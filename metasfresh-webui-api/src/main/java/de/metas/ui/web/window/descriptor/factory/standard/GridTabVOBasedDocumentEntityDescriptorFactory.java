@@ -261,8 +261,18 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
 			if(widgetType.isButton() && gridFieldVO.AD_Process_ID > 0)
 			{
-				widgetType = DocumentFieldWidgetType.ProcessButton;
-				buttonProcessId = gridFieldVO.AD_Process_ID;
+				if(WindowConstants.FIELDNAME_DocAction.equals(fieldName)
+						|| WindowConstants.FIELDNAME_Processing.equals(fieldName))
+				{
+					// FIXME: hardcoded, exclude field when considering ProcessButton widget
+					// because it's AD_Process_ID it's a placeholder-ish one.
+					buttonProcessId = -1;
+				}
+				else
+				{
+					widgetType = DocumentFieldWidgetType.ProcessButton;
+					buttonProcessId = gridFieldVO.AD_Process_ID;
+				}
 			}
 			else
 			{
