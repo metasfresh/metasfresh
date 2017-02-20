@@ -48,6 +48,7 @@ upcoming
 ## Fixes
 
  * metasfresh
+  * [#942](https://github.com/metasfresh/metasfresh/issues/942) Fix price list copy
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
   * [#998](https://github.com/metasfresh/metasfresh/issues/998) ClassNotFoundException: de.metas.dlm.swingui.model.interceptor.Main
   
