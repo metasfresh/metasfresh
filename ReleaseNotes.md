@@ -65,6 +65,7 @@ upcoming
   * [#333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/333) The whole process parameters content vanished
   * [#353](https://github.com/metasfresh/metasfresh-webui-frontend/issues/353) Wrong sitemap breadcrumb
   * [#354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/354) Filter w/o variable Parameters not working
+  * [#364](https://github.com/metasfresh/metasfresh-webui-frontend/issues/364) Handling Unit Double click Icon changes data underneath overlay
 
 # metasfresh 4.56.55 (2017-07)
 
