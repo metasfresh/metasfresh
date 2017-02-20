@@ -1,4 +1,4 @@
-package de.metas.dlm.swingui.model.interceptor;
+package de.metas.dlm.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 
@@ -31,7 +31,7 @@ import de.metas.dlm.swingui.PreferenceCustomizer;
  * 
  * This class will be loaded only if running with {@link org.compiere.Adempiere.RunMode#SWING_CLIENT} run mode.
  * 
- * NOTE: for this it's important to keep the name in sync with {@link de.metas.dlm.model.interceptor.Main} and also to keep the suffix {@code _SwingUI}.
+ * NOTE: for this it's important to keep the name (incl. package name!) in sync with {@link de.metas.dlm.model.interceptor.Main} and also to keep the suffix {@code _SwingUI}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  */
