@@ -84,7 +84,7 @@ class Filters extends Component {
         if(filters.parameters){
             return filters.parameters.filter(item => {
                 return item.mandatory && !item.value;
-            }).length();
+            }).length;
         }else{
             return false;
         }
