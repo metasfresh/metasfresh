@@ -42,6 +42,8 @@ upcoming
   * [#227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/277) Processed HU in Material Receipt Workflow
   * [#282](https://github.com/metasfresh/metasfresh-webui-frontend/issues/282) Implement attachments list in Actions menu
   * [#996](https://github.com/metasfresh/metasfresh/issues/996) Add Warehouse and processed Filter to Material Receipt Candidates Window
+  * [#265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/265) Create Jenkinsfile for metasfresh-webui-frontend
+  * [#345](https://github.com/metasfresh/metasfresh-webui-frontend/issues/345) Grid view layout: honor supportNewRecord and newRecordCaption
   
 ## Fixes
 
@@ -68,6 +70,7 @@ upcoming
   * [#354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/354) Filter w/o variable Parameters not working
   * [#364](https://github.com/metasfresh/metasfresh-webui-frontend/issues/364) Handling Unit Double click Icon changes data underneath overlay
   * [#259](https://github.com/metasfresh/metasfresh-webui-frontend/issues/259) Grid view selection lost when trying to use the scroll bar
+  * [#352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/352) Lines not "refreshed" after docaction reactivation
   
 # metasfresh 4.56.55 (2017-07)
 
