@@ -365,6 +365,7 @@ body {
 .document-list-header {
     display: flex;
     justify-content: space-between;
+    flex-shrink: 0;
 }
 
 .document-list-header > * {
