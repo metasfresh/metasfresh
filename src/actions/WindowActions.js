@@ -102,14 +102,6 @@ export function deleteRow(tabid, rowid, scope) {
     }
 }
 
-export function clearTab(tabId, scope) {
-    return {
-        type: types.CLEAR_TAB,
-        tabId: tabId,
-        scope: scope
-    }
-}
-
 export function updateDataProperty(property, value, scope) {
     return {
         type: types.UPDATE_DATA_PROPERTY,
