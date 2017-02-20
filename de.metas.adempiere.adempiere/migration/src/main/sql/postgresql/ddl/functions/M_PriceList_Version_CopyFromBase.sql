@@ -42,6 +42,7 @@ begin
 		--
 		, IsDefault
 		, IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
+		, M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
 		--
 		, AD_Client_ID
 		, AD_Org_ID
@@ -76,6 +77,7 @@ begin
 		--
 		, s.IsDefault
 		, s.IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
+		, s.M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
 		--
 		, s.AD_Client_ID
 		, s.AD_Org_ID
