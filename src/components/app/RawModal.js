@@ -50,11 +50,11 @@ class RawModal extends Component {
     }
 
     removeModal = () => {
-        const {dispatch} = this.props;
+        const {dispatch, modalVisible} = this.props;
 
         dispatch(closeRawModal());
 
-        if (!this.props.modalVisible){
+        if (!modalVisible){
             document.body.style.overflow = 'auto';
         }
     }
