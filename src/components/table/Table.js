@@ -35,7 +35,7 @@ class Table extends Component {
         const {defaultSelected} = this.props;
 
         this.state = {
-            selected: defaultSelected || [null],
+            selected: defaultSelected || [undefined],
             listenOnKeys: true,
             contextMenu: {
                 open: false,
@@ -55,7 +55,8 @@ class Table extends Component {
     componentWillUpdate(nextProps, nextState) {
         const {dispatch} = this.props;
 
-        if((JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
+        if(
+            (JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
         ){
             dispatch(selectTableItems(nextState.selected));
         }
@@ -387,7 +388,7 @@ class Table extends Component {
             const selectRange = e.shiftKey;
             const isSelected = selected.indexOf(id) > -1;
             const isAnySelected = selected.length > 0;
-
+            
             if(selectMore){
                 if(isSelected){
                     this.deselectProduct(id);
@@ -432,12 +433,12 @@ class Table extends Component {
     }
 
     handleFocus = () => {
-        const {rowData, tabid} = this.props;
-        const {selected} = this.state;
-
-         if(selected.length <= 0){
-            const firstId = Object.keys(rowData[tabid])[0];
-            this.selectOneProduct(firstId, 0);
+        const {tabid, keyProperty} = this.props;
+        const {selected, rows} = this.state;
+        const keyProp = keyProperty ? keyProperty : 'rowId';
+        
+        if(selected.length <= 0){
+            this.selectOneProduct(rows[tabid][keyProperty], 0);
         }
     }
 
