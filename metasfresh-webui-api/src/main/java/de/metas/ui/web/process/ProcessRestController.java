@@ -1,10 +1,8 @@
 package de.metas.ui.web.process;
 
 import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,9 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Strings;
-
-import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
@@ -28,17 +23,11 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.controller.Execution;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import io.swagger.annotations.Api;
 
@@ -77,12 +66,6 @@ public class ProcessRestController
 	@Autowired
 	private ProcessInstancesRepository instancesRepository;
 
-	@Autowired
-	private DocumentCollection documentsCollection;
-
-	@Autowired
-	private IDocumentViewsRepository documentViewsRepo;
-
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	private JSONOptions newJsonOpts()
@@ -90,6 +73,11 @@ public class ProcessRestController
 		return JSONOptions.builder()
 				.setUserSession(userSession)
 				.build();
+	}
+	
+	private <R> R forProcessInstanceWritable(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
+	{
+		return Execution.callInNewExecution("", () -> instancesRepository.forProcessInstanceWritable(pinstanceIdAsInt, processor));
 	}
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
@@ -110,77 +98,10 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ProcessInfo processInfo = createProcessInfo(adProcessId, request);
-
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processInfo);
+			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(adProcessId, request);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
-	}
-
-	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
-	{
-		// Validate request's AD_Process_ID
-		// (we are not using it, but just for consistency)
-		if (request.getAD_Process_ID() > 0 && request.getAD_Process_ID() != adProcessId)
-		{
-			throw new IllegalArgumentException("Request's AD_Process_ID is not valid. It shall be " + adProcessId + " or none but it was " + request.getAD_Process_ID());
-		}
-
-		Check.assume(adProcessId > 0, "adProcessId > 0");
-
-		//
-		// Extract process where clause from view, in case the process was called from a view.
-		final String sqlWhereClause;
-		final String viewId = Strings.emptyToNull(request.getViewId());
-		int view_AD_Window_ID = -1;
-		DocumentId view_DocumentId = null;
-		if (!Check.isEmpty(viewId))
-		{
-			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
-			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
-			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
-
-			if (viewDocumentIds.size() == 1)
-			{
-				view_AD_Window_ID = view.getAD_Window_ID();
-				view_DocumentId = viewDocumentIds.iterator().next();
-			}
-		}
-		else
-		{
-			sqlWhereClause = null;
-		}
-
-		//
-		// Extract the (single) referenced document
-		final TableRecordReference documentRef;
-		if (request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
-		{
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
-			documentRef = documentsCollection.getTableRecordReference(documentPath);
-		}
-		else if (view_AD_Window_ID > 0 && view_DocumentId != null)
-		{
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_DocumentId);
-			documentRef = documentsCollection.getTableRecordReference(documentPath);
-		}
-		else
-		{
-			documentRef = null;
-		}
-
-		return ProcessInfo.builder()
-				.setCtx(userSession.getCtx())
-				.setCreateTemporaryCtx()
-				.setAD_Process_ID(adProcessId)
-				.setRecord(documentRef)
-				.setWhereClause(sqlWhereClause)
-				//
-				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
-				//
-				.build();
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
@@ -191,10 +112,9 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ProcessInstance processInstance = instancesRepository.getProcessInstanceForReading(pinstanceId);
-		return JSONProcessInstance.of(processInstance, newJsonOpts());
+		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
 	}
-
+	
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters", method = RequestMethod.PATCH)
 	public List<JSONDocument> processParametersChangeEvents_DEPRECATED(
 			@PathVariable("pinstanceId") final int pinstanceId //
@@ -212,23 +132,11 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
-
-		return Execution.prepareNewExecution()
-				.retryOnVersionError(3)
-				.execute(() -> {
-					final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
-
-					//
-					// Apply changes
-					processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-
-					// Push back the changed document
-					instancesRepository.checkin(processInstance);
-
-					//
-					// Return the changes
-					return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
-				});
+		
+		return forProcessInstanceWritable(pinstanceId, processInstance -> {
+			processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+		});
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/start", method = RequestMethod.GET)
@@ -238,14 +146,9 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
-
-		return Execution.callInNewExecution("pinstance.startProcess", () -> {
-			final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
+		
+		return forProcessInstanceWritable(pinstanceId, processInstance -> {
 			final ProcessInstanceResult result = processInstance.startProcess();
-
-			// Push back the changed document
-			instancesRepository.checkin(processInstance);
-
 			return JSONProcessInstanceResult.of(result);
 		});
 	}
@@ -257,8 +160,7 @@ public class ProcessRestController
 			, @PathVariable("filename") final String filename //
 	)
 	{
-		final ProcessInstanceResult executionResult = instancesRepository.getProcessInstanceForReading(pinstanceId)
-				.getExecutionResult();
+		final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
 
 		final String reportFilename = executionResult.getReportFilename();
 		final String reportContentType = executionResult.getReportContentType();
@@ -284,8 +186,7 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
-		return instancesRepository.getProcessInstanceForReading(pinstanceId)
-				.getParameterLookupValuesForQuery(parameterName, query)
+		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -298,8 +199,7 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
-		return instancesRepository.getProcessInstanceForReading(pinstanceId)
-				.getParameterLookupValues(parameterName)
+		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 }

@@ -7,9 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -86,13 +90,14 @@ public final class ProcessInstance
 	private IDocumentViewsRepository documentViewsRepo;
 
 	private final DocumentId adPInstanceId;
-	private int version = 1;
 
 	private final ProcessDescriptor processDescriptor;
 	private final Document parameters;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
+
+	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
 	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final DocumentId adPInstanceId, final Document parameters)
@@ -106,6 +111,8 @@ public final class ProcessInstance
 
 		executed = false;
 		executionResult = null;
+
+		readwriteLock = new ReentrantReadWriteLock();
 	}
 
 	/** Copy constructor */
@@ -117,13 +124,14 @@ public final class ProcessInstance
 		documentViewsRepo = from.documentViewsRepo;
 
 		adPInstanceId = from.adPInstanceId;
-		version = from.version;
 
 		processDescriptor = from.processDescriptor;
 		parameters = from.parameters.copy(copyMode);
 
 		executed = from.executed;
 		executionResult = from.executionResult;
+
+		readwriteLock = from.readwriteLock; // always share
 	}
 
 	@Override
@@ -132,7 +140,6 @@ public final class ProcessInstance
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("AD_PInstance_ID", adPInstanceId)
-				.add("version", version)
 				.add("executed", "executed")
 				.add("executionResult", executionResult)
 				.add("processDescriptor", processDescriptor)
@@ -153,16 +160,6 @@ public final class ProcessInstance
 	public DocumentId getAD_PInstance_ID()
 	{
 		return adPInstanceId;
-	}
-
-	/* package */int getVersion()
-	{
-		return version;
-	}
-
-	/* package */void setVersion(final int version)
-	{
-		this.version = version;
 	}
 
 	public Document getParametersDocument()
@@ -440,5 +437,31 @@ public final class ProcessInstance
 		}
 
 		return saved;
+	}
+
+	public IAutoCloseable lockForReading()
+	{
+		final ReadLock readLock = readwriteLock.readLock();
+		logger.debug("Acquiring read lock for {}: {}", this, readLock);
+		readLock.lock();
+		logger.debug("Acquired read lock for {}: {}", this, readLock);
+
+		return () -> {
+			readLock.unlock();
+			logger.debug("Released read lock for {}: {}", this, readLock);
+		};
+	}
+
+	public IAutoCloseable lockForWriting()
+	{
+		final WriteLock writeLock = readwriteLock.writeLock();
+		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
+		writeLock.lock();
+		logger.debug("Acquired write lock for {}: {}", this, writeLock);
+
+		return () -> {
+			writeLock.unlock();
+			logger.debug("Released write lock for {}: {}", this, writeLock);
+		};
 	}
 }
