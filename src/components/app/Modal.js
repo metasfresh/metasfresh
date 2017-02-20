@@ -103,10 +103,13 @@ class Modal extends Component {
     }
 
     removeModal = () => {
-        const {dispatch} = this.props;
+        const {dispatch, rawModalVisible} = this.props;
 
         dispatch(closeModal());
-        document.body.style.overflow = 'auto';
+
+        if (!rawModalVisible){
+            document.body.style.overflow = 'auto';
+        }
     }
 
     renderModalBody = () => {
@@ -201,6 +204,6 @@ Modal.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-Modal = connect()(Modal)
+Modal = connect()(Modal);
 
 export default Modal

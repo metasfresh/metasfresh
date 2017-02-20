@@ -172,7 +172,7 @@ class NavigationTree extends Component {
     }
 
     render() {
-        const {modal} = this.props;
+        const {rawModalVisible, modal} = this.props;
         const {rootResults} = this.state;
 
         return (
@@ -190,6 +190,7 @@ class NavigationTree extends Component {
                         modalTitle={modal.title}
                         modalType={modal.modalType}
                         modalViewId={modal.viewId}
+                        rawModalVisible={rawModalVisible}
                      />
                  }
                 {this.renderTree(rootResults)}
@@ -206,15 +207,20 @@ function mapStateToProps(state) {
     } = windowHandler || {
         modal: {}
     }
+    const {
+        visible
+    } = windowHandler.rawModal || false;
 
     return {
-        modal
+        modal,
+        rawModalVisible: visible
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    modal: PropTypes.object.isRequired
+    modal: PropTypes.object.isRequired,
+    rawModalVisible: PropTypes.bool.isRequired
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);
