@@ -429,6 +429,10 @@ public final class DocumentPath
 
 	public DocumentPath getRootDocumentPath()
 	{
+		if(isRootDocument())
+		{
+			return this;
+		}
 		return rootDocumentPath(documentType, documentTypeId, documentId);
 	}
 	
