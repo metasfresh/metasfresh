@@ -1,5 +1,7 @@
 package de.metas.process;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
@@ -21,11 +23,11 @@ import de.metas.i18n.ImmutableTranslatableString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -233,7 +235,13 @@ public final class ProcessPreconditionsResolution
 		}
 	}
 
-	public ProcessPreconditionsResolution deriveWithCaptionOverride(final String captionOverride)
+	/**
+	 * Derive this resolution, overriding the caption.
+	 * 
+	 * @param captionOverride caption override; null value will be considered as no override
+	 * @return
+	 */
+	public ProcessPreconditionsResolution deriveWithCaptionOverride(@Nullable final String captionOverride)
 	{
 		final ITranslatableString captionOverrideNew = captionOverride == null ? null : ImmutableTranslatableString.constant(captionOverride);
 		if (Objects.equal(this.captionOverride, captionOverrideNew))

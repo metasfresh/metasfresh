@@ -15,7 +15,7 @@
 
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir>75-dlm</migration-sql-basedir>
 	</properties>
 
 	<dependencies>

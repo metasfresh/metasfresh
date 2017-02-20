@@ -319,7 +319,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (final SQLException e)
 		{
-			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
