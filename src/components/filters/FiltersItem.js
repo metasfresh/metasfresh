@@ -68,7 +68,7 @@ class FiltersItem extends Component {
     handleApply = () => {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
-
+        
         applyFilters(filter);
         closeFilterMenu();
     }
