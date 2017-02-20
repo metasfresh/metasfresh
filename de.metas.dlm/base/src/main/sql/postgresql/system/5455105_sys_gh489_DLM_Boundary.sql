@@ -12,4 +12,4 @@ UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2017-01-06
 UPDATE AD_Column SET IsDLMPartitionBoundary='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2017-01-06 09:15:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=8762
 ;
 
-select dlm.recreate_dlm_triggers('M_AttributeSetInstance');
+select dlm.recreate_dlm_triggers('M_AttributeSetInstance') FROM AD_Table WHERE TableName='M_AttributeSetInstance' AND IsDLM='Y';

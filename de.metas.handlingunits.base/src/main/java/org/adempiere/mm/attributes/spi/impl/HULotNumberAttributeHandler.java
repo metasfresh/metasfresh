@@ -1,19 +1,17 @@
 package org.adempiere.mm.attributes.spi.impl;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.spi.AttributeValueCalloutAdapter;
+import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -41,8 +39,8 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
  */
 
 public class HULotNumberAttributeHandler
-		extends AttributeValueCalloutAdapter
-		implements IAttributeValueGenerator
+		extends AbstractAttributeValueGenerator
+		implements IAttributeValueCallout
 {
 
 	public HULotNumberAttributeHandler()
@@ -125,30 +123,6 @@ public class HULotNumberAttributeHandler
 	public boolean canGenerateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
 	{
 		return false;
-	}
-
-	@Override
-	public String generateStringValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
-	{
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	@Override
-	public BigDecimal generateNumericValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
-	{
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	@Override
-	public Date generateDateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
-	{
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	@Override
-	public I_M_AttributeValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName)
-	{
-		throw new UnsupportedOperationException("Not supported");
 	}
 
 }
