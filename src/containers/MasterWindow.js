@@ -114,6 +114,7 @@ class MasterWindow extends Component {
                         closeCallback={(isNew) => this.closeModalCallback(
                             modal.modalType, isNew, modal.layout.pinstanceId
                         )}
+                        rawModalVisible={rawModal.visible}
                      />
                  }
                  {rawModal.visible &&
