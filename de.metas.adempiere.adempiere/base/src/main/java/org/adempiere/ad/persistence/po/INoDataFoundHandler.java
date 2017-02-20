@@ -34,6 +34,7 @@ import org.adempiere.model.IContextAware;
 public interface INoDataFoundHandler
 {
 	/**
+	 * Invoke the handler. This method is supposed to be called by {@link NoDataFoundHandlers#invokeHandlers(String, Object[], IContextAware)} only!
 	 * 
 	 * @param tableName the name of the table (or view!) the PO tried to load from.
 	 * @param ids the primary keys the PO tries to load with. In <i>most</i> cases, these IDs are integers.

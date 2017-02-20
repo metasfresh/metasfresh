@@ -1741,15 +1741,10 @@ public abstract class PO
 				if (!isRetry)
 				{
 					// gh #986 see if any noDataFoundHandler can do something and, if so, retry *once*
-					boolean atLeastOneHandlerFixedIt = false;
-					for (final INoDataFoundHandler handler : NoDataFoundHandlers.get().getHandlers())
-					{
-						if (handler.invoke(get_TableName(), m_IDs, InterfaceWrapperHelper.getContextAware(this)) && !atLeastOneHandlerFixedIt)
-						{
-							atLeastOneHandlerFixedIt = true;
-						}
-					}
-					if (atLeastOneHandlerFixedIt)
+					if (NoDataFoundHandlers.get()
+							.invokeHandlers(get_TableName(),
+									m_IDs,
+									InterfaceWrapperHelper.getContextAware(this)))
 					{
 						return load0(trxName, true); // this is the retry, so isRetry=true this time
 					}

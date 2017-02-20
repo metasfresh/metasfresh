@@ -3,6 +3,8 @@ package org.adempiere.ad.persistence.po;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.model.IContextAware;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,6 +27,13 @@ import java.util.List;
  * #L%
  */
 
+/**
+ * Singleton where {@link INoDataFoundHandler}s can be registered (see {@link #addHandler(INoDataFoundHandler)}) and invoked (see {@link #invokeHandlers(String, Object[], IContextAware)}).
+ * Note that it's up to the caller to determine if the handlers actually need to be called.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class NoDataFoundHandlers
 {
 	private static final NoDataFoundHandlers INSTANCE = new NoDataFoundHandlers();
@@ -46,8 +55,27 @@ public final class NoDataFoundHandlers
 		return this;
 	}
 
-	public List<INoDataFoundHandler> getHandlers()
+	/**
+	 * Invoke all registered handlers on the given parameters. If one of them returns {@code true}, then this method also returns {@code true}.
+	 * In any case, all handlers are invoked.
+	 * <p>
+	 * Hint: the caller of this method might want to throw a {@link NoDataFoundHandlerRetryRequestException} if this method returned {@code true}.
+	 * 
+	 * @param tableName
+	 * @param ids
+	 * @param ctx
+	 * @return
+	 */
+	public boolean invokeHandlers(String tableName, Object[] ids, IContextAware ctx)
 	{
-		return noDataFoundHandlers;
+		boolean atLeastOneHandlerFixedIt = false;
+		for (final INoDataFoundHandler handler : noDataFoundHandlers)
+		{
+			if (handler.invoke(tableName, ids, ctx) && !atLeastOneHandlerFixedIt)
+			{
+				atLeastOneHandlerFixedIt = true;
+			}
+		}
+		return atLeastOneHandlerFixedIt;
 	}
 }
