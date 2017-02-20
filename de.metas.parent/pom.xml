@@ -47,7 +47,7 @@
 		<!-- For versions info, see https://github.com/spring-projects/spring-boot/blob/v1.4.1.RELEASE/spring-boot-dependencies/pom.xml -->
 		<spring.version>4.3.3.RELEASE</spring.version>
 
-		<guava.version>18.0</guava.version>
+		<guava.version>21.0</guava.version>
 
 		<!-- The version to be used by metasfresh, as opposed to the ESB's. The 
 			two versions might clash in ait modules -->
