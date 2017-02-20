@@ -111,9 +111,7 @@ class MasterWindow extends Component {
                         modalType={modal.modalType}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
-                        closeCallback={(isNew) => this.closeModalCallback(
-                            isNew
-                        )}
+                        closeCallback={this.closeModalCallback}
                      />
                  }
                  {rawModal.visible &&
