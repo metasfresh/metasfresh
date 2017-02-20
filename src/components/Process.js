@@ -13,6 +13,7 @@ export class Process extends Component {
     }
 
     renderElements = (layout, data, type) => {
+        const {disabled} = this.props;
         const elements = layout.elements;
         return elements.map((elem, id) => {
             const widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
@@ -24,6 +25,7 @@ export class Process extends Component {
                     dataId={layout.pinstanceId}
                     widgetData={widgetData}
                     isModal={true}
+                    disabled={disabled}
                     {...elem} />
             )
         })

@@ -81,9 +81,13 @@ class Filters extends Component {
     }
 
     isFilterValid = (filters) => {
-        return filters.parameters.filter(item => {
-            return item.mandatory && !item.value;
-        })
+        if(filters.parameters){
+            return filters.parameters.filter(item => {
+                return item.mandatory && !item.value;
+            }).length;
+        }else{
+            return false;
+        }
     }
 
     getFiltersStructure = (filterData) => {

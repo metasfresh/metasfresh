@@ -11,8 +11,7 @@ import Modal from '../components/app/Modal';
 import {
     rootRequest,
     nodePathsRequest,
-    queryPathsRequest,
-    getWindowBreadcrumb
+    queryPathsRequest
  } from '../actions/MenuActions';
 
 import {
@@ -35,10 +34,7 @@ class NavigationTree extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch} = this.props;
-
         this.getData();
-        dispatch(getWindowBreadcrumb('143'));
     }
 
     getData = (callback) => {
@@ -176,12 +172,11 @@ class NavigationTree extends Component {
     }
 
     render() {
-        const {modal, breadcrumb} = this.props;
+        const {modal} = this.props;
         const {rootResults} = this.state;
 
         return (
             <Container
-                breadcrumb={breadcrumb.slice(0,1)}
                 siteName = "Sitemap"
             >
                 {modal.visible &&
@@ -204,7 +199,7 @@ class NavigationTree extends Component {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
+    const { windowHandler } = state;
 
     const {
         modal
@@ -212,21 +207,13 @@ function mapStateToProps(state) {
         modal: {}
     }
 
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: []
-    }
-
     return {
-        breadcrumb,
         modal
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired,
     modal: PropTypes.object.isRequired
 };
 

@@ -135,7 +135,8 @@ class MasterWidget extends Component {
         const {
             caption, widgetType, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus, fullScreen
+            handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus, fullScreen,
+            disabled
         } = this.props;
 
         const {updated} = this.state;
@@ -165,6 +166,7 @@ class MasterWidget extends Component {
                 dropdownOpenCallback={dropdownOpenCallback}
                 autoFocus={autoFocus}
                 fullScreen={fullScreen}
+                disabled={disabled}
             />
         )
     }
