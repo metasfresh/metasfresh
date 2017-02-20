@@ -22,7 +22,7 @@ class MasterWindow extends Component {
         }
     }
 
-    closeModalCallback = (isNew) => {
+    closeModalCallback = (type, isNew) => {
         if(isNew){
             this.setState({
                     newRow: true
