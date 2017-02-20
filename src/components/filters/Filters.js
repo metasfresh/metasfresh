@@ -10,14 +10,14 @@ class Filters extends Component {
         this.state = {
             filter: null,
             notValidFields: null,
-            active: null,
             widgetShown: false
         }
     }
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
-        filtersActive && this.init(filtersActive[0]);
+        
+        this.init(filtersActive ? filtersActive[0] : null);
     }
 
     componentDidMount() {
