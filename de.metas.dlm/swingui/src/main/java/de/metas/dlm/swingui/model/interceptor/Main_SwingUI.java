@@ -26,7 +26,16 @@ import de.metas.dlm.swingui.PreferenceCustomizer;
  * #L%
  */
 
-public class Main extends AbstractModuleInterceptor
+/**
+ * DLM SwingUI module activator.
+ * 
+ * This class will be loaded only if running with {@link org.compiere.Adempiere.RunMode#SWING_CLIENT} run mode.
+ * 
+ * NOTE: for this it's important to keep the name in sync with {@link de.metas.dlm.model.interceptor.Main} and also to keep the suffix {@code _SwingUI}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
+public class Main_SwingUI extends AbstractModuleInterceptor
 {
 	@Override
 	protected void onAfterInit()
