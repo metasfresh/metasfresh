@@ -1,7 +1,7 @@
 package org.adempiere.ad.persistence.po;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.model.IContextAware;
 
@@ -38,12 +38,12 @@ public final class NoDataFoundHandlers
 {
 	private static final NoDataFoundHandlers INSTANCE = new NoDataFoundHandlers();
 
+	private final List<INoDataFoundHandler> noDataFoundHandlers = new CopyOnWriteArrayList<>();
+	
 	public static NoDataFoundHandlers get()
 	{
 		return INSTANCE;
 	}
-
-	private final List<INoDataFoundHandler> noDataFoundHandlers = new ArrayList<>();
 
 	private NoDataFoundHandlers()
 	{
