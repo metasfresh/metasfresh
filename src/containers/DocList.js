@@ -104,6 +104,7 @@ class DocList extends Component {
                              defaultViewId={rawModal.viewId}
                              selected={selected}
                              setModalTitle={this.setModalTitle}
+                             isModal={true}
                          />
                      </RawModal>
                  }
