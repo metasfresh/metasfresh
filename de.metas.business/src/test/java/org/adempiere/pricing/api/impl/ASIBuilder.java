@@ -44,6 +44,7 @@ public class ASIBuilder
 	}
 
 	private final Map<Integer, Object> attributeValues = new LinkedHashMap<>();
+	private boolean skipNullAttributeValues = false;
 
 	public I_M_AttributeSetInstance build()
 	{
@@ -66,7 +67,17 @@ public class ASIBuilder
 
 		if (value == null)
 		{
-			//
+			if (skipNullAttributeValues)
+			{
+				return;
+			}
+			else
+			{
+				ai.setValue(null);
+				ai.setValueNumber(null);
+				ai.setValueDate(null);
+				ai.setM_AttributeValue(null);
+			}
 		}
 		else if (value instanceof String)
 		{
@@ -91,7 +102,7 @@ public class ASIBuilder
 		{
 			throw new IllegalStateException("Unsupported attribute value: " + value + " (" + value.getClass() + ")");
 		}
-		
+
 		InterfaceWrapperHelper.save(ai);
 	}
 
@@ -123,6 +134,12 @@ public class ASIBuilder
 	public ASIBuilder setAttribute(final I_M_Attribute attribute, final I_M_AttributeValue value)
 	{
 		attributeValues.put(attribute.getM_Attribute_ID(), value);
+		return this;
+	}
+
+	public ASIBuilder skipNullAttributeValues()
+	{
+		skipNullAttributeValues = true;
 		return this;
 	}
 
