@@ -235,7 +235,7 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery) => {
-        const {dispatch, windowType, updateUri, selected} = this.props;
+        const {dispatch, windowType, updateUri} = this.props;
 
         if(updateUri){
             id && updateUri('viewId', id);

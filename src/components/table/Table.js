@@ -67,7 +67,7 @@ class Table extends Component {
         // that selection still exist
         if(
             nextState.selected[0] &&
-            !getItemsByProperty(nextState.rows, "id", nextState.selected[0]).length
+            !getItemsByProperty(nextState.rows, 'id', nextState.selected[0]).length
         ){
             dispatch(selectTableItems());
         }
