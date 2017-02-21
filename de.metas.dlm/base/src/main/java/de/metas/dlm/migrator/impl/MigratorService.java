@@ -45,7 +45,7 @@ import de.metas.logging.LogManager;
 
 public class MigratorService implements IMigratorService
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(MigratorService.class);
 
 	@Override
 	public void testMigratePartition(final Partition partition)
