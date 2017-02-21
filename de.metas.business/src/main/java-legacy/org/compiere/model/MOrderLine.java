@@ -33,7 +33,6 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
@@ -449,7 +448,8 @@ public class MOrderLine extends X_C_OrderLine
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
 		if (isTaxIncluded && !documentLevel)
 		{
-			BigDecimal taxStdAmt = BigDecimal.ZERO, taxThisAmt = BigDecimal.ZERO;
+			BigDecimal taxStdAmt = BigDecimal.ZERO;
+			BigDecimal taxThisAmt = BigDecimal.ZERO;
 
 			MTax orderTax = getTax();
 			MTax stdTax = null;
