@@ -28,6 +28,7 @@
 		<metasfresh.version>1.0.0</metasfresh.version>
 		<metasfresh-webui-frontend.version>1.0.0</metasfresh-webui-frontend.version>
 		<metasfresh-webui-api.version>1.0.0</metasfresh-webui-api.version>
+		<metasfresh-procurement-webui.version>1.0.0</metasfresh-procurement-webui.version>
 	</properties>
 
 	<dependencies>
@@ -560,6 +561,15 @@ note: when adding new records, please roughly order them by alphabet.
 									<outputDirectory>${project.build.directory}/dist/metasfresh-webui-frontend</outputDirectory>
 									<destFileName>metasfresh-webui-frontend.tar.gz</destFileName>
 								</artifactItem>
+								<artifactItem>
+									 <groupId>de.metas.procurement</groupId>
+  									<artifactId>de.metas.procurement.webui</artifactId>
+									<version>${metasfresh-procurement-webui.version}</version>
+									<type>tar.gz</type>
+									<outputDirectory>${project.build.directory}/dist/metasfresh-procurement-webui</outputDirectory>
+									<destFileName>metasfresh-procurement-webui.jar</destFileName>
+								</artifactItem>
+
 							</artifactItems>
 						</configuration>
 					</execution>

@@ -477,7 +477,57 @@ node('agent && linux && libc6-i386')
 				final String metasfreshUpdateParentParam;
 				final String metasfreshUpdatePropertyParam;
 				final String metasfreshWebApiUpdatePropertyParam;
-				final String metasfreshWebFrontEntUpdatePropertyParam;
+				final String metasfreshWebFrontEndUpdatePropertyParam;
+				final String metasfreshProcurementWebuiUpdatePropertyParam;
+				
+				// metasfresh-webui-frontend
+				if(MF_UPSTREAM_JOBNAME=="metasfresh-webui-frontend")
+				{
+					// we were called by metasfresh-webui-frontend; unclude that version in our tar.gz
+					metasfreshWebFrontEndUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${MF_UPSTREAM_VERSION}";
+				}
+				else
+				{
+					// just include the latest metasfresh-webui-frontend
+					metasfreshWebFrontEndUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version";
+				}
+				
+				// metasfresh-webui(-api)
+				if(MF_UPSTREAM_JOBNAME=="metasfresh-webui")
+				{
+					// we were called by metasfresh-webui(-api); unclude that version in our tar.gz
+					metasfreshWebApiUpdatePropertyParam="-Dproperty=metasfresh-webui-api.version -DnewVersion=${MF_UPSTREAM_VERSION}";
+				}
+				else if(EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui'])
+				{
+					// we did invoke the metasfresh-webui job and got some infos from it; use them
+					metasfreshWebApiUpdatePropertyParam="-Dproperty=metasfresh-webui-api.version -DnewVersion=${EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui']}";
+				}	
+				else
+				{
+					// this might be the case if we were called by metasfresh-webui-frontend; just include the latest metasfresh-webui-frontend
+					metasfreshWebApiUpdatePropertyParam="-Dproperty=metasfresh-webui-api.version";
+				}
+				
+				// metasfresh-procurement-webui
+				if(MF_UPSTREAM_JOBNAME=="metasfresh-procurement-webui")
+				{
+					// we were called by metasfresh-procurement-webui; unclude that version in our tar.gz
+					metasfreshProcurementWebuiUpdatePropertyParam="-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${MF_UPSTREAM_VERSION}";
+				}
+				else if(EXTERNAL_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])
+				{
+					// we did invoke the metasfresh-webui job and got some infos from it; use them
+					metasfreshProcurementWebuiUpdatePropertyParam="-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${EXTERNAL_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}";
+				}	
+				else
+				{
+					// this might be the case if we were called by metasfresh-webui-frontend; just include the latest metasfresh-webui-frontend
+					metasfreshProcurementWebuiUpdatePropertyParam="-Dproperty=metasfresh-procurement-webui.version";
+				}
+				
+				
+				
 				if(!params.MF_SKIP_TO_DIST)
 				{
 					metasfreshUpdateParentParam="-DparentVersion=${BUILD_VERSION}";
@@ -485,10 +535,6 @@ node('agent && linux && libc6-i386')
 					// update the property, use the metasfresh version that the "main" part of this pipeline was build with
 					metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}";
 					
-					// gh #968 TODO: update the properties, use either the version that we got from the downstream job invokations
-					// or use the MF_UPSTREAM_VERSION that we got from webui-api if *they called us*
-					metasfreshWebApiUpdatePropertyParam="-Dmetasfresh-webui-api.version -DnewVersion=${}";
-					metasfreshWebFrontEntUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${}";
 				}
 				else
 				{
@@ -496,8 +542,6 @@ node('agent && linux && libc6-i386')
 					
 					// the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the properties, but use the latest versions
 					metasfreshUpdatePropertyParam='-Dproperty=metasfresh.version';
-					metasfreshWebApiUpdatePropertyParam="-Dmetasfresh-webui-api.version";
-					metasfreshWebFrontEntUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version";
 				}
 		
 				// update the parent pom version
@@ -506,7 +550,10 @@ node('agent && linux && libc6-i386')
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdatePropertyParam} versions:update-property"
 
-				// gh#968 TODO: also update the metasfresh-webui-frontend.version and metasfresh-webui-api.versions. for the frontend, just get the latest. 
+				// gh#968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 				
 				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
