@@ -11,6 +11,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
 
 import com.google.common.base.MoreObjects;
 
@@ -24,6 +25,7 @@ import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
@@ -180,13 +182,29 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 			
 			final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
 
-			final Object value = event.getValue(); // TODO: i think we will need some conversions
+			final Object value = convertFromJson(attribute, event.getValue());
 			attributesStorage.setValue(attribute, value);
 		}
 		else
 		{
 			throw new IllegalArgumentException("Unknown operation: " + event);
 		}
+	}
+	
+	private final Object convertFromJson(final I_M_Attribute attribute, final Object value)
+	{
+		if(value == null)
+		{
+			return null;
+		}
+		
+		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			return JSONDate.fromJson(value.toString());
+		}
+		
+		return value;
 	}
 
 	@Override
