@@ -337,6 +337,13 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 <li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
 </ul>"""
 
+				// gh #968:
+				// set env variables which bill be available to a possible upstream job that might have called us
+				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
+				env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
+				env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
+				env.BUILD_VERSION="${BUILD_VERSION}";
+
 				junit '**/target/surefire-reports/*.xml'
             }
 		}
