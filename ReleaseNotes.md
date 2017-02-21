@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.57.56 (2017-08)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh 
@@ -30,7 +30,8 @@ upcoming
   * [#993](https://github.com/metasfresh/metasfresh/issues/993) New ProductPrice Window for Price Maintenance 
   * [#981](https://github.com/metasfresh/metasfresh/issues/981) Introduce AD_PInstance(AD_Pinstance_ID, ColumnName) unique index
   * [#983](https://github.com/metasfresh/metasfresh/issues/983) Upgrade guava version from 18 to 21
-  
+  * [#986](https://github.com/metasfresh/metasfresh/issues/986) Handle the case that PO can't load a record
+
 * webUI
   * [#145](https://github.com/metasfresh/metasfresh-webui/issues/145) HU editor - Create material receipt not enabled when the whole palet is selected
   * [#146](https://github.com/metasfresh/metasfresh-webui/issues/146) Receipt schedules: show empties receive/return actions only when only one row is selected
@@ -44,6 +45,7 @@ upcoming
   * [#996](https://github.com/metasfresh/metasfresh/issues/996) Add Warehouse and processed Filter to Material Receipt Candidates Window
   * [#265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/265) Create Jenkinsfile for metasfresh-webui-frontend
   * [#345](https://github.com/metasfresh/metasfresh-webui-frontend/issues/345) Grid view layout: honor supportNewRecord and newRecordCaption
+  * [#162](https://github.com/metasfresh/metasfresh-webui/issues/162) Possibility to choose used filter criteria for webUI
   
 ## Fixes
 
