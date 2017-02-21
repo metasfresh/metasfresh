@@ -211,7 +211,7 @@ public class HUSplitBuilder implements IHUSplitBuilder
 						// Make a copy of the processing context, we will need to modify it
 						final IMutableHUContext huContext = huContext0.copyAsMutable();
 
-						// Register our split HUTrxListener
+						// Register our split HUTrxListener so that the other listeners' onSplit() methods will be called
 						huContext.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
 
 						// Perform the actual split
