@@ -1,7 +1,21 @@
-### Is this a bug or feature request?
+### Type of issue
 
-### What is the current behavior?
+Bug / Feature request
 
-#### Which are the steps to reproduce?
+### Current behavior
 
-### What is the expected or desired behavior?
+### Expected behavior
+
+### Steps to reproduce
+
+Remove this part if feature request.
+
+**Window:** enter window ID or Navigation menu step-by-step.
+
+**Entity:** enter dockument ID or steps to reproduce environment.
+
+/or/
+
+**Link:** link to w101.
+
+**Pre-filled data:** which inputs shall be filled before?

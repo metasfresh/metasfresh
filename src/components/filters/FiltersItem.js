@@ -47,8 +47,7 @@ class FiltersItem extends Component {
     }
 
     mergeData = (property, value, id, valueTo = null) => {
-        this.setState(prevState => {
-            return {
+        this.setState(prevState => ({
                 filter: Object.assign({}, prevState.filter, {
                     parameters: prevState.filter.parameters.map(param => {
                         if(param.parameterName === property){
@@ -65,8 +64,8 @@ class FiltersItem extends Component {
                         }
                     })
                 })
-            }
-        })
+            })
+        )
     }
 
     handleApply = () => {

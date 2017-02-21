@@ -1,8 +1,5 @@
-/* global config:true */
-
 import * as types from '../constants/MenuTypes'
 import axios from 'axios';
-
 
 export function setBreadcrumb(breadcrumb){
     return {
