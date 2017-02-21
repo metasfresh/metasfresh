@@ -71,7 +71,7 @@ class RawModal extends Component {
 
         return (
             <div
-                className="screen-freeze js-not-unselect"
+                className="screen-freeze"
             >
                 <div className="panel panel-modal panel-modal-primary">
                     <div
