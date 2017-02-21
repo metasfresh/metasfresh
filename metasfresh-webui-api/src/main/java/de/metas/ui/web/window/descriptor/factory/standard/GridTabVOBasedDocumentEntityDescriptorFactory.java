@@ -283,6 +283,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
 					.setColumnName(sqlColumnName)
+					.setWidgetType(widgetType)
 					.setDisplayType(displayType)
 					.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
 					.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
