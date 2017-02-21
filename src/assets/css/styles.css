@@ -365,6 +365,7 @@ body {
 .document-list-header {
     display: flex;
     justify-content: space-between;
+    flex-shrink: 0;
 }
 
 .document-list-header > * {
@@ -815,12 +816,15 @@ td.pulse-off input {
 
 .quick-actions-wrapper {
     position: relative;
+    display: flex;
 }
 
 .quick-actions-dropdown {
     position: absolute;
     z-index:1;
     width: 100%;
+    left: 0;
+    top: 100%;
 
     margin-top: .2rem;
     padding: .3rem;
@@ -860,6 +864,9 @@ td.pulse-off input {
     border-radius: 3px;
     border: 1px solid $brand-border-color;
     margin-left: .5rem;
+    
+    overflow: auto;
+    overflow-x: hidden;
 }
 
 .attributes-selector-header,
@@ -915,4 +922,31 @@ td.pulse-off input {
 
 .document-file-dropzone-active .document-file-dropzone-backdrop{
     display: block;
+}
+
+.slidein-enter {
+    right: -100%;
+}
+
+.slidein-enter.slidein-enter-active {
+    right: 0;
+    transition: right .2s;
+    transition-delay: .8s;
+}
+
+.slidein-leave {
+    right: 0;
+    transition: right .2s;
+}
+
+.slidein-leave.slidein-leave-active {
+    right: -100%;
+}
+
+@media (max-width: $breakpoint-md){
+    .btn-new-document {
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }

@@ -33,12 +33,15 @@ export default {
         TOGGLE_EXPAND: mod + '+' + 'space'
     },
     PAGINATION_CONTEXT: {
-        NEXT_PAGE: 'pageup',
-        PREV_PAGE: 'pagedown',
+        NEXT_PAGE: 'pagedown',
+        PREV_PAGE: 'pageup',
         FIRST_PAGE: 'home',
         LAST_PAGE: 'end'
     },
     QUICK_ACTIONS: {
         QUICK_ACTION_POS: mod + '+' + 'u'
+    },
+    DOCUMENT_STATUS_CONTEXT: {
+        COMPLETE_STATUS: mod + '+' + 'u'
     }
 }

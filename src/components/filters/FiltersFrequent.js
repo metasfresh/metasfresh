@@ -4,10 +4,6 @@ import onClickOutside from 'react-onclickoutside';
 
 import FiltersItem from './FiltersItem';
 
-import {
-    getItemsByProperty
-} from '../../actions/WindowActions';
-
 class FiltersFrequent extends Component {
     constructor(props) {
         super(props);
@@ -17,7 +13,7 @@ class FiltersFrequent extends Component {
         }
     }
 
-    toggleFilter = (index, item) => {
+    toggleFilter = (index) => {
         this.setState({
             openFilterId: index
         })
@@ -45,9 +41,9 @@ class FiltersFrequent extends Component {
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
                                 className={
-                                    "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm " +
-                                    (openFilterId === index ? "btn-select ": "") +
-                                    (isActive ? "btn-active ": "")
+                                    'btn btn-filter btn-meta-outline-secondary btn-distance btn-sm ' +
+                                    (openFilterId === index ? 'btn-select ': '') +
+                                    (isActive ? 'btn-active ': '')
                                 }
                             >
                                 <i className="meta-icon-preview" />

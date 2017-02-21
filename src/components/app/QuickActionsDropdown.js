@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 
@@ -26,8 +26,8 @@ class QuickActionsDropdown extends Component {
                 {actions.map((action, index) =>
                     <div
                         className={
-                            "quick-actions-item " +
-                            (action.disabled ? "quick-actions-item-disabled " : "")}
+                            'quick-actions-item ' +
+                            (action.disabled ? 'quick-actions-item-disabled ' : '')}
                         key={index}
                         onClick={() => handleClick(action)}
                     >

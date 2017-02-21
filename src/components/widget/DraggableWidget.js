@@ -1,5 +1,4 @@
 import React, { Component, PropTypes } from 'react';
-import { findDOMNode } from 'react-dom';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
@@ -21,36 +20,24 @@ const cardSource = {
 };
 
 const cardTarget = {
-    hover(props, monitor, component) {
+    hover(props, monitor) {
         const dragIndex = monitor.getItem().index;
         const hoverIndex = props.index;
 
-// Don't replace items with themselves
-if (dragIndex === hoverIndex) {
-    return;
-}
+        // Don't replace items with themselves
+        if (dragIndex === hoverIndex) {
+            return;
+        }
 
-// Determine rectangle on screen
-const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
+        // Time to actually perform the action
+        props.moveCard(dragIndex, hoverIndex);
 
-// Get vertical middle
-const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
-// Determine mouse position
-const clientOffset = monitor.getClientOffset();
-
-// Get pixels to the top
-const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-// Time to actually perform the action
-props.moveCard(dragIndex, hoverIndex);
-
-// Note: we're mutating the monitor item here!
-// Generally it's better to avoid mutations,
-// but it's good here for the sake of performance
-// to avoid expensive index searches.
-monitor.getItem().index = hoverIndex;
-}
+        // Note: we're mutating the monitor item here!
+        // Generally it's better to avoid mutations,
+        // but it's good here for the sake of performance
+        // to avoid expensive index searches.
+        monitor.getItem().index = hoverIndex;
+    }
 };
 
 function collect(connect, monitor) {
@@ -60,7 +47,7 @@ function collect(connect, monitor) {
     };
 }
 
-function connect(connect, monitor) {
+function connect(connect) {
     return {
         connectDropTarget: connect.dropTarget()
     };
@@ -78,40 +65,40 @@ export class DraggableWidget extends Component {
     }
 
     handleClickOutside = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             toggleWidgetMenu: false
-        }))
+        })
     }
 
     toggleMenu = () => {
         const { toggleWidgetMenu } = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             toggleWidgetMenu: !toggleWidgetMenu
-        }))
+        })
     }
 
     maximizeWidget = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isMaximize: true,
             toggleWidgetMenu: false
-        }))
+        })
     }
 
     minimizeWidget = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isMaximize: false,
             toggleWidgetMenu: false
-        }))
+        })
     }
 
     handleRefresh = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             refresh: true
-        }), () => {
-            this.setState(Object.assign({}, this.state, {
+        }, () => {
+            this.setState({
                 refresh: false,
                 toggleWidgetMenu: false
-            }));
+            })
         });
     }
 
@@ -124,10 +111,10 @@ export class DraggableWidget extends Component {
 
         return connectDragSource(connectDropTarget(
             <div className={
-                "draggable-widget" +
-                (isMaximize ? " draggable-widget-maximize" : "") +
-                (isDragging ? " dragging" : "") +
-                ((idMaximized !== false) && !isMaximize ? " hidden-xs-up" : "")
+                'draggable-widget' +
+                (isMaximize ? ' draggable-widget-maximize' : '') +
+                (isDragging ? ' dragging' : '') +
+                ((idMaximized !== false) && !isMaximize ? ' hidden-xs-up' : '')
             } >
                 <div className="draggable-widget-header">
                     {text}
@@ -144,7 +131,7 @@ export class DraggableWidget extends Component {
                         </div>
                     }
                 </div>
-                {this.props.dashboard == "/dashboard2" && 
+                {this.props.dashboard == '/dashboard2' && 
                     <div className="draggable-widget-body">
                         {id===1000001 &&
                             <BarChart5/>
@@ -166,7 +153,7 @@ export class DraggableWidget extends Component {
                         }
                     </div>
                 }
-                {this.props.dashboard == "/dashboard1" && 
+                {this.props.dashboard == '/dashboard1' && 
                     <div className="draggable-widget-body">
                         <iframe
                             src={!refresh && url}

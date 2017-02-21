@@ -1,10 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import { push } from 'react-router-redux';
 
 import Window from '../Window';
 import Process from '../Process';
-import DocumentList from './DocumentList';
 
 import {
     closeModal,
@@ -14,38 +12,40 @@ import {
     handleProcessResponse
 } from '../../actions/WindowActions';
 
-import {
-    addNotification
-} from '../../actions/AppActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
 
         const {
-            dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
+            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
             relativeType, isAdvanced, modalViewId
         } = this.props;
 
         this.state = {
             scrolled: false,
-            isNew: rowId === "NEW",
-            init: false
+            isNew: rowId === 'NEW',
+            init: false,
+            pending: false
         }
 
         switch(modalType){
-            case "window":
-                dispatch(createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)).catch(err => {
+            case 'window':
+                dispatch(
+                    createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
+                ).catch(() => {
                     this.handleClose();
                 });
                 break;
-            case "process":
+            case 'process':
                 //processid, viewId, docType, id or ids
-                dispatch(createProcess(windowType, modalViewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                dispatch(
+                    createProcess(
+                        windowType, modalViewId, relativeType, dataId ? dataId : selected
+                    )
+                ).catch(() => {
                     this.handleClose();
                 });
-                break;
-            case "documentView":
                 break;
         }
     }
@@ -56,7 +56,7 @@ class Modal extends Component {
         // because body is out of react app range
         // and css dont affect parents
         // but we have to change scope of scrollbar
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
@@ -67,9 +67,9 @@ class Modal extends Component {
         const modalContent = document.querySelector('.js-panel-modal-content')
         modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
     }
-    
+
     handleClose = () => {
-        const {dispatch, closeCallback, modalType} = this.props;
+        const {closeCallback} = this.props;
         const {isNew} = this.state;
         closeCallback && closeCallback(isNew);
         this.removeModal();
@@ -84,27 +84,43 @@ class Modal extends Component {
     }
 
     handleStart = () => {
-        const {dispatch, modalType, layout, windowType} = this.props;
+        this.setState(Object.assign({}, this.state, {
+            pending: true
+        }));
+
+        const {dispatch, layout, windowType} = this.props;
         dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                pending: false
+            }));
             dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
+            
+        }).catch(() => {
+            this.setState(Object.assign({}, this.state, {
+                pending: false
+            }));
         });
     }
 
     removeModal = () => {
-        const {dispatch} = this.props;
+        const {dispatch, rawModalVisible} = this.props;
 
         dispatch(closeModal());
-        document.body.style.overflow = "auto";
+
+        if (!rawModalVisible){
+            document.body.style.overflow = 'auto';
+        }
     }
 
     renderModalBody = () => {
         const {
-            data, layout, tabId, rowId, dataId, modalType, windowType,
-            isAdvanced, modalViewId, query, selected
+            data, layout, tabId, rowId, dataId, modalType, windowType, isAdvanced
         } = this.props;
 
+        const {pending} = this.state;
+
         switch(modalType){
-            case "window":
+            case 'window':
                 return (
                     <Window
                         data={data}
@@ -117,12 +133,13 @@ class Modal extends Component {
                         isAdvanced={isAdvanced}
                     />
                 )
-            case "process":
+            case 'process':
                 return (
                     <Process
                         data={data}
                         layout={layout}
                         type={windowType}
+                        disabled={pending}
                     />
                 )
         }
@@ -130,39 +147,39 @@ class Modal extends Component {
 
     render() {
         const {
-            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType,
-            isAdvanced
+            data, modalTitle, modalType
         } = this.props;
 
         const {
-            scrolled
+            scrolled,
+            pending
         } = this.state;
 
         return (
-            (modalType === "documentView" || data.length > 0) && <div
+            data.length > 0 && <div
                 className="screen-freeze js-not-unselect"
             >
                 <div className="panel panel-modal panel-modal-primary">
                     <div
                         className={
-                            "panel-modal-header " +
-                            (scrolled ? "header-shadow": "")
+                            'panel-modal-header ' +
+                            (scrolled ? 'header-shadow': '')
                         }
                     >
                         <span className="panel-modal-header-title">
-                            {modalTitle ? modalTitle : "Modal"}
+                            {modalTitle ? modalTitle : 'Modal'}
                         </span>
                         <div className="items-row-2">
                             <button
-                                className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+                                className={'btn btn-meta-outline-secondary btn-distance-3 btn-md ' + (pending ? 'tag-disabled disabled' : '')}
                                 onClick={this.handleClose}
                                 tabIndex={0}
                             >
-                                {modalType === "process" ? "Cancel" : "Done"}
+                                {modalType === 'process' ? 'Cancel' : 'Done'}
                             </button>
-                            {modalType === "process" &&
+                            {modalType === 'process' &&
                                 <button
-                                    className="btn btn-meta-primary btn-distance-3 btn-md"
+                                    className={'btn btn-meta-primary btn-distance-3 btn-md ' + (pending ? 'tag-disabled disabled' : '') }
                                     onClick={this.handleStart}
                                     tabIndex={0}
                                 >
@@ -187,6 +204,6 @@ Modal.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-Modal = connect()(Modal)
+Modal = connect()(Modal);
 
 export default Modal

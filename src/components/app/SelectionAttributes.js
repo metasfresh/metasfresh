@@ -1,10 +1,9 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {connect} from 'react-redux';
 
 import {
     initLayout,
-    getData,
-    patchRequest
+    getData
 } from '../../actions/GenericActions';
 
 import {
@@ -61,7 +60,7 @@ class SelectionAttributes extends Component {
 
     moveToDevice = (e) => {
         switch(e.key) {
-            case "Shift":
+            case 'Shift':
                 e.preventDefault();
                 //TO DO
             break;
@@ -83,8 +82,6 @@ class SelectionAttributes extends Component {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
             DLWrapperHandleChange, DLWrapperHandlePatch, entity, setClickOutsideLock
         } = this.props;
-
-        const lastItem = DLWrapperLayout.length-1;
 
         return (
             <div>

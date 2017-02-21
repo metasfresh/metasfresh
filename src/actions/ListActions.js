@@ -1,3 +1,4 @@
+ 
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 
@@ -44,7 +45,7 @@ export function quickActionsRequest(windowId, viewId, selectedIds) {
         config.API_URL + '/documentView/' +
         windowId + '/' + viewId +
         '/quickActions' +
-        (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
+        (selectedIds && selectedIds.length ? '?selectedIds=' + selectedIds : '')
     );
 }
 
@@ -53,6 +54,6 @@ export function selectionAttributes(windowId, viewId, selectedIds) {
         config.API_URL + '/documentView/' +
         windowId + '/' + viewId +
         '/quickActions' +
-        (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
+        (selectedIds && selectedIds.length ? '?selectedIds=' + selectedIds : '')
     );
 }

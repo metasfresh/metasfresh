@@ -8,14 +8,23 @@
     "node": true
   },
   "parser": "babel-eslint",
+  "extends": "eslint:recommended",
   "rules": {
     "quotes": [2, "single"],
+    "jsx-quotes": [2, "prefer-double"],
+    "no-console": [2, { allow: ["warn", "error"] }],
     "strict": [2, "never"],
+    "no-class-assign": 0,
     "react/jsx-uses-react": 2,
     "react/jsx-uses-vars": 2,
     "react/react-in-jsx-scope": 2
   },
   "plugins": [
     "react"
-  ]
+  ],
+  "globals": {
+    "localStorage",
+    "Promise",
+    "config"
+  }
 }

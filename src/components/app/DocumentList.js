@@ -1,8 +1,7 @@
 import React, { Component, PropTypes } from 'react';
-import {push, replace} from 'react-router-redux';
+import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
-import DatetimeRange from '../widget/DatetimeRange';
 import QuickActions from './QuickActions';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
@@ -17,9 +16,12 @@ import {
 } from '../../actions/GenericActions';
 
 import {
+    selectTableItems
+} from '../../actions/WindowActions';
+
+import {
     createViewRequest,
-    browseViewRequest,
-    addNotification
+    browseViewRequest
 } from '../../actions/AppActions';
 
 class DocumentList extends Component {
@@ -40,21 +42,31 @@ class DocumentList extends Component {
             filters: null,
 
             clickOutsideLock: false,
-            refresh: null
+            refresh: null,
+            
+            cachedSelection: null
         }
         this.fetchLayoutAndData();
     }
 
     componentWillReceiveProps(props) {
-        const {windowType, defaultViewId, defaultSort, defaultPage} = props;
-        const {page, sort, viewId} = this.state;
-        //if we browse list of docs, changing type of Document
-        //does not re-construct component, so we need to
-        //make it manually while the windowType changes.
+        const {
+            windowType, defaultViewId, defaultSort, defaultPage, selected,
+            inBackground
+        } = props;
+        const {page, sort, viewId, cachedSelection} = this.state;
+        
+        /* 
+         * If we browse list of docs, changing type of Document
+         * does not re-construct component, so we need to
+         * make it manually while the windowType changes.
+         */
         if(windowType !== this.props.windowType) {
             this.setState({
                 data:null,
-                layout:null
+                layout:null,
+                filters: null,
+                viewId: null
             }, () => {
 
                 this.fetchLayoutAndData();
@@ -88,11 +100,31 @@ class DocumentList extends Component {
             });
             this.connectWS(defaultViewId);
         }
+        
+        /*
+         * It is case when we need refersh global selection state, 
+         * because scope is changed
+         *
+         * After opening modal cache current selection
+         * After closing modal with gridview, refresh selected.
+         */
+        if(
+            inBackground != this.props.inBackground 
+        ) {
+            if(!inBackground){
+                this.props.dispatch(
+                    selectTableItems(cachedSelection)
+                )
+            }else{
+                this.setState({
+                    cachedSelection: selected
+                })
+            }
+        }
     }
 
     componentDidMount() {
         const {viewId} = this.state;
-
         this.connectWS(viewId);
     }
 
@@ -110,7 +142,7 @@ class DocumentList extends Component {
         this.sock = new SockJs(config.WS_URL);
         this.sockClient = Stomp.Stomp.over(this.sock);
         this.sockClient.debug = null;
-        this.sockClient.connect({}, frame => {
+        this.sockClient.connect({}, () => {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
                 const {fullyChanged} = JSON.parse(msg.body);
                 if(fullyChanged == true){
@@ -170,7 +202,6 @@ class DocumentList extends Component {
      *  If viewId exist, than browse that view.
      */
     browseView = () => {
-        const {dispatch, windowType} = this.props;
         const {viewId, page, sort} = this.state;
 
         this.getData(
@@ -205,9 +236,9 @@ class DocumentList extends Component {
         const {dispatch, windowType, updateUri} = this.props;
 
         if(updateUri){
-            id && updateUri("viewId", id);
-            page && updateUri("page", page);
-            sortingQuery && updateUri("sort", sortingQuery);
+            id && updateUri('viewId', id);
+            page && updateUri('page', page);
+            sortingQuery && updateUri('sort', sortingQuery);
         }
 
         return dispatch(
@@ -218,7 +249,7 @@ class DocumentList extends Component {
                 viewId: response.data.viewId,
                 filters: response.data.filters,
                 refresh: Date.now()
-            })
+            });
         });
     }
 
@@ -228,15 +259,14 @@ class DocumentList extends Component {
 
     handleChangePage = (index) => {
         const {data, sort, page, viewId} = this.state;
-        const {dispatch} = this.props;
 
         let currentPage = page;
 
         switch(index){
-            case "up":
+            case 'up':
                 currentPage * data.pageLength < data.size ? currentPage++ : null;
                 break;
-            case "down":
+            case 'down':
                 currentPage != 1 ? currentPage-- : null;
                 break;
             default:
@@ -250,10 +280,10 @@ class DocumentList extends Component {
         });
     }
 
-    getSortingQuery = (asc, field) => (asc ? "+" : "-") + field;
+    getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
 
-    sortData = (asc, field, startPage, currPage) => {
-        const {data, viewId, page} = this.state;
+    sortData = (asc, field, startPage) => {
+        const {viewId, page} = this.state;
 
         this.setState({
             sort: this.getSortingQuery(asc, field)
@@ -274,24 +304,27 @@ class DocumentList extends Component {
 
     render() {
         const {
-            layout, data, viewId, clickOutsideLock, refresh, page, sort, filters
+            layout, data, viewId, clickOutsideLock, refresh, page, filters
         } = this.state;
 
         const {
-            dispatch, windowType, type, open, closeOverlays, selected, inBackground
+            dispatch, windowType, open, closeOverlays, selected, inBackground,
+            fetchQuickActionsOnInit, isModal
         } = this.props;
+        
 
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         <div>
-                            {type === "grid" &&
+                            {layout.supportNewRecord && !isModal &&
                                 <button
-                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
+                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
+                                    title={'New '+ layout.newRecordCaption}
                                 >
-                                    <i className="meta-icon-add" /> New {layout.caption}
+                                    <i className="meta-icon-add" /> {layout.newRecordCaption}
                                 </button>
                             }
                             {layout.filters && <Filters
@@ -308,6 +341,7 @@ class DocumentList extends Component {
                             selected={data.size && selected}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
+                            fetchOnInit={fetchQuickActionsOnInit}
                         />
                     </div>
                     <div className="document-list-body">
@@ -326,8 +360,10 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
-                                dispatch(push("/window/" + windowType + "/" + id))
+                                !isModal &&
+                                dispatch(push('/window/' + windowType + '/' + id))
                             }}
+                            isModal={isModal}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
@@ -371,7 +407,7 @@ class DocumentList extends Component {
 
 DocumentList.propTypes = {
     windowType: PropTypes.number.isRequired,
-    dispatch: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired
 }
 
 DocumentList = connect()(DocumentList);

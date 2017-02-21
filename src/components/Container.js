@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Header from './header/Header';
+import ErrorScreen from './app/ErrorScreen';
 import NotificationHandler from './notifications/NotificationHandler';
 
 class Container extends Component {
@@ -12,7 +13,7 @@ class Container extends Component {
         const {
             docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
             dataId, windowType, breadcrumb, references, actions, showSidelist,
-            siteName, connectionError, noMargin, entity, children, query
+            siteName, connectionError, noMargin, entity, children, query, attachments
         } = this.props;
 
         return (
@@ -29,6 +30,7 @@ class Container extends Component {
                     breadcrumb={breadcrumb}
                     references={references}
                     actions={actions}
+                    attachments={attachments}
                     showSidelist={showSidelist}
                     siteName = {siteName}
                     query={query}
@@ -37,8 +39,8 @@ class Container extends Component {
                 <NotificationHandler />
                 <div
                     className={
-                        "header-sticky-distance js-unselect " +
-                        (!!noMargin ? "dashboard" : "container-fluid")
+                        'header-sticky-distance js-unselect ' +
+                        (noMargin ? 'dashboard' : 'container-fluid')
                     }
                 >
                     {children}
@@ -48,4 +50,12 @@ class Container extends Component {
     }
 }
 
-export default Container;
+Container.propTypes = {
+    connectionError: PropTypes.bool
+};
+
+const mapStateToProps = state => ({
+    connectionError: state.windowHandler.connectionError || false
+});
+
+export default connect(mapStateToProps)(Container);

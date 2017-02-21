@@ -19,21 +19,21 @@ class List extends Component {
     handleFocus = () => {
         const {
             properties, dispatch, dataId, rowId, tabId, windowType, filterWidget,
-            filterId, parameterName, entity, subentity, subentityId, viewId
+            entity, subentity, subentityId, viewId
         } = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             loading: true
-        }));
+        });
 
         dispatch(dropdownRequest(
             windowType, filterWidget ? properties[0].parameterName: properties[0].field,
             dataId, tabId, rowId, entity, subentity, subentityId, viewId
         )).then((res) => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 list: res.data.values,
                 loading: false
-            }));
+            });
         });
     }
 

@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class GlobalContextShortcuts extends Component {
@@ -24,7 +24,7 @@ class GlobalContextShortcuts extends Component {
                 break;
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
-                closeOverlays('', (e)=> handleInboxOpen(true));
+                closeOverlays('', ()=> handleInboxOpen(true));
                 
                 break;
             case 'OPEN_SIDEBAR_MENU':
@@ -69,13 +69,14 @@ class GlobalContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name = { "GLOBAL_CONTEXT" }
+                name = "GLOBAL_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
                 global = {true}
+                dataShortcuts = { true }
             />
         )
     }

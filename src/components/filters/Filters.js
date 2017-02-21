@@ -1,12 +1,7 @@
 import React, { Component, PropTypes } from 'react';
-import update from 'react-addons-update';
 
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
-
-import {
-    getItemsByProperty
-} from '../../actions/WindowActions';
 
 class Filters extends Component {
     constructor(props) {
@@ -14,21 +9,15 @@ class Filters extends Component {
 
         this.state = {
             filter: null,
-
-            openDateMenu: false,
-            notFrequentListOpen: true,
-            selectedItem: '',
-            frequentFilterOpen: false,
-            notFrequentFilterOpen: false,
             notValidFields: null,
-            active: null,
             widgetShown: false
         }
     }
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
-        filtersActive && this.init(filtersActive[0]);
+        
+        this.init(filtersActive ? filtersActive[0] : null);
     }
 
     componentDidMount() {
@@ -40,19 +29,6 @@ class Filters extends Component {
         this.setState({
             filter: filter
         })
-    }
-
-    setSelectedItem = (item, close) => {
-        this.setState(Object.assign({}, this.state, {
-            selectedItem: item
-        }), () => {
-            close && this.setState(Object.assign({}, this.state, {
-                notFrequentListOpen: true,
-                filterDataItem: '',
-                notFrequentFilterOpen: false,
-                frequentFilterOpen: false
-            }))
-        });
     }
 
     // SETTING FILTERS  --------------------------------------------------------
@@ -105,9 +81,13 @@ class Filters extends Component {
     }
 
     isFilterValid = (filters) => {
-        return filters.parameters.filter(item => {
-            return item.mandatory && !item.value;
-        })
+        if(filters.parameters){
+            return filters.parameters.filter(item => {
+                return item.mandatory && !item.value;
+            }).length;
+        }else{
+            return false;
+        }
     }
 
     getFiltersStructure = (filterData) => {
@@ -120,9 +100,9 @@ class Filters extends Component {
     // RENDERING FILTERS -------------------------------------------------------
 
     render() {
-        const {filterData, filtersActive, windowType, viewId} = this.props;
+        const {filterData, windowType, viewId} = this.props;
         const {frequentFilters, notFrequentFilters} = this.sortFilters(filterData);
-        const {selectedItem, notValidFields, widgetShown, filter} = this.state;
+        const {notValidFields, widgetShown, filter} = this.state;
         return (
             <div className="filter-wrapper js-not-unselect">
                 <span>Filters: </span>

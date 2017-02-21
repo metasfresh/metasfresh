@@ -1,19 +1,17 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import { Link } from 'react-router';
 
-import Header from '../components/header/Header';
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
+import Modal from '../components/app/Modal';
 
 
 import {
     rootRequest,
     nodePathsRequest,
-    queryPathsRequest,
-    getWindowBreadcrumb
+    queryPathsRequest
  } from '../actions/MenuActions';
 
 import {
@@ -26,20 +24,17 @@ class NavigationTree extends Component {
         super(props);
         this.state = {
             rootResults: {
-                caption: "",
+                caption: '',
                 children: []
             },
-            query: "",
+            query: '',
             queriedResults: [],
             deepNode: null
         };
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType} = this.props;
-
         this.getData();
-        dispatch(getWindowBreadcrumb("143"));
     }
 
     getData = (callback) => {
@@ -48,7 +43,7 @@ class NavigationTree extends Component {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
-                query: ""
+                query: ''
             }), () => {
                 callback();
             })
@@ -57,7 +52,7 @@ class NavigationTree extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: [],
                     rootResults: {},
-                    query: ""
+                    query: ''
                 }), () => {
                     callback();
                 })
@@ -72,25 +67,24 @@ class NavigationTree extends Component {
 
     handleQuery = (e) => {
         const {dispatch} = this.props;
-        const {rootResults} = this.state;
 
         e.preventDefault();
-        if(!!e.target.value){
-            this.setState(Object.assign({}, this.state, {
+        if(e.target.value){
+            this.setState({
                 query: e.target.value
-            }));
+            });
 
             dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     queriedResults: response.data.children
-                }))
+                })
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         queriedResults: [],
                         rootResults: {}
-                    }))
+                    })
                 }
             });
         }else{
@@ -100,7 +94,7 @@ class NavigationTree extends Component {
     }
 
     clearValue = () => {
-        document.getElementById('search-input').value=""
+        document.getElementById('search-input').value=''
     }
 
     handleClear = (e) => {
@@ -108,8 +102,7 @@ class NavigationTree extends Component {
         this.getData(this.clearValue);
     }
 
-    renderTree = (res) => {
-      const {dispatch} = this.props;
+    renderTree = () => {
       const {rootResults, queriedResults, query} = this.state;
 
       return(
@@ -140,7 +133,7 @@ class NavigationTree extends Component {
                             {...subitem}
                         />
                     )}
-                    { queriedResults.length === 0 && query!="" &&
+                    { queriedResults.length === 0 && query!='' &&
                         <span>There are no results</span>
                     }
               </div>
@@ -150,12 +143,12 @@ class NavigationTree extends Component {
   }
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + elementId));
+        dispatch(push('/window/' + elementId));
     }
 
     handleNewRedirect = (elementId) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + elementId + "/new"));
+        dispatch(push('/window/' + elementId + '/new'));
     }
 
     handleDeeper = (e, nodeId) => {
@@ -179,15 +172,27 @@ class NavigationTree extends Component {
     }
 
     render() {
-        const {master, connectionError, modal, breadcrumb} = this.props;
-        const {nodeId, node} = this.props;
-        const {rootResults, deepNode} = this.state;
+        const {rawModalVisible, modal} = this.props;
+        const {rootResults} = this.state;
 
         return (
             <Container
-                breadcrumb={breadcrumb.slice(0,1)}
-                siteName = {"Sitemap"}
+                siteName = "Sitemap"
             >
+                {modal.visible &&
+                    <Modal
+                        windowType={modal.type}
+                        data={modal.data}
+                        layout={modal.layout}
+                        rowData={modal.rowData}
+                        tabId={modal.tabId}
+                        rowId={modal.rowId}
+                        modalTitle={modal.title}
+                        modalType={modal.modalType}
+                        modalViewId={modal.viewId}
+                        rawModalVisible={rawModalVisible}
+                     />
+                 }
                 {this.renderTree(rootResults)}
             </Container>
         );
@@ -195,21 +200,27 @@ class NavigationTree extends Component {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
+    const { windowHandler } = state;
+
     const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: []
+        modal
+    } = windowHandler || {
+        modal: {}
     }
+    const {
+        visible
+    } = windowHandler.rawModal || false;
 
     return {
-        breadcrumb
+        modal,
+        rawModalVisible: visible
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    modal: PropTypes.object.isRequired,
+    rawModalVisible: PropTypes.bool.isRequired
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);

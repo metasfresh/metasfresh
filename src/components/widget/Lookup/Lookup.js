@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import update from 'react-addons-update';
 
 import {
@@ -21,16 +20,16 @@ class Lookup extends Component {
         super(props);
 
         this.state = {
-            query: "",
+            query: '',
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
-            property: "",
+            property: '',
             properts: {},
             loading: false,
-            propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
-            mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
+            propertiesCopy: getItemsByProperty(this.props.properties, 'source', 'list'),
+            mainProperty: getItemsByProperty(this.props.properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
             shouldBeFocused: true
@@ -38,14 +37,14 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        const {selected, filterWidget} = this.props;
+        const {selected} = this.props;
 
         this.handleValueChanged();
 
         if(selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
         }else{
-            this.handleClear();
+            this.handleBlur(this.clearState);
         }
     }
 
@@ -57,26 +56,26 @@ class Lookup extends Component {
 
         if(autoFocus && isInputEmpty && shouldBeFocused){
             this.inputSearch.focus();
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 shouldBeFocused: false
-            }));
+            });
         }
     }
 
     handleSelect = (select) => {
         const {
-            dispatch, properties, onChange, dataId, fields, filterWidget,
-            parameterName, windowType, subentity
+            onChange, filterWidget, parameterName, subentity
         } = this.props;
 
         const {
-            mainProperty, propertiesCopy, property
+            mainProperty, property
         } = this.state;
 
+
         // removing selection
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: null
-        }), () => {
+        }, () => {
             if(filterWidget) {
                 onChange(parameterName, select);
 
@@ -86,7 +85,7 @@ class Lookup extends Component {
             } else {
                 // handling selection when main is not set or set.
 
-                if(property === "") {
+                if(property === '') {
                     const promise = onChange(mainProperty[0].field, select, this.getAllDropdowns);
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
@@ -113,7 +112,7 @@ class Lookup extends Component {
                             return item;
                         }},
                         list: {$set: []},
-                        property: {$set: ""}
+                        property: {$set: ''}
                     }), () => {
                         this.generatingPropsSelection();
                     });
@@ -126,8 +125,8 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, item, dataId, newProps, select, tabId, rowId,
-            entity, subentity, subentityId
+            dispatch, windowType, dataId, select, tabId, rowId, entity, subentity, 
+            subentityId
         } = this.props;
 
         const {
@@ -149,10 +148,10 @@ class Lookup extends Component {
                     newProps[propertiesCopy[index].field] = prop.data.values;
                 });
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     properts: newProps,
                     model: select
-                }), () => {
+                }, () => {
                     this.generatingPropsSelection();
                 });
             });
@@ -162,8 +161,9 @@ class Lookup extends Component {
         }
     }
 
+
     generatingPropsSelection = () => {
-        const {dispatch, onChange} = this.props;
+        const {onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
 
@@ -171,9 +171,9 @@ class Lookup extends Component {
         // unselected properties and handling further
         // selection
         if(propertiesKeys.length === 0){
-            this.setState(Object.assign({}, this.state, {
-                property: ""
-            }));
+            this.setState({
+                property: ''
+            });
 
             this.handleBlur();
             return;
@@ -183,102 +183,100 @@ class Lookup extends Component {
 
             if(properts[propertiesKeys[i]].length > 1){
                 // Generating list of props choice
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     list: properts[propertiesKeys[i]],
                     property: propertiesKeys[i]
-                }));
+                });
                 break;
             }else{
                 onChange(propertiesKeys[i], properts[propertiesKeys[i]][0]);
                 this.handleBlur();
             }
         }
+
+        this.handleBlur();
     }
 
     handleAddNew = () => {
-        const {query} = this.state;
         const {dispatch, windowType} = this.props;
 
         //TODO: Waiting for windowType from API for the new instance of entity
-        dispatch(openModal("Add new", windowType, "window"));
+        dispatch(openModal('Add new', windowType, 'window'));
     }
 
     handleBlur = (callback) => {
-
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: false
-        }), () => {
-            if(callback) {
+        }, () => {
+            if(callback){
                 callback();
             }
-
-        })
+        });
     }
 
     handleFocus = () => {
         const {isInputEmpty, property} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: true
-        }))
+        })
 
-        if(!isInputEmpty && property === ""){
+        if(!isInputEmpty && property === ''){
             this.handleChange();
         }
     }
 
     handleChange = () => {
         const {
-            dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId, entity,subentity, subentityId,
-            viewId
+            dispatch, recent, windowType, dataId, filterWidget, parameterName, 
+            tabId, rowId, entity,subentity, subentityId, viewId
         } = this.props;
 
         const {mainProperty} = this.state;
 
-        if(this.inputSearch.value != ""){
+        if(this.inputSearch.value != ''){
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 isInputEmpty: false,
                 loading: true,
                 query: this.inputSearch.value,
                 isOpen: true
-            }));
+            });
 
             dispatch(autocompleteRequest(
                 windowType, (filterWidget ? parameterName : mainProperty[0].field), this.inputSearch.value,
                 (filterWidget ? viewId : dataId), tabId, rowId, entity, subentity, subentityId
             )).then((response)=>{
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     list: response.data.values,
                     loading: false
-                }));
+                });
             });
 
         }else{
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 isInputEmpty: true,
                 query: this.inputSearch.value,
                 list: recent
-            }));
+            });
         }
     }
 
     clearState = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
-            property: "",
+            property: '',
             loading: false,
-            query: ""
-        }));
+            query: ''
+        });
     }
 
     handleClear = (e) => {
-        const {onChange, properties, defaultValue, subentity} = this.props;
+        const {onChange, properties} = this.props;
         e && e.preventDefault();
-        this.inputSearch.value = "";
+        this.inputSearch.value = '';
 
         onChange(properties, null, false);
 
@@ -288,32 +286,32 @@ class Lookup extends Component {
     handleKeyDown = (e) => {
         const {selected, list, query} = this.state;
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 this.navigate();
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 this.navigate(true);
                 break;
-            case "ArrowLeft":
+            case 'ArrowLeft':
                 e.preventDefault();
                 this.handleChange();
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
-                if(selected === "new"){
+                if(selected === 'new'){
                     this.handleAddNew(query);
                 }else if(selected != null){
                     this.handleSelect(list[selected]);
 
                 }
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 this.handleBlur();
                 break;
-            case "Tab":
+            case 'Tab':
                 this.handleBlur();
                 break;
         }
@@ -324,28 +322,28 @@ class Lookup extends Component {
 
         if(list.length === 0){
             // Case of selecting row for creting new instance
-            this.setState(Object.assign({}, this.state, {
-                selected: "new"
-            }));
+            this.setState({
+                selected: 'new'
+            });
         }else{
             // Case of selecting regular list items
-            if(typeof selected === "number"){
+            if(typeof selected === 'number'){
                 const selectTarget = selected + (reverse ? (-1) : (1));
-                if (typeof list[selectTarget] != "undefined") {
-                    this.setState(Object.assign({}, this.state, {
+                if (typeof list[selectTarget] != 'undefined') {
+                    this.setState({
                         selected: selectTarget
-                    }));
+                    });
                 }
-            }else if(typeof list[0] != "undefined"){
-                this.setState(Object.assign({}, this.state, {
+            }else if(typeof list[0] != 'undefined'){
+                this.setState({
                     selected: 0
-                }));
+                });
             }
         }
     }
 
     handleValueChanged = () => {
-        const {defaultValue, filterWidget, selected} = this.props;
+        const {defaultValue, filterWidget} = this.props;
         const {oldValue} = this.state;
 
         if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
@@ -355,10 +353,10 @@ class Lookup extends Component {
             if(inputValue !== oldValue){
                 this.inputSearch.value = inputValue;
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     oldValue: inputValue,
                     isInputEmpty: false
-                }));
+                });
             }
 
         } else if(oldValue && !defaultValue[0].value && this.inputSearch) {
@@ -366,24 +364,23 @@ class Lookup extends Component {
 
             if(inputEmptyValue !== oldValue){
                 this.inputSearch.value = inputEmptyValue;
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     oldValue: inputEmptyValue,
                     isInputEmpty: true
-                }));
+                });
             }
         }
     }
 
     render() {
         const {
-            rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, oldValue, filterWidget, mandatory, rowId, tabIndex
+            rank, readonly, defaultValue, placeholder, align, isModal, updated, 
+            filterWidget, mandatory, rowId, tabIndex
         } = this.props;
 
         const {
             propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
-
 
         return (
             <div
@@ -391,22 +388,22 @@ class Lookup extends Component {
                 onClick={()=> this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 className={
-                    "input-dropdown-container " +
-                    (isOpen ? "input-focused " : "") +
-                    (readonly ? "input-disabled " : "") +
-                    (rowId ? "input-dropdown-container-static " : "") +
-                    ((rowId && !isModal)? "input-table " : "")
+                    'input-dropdown-container ' +
+                    (isOpen ? 'input-focused ' : '') +
+                    (readonly ? 'input-disabled ' : '') +
+                    (rowId ? 'input-dropdown-container-static ' : '') +
+                    ((rowId && !isModal)? 'input-table ' : '')
                 }
             >
                 <div className={
-                    "input-dropdown input-block input-" + (rank ? rank : "primary") +
-                    (updated ? " pulse-on" : " pulse-off") +
-                    (filterWidget ? " input-full" : "") +
-                    (mandatory && isInputEmpty ? " input-mandatory " : "")
+                    'input-dropdown input-block input-' + (rank ? rank : 'primary') +
+                    (updated ? ' pulse-on' : ' pulse-off') +
+                    (filterWidget ? ' input-full' : '') +
+                    (mandatory && isInputEmpty ? ' input-mandatory ' : '')
                 }>
                     <div className={
-                        "input-editable " +
-                        (align ? "text-xs-" + align + " " : "")
+                        'input-editable ' +
+                        (align ? 'text-xs-' + align + ' ' : '')
                     }>
                         <input
                             type="text"
@@ -422,7 +419,7 @@ class Lookup extends Component {
 
                     {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
-                            const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;
+                            const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
                     </div>}
@@ -446,6 +443,7 @@ class Lookup extends Component {
                         onClickOutside={this.handleBlur}
                         disableOnClickOutside={!isOpen}
                         query={query}
+                        creatingNewDisabled={isModal}
                     />
                 }
             </div>

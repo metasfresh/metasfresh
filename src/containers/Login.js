@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
-import NotificationHandler from '../components/notifications/NotificationHandler';
 import LoginForm from '../components/app/LoginForm';
 
 
@@ -13,7 +12,7 @@ class Login extends Component {
     componentWillMount(){
         const {logged, dispatch} = this.props;
         if(logged){
-            dispatch(push("/"));
+            dispatch(push('/'));
         }
     }
 

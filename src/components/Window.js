@@ -1,5 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
 
 import Dropzone from './Dropzone';
 
@@ -10,8 +9,6 @@ import {
 import MasterWidget from '../components/widget/MasterWidget';
 import Tabs from '../components/tabs/Tabs';
 import Table from '../components/table/Table';
-
-import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 
 class Window extends Component {
     constructor(props){
@@ -38,17 +35,16 @@ class Window extends Component {
     }
 
     toggleTableFullScreen = (tabId) => {
-        const {fullScreen} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             fullScreen: tabId
-        }));
+        });
     }
 
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
         const {data, rowData, newRow} = this.props;
         const {fullScreen} = this.state;
-        const dataId = findRowByPropName(data, "ID").value;
+        const dataId = findRowByPropName(data, 'ID').value;
 
         return(
             <Tabs
@@ -85,7 +81,7 @@ class Window extends Component {
         return sections.map((elem, id)=> {
             const columns = elem.columns;
             return (
-                <div className="row" key={"section" + id}>
+                <div className="row" key={'section' + id}>
                     {columns && this.renderColumns(columns)}
                 </div>
             )
@@ -99,7 +95,7 @@ class Window extends Component {
             const isFirst = (id === 0);
             const elementGroups = elem.elementGroups;
             return (
-                <div className={"col-sm-" + colWidth} key={'col' + id}>
+                <div className={'col-sm-' + colWidth} key={'col' + id}>
                     {elementGroups && this.renderElementGroups(elementGroups, isFirst)}
                 </div>
             )
@@ -111,7 +107,7 @@ class Window extends Component {
             const {type, elementsLine} = elem;
             const shouldBeFocused = isFirst && (id === 0);
 
-            const tabIndex = (type === "primary") ?
+            const tabIndex = (type === 'primary') ?
                 this.tabIndex.firstColumn:
                 this.tabIndex.secondColumn;
 
@@ -121,8 +117,8 @@ class Window extends Component {
                         key={'elemGroups' + id}
                         tabIndex={shouldBeFocused ? 0 : undefined}
                         className={
-                            "panel panel-spaced panel-distance " +
-                            ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
+                            'panel panel-spaced panel-distance ' +
+                            ((type === 'primary') ? 'panel-bordered panel-primary' : 'panel-secondary')
                         }
                     >
                         {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
@@ -137,7 +133,7 @@ class Window extends Component {
             const isFocused = shouldBeFocused && (id === 0);
             return (
                 elements && elements.length > 0 &&
-                    <div className="elements-line" key={"line" + id}>
+                    <div className="elements-line" key={'line' + id}>
                         {this.renderElements(elements, tabIndex, isFocused)}
                     </div>
             )
@@ -153,7 +149,7 @@ class Window extends Component {
             
             const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
-            let relativeDocId = findRowByPropName(data, "ID").value;
+            let relativeDocId = findRowByPropName(data, 'ID').value;
             return (
                 <MasterWidget
                     entity="window"
@@ -176,8 +172,8 @@ class Window extends Component {
     }
 
     render() {
-        const {sections, type, tabs} = this.props.layout;
-        const {data, isModal, handleDropFile} = this.props;
+        const {sections, tabs} = this.props.layout;
+        const {handleDropFile} = this.props;
         return (
             <div key="window" className="window-wrapper">
                 <Dropzone handleDropFile={handleDropFile}>

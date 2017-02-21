@@ -3,22 +3,13 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    startProcess,
-    attachFileAction,
-    createWindow
+    attachFileAction
 } from '../actions/WindowActions';
-
-import {
-    getData
-} from '../actions/GenericActions';
-
-import {
-    addNotification
-} from '../actions/AppActions';
 
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
-import MasterWidget from '../components/widget/MasterWidget';
+import RawModal from '../components/app/RawModal';
+import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 
 class MasterWindow extends Component {
@@ -26,13 +17,12 @@ class MasterWindow extends Component {
         super(props);
 
         this.state = {
-            newRow: false
+            newRow: false,
+            modalTitle: null
         }
     }
 
-    closeModalCallback = (entity, isNew, dataId) => {
-        const {dispatch} = this.props;
-
+    closeModalCallback = (isNew) => {
         if(isNew){
             this.setState({
                     newRow: true
@@ -50,12 +40,12 @@ class MasterWindow extends Component {
     handleDropFile(file){
         file = file instanceof Array ? file[0] : file;
 
-        if (!file instanceof File){
+        if (!(file instanceof File)){
             return Promise.reject();
         }
 
         const { dispatch, master } = this.props;
-        const dataId = findRowByPropName(master.data, "ID").value;
+        const dataId = findRowByPropName(master.data, 'ID').value;
         const { type } = master.layout;
 
         let fd = new FormData();
@@ -64,17 +54,26 @@ class MasterWindow extends Component {
         return dispatch(attachFileAction(type, dataId, fd));
     }
 
+    setModalTitle = (title) => {
+        this.setState({
+            modalTitle: title
+        })
+    }
+
     render() {
-        const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
-        const {newRow} = this.state;
+        const {
+            master, modal, breadcrumb, references, actions, attachments, rawModal,
+            selected
+        } = this.props;
+        const {newRow, modalTitle} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
         const dataId = master.docId;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
 
         const docStatusData = {
-            "status": findRowByPropName(master.data, "DocStatus"),
-            "action": findRowByPropName(master.data, "DocAction"),
-            "displayed": true
+            'status': findRowByPropName(master.data, 'DocStatus'),
+            'action': findRowByPropName(master.data, 'DocAction'),
+            'displayed': true
         };
 
         const docSummaryData = findRowByPropName(
@@ -95,6 +94,7 @@ class MasterWindow extends Component {
                 breadcrumb={breadcrumb}
                 references={references}
                 actions={actions}
+                attachments={attachments}
                 showSidelist={true}
             >
                 {modal.visible &&
@@ -111,10 +111,22 @@ class MasterWindow extends Component {
                         modalType={modal.modalType}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
-                        closeCallback={(isNew) => this.closeModalCallback(
-                            modal.modalType, isNew, modal.layout.pinstanceId
-                        )}
+                        closeCallback={this.closeModalCallback}
+                        rawModalVisible={rawModal.visible}
                      />
+                 }
+                 {rawModal.visible &&
+                     <RawModal
+                         modalTitle={modalTitle}
+                     >
+                         <DocumentList
+                             type="grid"
+                             windowType={parseInt(rawModal.type)}
+                             defaultViewId={rawModal.viewId}
+                             selected={selected}
+                             setModalTitle={this.setModalTitle}
+                         />
+                     </RawModal>
                  }
                 <Window
                     data={master.data}
@@ -131,44 +143,52 @@ class MasterWindow extends Component {
 }
 
 MasterWindow.propTypes = {
-    connectionError: PropTypes.bool.isRequired,
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
     references: PropTypes.array.isRequired,
     actions: PropTypes.array.isRequired,
-    dispatch: PropTypes.func.isRequired
+    attachments: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    selected: PropTypes.array,
+    rawModal: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
     const {
         master,
-        connectionError,
-        modal
+        modal,
+        rawModal,
+        selected
     } = windowHandler || {
         master: {},
-        connectionError: false,
-        modal: false
+        modal: false,
+        rawModal: {},
+        selected: []
     }
 
     const {
         breadcrumb,
         references,
-        actions
+        actions,
+        attachments
     } = menuHandler || {
         references: [],
         breadcrumb: [],
-        actions: []
+        actions: [],
+        attachments: []
     }
-
+    
     return {
         master,
-        connectionError,
         breadcrumb,
         references,
         modal,
-        actions
+        actions,
+        attachments,
+        selected,
+        rawModal
     }
 }
 
