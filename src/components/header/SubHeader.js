@@ -83,8 +83,10 @@ class Subheader extends Component {
     }
     
     handleAttachmentClick = (id) => {
-        const {dispatch, entity, windowType, dataId} = this.props;
-        dispatch(openFile(entity, windowType, dataId, 'attachments', id));
+        const {dispatch, windowType, dataId, selected} = this.props;
+        dispatch(openFile(
+            'window', windowType, dataId ? dataId : selected[0], 'attachments', id
+        ));
     }
     
     handleAttachmentDelete = (e, id) => {
