@@ -30,10 +30,10 @@ class RawWidget extends Component {
     handleFocus = (e) => {
         const {handleFocus} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isEdited: true,
             cachedValue: e.target.value
-        }));
+        });
 
         handleFocus && handleFocus();
     }
@@ -46,8 +46,10 @@ class RawWidget extends Component {
         //do patch only when value is not equal state
         //or cache is set and it is not equal value
 
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+        if( 
+            JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))
+        ){
 
             if(handlePatch) {
                 ret = handlePatch(property, value, id);
@@ -55,9 +57,9 @@ class RawWidget extends Component {
         }
 
         if(ret){
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 cachedValue: null
-            }));
+            });
         }
 
         return ret;
@@ -68,9 +70,9 @@ class RawWidget extends Component {
 
         handleBlur && handleBlur();
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isEdited: false
-        }));
+        });
 
         this.handlePatch(widgetField, value, id);
     }
@@ -97,7 +99,7 @@ class RawWidget extends Component {
                     return (
                         <DatetimeRange
                             onChange={(value, valueTo) =>
-                                this.handlePatch(widgetField, value, valueTo)
+                                this.handlePatch(widgetField, value, null, valueTo)
                             }
                             mandatory={widgetData[0].mandatory}
                             onShow={onShow}

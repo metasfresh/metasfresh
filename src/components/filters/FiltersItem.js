@@ -46,7 +46,8 @@ class FiltersItem extends Component {
         }
     }
 
-    mergeData = (property, value, valueTo = null) => {
+    mergeData = (property, value, id, valueTo = null) => {
+        console.log(value, valueTo)
         this.setState(prevState => {
             return {
                 filter: Object.assign({}, prevState.filter, {
