@@ -235,7 +235,7 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery) => {
-        const {dispatch, windowType, updateUri} = this.props;
+        const {dispatch, windowType, updateUri, selected} = this.props;
 
         if(updateUri){
             id && updateUri('viewId', id);
@@ -251,7 +251,7 @@ class DocumentList extends Component {
                 viewId: response.data.viewId,
                 filters: response.data.filters,
                 refresh: Date.now()
-            })
+            });
         });
     }
 
