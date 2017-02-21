@@ -206,7 +206,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.dlm</groupId>
-			<artifactId>metasfresh-dlm</artifactId>
+			<artifactId>metasfresh-dlm-base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
