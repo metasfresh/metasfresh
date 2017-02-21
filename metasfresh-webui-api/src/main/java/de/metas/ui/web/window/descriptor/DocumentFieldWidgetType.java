@@ -7,7 +7,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public enum DocumentFieldWidgetType
 	// Buttons
 	, Button(LayoutAlign.Left, null) //
 	, ActionButton(LayoutAlign.Left, null) //
-	, ProcessButton(LayoutAlign.Left, StringLookupValue.class) //
+	, ProcessButton(LayoutAlign.Left, String.class) //
 
 	//
 	;
