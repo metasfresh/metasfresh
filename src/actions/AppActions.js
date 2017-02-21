@@ -1,5 +1,3 @@
-/* global config:true */
- 
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import {replace} from 'react-router-redux';
@@ -8,7 +6,6 @@ import Stomp from 'stompjs/lib/stomp.min.js';
 
 export function loginSuccess() {
     return dispatch => {
-        /** global: localStorage */
         localStorage.setItem('isLogged', true);
 
         dispatch(getNotificationsEndpoint()).then(topic => {
@@ -44,7 +41,6 @@ export function loginSuccess() {
 
 export function logoutSuccess() {
     return () => {
-        /** global: localStorage */
         localStorage.removeItem('isLogged');
     }
 }

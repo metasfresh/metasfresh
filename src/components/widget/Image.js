@@ -1,5 +1,3 @@
-/* global Promise:true */
-
 import React, { Component } from 'react';
 import { getImageAction, postImageAction } from '../../actions/AppActions';
 
