@@ -62,6 +62,8 @@ def Map invokeDownStreamJobs(String jobFolderName, String buildId, String upstre
 		], wait: wait
 	;
 
+	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
+	
 	return buildResult.getBuildVariables();
 }
 
