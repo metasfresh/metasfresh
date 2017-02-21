@@ -34,17 +34,12 @@ import org.compiere.model.I_M_ProductPrice;
 
 public class ProductPriceBuilder
 {
-	public static final ProductPriceBuilder newInstance(final I_M_PriceList_Version plv, final I_M_Product product)
-	{
-		return new ProductPriceBuilder(plv, product);
-	}
-
 	private final I_M_PriceList_Version plv;
 	private final I_M_Product product;
 	private BigDecimal price;
 	private I_M_AttributeSetInstance asi;
 
-	private ProductPriceBuilder(final I_M_PriceList_Version plv, final I_M_Product product)
+	public ProductPriceBuilder(final I_M_PriceList_Version plv, final I_M_Product product)
 	{
 		this.plv = plv;
 		this.product = product;

@@ -1,5 +1,7 @@
 package org.adempiere.pricing.api.impl;
 
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,6 +22,8 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
 
@@ -47,7 +51,7 @@ import de.metas.adempiere.model.I_M_Product;
 
 public class PricingTestHelper
 {
-	private IPricingBL pricingBL;
+	private final IPricingBL pricingBL;
 
 	public static final int C_Currency_ID_EUR = 102;
 	public I_C_Country defaultCountry;
@@ -87,22 +91,27 @@ public class PricingTestHelper
 		pricingBL = Services.get(IPricingBL.class);
 	}
 
-	private static final void createPricingRules()
+	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		final String[] classnames = new String[] {
-				// "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB" // commented out, requires DB access
-				"org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVB" // commented out, requires DB access
-				// , "org.adempiere.pricing.spi.impl.rules.PriceList" // commented out, requires DB access
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceListVB" // commented out, requires DB access
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceList" // commented out, requires DB access
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
+		return ImmutableList.copyOf(new String[] {
+				// "de.metas.handlingunits.pricing.spi.impl.HUPricing" //
+				"de.metas.pricing.attributebased.impl.AttributePricing" //
 				, "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice" //
-				// , "de.metas.flatrate.pricing.spi.impl.ContractDiscount" //
-				, "de.metas.pricing.attributebased.impl.AttributePricing" //
-				// , "de.metas.handlingunits.pricing.spi.impl.HUPricing" //
+				// , "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB" //
+				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
+				// , "org.adempiere.pricing.spi.impl.rules.PriceListVB" //
+				// , "org.adempiere.pricing.spi.impl.rules.PriceList" //
+				// , "org.adempiere.pricing.spi.impl.rules.BasePriceListVB" //
+				// , "org.adempiere.pricing.spi.impl.rules.BasePriceList" //
+				, "org.adempiere.pricing.spi.impl.rules.Discount" //
 				// , "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule" //
-		};
+				// , "de.metas.flatrate.pricing.spi.impl.ContractDiscount" //
+		});
+	}
+
+	private final void createPricingRules()
+	{
+		final List<String> classnames = getPricingRuleClassnamesToRegister();
 
 		int nextSeqNo = 10;
 		for (final String classname : classnames)
@@ -192,23 +201,29 @@ public class PricingTestHelper
 		return InterfaceWrapperHelper.create(orderLine, IAttributeSetInstanceAware.class);
 	}
 
-	public final IEditablePricingContext createPricingContextWithASI(final I_M_AttributeSetInstance asi)
+	public final IEditablePricingContext createPricingContext()
 	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setM_PricingSystem_ID(defaultPricingSystem.getM_PricingSystem_ID());
 		pricingCtx.setM_PriceList_ID(defaultPriceList.getM_PriceList_ID());
 		pricingCtx.setM_PriceList_Version_ID(defaultPriceListVerion.getM_PriceList_Version_ID());
 		pricingCtx.setM_Product_ID(defaultProduct.getM_Product_ID());
-		pricingCtx.setReferencedObject(asiAware(asi));
 
 		return pricingCtx;
 	}
-	
+
+	public final IEditablePricingContext createPricingContextWithASI(final I_M_AttributeSetInstance asi)
+	{
+		final IEditablePricingContext pricingCtx = createPricingContext();
+		pricingCtx.setReferencedObject(asiAware(asi));
+		return pricingCtx;
+	}
+
 	public ProductPriceBuilder newProductPriceBuilder()
 	{
-		return ProductPriceBuilder.newInstance(defaultPriceListVerion, defaultProduct);
+		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct);
 	}
-	
+
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
 		return pricingBL.calculatePrice(pricingCtx);
