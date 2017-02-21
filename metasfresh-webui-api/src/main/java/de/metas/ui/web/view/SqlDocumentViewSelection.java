@@ -266,7 +266,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		final String uuid = orderedSelection.getUuid();
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
-		final int lastSeqNo = firstRow + pageLength - 1;
+		final int lastSeqNo = firstRow + pageLength;
 
 		final Object[] sqlParams = new Object[] { uuid, firstSeqNo, lastSeqNo };
 		PreparedStatement pstmt = null;
