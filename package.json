@@ -15,7 +15,7 @@
     "babel-preset-stage-0": "~6.16.0",
     "css-loader": "~0.23.1",
     "eslint": "~3.16.0",
-    "eslint-plugin-react": "~3.6.2",
+    "eslint-plugin-react": "~6.10.0",
     "html-loader": "~0.4.4",
     "html-webpack-plugin": "~2.26.0",
     "postcss-color-function": "~2.0.1",

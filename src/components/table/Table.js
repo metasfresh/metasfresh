@@ -145,10 +145,11 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => {
+        this.setState(prevState => ({
             selected: prevState.selected.concat([id])
-        }, () => {
-            dispatch(selectTableItems(this.state.selected))
+        }), () => {
+            const {selected} = this.state;
+            dispatch(selectTableItems(selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
@@ -158,7 +159,7 @@ class Table extends Component {
             selected: ids
         });
     }
-
+    
     selectAll = () => {
         const {keyProperty} = this.props;
         const {rows} = this.state;
@@ -228,7 +229,7 @@ class Table extends Component {
         }
 
         switch(e.key) {
-            case 'ArrowDown':
+            case 'ArrowDown': {
                 e.preventDefault();
 
                 const actualId = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
@@ -243,7 +244,8 @@ class Table extends Component {
                     }
                 }
                 break;
-            case 'ArrowUp':
+            }
+            case 'ArrowUp': {
                 e.preventDefault();
 
                 const actual = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
@@ -258,6 +260,7 @@ class Table extends Component {
                     }
                 }
                 break;
+            }
             case 'ArrowLeft':
                 e.preventDefault();
                 if(document.activeElement.previousSibling){
@@ -324,7 +327,7 @@ class Table extends Component {
         const selectRange = e.shiftKey;
 
         switch(e.key) {
-            case 'ArrowDown':
+            case 'ArrowDown': {
                 e.preventDefault();
 
                 const array = rows.map((item) => {
@@ -343,7 +346,8 @@ class Table extends Component {
                     }
                 }
                 break;
-            case 'ArrowUp':
+            }
+            case 'ArrowUp': {
                 e.preventDefault();
 
                 const arrays = rows.map((item) => {
@@ -362,6 +366,7 @@ class Table extends Component {
                     }
                 }
                 break;
+            }
             case 'Enter':
                 e.preventDefault();
                 if(selected.length <= 1) {
@@ -377,13 +382,14 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
-            case 'Tab':
+            case 'Tab': {
                 e.preventDefault();
                 const focusedElem = document.getElementsByClassName('js-attributes')[0];
                 if(focusedElem){
                     focusedElem.getElementsByTagName('input')[0].focus();
                 }
                 break;
+            }
         }
     }
 
