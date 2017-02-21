@@ -33,8 +33,6 @@ import de.metas.ui.web.window.descriptor.DetailId;
 
 public interface IDocumentChangesCollector
 {
-	Set<String> getFieldNames(DocumentPath documentPath);
-
 	Map<DocumentPath, DocumentChanges> getDocumentChangesByPath();
 
 	void collectValueChanged(IDocumentFieldView documentField, ReasonSupplier reason);

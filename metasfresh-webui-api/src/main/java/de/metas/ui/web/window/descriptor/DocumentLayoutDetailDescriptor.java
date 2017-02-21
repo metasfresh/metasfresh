@@ -153,6 +153,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		{
 			return elementBuilders
 					.stream()
+					.filter(elementBuilder -> elementBuilder.getFieldsCount() > 0)
 					.map(elementBuilder -> elementBuilder.build())
 					.collect(GuavaCollectors.toImmutableList());
 		}

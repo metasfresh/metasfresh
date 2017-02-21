@@ -36,7 +36,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 
 @Immutable
 @SuppressWarnings("serial")
-public class ProcessInstanceResult implements Serializable
+public final class ProcessInstanceResult implements Serializable
 {
 	public static final Builder builder()
 	{

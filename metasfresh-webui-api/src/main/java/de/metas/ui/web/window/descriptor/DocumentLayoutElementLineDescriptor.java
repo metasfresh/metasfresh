@@ -119,6 +119,12 @@ public final class DocumentLayoutElementLineDescriptor
 				return false;
 			}
 			
+			if(elementBuilder.getFieldsCount() <= 0)
+			{
+				logger.trace("Skip adding {} to {} because it does not have fields", elementBuilder, this);
+				return false;
+			}
+			
 			return true;
 		}
 

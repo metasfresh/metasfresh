@@ -172,6 +172,7 @@ public class DocumentViewLayout
 		{
 			return elementBuilders
 					.stream()
+					.filter(elementBuilder -> elementBuilder.getFieldsCount() > 0) // have some field builders
 					.map(elementBuilder -> elementBuilder.build())
 					.collect(GuavaCollectors.toImmutableList());
 		}
