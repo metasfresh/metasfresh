@@ -931,11 +931,3 @@ from get_AD_TreeNodeMM_Paths(10, 1000007) t
 where not IsCycle
 order by path
 ;
-
-
---
--- Check results:
--- select * from AD_TreeNodeMM where AD_Tree_ID=1000039 order by Node_ID
-select * from get_AD_TreeNodeMM_Paths(1000039, null) t
--- where IsCycle
-order by path;
