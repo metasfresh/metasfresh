@@ -68,12 +68,12 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 		final int count = sqlHelper.getSQLValueInt(sql, projectName, name);
 		if (count == 0)
 		{
-			logger.debug("Not executed: " + script);
+			logger.debug("Script was not yet executed: " + script);
 			return false;
 		}
 		else if (count == 1)
 		{
-			logger.debug("Executed: " + script);
+			logger.debug("Script was already executed; projectname={}; name={}; script={}", projectName, name, script);
 			return true;
 		}
 		else

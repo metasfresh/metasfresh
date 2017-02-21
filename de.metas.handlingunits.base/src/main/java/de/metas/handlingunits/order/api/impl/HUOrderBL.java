@@ -281,25 +281,25 @@ public class HUOrderBL implements IHUOrderBL
 	private boolean isM_HU_PI_Item_ProductChanged(final I_C_OrderLine orderLine, final String columnName)
 	{
 		return de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID.equals(columnName) //
-				|| InterfaceWrapperHelper.isPOValueChanged(orderLine, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID);
+				|| InterfaceWrapperHelper.isValueChanged(orderLine, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
 
 	private boolean isQtyChanged(final I_C_OrderLine orderLine, final String columnName)
 	{
 		return org.compiere.model.I_C_OrderLine.COLUMNNAME_QtyEntered.equals(columnName)
-				|| InterfaceWrapperHelper.isPOValueChanged(orderLine, org.compiere.model.I_C_OrderLine.COLUMNNAME_QtyEntered);
+				|| InterfaceWrapperHelper.isValueChanged(orderLine, org.compiere.model.I_C_OrderLine.COLUMNNAME_QtyEntered);
 	}
 
 	private boolean isProductChanged(final I_C_OrderLine orderLine, final String columnName)
 	{
 		return org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID.equals(columnName)
-				|| InterfaceWrapperHelper.isPOValueChanged(orderLine, org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID);
+				|| InterfaceWrapperHelper.isValueChanged(orderLine, org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID);
 	}
 
 	private boolean isBPartnerChanged(final I_C_OrderLine orderLine, final String columnName)
 	{
 		return org.compiere.model.I_C_OrderLine.COLUMNNAME_C_BPartner_ID.equals(columnName)
-				|| InterfaceWrapperHelper.isPOValueChanged(orderLine, org.compiere.model.I_C_OrderLine.COLUMNNAME_C_BPartner_ID);
+				|| InterfaceWrapperHelper.isValueChanged(orderLine, org.compiere.model.I_C_OrderLine.COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override

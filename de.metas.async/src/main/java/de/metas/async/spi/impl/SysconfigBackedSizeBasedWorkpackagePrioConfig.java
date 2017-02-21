@@ -29,6 +29,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -39,8 +41,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 
 import de.metas.logging.LogManager;
 

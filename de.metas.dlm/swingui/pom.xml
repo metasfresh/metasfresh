@@ -1,0 +1,38 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.dlm</groupId>
+		<artifactId>metasfresh-dlm</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.dlm</groupId>
+	<artifactId>metasfresh-dlm-swingui</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<!-- empty property because the sql migration dir already contains a list of base directories -->
+		<migration-sql-basedir></migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+	
+		<!-- #957: needed because we have to inject our own settings into the preferences dialog -->
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.dlm</groupId>
+			<artifactId>metasfresh-dlm-base</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

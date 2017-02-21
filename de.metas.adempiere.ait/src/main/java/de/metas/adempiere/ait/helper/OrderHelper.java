@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.MOrder;
 import org.compiere.model.Query;
@@ -52,7 +53,6 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.ait.helper.ProductPriceVO.LineType;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.interfaces.I_C_BPartner;

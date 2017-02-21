@@ -32,7 +32,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 /**
  * Calculate Price using Price List Version and Vendor Breaks
@@ -122,13 +121,13 @@ public class PriceListVersionVB extends AbstractPriceListBasedRule
 				// Prices
 				m_PriceStd = rs.getBigDecimal(1);
 				if (rs.wasNull())
-					m_PriceStd = Env.ZERO;
+					m_PriceStd = BigDecimal.ZERO;
 				m_PriceList = rs.getBigDecimal(2);
 				if (rs.wasNull())
-					m_PriceList = Env.ZERO;
+					m_PriceList = BigDecimal.ZERO;
 				m_PriceLimit = rs.getBigDecimal(3);
 				if (rs.wasNull())
-					m_PriceLimit = Env.ZERO;
+					m_PriceLimit = BigDecimal.ZERO;
 				//
 				m_C_UOM_ID = rs.getInt(4);
 				m_C_Currency_ID = rs.getInt(6);

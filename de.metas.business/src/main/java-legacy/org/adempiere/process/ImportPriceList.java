@@ -29,11 +29,10 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.ProductPriceQuery;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
@@ -41,6 +40,9 @@ import org.compiere.model.X_I_PriceList;
 import org.compiere.model.X_M_ProductPriceVendorBreak;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Import Price Lists from I_PriceList
@@ -57,6 +59,7 @@ public class ImportPriceList extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -78,6 +81,7 @@ public class ImportPriceList extends JavaProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		StringBuffer sql = null;
@@ -398,30 +402,41 @@ public class ImportPriceList extends JavaProcess
 						DB.executeUpdate(sql0.toString(), get_TrxName());
 						continue;
 					}
-				} else {
+				}
+				else
+				{
 					// M_ProductPrice
-					MProductPrice pp = MProductPrice.get(getCtx(), pricelistversion.getM_PriceList_Version_ID(), imp.getM_Product_ID(), get_TrxName());
-					boolean isInsert = false;
-					if (pp != null) {
+					//I_M_ProductPrice pp = MProductPrice.get(getCtx(), pricelistversion.getM_PriceList_Version_ID(), imp.getM_Product_ID(), get_TrxName());
+					I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(pricelistversion, imp.getM_Product_ID())
+							.orElse(null);
+
+					final boolean isInsert;
+					if (pp != null)
+					{
 						pp.setPriceLimit(imp.getPriceLimit());
 						pp.setPriceList(imp.getPriceList());
 						pp.setPriceStd(imp.getPriceStd());
-					} else {
+						isInsert = false;
+					}
+					else
+					{
 						pp = new MProductPrice(pricelistversion, imp.getM_Product_ID(), imp.getPriceList(), imp.getPriceStd(), imp.getPriceLimit());
 						isInsert = true;
 					}
-					if (pp.save())
+
+					try
 					{
+						InterfaceWrapperHelper.save(pp);
 						log.trace("Insert/Update Product Price");
 						if (isInsert)
 							noInsertpp++;
 						else
 							noUpdatepp++;
 					}
-					else
+					catch(Exception e)
 					{
 						StringBuffer sql0 = new StringBuffer ("UPDATE I_PriceList i "
-							+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert/Update Product Price failed"))
+							+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert/Update Product Price failed: "+e.getLocalizedMessage()))
 							.append("WHERE I_PriceList_ID=").append(I_PriceList_ID);
 						DB.executeUpdate(sql0.toString(), get_TrxName());
 						continue;

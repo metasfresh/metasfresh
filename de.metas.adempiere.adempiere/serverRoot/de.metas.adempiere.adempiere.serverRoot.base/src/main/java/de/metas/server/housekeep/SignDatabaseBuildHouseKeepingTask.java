@@ -3,12 +3,13 @@ package de.metas.server.housekeep;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 
 /*
@@ -39,7 +40,7 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 	private static final transient Logger logger = LogManager.getLogger(SignDatabaseBuildHouseKeepingTask.class);
 
 	@Override
-	public void executeTask(final ILoggable loggable)
+	public void executeTask()
 	{
 		if (!DB.isConnected())
 		{
@@ -49,12 +50,12 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		final String lastBuildInfo = Adempiere.getImplementationVersion();
 		if (lastBuildInfo!= null && lastBuildInfo.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
 		{
-			logger.warn("Not signing the database build with our version={}, because it makes no sense", lastBuildInfo);
+			Loggables.get().withLogger(logger, Level.WARN).addLog("Not signing the database build with our version={}, because it makes no sense", lastBuildInfo);
 			return;
 		}
 		if (CConnection.isServerEmbedded())
 		{
-			logger.warn("Not signing the database build with our version, because we run in embedded server mode");
+			Loggables.get().withLogger(logger, Level.WARN).addLog("Not signing the database build with our version, because we run in embedded server mode");
 			return;
 		}
 		try
@@ -64,10 +65,10 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		}
 		catch (final Exception ex)
 		{
-			logger.error("Failed updating the LastBuildInfo", ex);
+			Loggables.get().withLogger(logger, Level.ERROR).addLog("Failed updating the LastBuildInfo", ex);
 		}
 
-		logger.info("Signed the database build with version: {}", lastBuildInfo);
+		Loggables.get().withLogger(logger, Level.INFO).addLog("Signed the database build with version: {}", lastBuildInfo);
 	}
 
 }

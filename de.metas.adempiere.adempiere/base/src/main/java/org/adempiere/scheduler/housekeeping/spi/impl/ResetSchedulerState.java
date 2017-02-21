@@ -25,7 +25,7 @@ package org.adempiere.scheduler.housekeeping.spi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.DB;
@@ -40,12 +40,12 @@ import org.compiere.util.DB;
 public class ResetSchedulerState implements IStartupHouseKeepingTask
 {
 	@Override
-	public void executeTask(final ILoggable loggable)
+	public void executeTask()
 	{
 		final int no = DB.executeUpdateEx("UPDATE " + I_AD_Scheduler.Table_Name
 				+ " SET " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Started + "'"
 				+ " WHERE " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Running + "'", ITrx.TRXNAME_None);
 
-		loggable.addLog("Updated " + no + " AD_Scheduler records from status '" + X_AD_Scheduler.STATUS_Running + "' to '" + X_AD_Scheduler.STATUS_Started + "'");
+		Loggables.get().addLog("Updated " + no + " AD_Scheduler records from status '" + X_AD_Scheduler.STATUS_Running + "' to '" + X_AD_Scheduler.STATUS_Started + "'");
 	}
 }
