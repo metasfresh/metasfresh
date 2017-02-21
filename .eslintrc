@@ -12,7 +12,7 @@
   "rules": {
     "quotes": [2, "single"],
     "jsx-quotes": [2, "prefer-double"],
-    "no-console": 2,
+    "no-console": [2, { allow: ["warn", "error"] }],
     "strict": [2, "never"],
     "react/jsx-uses-react": 2,
     "react/jsx-uses-vars": 2,

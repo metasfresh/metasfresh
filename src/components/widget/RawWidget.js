@@ -567,56 +567,71 @@ class RawWidget extends Component {
                     handlePatch={this.handlePatch}
                 />;
             default:
-                return (<div>{widgetType}</div>)
+                return false;
         }
     }
 
     render() {
         const {
-            caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch
+            caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch,
+            widgetType
         } = this.props;
+        
+        const widgetBody = this.renderWidget();
 
-        if(widgetData[0].displayed && widgetData[0].displayed === true){
-            return (
-                <div className={
-                    'form-group row ' +
-                    ((rowId && !isModal) ? 'form-group-table ' : ' ')
-                }>
-                    {(!noLabel && caption) &&
-                        <div
-                            key="title"
-                            className={
-                                'form-control-label ' +
-                                ((type === 'primary') ? 'col-sm-12 panel-title' : 'col-sm-3')
-                            }
-                            title={caption}
-                        >
-                            {caption}
-                        </div>
-                    }
-                    <div
-                        className={
-                            ((type === 'primary' || noLabel) ? 'col-sm-12 ' : 'col-sm-9 ') +
-                            (fields[0].devices ? 'form-group-flex ': '')
-                        }
-                    >
-                        {this.renderWidget()}
-                        
-                        {fields[0].devices && !widgetData[0].readonly &&
-                            <DevicesWidget
-                                devices={fields[0].devices}
-                                tabIndex={1}
-                                handleChange={(value) =>
-                                    handlePatch && handlePatch(fields[0].field, value)
-                                }
-                            />
-                        }
-                    </div>
-                </div>
-            )
-        }else{
+        // Unsupported widget type
+        if(!widgetBody){
+            console.warn(
+                'The %c' + widgetType, 
+                'font-weight:bold;', 
+                'is unsupported type of widget.'
+            );
+            
             return false;
         }
+        
+        // No display value or not displayed
+        if(!widgetData[0].displayed || widgetData[0].displayed !== true){
+            return false;
+        }
+        
+        return (
+            <div className={
+                'form-group row ' +
+                ((rowId && !isModal) ? 'form-group-table ' : ' ')
+            }>
+                {(!noLabel && caption) &&
+                    <div
+                        key="title"
+                        className={
+                            'form-control-label ' +
+                            ((type === 'primary') ? 'col-sm-12 panel-title' : 'col-sm-3')
+                        }
+                        title={caption}
+                    >
+                        {caption}
+                    </div>
+                }
+                <div
+                    className={
+                        ((type === 'primary' || noLabel) ? 'col-sm-12 ' : 'col-sm-9 ') +
+                        (fields[0].devices ? 'form-group-flex ': '')
+                    }
+                >
+                    {widgetBody}
+                    
+                    {fields[0].devices && !widgetData[0].readonly &&
+                        <DevicesWidget
+                            devices={fields[0].devices}
+                            tabIndex={1}
+                            handleChange={(value) =>
+                                handlePatch && handlePatch(fields[0].field, value)
+                            }
+                        />
+                    }
+                </div>
+            </div>
+        )
     }
 }
 
