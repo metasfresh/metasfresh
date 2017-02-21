@@ -1,4 +1,5 @@
 /* global config:true */
+/* global Promise:true */
 
 import * as types from '../constants/MenuTypes'
 import axios from 'axios';

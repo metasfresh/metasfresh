@@ -137,7 +137,6 @@ class RawWidget extends Component {
                         </div>
                     )
                 }
-                break;
             case 'DateTime':
                 return (
                     <div className={'input-icon-container input-block ' +

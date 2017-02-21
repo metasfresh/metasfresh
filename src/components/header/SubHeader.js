@@ -119,21 +119,23 @@ class Subheader extends Component {
         const {closeSubheader} = this.props;
 
         switch(e.key){
-            case 'ArrowDown':
+            case 'ArrowDown': {
                 e.preventDefault();
                 const activeElem = this.getItemActiveElem();
                 if(activeElem.nextSibling) {
                     activeElem.nextSibling.focus();
                 }
                 break;
-            case 'ArrowUp':
+            }
+            case 'ArrowUp': {
                 e.preventDefault();
                 const activeEl = this.getItemActiveElem();
                 if(activeEl.previousSibling) {
                     activeEl.previousSibling.focus();
                 }
                 break;
-            case 'ArrowLeft':
+            }
+            case 'ArrowLeft': {
                 e.preventDefault();
                 const activeColumn = this.getColumnActiveElem();
                 if(activeColumn.previousSibling) {
@@ -143,7 +145,8 @@ class Subheader extends Component {
                     }
                 }
                 break;
-            case 'ArrowRight':
+            }
+            case 'ArrowRight': {
                 e.preventDefault();
                 const activeCol = this.getColumnActiveElem();
                 if(activeCol.nextSibling) {
@@ -153,6 +156,7 @@ class Subheader extends Component {
                     }
                 }
                 break;
+            }
             case 'Enter':
                 e.preventDefault();
                 document.activeElement.click();
@@ -205,7 +209,7 @@ class Subheader extends Component {
 
         return (
             <div
-                className={"subheader-container overlay-shadow subheader-open js-not-unselect"}
+                className={'subheader-container overlay-shadow subheader-open js-not-unselect'}
                 tabIndex={0}
                 onKeyDown={this.handleKeyDown}
                 ref={(c)=> this.subHeader = c}

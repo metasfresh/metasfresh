@@ -1,3 +1,5 @@
+/* global Promise:true */
+
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
@@ -40,7 +42,7 @@ class MasterWindow extends Component {
     handleDropFile(file){
         file = file instanceof Array ? file[0] : file;
 
-        if (!file instanceof File){
+        if (!(file instanceof File)){
             return Promise.reject();
         }
 
