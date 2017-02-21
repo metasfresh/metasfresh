@@ -1,8 +1,14 @@
 --
+-- note that in order to create these PKs "peu-a-peu, we need https://github.com/metasfresh/metasfresh/issues/941 to be rolled out, or the sequences will be reset to 1000000 on each server start
+--
+
+--
 -- DDL for creating a single PK for AD_PInstance_Para
 --
 -- 26.10.2016 21:39
 -- URL zum Konzept
+-- this column is already created
+ALTER TABLE AD_PInstance_Para drop COLUMN AD_PInstance_Para_ID;
 ALTER TABLE AD_PInstance_Para ADD COLUMN AD_PInstance_Para_ID numeric(10,0) NOT NULL DEFAULT nextval('ad_pinstance_para_seq')
 ;
 
@@ -21,6 +27,7 @@ ALTER TABLE AD_PInstance_Para ADD CONSTRAINT ad_pinstance_para_pkey PRIMARY KEY 
 --
 -- 27.10.2016 07:07
 -- URL zum Konzept
+ALTER TABLE AD_PInstance_Log DROP COLUMN AD_PInstance_Log_ID;
 ALTER TABLE AD_PInstance_Log ADD COLUMN AD_PInstance_Log_ID numeric(10,0) NOT NULL DEFAULT nextval('ad_pinstance_log_seq')
 ;
 
@@ -39,6 +46,7 @@ ALTER TABLE AD_PInstance_Log ADD CONSTRAINT ad_pinstance_log_pkey PRIMARY KEY (A
 --
 -- 26.10.2016 14:51
 -- URL zum Konzept
+ALTER TABLE M_MovementLineMA DROP COLUMN M_MovementLineMA_ID;
 ALTER TABLE M_MovementLineMA ADD COLUMN M_MovementLineMA_ID numeric(10,0) NOT NULL DEFAULT nextval('m_movementlinema_seq')
 ;
 -- 26.10.2016 14:51
@@ -55,6 +63,7 @@ ALTER TABLE M_MovementLineMA ADD CONSTRAINT m_movementlinema_pkey PRIMARY KEY (M
 --
 -- 28.10.2016 06:34
 -- URL zum Konzept
+ALTER TABLE M_HU_Snapshot DROP COLUMN M_HU_Snapshot_ID;
 ALTER TABLE M_HU_Snapshot ADD COLUMN M_HU_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_snapshot_seq')
 ;
 
@@ -73,6 +82,7 @@ ALTER TABLE M_HU_Snapshot ADD CONSTRAINT m_hu_snapshot_pkey PRIMARY KEY (M_HU_Sn
 --
 -- 28.10.2016 06:35
 -- URL zum Konzept
+ALTER TABLE M_HU_Storage_Snapshot DROP COLUMN M_HU_Storage_Snapshot_ID;
 ALTER TABLE M_HU_Storage_Snapshot ADD COLUMN M_HU_Storage_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_storage_snapshot_seq')
 ;
 
@@ -89,6 +99,8 @@ ALTER TABLE M_HU_Storage_Snapshot ADD CONSTRAINT m_hu_storage_snapshot_pkey PRIM
 --
 -- DDL for creating a single PK for M_HU_Attribute_Snapshot
 --
+/*
+note that at this point we already made sure that M_HU_Attribute_Snapshot_ID is unique
 -- 28.10.2016 06:35
 -- URL zum Konzept
 ALTER TABLE M_HU_Attribute_Snapshot ADD COLUMN M_HU_Attribute_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_attribute_snapshot_seq')
@@ -98,17 +110,19 @@ ALTER TABLE M_HU_Attribute_Snapshot ADD COLUMN M_HU_Attribute_Snapshot_ID numeri
 -- URL zum Konzept
 ALTER TABLE M_HU_Attribute_Snapshot DROP CONSTRAINT IF EXISTS m_hu_attribute_snapshot_pkey
 ;
-
+*/
 -- 28.10.2016 06:35
 -- URL zum Konzept
 ALTER TABLE M_HU_Attribute_Snapshot ADD CONSTRAINT m_hu_attribute_snapshot_pkey PRIMARY KEY (M_HU_Attribute_Snapshot_ID)
 ;
+
 
 --
 -- DDL for creating a single PK for M_AttributeInstance
 --
 -- 31.10.2016 14:21
 -- URL zum Konzept
+ALTER TABLE M_AttributeInstance DROP COLUMN M_AttributeInstance_ID;
 ALTER TABLE M_AttributeInstance ADD COLUMN M_AttributeInstance_ID numeric(10,0) NOT NULL DEFAULT nextval('m_attributeinstance_seq')
 ;
 
@@ -125,8 +139,11 @@ ALTER TABLE M_AttributeInstance ADD CONSTRAINT m_attributeinstance_pkey PRIMARY 
 --
 -- DDL for creating a single PK for M_InventoryLineMA
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 06:31
 -- URL zum Konzept
+ALTER TABLE M_InventoryLineMA DROP COLUMN M_InventoryLineMA_ID;
 ALTER TABLE M_InventoryLineMA ADD COLUMN M_InventoryLineMA_ID numeric(10,0) NOT NULL DEFAULT nextval('m_inventorylinema_seq')
 ;
 
@@ -134,7 +151,7 @@ ALTER TABLE M_InventoryLineMA ADD COLUMN M_InventoryLineMA_ID numeric(10,0) NOT 
 -- URL zum Konzept
 ALTER TABLE M_InventoryLineMA DROP CONSTRAINT IF EXISTS m_inventorylinema_pkey
 ;
-
+*/
 -- 03.11.2016 06:31
 -- URL zum Konzept
 ALTER TABLE M_InventoryLineMA ADD CONSTRAINT m_inventorylinema_pkey PRIMARY KEY (M_InventoryLineMA_ID)
@@ -143,8 +160,11 @@ ALTER TABLE M_InventoryLineMA ADD CONSTRAINT m_inventorylinema_pkey PRIMARY KEY 
 --
 -- DDL for creating a single PK for M_ProductionLineMA
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 06:32
 -- URL zum Konzept
+ALTER TABLE M_ProductionLineMA DROP COLUMN M_ProductionLineMA_ID;
 ALTER TABLE M_ProductionLineMA ADD COLUMN M_ProductionLineMA_ID numeric(10,0) NOT NULL DEFAULT nextval('m_productionlinema_seq')
 ;
 
@@ -152,7 +172,7 @@ ALTER TABLE M_ProductionLineMA ADD COLUMN M_ProductionLineMA_ID numeric(10,0) NO
 -- URL zum Konzept
 ALTER TABLE M_ProductionLineMA DROP CONSTRAINT IF EXISTS m_productionlinema_pkey
 ;
-
+*/
 -- 03.11.2016 06:32
 -- URL zum Konzept
 ALTER TABLE M_ProductionLineMA ADD CONSTRAINT m_productionlinema_pkey PRIMARY KEY (M_ProductionLineMA_ID)
@@ -163,6 +183,7 @@ ALTER TABLE M_ProductionLineMA ADD CONSTRAINT m_productionlinema_pkey PRIMARY KE
 --
 -- 03.11.2016 06:36
 -- URL zum Konzept
+ALTER TABLE M_Cost DROP COLUMN M_Cost_ID;
 ALTER TABLE M_Cost ADD COLUMN M_Cost_ID numeric(10,0) NOT NULL DEFAULT nextval('m_cost_seq')
 ;
 
@@ -179,6 +200,8 @@ ALTER TABLE M_Cost ADD CONSTRAINT m_cost_pkey PRIMARY KEY (M_Cost_ID)
 --
 -- DDL for creating a single PK for R_Group_Prospect
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 06:39
 -- URL zum Konzept
 ALTER TABLE R_Group_Prospect ADD COLUMN R_Group_Prospect_ID numeric(10,0) NOT NULL DEFAULT nextval('r_group_prospect_seq')
@@ -188,7 +211,7 @@ ALTER TABLE R_Group_Prospect ADD COLUMN R_Group_Prospect_ID numeric(10,0) NOT NU
 -- URL zum Konzept
 ALTER TABLE R_Group_Prospect DROP CONSTRAINT IF EXISTS r_group_prospect_pkey
 ;
-
+*/
 -- 03.11.2016 06:39
 -- URL zum Konzept
 ALTER TABLE R_Group_Prospect ADD CONSTRAINT r_group_prospect_pkey PRIMARY KEY (R_Group_Prospect_ID)
@@ -199,6 +222,7 @@ ALTER TABLE R_Group_Prospect ADD CONSTRAINT r_group_prospect_pkey PRIMARY KEY (R
 --
 -- 03.11.2016 07:11
 -- URL zum Konzept
+ALTER TABLE M_HU_Item_Snapshot DROP COLUMN M_HU_Item_Snapshot_ID;
 ALTER TABLE M_HU_Item_Snapshot ADD COLUMN M_HU_Item_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_item_snapshot_seq')
 ;
 
@@ -217,6 +241,7 @@ ALTER TABLE M_HU_Item_Snapshot ADD CONSTRAINT m_hu_item_snapshot_pkey PRIMARY KE
 --
 -- 03.11.2016 07:11
 -- URL zum Konzept
+ALTER TABLE M_HU_Item_Storage_Snapshot DROP COLUMN M_HU_Item_Storage_Snapshot_ID;
 ALTER TABLE M_HU_Item_Storage_Snapshot ADD COLUMN M_HU_Item_Storage_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_item_storage_snapshot_seq')
 ;
 
@@ -233,8 +258,11 @@ ALTER TABLE M_HU_Item_Storage_Snapshot ADD CONSTRAINT m_hu_item_storage_snapshot
 --
 -- DDL for creating a single PK for C_BP_Withholding
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:23
 -- URL zum Konzept
+ALTER TABLE C_BP_Withholding DROP COLUMN C_BP_Withholding_ID;
 ALTER TABLE C_BP_Withholding ADD COLUMN C_BP_Withholding_ID numeric(10,0) NOT NULL DEFAULT nextval('c_bp_withholding_seq')
 ;
 
@@ -245,6 +273,7 @@ ALTER TABLE C_BP_Withholding DROP CONSTRAINT IF EXISTS c_bp_withholding_pkey
 
 -- 03.11.2016 07:23
 -- URL zum Konzept
+*/
 ALTER TABLE C_BP_Withholding ADD CONSTRAINT c_bp_withholding_pkey PRIMARY KEY (C_BP_Withholding_ID)
 ;
 
@@ -252,8 +281,11 @@ ALTER TABLE C_BP_Withholding ADD CONSTRAINT c_bp_withholding_pkey PRIMARY KEY (C
 --
 -- DDL for creating a single PK for C_ProjectIssueMA
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:23
 -- URL zum Konzept
+ALTER TABLE C_ProjectIssueMA DROP COLUMN C_ProjectIssueMA_ID;
 ALTER TABLE C_ProjectIssueMA ADD COLUMN C_ProjectIssueMA_ID numeric(10,0) NOT NULL DEFAULT nextval('c_projectissuema_seq')
 ;
 
@@ -261,7 +293,7 @@ ALTER TABLE C_ProjectIssueMA ADD COLUMN C_ProjectIssueMA_ID numeric(10,0) NOT NU
 -- URL zum Konzept
 ALTER TABLE C_ProjectIssueMA DROP CONSTRAINT IF EXISTS c_projectissuema_pkey
 ;
-
+*/
 -- 03.11.2016 07:23
 -- URL zum Konzept
 ALTER TABLE C_ProjectIssueMA ADD CONSTRAINT c_projectissuema_pkey PRIMARY KEY (C_ProjectIssueMA_ID)
@@ -271,6 +303,8 @@ ALTER TABLE C_ProjectIssueMA ADD CONSTRAINT c_projectissuema_pkey PRIMARY KEY (C
 --
 -- DDL for creating a single PK for M_TransactionAllocation
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:24
 -- URL zum Konzept
 ALTER TABLE M_TransactionAllocation ADD COLUMN M_TransactionAllocation_ID numeric(10,0) NOT NULL DEFAULT nextval('m_transactionallocation_seq')
@@ -283,6 +317,7 @@ ALTER TABLE M_TransactionAllocation DROP CONSTRAINT IF EXISTS m_transactionalloc
 
 -- 03.11.2016 07:24
 -- URL zum Konzept
+*/
 ALTER TABLE M_TransactionAllocation ADD CONSTRAINT m_transactionallocation_pkey PRIMARY KEY (M_TransactionAllocation_ID)
 ;
 
@@ -292,6 +327,8 @@ ALTER TABLE M_TransactionAllocation ADD CONSTRAINT m_transactionallocation_pkey 
 --
 -- 03.11.2016 07:24
 -- URL zum Konzept
+/*
+no need for this, we can just create the PK constraint
 ALTER TABLE P_AdvCommissionDetails ADD COLUMN P_AdvCommissionDetails_ID numeric(10,0) NOT NULL DEFAULT nextval('p_advcommissiondetails_seq')
 ;
 
@@ -299,7 +336,7 @@ ALTER TABLE P_AdvCommissionDetails ADD COLUMN P_AdvCommissionDetails_ID numeric(
 -- URL zum Konzept
 ALTER TABLE P_AdvCommissionDetails DROP CONSTRAINT IF EXISTS p_advcommissiondetails_pkey
 ;
-
+*/
 -- 03.11.2016 07:24
 -- URL zum Konzept
 ALTER TABLE P_AdvCommissionDetails ADD CONSTRAINT p_advcommissiondetails_pkey PRIMARY KEY (P_AdvCommissionDetails_ID)
@@ -309,7 +346,8 @@ ALTER TABLE P_AdvCommissionDetails ADD CONSTRAINT p_advcommissiondetails_pkey PR
 --
 -- DDL for creating a single PK for PP_MRP_Alloc
 --
-
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:26
 -- URL zum Konzept
 ALTER TABLE PP_MRP_Alloc ADD COLUMN PP_MRP_Alloc_ID numeric(10,0) NOT NULL DEFAULT nextval('pp_mrp_alloc_seq')
@@ -320,7 +358,7 @@ ALTER TABLE PP_MRP_Alloc ADD COLUMN PP_MRP_Alloc_ID numeric(10,0) NOT NULL DEFAU
 ALTER TABLE PP_MRP_Alloc DROP CONSTRAINT IF EXISTS pp_mrp_alloc_pkey
 ;
 ALTER TABLE pp_mrp_alloc DROP CONSTRAINT IF EXISTS pp_mrp_alloc_key;
-
+*/
 -- 03.11.2016 07:26
 -- URL zum Konzept
 ALTER TABLE PP_MRP_Alloc ADD CONSTRAINT pp_mrp_alloc_pkey PRIMARY KEY (PP_MRP_Alloc_ID)
@@ -329,6 +367,8 @@ ALTER TABLE PP_MRP_Alloc ADD CONSTRAINT pp_mrp_alloc_pkey PRIMARY KEY (PP_MRP_Al
 --
 -- DDL for creating a single PK for PP_MRP_Alternative
 --
+/*
+no need for this, we can just create the PK constraint
 ALTER TABLE pp_mrp_alternative DROP CONSTRAINT IF EXISTS pp_mrp_alternative_key;
 -- 03.11.2016 07:27
 -- URL zum Konzept
@@ -339,7 +379,7 @@ ALTER TABLE PP_MRP_Alternative ADD COLUMN PP_MRP_Alternative_ID numeric(10,0) NO
 -- URL zum Konzept
 ALTER TABLE PP_MRP_Alternative DROP CONSTRAINT IF EXISTS pp_mrp_alternative_pkey
 ;
-
+*/
 -- 03.11.2016 07:27
 -- URL zum Konzept
 ALTER TABLE PP_MRP_Alternative ADD CONSTRAINT pp_mrp_alternative_pkey PRIMARY KEY (PP_MRP_Alternative_ID)
@@ -349,6 +389,8 @@ ALTER TABLE PP_MRP_Alternative ADD CONSTRAINT pp_mrp_alternative_pkey PRIMARY KE
 --
 -- DDL for creating a single PK for R_CategoryUpdates
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:28
 -- URL zum Konzept
 ALTER TABLE R_CategoryUpdates ADD COLUMN R_CategoryUpdates_ID numeric(10,0) NOT NULL DEFAULT nextval('r_categoryupdates_seq')
@@ -358,7 +400,7 @@ ALTER TABLE R_CategoryUpdates ADD COLUMN R_CategoryUpdates_ID numeric(10,0) NOT 
 -- URL zum Konzept
 ALTER TABLE R_CategoryUpdates DROP CONSTRAINT IF EXISTS r_categoryupdates_pkey
 ;
-
+*/
 -- 03.11.2016 07:28
 -- URL zum Konzept
 ALTER TABLE R_CategoryUpdates ADD CONSTRAINT r_categoryupdates_pkey PRIMARY KEY (R_CategoryUpdates_ID)
@@ -367,6 +409,8 @@ ALTER TABLE R_CategoryUpdates ADD CONSTRAINT r_categoryupdates_pkey PRIMARY KEY 
 --
 -- DDL for creating a single PK for R_ContactInterest
 --
+/*
+This PK already exists
 ALTER TABLE r_contactinterest DROP CONSTRAINT IF EXISTS r_contactinterest_key;
 
 -- 03.11.2016 07:31
@@ -383,10 +427,13 @@ ALTER TABLE R_ContactInterest DROP CONSTRAINT IF EXISTS r_contactinterest_pkey
 -- URL zum Konzept
 ALTER TABLE R_ContactInterest ADD CONSTRAINT r_contactinterest_pkey PRIMARY KEY (R_ContactInterest_ID)
 ;
+*/
 
 --
 -- DDL for creating a single PK for R_GroupUpdates
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:32
 -- URL zum Konzept
 ALTER TABLE R_GroupUpdates ADD COLUMN R_GroupUpdates_ID numeric(10,0) NOT NULL DEFAULT nextval('r_groupupdates_seq')
@@ -396,7 +443,7 @@ ALTER TABLE R_GroupUpdates ADD COLUMN R_GroupUpdates_ID numeric(10,0) NOT NULL D
 -- URL zum Konzept
 ALTER TABLE R_GroupUpdates DROP CONSTRAINT IF EXISTS r_groupupdates_pkey
 ;
-
+*/
 -- 03.11.2016 07:32
 -- URL zum Konzept
 ALTER TABLE R_GroupUpdates ADD CONSTRAINT r_groupupdates_pkey PRIMARY KEY (R_GroupUpdates_ID)
@@ -405,6 +452,8 @@ ALTER TABLE R_GroupUpdates ADD CONSTRAINT r_groupupdates_pkey PRIMARY KEY (R_Gro
 --
 -- DDL for creating a single PK for R_RequestTypeUpdates
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:32
 -- URL zum Konzept
 ALTER TABLE R_RequestTypeUpdates ADD COLUMN R_RequestTypeUpdates_ID numeric(10,0) NOT NULL DEFAULT nextval('r_requesttypeupdates_seq')
@@ -414,7 +463,7 @@ ALTER TABLE R_RequestTypeUpdates ADD COLUMN R_RequestTypeUpdates_ID numeric(10,0
 -- URL zum Konzept
 ALTER TABLE R_RequestTypeUpdates DROP CONSTRAINT IF EXISTS r_requesttypeupdates_pkey
 ;
-
+*/
 -- 03.11.2016 07:32
 -- URL zum Konzept
 ALTER TABLE R_RequestTypeUpdates ADD CONSTRAINT r_requesttypeupdates_pkey PRIMARY KEY (R_RequestTypeUpdates_ID)
@@ -424,6 +473,8 @@ ALTER TABLE R_RequestTypeUpdates ADD CONSTRAINT r_requesttypeupdates_pkey PRIMAR
 --
 -- DDL for creating a single PK for R_RequestUpdates
 --
+/*
+no need for this, we can just create the PK constraint
 -- 03.11.2016 07:33
 -- URL zum Konzept
 ALTER TABLE R_RequestUpdates ADD COLUMN R_RequestUpdates_ID numeric(10,0) NOT NULL DEFAULT nextval('r_requestupdates_seq')
@@ -433,7 +484,7 @@ ALTER TABLE R_RequestUpdates ADD COLUMN R_RequestUpdates_ID numeric(10,0) NOT NU
 -- URL zum Konzept
 ALTER TABLE R_RequestUpdates DROP CONSTRAINT IF EXISTS r_requestupdates_pkey
 ;
-
+*/
 -- 03.11.2016 07:33
 -- URL zum Konzept
 ALTER TABLE R_RequestUpdates ADD CONSTRAINT r_requestupdates_pkey PRIMARY KEY (R_RequestUpdates_ID)
