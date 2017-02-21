@@ -56,6 +56,12 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 */
 	I_M_HU_LUTU_Configuration copy(I_M_HU_LUTU_Configuration lutuConfiguration);
 
+	/**
+	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface. 
+	 * @param lutuConfiguration1
+	 * @param lutuConfiguration2
+	 * @return
+	 */
 	boolean isSameForHUProducer(I_M_HU_LUTU_Configuration lutuConfiguration1, I_M_HU_LUTU_Configuration lutuConfiguration2);
 
 	/**
