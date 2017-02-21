@@ -6,7 +6,8 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteLocal
+    deleteLocal,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
@@ -56,14 +57,25 @@ class Table extends Component {
         const {dispatch} = this.props;
 
         if(
-            (JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
+            JSON.stringify(nextState.selected) !== 
+            JSON.stringify(this.state.selected)
         ){
             dispatch(selectTableItems(nextState.selected));
+        }
+        
+        // When the rows are changing we should ensure 
+        // that selection still exist
+        if(
+            nextState.selected[0] &&
+            !getItemsByProperty(nextState.rows, 'id', nextState.selected[0]).length
+        ){
+            dispatch(selectTableItems());
         }
     }
 
     componentDidUpdate(prevProps) {
         const {mainTable, open, rowData} = this.props;
+        
         if(mainTable && open){
             this.table.focus();
         }

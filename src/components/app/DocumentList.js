@@ -251,7 +251,7 @@ class DocumentList extends Component {
                 viewId: response.data.viewId,
                 filters: response.data.filters,
                 refresh: Date.now()
-            })
+            });
         });
     }
 
