@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -33,7 +34,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -117,7 +117,7 @@ public class MColumn extends X_AD_Column
 			setIsSelectionColumn(false);
 			setIsTranslated(false);
 			setIsUpdateable(true);	// Y
-			setVersion(Env.ZERO);
+			setVersion(BigDecimal.ZERO);
 		}
 	}	// MColumn
 
@@ -329,7 +329,7 @@ public class MColumn extends X_AD_Column
 	}	// afterSave
 
 	/**
-	 * Get SQL Add command
+	 * Create and return the SQL add column DDL sstatement.
 	 *
 	 * @param table table
 	 * @return sql
@@ -339,9 +339,10 @@ public class MColumn extends X_AD_Column
 		final String tableName = table.getTableName();
 
 		final StringBuilder sql = new StringBuilder("ALTER TABLE ")
-				.append("public.") // if the table is already DLM'ed then there is a view with the sale name in the dlm schema.
+				.append("public.") // if the table is already DLM'ed then there is a view with the same name in the dlm schema.
 				.append(tableName)
-				.append(" ADD ").append(getSQLDDL());
+				.append(" ADD COLUMN ") // not just "ADD" but "ADD COLUMN" to make it easier to distinguish the sort of this DDL further down the road.
+				.append(getSQLDDL());
 
 		final String constraint = getConstraint(tableName);
 		if (constraint != null && constraint.length() > 0)
@@ -350,6 +351,7 @@ public class MColumn extends X_AD_Column
 					.append(tableName)
 					.append(" ADD ").append(constraint);
 		}
+
 		return sql.toString();
 	}	// getSQLAdd
 
@@ -361,8 +363,9 @@ public class MColumn extends X_AD_Column
 	public String getSQLDDL()
 	{
 		if (isVirtualColumn())
+		{
 			return null;
-
+		}
 		StringBuffer sql = new StringBuffer(getColumnName())
 				.append(" ").append(getSQLDataType());
 
@@ -388,8 +391,9 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-			if (!isMandatory())
-				sql.append(" DEFAULT NULL ");
+			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
+			// if (!isMandatory())
+			// sql.append(" DEFAULT NULL ");
 			defaultValue = null;
 		}
 
@@ -447,8 +451,9 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-			if (!mandatory)
-				sqlDefault.append(" DEFAULT NULL ");
+			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
+			// if (!mandatory)
+			// sqlDefault.append(" DEFAULT NULL ");
 			defaultValue = null;
 		}
 		sql.append(DB.convertSqlToNative(sqlDefault.toString()));
@@ -599,20 +604,22 @@ public class MColumn extends X_AD_Column
 	 */
 	public String syncDatabase()
 	{
-
-		MTable table = new MTable(getCtx(), getAD_Table_ID(), get_TrxName());
+		final MTable table = new MTable(getCtx(), getAD_Table_ID(), get_TrxName());
 		table.set_TrxName(get_TrxName());  // otherwise table.getSQLCreate may miss current column
 		if (table.get_ID() == 0)
+		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + getAD_Table_ID());
+		}
 
 		// Find Column in Database
 		Connection conn = null;
 		try
 		{
 			conn = DB.getConnectionRO();
-			DatabaseMetaData md = conn.getMetaData();
-			String catalog = DB.getDatabase().getCatalog();
-			String schema = DB.getDatabase().getSchema();
+			final DatabaseMetaData md = conn.getMetaData();
+			final String catalog = DB.getDatabase().getCatalog();
+			final String schema = DB.getDatabase().getSchema();
+
 			String tableName = table.getTableName();
 			if (md.storesUpperCaseIdentifiers())
 			{
@@ -641,28 +648,27 @@ public class MColumn extends X_AD_Column
 			rs.close();
 			rs = null;
 
-			// No Table
+			boolean addingSingleColumn = false;
 			if (noColumns == 0)
+			{
+				// No Table
 				sql = table.getSQLCreate();
-			// No existing column
-			else if (sql == null)
-				sql = getSQLAdd(table);
-
-			if (sql == null)
-				return "No sql";
-
-			int no = 0;
-			if (sql.indexOf(DB.SQLSTATEMENT_SEPARATOR) == -1)
-			{
-				DB.executeUpdateEx(sql, get_TrxName());
 			}
-			else
+			else if (sql == null)
 			{
-				String statements[] = sql.split(DB.SQLSTATEMENT_SEPARATOR);
-				for (int i = 0; i < statements.length; i++)
-				{
-					DB.executeUpdateEx(statements[i], get_TrxName());
-				}
+				// No existing column
+				sql = getSQLAdd(table);
+				addingSingleColumn = true;
+			}
+			if (sql == null)
+			{
+				return "No sql";
+			}
+
+			final String statements[] = sql.split(DB.SQLSTATEMENT_SEPARATOR); // split also works for a single statement, with and without the separator
+			for (String statement : statements)
+			{
+				executeSQL(tableName, statement, addingSingleColumn);
 			}
 
 			return sql;
@@ -685,6 +691,44 @@ public class MColumn extends X_AD_Column
 				}
 			}
 		}
+	}
+
+	/**
+	 * Executes the given SQL statement.
+	 * 
+	 * @param tableName the table name that needs to be changed
+	 * @param statement the DDL that needs to be executed
+	 * @param addingSingleColumn tells if the given {@code statement} is about adding a (single) column, as opposed to creating a whole table.
+	 *            If this parameter's value is {@code true} and if {@link #isAddColumnDDL(String)} returns {@code true} on the given {@code statement},
+	 *            then the given statement is wrapped into an invocation of the {@code db_alter_table()} DB function.
+	 *            See that function and its documentation for more infos.
+	 */
+	private void executeSQL(String tableName, String statement, boolean addingSingleColumn)
+	{
+		if (addingSingleColumn && isAddColumnDDL(statement))
+		{
+			DB.executeFunctionCallEx(get_TrxName(), "SELECT public.db_alter_table(?,?)", new Object[] { tableName, statement });
+		}
+		else
+		{
+			DB.executeUpdateEx(statement, get_TrxName());
+		}
+	}
+
+	/**
+	 * 
+	 * @param statement
+	 * @return {@code true} if the given statement is something like {@code ... ALTER TABLE ... ADD COLUMN ...} (case-insensitive!).
+	 */
+	private boolean isAddColumnDDL(final String statement)
+	{
+		if (Check.isEmpty(statement, true))
+		{
+			return false;
+		}
+
+		// example: ALTER TABLE public.C_BPartner ADD COLUMN AD_User_ID NUMERIC(10)
+		return statement.matches("(?i).*alter table [^ ]+ add column .*");
 	}
 
 	public static boolean isSuggestSelectionColumn(String columnName, boolean caseSensitive)

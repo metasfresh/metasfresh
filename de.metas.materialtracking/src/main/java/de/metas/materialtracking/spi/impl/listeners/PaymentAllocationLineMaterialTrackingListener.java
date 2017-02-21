@@ -10,18 +10,17 @@ package de.metas.materialtracking.spi.impl.listeners;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -32,7 +31,16 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.validator.MaterialTrackableDocumentByASIInterceptor;
 
+/**
+ * Links and unlinks payments as {@link I_C_AllocationLine}s are linked and unlinked.
+ * <p>
+ * Note that the linking of those allocation lines is likely triggered via {@link MaterialTrackableDocumentByASIInterceptor}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class PaymentAllocationLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
 {
 	public static final transient PaymentAllocationLineMaterialTrackingListener instance = new PaymentAllocationLineMaterialTrackingListener();

@@ -18,14 +18,11 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
 
@@ -39,7 +36,7 @@ public class MProjectIssue extends X_C_ProjectIssue
 {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 4714411434615096132L;
 
@@ -59,7 +56,7 @@ public class MProjectIssue extends X_C_ProjectIssue
 		//	setM_Locator_ID (0);
 		//	setM_Product_ID (0);
 		//	setMovementDate (new Timestamp(System.currentTimeMillis()));
-			setMovementQty (Env.ZERO);
+			setMovementQty (BigDecimal.ZERO);
 			setPosted (false);
 			setProcessed (false);
 		}
@@ -91,22 +88,22 @@ public class MProjectIssue extends X_C_ProjectIssue
 	//	setM_Locator_ID (0);
 	//	setM_Product_ID (0);
 		//
-		setMovementDate (new Timestamp(System.currentTimeMillis()));
-		setMovementQty (Env.ZERO);
+		setMovementDate (SystemTime.asTimestamp());
+		setMovementQty (BigDecimal.ZERO);
 		setPosted (false);
 		setProcessed (false);
 	}	//	MProjectIssue
 
 	/**	Parent				*/
 	private MProject	m_parent = null;
-	
+
 	/**
 	 *	Get the next Line No
 	 * 	@return next line no
 	 */
 	private int getNextLine()
 	{
-		return DB.getSQLValue(get_TrxName(), 
+		return DB.getSQLValue(get_TrxName(),
 			"SELECT COALESCE(MAX(Line),0)+10 FROM C_ProjectIssue WHERE C_Project_ID=?", getC_Project_ID());
 	}	//	getLineFromProject
 
@@ -133,7 +130,7 @@ public class MProjectIssue extends X_C_ProjectIssue
 			m_parent = new MProject (getCtx(), getC_Project_ID(), get_TrxName());
 		return m_parent;
 	}	//	getParent
-	
+
 	/**************************************************************************
 	 * 	Process Issue
 	 *	@return true if processed
@@ -160,14 +157,19 @@ public class MProjectIssue extends X_C_ProjectIssue
 		/** @todo Transaction */
 
 		//	**	Create Material Transactions **
-		MTransaction mTrx = new MTransaction (getCtx(), getAD_Org_ID(), 
+		MTransaction mTrx = new MTransaction (getCtx(),
+			getAD_Org_ID(),
 			MTransaction.MOVEMENTTYPE_WorkOrderPlus,
-			getM_Locator_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(),
-			getMovementQty().negate(), getMovementDate(), get_TrxName());
+			getM_Locator_ID(),
+			getM_Product_ID(),
+			getM_AttributeSetInstance_ID(),
+			getMovementQty().negate(),
+			getMovementDate(),
+			get_TrxName());
 		mTrx.setC_ProjectIssue_ID(getC_ProjectIssue_ID());
 		//
 		MLocator loc = MLocator.get(getCtx(), getM_Locator_ID());
-		if (MStorage.add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(), 
+		if (MStorage.add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(),
 				getM_Product_ID(), getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID(),
 				getMovementQty().negate(), null, null, get_TrxName()))
 		{
