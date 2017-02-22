@@ -46,6 +46,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -53,6 +55,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.TableInfoVO;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
@@ -961,6 +964,23 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			final int maxRowsActual = getMaxQueryRecordsActual(maxRows);
 			m_mTable.setSelectWhereClause(where.toString(), m_vo.getDefaultWhereClause(), m_vo.onlyCurrentRows && !isDetail(), onlyCurrentDays);
 			m_mTable.open(maxRowsActual);
+			
+			// gh #986: find out if this is a "failed" zoom operation
+			if (m_query != null 
+					&& !Check.isEmpty(m_query.getZoomTableName()) 
+					&& !Check.isEmpty(m_query.getZoomColumnName())
+					&& m_mTable.getRowCount() < 1)
+			{
+				// gh #986: see if something can be done about the missing record. If so, request a retry. 
+				if (NoDataFoundHandlers.get().invokeHandlers(
+						m_query.getZoomTableName(), 
+						new Object[] { m_query.getZoomValue() }, 
+						PlainContextAware.newOutOfTrx(getCtx())))
+				{
+					// Since I don't know how to do the retry in here, I throw an exception and the retry will be handled somewhere else in the stack.
+					throw new NoDataFoundHandlerRetryRequestException();
+				}
+			}
 		}
 
 		if (keyNo != m_mTable.getKeyID(m_currentRow))   // something changed

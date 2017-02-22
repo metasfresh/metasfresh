@@ -50,6 +50,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.persistence.po.INoDataFoundHandler;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -1695,7 +1697,7 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName);
+			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
 		}
 		finally
 		{
@@ -1703,8 +1705,14 @@ public abstract class PO
 			m_loadingLock.unlock();
 		}
 	}
-
-	private final boolean load0(final String trxName)
+	
+	/**
+	 * Do the actual loading.
+	 * 
+	 * @param trxName
+	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry. 
+	 */
+	private final boolean load0(final String trxName, final boolean isRetry)
 	{
 		m_trxName = trxName;
 		boolean success = true;
@@ -1730,6 +1738,17 @@ public abstract class PO
 			}
 			else
 			{
+				if (!isRetry)
+				{
+					// gh #986 see if any noDataFoundHandler can do something and, if so, retry *once*
+					if (NoDataFoundHandlers.get()
+							.invokeHandlers(get_TableName(),
+									m_IDs,
+									InterfaceWrapperHelper.getContextAware(this)))
+					{
+						return load0(trxName, true); // this is the retry, so isRetry=true this time
+					}
+				}
 				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
 				m_IDs = new Object[] { I_ZERO };
 				success = false;

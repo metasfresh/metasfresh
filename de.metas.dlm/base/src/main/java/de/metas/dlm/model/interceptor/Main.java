@@ -3,6 +3,7 @@ package de.metas.dlm.model.interceptor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -13,6 +14,7 @@ import de.metas.dlm.connection.DLMPermanentIniCustomizer;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.coordinator.impl.LastUpdatedInspector;
 import de.metas.dlm.exception.DLMReferenceExceptionWrapper;
+import de.metas.dlm.po.UnArchiveRecordHandler;
 
 /*
  * #%L
@@ -71,5 +73,8 @@ public class Main extends AbstractModuleInterceptor
 		Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentIniCustomizer.INSTANCE);
 
 		Services.get(ICoordinatorService.class).registerInspector(LastUpdatedInspector.INSTANCE);
+		
+		// gh #968: register handler to try to get back archived records, if PO could not load them
+		NoDataFoundHandlers.get().addHandler(UnArchiveRecordHandler.INSTANCE);
 	}
 }
