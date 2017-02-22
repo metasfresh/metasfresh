@@ -40,7 +40,7 @@ class MasterWindow extends Component {
     handleDropFile(file){
         file = file instanceof Array ? file[0] : file;
 
-        if (!file instanceof File){
+        if (!(file instanceof File)){
             return Promise.reject();
         }
 
@@ -111,9 +111,8 @@ class MasterWindow extends Component {
                         modalType={modal.modalType}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
-                        closeCallback={(isNew) => this.closeModalCallback(
-                            modal.modalType, isNew, modal.layout.pinstanceId
-                        )}
+                        closeCallback={this.closeModalCallback}
+                        rawModalVisible={rawModal.visible}
                      />
                  }
                  {rawModal.visible &&

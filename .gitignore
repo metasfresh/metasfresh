@@ -6,3 +6,4 @@ dist
 config.js
 /static
 .vscode
+.history

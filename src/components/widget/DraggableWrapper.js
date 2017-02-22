@@ -102,9 +102,7 @@ export class DraggableWrapper extends Component {
                 }>
                     {false && indicators.map((indicator, id) =>
                         <div
-                            className={
-                                "indicator "
-                            }
+                            className="indicator"
                             key={id}
                         >
                             <iframe

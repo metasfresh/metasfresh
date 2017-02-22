@@ -63,7 +63,6 @@ class TableCell extends Component {
                     } else {
                         return field[Object.keys(field)[0]];
                     }
-                    break;
                 case 'boolean':
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
                 case 'string':
@@ -72,7 +71,6 @@ class TableCell extends Component {
                     } else {
                         return field;
                     }
-                    break;
                 default:
                     return field;
             }

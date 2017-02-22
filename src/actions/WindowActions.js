@@ -1,5 +1,3 @@
-/* global config:true */
-
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import { push, replace } from 'react-router-redux';
@@ -345,11 +343,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         //Handling staleTabIds
         staleTabIds.map(staleTabId => {
             dispatch(getTab(staleTabId, windowType, id)).then(tab => {
-                const keys = Object.keys(tab);
-
-                keys.map(key => {
-                    dispatch(addNewRow(tab[key], staleTabId, key, 'master'))
-                })
+                dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
     }

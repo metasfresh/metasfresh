@@ -10,14 +10,14 @@ class Filters extends Component {
         this.state = {
             filter: null,
             notValidFields: null,
-            active: null,
             widgetShown: false
         }
     }
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
-        filtersActive && this.init(filtersActive[0]);
+        
+        this.init(filtersActive ? filtersActive[0] : null);
     }
 
     componentDidMount() {
@@ -36,7 +36,7 @@ class Filters extends Component {
     /*
      *   This method should update docList
      */
-    applyFilters = (filter) => {
+    applyFilters = (filter, cb) => {
         const notValid = this.isFilterValid(filter);
 
         if (notValid.length) {
@@ -45,6 +45,7 @@ class Filters extends Component {
             });
         } else {
             this.setFilterActive([filter]);
+            cb && cb();
         }
     }
 
@@ -81,9 +82,13 @@ class Filters extends Component {
     }
 
     isFilterValid = (filters) => {
-        return filters.parameters.filter(item => {
-            return item.mandatory && !item.value;
-        })
+        if(filters.parameters){
+            return filters.parameters.filter(
+                item => item.mandatory && !item.value
+            );
+        }else{
+            return [];
+        }
     }
 
     getFiltersStructure = (filterData) => {

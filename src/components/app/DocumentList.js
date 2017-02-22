@@ -1,5 +1,3 @@
-/* global config:true */
-
 import React, { Component, PropTypes } from 'react';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
@@ -66,7 +64,9 @@ class DocumentList extends Component {
         if(windowType !== this.props.windowType) {
             this.setState({
                 data:null,
-                layout:null
+                layout:null,
+                filters: null,
+                viewId: null
             }, () => {
 
                 this.fetchLayoutAndData();
@@ -249,7 +249,7 @@ class DocumentList extends Component {
                 viewId: response.data.viewId,
                 filters: response.data.filters,
                 refresh: Date.now()
-            })
+            });
         });
     }
 
@@ -308,22 +308,23 @@ class DocumentList extends Component {
         } = this.state;
 
         const {
-            dispatch, windowType, type, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit
+            dispatch, windowType, open, closeOverlays, selected, inBackground,
+            fetchQuickActionsOnInit, isModal
         } = this.props;
+        
 
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         <div>
-                            {type === 'grid' &&
+                            {layout.supportNewRecord && !isModal &&
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
-                                    title={'New '+layout.caption}
+                                    title={'New '+ layout.newRecordCaption}
                                 >
-                                    <i className="meta-icon-add" /> New {layout.caption}
+                                    <i className="meta-icon-add" /> {layout.newRecordCaption}
                                 </button>
                             }
                             {layout.filters && <Filters
@@ -359,8 +360,10 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
+                                !isModal &&
                                 dispatch(push('/window/' + windowType + '/' + id))
                             }}
+                            isModal={isModal}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
