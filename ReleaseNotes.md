@@ -10,6 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.x.x (2017-09)
+
+upcoming
+
 # metasfresh 4.57.56 (2017-08)
 
 this week's RC
@@ -31,7 +35,8 @@ this week's RC
   * [#981](https://github.com/metasfresh/metasfresh/issues/981) Introduce AD_PInstance(AD_Pinstance_ID, ColumnName) unique index
   * [#983](https://github.com/metasfresh/metasfresh/issues/983) Upgrade guava version from 18 to 21
   * [#986](https://github.com/metasfresh/metasfresh/issues/986) Handle the case that PO can't load a record
-
+  * [#1018](https://github.com/metasfresh/metasfresh/issues/1018) support description fields in shipment
+  
 * webUI
   * [#145](https://github.com/metasfresh/metasfresh-webui/issues/145) HU editor - Create material receipt not enabled when the whole palet is selected
   * [#146](https://github.com/metasfresh/metasfresh-webui/issues/146) Receipt schedules: show empties receive/return actions only when only one row is selected
