@@ -65,9 +65,9 @@ class RawList extends Component {
 
         const next = up ? selected + 1 : selected - 1;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: (next >= 0 && next <= list.length) ? next : selected
-        }));
+        });
     }
 
     handleKeyDown = (e) => {
@@ -170,7 +170,7 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, tabIndex, disabled
+            rowId, isModal, tabIndex, disabled, mandatory
         } = this.props;
 
         const {
@@ -194,7 +194,8 @@ class RawList extends Component {
                 <div className={
                     'input-dropdown input-block input-readonly input-' +
                     (rank ? rank : 'secondary') +
-                    (updated ? ' pulse ' : ' ')
+                    (updated ? ' pulse ' : ' ') +
+                    ((mandatory && !selected) ? 'input-mandatory ' : '')
                 }>
                     <div className={
                         'input-editable input-dropdown-focused ' +
@@ -227,7 +228,11 @@ class RawList extends Component {
                     )}
                     {(loading && list.length === 0) && (
                         <div className="input-dropdown-list-header">
-                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                            <ReactCSSTransitionGroup
+                                transitionName="rotate"
+                                transitionEnterTimeout={1000}
+                                transitionLeaveTimeout={1000}
+                            >
                                 <div className="rotate icon-rotate">
                                     <i className="meta-icon-settings"/>
                                 </div>

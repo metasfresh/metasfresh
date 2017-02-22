@@ -49,7 +49,7 @@ class MasterWidget extends Component {
 
     handlePatch = (property, value) => {
         const {
-            isModal, widgetType, dataId, windowType, dispatch, rowId, tabId, 
+            isModal, widgetType, dataId, windowType, dispatch, rowId, tabId,
             onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 

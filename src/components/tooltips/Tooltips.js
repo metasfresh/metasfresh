@@ -26,14 +26,14 @@ class Tooltips extends Component {
         const {opacity} = this.state;
         return (
             <div style={{opacity: opacity}}>
-                <div 
+                <div
                     className={'tooltip-wrapp' + ' tooltip-'+type + ' ' + extraClass}
                 >
                     <div className="tooltip-shortcut">{name}</div>
                     <div className="tooltip-name">{action}</div>
-                </div>  
+                </div>
             </div>
-              
+
         )
     }
 }

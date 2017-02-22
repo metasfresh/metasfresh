@@ -77,7 +77,7 @@ class TableContextMenu extends Component {
                     </div>
                 }
 
-                {handleDelete && 
+                {handleDelete &&
                     <div className="context-menu-item" onClick={handleDelete}>
                         <i className="meta-icon-trash" /> Delete
                         <span className="tooltip-inline">

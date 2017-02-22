@@ -9,6 +9,7 @@ class FiltersItem extends Component {
         this.state = {
             filter: props.data
         }
+
     }
 
     componentWillMount() {
@@ -24,15 +25,29 @@ class FiltersItem extends Component {
     init = () => {
         const {active} = this.props;
         const {filter} = this.state;
-        
-        if(filter.parameters && active && active.parameters){
+
+        if(
+            filter.parameters && active && active.parameters &&
+            (active.filterId === filter.filterId)
+        ){
             active.parameters.map(item => {
-                this.mergeData(item.parameterName, item.value, item.valueTo);
+                this.mergeData(
+                    item.parameterName,
+                    item.value ? item.value : '',
+                    item.valueTo ? item.valueTo : ''
+                );
+            })
+        }else{
+            filter.parameters.map(item => {
+                this.mergeData(
+                    item.parameterName,
+                    ''
+                );
             })
         }
     }
 
-    setValue = (property, value, valueTo) => {
+    setValue = (property, value, id, valueTo) => {
         //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
         // IT HAS TO BE UNIFIED
         //
@@ -46,12 +61,12 @@ class FiltersItem extends Component {
         }
     }
 
-    mergeData = (property, value, id, valueTo = null) => {
+    mergeData = (property, value, valueTo) => {
         this.setState(prevState => ({
                 filter: Object.assign({}, prevState.filter, {
                     parameters: prevState.filter.parameters.map(param => {
                         if(param.parameterName === property){
-                            return Object.assign({}, param, 
+                            return Object.assign({}, param,
                                 valueTo ? {
                                     value,
                                     valueTo
@@ -71,9 +86,10 @@ class FiltersItem extends Component {
     handleApply = () => {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
-        
-        applyFilters(filter);
-        closeFilterMenu();
+
+        applyFilters(filter, () => {
+            closeFilterMenu();
+        });
     }
 
     handleClear = () => {
