@@ -1,41 +1,43 @@
-package de.metas.dlm.model;
+package org.adempiere.ad.persistence.po;
+
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * metasfresh-dlm
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IDLMAware
+/**
+ * Can be thrown to by a caller of {@link NoDataFoundHandlers#invokeHandlers(String, Object[], org.adempiere.model.IContextAware)},<br>
+ * if the {@code invokeHandlers()} method returned @{code true}, but the code in change of the retry is somehwere else in the call stack.
+ * 
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class NoDataFoundHandlerRetryRequestException extends AdempiereException
 {
+
 	/**
-	 * No getter for I_DLM_Partition records, because they might or might not exists at any given time.
+	 * 
 	 */
-	String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
+	private static final long serialVersionUID = 273568070034884347L;
 
-	int getDLM_Partition_ID();
-
-	void setDLM_Partition_ID(int DLM_Partition_ID);
-
-	String COLUMNNAME_DLM_Level = "DLM_Level";
-
-	int getDLM_Level();
-	
-	void setDLM_Level(int DLM_Level);
 }

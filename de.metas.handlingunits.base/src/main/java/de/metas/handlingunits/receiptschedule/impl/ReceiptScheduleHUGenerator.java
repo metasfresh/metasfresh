@@ -327,7 +327,7 @@ public class ReceiptScheduleHUGenerator
 	}
 
 	/**
-	 * Create the HUs. This will take place in a dedicated {@link TrxRunnable} which will be committed (or rolled back) withing this method.
+	 * Create the HUs (if necessary, also see the remarks on the class-javadoc). This will take place in a dedicated {@link TrxRunnable} which will be committed (or rolled back) within this method.
 	 * 
 	 * @return
 	 */

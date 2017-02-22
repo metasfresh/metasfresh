@@ -75,14 +75,14 @@ public interface ILUTUConfigurationEditor
 	ILUTUConfigurationEditor updateFromModel();
 
 	/**
-	 * Saves the changes made to the {@link I_M_HU_LUTU_Configuration} by this editor back to the DB and exists the editing mode.
+	 * Save the changes made to the {@link I_M_HU_LUTU_Configuration} by this editor back to the DB and exist the editing mode.
 	 *
 	 * @return this instance
 	 */
 	ILUTUConfigurationEditor save();
 
 	/**
-	 * Synchronizes this editing-configuration (see {@link #getEditingLUTUConfiguration()}) back to the underlying document.
+	 * Synchronize this editing-configuration (see {@link #getEditingLUTUConfiguration()}) back to the underlying {@link I_M_HU_LUTU_Configuration}.
 	 *
 	 * @return this instance
 	 */
