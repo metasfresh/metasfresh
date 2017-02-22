@@ -62,11 +62,12 @@ class LoginForm extends Component {
 
     checkIfAlreadyLogged(err){
         const {dispatch} = this.props;
+        const {router} = this.context;
 
         return dispatch(localLoginRequest())
             .then(response => {
                 if (response.data){
-                    return location.href = '/';
+                    return router.push('/')
                 }
 
                 return Promise.reject(err);
@@ -79,38 +80,41 @@ class LoginForm extends Component {
 
         this.setState({
             pending: true
-        });
-        if(roleSelect){
-            dispatch(loginCompletionRequest(role)).then(() => {
-                dispatch(loginSuccess());
-                this.handleSuccess();
-            })
-        }else{
+        }, () => {
+            if(roleSelect){
+                return dispatch(loginCompletionRequest(role))
+                    .then(() => {
+                        dispatch(loginSuccess());
+                        this.handleSuccess();
+                    })
+            }
+
             dispatch(loginRequest(this.login.value, this.passwd.value))
                 .then(response =>{
                     if(response.data.loginComplete){
-                        this.handleSuccess();
-                    }else{
-                        this.setState(Object.assign({}, this.state, {
-                            roleSelect: true,
-                            roles: response.data.roles,
-                            role: response.data.roles[0]
-                        }))
+                        return this.handleSuccess();
                     }
-                }).catch(err => {
-                    return this.checkIfAlreadyLogged(err);
-                })
-                .catch(err => {
-                    this.setState(Object.assign({}, this.state, {
-                        err: err.response.data.message
-                    }));
+                    this.setState({
+                        roleSelect: true,
+                        roles: response.data.roles,
+                        role: response.data.roles[0]
+                    })
                 })
                 .then(() => {
                     this.setState({
                         pending: false
+                    })
+                })
+                .catch(err => {
+                    return this.checkIfAlreadyLogged(err);
+                })
+                .catch(err => {
+                    this.setState({
+                        err: err.response.data.message,
+                        pending: false
                     });
                 })
-        }
+        });
     }
 
     handleRoleSelect = (option) => {
@@ -189,6 +193,10 @@ class LoginForm extends Component {
 
 LoginForm.propTypes = {
     dispatch: PropTypes.func.isRequired
+};
+
+LoginForm.contextTypes = {
+    router: PropTypes.object.isRequired
 };
 
 LoginForm = connect()(LoginForm);
