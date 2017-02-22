@@ -94,7 +94,7 @@ class Modal extends Component {
                 pending: false
             }));
             dispatch(handleProcessResponse(response, windowType, layout.pinstanceId, () => this.removeModal()));
-            
+
         }).catch(() => {
             this.setState(Object.assign({}, this.state, {
                 pending: false
