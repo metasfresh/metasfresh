@@ -67,6 +67,7 @@ this week's RC
   * [#164](https://github.com/metasfresh/metasfresh-webui/issues/164) Create migration script for missing Menu
   * [#168](https://github.com/metasfresh/metasfresh-webui/issues/168) internal: Don't create layout elements if there are no fields inside
   * [#170](https://github.com/metasfresh/metasfresh-webui/issues/170) date attributes in hu modal window
+  * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
   * [#172](https://github.com/metasfresh/metasfresh-webui/issues/172) Entries skipped at the begining of pages
   * [#263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/263) Grid view attributes were queried when there are no rows
   * [#294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/294) Leave Location editor with no entry
