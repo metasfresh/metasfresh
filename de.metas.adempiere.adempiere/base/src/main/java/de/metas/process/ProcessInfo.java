@@ -106,8 +106,8 @@ public final class ProcessInfo implements Serializable
 		}
 		else
 		{
-			final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
-			this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
+		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
+		this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
 
 			this.parametersOverride = null;
 		}
@@ -522,8 +522,9 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 *
-	 * @return a query filter for the current m_whereClause
+	 * @return a query filter for the current {@code m_whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the whereclause is empty.
 	 * @task 03685
+	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
 	public <T> IQueryFilter<T> getQueryFilter()
 	{

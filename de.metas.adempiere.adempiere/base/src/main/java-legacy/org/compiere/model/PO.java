@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,6 +50,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.persistence.po.INoDataFoundHandler;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -803,14 +806,15 @@ public abstract class PO
 			return false;
 		}
 
-		if (m_newValues[index] == null)
-			return false;
 		// metas: begin: If column was explicitly marked as changed we consider it changed
 		if (markedChangedColumns != null && markedChangedColumns.contains(index))
 		{
 			return true;
 		}
 		// metas: end
+
+		if (m_newValues[index] == null)
+			return false;
 
 		// metas: normalize null values before comparing them (04219)
 		Object newValue = m_newValues[index];
@@ -991,14 +995,14 @@ public abstract class PO
 			// metas-ts 02973 only show this message (and clutter the log) if old and new value differ
 			// NOTE: when comparing we need to take the old value (the one which is in database) and NOT the previously set (via set_ValueNoCheck for example).
 			final Object oldValue = get_ValueOld(index);
-			if (Check.equals(oldValue, value))
+			if (Objects.equals(oldValue, value))
 			{
 				// Value did not changed.
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
 				// ...but we can do a quick look-ahead and see if that's the case
-				if (Check.equals(m_newValues[index], value))
+				if (Objects.equals(m_newValues[index], value))
 				{
 					return true;
 				}
@@ -1693,7 +1697,7 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName);
+			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
 		}
 		finally
 		{
@@ -1701,8 +1705,14 @@ public abstract class PO
 			m_loadingLock.unlock();
 		}
 	}
-
-	private final boolean load0(final String trxName)
+	
+	/**
+	 * Do the actual loading.
+	 * 
+	 * @param trxName
+	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry. 
+	 */
+	private final boolean load0(final String trxName, final boolean isRetry)
 	{
 		m_trxName = trxName;
 		boolean success = true;
@@ -1728,6 +1738,17 @@ public abstract class PO
 			}
 			else
 			{
+				if (!isRetry)
+				{
+					// gh #986 see if any noDataFoundHandler can do something and, if so, retry *once*
+					if (NoDataFoundHandlers.get()
+							.invokeHandlers(get_TableName(),
+									m_IDs,
+									InterfaceWrapperHelper.getContextAware(this)))
+					{
+						return load0(trxName, true); // this is the retry, so isRetry=true this time
+					}
+				}
 				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
 				m_IDs = new Object[] { I_ZERO };
 				success = false;

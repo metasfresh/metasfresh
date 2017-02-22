@@ -26,12 +26,12 @@ package org.eevolution.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,7 +88,7 @@ import de.metas.product.IProductBL;
 
 /**
  * PP Order Model.
- * 
+ *
  * @author Victor Perez www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
@@ -98,7 +98,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * get if Component is Available
-	 * 
+	 *
 	 * @param MPPOrdrt Manufacturing order
 	 * @param issues
 	 * @param minGuaranteeDate Guarantee Date
@@ -235,7 +235,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param PP_Order_ID order to load, (0 create new order)
 	 */
@@ -251,7 +251,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**************************************************************************
 	 * Project Constructor
-	 * 
+	 *
 	 * @param project Project to create Order from
 	 * @param DocSubType if SO DocType Target (default DocSubType_OnCredit)
 	 */
@@ -302,7 +302,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 */
@@ -313,7 +313,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Get BOM Lines of PP Order
-	 * 
+	 *
 	 * @param requery
 	 * @return Order BOM Lines
 	 */
@@ -336,7 +336,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Get Order BOM Lines
-	 * 
+	 *
 	 * @return Order BOM Lines
 	 */
 	private List<I_PP_Order_BOMLine> getLines()
@@ -595,7 +595,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Complete/Process the manufacturing order which is dealing with a Make-To-Kit BOM.
-	 * 
+	 *
 	 * NOTE: in this case we need a special was of completing it. After this method, the document can be automatically marked as closed.
 	 */
 	private void completeMakeToKit()
@@ -603,7 +603,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		final Timestamp today = SystemTime.asTimestamp();
 
 		// metas : cg task: 06004 - refactored a bit : start
-		final Map<Integer, PPOrderBOMLineModel> issue = new HashMap<Integer, PPOrderBOMLineModel>();
+		final Map<Integer, PPOrderBOMLineModel> issue = new HashMap<>();
 
 		for (final I_PP_Order_BOMLine line : getLines())
 		{
@@ -711,7 +711,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Check if the Quantity from all BOM Lines is available (QtyOnHand >= QtyRequired)
-	 * 
+	 *
 	 * @return true if entire Qty is available for this Order
 	 */
 	public boolean isAvailable()
@@ -876,7 +876,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		setDocStatus(DOCSTATUS_Closed);
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
-		
+
 		//
 		// Call Model Validator: AFTER_CLOSE
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
@@ -986,7 +986,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Create PDF file
-	 * 
+	 *
 	 * @param file output file
 	 * @return file if success
 	 */
@@ -1000,7 +1000,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Get Document Info
-	 * 
+	 *
 	 * @return document info (untranslated)
 	 */
 	@Override
@@ -1028,7 +1028,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 
 	/**
 	 * Create Issue
-	 * 
+	 *
 	 * @param PP_OrderBOMLine_ID
 	 * @param movementdate
 	 * @param qty
@@ -1036,7 +1036,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	 * @param qtyReject
 	 * @param storages
 	 * @param force Issue
-	 * 
+	 *
 	 * @deprecated Please use {@link IPPCostCollectorBL#createIssue(I_PP_Order_BOMLine, int, int, java.util.Date, BigDecimal, BigDecimal, BigDecimal, org.compiere.model.I_C_UOM)}.
 	 */
 	@Deprecated
@@ -1094,7 +1094,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 						order, 															// MPPOrder
 						orderBOMLine.getM_Product_ID(),									// M_Product_ID
 						storage.getM_Locator_ID(),										// M_Locator_ID
-						storage.getM_AttributeSetInstance_ID(),							// M_AttributeSetInstance_ID
+						0, // storage.getM_AttributeSetInstance_ID(),					// M_AttributeSetInstance_ID
 						order.getS_Resource_ID(),										// S_Resource_ID
 						orderBOMLine.getPP_Order_BOMLine_ID(),							// PP_Order_BOMLine_ID
 						0,																// PP_Order_Node_ID

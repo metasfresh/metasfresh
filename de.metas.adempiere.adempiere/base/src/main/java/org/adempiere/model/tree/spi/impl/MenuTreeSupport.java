@@ -29,7 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -45,7 +44,7 @@ import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+import org.compiere.util.Language;
 
 /**
  * @author tsa
@@ -56,8 +55,6 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 	@Override
 	public String getNodeInfoSelectSQL(final MTree tree, final List<Object> sqlParams)
 	{
-		final Properties ctx = tree.getCtx();
-
 		final StringBuilder sqlDeveloperMode = new StringBuilder();
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
@@ -68,9 +65,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 			sqlDeveloperMode.append("\n");
 		}
 
+		final String adLanguage = tree.getAD_Language();
+		final boolean isBaseLanguage = Language.isBaseLanguage(adLanguage);
 		final StringBuilder sql = new StringBuilder();
-		final boolean base = Env.isBaseLanguage(ctx, "AD_Menu");
-		if (base)
+		if (isBaseLanguage)
 		{
 			sql.append("SELECT AD_Menu.AD_Menu_ID AS Node_ID"
 					+ ", AD_Menu.Name"
@@ -105,9 +103,9 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ "\n FROM AD_Menu, AD_Menu_Trl t");
 		}
 		sql.append(" WHERE 1=1 ");
-		if (!base)
+		if (!isBaseLanguage)
 		{
-			sql.append("\n AND AD_Menu.AD_Menu_ID=t.AD_Menu_ID AND t.AD_Language=").append(DB.TO_STRING(Env.getAD_Language(ctx)));
+			sql.append("\n AND AD_Menu.AD_Menu_ID=t.AD_Menu_ID AND t.AD_Language=").append(DB.TO_STRING(adLanguage));
 		}
 		if (!tree.isEditable())
 		{
