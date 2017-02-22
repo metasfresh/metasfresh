@@ -146,7 +146,7 @@ class Window extends Component {
         const {fullScreen} = this.state;
 
         return elements.map((elem, id)=> {
-            
+
             const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, 'ID').value;

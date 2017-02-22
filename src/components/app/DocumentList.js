@@ -43,7 +43,7 @@ class DocumentList extends Component {
 
             clickOutsideLock: false,
             refresh: null,
-            
+
             cachedSelection: null
         }
         this.fetchLayoutAndData();
@@ -55,8 +55,8 @@ class DocumentList extends Component {
             inBackground
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
-        
-        /* 
+
+        /*
          * If we browse list of docs, changing type of Document
          * does not re-construct component, so we need to
          * make it manually while the windowType changes.
@@ -100,16 +100,16 @@ class DocumentList extends Component {
             });
             this.connectWS(defaultViewId);
         }
-        
+
         /*
-         * It is case when we need refersh global selection state, 
+         * It is case when we need refersh global selection state,
          * because scope is changed
          *
          * After opening modal cache current selection
          * After closing modal with gridview, refresh selected.
          */
         if(
-            inBackground != this.props.inBackground 
+            inBackground != this.props.inBackground
         ) {
             if(!inBackground){
                 this.props.dispatch(
@@ -311,7 +311,7 @@ class DocumentList extends Component {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal
         } = this.props;
-        
+
 
         if(layout && data) {
             return (

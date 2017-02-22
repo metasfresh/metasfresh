@@ -9,7 +9,7 @@ class FiltersItem extends Component {
         this.state = {
             filter: props.data
         }
-        
+
     }
 
     componentWillMount() {
@@ -25,14 +25,14 @@ class FiltersItem extends Component {
     init = () => {
         const {active} = this.props;
         const {filter} = this.state;
-        
+
         if(
             filter.parameters && active && active.parameters &&
             (active.filterId === filter.filterId)
         ){
             active.parameters.map(item => {
                 this.mergeData(
-                    item.parameterName, 
+                    item.parameterName,
                     item.value ? item.value : '',
                     item.valueTo ? item.valueTo : ''
                 );
@@ -40,7 +40,7 @@ class FiltersItem extends Component {
         }else{
             filter.parameters.map(item => {
                 this.mergeData(
-                    item.parameterName, 
+                    item.parameterName,
                     ''
                 );
             })
@@ -66,7 +66,7 @@ class FiltersItem extends Component {
                 filter: Object.assign({}, prevState.filter, {
                     parameters: prevState.filter.parameters.map(param => {
                         if(param.parameterName === property){
-                            return Object.assign({}, param, 
+                            return Object.assign({}, param,
                                 valueTo ? {
                                     value,
                                     valueTo
@@ -86,7 +86,7 @@ class FiltersItem extends Component {
     handleApply = () => {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
-        
+
         applyFilters(filter, () => {
             closeFilterMenu();
         });

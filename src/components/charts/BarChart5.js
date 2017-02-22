@@ -98,7 +98,7 @@ class BarChart extends Component {
             chart.select('.y.axis').call(yAxis);
         }
     }
-    
+
 
     render() {
 

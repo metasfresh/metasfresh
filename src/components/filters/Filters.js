@@ -16,7 +16,7 @@ class Filters extends Component {
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
-        
+
         this.init(filtersActive ? filtersActive[0] : null);
     }
 
@@ -38,7 +38,7 @@ class Filters extends Component {
      */
     applyFilters = (filter, cb) => {
         const valid = this.isFilterValid(filter);
-        
+
         this.setState({
             notValidFields: !valid
         }, () => {
@@ -71,7 +71,7 @@ class Filters extends Component {
     clearFilters = () => {
         this.setFilterActive(null)
     }
-    
+
     dropdownToggled = () => {
         this.setState({
             notValidFields: false

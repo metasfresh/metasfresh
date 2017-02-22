@@ -228,9 +228,9 @@ class RawList extends Component {
                     )}
                     {(loading && list.length === 0) && (
                         <div className="input-dropdown-list-header">
-                            <ReactCSSTransitionGroup 
-                                transitionName="rotate" 
-                                transitionEnterTimeout={1000} 
+                            <ReactCSSTransitionGroup
+                                transitionName="rotate"
+                                transitionEnterTimeout={1000}
                                 transitionLeaveTimeout={1000}
                             >
                                 <div className="rotate icon-rotate">

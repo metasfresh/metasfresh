@@ -16,7 +16,7 @@ class ActionButton extends Component {
             },
             selected: 0
         }
-        
+
     }
 
     componentDidMount(){
@@ -60,7 +60,7 @@ class ActionButton extends Component {
         if(this.statusDropdown) {
             this.statusDropdown.classList.remove('dropdown-status-open');
         }
-        
+
     }
 
     handleDropdownFocus = () => {
@@ -73,7 +73,7 @@ class ActionButton extends Component {
 
     fetchStatusList(){
         const { dispatch, windowType, fields, dataId} = this.props;
-        
+
         dispatch(
             dropdownRequest(windowType, fields[1].field, dataId, null, null, 'window')
         ).then((res) => {
