@@ -109,9 +109,10 @@ Since we now work with a range, we now declare the dependencies here where range
 			<version>1.0.0</version>
 		</dependency>
 		-->
-		
+
 		<!-- 
-			gh #968: we need to have theses dependencies so that the version:update-property can update the *.veersion properties 
+			gh #968 https://github.com/metasfresh/metasfresh/issues/968
+			We need to declare theses dependencies so that the version:update-property can update the *.version properties 
 			Further down we will then copy these files to the dist folder using the copy-dependencies goal.
 		-->
 		<dependency>
@@ -559,9 +560,9 @@ note: when adding new records, please roughly order them by alphabet.
 
 					<!-- 
 						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
-						These bundles are build somewhere else and therefore we need to resolve them with a version range.
-						We did this by specifying them as dependencies further up. they were already resolved and now, we only need to copy them,
-						without specifying a particular version at this place. 
+						We specified these artifacts as dependencies further up. 
+						Therefore they were already resolved and now we only need to grab 'em by the artifactid
+						without having to specify a particular version. 
 					-->
 					<execution>
 						<id>copy-metasfresh-download-jars</id>
@@ -580,7 +581,6 @@ note: when adding new records, please roughly order them by alphabet.
 								metasfresh-webui-frontend,
 								metasfresh-webui-api
 							</includeArtifactIds>
-							<!-- type>jar</type -->
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>

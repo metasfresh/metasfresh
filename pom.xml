@@ -16,14 +16,6 @@
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
 	<version>1.0.0</version>
 
-	<properties>
-		<!--
-			the artifact version of the esb bundles which we download from the maven repository in other to 
-			provide them as part of the complete metasfresh package. 
-		-->
-		<esb.bundles.version>${metasfresh-dependency.version}</esb.bundles.version>
-	</properties>
-
 	<modules>
 		<!-- note: we can't use e.g.
 		<module>${project.groupId}.base</module>
@@ -105,6 +97,10 @@
 							<searchReactor>false</searchReactor>
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
+
+						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968 
+							declare the the version properties of related artifacts which we can to set in the dist module
+						-->
 						<property>
 							<name>metasfresh-webui-frontend.version</name>
 							<searchReactor>false</searchReactor>
