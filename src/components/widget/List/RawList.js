@@ -91,9 +91,9 @@ class RawList extends Component {
 
         const next = up ? selectedIndex + 1 : selectedIndex - 1;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
-        }));
+        })
 
     }
 
@@ -189,7 +189,6 @@ class RawList extends Component {
         list.map((option, index) => {
             ret.push(this.getRow(index + 1, option))
         })
-        
         return ret;
     }
 
