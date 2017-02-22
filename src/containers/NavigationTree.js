@@ -74,7 +74,7 @@ class NavigationTree extends Component {
                 query: e.target.value
             });
 
-            dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
+            dispatch(queryPathsRequest(e.target.value, '', true)).then(response => {
 
                 this.setState({
                     queriedResults: response.data.children
