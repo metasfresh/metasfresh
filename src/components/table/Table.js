@@ -55,23 +55,12 @@ class Table extends Component {
     componentWillUpdate(nextProps, nextState) {
         const {dispatch} = this.props;
 
-        // When the rows are changing we should ensure
-        // that selection still exist
-        // if(
-        //     nextState.selected[0] &&
-        //     (nextState.rows &&
-        //     !getItemsByProperty(nextState.rows, 'id', nextState.selected[0]).length)
-        // ){
-        //     dispatch(selectTableItems([]));
-        // }
-
         if(
             JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
         ){
             dispatch(selectTableItems(nextState.selected));
         }
-
     }
 
     componentDidUpdate(prevProps) {
@@ -451,16 +440,6 @@ class Table extends Component {
                 open: true
             })
         });
-    }
-
-    handleFocus = () => {
-        // const {tabid, keyProperty} = this.props;
-        // const {selected, rows} = this.state;
-        // const keyProp = keyProperty ? keyProperty : 'rowId';
-        //
-        // if(selected.length <= 0){
-        //     this.selectOneProduct(rows[tabid][keyProp], 0);
-        // }
     }
 
     getProductRange = (id) => {
