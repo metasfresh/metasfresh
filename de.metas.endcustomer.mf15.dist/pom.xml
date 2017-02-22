@@ -576,8 +576,9 @@ note: when adding new records, please roughly order them by alphabet.
 								de.metas.edi.esb.camel,
 								de.metas.admin.webui,
 								<!-- gh #968 -->
-								metasfresh-procurement-webui,
+								de.metas.procurement.webui,
 								metasfresh-webui-frontend,
+								metasfresh-webui-api
 							</includeArtifactIds>
 							<!-- type>jar</type -->
 							<excludeTransitive>true</excludeTransitive>
