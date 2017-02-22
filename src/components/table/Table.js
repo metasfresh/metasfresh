@@ -6,8 +6,7 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteLocal,
-    getItemsByProperty
+    deleteLocal
 } from '../../actions/WindowActions';
 
 import {
@@ -56,6 +55,16 @@ class Table extends Component {
     componentWillUpdate(nextProps, nextState) {
         const {dispatch} = this.props;
 
+        // When the rows are changing we should ensure
+        // that selection still exist
+        // if(
+        //     nextState.selected[0] &&
+        //     (nextState.rows &&
+        //     !getItemsByProperty(nextState.rows, 'id', nextState.selected[0]).length)
+        // ){
+        //     dispatch(selectTableItems([]));
+        // }
+
         if(
             JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
@@ -63,14 +72,6 @@ class Table extends Component {
             dispatch(selectTableItems(nextState.selected));
         }
 
-        // When the rows are changing we should ensure
-        // that selection still exist
-        if(
-            nextState.selected[0] &&
-            !getItemsByProperty(nextState.rows, 'id', nextState.selected[0]).length
-        ){
-            dispatch(selectTableItems());
-        }
     }
 
     componentDidUpdate(prevProps) {
@@ -453,13 +454,13 @@ class Table extends Component {
     }
 
     handleFocus = () => {
-        const {tabid, keyProperty} = this.props;
-        const {selected, rows} = this.state;
-        const keyProp = keyProperty ? keyProperty : 'rowId';
-
-        if(selected.length <= 0){
-            this.selectOneProduct(rows[tabid][keyProp], 0);
-        }
+        // const {tabid, keyProperty} = this.props;
+        // const {selected, rows} = this.state;
+        // const keyProp = keyProperty ? keyProperty : 'rowId';
+        //
+        // if(selected.length <= 0){
+        //     this.selectOneProduct(rows[tabid][keyProp], 0);
+        // }
     }
 
     getProductRange = (id) => {
@@ -538,8 +539,9 @@ class Table extends Component {
             promptOpen: false,
             selected: []
         }, () => {
-            dispatch(deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected))
-            .then(() => {
+            dispatch(
+                deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected)
+            ).then(() => {
                 if(docId){
                     dispatch(deleteLocal(tabid, selected, 'master'))
                 } else {

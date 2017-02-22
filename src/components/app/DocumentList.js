@@ -146,7 +146,7 @@ class DocumentList extends Component {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
                 const {fullyChanged} = JSON.parse(msg.body);
                 if(fullyChanged == true){
-                    this.browseView();
+                    this.browseView(true);
                 }
             });
         });
@@ -201,11 +201,11 @@ class DocumentList extends Component {
     /*
      *  If viewId exist, than browse that view.
      */
-    browseView = () => {
+    browseView = (refresh) => {
         const {viewId, page, sort} = this.state;
 
         this.getData(
-            viewId, page, sort
+            viewId, page, sort, refresh
         ).catch((err) => {
             if(err.response && err.response.status === 404) {
                 this.createView();
@@ -232,7 +232,7 @@ class DocumentList extends Component {
         })
     }
 
-    getData = (id, page, sortingQuery) => {
+    getData = (id, page, sortingQuery, refresh) => {
         const {dispatch, windowType, updateUri} = this.props;
 
         if(updateUri){
@@ -244,12 +244,14 @@ class DocumentList extends Component {
         return dispatch(
             browseViewRequest(id, page, this.pageLength, sortingQuery, windowType)
         ).then(response => {
-            this.setState({
+
+            this.setState(Object.assign({}, {
                 data: response.data,
                 viewId: response.data.viewId,
-                filters: response.data.filters,
+                filters: response.data.filters
+            }, refresh && {
                 refresh: Date.now()
-            });
+            }))
         });
     }
 
