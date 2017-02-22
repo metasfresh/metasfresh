@@ -86,6 +86,7 @@ this week's RC
   * [#352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/352) Lines not "refreshed" after docaction reactivation
   * [#383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/383) Shortcut for Batch entry space not usable when in input field
   * [#376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/376) Don't render unknown widget types but log in console
+  * [#350](https://github.com/metasfresh/metasfresh-webui-frontend/issues/350) Strange pulse effect in Subtab Gridview
   
 # metasfresh 4.56.55 (2017-07)
 
