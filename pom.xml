@@ -28,8 +28,8 @@
 	</developers>
 
 	<properties>
-		<!-- java 1.7. is currently our minimum, but some projects might already be implemented with java-8-->
-		<minimum.java.version>1.7</minimum.java.version>
+		<!-- this is our default; individual projects might need to specify their own settings -->
+		<metasfresh.java.version>1.8</metasfresh.java.version>
 	</properties>
 
 	<repositories>
@@ -75,7 +75,8 @@
 
 	<build>
 		<plugins>
-			<plugin>
+		            
+            <plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
 				<version>1.0.0</version>
@@ -100,6 +101,7 @@
 					</execution>
 				</executions>
 			</plugin>
+            
 		</plugins>
 
 		<pluginManagement>
@@ -107,6 +109,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
+					<!-- use this rather old jaxb2 version because there are problems with the m2e plugin of eclipse and 2.x versions of jaxb2. -->
 					<version>1.6</version>
 				</plugin>
 
@@ -117,8 +120,8 @@
 					<version>3.5.1</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
-						<source>${minimum.java.version}</source>
-						<target>${minimum.java.version}</target>
+						<source>${metasfresh.java.version}</source>
+						<target>${metasfresh.java.version}</target>
 					</configuration>
 				</plugin>
 				<plugin>
