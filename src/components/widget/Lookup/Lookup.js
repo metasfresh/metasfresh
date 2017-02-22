@@ -125,7 +125,7 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, dataId, select, tabId, rowId, entity, subentity, 
+            dispatch, windowType, dataId, select, tabId, rowId, entity, subentity,
             subentityId
         } = this.props;
 
@@ -227,7 +227,7 @@ class Lookup extends Component {
 
     handleChange = () => {
         const {
-            dispatch, recent, windowType, dataId, filterWidget, parameterName, 
+            dispatch, recent, windowType, dataId, filterWidget, parameterName,
             tabId, rowId, entity,subentity, subentityId, viewId
         } = this.props;
 
@@ -374,7 +374,7 @@ class Lookup extends Component {
 
     render() {
         const {
-            rank, readonly, defaultValue, placeholder, align, isModal, updated, 
+            rank, readonly, defaultValue, placeholder, align, isModal, updated,
             filterWidget, mandatory, rowId, tabIndex
         } = this.props;
 

@@ -17,7 +17,7 @@ import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class QuickActions extends Component {
-    
+
     constructor(props){
         super(props);
 
@@ -25,7 +25,7 @@ class QuickActions extends Component {
             actions: [],
             isDropdownOpen: false
         }
-        
+
         const {fetchOnInit} = this.props;
 
         if(fetchOnInit){
@@ -60,7 +60,7 @@ class QuickActions extends Component {
         if(action.disabled){
             return;
         }
-        
+
         dispatch(
             openModal(
                 action.caption, action.processId, 'process', null, null, false,

@@ -46,7 +46,7 @@ class RawWidget extends Component {
         // Do patch only when value is not equal state
         // or cache is set and it is not equal value
 
-        if( 
+        if(
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
             JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
             (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))
@@ -576,26 +576,26 @@ class RawWidget extends Component {
             caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch,
             widgetType
         } = this.props;
-        
+
         const widgetBody = this.renderWidget();
 
         // Unsupported widget type
         if(!widgetBody){
             console.warn(
-                'The %c' + widgetType, 
-                'font-weight:bold;', 
+                'The %c' + widgetType,
+                'font-weight:bold;',
                 'is unsupported type of widget.'
             );
-            
+
             return false;
         }
-        
+
         // No display value or not displayed
         if(!widgetData[0].displayed || widgetData[0].displayed !== true){
             return false;
         }
-        
-        
+
+
         return (
             <div className={
                 'form-group row ' +
@@ -620,7 +620,7 @@ class RawWidget extends Component {
                     }
                 >
                     {widgetBody}
-                    
+
                     {fields[0].devices && !widgetData[0].readonly &&
                         <DevicesWidget
                             devices={fields[0].devices}

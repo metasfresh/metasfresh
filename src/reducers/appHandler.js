@@ -34,7 +34,7 @@ export default function appHandler(state = initialState, action) {
                     }]
                 })
             });
-            
+
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
                 notifications: update(state.notifications, {$splice: [[action.id,1]]})

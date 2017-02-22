@@ -52,13 +52,13 @@ class TableItem extends Component {
         const elem = document.activeElement;
         const { changeListenOnTrue } = this.props;
         const { edited, activeCell} = this.state;
-        
+
         if(!elem.className.includes('js-input-field')) {
             this.setState({
                 activeCell: elem
             })
         }
-        
+
         if(e.key === 'Enter' && !edited) {
             this.handleEditProperty(e,property, true);
         } else if (e.key === 'Enter' && edited) {
@@ -192,7 +192,7 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick, 
+            isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick,
             indentSupported, contextType, item, lastSibling, includedDocuments
         } = this.props;
 
@@ -203,9 +203,9 @@ class TableItem extends Component {
                 onContextMenu={handleRightClick}
                 className={
                     (isSelected ? 'row-selected ' : '') +
-                    (odd ? 'tr-odd ': 'tr-even ') + 
-                    (item.processed ? 'row-disabled ': '') + 
-                    ((item.processed && lastSibling && !includedDocuments) ? 
+                    (odd ? 'tr-odd ': 'tr-even ') +
+                    (item.processed ? 'row-disabled ': '') +
+                    ((item.processed && lastSibling && !includedDocuments) ?
                         'row-boundary ': ''
                     )
                 }
