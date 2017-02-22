@@ -88,14 +88,12 @@ class Modal extends Component {
             pending: true
         }));
 
-        console.log('start');
-
         const {dispatch, layout, windowType} = this.props;
         dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 pending: false
             }));
-            dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
+            dispatch(handleProcessResponse(response, windowType, layout.pinstanceId, () => this.removeModal()));
             
         }).catch(() => {
             this.setState(Object.assign({}, this.state, {
