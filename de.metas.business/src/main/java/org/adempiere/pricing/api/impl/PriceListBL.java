@@ -23,30 +23,20 @@ package org.adempiere.pricing.api.impl;
  */
 
 import java.sql.Timestamp;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 public class PriceListBL implements IPriceListBL
 {
-	private static final Logger logger = LogManager.getLogger(PriceListBL.class);
-
 	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(final I_M_PricingSystem pricingSystem,
 			final I_C_Country country,
@@ -62,44 +52,6 @@ public class PriceListBL implements IPriceListBL
 
 		final I_M_PriceList currentPricelist = InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
 		return currentPricelist;
-	}
-
-	@Override
-	public void finishPlvCreation(final IContextAware ctxAware,
-			final I_M_PriceList_Version targetPriceListVersion,
-			final I_M_DiscountSchemaLine discountSchemaLine,
-			final int adPinstanceId)
-	{
-		if (targetPriceListVersion.getM_Pricelist_Version_Base_ID() <= 0)
-		{
-			logger.info("{} has M_Pricelist_Version_Base_ID=0; nothing to do", targetPriceListVersion);
-			return;
-		}
-
-		//
-		// Update Attribute pricing records
-		getPlvCreationListeners()
-				.stream()
-				.sorted(Comparator.comparing(IPlvCreationListener::getExecutionOrderSeqNo))
-				.forEach(listener -> listener.onPlvCreation(
-						ctxAware,
-						targetPriceListVersion,
-						discountSchemaLine,
-						adPinstanceId));
-	}
-
-	private final CopyOnWriteArrayList<IPlvCreationListener> _plvCreationListeners = new CopyOnWriteArrayList<>();
-
-	@Override
-	public void addPlvCreationListener(final IPlvCreationListener listener)
-	{
-		Check.assumeNotNull(listener, "Parameter listener is not null");
-		_plvCreationListeners.addIfAbsent(listener);
-	}
-
-	private List<IPlvCreationListener> getPlvCreationListeners()
-	{
-		return _plvCreationListeners;
 	}
 
 	@Override
