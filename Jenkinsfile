@@ -201,11 +201,6 @@ def deleteRepo(String repoId)
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
 
-// currently, the code in these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
-final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
-echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
-
-
 final MF_UPSTREAM_BRANCH;
 if(params.MF_UPSTREAM_BRANCH)
 {
@@ -382,8 +377,8 @@ node('agent && linux')
 } // node			
 
 // this map is populated in the "Invoke downstream jobs" stage
-final EXTERNAL_ARTIFACT_URLS = [:];
-final EXTERNAL_ARTIFACT_VERSIONS = [:];
+final MF_ARTIFACT_URLS = [:];
+final MF_ARTIFACT_VERSIONS = [:];
 
 
 // invoke external build jobs like webui
@@ -400,59 +395,76 @@ stage('Invoke downstream jobs')
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
 			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
-			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
-			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui']=params.MF_UPSTREAM_VERSION;
-			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+			MF_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
+			MF_ARTIFACT_VERSIONS['metasfresh-webui']=params.MF_UPSTREAM_VERSION;
+			echo "Set MF_ARTIFACT_URLS.metasfresh-webui=${MF_ARTIFACT_URLS['metasfresh-webui']}"
 		}
 		
-		// gh #968: this needs to go away, there is no point. the frontend doesn't depend with this repo. Just get the latest webui-frontend later, when we need it. (using mvn version:update etc)
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend')
 		{
-			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
-			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_VERSION;
-			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui-frontend=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+			MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
+			MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_VERSION;
+			echo "Set MF_ARTIFACT_URLS.metasfresh-webui-frontend=${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+		}
+		
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-procurement-webui')
+		{
+			MF_ARTIFACT_URLS['metasfresh-procurement-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
+			MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=params.MF_UPSTREAM_VERSION;
+			echo "Set MF_ARTIFACT_URLS.metasfresh-procurement-webui=${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}"
 		}
 		// TODO: also handle procurement-webui
 	}
 	else
 	{
-		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
-		{
-			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
-			final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-			EXTERNAL_ARTIFACT_URLS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_ARTIFACT_URL;
-			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
-			
-			// gh #968: this needs to go away, there is no point. the frontend doesn't depend with this repo. Just get the latest webui-frontend later, when we need it. (using mvn version:update etc)
-			final webuiFrontendDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui-frontend', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']=webuiFrontendDownStreamJobMap.BUILD_ARTIFACT_URL;
-			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=webuiFrontendDownStreamJobMap.BUILD_VERSION;
-		}
+		MF_ARTIFACT_VERSIONS['metasfresh'] = BUILD_VERSION;
+		
+		// params.MF_SKIP_TO_DIST == false, so invoke downstream jobs and get the build versions which came out of them
+		
+		// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
+		final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+		MF_ARTIFACT_URLS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_ARTIFACT_URL;
+		MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
+	
+		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo. 
+		// Therefore we will just get the latest webui-frontend later, when we need it.
 
-		// yup metasfresh-procurement-webui does share *some* code with this repo
+		// yup, metasfresh-procurement-webui does share *some* code with this repo
 		final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-		EXTERNAL_ARTIFACT_URLS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_ARTIFACT_URL;
-		EXTERNAL_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
+		MF_ARTIFACT_URLS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_ARTIFACT_URL;
+		MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
 
-		// more do come: admin-webui
-
-		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-		echo "Going to notify external systems via zapier webhook"
-		node('linux')
-		{	
-			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
-			{
-				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
-				final jsonPayload = """{ 
-					\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", 
-					\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", 
-					\"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" 
-				}""";
-				
-				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
-			}
-		}
+		// more to come: admin-webui
 	} // if(params.MF_SKIP_TO_DIST)
+	
+	// complement the MF_ARTIFACT_VERSIONS we did not set so far
+	final MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
+	final MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] ?: "LATEST";
+	final MF_ARTIFACT_VERSIONS['metasfresh-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-webui'] ?: "LATEST";
+	final MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
+			
+	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+	// note: even with "skiptodis=true we do this, because we still want to make the notifcations
+	echo "Going to notify external systems via zapier webhook"
+	node('linux')
+	{
+		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+		{
+			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
+			
+			/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
+			final jsonPayload = """{ 
+				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", 
+				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", 
+				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
+				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
+				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
+				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}\",
+			}""";
+
+			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+		}
+	}
 }
 
 // to build the client-exe on linux, we need 32bit libs!
@@ -476,75 +488,12 @@ node('agent && linux && libc6-i386')
 				checkout scm; // i hope this to do all the magic we need
 				sh 'git clean -d --force -x' // clean the workspace
 				
-				final String metasfreshUpdateParentParam;
-				final String metasfreshUpdatePropertyParam;
-				final String metasfreshWebApiUpdatePropertyParam;
-				final String metasfreshWebFrontEndUpdatePropertyParam;
-				final String metasfreshProcurementWebuiUpdatePropertyParam;
-				
-				// metasfresh-webui-frontend
-				if(MF_UPSTREAM_JOBNAME=="metasfresh-webui-frontend")
-				{
-					// we were called by metasfresh-webui-frontend; unclude that version in our tar.gz
-					metasfreshWebFrontEndUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${MF_UPSTREAM_VERSION}";
-				}
-				else
-				{
-					// just include the latest metasfresh-webui-frontend
-					metasfreshWebFrontEndUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version";
-				}
-				
-				// metasfresh-webui(-api)
-				if(MF_UPSTREAM_JOBNAME=="metasfresh-webui")
-				{
-					// we were called by metasfresh-webui(-api); unclude that version in our tar.gz
-					metasfreshWebApiUpdatePropertyParam="-Dproperty=metasfresh-webui-api.version -DnewVersion=${MF_UPSTREAM_VERSION}";
-				}
-				else if(EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui'])
-				{
-					// we did invoke the metasfresh-webui job and got some infos from it; use them
-					metasfreshWebApiUpdatePropertyParam="-Dproperty=metasfresh-webui-api.version -DnewVersion=${EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui']}";
-				}	
-				else
-				{
-					// this might be the case if we were called by metasfresh-webui-frontend; just include the latest metasfresh-webui-frontend
-					metasfreshWebApiUpdatePropertyParam="-Dproperty=metasfresh-webui-api.version";
-				}
-				
-				// metasfresh-procurement-webui
-				if(MF_UPSTREAM_JOBNAME=="metasfresh-procurement-webui")
-				{
-					// we were called by metasfresh-procurement-webui; unclude that version in our tar.gz
-					metasfreshProcurementWebuiUpdatePropertyParam="-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${MF_UPSTREAM_VERSION}";
-				}
-				else if(EXTERNAL_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])
-				{
-					// we did invoke the metasfresh-webui job and got some infos from it; use them
-					metasfreshProcurementWebuiUpdatePropertyParam="-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${EXTERNAL_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}";
-				}	
-				else
-				{
-					// this might be the case if we were called by metasfresh-webui-frontend; just include the latest metasfresh-webui-frontend
-					metasfreshProcurementWebuiUpdatePropertyParam="-Dproperty=metasfresh-procurement-webui.version";
-				}
-				
-				
-				
-				if(!params.MF_SKIP_TO_DIST)
-				{
-					metasfreshUpdateParentParam="-DparentVersion=${BUILD_VERSION}";
-					
-					// update the property, use the metasfresh version that the "main" part of this pipeline was build with
-					metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}";
-					
-				}
-				else
-				{
-					metasfreshUpdateParentParam=''; // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so use the latest
-					
-					// the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the properties, but use the latest versions
-					metasfreshUpdatePropertyParam='-Dproperty=metasfresh.version';
-				}
+				final String metasfreshUpdateParentParam="-DparentVersion=${MF_ARTIFACT_VERSIONS['metasfresh']}";;
+
+				final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}";
+				final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh-webui']}";
+				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}";
+				final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh']}";
 		
 				// update the parent pom version
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdateParentParam} versions:update-parent"
@@ -553,9 +502,9 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdatePropertyParam} versions:update-property"
 
 				// gh#968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
+				sh "mvn --debug --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
+				sh "mvn --debug --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
+				sh "mvn --debug --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 				
 				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
@@ -579,16 +528,16 @@ node('agent && linux && libc6-i386')
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
 """;
 
-				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui'])
+				if(MF_ARTIFACT_URLS['metasfresh-webui'])
 				{
 					currentBuild.description="""${currentBuild.description}
-<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 """;
 				}
-				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'])
+				if(MF_ARTIFACT_URLS['metasfresh-webui-frontend'])
 				{
 					currentBuild.description="""${currentBuild.description}
-<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
+<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 """;
 				}
 				
@@ -737,10 +686,10 @@ stage('Deployment')
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
 				
 				final paramWebuiApiServerArtifactURL;
-				if( EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] )
+				if( MF_ARTIFACT_URLS['metasfresh-webui'] )
 				{
-					echo "Deploying metasfresh-webui-api from URL ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
-					paramWebuiApiServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+					echo "Deploying metasfresh-webui-api from URL ${MF_ARTIFACT_URLS['metasfresh-webui']}"
+					paramWebuiApiServerArtifactURL="-u ${MF_ARTIFACT_URLS['metasfresh-webui']}"
 				}
 				else
 				{
@@ -750,10 +699,10 @@ stage('Deployment')
 				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
 								
 				final paramWebuiFrontendServerArtifactURL;
-				if( EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] )
+				if( MF_ARTIFACT_URLS['metasfresh-webui-frontend'] )
 				{
-					echo "Deploying metasfresh-webui-frontend from URL ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
-					paramWebuiFrontendServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+					echo "Deploying metasfresh-webui-frontend from URL ${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+					paramWebuiFrontendServerArtifactURL="-u ${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}"
 				}
 				else
 				{
