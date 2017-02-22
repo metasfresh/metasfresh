@@ -36,7 +36,7 @@ class Filters extends Component {
     /*
      *   This method should update docList
      */
-    applyFilters = (filter) => {
+    applyFilters = (filter, cb) => {
         const notValid = this.isFilterValid(filter);
 
         if (notValid.length) {
@@ -45,6 +45,7 @@ class Filters extends Component {
             });
         } else {
             this.setFilterActive([filter]);
+            cb && cb();
         }
     }
 
@@ -82,11 +83,11 @@ class Filters extends Component {
 
     isFilterValid = (filters) => {
         if(filters.parameters){
-            return filters.parameters.filter(item => {
-                return item.mandatory && !item.value;
-            }).length;
+            return filters.parameters.filter(
+                item => item.mandatory && !item.value
+            );
         }else{
-            return false;
+            return [];
         }
     }
 

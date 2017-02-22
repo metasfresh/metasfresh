@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 
 import RawWidget from '../widget/RawWidget';
+import {
+    parseToDisplay
+} from '../../actions/WindowActions';
 
 class FiltersItem extends Component {
     constructor(props) {
@@ -9,6 +12,7 @@ class FiltersItem extends Component {
         this.state = {
             filter: props.data
         }
+        
     }
 
     componentWillMount() {
@@ -24,10 +28,21 @@ class FiltersItem extends Component {
     init = () => {
         const {active} = this.props;
         const {filter} = this.state;
-        
+
         if(filter.parameters && active && active.parameters){
             active.parameters.map(item => {
-                this.mergeData(item.parameterName, item.value, item.valueTo);
+                this.mergeData(
+                    item.parameterName, 
+                    item.value ? item.value : "", 
+                    item.valueTo
+                );
+            })
+        }else{
+            filter.parameters.map(item => {
+                this.mergeData(
+                    item.parameterName, 
+                    ""
+                );
             })
         }
     }
@@ -72,8 +87,9 @@ class FiltersItem extends Component {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
         
-        applyFilters(filter);
-        closeFilterMenu();
+        applyFilters(filter, () => {
+            closeFilterMenu();
+        });
     }
 
     handleClear = () => {
