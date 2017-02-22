@@ -414,6 +414,8 @@ export function handleProcessResponse(response, type, id, successCallback) {
             openViewId, openViewWindowId
         } = response.data;
 
+        console.log(response);
+
         if(error){
             dispatch(addNotification('Process error', summary, 5000, 'error'));
         }else{
