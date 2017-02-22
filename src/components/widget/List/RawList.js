@@ -85,7 +85,7 @@ class RawList extends Component {
 
         dropdownList.map((item, index) => {
             if(JSON.stringify(item) === JSON.stringify(selected)){
-                return selectedIndex = index;
+                selectedIndex = index;
             }
         });
 
