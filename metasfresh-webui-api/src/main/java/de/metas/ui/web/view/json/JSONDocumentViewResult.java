@@ -88,6 +88,15 @@ public final class JSONDocumentViewResult implements Serializable
 	@JsonProperty(value = "pageLength", index = 50)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer pageLength;
+	
+	//
+	// Query limit informations
+	@JsonProperty("queryLimitHit")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean queryLimitHit;
+	@JsonProperty("queryLimit")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer queryLimit;
 
 	//
 	// Debug properties
@@ -123,6 +132,11 @@ public final class JSONDocumentViewResult implements Serializable
 			firstRow = null;
 			pageLength = null;
 		}
+		
+		//
+		// Query limit informations
+		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
+		queryLimitHit = viewResult.isQueryLimitHit() ? Boolean.TRUE : null;
 
 		//
 		// Debugging informations
@@ -147,6 +161,9 @@ public final class JSONDocumentViewResult implements Serializable
 			, @JsonProperty("result") final List<JSONDocument> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
 			, @JsonProperty("pageLength") final Integer pageLength //
+			//
+			, @JsonProperty("queryLimit") final Integer queryLimit //
+			, @JsonProperty("queryLimitHit") final Boolean queryLimitHit //
 	)
 	{
 		super();
@@ -164,6 +181,11 @@ public final class JSONDocumentViewResult implements Serializable
 		this.result = result;
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
+		
+		//
+		// Query limit hit
+		this.queryLimit = queryLimit;
+		this.queryLimitHit = queryLimitHit;
 
 		//
 		// Debug informations

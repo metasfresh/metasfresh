@@ -164,4 +164,14 @@ public final class DocumentViewResult
 		}
 		return page;
 	}
+	
+	public int getQueryLimit()
+	{
+		return view.getQueryLimit();
+	}
+	
+	public boolean isQueryLimitHit()
+	{
+		return view.isQueryLimitHit();
+	}
 }

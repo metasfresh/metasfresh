@@ -48,6 +48,10 @@ public interface IDocumentViewSelection
 	long size();
 
 	void close();
+	
+	int getQueryLimit();
+
+	boolean isQueryLimitHit();
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 

@@ -117,6 +117,18 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 	}
+	
+	@Override
+	public int getQueryLimit()
+	{
+		return -1;
+	}
+	
+	@Override
+	public boolean isQueryLimitHit()
+	{
+		return false;
+	}
 
 	@Override
 	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)

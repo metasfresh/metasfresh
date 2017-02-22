@@ -218,6 +218,18 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
+	public int getQueryLimit()
+	{
+		return defaultSelection.getQueryLimit();
+	}
+	
+	@Override
+	public boolean isQueryLimitHit()
+	{
+		return defaultSelection.isQueryLimitHit();
+	}
+
+	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
 		return stickyFilters;
@@ -388,9 +400,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return defaultSelection;
 		}
 
-		final String fromUUID = defaultSelection.getUuid();
 		final ImmutableList<DocumentQueryOrderBy> orderBysImmutable = ImmutableList.copyOf(orderBys);
-		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromViewId(fromUUID, orderBysImmutable));
+		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
 	}
 
 	private final DocumentView.Builder newDocumentViewBuilder()
