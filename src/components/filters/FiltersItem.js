@@ -52,7 +52,6 @@ class FiltersItem extends Component {
         // IT HAS TO BE UNIFIED
         //
         // OVERWORKED WORKAROUND
-        console.warn(value, '|||', valueTo)
         if(Array.isArray(property)){
             property.map(item => {
                 this.mergeData(item.parameterName, value, valueTo);
