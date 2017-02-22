@@ -53,7 +53,8 @@ this week's RC
   * [#942](https://github.com/metasfresh/metasfresh/issues/942) Fix price list copy
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
   * [#998](https://github.com/metasfresh/metasfresh/issues/998) ClassNotFoundException: de.metas.dlm.swingui.model.interceptor.Main
-  
+  * [#1010](https://github.com/metasfresh/metasfresh/issues/1010) M_ProductPrice with Season fix price=Y should not be modified when copied
+
 * webUI
   * [#124](https://github.com/metasfresh/metasfresh-webui/issues/124) Default/ Standard Filter not correct in WebUI
   * [#135](https://github.com/metasfresh/metasfresh-webui/issues/135) process parameter defaults are not set
@@ -64,6 +65,8 @@ this week's RC
   * [#157](https://github.com/metasfresh/metasfresh-webui/issues/157) Receive HU opens with 10 LUs
   * [#164](https://github.com/metasfresh/metasfresh-webui/issues/164) Create migration script for missing Menu
   * [#168](https://github.com/metasfresh/metasfresh-webui/issues/168) internal: Don't create layout elements if there are no fields inside
+  * [#170](https://github.com/metasfresh/metasfresh-webui/issues/170) date attributes in hu modal window
+  * [#172](https://github.com/metasfresh/metasfresh-webui/issues/172) Entries skipped at the begining of pages
   * [#263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/263) Grid view attributes were queried when there are no rows
   * [#294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/294) Leave Location editor with no entry
   * [#311](https://github.com/metasfresh/metasfresh-webui-frontend/issues/311) Fix the scrollbars when having an overlay grid view
@@ -82,7 +85,7 @@ this week's RC
   * [#352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/352) Lines not "refreshed" after docaction reactivation
   * [#383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/383) Shortcut for Batch entry space not usable when in input field
   * [#376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/376) Don't render unknown widget types but log in console
-
+  
 # metasfresh 4.56.55 (2017-07)
 
 ## Features
