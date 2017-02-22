@@ -38,7 +38,7 @@ class RawWidget extends Component {
         handleFocus && handleFocus();
     }
 
-    handlePatch = (property, value, id) => {
+    handlePatch = (property, value, id, valueTo) => {
         const {handlePatch, widgetData} = this.props;
         const {cachedValue} = this.state;
         let ret = null;
@@ -48,11 +48,12 @@ class RawWidget extends Component {
 
         if( 
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
             (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))
         ){
 
             if(handlePatch) {
-                ret = handlePatch(property, value, id);
+                ret = handlePatch(property, value, id, valueTo);
             }
         }
 

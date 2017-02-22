@@ -25,13 +25,16 @@ class FiltersItem extends Component {
     init = () => {
         const {active} = this.props;
         const {filter} = this.state;
-
-        if(filter.parameters && active && active.parameters){
+        
+        if(
+            filter.parameters && active && active.parameters &&
+            (active.filterId === filter.filterId)
+        ){
             active.parameters.map(item => {
                 this.mergeData(
                     item.parameterName, 
-                    item.value ? item.value : '', 
-                    item.valueTo
+                    item.value ? item.value : '',
+                    item.valueTo ? item.valueTo : ''
                 );
             })
         }else{
@@ -44,11 +47,12 @@ class FiltersItem extends Component {
         }
     }
 
-    setValue = (property, value, valueTo) => {
+    setValue = (property, value, id, valueTo) => {
         //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
         // IT HAS TO BE UNIFIED
         //
         // OVERWORKED WORKAROUND
+        console.warn(value, '|||', valueTo)
         if(Array.isArray(property)){
             property.map(item => {
                 this.mergeData(item.parameterName, value, valueTo);
@@ -58,7 +62,7 @@ class FiltersItem extends Component {
         }
     }
 
-    mergeData = (property, value, id, valueTo = null) => {
+    mergeData = (property, value, valueTo) => {
         this.setState(prevState => ({
                 filter: Object.assign({}, prevState.filter, {
                     parameters: prevState.filter.parameters.map(param => {

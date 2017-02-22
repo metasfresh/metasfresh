@@ -13,6 +13,7 @@ class DatetimeRange extends Component {
 
     componentDidMount() {
         const {value, valueTo, onChange} = this.props;
+        console.log(value,valueTo)
         if(value && valueTo){
             this.setState({
                 startDate: Moment(value),

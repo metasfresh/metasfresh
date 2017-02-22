@@ -37,16 +37,16 @@ class Filters extends Component {
      *   This method should update docList
      */
     applyFilters = (filter, cb) => {
-        const notValid = this.isFilterValid(filter);
-
-        if (notValid.length) {
-            this.setState({
-                notValidFields: notValid
-            });
-        } else {
-            this.setFilterActive([filter]);
-            cb && cb();
-        }
+        const valid = this.isFilterValid(filter);
+        
+        this.setState({
+            notValidFields: !valid
+        }, () => {
+            if (valid){
+                this.setFilterActive([filter]);
+                cb && cb();
+            }
+        });
     }
 
     setFilterActive = (filter) => {
@@ -71,6 +71,12 @@ class Filters extends Component {
     clearFilters = () => {
         this.setFilterActive(null)
     }
+    
+    dropdownToggled = () => {
+        this.setState({
+            notValidFields: false
+        })
+    }
 
     // PARSING FILTERS ---------------------------------------------------------
 
@@ -83,11 +89,11 @@ class Filters extends Component {
 
     isFilterValid = (filters) => {
         if(filters.parameters){
-            return filters.parameters.filter(
+            return !(filters.parameters.filter(
                 item => item.mandatory && !item.value
-            );
+            ).length);
         }else{
-            return [];
+            return false;
         }
     }
 
@@ -119,6 +125,7 @@ class Filters extends Component {
                             applyFilters={this.applyFilters}
                             clearFilters={this.clearFilters}
                             active={filter}
+                            dropdownToggled={this.dropdownToggled}
                         />
                     }
                     {!!notFrequentFilters.length &&
@@ -132,6 +139,7 @@ class Filters extends Component {
                             applyFilters={this.applyFilters}
                             clearFilters={this.clearFilters}
                             active={filter}
+                            dropdownToggled={this.dropdownToggled}
                         />
                     }
                 </div>
