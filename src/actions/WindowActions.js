@@ -518,7 +518,7 @@ export function findRowByPropName(arr, name) {
 export function getItemsByProperty(arr, prop, value) {
     let ret = [];
 
-    Array.isArray(arr) && arr.map((item) => {
+    arr.map((item) => {
         if (item[prop] === value) {
             ret.push(item);
         }
