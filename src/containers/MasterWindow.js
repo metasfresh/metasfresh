@@ -63,7 +63,11 @@ class MasterWindow extends Component {
 
         dropped = dropped instanceof Array ? dropped[0] : dropped;
 
-        dispatch(addNotification('Attachment', 'Dropped item [' + dropped.type + '] could not be attached', 5000, 'error'))
+        dispatch(addNotification(
+            'Attachment', 'Dropped item [' +
+            dropped.type +
+            '] could not be attached', 5000, 'error'
+        ))
     }
 
     setModalTitle = (title) => {
