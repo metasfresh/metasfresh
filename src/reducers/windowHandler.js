@@ -195,7 +195,7 @@ export default function windowHandler(state = initialState, action) {
 
         case types.SELECT_TABLE_ITEMS:
             return Object.assign({}, state, {
-                selected: action.ids ? action.ids : []
+                selected: action.ids
             })
 
         // LATEST NEW DOCUMENT CACHE
