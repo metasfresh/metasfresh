@@ -87,15 +87,15 @@ export class DraggableWrapper extends Component {
     render() {
         const { cards, idMaximized, indicators } = this.state;
         return (
-            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}> 
+            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}>
                 {this.props.dashboard == '/' &&
                     <div className="logo-wrapper">
                         <img src={logo} />
                     </div>
                 }
-                
-                
-                
+
+
+
                 {false && indicators.length > 0 && <div className={
                     'indicators-wrapper ' +
                     (idMaximized !== false ? 'indicator-hidden' : '')

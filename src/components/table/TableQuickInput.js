@@ -130,7 +130,7 @@ class TableQuickInput extends Component {
 
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
         const {tabId, docType} = this.props;
-        
+
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));

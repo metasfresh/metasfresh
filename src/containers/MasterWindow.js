@@ -179,7 +179,7 @@ function mapStateToProps(state) {
         actions: [],
         attachments: []
     }
-    
+
     return {
         master,
         breadcrumb,

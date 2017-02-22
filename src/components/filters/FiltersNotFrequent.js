@@ -19,8 +19,9 @@ class FiltersNotFrequent extends Component {
     }
 
     handleClickOutside = () => {
-        const {widgetShown} = this.props;
+        const {widgetShown, dropdownToggled} = this.props;
         if(!widgetShown) {
+            dropdownToggled();
             this.toggleDropdown(false);
             this.toggleFilter(null);
         }
