@@ -43,8 +43,8 @@ class RawWidget extends Component {
         const {cachedValue} = this.state;
         let ret = null;
 
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
+        // Do patch only when value is not equal state
+        // or cache is set and it is not equal value
 
         if( 
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
@@ -593,6 +593,7 @@ class RawWidget extends Component {
         if(!widgetData[0].displayed || widgetData[0].displayed !== true){
             return false;
         }
+        
         
         return (
             <div className={
