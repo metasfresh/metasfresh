@@ -92,7 +92,7 @@
 			</plugin>
 			<!--
 			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
-			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+			Note that the property needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 			-->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -112,6 +112,11 @@
 						</property>
 						<property>
 							<name>metasfresh-webui-api.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-procurement-webui.version</name>
 							<searchReactor>false</searchReactor>
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
