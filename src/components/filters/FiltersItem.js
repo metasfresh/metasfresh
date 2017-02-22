@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 
 import RawWidget from '../widget/RawWidget';
-import {
-    parseToDisplay
-} from '../../actions/WindowActions';
 
 class FiltersItem extends Component {
     constructor(props) {
@@ -33,7 +30,7 @@ class FiltersItem extends Component {
             active.parameters.map(item => {
                 this.mergeData(
                     item.parameterName, 
-                    item.value ? item.value : "", 
+                    item.value ? item.value : '', 
                     item.valueTo
                 );
             })
@@ -41,7 +38,7 @@ class FiltersItem extends Component {
             filter.parameters.map(item => {
                 this.mergeData(
                     item.parameterName, 
-                    ""
+                    ''
                 );
             })
         }

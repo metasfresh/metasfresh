@@ -491,7 +491,6 @@ function parseDateToReadable(arr) {
 }
 
 function nullToEmptyStrings(arr) {
-    console.log(arr)
     return arr.map(item =>
         (item.value === null) ?
         Object.assign({}, item, { value: '' }) :
