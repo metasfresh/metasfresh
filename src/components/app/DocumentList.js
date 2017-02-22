@@ -322,7 +322,7 @@ class DocumentList extends Component {
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
-                                    title={'New '+ layout.newRecordCaption}
+                                    title={layout.newRecordCaption}
                                 >
                                     <i className="meta-icon-add" /> {layout.newRecordCaption}
                                 </button>

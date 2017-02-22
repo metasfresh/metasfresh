@@ -41,7 +41,7 @@ class Modal extends Component {
                 //processid, viewId, docType, id or ids
                 dispatch(
                     createProcess(
-                        windowType, modalViewId, relativeType, dataId ? dataId : selected
+                        windowType, modalViewId, relativeType, dataId ? [dataId] : selected
                     )
                 ).catch(() => {
                     this.handleClose();
