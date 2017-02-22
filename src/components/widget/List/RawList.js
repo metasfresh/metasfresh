@@ -24,9 +24,9 @@ class RawList extends Component {
             }
 
             if(list.length > 0) {
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     dropdownList: dropdown.concat(list)
-                }));
+                });
             }
         }
     }
