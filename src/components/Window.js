@@ -173,10 +173,10 @@ class Window extends Component {
 
     render() {
         const {sections, tabs} = this.props.layout;
-        const {handleDropFile} = this.props;
+        const {handleDropFile, handleRejectDropped} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                <Dropzone handleDropFile={handleDropFile}>
+                <Dropzone handleDropFile={handleDropFile} handleRejectDropped={handleRejectDropped}>
                     <div className="sections-wrapper">
                         {sections && this.renderSections(sections)}
                     </div>
