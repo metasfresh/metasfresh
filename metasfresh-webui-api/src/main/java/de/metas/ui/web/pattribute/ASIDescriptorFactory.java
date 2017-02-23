@@ -18,6 +18,7 @@ import org.compiere.model.MAttribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.util.function.BiConsumer;
@@ -65,7 +66,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 @Component
 public class ASIDescriptorFactory
 {
-	private final CCache<DocumentId, ASIDescriptor> asiDescriptorById = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
+	private final CCache<ArrayKey, ASIDescriptor> asiDescriptorById = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
 	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
 
 	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
@@ -82,17 +83,22 @@ public class ASIDescriptorFactory
 
 	public ASIDescriptor getASIDescriptor(final ASIEditingInfo info)
 	{
-		final DocumentId asiDescriptorId = extractASIDescriptorId(info);
-		return asiDescriptorById.getOrLoad(asiDescriptorId, () -> createASIDescriptor(asiDescriptorId, info));
+		final ArrayKey key = createASIDescriptorCachingKey(info);
+		return asiDescriptorById.getOrLoad(key, () -> createASIDescriptor(info));
 	}
 
-	private static final DocumentId extractASIDescriptorId(final ASIEditingInfo info)
+	private static final ArrayKey createASIDescriptorCachingKey(final ASIEditingInfo info)
 	{
-		return DocumentId.ofString(info.getWindowType() + "_" + info.getM_AttributeSet_ID());
+		return ArrayKey.builder()
+				.append(info.getWindowType())
+				.append(info.getM_AttributeSet_ID())
+				.append(info.getAvailableAttributeIds())
+				.build();
 	}
 
-	private ASIDescriptor createASIDescriptor(final DocumentId asiDescriptorId, final ASIEditingInfo info)
+	private ASIDescriptor createASIDescriptor(final ASIEditingInfo info)
 	{
+		final DocumentId asiDescriptorId = DocumentId.ofString(info.getWindowType() + "_" + info.getM_AttributeSet_ID());
 		final DocumentEntityDescriptor entityDescriptor = createDocumentEntityDescriptor( //
 				asiDescriptorId //
 				, info.getM_AttributeSet_Name() // name
