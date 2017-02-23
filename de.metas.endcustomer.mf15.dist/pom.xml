@@ -584,6 +584,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
 						</configuration>
 					</execution>
 					<execution>
