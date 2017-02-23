@@ -12,14 +12,12 @@ import {
     handleProcessResponse
 } from '../../actions/WindowActions';
 
-
 class Modal extends Component {
     constructor(props) {
         super(props);
 
         const {
-            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
-            relativeType, isAdvanced, modalViewId
+            rowId
         } = this.props;
 
         this.state = {
@@ -29,25 +27,7 @@ class Modal extends Component {
             pending: false
         }
 
-        switch(modalType){
-            case 'window':
-                dispatch(
-                    createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
-                ).catch(() => {
-                    this.handleClose();
-                });
-                break;
-            case 'process':
-                //processid, viewId, docType, id or ids
-                dispatch(
-                    createProcess(
-                        windowType, modalViewId, relativeType, dataId ? [dataId] : selected
-                    )
-                ).catch(() => {
-                    this.handleClose();
-                });
-                break;
-        }
+        this.init();
     }
 
     componentDidMount() {
@@ -66,6 +46,43 @@ class Modal extends Component {
     componentWillUnmount() {
         const modalContent = document.querySelector('.js-panel-modal-content')
         modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
+    }
+
+    componentDidUpdate (prevProps) {
+        const {
+            windowType
+        } = this.props;
+
+        if(prevProps.windowType !== windowType){
+            this.init();
+        }
+    }
+
+    init = () => {
+        const {
+            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
+            relativeType, isAdvanced, modalViewId
+        } = this.props;
+
+        switch(modalType){
+            case 'window':
+                dispatch(
+                    createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
+                ).catch(() => {
+                    this.handleClose();
+                });
+                break;
+            case 'process':
+                dispatch(
+                    createProcess(
+                        windowType, modalViewId, relativeType, dataId ? [dataId] : selected,
+                        tabId, rowId
+                    )
+                ).catch(() => {
+                    this.handleClose();
+                });
+                break;
+        }
     }
 
     handleClose = () => {

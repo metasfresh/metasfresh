@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 
 import {
     patch,
-    updateProperty
+    updateProperty,
+    openModal
 } from '../../actions/WindowActions';
 
 import RawWidget from './RawWidget';
@@ -29,16 +30,16 @@ class MasterWidget extends Component {
                         updated: true
                     }), () => {
                         this.timeout = setTimeout(() => {
-                            this.setState(Object.assign({}, this.state, {
+                            this.setState({
                                 updated: false
-                            }))
+                            })
                         }, 1000);
                     }
                 )
             }else{
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     edited: false
-                }));
+                });
             }
         }
     }
@@ -107,9 +108,9 @@ class MasterWidget extends Component {
     }
 
     setEditedFlag = (edited) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             edited: edited
-        }));
+        });
     }
 
     validatePrecision = (value) => {
@@ -130,13 +131,22 @@ class MasterWidget extends Component {
         }
     }
 
+    handleProcess = (
+        caption, buttonProcessId, tabId, rowId, dataId
+    ) => {
+        const {dispatch} = this.props;
+
+        dispatch(
+            openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false)
+        );
+    }
 
     render() {
         const {
             caption, widgetType, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
             handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus, fullScreen,
-            disabled
+            disabled, buttonProcessId
         } = this.props;
 
         const {updated} = this.state;
@@ -155,6 +165,7 @@ class MasterWidget extends Component {
                 gridAlign={gridAlign}
                 handlePatch={this.handlePatch}
                 handleChange={this.handleChange}
+                handleProcess={this.handleProcess}
                 updated={updated}
                 isModal={isModal}
                 setEditedFlag={this.setEditedFlag}
@@ -167,6 +178,7 @@ class MasterWidget extends Component {
                 autoFocus={autoFocus}
                 fullScreen={fullScreen}
                 disabled={disabled}
+                buttonProcessId={buttonProcessId}
             />
         )
     }

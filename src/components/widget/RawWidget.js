@@ -78,13 +78,24 @@ class RawWidget extends Component {
         this.handlePatch(widgetField, value, id);
     }
 
+    handleProcess = () => {
+        const {
+            handleProcess, buttonProcessId, tabId, rowId, dataId, windowType,
+            caption
+        } = this.props;
+
+        handleProcess && handleProcess(
+            caption, buttonProcessId, tabId, rowId, dataId, windowType
+        );
+    }
+
     renderWidget = () => {
         const {
             handleChange, updated, isModal, filterWidget, filterId, id, range,
             onHide, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled
+            entity, onShow, disabled, caption
         } = this.props;
 
         const {isEdited} = this.state;
@@ -509,6 +520,21 @@ class RawWidget extends Component {
                         ref={c => this.rawWidget = c}
                     >
                         {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
+                    </button>
+                )
+            case 'ProcessButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
+                        }
+                        onClick={this.handleProcess}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
                     </button>
                 )
             case 'ActionButton':
