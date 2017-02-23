@@ -116,9 +116,6 @@ public class UserSession implements InitializingBean, Serializable
 	@Value("${metasfresh.webui.debug.showColumnNamesForCaption:false}")
 	private boolean default_showColumnNamesForCaption;
 
-	@Value("${metasfresh.webui.userSession.dashboardUrl:}")
-	private String dashboardUrl;
-
 	public static final String PARAM_DisableDeprecatedRestAPI = "metasfresh.webui.debug.DisableDeprecatedRestAPI";
 	@Value("${" + PARAM_DisableDeprecatedRestAPI + ":true}")
 	private boolean default_disableDeprecatedRestAPI;
@@ -316,12 +313,6 @@ public class UserSession implements InitializingBean, Serializable
 	public IUserRolePermissions getUserRolePermissions()
 	{
 		return Env.getUserRolePermissions(getCtx());
-	}
-
-	@Deprecated
-	public String getDashboardUrl()
-	{
-		return dashboardUrl;
 	}
 
 	public <T extends Serializable> Object setProperty(final String name, final T value)

@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
@@ -69,13 +68,5 @@ public class UserSessionRestController
 	public String getAD_Language()
 	{
 		return userSession.getAD_Language();
-	}
-
-	@RequestMapping(value = "/dashboardUrl", method = RequestMethod.GET)
-	@Deprecated
-	public String getDashboardUrl_DEPRECATED()
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return userSession.getDashboardUrl();
 	}
 }
