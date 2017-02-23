@@ -72,10 +72,11 @@ export function queryPathsRequest(query, limit, child) {
     );
 }
 
-export function rootRequest(limit) {
+export function rootRequest(limit, depth) {
     return () => axios.get(
         config.API_URL +
-        '/menu/root?depth=10' +
+        '/menu/root?depth=' +
+        (depth ? depth : '10')  +
         (limit ? '&childrenLimit=' + limit : ''));
 }
 
