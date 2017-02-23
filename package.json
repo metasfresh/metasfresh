@@ -3,7 +3,8 @@
   "scripts": {
     "start": "node server.js",
     "lint": "eslint src",
-    "lint-fix": "eslint src --fix"
+    "lint-fix": "eslint src --fix",
+    "stylelint": "stylelint 'src/assets/**/*.css'"
   },
   "devDependencies": {
     "autoprefixer": "~6.3.6",
@@ -27,6 +28,7 @@
     "react-hot-loader": "~3.0.0-beta.6",
     "redux-devtools": "~3.3.1",
     "style-loader": "~0.13.1",
+    "stylelint": "^7.9.0",
     "webpack": "~1.13.0",
     "webpack-dev-server": "~1.12.1"
   },
