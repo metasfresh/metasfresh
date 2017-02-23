@@ -116,8 +116,8 @@ public final class JSONDocumentFilter implements Serializable
 				continue;
 			}
 
-			final Object value = jsonParam.getValue();
-			final Object valueTo = jsonParam.getValueTo();
+			final Object value = paramDescriptor.convertValueFromJson(jsonParam.getValue());
+			final Object valueTo = paramDescriptor.convertValueFromJson(jsonParam.getValueTo());
 
 			// If there was no value/valueTo provided: skip it if no required, else throw exception
 			if (value == null && valueTo == null)

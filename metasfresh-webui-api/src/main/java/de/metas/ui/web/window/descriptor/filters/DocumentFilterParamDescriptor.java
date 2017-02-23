@@ -7,8 +7,10 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
@@ -25,11 +27,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,24 +43,25 @@ public class DocumentFilterParamDescriptor
 		return new Builder();
 	}
 
-	private final boolean joinAnd; 
+	private final boolean joinAnd;
 	private final String parameterName;
 	private final String fieldName;
 	private final DocumentFieldWidgetType widgetType;
+	private final Class<?> valueClass;
 	private final ITranslatableString displayName;
-	
+
 	private final Operator operator;
 	private final Object defaultValue;
 	private final Object defaultValueTo;
 
 	private final LookupDescriptor lookupDescriptor;
-	
+
 	private final boolean mandatory;
 
 	private DocumentFilterParamDescriptor(final Builder builder)
 	{
 		super();
-		
+
 		joinAnd = builder.joinAnd;
 
 		parameterName = builder.parameterName;
@@ -69,6 +72,7 @@ public class DocumentFilterParamDescriptor
 
 		widgetType = builder.widgetType;
 		Check.assumeNotNull(widgetType, "Parameter widgetType is not null");
+		valueClass = DescriptorsFactoryHelper.getValueClass(builder.widgetType, builder.lookupDescriptor);
 
 		displayName = builder.displayName;
 		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
@@ -77,9 +81,9 @@ public class DocumentFilterParamDescriptor
 
 		defaultValue = builder.defaultValue;
 		defaultValueTo = builder.defaultValueTo;
-		
+
 		lookupDescriptor = builder.lookupDescriptor;
-		
+
 		mandatory = builder.mandatory;
 	}
 
@@ -99,7 +103,7 @@ public class DocumentFilterParamDescriptor
 				.add("required", mandatory)
 				.toString();
 	}
-	
+
 	public boolean isJoinAnd()
 	{
 		return joinAnd;
@@ -120,16 +124,21 @@ public class DocumentFilterParamDescriptor
 		return widgetType;
 	}
 
+	public Class<?> getValueClass()
+	{
+		return valueClass;
+	}
+
 	public String getDisplayName(final String adLanguage)
 	{
 		return displayName.translate(adLanguage);
 	}
-	
+
 	public Operator getOperator()
 	{
 		return operator;
 	}
-	
+
 	public boolean isRange()
 	{
 		return operator != null && operator.isRangeOperator();
@@ -144,15 +153,29 @@ public class DocumentFilterParamDescriptor
 	{
 		return defaultValueTo;
 	}
-	
+
 	public LookupDataSource getLookupDataSource()
 	{
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);		
+		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
-	
+
+	private final LookupDataSource getLookupDataSourceOrNull()
+	{
+		if (lookupDescriptor == null)
+		{
+			return null;
+		}
+		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+	}
+
 	public boolean isMandatory()
 	{
 		return mandatory;
+	}
+
+	public Object convertValueFromJson(final Object jsonValue)
+	{
+		return DocumentFieldDescriptor.convertToValueClass(getFieldName(), jsonValue, getWidgetType(), getValueClass(), getLookupDataSourceOrNull());
 	}
 
 	public static final class Builder
@@ -178,7 +201,7 @@ public class DocumentFilterParamDescriptor
 			return new DocumentFilterParamDescriptor(this);
 		}
 
-		public Builder setJoinAnd(boolean joinAnd)
+		public Builder setJoinAnd(final boolean joinAnd)
 		{
 			this.joinAnd = joinAnd;
 			return this;
@@ -195,7 +218,7 @@ public class DocumentFilterParamDescriptor
 			return fieldName;
 		}
 
-		public Builder setParameterName(String parameterName)
+		public Builder setParameterName(final String parameterName)
 		{
 			this.parameterName = parameterName;
 			return this;
@@ -206,10 +229,10 @@ public class DocumentFilterParamDescriptor
 			this.widgetType = widgetType;
 			return this;
 		}
-		
+
 		public DocumentFieldWidgetType getWidgetType()
 		{
-			return this.widgetType;
+			return widgetType;
 		}
 
 		public Builder setDisplayName(final ITranslatableString displayName)
@@ -223,13 +246,13 @@ public class DocumentFilterParamDescriptor
 			this.displayName = ImmutableTranslatableString.constant(displayName);
 			return this;
 		}
-		
+
 		public ITranslatableString getDisplayName()
 		{
 			return displayName;
 		}
 
-		public Builder setOperator(Operator operator)
+		public Builder setOperator(final Operator operator)
 		{
 			Check.assumeNotNull(operator, "Parameter operator is not null");
 			this.operator = operator;
@@ -247,14 +270,14 @@ public class DocumentFilterParamDescriptor
 			this.defaultValueTo = defaultValueTo;
 			return this;
 		}
-		
+
 		public Builder setLookupDescriptor(final LookupDescriptor lookupDescriptor)
 		{
 			this.lookupDescriptor = lookupDescriptor;
 			return this;
 		}
-		
-		public Builder setMandatory(boolean mandatory)
+
+		public Builder setMandatory(final boolean mandatory)
 		{
 			this.mandatory = mandatory;
 			return this;

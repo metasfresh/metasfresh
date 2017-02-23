@@ -18,6 +18,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -229,14 +230,14 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public int getValueAsInt(final int defaultValueWhenNull)
 	{
-		final Integer valueInt = convertToValueClass(_value, Integer.class);
+		final Integer valueInt = convertToValueClass(_value, DocumentFieldWidgetType.Integer, Integer.class);
 		return valueInt == null ? defaultValueWhenNull : valueInt;
 	}
 
 	@Override
 	public boolean getValueAsBoolean()
 	{
-		final Boolean valueBoolean = convertToValueClass(_value, Boolean.class);
+		final Boolean valueBoolean = convertToValueClass(_value, DocumentFieldWidgetType.YesNo, Boolean.class);
 		return valueBoolean != null && valueBoolean.booleanValue();
 	}
 
@@ -244,7 +245,8 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	public <T> T getValueAs(final Class<T> returnType)
 	{
 		Preconditions.checkNotNull(returnType, "returnType shall not be null");
-		final T value = convertToValueClass(_value, returnType);
+		final DocumentFieldWidgetType widgetType = null; // N/A
+		final T value = convertToValueClass(_value, widgetType, returnType);
 		return value;
 	}
 
@@ -256,8 +258,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 	private Object convertToValueClass(final Object value)
 	{
+		final DocumentFieldWidgetType widgetType = getWidgetType();
 		final Class<?> targetType = descriptor.getValueClass();
-		return convertToValueClass(value, targetType);
+		return convertToValueClass(value, widgetType, targetType);
 	}
 
 	/**
@@ -293,9 +296,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		return valueConv;
 	}
 
-	private final <T> T convertToValueClass(final Object value, final Class<T> targetType)
+	private final <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType)
 	{
-		return descriptor.convertToValueClass(value, targetType, getLookupDataSource());
+		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSource());
 	}
 
 	@Override
