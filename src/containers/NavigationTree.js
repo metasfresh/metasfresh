@@ -39,7 +39,7 @@ class NavigationTree extends Component {
 
     getData = (callback) => {
         const {dispatch} = this.props;
-        dispatch(rootRequest('', '0')).then(response => {
+        dispatch(rootRequest()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
