@@ -30,6 +30,7 @@ public enum HUDocumentViewType implements IDocumentViewType
 {
 	LU("LU", true) //
 	, TU("TU", true) //
+	, VHU("CU", true)
 	, HUStorage("CU", false) //
 	;
 
@@ -65,7 +66,7 @@ public enum HUDocumentViewType implements IDocumentViewType
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
 		{
-			return TU;
+			return VHU;
 		}
 		else
 		{
