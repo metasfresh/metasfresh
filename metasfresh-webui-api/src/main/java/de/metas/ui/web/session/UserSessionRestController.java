@@ -1,12 +1,15 @@
 package de.metas.ui.web.session;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.session.json.JSONUserSession;
 
 /*
  * #%L
@@ -18,14 +21,14 @@ import de.metas.ui.web.config.WebConfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,7 +41,7 @@ public class UserSessionRestController
 
 	@Autowired
 	private UserSession userSession;
-	
+
 	private static final void logResourceValueChanged(final String name, final Object value, final Object valueOld)
 	{
 		System.out.println("*********************************************************************************************");
@@ -46,23 +49,28 @@ public class UserSessionRestController
 		System.out.println("*********************************************************************************************");
 	}
 
+	@GetMapping
+	public JSONUserSession getAll()
+	{
+		return JSONUserSession.of(userSession);
+	}
 
-	@RequestMapping(value = "/language", method = RequestMethod.PUT)
+	@PutMapping("/language")
 	public String setAD_Language(@RequestBody final String adLanguage)
 	{
 		final String adLanguageOld = userSession.setAD_Language(adLanguage);
 		final String adLanguageNew = userSession.getAD_Language();
 		logResourceValueChanged("AD_Language", adLanguageNew, adLanguageOld);
-		
+
 		return adLanguageNew;
 	}
 
-	@RequestMapping(value = "/language", method = RequestMethod.GET)
+	@GetMapping("/language")
 	public String getAD_Language()
 	{
 		return userSession.getAD_Language();
 	}
-	
+
 	@RequestMapping(value = "/dashboardUrl", method = RequestMethod.GET)
 	@Deprecated
 	public String getDashboardUrl_DEPRECATED()

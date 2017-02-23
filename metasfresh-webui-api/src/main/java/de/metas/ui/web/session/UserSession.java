@@ -301,6 +301,11 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		return Env.getContext(getCtx(), Env.CTXNAME_AD_User_Name);
 	}
+	
+	public String getRoleName()
+	{
+		return Env.getContext(getCtx(), Env.CTXNAME_AD_Role_Name);
+	}
 
 	public UserRolePermissionsKey getUserRolePermissionsKey()
 	{
