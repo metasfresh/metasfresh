@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
@@ -49,7 +50,10 @@ final class JSONDocumentFilterParam implements Serializable
 			return Optional.empty();
 		}
 
-		final JSONDocumentFilterParam jsonFilterParam = new JSONDocumentFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
+		final String fieldName = filterParam.getFieldName();
+		final Object jsonValue = Values.valueToJsonObject(filterParam.getValue());
+		final Object jsonValueTo = Values.valueToJsonObject(filterParam.getValueTo());
+		final JSONDocumentFilterParam jsonFilterParam = new JSONDocumentFilterParam(fieldName, jsonValue, jsonValueTo);
 		return Optional.of(jsonFilterParam);
 	}
 

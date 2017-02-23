@@ -58,11 +58,11 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -117,8 +117,8 @@ public final class DocumentFieldDescriptor implements Serializable
 			Characteristic.SpecialField_DocumentNo //
 			, Characteristic.SpecialField_DocStatus //
 			, Characteristic.SpecialField_DocAction //
-			// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
-			);
+	// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
+	);
 
 	private final Set<Characteristic> characteristics;
 
@@ -297,7 +297,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	public Object convertToValueClass(final Object value, final LookupValueByIdSupplier lookupDataSource)
 	{
-		return convertToValueClass(fieldName, value, valueClass, lookupDataSource);
+		return convertToValueClass(fieldName, value, widgetType, valueClass, lookupDataSource);
 	}
 
 	/**
@@ -305,12 +305,13 @@ public final class DocumentFieldDescriptor implements Serializable
 	 *
 	 * @param value value to be converted
 	 * @param targetType target type
+	 * @param widgetType optional widget type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
-	public <T> T convertToValueClass(final Object value, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
+	public <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
 	{
-		return convertToValueClass(fieldName, value, targetType, lookupDataSource);
+		return convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
 	}
 
 	/**
@@ -318,11 +319,18 @@ public final class DocumentFieldDescriptor implements Serializable
 	 *
 	 * @param fieldName field name, needed only for logging purposes
 	 * @param value value to be converted
+	 * @param widgetType widget type
 	 * @param targetType target type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
-	public static <T> T convertToValueClass(final String fieldName, final Object value, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
+	public static <T> T convertToValueClass( //
+			final String fieldName //
+			, final Object value //
+			, final DocumentFieldWidgetType widgetType //
+			, final Class<T> targetType //
+			, final LookupValueByIdSupplier lookupDataSource //
+	)
 	{
 		if (value == null)
 		{
@@ -378,7 +386,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (value instanceof String)
 				{
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONDate.fromJson((String)value);
+					final T valueConv = (T)JSONDate.fromJson((String)value, widgetType);
 					return valueConv;
 				}
 			}
@@ -442,7 +450,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueInt);
-						final T valueConv = convertToValueClass(fieldName, valueLookup, targetType, /* lookupDataSource */null);
+						final T valueConv = convertToValueClass(fieldName, valueLookup, widgetType, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -458,7 +466,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
-						final T valueConv = convertToValueClass(fieldName, valueLookup, targetType, /* lookupDataSource */null);
+						final T valueConv = convertToValueClass(fieldName, valueLookup, widgetType, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -492,7 +500,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
-						final T valueConv = convertToValueClass(fieldName, valueLookup, targetType, /* lookupDataSource */null);
+						final T valueConv = convertToValueClass(fieldName, valueLookup, widgetType, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -510,6 +518,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			throw new AdempiereException("Failed converting " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 					+ "\n LookupDataSource: " + lookupDataSource //
+					+ "\n Widget type: " + widgetType
 					, e);
 		}
 
@@ -572,7 +581,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
 
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
-		
+
 		private int buttonProcessId = -1;
 
 		private Builder(final String fieldName)
@@ -682,7 +691,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return _detailId;
 		}
-		
+
 		/**
 		 * @return true if included entity (i.e. detail tab)
 		 */
@@ -784,14 +793,14 @@ public final class DocumentFieldDescriptor implements Serializable
 			this._valueClass = valueClass;
 			return this;
 		}
-		
+
 		private Class<?> getValueClass()
 		{
-			if(_valueClass != null)
+			if (_valueClass != null)
 			{
 				return _valueClass;
 			}
-			
+
 			final DocumentFieldWidgetType widgetType = getWidgetType();
 			return widgetType.getValueClass();
 		}
@@ -987,7 +996,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			setDisplayLogic(ConstantLogicExpression.of(display));
 			return this;
 		}
-		
+
 		public Builder setDisplayLogic(final String displayLogic)
 		{
 			setDisplayLogic(LogicExpressionCompiler.instance.compile(displayLogic));
@@ -1140,7 +1149,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			callouts.add(callout);
 			return this;
 		}
-		
+
 		public Builder addCallout(final ILambdaDocumentFieldCallout lambdaCallout)
 		{
 			final LambdaDocumentFieldCallout callout = new LambdaDocumentFieldCallout(getFieldName(), lambdaCallout);
@@ -1148,18 +1157,17 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-
 		/* package */List<IDocumentFieldCallout> getCallouts()
 		{
 			return callouts;
 		}
-		
+
 		public Builder setButtonProcessId(final int buttonProcessId)
 		{
 			this.buttonProcessId = buttonProcessId;
 			return this;
 		}
-		
+
 		public int getButtonProcessId()
 		{
 			return buttonProcessId;

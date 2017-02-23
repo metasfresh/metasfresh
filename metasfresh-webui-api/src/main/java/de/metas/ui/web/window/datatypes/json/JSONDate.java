@@ -8,9 +8,11 @@ import java.util.TimeZone;
 
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -65,7 +67,36 @@ public final class JSONDate implements Serializable
 		return DATE_FORMAT.format(new java.util.Date(millis));
 	}
 
-	public static java.util.Date fromJson(final String valueStr)
+	public static java.util.Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
+	{
+		java.util.Date valueDate = fromString(valueStr);
+		if(valueDate == null)
+		{
+			return null;
+		}
+
+		//
+		// Apply widget type rounding, if any
+		if (widgetType == DocumentFieldWidgetType.Date)
+		{
+			return TimeUtil.truncToDay(valueDate); 
+		}
+		else
+		{
+			return valueDate;
+		}
+	}
+
+	public static java.util.Date fromTimestamp(final Timestamp ts)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+		return new java.util.Date(ts.getTime());
+	}
+	
+	private static final java.util.Date fromString(final String valueStr)
 	{
 		try
 		{
@@ -92,15 +123,6 @@ public final class JSONDate implements Serializable
 				throw exFinal;
 			}
 		}
-	}
-
-	public static java.util.Date fromTimestamp(final Timestamp ts)
-	{
-		if (ts == null)
-		{
-			return null;
-		}
-		return new java.util.Date(ts.getTime());
 	}
 
 	private JSONDate()

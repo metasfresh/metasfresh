@@ -27,6 +27,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -180,7 +181,8 @@ import de.metas.ui.web.window.descriptor.DetailId;
 		}
 		else
 		{
-			return JSONDate.fromJson(valueObj.toString());
+			final DocumentFieldWidgetType widgetType = null; // N/A
+			return JSONDate.fromJson(valueObj.toString(), widgetType);
 		}
 	}
 

@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 
@@ -201,7 +202,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			return JSONDate.fromJson(value.toString());
+			return JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
 		}
 		
 		return value;
