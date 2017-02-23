@@ -386,9 +386,7 @@ node('agent && linux')
 } // node			
 
 // this map is populated in the "Invoke downstream jobs" stage
-final MF_ARTIFACT_URLS = [:];
 final MF_ARTIFACT_VERSIONS = [:];
-
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -404,23 +402,20 @@ stage('Invoke downstream jobs')
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
 			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
-			MF_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
 			MF_ARTIFACT_VERSIONS['metasfresh-webui']=params.MF_UPSTREAM_VERSION;
-			echo "Set MF_ARTIFACT_URLS.metasfresh-webui=${MF_ARTIFACT_URLS['metasfresh-webui']}"
+			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui=${MF_ARTIFACT_VERSIONS['metasfresh-webui']}"
 		}
 		
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend')
 		{
-			MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
 			MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_VERSION;
-			echo "Set MF_ARTIFACT_URLS.metasfresh-webui-frontend=${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui-frontend=${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}"
 		}
 		
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-procurement-webui')
 		{
-			MF_ARTIFACT_URLS['metasfresh-procurement-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
 			MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=params.MF_UPSTREAM_VERSION;
-			echo "Set MF_ARTIFACT_URLS.metasfresh-procurement-webui=${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}"
+			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-procurement-webui=${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}"
 		}
 		// TODO: also handle procurement-webui
 	}
@@ -430,18 +425,24 @@ stage('Invoke downstream jobs')
 		
 		// params.MF_SKIP_TO_DIST == false, so invoke downstream jobs and get the build versions which came out of them
 		
-		// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
-		final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-		MF_ARTIFACT_URLS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_ARTIFACT_URL;
-		MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
-	
+		 parallel (
+			 "metasfresh-webui" : 
+			 {
+				// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
+				final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+				MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
+			}, 
+			"metasfresh-procurement-webui" : 
+			{
+				// yup, metasfresh-procurement-webui does share *some* code with this repo
+				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
+			},
+			true
+		); //failFast=true
+			
 		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo. 
 		// Therefore we will just get the latest webui-frontend later, when we need it.
-
-		// yup, metasfresh-procurement-webui does share *some* code with this repo
-		final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-		MF_ARTIFACT_URLS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_ARTIFACT_URL;
-		MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
 
 		// more to come: admin-webui
 	} // if(params.MF_SKIP_TO_DIST)
@@ -451,7 +452,7 @@ stage('Invoke downstream jobs')
 	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
-			
+
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
 	// note: even with "skiptodis=true we do this, because we still want to make the notifcations
 	echo "Going to notify external systems via zapier webhook"
@@ -470,12 +471,8 @@ stage('Invoke downstream jobs')
 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
 				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}\"
 			}""";
+			// echo "jsonPayload=${jsonPayload}";
 
-			echo "jsonPayload=${jsonPayload}";
-			
-			// this one-lined version from master works
-			//final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
-			
 			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}";
 		}
 	}
@@ -515,11 +512,11 @@ node('agent && linux && libc6-i386')
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdatePropertyParam} versions:update-property"
 
-				// gh#968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
+				// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
-				
+
 				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
@@ -533,31 +530,45 @@ node('agent && linux && libc6-i386')
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
 				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
 				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-				
-				// prepend links to the artifacts we just deployed
-				currentBuild.description="""artifacts (if not yet cleaned up)
-<ul>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-""";
 
-				if(MF_ARTIFACT_URLS['metasfresh-webui'])
-				{
-					currentBuild.description="""${currentBuild.description}
-<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
-""";
-				}
-				if(MF_ARTIFACT_URLS['metasfresh-webui-frontend'])
-				{
-					currentBuild.description="""${currentBuild.description}
-<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
-""";
-				}
-				
-				currentBuild.description="""${currentBuild.description}
-</ul>""";
-				
+				// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
+				// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/pom.xml --batch-mode properties:write-project-properties"
+
+				// now load the proeprtes we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
+				def mavenProps = readProperties  file: 'app.properties'
+
+				final MF_ARTIFACT_URLS = [:];
+				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metaas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
+				MF_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${mavenProps['metasfresh-webui-api.version']}";
+				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&p=tar.gz&v=${mavenProps['metasfresh-webui-frontend.version']}";
+
+				currentBuild.description="""
+<h3>Version infos</h3>
+<ul>
+  <li>endcustomer.mf15: version <b>${BUILD_VERSION}</b></li>
+  <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li>
+  <li>metasfresh webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b>
+  <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b>
+</ul>
+<p>
+<h3>Deployable artifacts</h3>
+<ul>
+	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
+	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
+</ul>
+
+<h3>Additional notes</h3>
+<ul>
+  <li>The artifacts on <a href="https://repo.metasfresh.com">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
+    Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
+  <li>It is important to note that both the <i>"endcustomer"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
+</ul>
+""";		
 			}
 		} // withMaven
 		} // withEnv(['"BUILD_VERSION=${BUILD_VERSION}"'])
