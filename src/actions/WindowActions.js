@@ -127,7 +127,9 @@ export function noConnection(status) {
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId, isAdvanced, viewId) {
+export function openModal(
+    title, windowType, type, tabId, rowId, isAdvanced, viewId, viewDocumentIds
+) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
@@ -136,7 +138,8 @@ export function openModal(title, windowType, type, tabId, rowId, isAdvanced, vie
         rowId: rowId,
         viewId: viewId,
         title: title,
-        isAdvanced: isAdvanced
+        isAdvanced: isAdvanced,
+        viewDocumentIds: viewDocumentIds
     }
 }
 

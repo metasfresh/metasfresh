@@ -65,6 +65,7 @@ class MasterWindow extends Component {
             master, modal, breadcrumb, references, actions, attachments, rawModal,
             selected
         } = this.props;
+
         const {newRow, modalTitle} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
         const dataId = master.docId;
@@ -112,6 +113,7 @@ class MasterWindow extends Component {
                         modalViewId={modal.viewId}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
+                        modalViewDocumentIds={modal.viewDocumentIds}
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                      />

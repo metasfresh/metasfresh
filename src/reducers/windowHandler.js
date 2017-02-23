@@ -14,7 +14,8 @@ const initialState = {
         rowData: {},
         modalTitle: '',
         modalType: '',
-        isAdvanced: false
+        isAdvanced: false,
+        viewDocumentIds: null
     },
     rawModal: {
         visible: false,
@@ -50,7 +51,8 @@ export default function windowHandler(state = initialState, action) {
                     viewId: action.viewId,
                     title: action.title,
                     modalType: action.modalType,
-                    isAdvanced: action.isAdvanced
+                    isAdvanced: action.isAdvanced,
+                    viewDocumentIds: action.viewDocumentIds
                 })
         })
 

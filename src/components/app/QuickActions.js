@@ -56,7 +56,7 @@ class QuickActions extends Component {
     }
 
     handleClick = (action) => {
-        const {dispatch, viewId} = this.props;
+        const {dispatch, viewId, selected} = this.props;
 
         if(action.disabled){
             return;
@@ -65,7 +65,7 @@ class QuickActions extends Component {
         dispatch(
             openModal(
                 action.caption, action.processId, 'process', null, null, false,
-                viewId
+                viewId, selected
             )
         );
     }
