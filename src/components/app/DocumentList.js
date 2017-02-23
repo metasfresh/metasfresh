@@ -192,7 +192,6 @@ class DocumentList extends Component {
                 }else{
                     this.createView();
                 }
-
                 setModalTitle && setModalTitle(response.data.caption)
             })
         });
@@ -380,6 +379,7 @@ class DocumentList extends Component {
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={selected}
+                            queryLimitHit={data.queryLimitHit}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
