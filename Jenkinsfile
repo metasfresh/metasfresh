@@ -473,7 +473,8 @@ stage('Invoke downstream jobs')
 
 			echo "jsonPayload=${jsonPayload}";
 			
-			final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
+			// this one-lined version from master works
+			//final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
 			
 			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}";
 		}
