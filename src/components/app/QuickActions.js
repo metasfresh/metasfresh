@@ -127,7 +127,7 @@ class QuickActions extends Component {
                         }
                     </div>
                     <QuickActionsContextShortcuts
-                        handleClick={() => shouldNotUpdate ? '' : this.handleClick(actions[0])}
+                        handleClick={() => shouldNotUpdate ? null : this.handleClick(actions[0])}
                     />
                 </div>
             );
