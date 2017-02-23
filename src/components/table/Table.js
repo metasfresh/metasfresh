@@ -27,7 +27,6 @@ import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
-
 class Table extends Component {
     constructor(props) {
         super(props);

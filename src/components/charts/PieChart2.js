@@ -42,7 +42,6 @@ class PieChart2 extends Component {
 
     }
 
-
     render() {
         return (
             <div className="chart-wrapp">

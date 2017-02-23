@@ -9,7 +9,6 @@ import PieChart2 from '../charts/PieChart2';
 import StackedGroupedBars from '../charts/StackedGroupedBars';
 import StackedGroupedBars2 from '../charts/StackedGroupedBars2';
 
-
 const cardSource = {
     beginDrag(props) {
         return {
@@ -52,7 +51,6 @@ function connect(connect) {
         connectDropTarget: connect.dropTarget()
     };
 }
-
 
 export class DraggableWidget extends Component {
     constructor(props) {
@@ -164,7 +162,6 @@ export class DraggableWidget extends Component {
                 }
 
             </div>
-
 
             ));
     }

@@ -182,7 +182,6 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
             docId = 'NEW';
         }
 
-
         // this chain is really important,
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
@@ -472,8 +471,6 @@ export function deleteLocal(tabid, rowsid, scope) {
 }
 
 // END PROCESS ACTIONS
-
-
 
 // UTILITIES
 

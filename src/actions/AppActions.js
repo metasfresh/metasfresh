@@ -167,7 +167,6 @@ export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, ro
     });
 }
 
-
 export function getNotificationsSuccess(notifications, unreadCount) {
     return {
         type: types.GET_NOTIFICATIONS_SUCCESS,
