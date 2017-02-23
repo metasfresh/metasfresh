@@ -462,15 +462,17 @@ stage('Invoke downstream jobs')
 			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
 			
 			/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-			final jsonPayload = """{ 
+			final jsonPayload = "{ 
 				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", 
 				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", 
 				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
-				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}\",
-			}""";
+				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}\"
+			}";
 
+			final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
+			
 			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
 	}
@@ -690,38 +692,10 @@ stage('Deployment')
 				invokeRemoteInInstallDir('./sql_remote.sh');
 				invokeRemoteInInstallDir('./minor_remote.sh');
 				invokeRemoteInInstallDir('./start_service.sh');
-			
+
 				// clean up what we just rolled out
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
-				
-				final paramWebuiApiServerArtifactURL;
-				if( MF_ARTIFACT_URLS['metasfresh-webui'] )
-				{
-					echo "Deploying metasfresh-webui-api from URL ${MF_ARTIFACT_URLS['metasfresh-webui']}"
-					paramWebuiApiServerArtifactURL="-u ${MF_ARTIFACT_URLS['metasfresh-webui']}"
-				}
-				else
-				{
-					echo "Deploying latest metasfresh-webui-api from the ${MF_MAVEN_REPO_NAME} repository (see console to check what is really deployed)"
-					paramWebuiApiServerArtifactURL="-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=LATEST";
-				}
-				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
-								
-				final paramWebuiFrontendServerArtifactURL;
-				if( MF_ARTIFACT_URLS['metasfresh-webui-frontend'] )
-				{
-					echo "Deploying metasfresh-webui-frontend from URL ${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}"
-					paramWebuiFrontendServerArtifactURL="-u ${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}"
-				}
-				else
-				{
-					echo "Deploying latest metasfresh-webui-frontend from the ${MF_MAVEN_REPO_NAME} repository (see console to check what is really deployed)"
-					paramWebuiFrontendServerArtifactURL="-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=LATEST&p=tar.gz";
-				}
-				
-				// FIXME: commented out because it's not working
-				//invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh ${paramWebuiFrontendServerArtifactURL}");
-				
+
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
 				step([$class: 'WsCleanup', cleanWhenFailure: false])
 			} // node
