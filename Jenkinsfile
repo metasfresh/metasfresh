@@ -462,18 +462,20 @@ stage('Invoke downstream jobs')
 			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
 			
 			/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-			final jsonPayload = "{ 
+			final jsonPayload = """{ 
 				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", 
 				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", 
 				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
 				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}\"
-			}";
+			}""";
 
+			echo "jsonPayload=${jsonPayload}";
+			
 			final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
 			
-			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}";
 		}
 	}
 }
