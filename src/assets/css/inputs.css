@@ -332,7 +332,7 @@ button {
 
 .input-slider:before {
     position: absolute;
-    content: "";
+    content: '';
     height: 18px;
     width: 18px;
     left: 2px;
@@ -565,8 +565,8 @@ input:checked + .input-slider:before {
     background-color: transparent;
 }
 
-.form-control-meta[type="number"]::-webkit-outer-spin-button,
-.form-control-meta[type="number"]::-webkit-inner-spin-button {
+.form-control-meta[type='number']::-webkit-outer-spin-button,
+.form-control-meta[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
 }
 

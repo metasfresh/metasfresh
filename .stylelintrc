@@ -1,5 +1,7 @@
 {
     "rules": {
-        "string-quotes": "single"
+        "string-quotes": "single",
+        "indentation": 4,
+        "declaration-block-no-duplicate-properties": true
     }
 }
