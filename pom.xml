@@ -74,36 +74,6 @@
 	</distributionManagement>
 
 	<build>
-		<plugins>
-		            
-            <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>properties-maven-plugin</artifactId>
-				<version>1.0.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>set-system-properties</goal>
-						</goals>
-						<configuration>
-							<properties>
-								<!-- 
-									Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
-									because 'file' access is not allowed due to restriction set by the accessExternalSchema 
-									property." 
-									Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
-								<property>
-									<name>javax.xml.accessExternalSchema</name>
-									<value>all</value>
-								</property>
-							</properties>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-            
-		</plugins>
-
 		<pluginManagement>
 			<plugins>
 				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
@@ -136,6 +106,21 @@
 					-->
 					<!-- version>2.2</version -->
 					<version>1.6</version>
+				</plugin>
+
+				<plugin>
+					<!-- 
+						gh #968: If we run mvn properties:write-project-properties
+						then store the properties to a file calle "app.properties".
+						We need this for https://github.com/metasfresh/metasfresh/issues/968 
+						because among those properties there are some artifact versions that we want to document.
+					-->
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>properties-maven-plugin</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<outputFile>app.properties</outputFile>
+					</configuration>
 				</plugin>
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
@@ -184,30 +169,58 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<!-- 
+									Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
+									because 'file' access is not allowed due to restriction set by the accessExternalSchema 
+									property." 
+									Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
+								<property>
+									<name>javax.xml.accessExternalSchema</name>
+									<value>all</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
 	</build>
 
 	<profiles>
 	  <!-- thx to http://stackoverflow.com/questions/635154/multiple-deployments-in-maven -->
 	  <!-- note that instead of activating one of theses repos, we will probably set those variables from outside -->
-	  <profile>
-	    <id>metasfresh-perm-snapshots-repo</id>
-	    <properties>
-		  <deploy-repo-id>metasfresh-perm-snapshots-repo</deploy-repo-id>
-	      <deploy-repo-name>Maven metasfresh *permantent* Snapshots Repository</deploy-repo-name>
-	      <deploy-repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/</deploy-repo-url>
-	    </properties>
-	  </profile>
-	  <profile>
-	    <id>metasfresh-snapshots-repo</id>
-	    <activation>
-	      <activeByDefault>true</activeByDefault>
-	    </activation>
-	    <properties>
-	      <deploy-repo-id>metasfresh-snapshots-repo</deploy-repo-id>
-	      <deploy-repo-name>Maven metasfresh Snapshots Repository</deploy-repo-name>
-	      <deploy-repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-snapshots/</deploy-repo-url>
-	    </properties>
-	  </profile>
+		<profile>
+			<id>metasfresh-perm-snapshots-repo</id>
+			<properties>
+				<deploy-repo-id>metasfresh-perm-snapshots-repo</deploy-repo-id>
+				<deploy-repo-name>Maven metasfresh *permantent* Snapshots Repository</deploy-repo-name>
+				<deploy-repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/</deploy-repo-url>
+			</properties>
+		</profile>
+		<profile>
+			<id>metasfresh-snapshots-repo</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<deploy-repo-id>metasfresh-snapshots-repo</deploy-repo-id>
+				<deploy-repo-name>Maven metasfresh Snapshots Repository</deploy-repo-name>
+				<deploy-repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-snapshots/</deploy-repo-url>
+			</properties>
+		</profile>
 	</profiles>
 
 </project>
