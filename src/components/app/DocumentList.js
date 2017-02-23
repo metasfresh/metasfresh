@@ -179,9 +179,9 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        dispatch(
-            initLayout('documentView', windowType, null, null, null, null, type, true)
-        ).then(response => {
+        dispatch(initLayout(
+            'documentView', windowType, null, null, null, null, type, true
+        )).then(response => {
             this.setState({
                 layout: response.data,
                 page:1,

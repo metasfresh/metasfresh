@@ -132,7 +132,7 @@ class MasterWidget extends Component {
     }
 
     handleProcess = (
-        caption, buttonProcessId, tabId, rowId, dataId
+        caption, buttonProcessId, tabId, rowId
     ) => {
         const {dispatch} = this.props;
 
