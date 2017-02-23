@@ -106,13 +106,6 @@
 
 		<pluginManagement>
 			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>jaxb2-maven-plugin</artifactId>
-					<!-- use this rather old jaxb2 version because there are problems with the m2e plugin of eclipse and 2.x versions of jaxb2. -->
-					<version>1.6</version>
-				</plugin>
-
 				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
