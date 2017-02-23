@@ -202,8 +202,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-				env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
-				env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
 				env.BUILD_VERSION="${BUILD_VERSION}";
             }
 		}
