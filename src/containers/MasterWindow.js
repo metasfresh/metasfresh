@@ -41,8 +41,8 @@ class MasterWindow extends Component {
         }
     }
 
-    handleDropFile(file){
-        file = file instanceof Array ? file[0] : file;
+    handleDropFile(files){
+        const file = files instanceof Array ? files[0] : files;
 
         if (!(file instanceof File)){
             return Promise.reject();
@@ -58,10 +58,10 @@ class MasterWindow extends Component {
         return dispatch(attachFileAction(type, dataId, fd));
     }
 
-    handleRejectDropped(dropped){
+    handleRejectDropped(droppedFiles){
         const { dispatch } = this.props;
 
-        dropped = dropped instanceof Array ? dropped[0] : dropped;
+        const dropped = droppedFiles instanceof Array ? droppedFiles[0] : droppedFiles;
 
         dispatch(addNotification(
             'Attachment', 'Dropped item [' +
