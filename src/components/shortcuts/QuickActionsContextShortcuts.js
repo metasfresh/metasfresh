@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
-class DocumentListContextShortcuts extends Component {
+class QuickActionsContextShortcuts extends Component {
     constructor(props){
         super(props);
     }
@@ -30,4 +30,4 @@ class DocumentListContextShortcuts extends Component {
     }
 }
 
-export default DocumentListContextShortcuts;
+export default QuickActionsContextShortcuts;

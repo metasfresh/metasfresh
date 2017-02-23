@@ -57,6 +57,7 @@ class QuickActions extends Component {
 
     handleClick = (action) => {
         const {dispatch, viewId, selected} = this.props;
+
         if(action.disabled){
             return;
         }
@@ -90,6 +91,8 @@ class QuickActions extends Component {
             isDropdownOpen
         } = this.state;
 
+        const {shouldNotUpdate} = this.props;
+
         if(actions.length){
             return (
                 <div className="js-not-unselect">
@@ -104,7 +107,6 @@ class QuickActions extends Component {
                         >
                             {actions[0].caption}
                         </div>
-
                         <div
                             className={
                                 'btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer ' +
@@ -125,7 +127,7 @@ class QuickActions extends Component {
                         }
                     </div>
                     <QuickActionsContextShortcuts
-                        handleClick={() => this.handleClick(actions[0])}
+                        handleClick={() => shouldNotUpdate ? null : this.handleClick(actions[0])}
                     />
                 </div>
             );
