@@ -154,9 +154,7 @@ class BarChart extends Component {
         }
     }
 
-
     render() {
-
 
         return (
             <div>

@@ -176,7 +176,6 @@ function mapStateToProps(state) {
         pathname: ''
     }
 
-
     return {
         modal,
         breadcrumb,

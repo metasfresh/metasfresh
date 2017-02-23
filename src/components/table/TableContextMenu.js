@@ -90,7 +90,6 @@ class TableContextMenu extends Component {
     }
 }
 
-
 TableContextMenu.propTypes = {
     dispatch: PropTypes.func.isRequired
 };

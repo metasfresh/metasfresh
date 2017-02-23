@@ -83,7 +83,6 @@ export class DraggableWrapper extends Component {
         })
     }
 
-
     render() {
         const { cards, idMaximized, indicators } = this.state;
         return (
@@ -93,8 +92,6 @@ export class DraggableWrapper extends Component {
                         <img src={logo} />
                     </div>
                 }
-
-
 
                 {false && indicators.length > 0 && <div className={
                     'indicators-wrapper ' +

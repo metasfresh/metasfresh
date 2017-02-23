@@ -71,8 +71,6 @@ class PieChartComponent extends Component {
             .text(function(d) { return d.data.label; });
     }
 
-
-
     render() {
         return (
             <div>

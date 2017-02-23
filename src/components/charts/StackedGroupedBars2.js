@@ -154,9 +154,7 @@ class ChartGrouped extends Component {
         }
     }
 
-
     render() {
-
 
         return (
             <div>

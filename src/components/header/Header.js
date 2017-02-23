@@ -416,7 +416,6 @@ class Header extends Component {
     }
 }
 
-
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     indicator: PropTypes.string.isRequired,

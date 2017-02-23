@@ -86,9 +86,7 @@ class BarChartComponent extends Component {
         document.getElementsByClassName('barchart')[0].childNodes[0].remove();
     }
 
-
     render() {
-
 
         return (
             <div>

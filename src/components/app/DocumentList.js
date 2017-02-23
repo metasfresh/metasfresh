@@ -313,7 +313,6 @@ class DocumentList extends Component {
             fetchQuickActionsOnInit, isModal
         } = this.props;
 
-
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">

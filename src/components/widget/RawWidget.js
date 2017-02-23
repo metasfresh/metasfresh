@@ -622,7 +622,6 @@ class RawWidget extends Component {
             return false;
         }
 
-
         return (
             <div className={
                 'form-group row ' +

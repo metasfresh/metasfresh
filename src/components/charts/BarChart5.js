@@ -45,8 +45,6 @@ class BarChart extends Component {
 
         var mSvg = d3.select('.chart5');
 
-
-
         //Add a "defs" element to the svg
         var defs = mSvg.append('defs');
 
@@ -99,9 +97,7 @@ class BarChart extends Component {
         }
     }
 
-
     render() {
-
 
         return (
             <div className="chart-bar">

@@ -7,7 +7,6 @@ import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
 
-
 import {
     rootRequest,
     nodePathsRequest,
@@ -17,7 +16,6 @@ import {
 import {
     openModal
 } from '../actions/WindowActions';
-
 
 class NavigationTree extends Component {
     constructor(props){
@@ -155,7 +153,6 @@ class NavigationTree extends Component {
         const {dispatch} = this.props;
 
         e.preventDefault();
-
 
         dispatch(nodePathsRequest(nodeId,4)).then(response => {
             this.setState(Object.assign({}, this.state, {
