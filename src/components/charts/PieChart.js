@@ -54,7 +54,7 @@ class PieChart extends Component {
         context.restore();
         });
     }
-    
+
 
     render() {
 

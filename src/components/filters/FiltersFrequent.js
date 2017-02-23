@@ -20,8 +20,9 @@ class FiltersFrequent extends Component {
     }
 
     handleClickOutside = () => {
-        const {widgetShown} = this.props;
+        const {widgetShown, dropdownToggled} = this.props;
         !widgetShown && this.toggleFilter(null, null);
+        dropdownToggled();
     }
 
     render() {

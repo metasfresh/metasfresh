@@ -308,6 +308,12 @@ button {
     margin-bottom:0;
 }
 
+.input-switch.input-table {
+    height: 15px;
+    width: 30px;
+    margin-top: 0;
+}
+
 .input-switch input {
     display:none;
 }
@@ -336,6 +342,12 @@ button {
     border-radius: 50%;
 }
 
+.input-table .input-slider:before {
+    height:11px;
+    width: 11px;
+    left: 2px;
+}
+
 input:checked + .input-slider {
     background-color: $brand-success-dark-color;
 }
@@ -348,6 +360,9 @@ input:checked + .input-slider:before {
     transform: translateX(22px);
 }
 
+.input-table input:checked + .input-slider:before {
+    transform: translateX(15px);
+}
 
 
 /*

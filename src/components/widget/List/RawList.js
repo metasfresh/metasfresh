@@ -8,7 +8,26 @@ class RawList extends Component {
 
         this.state = {
             selected: props.selected || 0,
-            isOpen: false
+            isOpen: false,
+            dropdownList: []
+        }
+    }
+
+    componentDidUpdate = (prevProps) => {
+        const { list, mandatory } = this.props;
+
+        if(prevProps.list !== list){
+            let dropdown = [];
+
+            if(!mandatory){
+                dropdown.push(0);
+            }
+
+            if(list.length > 0) {
+                this.setState({
+                    dropdownList: dropdown.concat(list)
+                });
+            }
         }
     }
 
@@ -60,18 +79,25 @@ class RawList extends Component {
     }
 
     navigate = (up) => {
-        const {selected} = this.state;
-        const {list} = this.props;
+        const {selected, dropdownList} = this.state;
 
-        const next = up ? selected + 1 : selected - 1;
+        let selectedIndex = null;
 
-        this.setState(Object.assign({}, this.state, {
-            selected: (next >= 0 && next <= list.length) ? next : selected
-        }));
+        dropdownList.map((item, index) => {
+            if(JSON.stringify(item) === JSON.stringify(selected)){
+                selectedIndex = index;
+            }
+        });
+
+        const next = up ? selectedIndex + 1 : selectedIndex - 1;
+
+        this.setState({
+            selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
+        })
+
     }
 
     handleKeyDown = (e) => {
-        const {list} = this.props;
         const {selected} = this.state;
 
         switch(e.key){
@@ -85,7 +111,7 @@ class RawList extends Component {
                 break;
             case 'Enter':
                 e.preventDefault();
-                this.handleSelect(list[Object.keys(list)[selected-1]])
+                this.handleSelect(selected)
                 break;
             case 'Escape':
                 e.preventDefault();
@@ -163,14 +189,13 @@ class RawList extends Component {
         list.map((option, index) => {
             ret.push(this.getRow(index + 1, option))
         })
-
         return ret;
     }
 
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, tabIndex, disabled
+            rowId, isModal, tabIndex, disabled, mandatory
         } = this.props;
 
         const {
@@ -194,7 +219,8 @@ class RawList extends Component {
                 <div className={
                     'input-dropdown input-block input-readonly input-' +
                     (rank ? rank : 'secondary') +
-                    (updated ? ' pulse ' : ' ')
+                    (updated ? ' pulse ' : ' ') +
+                    ((mandatory && !selected) ? 'input-mandatory ' : '')
                 }>
                     <div className={
                         'input-editable input-dropdown-focused ' +
@@ -227,7 +253,11 @@ class RawList extends Component {
                     )}
                     {(loading && list.length === 0) && (
                         <div className="input-dropdown-list-header">
-                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                            <ReactCSSTransitionGroup
+                                transitionName="rotate"
+                                transitionEnterTimeout={1000}
+                                transitionLeaveTimeout={1000}
+                            >
                                 <div className="rotate icon-rotate">
                                     <i className="meta-icon-settings"/>
                                 </div>

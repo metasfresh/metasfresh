@@ -382,10 +382,12 @@ export function attachFileAction(windowType, docId, data){
 
 // PROCESS ACTIONS
 
-export function createProcess(processType, viewId, type, ids) {
+export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
     return (dispatch) =>
-        dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
+        dispatch(
+            getProcessData(processType, viewId, type, ids, tabId, rowId)
+        ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
             pid = response.data.pinstanceId;
             if (preparedData.length === 0) {
@@ -434,7 +436,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
     }
 }
 
-function getProcessData(processId, viewId, type, ids) {
+function getProcessData(processId, viewId, type, ids, tabId, rowId) {
     return () => axios.post(
         config.API_URL +
         '/process/' + processId,
@@ -445,7 +447,9 @@ function getProcessData(processId, viewId, type, ids) {
         } : {
             processId: processId,
             documentId: Array.isArray(ids) ? ids[0] : ids,
-            documentType: type
+            documentType: type,
+            tabId: tabId,
+            rowId: rowId
         }
     );
 }

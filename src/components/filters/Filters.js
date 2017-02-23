@@ -16,7 +16,7 @@ class Filters extends Component {
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
-        
+
         this.init(filtersActive ? filtersActive[0] : null);
     }
 
@@ -36,16 +36,17 @@ class Filters extends Component {
     /*
      *   This method should update docList
      */
-    applyFilters = (filter) => {
-        const notValid = this.isFilterValid(filter);
+    applyFilters = (filter, cb) => {
+        const valid = this.isFilterValid(filter);
 
-        if (notValid.length) {
-            this.setState({
-                notValidFields: notValid
-            });
-        } else {
-            this.setFilterActive([filter]);
-        }
+        this.setState({
+            notValidFields: !valid
+        }, () => {
+            if (valid){
+                this.setFilterActive([filter]);
+                cb && cb();
+            }
+        });
     }
 
     setFilterActive = (filter) => {
@@ -71,6 +72,12 @@ class Filters extends Component {
         this.setFilterActive(null)
     }
 
+    dropdownToggled = () => {
+        this.setState({
+            notValidFields: false
+        })
+    }
+
     // PARSING FILTERS ---------------------------------------------------------
 
     sortFilters = (data) => {
@@ -82,9 +89,9 @@ class Filters extends Component {
 
     isFilterValid = (filters) => {
         if(filters.parameters){
-            return filters.parameters.filter(item => {
-                return item.mandatory && !item.value;
-            }).length;
+            return !(filters.parameters.filter(
+                item => item.mandatory && !item.value
+            ).length);
         }else{
             return false;
         }
@@ -118,6 +125,7 @@ class Filters extends Component {
                             applyFilters={this.applyFilters}
                             clearFilters={this.clearFilters}
                             active={filter}
+                            dropdownToggled={this.dropdownToggled}
                         />
                     }
                     {!!notFrequentFilters.length &&
@@ -131,6 +139,7 @@ class Filters extends Component {
                             applyFilters={this.applyFilters}
                             clearFilters={this.clearFilters}
                             active={filter}
+                            dropdownToggled={this.dropdownToggled}
                         />
                     }
                 </div>

@@ -109,6 +109,7 @@ class MasterWindow extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
+                        modalViewId={modal.viewId}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
                         closeCallback={this.closeModalCallback}
@@ -179,7 +180,7 @@ function mapStateToProps(state) {
         actions: [],
         attachments: []
     }
-    
+
     return {
         master,
         breadcrumb,

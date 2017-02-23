@@ -24,9 +24,9 @@ class PieChartComponent extends Component {
             .range(['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00']);
 
         var dimensions = this.setDimensions();
-        this.drawChart(dimensions.width, dimensions.height, 
+        this.drawChart(dimensions.width, dimensions.height,
                                 dimensions.pie, dimensions.arc, data, color);
-    
+
     }
 
     setDimensions = (width=800, height=600) => {
@@ -41,7 +41,7 @@ class PieChartComponent extends Component {
             .value(function(d) { return d.value; });
 
         return {
-                width: width, 
+                width: width,
                 height:height,
                 radius: radius,
                 arc: arc,
