@@ -479,7 +479,8 @@ class RawWidget extends Component {
                         className={
                             'input-switch ' +
                             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '')
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (rowId && !isModal ? 'input-table ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
