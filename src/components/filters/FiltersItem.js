@@ -17,7 +17,12 @@ class FiltersItem extends Component {
     }
 
     componentWillReceiveProps(props) {
-        if(JSON.stringify(this.props.active) !== JSON.stringify(props.active)){
+        const {active} = this.props;
+        
+        if(
+            JSON.stringify(active) !== 
+            JSON.stringify(props.active)
+        ){
             this.init();
         }
     }
@@ -63,24 +68,23 @@ class FiltersItem extends Component {
 
     mergeData = (property, value, valueTo) => {
         this.setState(prevState => ({
-                filter: Object.assign({}, prevState.filter, {
-                    parameters: prevState.filter.parameters.map(param => {
-                        if(param.parameterName === property){
-                            return Object.assign({}, param,
-                                valueTo ? {
-                                    value,
-                                    valueTo
-                                } : {
-                                    value
-                                }
-                            )
-                        }else{
-                            return param;
-                        }
-                    })
+            filter: Object.assign({}, prevState.filter, {
+                parameters: prevState.filter.parameters.map(param => {
+                    if(param.parameterName === property){
+                        return Object.assign({}, param,
+                            valueTo ? {
+                                value,
+                                valueTo
+                            } : {
+                                value
+                            }
+                        )
+                    }else{
+                        return param;
+                    }
                 })
             })
-        )
+        }))
     }
 
     handleApply = () => {
