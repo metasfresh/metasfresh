@@ -93,6 +93,7 @@ this week's RC
   * [#383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/383) Shortcut for Batch entry space not usable when in input field
   * [#376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/376) Don't render unknown widget types but log in console
   * [#350](https://github.com/metasfresh/metasfresh-webui-frontend/issues/350) Strange pulse effect in Subtab Gridview
+  * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
   
 # metasfresh 4.56.55 (2017-07)
 
