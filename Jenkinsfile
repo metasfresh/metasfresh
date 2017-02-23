@@ -425,21 +425,19 @@ stage('Invoke downstream jobs')
 		
 		// params.MF_SKIP_TO_DIST == false, so invoke downstream jobs and get the build versions which came out of them
 		
-		 parallel (
-			 "metasfresh-webui" : 
-			 {
+//		 parallel 
+//			"metasfresh-webui" : {
 				// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
 				final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 				MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
-			}, 
-			"metasfresh-procurement-webui" : 
-			{
+//			}, 
+//			"metasfresh-procurement-webui" : {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
-			},
-			true
-		); //failFast=true
+//			},
+//			failFast : true
+//		;
 			
 		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo. 
 		// Therefore we will just get the latest webui-frontend later, when we need it.
