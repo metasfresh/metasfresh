@@ -31,7 +31,7 @@ module.exports = {
             loader: 'file?name=[path][name].[hash].[ext]'
         }, {
             test: /\.css$/,
-            loaders: ["style-loader","css-loader","postcss-loader"]
+            loaders: ['style-loader','css-loader','postcss-loader']
         }, {
             test: /\.html$/,
             loader: 'html'
