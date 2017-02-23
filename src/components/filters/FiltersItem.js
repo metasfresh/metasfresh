@@ -18,9 +18,9 @@ class FiltersItem extends Component {
 
     componentWillReceiveProps(props) {
         const {active} = this.props;
-        
+
         if(
-            JSON.stringify(active) !== 
+            JSON.stringify(active) !==
             JSON.stringify(props.active)
         ){
             this.init();

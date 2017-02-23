@@ -54,7 +54,7 @@ class Filters extends Component {
 
     setFilterActive = (filter) => {
         const {updateDocList} = this.props;
-        
+
         this.setState({
             filter: filter
         }, () => {
@@ -102,7 +102,7 @@ class Filters extends Component {
     }
 
     parseToPatch = (params) => {
-        return params.map(param => 
+        return params.map(param =>
             Object.assign({}, param, {
                 value: param.value === '' ? null : param.value
             })
