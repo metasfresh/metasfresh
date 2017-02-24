@@ -1,13 +1,12 @@
 package de.metas.ui.web.session.json;
 
-import java.util.TimeZone;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 
 /*
  * #%L
@@ -74,7 +73,6 @@ public class JSONUserSession
 
 		language = userSession.getAD_Language();
 
-		final TimeZone timeZone = TimeZone.getDefault();
-		this.timeZone = timeZone.getID();
+		timeZone = JSONDate.getCurrentTimeZoneAsJson();
 	}
 }

@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.util.TimeZone;
 
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -43,6 +44,8 @@ public final class JSONDate implements Serializable
 
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 	private static final SimpleDateFormatThreadLocal DATE_FORMAT = new SimpleDateFormatThreadLocal(DATE_PATTEN);
+	
+	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
 
 	private static final DateFormat getDateFormat()
 	{
@@ -123,6 +126,13 @@ public final class JSONDate implements Serializable
 				throw exFinal;
 			}
 		}
+	}
+	
+	public static String getCurrentTimeZoneAsJson()
+	{
+		final java.util.Date now = SystemTime.asDate();
+		final String timeZone = TIMEZONE_FORMAT.format(now);
+		return timeZone;
 	}
 
 	private JSONDate()
