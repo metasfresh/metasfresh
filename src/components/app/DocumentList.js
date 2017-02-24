@@ -183,9 +183,7 @@ class DocumentList extends Component {
             'documentView', windowType, null, null, null, null, type, true
         )).then(response => {
             this.setState({
-                layout: response.data,
-                page:1,
-                sort:null
+                layout: response.data
             }, () => {
                 if(viewId && !isNewFilter){
                     this.browseView();
