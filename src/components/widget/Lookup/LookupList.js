@@ -6,6 +6,12 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 class LookupList extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            listElementHeight: 0,
+            listVisibleElements: 0,
+            shouldListScrollUpdate: false
+        }
     }
 
     componentDidMount(){

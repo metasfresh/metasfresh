@@ -13,7 +13,7 @@ class RawList extends Component {
         }
     }
 
-    componentDidUpdate = (prevProps) => {
+    componentDidUpdate = prevProps => {
         const { list, mandatory } = this.props;
 
         if(prevProps.list !== list){
@@ -28,6 +28,40 @@ class RawList extends Component {
                     dropdownList: dropdown.concat(list)
                 });
             }
+        }
+
+        const { isOpen, selected } = this.state;
+        if (!isOpen) {
+            return;
+        }
+
+        const {listScrollWrap, items} = this.refs;
+
+        const listElementHeight = 30;
+        const listVisibleElements = Math.floor(listScrollWrap.clientHeight / listElementHeight);
+        const shouldListScrollUpdate = listVisibleElements <= items.childNodes.length;
+
+        const selectedIndex = (selected === 0) ? 0 :
+        list.findIndex(item => Object.keys(item)[0] === Object.keys(selected)[0]) + 1;
+
+        // no need for updating scroll
+        if (!shouldListScrollUpdate){
+            return;
+        }
+
+        const visibleMin = listScrollWrap.scrollTop;
+        const visibleMax = listScrollWrap.scrollTop +
+            listVisibleElements * listElementHeight;
+
+        //not visible from down
+        if ((selectedIndex + 1) * listElementHeight > visibleMax){
+            listScrollWrap.scrollTop = listElementHeight *
+                (selectedIndex - listVisibleElements)
+        }
+
+        //not visible from above
+        if (selectedIndex * listElementHeight < visibleMin){
+            listScrollWrap.scrollTop = selectedIndex * listElementHeight
         }
     }
 
@@ -189,7 +223,8 @@ class RawList extends Component {
         list.map((option, index) => {
             ret.push(this.getRow(index + 1, option))
         })
-        return ret;
+
+        return <div ref="items">{ret}</div>;
     }
 
     render() {
@@ -245,7 +280,7 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                {isOpen && <div className="input-dropdown-list">
+                {isOpen && <div className="input-dropdown-list" ref="listScrollWrap">
                     {(list.length === 0 && loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
