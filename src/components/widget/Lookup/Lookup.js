@@ -71,7 +71,6 @@ class Lookup extends Component {
             mainProperty, property
         } = this.state;
 
-
         // removing selection
         this.setState({
             selected: null
@@ -120,7 +119,6 @@ class Lookup extends Component {
             }
         });
 
-
     }
 
     getAllDropdowns = () => {
@@ -160,7 +158,6 @@ class Lookup extends Component {
             this.handleBlur();
         }
     }
-
 
     generatingPropsSelection = () => {
         const {onChange} = this.props;
@@ -228,7 +225,7 @@ class Lookup extends Component {
     handleChange = () => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
-            tabId, rowId, entity,subentity, subentityId, viewId
+            tabId, rowId, entity, subentity, subentityId, viewId
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -450,7 +447,6 @@ class Lookup extends Component {
         )
     }
 }
-
 
 Lookup.propTypes = {
     dispatch: PropTypes.func.isRequired

@@ -42,7 +42,7 @@ class BarChartComponent extends Component {
             };
     }
     setRanges = (width, height, data) => {
-        var x = d3.scaleBand().range([0,width]).padding(0.1);
+        var x = d3.scaleBand().range([0, width]).padding(0.1);
         var y = d3.scaleLinear().range([height, 0]);
 
         x.domain(data.map(function(d) { return d.name; }));
@@ -86,9 +86,7 @@ class BarChartComponent extends Component {
         document.getElementsByClassName('barchart')[0].childNodes[0].remove();
     }
 
-
     render() {
-
 
         return (
             <div>

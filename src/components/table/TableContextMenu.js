@@ -1,4 +1,4 @@
-import React, { Component,PropTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
 import keymap from '../../keymap.js';
@@ -15,8 +15,8 @@ class TableContextMenu extends Component {
     }
 
     componentDidMount() {
-        const {x,y} = this.props;
-        this.setPosition(x,y,this.contextMenu);
+        const {x, y} = this.props;
+        this.setPosition(x, y, this.contextMenu);
     }
 
     getPosition = (dir, pos, element) => {
@@ -32,7 +32,7 @@ class TableContextMenu extends Component {
         }
     }
 
-    setPosition = (x,y,elem) => {
+    setPosition = (x, y, elem) => {
         this.setState({
             contextMenu: {
                 x: this.getPosition('x', x, elem),
@@ -89,7 +89,6 @@ class TableContextMenu extends Component {
         )
     }
 }
-
 
 TableContextMenu.propTypes = {
     dispatch: PropTypes.func.isRequired

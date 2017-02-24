@@ -14,7 +14,8 @@ const initialState = {
         rowData: {},
         modalTitle: '',
         modalType: '',
-        isAdvanced: false
+        isAdvanced: false,
+        viewDocumentIds: null
     },
     rawModal: {
         visible: false,
@@ -50,7 +51,8 @@ export default function windowHandler(state = initialState, action) {
                     viewId: action.viewId,
                     title: action.title,
                     modalType: action.modalType,
-                    isAdvanced: action.isAdvanced
+                    isAdvanced: action.isAdvanced,
+                    viewDocumentIds: action.viewDocumentIds
                 })
         })
 
@@ -135,7 +137,7 @@ export default function windowHandler(state = initialState, action) {
                             [action.rowid]: {
                                 fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map(item =>
                                     item.field === action.item.field ?
-                                        Object.assign({},item,action.item) :
+                                        Object.assign({}, item, action.item) :
                                         item
                                 )}
                             }

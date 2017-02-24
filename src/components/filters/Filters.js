@@ -43,7 +43,10 @@ class Filters extends Component {
             notValidFields: !valid
         }, () => {
             if (valid){
-                this.setFilterActive([filter]);
+                const parsedFilter = filter.parameters ? Object.assign({}, filter, {
+                    parameters: this.parseToPatch(filter.parameters)
+                }) : filter;
+                this.setFilterActive([parsedFilter]);
                 cb && cb();
             }
         });
@@ -51,6 +54,7 @@ class Filters extends Component {
 
     setFilterActive = (filter) => {
         const {updateDocList} = this.props;
+
         this.setState({
             filter: filter
         }, () => {
@@ -97,11 +101,12 @@ class Filters extends Component {
         }
     }
 
-    getFiltersStructure = (filterData) => {
-        return filterData.parameters.map((item) => {
-            item.value = null;
-            return item;
-        });
+    parseToPatch = (params) => {
+        return params.map(param =>
+            Object.assign({}, param, {
+                value: param.value === '' ? null : param.value
+            })
+        )
     }
 
     // RENDERING FILTERS -------------------------------------------------------

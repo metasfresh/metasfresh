@@ -68,7 +68,7 @@ class MenuOverlayItem extends Component {
                 break;
             case 'Escape':
                 e.preventDefault();
-                handleMenuOverlay('','');
+                handleMenuOverlay('', '');
         }
     }
 

@@ -3,7 +3,6 @@ import onClickOutside from 'react-onclickoutside';
 import Moment from 'moment';
 import MasterWidget from '../widget/MasterWidget';
 
-
 class TableCell extends Component {
     constructor(props) {
         super(props);

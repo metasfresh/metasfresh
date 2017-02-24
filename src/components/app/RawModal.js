@@ -59,7 +59,6 @@ class RawModal extends Component {
         }
     }
 
-
     render() {
         const {
             modalTitle, children
