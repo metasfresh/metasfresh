@@ -116,14 +116,23 @@ this week's RC
 
 * webUI
   * [#124](https://github.com/metasfresh/metasfresh-webui/issues/124) Default/ Standard Filter not correct in WebUI
+    * Fix to show the right default Filters in WebUI as defined in Search Columns in Swing Client for a given window.
   * [#135](https://github.com/metasfresh/metasfresh-webui/issues/135) process parameter defaults are not set
+    * Fix that ensures the proper setting of report Parameters in WebUI to Jasperreports to allow creation of reports.
   * [#137](https://github.com/metasfresh/metasfresh-webui/issues/137) Make sure ProcessInstance is not override by concurrent REST api call
+    * Fixing timing conditions that lead to overriding ProcessInstance through concurrent REST API call.
   * [#141](https://github.com/metasfresh/metasfresh-webui/issues/141) edit address not working anymore
+    * Fix to allow the usage of buttons in the advanced edit overlays of WebUI (for example Button for location editor or Attributes Editor)
   * [#145](https://github.com/metasfresh/metasfresh-webui/issues/145) HU editor - Create material receipt not enabled when the whole palet is selected
+    * Fix that enables the QuickAction in Handling Unit Editor of Material Receipt when selecting an HU with LU Level (e.g. Pallet)
   * [#150](https://github.com/metasfresh/metasfresh-webui/issues/150) Material Receipt Candidates not updated after receive HU 
+    * Fixed a Bug that occured when doing mass enqueing of invoice candidate lines of different business partner.
   * [#155](https://github.com/metasfresh/metasfresh-webui/issues/155) Error in invoice candidate enqueuing
+    * Fixed a Bug that occured when doing mass enqueing of invoice candidate lines of different business partners.
   * [#157](https://github.com/metasfresh/metasfresh-webui/issues/157) Receive HU opens with 10 LUs
+    * Bugfix for Material Recipts via Handling Unit Editor. Always opened with wrong amount of Top Level Handling Units (LU).
   * [#164](https://github.com/metasfresh/metasfresh-webui/issues/164) Create migration script for missing Menu
+    * Recreated the missing migration for the newly built WebUI menu with flatter and more comprehensible Hierarchy and Structure.
   * [#168](https://github.com/metasfresh/metasfresh-webui/issues/168) internal: Don't create layout elements if there are no fields inside
   * [#170](https://github.com/metasfresh/metasfresh-webui/issues/170) date attributes in hu modal window
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
