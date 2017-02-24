@@ -142,11 +142,11 @@ class Window extends Component {
 
     renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
-        const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+        const {data, modal, tabId, rowId, dataId, isAdvanced} = this.props;
         const {fullScreen} = this.state;
 
         return elements.map((elem, id)=> {
-            
+
             const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, 'ID').value;

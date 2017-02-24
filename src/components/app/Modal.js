@@ -12,42 +12,23 @@ import {
     handleProcessResponse
 } from '../../actions/WindowActions';
 
-
 class Modal extends Component {
     constructor(props) {
         super(props);
 
         const {
-            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
-            relativeType, isAdvanced, modalViewId
+            rowId
         } = this.props;
 
         this.state = {
             scrolled: false,
             isNew: rowId === 'NEW',
             init: false,
-            pending: false
+            pending: false,
+            waitingFetch: false
         }
 
-        switch(modalType){
-            case 'window':
-                dispatch(
-                    createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
-                ).catch(() => {
-                    this.handleClose();
-                });
-                break;
-            case 'process':
-                //processid, viewId, docType, id or ids
-                dispatch(
-                    createProcess(
-                        windowType, modalViewId, relativeType, dataId ? dataId : selected
-                    )
-                ).catch(() => {
-                    this.handleClose();
-                });
-                break;
-        }
+        this.init();
     }
 
     componentDidMount() {
@@ -60,12 +41,71 @@ class Modal extends Component {
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
-        modalContent && modalContent.addEventListener('scroll', this.handleScroll);
+        modalContent &&
+            modalContent.addEventListener('scroll', this.handleScroll);
     }
 
     componentWillUnmount() {
         const modalContent = document.querySelector('.js-panel-modal-content')
-        modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
+        modalContent &&
+            modalContent.removeEventListener('scroll', this.handleScroll);
+    }
+
+    componentDidUpdate (prevProps) {
+        const {
+            windowType, indicator
+        } = this.props;
+
+        const {waitingFetch} = this.state;
+
+        if(prevProps.windowType !== windowType){
+            this.init();
+        }
+
+        // Case when we have to trigger pending start request
+        // in due to some pending patches that are required.
+        if(
+            waitingFetch &&
+            prevProps.indicator !== indicator
+        ) {
+            this.setState({
+                waitingFetch: false
+            }, () => {
+                this.handleStart();
+            })
+        }
+    }
+
+    init = () => {
+        const {
+            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
+            relativeType, isAdvanced, modalViewId, modalViewDocumentIds
+        } = this.props;
+
+        switch(modalType){
+            case 'window':
+                dispatch(createWindow(
+                    windowType, dataId, tabId, rowId, true, isAdvanced
+                )).catch(() => {
+                    this.handleClose();
+                });
+                break;
+            case 'process':
+                // We have 3 cases of processes (prioritized):
+                // - with viewDocumentIds: on single page with rawModal
+                // - with dataId: on single document page
+                // - with selected : on gridviews
+                dispatch(
+                    createProcess(
+                        windowType, modalViewId, relativeType,
+                        modalViewDocumentIds || (dataId ? [dataId] : selected),
+                        tabId, rowId
+                    )
+                ).catch(() => {
+                    this.handleClose();
+                });
+                break;
+        }
     }
 
     handleClose = () => {
@@ -80,25 +120,40 @@ class Modal extends Component {
 
         this.setState({
             scrolled: scrollTop > 0
-        })
+        });
     }
 
     handleStart = () => {
-        this.setState(Object.assign({}, this.state, {
-            pending: true
-        }));
+        const {dispatch, layout, windowType, indicator} = this.props;
 
-        const {dispatch, layout, windowType} = this.props;
-        dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                pending: false
-            }));
-            dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
-            
-        }).catch(() => {
-            this.setState(Object.assign({}, this.state, {
-                pending: false
-            }));
+        if(indicator === 'pending'){
+            this.setState({
+                waitingFetch: true,
+                pending: true
+            });
+
+            return;
+        }
+
+        this.setState({
+            pending: true
+        }, () => {
+            dispatch(startProcess(
+                windowType, layout.pinstanceId
+            )).then(response => {
+                this.setState({
+                    pending: false
+                }, () => {
+                    dispatch(handleProcessResponse(
+                        response, windowType, layout.pinstanceId,
+                        () => this.removeModal()
+                    ));
+                });
+            }).catch(() => {
+                this.setState({
+                    pending: false
+                });
+            });
         });
     }
 
@@ -114,7 +169,8 @@ class Modal extends Component {
 
     renderModalBody = () => {
         const {
-            data, layout, tabId, rowId, dataId, modalType, windowType, isAdvanced
+            data, layout, tabId, rowId, dataId, modalType, windowType,
+            isAdvanced
         } = this.props;
 
         const {pending} = this.state;
@@ -151,8 +207,7 @@ class Modal extends Component {
         } = this.props;
 
         const {
-            scrolled,
-            pending
+            scrolled, pending
         } = this.state;
 
         return (
@@ -171,7 +226,11 @@ class Modal extends Component {
                         </span>
                         <div className="items-row-2">
                             <button
-                                className={'btn btn-meta-outline-secondary btn-distance-3 btn-md ' + (pending ? 'tag-disabled disabled' : '')}
+                                className={
+                                    `btn btn-meta-outline-secondary
+                                    btn-distance-3 btn-md `+
+                                    (pending ? 'tag-disabled disabled ' : '')
+                                }
                                 onClick={this.handleClose}
                                 tabIndex={0}
                             >
@@ -179,7 +238,11 @@ class Modal extends Component {
                             </button>
                             {modalType === 'process' &&
                                 <button
-                                    className={'btn btn-meta-primary btn-distance-3 btn-md ' + (pending ? 'tag-disabled disabled' : '') }
+                                    className={
+                                        `btn btn-meta-primary btn-distance-3
+                                        btn-md ` +
+                                        (pending ? 'tag-disabled disabled' : '')
+                                    }
                                     onClick={this.handleStart}
                                     tabIndex={0}
                                 >
@@ -189,7 +252,10 @@ class Modal extends Component {
                         </div>
                     </div>
                     <div
-                        className="panel-modal-content js-panel-modal-content container-fluid"
+                        className={
+                            `panel-modal-content js-panel-modal-content
+                            container-fluid`
+                        }
                         ref={c => { c && c.focus()}}
                     >
                         {this.renderModalBody()}

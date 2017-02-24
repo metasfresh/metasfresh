@@ -7,7 +7,6 @@ import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
 
-
 import {
     rootRequest,
     nodePathsRequest,
@@ -17,7 +16,6 @@ import {
 import {
     openModal
 } from '../actions/WindowActions';
-
 
 class NavigationTree extends Component {
     constructor(props){
@@ -74,7 +72,7 @@ class NavigationTree extends Component {
                 query: e.target.value
             });
 
-            dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
+            dispatch(queryPathsRequest(e.target.value, '', true)).then(response => {
 
                 this.setState({
                     queriedResults: response.data.children
@@ -156,8 +154,7 @@ class NavigationTree extends Component {
 
         e.preventDefault();
 
-
-        dispatch(nodePathsRequest(nodeId,4)).then(response => {
+        dispatch(nodePathsRequest(nodeId, 4)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))

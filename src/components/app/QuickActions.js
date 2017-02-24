@@ -17,7 +17,7 @@ import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class QuickActions extends Component {
-    
+
     constructor(props){
         super(props);
 
@@ -25,7 +25,7 @@ class QuickActions extends Component {
             actions: [],
             isDropdownOpen: false
         }
-        
+
         const {fetchOnInit} = this.props;
 
         if(fetchOnInit){
@@ -56,15 +56,16 @@ class QuickActions extends Component {
     }
 
     handleClick = (action) => {
-        const {dispatch, viewId} = this.props;
+        const {dispatch, viewId, selected} = this.props;
+
         if(action.disabled){
             return;
         }
-        
+
         dispatch(
             openModal(
                 action.caption, action.processId, 'process', null, null, false,
-                viewId
+                viewId, selected
             )
         );
     }
@@ -90,6 +91,8 @@ class QuickActions extends Component {
             isDropdownOpen
         } = this.state;
 
+        const {shouldNotUpdate} = this.props;
+
         if(actions.length){
             return (
                 <div className="js-not-unselect">
@@ -104,7 +107,6 @@ class QuickActions extends Component {
                         >
                             {actions[0].caption}
                         </div>
-
                         <div
                             className={
                                 'btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer ' +
@@ -125,7 +127,7 @@ class QuickActions extends Component {
                         }
                     </div>
                     <QuickActionsContextShortcuts
-                        handleClick={() => this.handleClick(actions[0])}
+                        handleClick={() => shouldNotUpdate ? null : this.handleClick(actions[0])}
                     />
                 </div>
             );

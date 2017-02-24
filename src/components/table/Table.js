@@ -6,8 +6,7 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteLocal,
-    getItemsByProperty
+    deleteLocal
 } from '../../actions/WindowActions';
 
 import {
@@ -27,7 +26,6 @@ import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortc
 import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
-
 
 class Table extends Component {
     constructor(props) {
@@ -57,25 +55,16 @@ class Table extends Component {
         const {dispatch} = this.props;
 
         if(
-            JSON.stringify(nextState.selected) !== 
+            JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
         ){
             dispatch(selectTableItems(nextState.selected));
-        }
-        
-        // When the rows are changing we should ensure 
-        // that selection still exist
-        if(
-            nextState.selected[0] &&
-            !getItemsByProperty(nextState.rows, 'id', nextState.selected[0]).length
-        ){
-            dispatch(selectTableItems());
         }
     }
 
     componentDidUpdate(prevProps) {
         const {mainTable, open, rowData} = this.props;
-        
+
         if(mainTable && open){
             this.table.focus();
         }
@@ -159,7 +148,7 @@ class Table extends Component {
             selected: ids
         });
     }
-    
+
     selectAll = () => {
         const {keyProperty} = this.props;
         const {rows} = this.state;
@@ -213,7 +202,7 @@ class Table extends Component {
             }
 
             this.deselectAllProducts();
-        }   
+        }
     }
 
     handleKeyDown = (e) => {
@@ -408,7 +397,7 @@ class Table extends Component {
             const selectRange = e.shiftKey;
             const isSelected = selected.indexOf(id) > -1;
             const isAnySelected = selected.length > 0;
-            
+
             if(selectMore){
                 if(isSelected){
                     this.deselectProduct(id);
@@ -452,16 +441,6 @@ class Table extends Component {
         });
     }
 
-    handleFocus = () => {
-        const {tabid, keyProperty} = this.props;
-        const {selected, rows} = this.state;
-        const keyProp = keyProperty ? keyProperty : 'rowId';
-        
-        if(selected.length <= 0){
-            this.selectOneProduct(rows[tabid][keyProp], 0);
-        }
-    }
-
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
         let arrayIndex;
@@ -483,7 +462,7 @@ class Table extends Component {
             selectIdB
         ];
 
-        selected.sort((a,b) => a - b);
+        selected.sort((a, b) => a - b);
             if(keyProperty === 'id'){
                 return arrayIndex.slice(selected[0], selected[1]+1);
             }else {
@@ -538,8 +517,9 @@ class Table extends Component {
             promptOpen: false,
             selected: []
         }, () => {
-            dispatch(deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected))
-            .then(() => {
+            dispatch(
+                deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected)
+            ).then(() => {
                 if(docId){
                     dispatch(deleteLocal(tabid, selected, 'master'))
                 } else {
@@ -564,7 +544,7 @@ class Table extends Component {
 
     renderTableBody = () => {
         const {
-            tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, 
+            tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
 
@@ -640,8 +620,9 @@ class Table extends Component {
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
-            pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex, indentSupported, isModal
+            pageLength, page, mainTable, updateDocList, sort, orderBy,
+            toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
+            queryLimitHit
         } = this.props;
 
         const {
@@ -745,6 +726,7 @@ class Table extends Component {
                                 page={page}
                                 orderBy={orderBy}
                                 deselect={this.deselectAllProducts}
+                                queryLimitHit={queryLimitHit}
                             />
                         </div>
                     </div>

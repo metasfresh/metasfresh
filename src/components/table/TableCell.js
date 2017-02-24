@@ -3,7 +3,6 @@ import onClickOutside from 'react-onclickoutside';
 import Moment from 'moment';
 import MasterWidget from '../widget/MasterWidget';
 
-
 class TableCell extends Component {
     constructor(props) {
         super(props);
@@ -29,7 +28,7 @@ class TableCell extends Component {
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
         const {backdropLock} = this.state;
-        
+
         //We can handle click outside only if
         //nested elements has no click oustide listening pending
         if(!backdropLock){
@@ -75,7 +74,7 @@ class TableCell extends Component {
                     return field;
             }
         }
-        
+
     }
 
     render() {

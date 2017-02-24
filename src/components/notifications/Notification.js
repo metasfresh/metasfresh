@@ -38,7 +38,7 @@ class Notification extends Component {
 
     componentDidMount() {
         const {item, index, dispatch} = this.props;
-        
+
         if(item.time > 0) {
             setTimeout(function(){
                 dispatch(deleteNotification(index));
@@ -51,13 +51,12 @@ class Notification extends Component {
             })
         }, 10);
     }
-    
+
     componentWillReceiveProps() {
         this.setState({
             notificationMounted: true
         })
     }
-
 
     render() {
         const {item, index} = this.props;
@@ -72,7 +71,6 @@ class Notification extends Component {
 Notification.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
-
 
 Notification = connect()(Notification)
 

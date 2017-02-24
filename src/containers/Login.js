@@ -3,7 +3,6 @@ import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 import LoginForm from '../components/app/LoginForm';
 
-
 class Login extends Component {
     constructor(props){
         super(props);

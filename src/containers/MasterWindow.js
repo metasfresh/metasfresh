@@ -78,13 +78,21 @@ class MasterWindow extends Component {
 
     render() {
         const {
-            master, modal, breadcrumb, references, actions, attachments, rawModal,
-            selected
+            master, modal, breadcrumb, references, actions, attachments,
+            rawModal, selected, indicator
         } = this.props;
+
         const {newRow, modalTitle} = this.state;
-        const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
+
+        const {
+            documentNoElement, docActionElement, documentSummaryElement, type
+        } = master.layout;
+
         const dataId = master.docId;
-        const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
+
+        const docNoData = findRowByPropName(
+            master.data, documentNoElement && documentNoElement.fields[0].field
+        );
 
         const docStatusData = {
             'status': findRowByPropName(master.data, 'DocStatus'),
@@ -125,10 +133,13 @@ class MasterWindow extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
+                        modalViewId={modal.viewId}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
+                        modalViewDocumentIds={modal.viewDocumentIds}
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
+                        indicator={indicator}
                      />
                  }
                  {rawModal.visible &&
@@ -168,7 +179,8 @@ MasterWindow.propTypes = {
     attachments: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array,
-    rawModal: PropTypes.object.isRequired
+    rawModal: PropTypes.object.isRequired,
+    indicator: PropTypes.string.isRequired,
 };
 
 function mapStateToProps(state) {
@@ -177,12 +189,14 @@ function mapStateToProps(state) {
         master,
         modal,
         rawModal,
-        selected
+        selected,
+        indicator
     } = windowHandler || {
         master: {},
         modal: false,
         rawModal: {},
-        selected: []
+        selected: [],
+        indicator: ''
     }
 
     const {
@@ -196,7 +210,7 @@ function mapStateToProps(state) {
         actions: [],
         attachments: []
     }
-    
+
     return {
         master,
         breadcrumb,
@@ -205,7 +219,8 @@ function mapStateToProps(state) {
         actions,
         attachments,
         selected,
-        rawModal
+        rawModal,
+        indicator
     }
 }
 

@@ -38,21 +38,22 @@ class RawWidget extends Component {
         handleFocus && handleFocus();
     }
 
-    handlePatch = (property, value, id) => {
+    handlePatch = (property, value, id, valueTo) => {
         const {handlePatch, widgetData} = this.props;
         const {cachedValue} = this.state;
         let ret = null;
 
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
+        // Do patch only when value is not equal state
+        // or cache is set and it is not equal value
 
-        if( 
+        if(
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
             (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))
         ){
 
             if(handlePatch) {
-                ret = handlePatch(property, value, id);
+                ret = handlePatch(property, value, id, valueTo);
             }
         }
 
@@ -77,13 +78,24 @@ class RawWidget extends Component {
         this.handlePatch(widgetField, value, id);
     }
 
+    handleProcess = () => {
+        const {
+            handleProcess, buttonProcessId, tabId, rowId, dataId, windowType,
+            caption
+        } = this.props;
+
+        handleProcess && handleProcess(
+            caption, buttonProcessId, tabId, rowId, dataId, windowType
+        );
+    }
+
     renderWidget = () => {
         const {
             handleChange, updated, isModal, filterWidget, filterId, id, range,
             onHide, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled
+            entity, onShow, disabled, caption
         } = this.props;
 
         const {isEdited} = this.state;
@@ -467,7 +479,8 @@ class RawWidget extends Component {
                         className={
                             'input-switch ' +
                             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '')
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (rowId && !isModal ? 'input-table ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
@@ -508,6 +521,21 @@ class RawWidget extends Component {
                         ref={c => this.rawWidget = c}
                     >
                         {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
+                    </button>
+                )
+            case 'ProcessButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
+                        }
+                        onClick={this.handleProcess}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
                     </button>
                 )
             case 'ActionButton':
@@ -575,25 +603,25 @@ class RawWidget extends Component {
             caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch,
             widgetType
         } = this.props;
-        
+
         const widgetBody = this.renderWidget();
 
         // Unsupported widget type
         if(!widgetBody){
             console.warn(
-                'The %c' + widgetType, 
-                'font-weight:bold;', 
+                'The %c' + widgetType,
+                'font-weight:bold;',
                 'is unsupported type of widget.'
             );
-            
+
             return false;
         }
-        
+
         // No display value or not displayed
         if(!widgetData[0].displayed || widgetData[0].displayed !== true){
             return false;
         }
-        
+
         return (
             <div className={
                 'form-group row ' +
@@ -618,7 +646,7 @@ class RawWidget extends Component {
                     }
                 >
                     {widgetBody}
-                    
+
                     {fields[0].devices && !widgetData[0].readonly &&
                         <DevicesWidget
                             devices={fields[0].devices}

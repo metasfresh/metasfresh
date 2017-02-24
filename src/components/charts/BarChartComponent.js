@@ -23,7 +23,7 @@ class BarChartComponent extends Component {
         var ranges = this.setRanges(dimensions.width, dimensions.height, data);
         var svg = this.drawChart(dimensions, ranges, data);
         this.addAxis(svg, dimensions, ranges);
-        
+
     }
 
     setDimensions = (mTop=20, mRight=20, mBottom=20, mLeft=20, mwidth=600, mheight=400) => {
@@ -32,17 +32,17 @@ class BarChartComponent extends Component {
             height = mheight - margin.top - margin.bottom;
             return {
                 margin: {
-                    top: margin.top, 
-                    right: margin.right, 
+                    top: margin.top,
+                    right: margin.right,
                     bottom: margin.bottom,
-                    left: margin.left 
-                }, 
-                width: width, 
+                    left: margin.left
+                },
+                width: width,
                 height:height
             };
     }
     setRanges = (width, height, data) => {
-        var x = d3.scaleBand().range([0,width]).padding(0.1);
+        var x = d3.scaleBand().range([0, width]).padding(0.1);
         var y = d3.scaleLinear().range([height, 0]);
 
         x.domain(data.map(function(d) { return d.name; }));
@@ -56,7 +56,7 @@ class BarChartComponent extends Component {
             .attr('width', dimensions.width + dimensions.margin.left + dimensions.margin.right)
             .attr('height', dimensions.height + dimensions.margin.top + dimensions.margin.bottom)
             .append('g')
-            .attr('transform', 
+            .attr('transform',
                 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
 
         svg.selectAll('.bar')
@@ -85,10 +85,8 @@ class BarChartComponent extends Component {
     clearChart = () => {
         document.getElementsByClassName('barchart')[0].childNodes[0].remove();
     }
-    
 
     render() {
-
 
         return (
             <div>
