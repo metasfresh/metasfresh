@@ -134,13 +134,21 @@ this week's RC
   * [#164](https://github.com/metasfresh/metasfresh-webui/issues/164) Create migration script for missing Menu
     * Recreated the missing migration for the newly built WebUI menu with flatter and more comprehensible Hierarchy and Structure.
   * [#168](https://github.com/metasfresh/metasfresh-webui/issues/168) internal: Don't create layout elements if there are no fields inside
+    * Fixed a Bug that occured first time in General Ledger window in WebUI, caused through layout elements without included fields.
   * [#170](https://github.com/metasfresh/metasfresh-webui/issues/170) date attributes in hu modal window
+    * Bugfix to allow the setting and editing of attributes in date format.
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
+    * Fix to allow the user to select the Packing Item field in WebUI.
   * [#172](https://github.com/metasfresh/metasfresh-webui/issues/172) Entries skipped at the begining of pages
+    * Fixed a User Interface bug that caused ugly jumps of the Grid View/ Table View when turning pages.
   * [#263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/263) Grid view attributes were queried when there are no rows
+    * Fix in Handling Unit Editor that was trying to read data for an already reversed/ vanished Handling unit.
   * [#294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/294) Leave Location editor with no entry
+    * Bugfix. The user is now allowed to leave the location editor in Business Partner Location without changing any data.
   * [#311](https://github.com/metasfresh/metasfresh-webui-frontend/issues/311) Fix the scrollbars when having an overlay grid view
+    * Bugfix. The user is now allowed to leave the location editor in Business Partner Location without changing any data.
   * [#313](https://github.com/metasfresh/metasfresh-webui-frontend/issues/313) Scrollbar missing on LU/ TU Level in HU Editor
+    * Rearrangement of the Handling Unit Editor layout to not overload the window with too many scrollbars when not really needed.
   * [#314](https://github.com/metasfresh/metasfresh-webui-frontend/issues/314) Grid view filtering: don't send valueTo if it's not a range parameter
   * [#315](https://github.com/metasfresh/metasfresh-webui-frontend/issues/315) Quick action button layout is broken on smaller resolution
   * [#317](https://github.com/metasfresh/metasfresh-webui-frontend/issues/317) Quick actions are not refreshed when opening the modal HU editor
