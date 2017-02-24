@@ -540,6 +540,11 @@ node('agent && linux && libc6-i386')
 				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&p=tar.gz&v=${mavenProps['metasfresh-webui-frontend.version']}";
 				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
 
+
+				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
+				// See 
+				//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
+				//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 				currentBuild.description="""
 <h3>Version infos</h3>
 <ul>
@@ -562,13 +567,7 @@ node('agent && linux && libc6-i386')
 <p>
 <h3>Deploy</h3>
 <ul>
-	<!-- 
-		Note: for this link with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later
-		See 
-		* https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
-		* https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-	-->
-	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}\">This link</a> lets you jump to a rollout job that will deploy out the tar.gz to a host of your choice.</li>
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}\">This link</a> lets you jump to a rollout job that will deploy (rollout out) the tar.gz to a host of your choice.</li>
 </ul>
 <p>
 <h3>Additional notes</h3>
@@ -673,7 +672,7 @@ stage('Deployment')
 			// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
 			timeout(time:1, unit:'DAYS') 
 			{
-				// use milestones to abort older builds as soon as a receent build is deployed
+				// use milestones to abort older builds as soon as a recent build is deployed
 				// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
 				milestone 1;
 				userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
