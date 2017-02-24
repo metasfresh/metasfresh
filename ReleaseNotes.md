@@ -106,9 +106,13 @@ this week's RC
 
 * metasfresh
   * [#942](https://github.com/metasfresh/metasfresh/issues/942) Fix price list copy
+    * Enabled the functionality in WebUI to generate new Product prices via the Pricelist Version record and configured calculation Schema with source Price List.
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
+    * Fixed a minor Bug that restricted the login after creating a new Role.
   * [#998](https://github.com/metasfresh/metasfresh/issues/998) ClassNotFoundException: de.metas.dlm.swingui.model.interceptor.Main
+    * Bugfix for ClassNotFound Exception in Data Life-cycle Management Interceptor.
   * [#1010](https://github.com/metasfresh/metasfresh/issues/1010) M_ProductPrice with Season fix price=Y should not be modified when copied
+    * Fix that now prohibits the modification of Product Prices which are flagged as SeasonFixPrice during copy.
 
 * webUI
   * [#124](https://github.com/metasfresh/metasfresh-webui/issues/124) Default/ Standard Filter not correct in WebUI
