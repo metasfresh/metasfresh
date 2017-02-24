@@ -172,7 +172,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public IDocumentView getById(final DocumentId documentId) throws EntityNotFoundException
+	public HUDocumentView getById(final DocumentId documentId) throws EntityNotFoundException
 	{
 		return getRecords().getById(documentId);
 	}
@@ -247,6 +247,17 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		_recordsSupplier.forget();
 		documentViewsLoader.getAttributesProvider().invalidateAll();
+	}
+	
+	public void addHUsAndInvalidate(final Collection<I_M_HU> husToAdd)
+	{
+		if(husToAdd.isEmpty())
+		{
+			return;
+		}
+		
+		documentViewsLoader.addHUs(husToAdd);
+		invalidateAll();
 	}
 
 	@Override
