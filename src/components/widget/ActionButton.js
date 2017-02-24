@@ -48,7 +48,7 @@ class ActionButton extends Component {
     }
 
     navigate = (up) => {
-        const {selected,list} = this.state;
+        const {selected, list} = this.state;
         const next = up ? selected + 1 : selected - 1;
 
         this.setState({

@@ -426,7 +426,7 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const {windowHandler,listHandler, appHandler, menuHandler} = state;
+    const {windowHandler, listHandler, appHandler, menuHandler} = state;
 
     const {
         viewId

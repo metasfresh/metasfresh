@@ -91,7 +91,7 @@ class Breadcrumb extends Component {
                     {this.renderBtn(homemenu, 0)}
 
                     {breadcrumb && breadcrumb.map((item, index) =>
-                        this.renderBtn(item,index+1)
+                        this.renderBtn(item, index+1)
                     )}
 
                     {docNo && <div className="divider">/</div>}

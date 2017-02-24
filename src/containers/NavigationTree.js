@@ -154,7 +154,7 @@ class NavigationTree extends Component {
 
         e.preventDefault();
 
-        dispatch(nodePathsRequest(nodeId,4)).then(response => {
+        dispatch(nodePathsRequest(nodeId, 4)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))

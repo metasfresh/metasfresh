@@ -50,22 +50,22 @@ class BarChart extends Component {
 
         //Append a clipPath element to the defs element, and a Shape
         // to define the cliping area
-        defs.append('clipPath').attr('id','my-clip-path').append('rect')
-            .attr('width',width) //Set the width of the clipping area
-            .attr('height',height); // set the height of the clipping area
+        defs.append('clipPath').attr('id', 'my-clip-path').append('rect')
+            .attr('width', width) //Set the width of the clipping area
+            .attr('height', height); // set the height of the clipping area
 
         //clip path for x axis
-        defs.append('clipPath').attr('id','x-clip-path').append('rect')
-            .attr('width',width) //Set the width of the clipping area
-            .attr('height',height + margin.bottom); // set the height of the clipping area
+        defs.append('clipPath').attr('id', 'x-clip-path').append('rect')
+            .attr('width', width) //Set the width of the clipping area
+            .attr('height', height + margin.bottom); // set the height of the clipping area
 
         //add a group that will be clipped (this will contain the bars)
         var barsGroup = chart.append('g');
 
         //Set the clipping path to the group (g element) that you want to clip
-        barsGroup.attr('clip-path','url(#my-clip-path)');
+        barsGroup.attr('clip-path', 'url(#my-clip-path)');
 
-        var xAxisGroup = chart.append('g').attr('class','x-axis')
+        var xAxisGroup = chart.append('g').attr('class', 'x-axis')
 
         xAxisGroup.append('g')
             .attr('class', 'x axis')
@@ -74,7 +74,7 @@ class BarChart extends Component {
 
         //The xAxis is scalled on zoom, so we need to clip it to
 
-        xAxisGroup.attr('clip-path','url(#x-clip-path)');
+        xAxisGroup.attr('clip-path', 'url(#x-clip-path)');
 
         chart.append('g')
             .attr('class', 'y axis')
