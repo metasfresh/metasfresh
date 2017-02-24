@@ -52,13 +52,21 @@ this week's RC
   * [#956](https://github.com/metasfresh/metasfresh/issues/956) Adjust Price list reports to new data structure
     * Adjustments to existing Price list reports dues to refactoring of new pricing hierarchy and functionality.
   * [#957](https://github.com/metasfresh/metasfresh/issues/957) Empties Returns for Vendors and Customers in Material Receipt Window
+    * Implementation of empties return and receive for Business Partners. The new functionality can be used in Material Receipt candidates window and automatically creates Shipment/ Receive documents for empties with predefined settings.
   * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
+    * Process to allow to archive during operational time for large chunks of data. This is a spacial migration process to prepare environments for the usage of metasfresh Data Life-cycle Management.
   * [#975](https://github.com/metasfresh/metasfresh/issues/975) Set DLM_Level via properties/preferences UI
+    * Allows the user to set if his client shall work with archived data or only show operational data (highly improved performance).
   * [#993](https://github.com/metasfresh/metasfresh/issues/993) New ProductPrice Window for Price Maintenance 
+    * A new Windows called Product Price which allows the easy filtering and maintenance of all product prices. The user filters the data via preset Price List version and is able to maintain the data vie Grid view or single view/ advanced edit.
   * [#981](https://github.com/metasfresh/metasfresh/issues/981) Introduce AD_PInstance(AD_Pinstance_ID, ColumnName) unique index
+    * Minor improvement to raise the reading performance of Process Instances.
   * [#983](https://github.com/metasfresh/metasfresh/issues/983) Upgrade guava version from 18 to 21
+    * Upgrading guava (google core libraries) from version 18 to 21.
   * [#986](https://github.com/metasfresh/metasfresh/issues/986) Handle the case that PO can't load a record
+    * Allows now fallback scenarios (for example retry) for the Persistance Object to retry in case of thrown exceptions during record loading.
   * [#1018](https://github.com/metasfresh/metasfresh/issues/1018) support description fields in shipment
+    * Add the fields description bottom and description to metasfresh client in Shipment Window and displays the field content also on Shipment Jasperreports.
   
 * webUI
   * [#145](https://github.com/metasfresh/metasfresh-webui/issues/145) HU editor - Create material receipt not enabled when the whole palet is selected
