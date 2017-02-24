@@ -65,14 +65,24 @@ export function getUserDashboardIndicators() {
     return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
 }
 
-export function browseViewRequest(viewId, page, pageLength, orderBy, windowType){
+export function browseViewRequest(
+    viewId, page, pageLength, orderBy, windowType
+){
     return () => axios.get(
-        config.API_URL + '/documentView/' + windowType +
-        '/' + viewId + '?firstRow=' + pageLength * (page - 1) +
-        '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
+        config.API_URL +
+        '/documentView/' +
+        windowType + '/' +
+        viewId +
+        '?firstRow=' + pageLength * (page - 1) +
+        '&pageLength=' + pageLength +
+        (orderBy ? '&orderBy=' + orderBy : '')
+    );
 }
 
-export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
+export function createViewRequest(
+    windowType, viewType, pageLength, filters, refDocType = null,
+    refDocId = null
+){
     return () => axios.post(config.API_URL + '/documentView/' + windowType, {
         'documentType': windowType,
         'viewType': viewType,
