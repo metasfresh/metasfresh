@@ -216,7 +216,7 @@ else
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
 final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable' || MF_UPSTREAM_BRANCH == 'FRESH-112') ? '20' : '5'
 
-// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
+// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
 	parameters([
 		string(defaultValue: '', 
@@ -243,11 +243,9 @@ Task branch builds are usually not deployed, so the pipeline can finish without 
 			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
 	]),
-	// disableConcurrentBuilds(), // concurrend builds proved a bit too complicated. However, if we just disable them like this, then build waiting for input will block further builds
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
-	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
-])
+]);
 
 if(params.MF_BUILD_ID)
 {
@@ -537,16 +535,17 @@ node('agent && linux && libc6-i386')
 				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/app.properties'
 
 				final MF_ARTIFACT_URLS = [:];
-				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metaas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
 				MF_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${mavenProps['metasfresh-webui-api.version']}";
 				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&p=tar.gz&v=${mavenProps['metasfresh-webui-frontend.version']}";
+				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
 
 				currentBuild.description="""
 <h3>Version infos</h3>
 <ul>
   <li>endcustomer.mf15: version <b>${BUILD_VERSION}</b></li>
   <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li>
-  <li>metasfresh webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b>
+  <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b>
+  <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b>
   <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b>
 </ul>
 <p>
@@ -558,6 +557,11 @@ node('agent && linux && libc6-i386')
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
+</ul>
+<p>
+<h3>Deploy</h3>
+<ul>
+	<li><a href="">This link (not yet working!)</a> let's you jump to a rollout job that will deploy out the tar.gz to a host of your choice</li>
 </ul>
 
 <h3>Additional notes</h3>
