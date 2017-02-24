@@ -14,6 +14,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
+  * [#1028](https://github.com/metasfresh/metasfresh/issues/1028) extract distributable stuff into dedicated repo
 
 * metasfresh-webui-api
 
