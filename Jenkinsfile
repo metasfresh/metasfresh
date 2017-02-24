@@ -2,21 +2,8 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-/**
- * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
- * 
- * TODO: move it into a shared library
- * IMPORTANT: i'm now wrapping up this work (i.e. https://github.com/metasfresh/metasfresh/issues/968) to do other things! it's not yet finsined or tested!
- *
- * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
- * <li>{@code BUILD_VERSION}: the version the maven artifacts were deployed with
- * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
- *
- */
-def Map invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
+def String getEffectiveDownStreamJobName(final String jobFolderName, final String upstreamBranch)
 {
-	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
-	
 	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
 	//
 	// Here i'm not checking if the build job exists but if the respective branch on github exists. If the branch is there, then I assume that the multibranch plugin also created the job
@@ -28,7 +15,6 @@ def Map invokeDownStreamJobs(String jobFolderName, String buildId, String upstre
 		// Perhaps you forgot to surround the code with a step that provides this, such as: node
 		// ...
 		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
-		
 		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
 	}
 	if(exitCode == 0)
@@ -41,17 +27,37 @@ def Map invokeDownStreamJobs(String jobFolderName, String buildId, String upstre
 		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
 		jobName = jobFolderName + "/master"
 	}
-	
+
 	// I also tried
 	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name] 
 	// which worked from chrome, also for metas-dev.
 	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
 	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
 	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
-	
+
 	// and I also tried inspecting the list returned by 
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
+	
+	return jobName;
+}
+
+/**
+ * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ * 
+ * TODO: move it into a shared library
+ * IMPORTANT: i'm now wrapping up this work (i.e. https://github.com/metasfresh/metasfresh/issues/968) to do other things! it's not yet finsined or tested!
+ *
+ * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
+ * <li>{@code BUILD_VERSION}: the version the maven artifacts were deployed with
+ * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
+ *
+ */
+def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, final String upstreamBranch, final String metasfreshVersion, final boolean wait)
+{
+	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
+
+	final String jobName = getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 	
 	final buildResult = build job: jobName, 
 		parameters: [
@@ -472,190 +478,21 @@ stage('Invoke downstream jobs')
 			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}";
 		}
 	}
+	
+	echo "Invoking downstream job 'metasfresh-dist' with preferred branch=${upstreamBranch}"
+
+	final String jobName = getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH);
+	
+	final buildResult = build job: jobName, 
+		parameters: [
+			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
+			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
+			string(name: 'MF_METASFRESH_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
+			string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']),
+			string(name: 'MF_METASFRESH_WEBUI_API_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui']),
+			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])
+		], wait: false
+	;
 }
-
-// to build the client-exe on linux, we need 32bit libs!
-node('agent && linux && libc6-i386')
-{
-	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
-	{
-		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
-		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
-		withEnv(["BUILD_VERSION=${BUILD_VERSION}", "MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}", "CHANGE_URL=${env.CHANGE_URL}", "BUILD_NUMBER=${env.BUILD_NUMBER}"])
-		{
-		sh "echo \"testing 'witEnv' using shell: BUILD_VERSION=${BUILD_VERSION}\""
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
-		{
-			stage('Set versions and build endcustomer-dist') 
-			{
-				// checkout our code
-				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
-				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
-
-				checkout scm; // i hope this to do all the magic we need
-				sh 'git clean -d --force -x' // clean the workspace
-				
-				final String metasfreshUpdateParentParam="-DparentVersion=${MF_ARTIFACT_VERSIONS['metasfresh']}";;
-
-				final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}";
-				final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh-webui']}";
-				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}";
-				final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${MF_ARTIFACT_VERSIONS['metasfresh']}";
-		
-				// update the parent pom version
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdateParentParam} versions:update-parent"
-				
-				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdatePropertyParam} versions:update-property"
-
-				// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
-
-				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-
-				// do the actual building and deployment
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				// about -Dmaven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-			
-
-				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
-				// ERROR: Test reports were found but none of them are new. Did tests run? 
-				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
-				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-
-				// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
-				// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/pom.xml --batch-mode properties:write-project-properties"
-
-				// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
-				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/app.properties'
-
-				final MF_ARTIFACT_URLS = [:];
-				MF_ARTIFACT_URLS['metasfresh-dist'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz";
-				MF_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${mavenProps['metasfresh-webui-api.version']}";
-				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&p=tar.gz&v=${mavenProps['metasfresh-webui-frontend.version']}";
-				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
-
-
-				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
-				// See 
-				//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
-				//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-				currentBuild.description="""
-<h3>Version infos</h3>
-<ul>
-  <li>endcustomer.mf15: version <b>${BUILD_VERSION}</b></li>
-  <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li>
-  <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b>
-  <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b>
-  <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b>
-</ul>
-<p>
-<h3>Deployable artifacts</h3>
-<ul>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
-</ul>
-<p>
-<h3>Deploy</h3>
-<ul>
-	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the tar.gz to a host of your choice.</li>
-</ul>
-<p>
-<h3>Additional notes</h3>
-<ul>
-  <li>The artifacts on <a href="https://repo.metasfresh.com">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
-    Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
-  <li>It is important to note that both the <i>"endcustomer"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
-</ul>
-""";		
-			}
-		} // withMaven
-		} // withEnv(['"BUILD_VERSION=${BUILD_VERSION}"'])
-	} // configFileProvider
-
-	// clean up the workspace, including the local maven repositories that the withMaven steps created
-	// don't clean up the work space..we do it when we check out next time
-	// step([$class: 'WsCleanup', cleanWhenFailure: true])
-} // node
-
-// we need this one for both "Test-SQL" and "Deployment
-def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
-
-	final packagingPart=packaging ? ":${packaging}" : ""
-	final classifierPart=classifier ? ":${classifier}" : ""
-	final artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
-
-	// we need configFileProvider because in mvn get -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
-	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
-	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
-	{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
-		{
-			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact} ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
-			
-			// copy the artifact to a deploy folder.
-			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
-		}
-	}
-	sh "scp ${WORKSPACE}/deploy/${artifactId}-${version}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}-${classifier}.${packaging}"
-}
-
-// we need this one for both "Test-SQL" and "Deployment
-def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> 
-
-// no echo needed: the log already shows what's done via the sh step
-//	echo "Going to invoke the following as user ${sshTargetUser} on host ${sshTargetHost} in directory ${directory}:";
-//	echo "${shellScript}"
-	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
-}
-
-
-stage('Test SQL-Migration')
-{
-	if(params.MF_SKIP_SQL_MIGRATION_TEST)
-	{
-		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-	}
-	else
-	{
-		node('master')
-		{
-			final distArtifactId='de.metas.endcustomer.mf15.dist';
-			final classifier='sql-only';
-			final packaging='tar.gz';
-			final sshTargetHost='mf15cloudit';
-			final sshTargetUser='metasfresh'
-
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
-
-			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
-			
-			// Look Ma, I'm currying!!
-			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
-
-			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");				
-			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
-					.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
-					.toLowerCase(); // also, DB names are generally in lowercase
-
-			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
-			
-			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
-		}
-	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
-} // stage
-
 } // timestamps
 
