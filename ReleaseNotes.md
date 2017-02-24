@@ -10,22 +10,27 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2017-09)
+# metasfresh 4.58.57 (2017-09)
 ## Features
-* metasfresh
+* metasfresh-backend
 
-* webUI
+* metasfresh-webui-api
+
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
   * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
   * [#182](https://github.com/metasfresh/metasfresh-webui/issues/182) Material Receipt w/ multiple lines and solitary CU Buckets
   * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone
 upcoming
 
-## Fixes
-* metasfresh
+* metasfresh-webui-frontend
 
-* webUI
+## Fixes
+* metasfresh-backend
+
+* metasfresh-webui-api
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+ 
+* metasfresh-webui-frontend
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts
  
 
