@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +88,7 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return (HUDocumentViewType)delegate.getType();
 	}
-	
+
 	@Override
 	public boolean isProcessed()
 	{
@@ -150,7 +151,7 @@ public final class HUDocumentView implements IDocumentView
 
 	public String getHUStatus()
 	{
-		JSONLookupValue jsonHUStatus = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
+		final JSONLookupValue jsonHUStatus = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
 		return jsonHUStatus == null ? null : jsonHUStatus.getKey();
 	}
 
@@ -158,7 +159,7 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return X_M_HU.HUSTATUS_Planning.equals(getHUStatus());
 	}
-	
+
 	public boolean isHUStatusActive()
 	{
 		return X_M_HU.HUSTATUS_Active.equals(getHUStatus());
@@ -168,9 +169,33 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return getType().isPureHU();
 	}
+	
+	public boolean isCU()
+	{
+		return getType().isCU();
+	}
 
 	public String getSummary()
 	{
 		return getValue();
 	}
+
+	public int getM_Product_ID()
+	{
+		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		return productLV == null ? -1 : productLV.getKeyAsInt();
+	}
+	
+	public int getC_UOM_ID()
+	{
+		final JSONLookupValue uomLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
+		return uomLV == null ? -1 : uomLV.getKeyAsInt();
+	}
+	
+	public BigDecimal getQtyCU()
+	{
+		return (BigDecimal)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
+	}
+
+
 }
