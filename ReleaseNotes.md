@@ -24,7 +24,7 @@ upcoming
 ## Fixes
 * metasfresh
 
-* webui
+* webUI
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts
  
