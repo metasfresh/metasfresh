@@ -166,6 +166,12 @@ public final class JSONLookupValue implements Serializable
 	{
 		return _key;
 	}
+	
+	@JsonIgnore
+	public int getKeyAsInt()
+	{
+		return Integer.parseInt(getKey());
+	}
 
 	@JsonIgnore
 	public String getName()

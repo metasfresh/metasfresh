@@ -36,7 +36,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -70,10 +69,7 @@ public class ProcessInstancesRepository
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
-	private DocumentCollection documentsCollection;
-	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
-
 
 	private final LoadingCache<DocumentId, ProcessInstance> processInstances = CacheBuilder.newBuilder()
 			.expireAfterAccess(10, TimeUnit.MINUTES)
@@ -125,7 +121,7 @@ public class ProcessInstancesRepository
 		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
 		return pinstance;
 	}
-	
+
 	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
 	{
 		// Validate request's AD_Process_ID
@@ -140,33 +136,37 @@ public class ProcessInstancesRepository
 		final String tableName;
 		final int recordId;
 		final String sqlWhereClause;
-		
+
 		//
 		// View
 		final String viewId = Strings.emptyToNull(request.getViewId());
+		final String viewSelectedIdsAsStr;
 		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
 		if (!Check.isEmpty(viewId))
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
+			viewSelectedIdsAsStr = DocumentId.toCommaSeparatedString(viewDocumentIds);
 			final int view_AD_Window_ID = view.getAD_Window_ID();
 			tableName = documentDescriptorFactory.getTableNameOrNull(view_AD_Window_ID);
-			
+
 			if (viewDocumentIds.size() == 1)
 			{
-				recordId = viewDocumentIds.iterator().next().toInt();
+				final DocumentId singleDocumentId = viewDocumentIds.iterator().next();
+				recordId = singleDocumentId.toIntOr(-1);
 			}
 			else
 			{
 				recordId = -1;
 			}
-			
+
 			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
 		}
 		//
 		// Single document call
 		else if (singleDocumentPath != null)
 		{
+			viewSelectedIdsAsStr = null;
 			tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID(), singleDocumentPath.getDetailId());
 			recordId = singleDocumentPath.getSingleRowId().toInt();
 			sqlWhereClause = null;
@@ -175,6 +175,7 @@ public class ProcessInstancesRepository
 		// From menu
 		else
 		{
+			viewSelectedIdsAsStr = null;
 			tableName = null;
 			recordId = -1;
 			sqlWhereClause = null;
@@ -189,10 +190,10 @@ public class ProcessInstancesRepository
 				//
 				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
 				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
+				.addParameter(ProcessInstance.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
 				//
 				.build();
 	}
-
 
 	private ProcessInstance retrieveProcessInstance(final DocumentId adPInstanceId)
 	{
@@ -229,7 +230,7 @@ public class ProcessInstancesRepository
 	public <R> R forProcessInstanceReadonly(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
-		
+
 		try
 		{
 			try (final IAutoCloseable readLock = processInstances.get(pinstanceId).lockForReading())
@@ -247,19 +248,19 @@ public class ProcessInstancesRepository
 	public <R> R forProcessInstanceWritable(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
-		
+
 		try
 		{
 			try (final IAutoCloseable writeLock = processInstances.get(pinstanceId).lockForWriting())
 			{
 				final ProcessInstance processInstance = processInstances.get(pinstanceId).copy(CopyMode.CheckOutWritable);
-				
+
 				final R result = processor.apply(processInstance);
-				
+
 				// Actually put it back
 				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
 				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
-				
+
 				return result;
 			}
 		}
