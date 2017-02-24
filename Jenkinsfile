@@ -479,14 +479,14 @@ stage('Invoke downstream jobs')
 		}
 	}
 	
-	echo "Invoking downstream job 'metasfresh-dist' with preferred branch=${upstreamBranch}"
+	echo "Invoking downstream job 'metasfresh-dist' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
 	final String jobName = getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH);
 	
 	final buildResult = build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
-			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
+			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 			string(name: 'MF_METASFRESH_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']),
 			string(name: 'MF_METASFRESH_WEBUI_API_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui']),
