@@ -71,6 +71,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		return DocumentViewLayout.builder()
 				.setAD_Window_ID(adWindowId)
+				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)

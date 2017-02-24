@@ -209,7 +209,14 @@ public class DocumentViewLayout
 			this.caption = caption;
 			return this;
 		}
+		
+		public Builder setCaption(final String caption)
+		{
+			setCaption(ImmutableTranslatableString.constant(caption));
+			return this;
+		}
 
+		
 		public Builder setDescription(final ITranslatableString description)
 		{
 			this.description = description;
