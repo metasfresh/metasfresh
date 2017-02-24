@@ -567,7 +567,7 @@ node('agent && linux && libc6-i386')
 <p>
 <h3>Deploy</h3>
 <ul>
-	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (rollout out) the tar.gz to a host of your choice.</li>
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the tar.gz to a host of your choice.</li>
 </ul>
 <p>
 <h3>Additional notes</h3>
