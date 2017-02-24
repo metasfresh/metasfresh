@@ -86,14 +86,21 @@ this week's RC
   * [#215](https://github.com/metasfresh/metasfresh-webui-frontend/issues/215) Shortcut for direct Document Action "complete"
     * Further usability Improvement. Added a new shortcut for document complete action. This action is mostly used among all documents and reduces the amount of user keystrokes or mouse click by 1 per document.
   * [#227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/277) Processed HU in Material Receipt Workflow
+    * When creating a Material Receipt in handlign Unit editor, then the processed Handling Units are now read-only and are grayed out, so the user can distinguis very well beween proceed and unprocessed Handling Units.
   * [#282](https://github.com/metasfresh/metasfresh-webui-frontend/issues/282) Implement attachments list in Actions menu
+    * The action menu now shows another section called "attachments" where all files are listet that are attached to the currently selected record (e.g. product record, document). Photos made per Webcam and uploaded are also automatically shown as Photo attachment.
   * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
     * Created a new API to provide the login credentials in the request body instead of parameters.
   * [#996](https://github.com/metasfresh/metasfresh/issues/996) Add Warehouse and processed Filter to Material Receipt Candidates Window
+    * The Window Material Receipt candidates has now 2 further filter selections (Warehouse, processed). This allows the user to search and filter the needed Data much faster.
   * [#265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/265) Create Jenkinsfile for metasfresh-webui-frontend
+    * Including the automatic build of the metasfresh WebUI into the Jenkins Build Infrastructure.
   * [#345](https://github.com/metasfresh/metasfresh-webui-frontend/issues/345) Grid view layout: honor supportNewRecord and newRecordCaption
+    * Implementation that brings New Record information up to the frontend and allowss the frontend now to react in a more flexible way.
   * [#162](https://github.com/metasfresh/metasfresh-webui/issues/162) Possibility to choose used filter criteria for webUI
+    * Reducing the amount of predefined filter selections per window to saved filter sets created by special user.
   * [#1014](https://github.com/metasfresh/metasfresh/issues/1014) Window Layout Purchase Order: Warehouse
+    * This is an Feature List Item that is part of an Feature List. Notice the connector between the three graphics to show that they are related.
   
 ## Fixes
 
