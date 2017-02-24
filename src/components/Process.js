@@ -16,7 +16,9 @@ export class Process extends Component {
         const {disabled} = this.props;
         const elements = layout.elements;
         return elements.map((elem, id) => {
-            const widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
+            const widgetData = elem.fields.map(item =>
+                findRowByPropName(data, item.field)
+            );
             return (
                 <MasterWidget
                     entity="process"
@@ -26,7 +28,8 @@ export class Process extends Component {
                     widgetData={widgetData}
                     isModal={true}
                     disabled={disabled}
-                    {...elem} />
+                    {...elem}
+                />
             )
         })
     }
@@ -35,11 +38,15 @@ export class Process extends Component {
         const {data, layout, type} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                {layout && layout.elements && this.renderElements(layout, data, type)}
+                {
+                    layout && layout.elements &&
+                    this.renderElements(layout, data, type)
+                }
             </div>
         );
     }
 }
+
 Process.propTypes = {
     dispatch: PropTypes.func.isRequired
 };

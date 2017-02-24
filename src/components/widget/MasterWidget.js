@@ -23,12 +23,14 @@ class MasterWidget extends Component {
         const {widgetData} = this.props;
         const {edited} = this.state;
 
-        if(JSON.stringify(widgetData[0].value) !== JSON.stringify(nextProps.widgetData[0].value)) {
+        if(
+            JSON.stringify(widgetData[0].value) !==
+            JSON.stringify(nextProps.widgetData[0].value)
+        ){
             if(!edited) {
-                this.setState(
-                    Object.assign({}, this.state, {
+                this.setState({
                         updated: true
-                    }), () => {
+                    }, () => {
                         this.timeout = setTimeout(() => {
                             this.setState({
                                 updated: false
@@ -77,6 +79,7 @@ class MasterWidget extends Component {
 
         return ret;
     }
+
     //
     // This method may looks like a redundant for this one above,
     // but is need to handle controlled components if
@@ -91,12 +94,13 @@ class MasterWidget extends Component {
 
         const dateParse = ['Date', 'DateTime', 'Time'];
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             edited: true
-        }), () => {
-            if(dateParse.indexOf(widgetType) === -1 && !this.validatePrecision(val)){
-                return;
-            }
+        }, () => {
+            if (
+                dateParse.indexOf(widgetType) === -1 &&
+                !this.validatePrecision(val)
+            ){ return; }
 
             if(rowId === 'NEW'){
                 currRowId = relativeDocId;
@@ -136,17 +140,17 @@ class MasterWidget extends Component {
     ) => {
         const {dispatch} = this.props;
 
-        dispatch(
-            openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false)
-        );
+        dispatch(openModal(
+            caption, buttonProcessId, 'process', tabId, rowId, false, false
+        ));
     }
 
     render() {
         const {
-            caption, widgetType, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus, fullScreen,
-            disabled, buttonProcessId
+            caption, widgetType, fields, windowType, type, noLabel, widgetData,
+            dataId, rowId, tabId, icon, gridAlign, isModal, entity,
+            handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus,
+            fullScreen, disabled, buttonProcessId
         } = this.props;
 
         const {updated} = this.state;
