@@ -192,9 +192,9 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 		}
 	}
 	
-	private final Object convertFromJson(final I_M_Attribute attribute, final Object value)
+	private final Object convertFromJson(final I_M_Attribute attribute, final Object jsonValue)
 	{
-		if(value == null)
+		if(jsonValue == null)
 		{
 			return null;
 		}
@@ -202,10 +202,10 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			return JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
+			return JSONDate.fromJson(jsonValue.toString(), DocumentFieldWidgetType.Date);
 		}
 		
-		return value;
+		return jsonValue;
 	}
 
 	@Override
