@@ -3,13 +3,11 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.adempiere.util.time.SystemTime;
@@ -55,21 +53,13 @@ public final class JSONDate implements Serializable
 
 	public static String toJson(final java.util.Date date)
 	{
-		final ZonedDateTime d = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-		return DATE_FORMAT.format(d);
-	}
-
-	public static String toJson(final java.util.Date date, final TimeZone timeZone)
-	{
-		final LocalDateTime ldt = LocalDateTime.ofInstant(date.toInstant(), timeZone.toZoneId());
-		final String valueStr = DATE_FORMAT.format(ldt);
-		return valueStr;
+		return toJson(date.getTime());
 	}
 
 	public static String toJson(final long millis)
 	{
-		final LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
-		return DATE_FORMAT.format(ldt);
+		final ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
+		return DATE_FORMAT.format(zdt);
 	}
 
 	public static java.util.Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
