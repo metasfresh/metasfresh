@@ -167,13 +167,21 @@ this week's RC
   * [#353](https://github.com/metasfresh/metasfresh-webui-frontend/issues/353) Wrong sitemap breadcrumb
     * Fix for a minor Issue that showed the wrong breadcrumb path when opening the sitemap.
   * [#354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/354) Filter w/o variable Parameters not working
+    * Fixed a Bug that prevented Filter selections without variable Filter criteria included.
   * [#364](https://github.com/metasfresh/metasfresh-webui-frontend/issues/364) Handling Unit Double click Icon changes data underneath overlay
+    * Now preventing clicks on modal overlay leading to navigational main window changes underneath.
   * [#259](https://github.com/metasfresh/metasfresh-webui-frontend/issues/259) Grid view selection lost when trying to use the scroll bar
+    * Now preventing clicks on modal overlay leading to navigational main window changes underneath.
   * [#352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/352) Lines not "refreshed" after docaction reactivation
+    * Bugfix that now refreshes the document lines after reactivation action.
   * [#383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/383) Shortcut for Batch entry space not usable when in input field
+    * Fix for keyboard navigation shortcut that now allows the direct jump to Quick Batch entry even when in field focus.
   * [#376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/376) Don't render unknown widget types but log in console
+    * Built restriction to not render unnown widget types in metasfresh WebUI.
   * [#350](https://github.com/metasfresh/metasfresh-webui-frontend/issues/350) Strange pulse effect in Subtab Gridview
+    * Fix for minor issue in Pulse effect when updating document rows.
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+    * Now the editing of all listed attributes are allowed in Attribute editor when displayed.
   
 # metasfresh 4.56.55 (2017-07)
 
