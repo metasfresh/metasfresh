@@ -533,8 +533,8 @@ node('agent && linux && libc6-i386')
 				// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/pom.xml --batch-mode properties:write-project-properties"
 
-				// now load the proeprtes we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
-				def mavenProps = readProperties  file: 'app.properties'
+				// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
+				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/app.properties'
 
 				final MF_ARTIFACT_URLS = [:];
 				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metaas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
