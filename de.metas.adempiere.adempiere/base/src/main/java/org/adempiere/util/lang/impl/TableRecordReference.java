@@ -202,7 +202,7 @@ public final class TableRecordReference implements ITableRecordReference
 		this.adTableId = adTableId;
 		this.tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
-		Check.assume(recordId > 0, "recordId > 0");
+		Check.assume(recordId >= 0, "recordId >= 0");
 		this.recordId = recordId;
 	}
 
