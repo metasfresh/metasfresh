@@ -11,8 +11,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -388,14 +392,45 @@ public final class ProcessInstance
 
 	private static final JSONReferencing extractJSONReferencing(final ProcessInfo processInfo)
 	{
-		final TableRecordReference sourceRecordRef = processInfo.getRecordRefOrNull();
-		if (sourceRecordRef == null)
+		final String tableName = processInfo.getTableNameOrNull();
+		if (tableName == null)
 		{
 			return null;
 		}
+		final TableRecordReference sourceRecordRef = processInfo.getRecordRefOrNull();
 
-		final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
-		return JSONReferencing.of(adWindowId, sourceRecordRef.getRecord_ID());
+		final IQueryFilter<Object> selectionQueryFilter = processInfo.getQueryFilterOrElse(null);
+		if (selectionQueryFilter != null)
+		{
+			final int maxRecordAllowedToSelect = 200;
+			final List<Integer> recordIds = Services.get(IQueryBL.class).createQueryBuilder(tableName, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+					.filter(selectionQueryFilter)
+					.setLimit(maxRecordAllowedToSelect + 1)
+					.create()
+					.listIds();
+			if(recordIds.isEmpty())
+			{
+				return null;
+			}
+			else if (recordIds.size() > maxRecordAllowedToSelect)
+			{
+				throw new AdempiereException("Selecting more than " + maxRecordAllowedToSelect + " records is not allowed");
+			}
+			
+			
+			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
+			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef); // assume all records are from same window
+			return JSONReferencing.of(adWindowId, recordIds);
+		}
+		else if (sourceRecordRef != null)
+		{
+			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
+			return JSONReferencing.of(adWindowId, sourceRecordRef.getRecord_ID());
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private static final DocumentPath extractSingleDocumentPath(final RecordsToOpen recordsToOpen)

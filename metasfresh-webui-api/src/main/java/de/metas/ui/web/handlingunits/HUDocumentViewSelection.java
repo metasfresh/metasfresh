@@ -21,6 +21,7 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -72,8 +73,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	private final String viewId;
 	private final int adWindowId;
 
-	private final DocumentPath referencingDocumentPath;
-	private final String referencingTableName;
+	private final Set<DocumentPath> referencingDocumentPaths;
 
 	private final HUDocumentViewLoader documentViewsLoader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
@@ -90,8 +90,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
-		referencingDocumentPath = builder.getReferencingDocumentPath();
-		referencingTableName = builder.getReferencingTableName();
+		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 	}
 
 	@Override
@@ -117,13 +116,13 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 	}
-	
+
 	@Override
 	public int getQueryLimit()
 	{
 		return -1;
 	}
-	
+
 	@Override
 	public boolean isQueryLimitHit()
 	{
@@ -231,14 +230,9 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return true;
 	}
 
-	public DocumentPath getReferencingDocumentPath()
+	public Set<DocumentPath> getReferencingDocumentPaths()
 	{
-		return referencingDocumentPath;
-	}
-
-	public String getReferencingTableName()
-	{
-		return referencingTableName;
+		return referencingDocumentPaths;
 	}
 
 	public void invalidateAll()
@@ -256,21 +250,19 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public void notifyRecordChanged(final TableRecordReference recordRef)
+	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		if (!I_M_HU.Table_Name.equals(recordRef.getTableName()))
-		{
-			return;
-		}
-
 		final IndexedDocumentViews records = getRecordsNoLoad();
 		if (records == null)
 		{
 			return;
 		}
 
-		final DocumentId documentId = DocumentId.of(recordRef.getRecord_ID());
-		if (!records.contains(documentId))
+		final boolean containsSomeRecords = recordRefs.stream()
+				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
+				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
+				.anyMatch(records::contains);
+		if(!containsSomeRecords)
 		{
 			return;
 		}
@@ -374,8 +366,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		private String viewId;
 		private int adWindowId;
-		private DocumentPath referencingDocumentPath;
-		private String referencingTableName;
+		private Set<DocumentPath> referencingDocumentPaths;
 
 		private ProcessDescriptorsFactory processDescriptorsFactory;
 		private HUDocumentViewLoader documentViewsLoader;
@@ -436,21 +427,15 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return processDescriptorsFactory;
 		}
 
-		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath, final String referencingTableName)
+		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
 		{
-			this.referencingDocumentPath = referencingDocumentPath;
-			this.referencingTableName = referencingTableName;
+			this.referencingDocumentPaths = referencingDocumentPaths;
 			return this;
 		}
 
-		private DocumentPath getReferencingDocumentPath()
+		private Set<DocumentPath> getReferencingDocumentPaths()
 		{
-			return referencingDocumentPath;
-		}
-
-		private String getReferencingTableName()
-		{
-			return referencingTableName;
+			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 	}
 

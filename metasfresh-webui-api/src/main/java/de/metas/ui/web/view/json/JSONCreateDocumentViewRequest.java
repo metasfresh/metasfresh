@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -36,11 +37,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -161,6 +162,12 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 	{
 		return referencing == null ? null : referencing.toDocumentPath();
 	}
+	
+	public Set<DocumentPath> getReferencingDocumentPaths()
+	{
+		return referencing == null ? ImmutableSet.of() : referencing.toDocumentPaths();
+	}
+
 
 	public List<JSONDocumentFilter> getFilters()
 	{
@@ -187,24 +194,57 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 	{
 		public static final JSONReferencing of(final int adWindowId, final int documentId)
 		{
-			return new JSONReferencing(String.valueOf(adWindowId), String.valueOf(documentId));
+			return new JSONReferencing(String.valueOf(adWindowId), ImmutableSet.of(documentId));
 		}
-		
+
+		public static final JSONReferencing of(final int adWindowId, final Collection<Integer> documentIds)
+		{
+			return new JSONReferencing(String.valueOf(adWindowId), documentIds);
+		}
+
 		@JsonProperty("documentType")
 		private final String documentType;
 
+		@JsonProperty("documentIds")
+		private final Set<String> documentIds;
+		
 		@JsonProperty("documentId")
+		@Deprecated
 		private final String documentId;
 
+
 		@JsonCreator
-		public JSONReferencing(
+		private JSONReferencing(
 				@JsonProperty("documentType") final String documentType //
+				, @JsonProperty("documentIds") final Set<String> documentIds //
 				, @JsonProperty("documentId") final String documentId //
 		)
 		{
 			super();
 			this.documentType = documentType;
-			this.documentId = documentId;
+			
+			if(documentIds != null && !documentIds.isEmpty())
+			{
+				this.documentIds = ImmutableSet.copyOf(documentIds);
+				this.documentId = documentIds.iterator().next();
+			}
+			else
+			{
+				this.documentId = documentId;
+				this.documentIds = ImmutableSet.of(documentId);
+			}
+		}
+
+		/** Multi-documents builder */
+		private JSONReferencing(final String documentType, final Collection<Integer> documentIdsAsInt)
+		{
+			this.documentType = documentType;
+
+			documentIds = documentIdsAsInt.stream()
+					.map(id -> id.toString())
+					.collect(GuavaCollectors.toImmutableSet());
+
+			documentId = documentIds.iterator().next();
 		}
 
 		@Override
@@ -212,13 +252,8 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 		{
 			return MoreObjects.toStringHelper(this)
 					.add("documentType", documentType)
-					.add("documentId", documentId)
+					.add("documentIds", documentIds)
 					.toString();
-		}
-
-		public String getDocumentType()
-		{
-			return documentType;
 		}
 
 		private int getAD_Window_ID()
@@ -226,7 +261,7 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 			return Integer.parseInt(documentType);
 		}
 
-		public String getDocumentId()
+		private String getDocumentId()
 		{
 			return documentId;
 		}
@@ -235,6 +270,15 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 		{
 			return DocumentPath.rootDocumentPath(DocumentType.Window, getAD_Window_ID(), getDocumentId());
 		}
+
+		public Set<DocumentPath> toDocumentPaths()
+		{
+			final int adWindowId = getAD_Window_ID();
+			return documentIds.stream()
+					.map(id -> DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, id))
+					.collect(GuavaCollectors.toImmutableSet());
+		}
+
 	}
 
 	public static final class Builder

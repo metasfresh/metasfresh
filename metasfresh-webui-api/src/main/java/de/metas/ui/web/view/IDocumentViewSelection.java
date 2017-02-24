@@ -44,7 +44,7 @@ public interface IDocumentViewSelection
 	String getViewId();
 
 	int getAD_Window_ID();
-
+	
 	long size();
 
 	void close();
@@ -139,7 +139,7 @@ public interface IDocumentViewSelection
 	Stream<? extends IDocumentView> streamByIds(Collection<DocumentId> documentIds);
 
 	/**
-	 * Notify the view that given record has changed.
+	 * Notify the view that given record(s) has changed.
 	 */
-	void notifyRecordChanged(TableRecordReference recordRef);
+	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
 }

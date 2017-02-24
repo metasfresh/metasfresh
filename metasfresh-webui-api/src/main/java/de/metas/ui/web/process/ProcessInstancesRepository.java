@@ -8,7 +8,6 @@ import java.util.function.Function;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,8 +32,8 @@ import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -68,6 +67,8 @@ public class ProcessInstancesRepository
 	// Services
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
+	@Autowired
+	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private DocumentCollection documentsCollection;
 	@Autowired
@@ -136,51 +137,54 @@ public class ProcessInstancesRepository
 
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 
-		//
-		// Extract process where clause from view, in case the process was called from a view.
+		final String tableName;
+		final int recordId;
 		final String sqlWhereClause;
+		
+		//
+		// View
 		final String viewId = Strings.emptyToNull(request.getViewId());
-		DocumentPath viewSingleDocumentPath = null;
+		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
 		if (!Check.isEmpty(viewId))
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
-			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
-
+			final int view_AD_Window_ID = view.getAD_Window_ID();
+			tableName = documentDescriptorFactory.getTableNameOrNull(view_AD_Window_ID);
+			
 			if (viewDocumentIds.size() == 1)
 			{
-				final int view_AD_Window_ID = view.getAD_Window_ID();
-				final DocumentId view_singleDocumentId = viewDocumentIds.iterator().next();
-				viewSingleDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_singleDocumentId);
+				recordId = viewDocumentIds.iterator().next().toInt();
 			}
+			else
+			{
+				recordId = -1;
+			}
+			
+			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
 		}
-		else
+		//
+		// Single document call
+		else if (singleDocumentPath != null)
 		{
+			tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID(), singleDocumentPath.getDetailId());
+			recordId = singleDocumentPath.getSingleRowId().toInt();
 			sqlWhereClause = null;
 		}
-
 		//
-		// Extract the (single) referenced document
-		final TableRecordReference documentRef;
-		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
-		if (singleDocumentPath != null)
-		{
-			documentRef = documentsCollection.getTableRecordReference(singleDocumentPath);
-		}
-		else if (viewSingleDocumentPath != null)
-		{
-			documentRef = documentsCollection.getTableRecordReference(viewSingleDocumentPath);
-		}
+		// From menu
 		else
 		{
-			documentRef = null;
+			tableName = null;
+			recordId = -1;
+			sqlWhereClause = null;
 		}
 
 		return ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(adProcessId)
-				.setRecord(documentRef)
+				.setRecord(tableName, recordId)
 				.setWhereClause(sqlWhereClause)
 				//
 				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here

@@ -20,6 +20,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
@@ -222,7 +223,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	{
 		return defaultSelection.getQueryLimit();
 	}
-	
+
 	@Override
 	public boolean isQueryLimitHit()
 	{
@@ -513,16 +514,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public void notifyRecordChanged(final TableRecordReference recordRef)
+	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		if (!Objects.equals(getTableName(), recordRef.getTableName()))
-		{
-			return;
-		}
+		final String viewTableName = getTableName();
 
-		final DocumentId documentId = DocumentId.of(recordRef.getRecord_ID());
+		final Set<DocumentId> documentIds = recordRefs.stream()
+				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
+				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
+				.collect(GuavaCollectors.toImmutableSet());
+
 		DocumentViewChangesCollector.getCurrentOrAutoflush()
-				.collectDocumentChanged(this, documentId);
+				.collectDocumentsChanged(this, documentIds);
 	}
 
 	//

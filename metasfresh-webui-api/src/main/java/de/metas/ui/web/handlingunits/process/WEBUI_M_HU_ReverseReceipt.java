@@ -3,10 +3,13 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -25,7 +28,6 @@ import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.process.ProcessInstance;
 import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -41,11 +43,11 @@ import de.metas.ui.web.window.model.DocumentCollection;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -67,12 +69,12 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("webui view not available");
 		}
-		
-		if(viewContext.isNoSelection())
+
+		if (viewContext.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
+
 		final MutableInt checkedDocumentsCount = new MutableInt(0);
 		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUDocumentViewSelection.class)
 				.streamByIds(viewContext.getSelectedDocumentIds())
@@ -95,7 +97,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 
 		return ProcessPreconditionsResolution.accept();
 	}
-	
+
 	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUDocumentView document)
 	{
 		if (!document.isHUStatusActive())
@@ -105,7 +107,6 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 
 		return null;
 	}
-
 
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
@@ -125,18 +126,49 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
-		
-		ReceiptCorrectHUsProcessor.builder()
-				.setM_ReceiptSchedule(receiptSchedule)
-				.build()
-				.reverseReceiptsForHUs(retrieveHUsToReverse());
+		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
+		final List<Integer> huIdsToReverse = retrieveHUsToReverse();
 
-		//
-		// Reset the view's affected HUs
-		getView().invalidateAll();
+		boolean hasChanges = false;
+		try
+		{
+			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
+			{
+				final ReceiptCorrectHUsProcessor processor = ReceiptCorrectHUsProcessor.builder()
+						.setM_ReceiptSchedule(receiptSchedule)
+						.tolerateNoHUsFound()
+						.build();
+				if (processor.isNoHUsFound())
+				{
+					continue;
+				}
 
-		documentViewsRepo.notifyRecordChanged(TableRecordReference.of(receiptSchedule));
+				final List<I_M_InOut> receiptsToReverse = processor.getReceiptsToReverseFromHUIds(huIdsToReverse);
+				if (receiptsToReverse.isEmpty())
+				{
+					continue;
+				}
+
+				processor.reverseReceipts(receiptsToReverse);
+				hasChanges = true;
+			}
+		}
+		finally
+		{
+			if (hasChanges)
+			{
+				// Reset the view's affected HUs
+				getView().invalidateAll();
+
+				// Notify all active views that given receipt schedules were changed
+				documentViewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
+			}
+		}
+
+		if (!hasChanges)
+		{
+			throw new AdempiereException("@NotFound@ @M_InOut_ID@");
+		}
 
 		return MSG_OK;
 	}
@@ -146,21 +178,20 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 		return documentViewsRepo.getView(p_WebuiViewId, HUDocumentViewSelection.class);
 	}
 
-	private I_M_ReceiptSchedule getM_ReceiptSchedule()
+	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
 	{
-		final HUDocumentViewSelection view = getView();
-		final DocumentPath referencingDocumentPath = view.getReferencingDocumentPath();
-
-		return documentsCollection.getTableRecordReference(referencingDocumentPath)
-				.getModel(this, I_M_ReceiptSchedule.class);
+		return getView()
+				.getReferencingDocumentPaths().stream()
+				.map(referencingDocumentPath -> documentsCollection.getTableRecordReference(referencingDocumentPath).getModel(this, I_M_ReceiptSchedule.class))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private List<I_M_HU> retrieveHUsToReverse()
+	private List<Integer> retrieveHUsToReverse()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, this)
 				.filter(getProcessInfo().getQueryFilter())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_M_HU.class);
+				.listIds();
 	}
 }

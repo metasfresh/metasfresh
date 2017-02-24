@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -46,8 +47,8 @@ public interface IDocumentViewsRepository
 	List<IDocumentViewSelection> getViews();
 
 	/**
-	 * Notify all views that given record was changed.
+	 * Notify all views that given records was changed.
 	 */
-	void notifyRecordChanged(TableRecordReference recordRef);
+	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
 
 }

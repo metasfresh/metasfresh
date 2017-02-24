@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.util.Check;
@@ -87,11 +88,11 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	}
 
 	@Override
-	public void notifyRecordChanged(final TableRecordReference recordRef)
+	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		Check.assumeNotNull(recordRef, "Parameter recordRef is not null");
+		Check.assumeNotEmpty(recordRefs, "Parameter recordRefs is not empty");
 
 		views.asMap().values().stream()
-				.forEach(view -> view.notifyRecordChanged(recordRef));
+				.forEach(view -> view.notifyRecordsChanged(recordRefs));
 	}
 }
