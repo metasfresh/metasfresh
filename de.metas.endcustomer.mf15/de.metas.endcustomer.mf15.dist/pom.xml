@@ -20,10 +20,18 @@
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
 		
-		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+		<!--
+		The following *.version properties are changed by the build system via mvn versions:update-property. 
+		See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
+		<!-- 1.0.0 is the version that is build and installed to our local repo bei eclipse or if we run maven from the command line -->
 		<metasfresh.version>1.0.0</metasfresh.version>
+		<metasfresh-webui-api.version>1.0.0</metasfresh-webui-api.version>
+		<metasfresh-procurement-webui.version>1.0.0</metasfresh-procurement-webui.version>
+		
+		<!-- need to pick LATEST because there is now 1.0.0 version in our local repo. Because currently it's only build on jenkins. -->
+		<metasfresh-webui-frontend.version>LATEST</metasfresh-webui-frontend.version>
 	</properties>
 
 	<dependencies>
@@ -102,6 +110,30 @@ Since we now work with a range, we now declare the dependencies here where range
 		</dependency>
 		-->
 
+		<!-- 
+			gh #968 https://github.com/metasfresh/metasfresh/issues/968
+			We need to declare theses dependencies so that the version:update-property can update the *.version properties 
+			Further down we will then copy these files to the dist folder using the copy-dependencies goal.
+		-->
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-api</artifactId>
+			<version>${metasfresh-webui-api.version}</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-frontend</artifactId>
+			<version>${metasfresh-webui-frontend.version}</version>
+			<type>tar.gz</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.webui</artifactId>
+			<version>${metasfresh-procurement-webui.version}</version>
+			<type>jar</type>
+		</dependency>
+
 <!-- 
 SQL and jasper dependencies:
 note: when adding new records, please roughly order them by alphabet.
@@ -167,7 +199,7 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.commission</groupId>
 			<artifactId>de.metas.commission.base</artifactId>
@@ -175,7 +207,7 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
@@ -528,9 +560,9 @@ note: when adding new records, please roughly order them by alphabet.
 
 					<!-- 
 						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
-						These bundles are buid somewhere else and therefore we need to resolve them with a version range.
-						We did this by specifying them as dependencies further up. they were already resolved and now, we only need to copy them,
-						without specifying a particular version at this place. 
+						We specified these artifacts as dependencies further up. 
+						Therefore they were already resolved and now we only need to grab 'em by the artifactid
+						without having to specify a particular version. 
 					-->
 					<execution>
 						<id>copy-metasfresh-download-jars</id>
@@ -540,11 +572,19 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
-							<includeArtifactIds>de.metas.printing.esb.camel,de.metas.edi.esb.camel,de.metas.document.archive.esb.camel,de.metas.admin.webui</includeArtifactIds>
-							<type>jar</type>
+							<includeArtifactIds>
+								de.metas.printing.esb.camel,
+								de.metas.edi.esb.camel,
+								de.metas.admin.webui,
+								<!-- gh #968 -->
+								de.metas.procurement.webui,
+								metasfresh-webui-frontend,
+								metasfresh-webui-api
+							</includeArtifactIds>
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
 						</configuration>
 					</execution>
 					<execution>

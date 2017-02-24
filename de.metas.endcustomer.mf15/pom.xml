@@ -16,14 +16,6 @@
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
 	<version>1.0.0</version>
 
-	<properties>
-		<!--
-			the artifact version of the esb bundles which we download from the maven repository in other to 
-			provide them as part of the complete metasfresh package. 
-		-->
-		<esb.bundles.version>${metasfresh-dependency.version}</esb.bundles.version>
-	</properties>
-
 	<modules>
 		<!-- note: we can't use e.g.
 		<module>${project.groupId}.base</module>
@@ -92,20 +84,39 @@
 			</plugin>
 			<!--
 			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
-			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+			Note that the property needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 			-->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
-					 <properties>
+					<properties>
 						<property>
-						  <name>metasfresh.version</name>
-						  <searchReactor>false</searchReactor>
-						  <autoLinkDependencies>true</autoLinkDependencies>
+							<name>metasfresh.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
-					  </properties>
+
+						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968 
+							declare the the version properties of related artifacts which we can to set in the dist module
+						-->
+						<property>
+							<name>metasfresh-webui-frontend.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-webui-api.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-procurement-webui.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					</properties>
 				</configuration>
 			</plugin>
 		</plugins>

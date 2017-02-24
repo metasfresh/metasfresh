@@ -106,6 +106,72 @@ install_metasfresh()
 	trace install_metasfresh END
 }
 
+install_metasfresh-webui-api()
+{
+	trace install_metasfresh-webui-api BEGIN
+	
+	# First, check if there is anything to do at all
+	# Thx to http://stackoverflow.com/a/13864829/1012103 on how to check if METASFRESH_WEBUI_FRONTEND_HOME is set
+	if [ -z ${METASFRESH_WEBUI_API_HOME+x} ]; 
+	then
+		trace install_metasfresh-webui-api "Variable METASFRESH_WEBUI_API_HOME is not set. Not installing the webui-api"
+		return
+	fi
+	
+	local SRC_JAR="${ROLLOUT_DIR}/deploy/download/metasfresh-webui-api.jar"
+	if [ ! -e ${SRC_JAR} ];
+	then
+		trace install_metasfresh-webui-api "File ${SRC_JAR} is not part of this package. Not installing the webui-api"
+		return
+	fi
+
+	local TARGET_JAR="${METASFRESH_WEBUI_API_HOME}/metasfresh-webui-api.jar"	
+	if [ -x $TARGET_JAR ]; # if TARGET_JAR exists as an executable file, then try to stop it
+	then
+		stop_metasfresh-webui-api
+	fi
+	
+	cp -v $SRC_JAR $TARGET_JAR
+	chmod -v 700 $TARGET_JAR # make it executable
+	chown -v metasfresh: $TARGET_JAR
+		
+	start_metasfresh-webui-api
+	
+	trace install_metasfresh-webui-api END
+}
+
+install_metasfresh-webui-frontend()
+{
+	trace install_metasfresh-webui-frontend BEGIN
+	
+	# First, check if there is anything to do at all
+	# Thx to http://stackoverflow.com/a/13864829/1012103 on how to check if METASFRESH_WEBUI_FRONTEND_HOME is set
+	if [ -z ${METASFRESH_WEBUI_FRONTEND_HOME+x} ]; 
+	then
+		trace install_metasfresh-webui-frontend "Variable METASFRESH_WEBUI_FRONTEND_HOME is not set. Not installing the webui-frontend"
+		return
+	fi
+	
+	local SRC_TAR="${ROLLOUT_DIR}/deploy/download/metasfresh-webui-frontend.tar.gz"
+	if [ ! -e ${SRC_TAR} ];
+	then
+		trace install_metasfresh-webui-frontend "File ${SRC_TAR} is not part of this package. Not installing the webui-frontend"
+		return
+	fi
+
+	cd ${METASFRESH_WEBUI_FRONTEND_HOME}
+	cp -a ./dist/config.js ./
+	rm -r ./dist
+	
+	cp -v ${SRC_TAR} ${METASFRESH_WEBUI_FRONTEND_HOME}
+	tar xvzf ./metasfresh-webui-frontend.tar.gz
+	
+	cp -a ./config.js ./dist/
+	chown metasfresh:metasfresh -R ./dist
+	
+	trace install_metasfresh-webui-frontend END
+}
+
 # task 06284
 invoke_customer_script()
 {
@@ -145,6 +211,8 @@ while getopts "d:s:n" OPTION; do
 done
 
 install_metasfresh 
+install_metasfresh-webui-api
+install_metasfresh-webui-frontend
 
 # task 06284
 invoke_customer_script
