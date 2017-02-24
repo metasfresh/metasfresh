@@ -13,6 +13,7 @@ Here come the actual release notes:
 # metasfresh 4.58.57 (2017-09)
 ## Features
 * metasfresh-backend
+  * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
 
 * metasfresh-webui-api
 
