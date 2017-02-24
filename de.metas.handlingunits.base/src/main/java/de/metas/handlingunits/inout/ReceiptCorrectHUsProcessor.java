@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -22,7 +23,6 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
 
-import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.exceptions.HUException;
@@ -45,18 +45,18 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * Helper class used to reverse the receipts for a given set of HUs.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -110,14 +110,19 @@ public class ReceiptCorrectHUsProcessor
 			}
 		}
 
-		if (husById.isEmpty())
+		if (husById.isEmpty() && builder.isFailOnNoHUsFound())
 		{
-			throw new TerminalException("@NotFound@ @M_HU_ID@");
+			throw new HUException("@NotFound@ @M_HU_ID@");
 		}
 
 		hus = ImmutableList.copyOf(husById.values());
 		this.huId2inout = ImmutableMap.copyOf(huId2inout);
 		this.inoutId2hus = ImmutableMultimap.copyOf(inoutId2hus);
+	}
+
+	public boolean isNoHUsFound()
+	{
+		return hus.isEmpty();
 	}
 
 	/**
@@ -150,7 +155,7 @@ public class ReceiptCorrectHUsProcessor
 	 */
 	public void reverseReceiptsForHUs(final Collection<I_M_HU> hus)
 	{
-		final List<I_M_InOut> receiptsToReverse = getReceiptsToReverse(IHUAware.transformHUCollection(hus));
+		final List<I_M_InOut> receiptsToReverse = getReceiptsToReverseFromHUs(hus);
 		reverseReceipts(receiptsToReverse);
 	}
 
@@ -163,24 +168,18 @@ public class ReceiptCorrectHUsProcessor
 	}
 
 	/**
-	 * @param hu
+	 * @param huId
 	 * @return receipt which contains the given HU or <code>null</code> if no receipt is matching.
 	 */
-	public I_M_InOut getReceiptOrNull(final I_M_HU hu)
+	private I_M_InOut getReceiptOrNull(final int huId)
 	{
-		final int huId = hu.getM_HU_ID();
 		final I_M_InOut receipt = huId2inout.get(huId);
 		return receipt;
 	}
 
-	/**
-	 * @param hu
-	 * @return receipt which contains the given HU or <code>null</code> if no receipt is matching.
-	 */
-	public I_M_InOut getReceiptOrNull(final IHUAware huAware)
+	public List<I_M_InOut> getReceiptsToReverseFromHUs(final Collection<I_M_HU> huAwareList)
 	{
-		final I_M_HU hu = huAware.getM_HU();
-		return getReceiptOrNull(hu);
+		return getReceiptsToReverse(IHUAware.transformHUCollection(hus));
 	}
 
 	/**
@@ -196,10 +195,31 @@ public class ReceiptCorrectHUsProcessor
 			return ImmutableList.of();
 		}
 
-		return huAwareList.stream()
-				.map(this::getReceiptOrNull)
-				.filter(receipt -> receipt != null) // it could be that user selected not a top level HU.... skip it for now
+		return getReceiptsToReverse(huAwareList
+				.stream()
+				.map(huAware -> huAware.getM_HU().getM_HU_ID()));
+	}
+
+	public List<I_M_InOut> getReceiptsToReverseFromHUIds(final Collection<Integer> huIds)
+	{
+		if (huIds == null || huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return getReceiptsToReverse(huIds.stream());
+	}
+
+	private final List<I_M_InOut> getReceiptsToReverse(final Stream<Integer> huIds)
+	{
+		return huIds
+				.map(huId -> getReceiptOrNull(huId))
+				// skip if no receipt found because
+				// * it could be that user selected not a top level HU.... skip it for now
+				// * or we were really asked to as much as we can
+				.filter(receipt -> receipt != null)
 				.collect(GuavaCollectors.toImmutableList());
+
 	}
 
 	/**
@@ -230,6 +250,7 @@ public class ReceiptCorrectHUsProcessor
 	public static final class Builder
 	{
 		private I_M_ReceiptSchedule receiptSchedule;
+		private boolean tolerateNoHUsFound = false;
 
 		private Builder()
 		{
@@ -253,6 +274,16 @@ public class ReceiptCorrectHUsProcessor
 			return receiptSchedule;
 		}
 
+		public Builder tolerateNoHUsFound()
+		{
+			tolerateNoHUsFound = true;
+			return this;
+		}
+
+		private boolean isFailOnNoHUsFound()
+		{
+			return !tolerateNoHUsFound;
+		}
 	}
 
 }
