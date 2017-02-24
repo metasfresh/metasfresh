@@ -88,6 +88,7 @@ public final class ProcessInstance
 	private static final transient Logger logger = LogManager.getLogger(ProcessInstance.class);
 
 	public static final String PARAM_ViewId = "$WEBUI_ViewId";
+	public static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
 
 	@Autowired
 	@Lazy
@@ -408,7 +409,7 @@ public final class ProcessInstance
 					.setLimit(maxRecordAllowedToSelect + 1)
 					.create()
 					.listIds();
-			if(recordIds.isEmpty())
+			if (recordIds.isEmpty())
 			{
 				return null;
 			}
@@ -416,8 +417,7 @@ public final class ProcessInstance
 			{
 				throw new AdempiereException("Selecting more than " + maxRecordAllowedToSelect + " records is not allowed");
 			}
-			
-			
+
 			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
 			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef); // assume all records are from same window
 			return JSONReferencing.of(adWindowId, recordIds);
