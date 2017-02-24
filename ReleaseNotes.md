@@ -36,13 +36,21 @@ this week's RC
 ## Features
 * metasfresh 
   * [#739](https://github.com/metasfresh/metasfresh/issues/739) remove X_BPartner_Stats_MV
+    * Removing the legacy DB Table with Business Partner statistics, because of big performance penalty. Will be replaces later via modern data storage and KPI in webUI.
   * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
+    * Now displaying the date promised on order confirmation document.
   * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
+    * Extending the Jasperreports documents for order confirmation, inouts and invoices. Now displaying further customer specific product numbers and names.
   * [#928](https://github.com/metasfresh/metasfresh/issues/928) have a way to control which contact is used on addresses in order
+    * Enhanced functionality for the selection and usage of contact information on order confirmations. Now its possible to do detailed presettings of Business Partner contacts to be used in Sales and purchase workflows.
   * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
+    * Enhancing the Table Sequence Checker to allow more robustness. Issues was recognized in corner cases of Data Life-cycle Management archiving process of legacy data.
   * [#942](https://github.com/metasfresh/metasfresh/issues/942) Improve Transparency & Usability of Pricing definitions
+    * Huge Improvement of Transparency & Usability of Pricing definitions. The Pricing Data Structure has grown during the last decade to allow very detailed price definitions bases on countries, currencies, products, packages, attributes and more. This lead into a data structure that is tough to understand and maintain for new users. This implementation improves the price hierarchy to allow much easier maintenance and better transparency.
   * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
+    * Changed the Address Layout on Dunning Document to fit better in standardized letter envelope windows.
   * [#956](https://github.com/metasfresh/metasfresh/issues/956) Adjust Price list reports to new data structure
+    * Adjustments to existing Price list reports dues to refactoring of new pricing hierarchy and functionality.
   * [#957](https://github.com/metasfresh/metasfresh/issues/957) Empties Returns for Vendors and Customers in Material Receipt Window
   * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
   * [#975](https://github.com/metasfresh/metasfresh/issues/975) Set DLM_Level via properties/preferences UI
