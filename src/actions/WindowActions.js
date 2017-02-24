@@ -278,7 +278,8 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  *  when responses should merge store
  */
 export function patch(
-    entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal, isAdvanced
+    entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal,
+    isAdvanced
 ) {
     return dispatch => {
         let responsed = false;
@@ -299,15 +300,19 @@ export function patch(
 
         return dispatch(patchRequest(
             entity, windowType, id, tabId, rowId, property, value, null, null,
-            isAdvanced)
-        ).then(response => {
+            isAdvanced
+        )).then(response => {
             responsed = true;
-            dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+            dispatch(mapDataToState(
+                response.data, isModal, rowId, id, windowType
+            ));
         }).catch(() => {
-            dispatch(
-                getData(entity, windowType, id, tabId, rowId, null, null, isAdvanced)
-            ).then(response => {
-                dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+            dispatch(getData(
+                entity, windowType, id, tabId, rowId, null, null, isAdvanced
+            )).then(response => {
+                dispatch(mapDataToState(
+                    response.data, isModal, rowId, id, windowType
+                ));
             });
         });
     }
