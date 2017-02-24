@@ -51,6 +51,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -603,7 +604,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setAD_User_ID(pi.getAD_User_ID());
 		adPInstance.setAD_Role_ID(pi.getAD_Role_ID());
 		adPInstance.setAD_Table_ID(pi.getTable_ID());
-		adPInstance.setRecord_ID(pi.getRecord_ID());
+		adPInstance.setRecord_ID(Util.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
 		adPInstance.setWhereClause(pi.getWhereClause());
 		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
 
