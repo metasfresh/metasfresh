@@ -235,7 +235,7 @@ start_metasfresh-webui-api()
 	else
 		echo "/etc/init.d/metasfresh-webui-api does not exist. Please create it. Menawhile, this script does *not* start the service."
 		echo "to create /etc/init.d/metasfresh-webui-api , you can do (as root):"
-		echo "		ln -s $TARGET_JAR /etc/init.d/metasfresh-webui-api"
+		echo "		ln -s metasfresh-webui-api.jar /etc/init.d/metasfresh-webui-api"
 	fi
 }
 
