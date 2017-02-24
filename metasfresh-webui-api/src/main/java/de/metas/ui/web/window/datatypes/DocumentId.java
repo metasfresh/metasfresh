@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
@@ -121,6 +122,13 @@ public abstract class DocumentId implements Serializable
 
 	}
 
+	public static String toCommaSeparatedString(final Collection<DocumentId> documentIds)
+	{
+		return documentIds.stream()
+				.map(DocumentId::toJson)
+				.collect(Collectors.joining(","));
+	}
+
 	public static Set<DocumentId> ofStringSet(final Collection<String> documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
@@ -209,6 +217,11 @@ public abstract class DocumentId implements Serializable
 	public abstract int toInt();
 
 	public abstract boolean isNew();
+
+	public int toIntOr(final int fallbackValue)
+	{
+		return isInt() ? toInt() : fallbackValue;
+	}
 
 	private static final class IntDocumentId extends DocumentId
 	{
