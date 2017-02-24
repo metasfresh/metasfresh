@@ -1,6 +1,7 @@
 package org.adempiere.util.lang.impl;
 
 import java.lang.ref.SoftReference;
+import java.util.Collection;
 import java.util.List;
 
 /*
@@ -26,6 +27,7 @@ import java.util.List;
  */
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -44,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -104,6 +107,20 @@ public final class TableRecordReference implements ITableRecordReference
 				.filter(model -> model != null)
 				.map(model -> of(model))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+	
+	public static final Set<TableRecordReference> ofSet(final Collection<?> models)
+	{
+		if(models == null || models.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return models
+				.stream()
+				.filter(model -> model != null)
+				.map(model -> of(model))
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
 
