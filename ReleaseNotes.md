@@ -105,7 +105,7 @@ this week's RC
 ## Fixes
 
 * metasfresh
-  * [#942](https://github.com/metasfresh/metasfresh/issues/942) Fix price list copy
+  * [#161](https://github.com/metasfresh/metasfresh-webui/issues/161) Button Action in Subtab for Price List Version creation
     * Enabled the functionality in WebUI to generate new Product prices via the Pricelist Version record and configured calculation Schema with source Price List.
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
     * Fixed a minor Bug that restricted the login after creating a new Role.
