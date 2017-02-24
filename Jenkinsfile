@@ -535,6 +535,7 @@ node('agent && linux && libc6-i386')
 				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/app.properties'
 
 				final MF_ARTIFACT_URLS = [:];
+				MF_ARTIFACT_URLS['metasfresh-dist'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz";
 				MF_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${mavenProps['metasfresh-webui-api.version']}";
 				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&p=tar.gz&v=${mavenProps['metasfresh-webui-frontend.version']}";
 				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.procurement&a=de.metas.procurement.webui&v=${mavenProps['metasfresh-procurement-webui.version']}";
@@ -551,7 +552,7 @@ node('agent && linux && libc6-i386')
 <p>
 <h3>Deployable artifacts</h3>
 <ul>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
 	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
 	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
@@ -561,9 +562,15 @@ node('agent && linux && libc6-i386')
 <p>
 <h3>Deploy</h3>
 <ul>
-	<li><a href="">This link (not yet working!)</a> let's you jump to a rollout job that will deploy out the tar.gz to a host of your choice</li>
+	<!-- 
+		Note: for this link with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later
+		See 
+		* https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
+		* https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
+	-->
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}\">This link</a> lets you jump to a rollout job that will deploy out the tar.gz to a host of your choice.</li>
 </ul>
-
+<p>
 <h3>Additional notes</h3>
 <ul>
   <li>The artifacts on <a href="https://repo.metasfresh.com">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
