@@ -949,3 +949,7 @@ td.pulse-off input {
         text-overflow: ellipsis;
     }
 }
+
+.raw-modal {
+    z-index:399;
+}
