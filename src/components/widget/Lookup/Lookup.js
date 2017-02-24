@@ -225,7 +225,7 @@ class Lookup extends Component {
     handleChange = () => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
-            tabId, rowId, entity,subentity, subentityId, viewId
+            tabId, rowId, entity, subentity, subentityId, viewId
         } = this.props;
 
         const {mainProperty} = this.state;

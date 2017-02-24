@@ -462,7 +462,7 @@ class Table extends Component {
             selectIdB
         ];
 
-        selected.sort((a,b) => a - b);
+        selected.sort((a, b) => a - b);
             if(keyProperty === 'id'){
                 return arrayIndex.slice(selected[0], selected[1]+1);
             }else {

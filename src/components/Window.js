@@ -142,7 +142,7 @@ class Window extends Component {
 
     renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
-        const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+        const {data, modal, tabId, rowId, dataId, isAdvanced} = this.props;
         const {fullScreen} = this.state;
 
         return elements.map((elem, id)=> {

@@ -137,7 +137,7 @@ export default function windowHandler(state = initialState, action) {
                             [action.rowid]: {
                                 fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map(item =>
                                     item.field === action.item.field ?
-                                        Object.assign({},item,action.item) :
+                                        Object.assign({}, item, action.item) :
                                         item
                                 )}
                             }

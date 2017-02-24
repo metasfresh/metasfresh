@@ -16,7 +16,7 @@ class TableItem extends Component {
         };
     }
 
-    handleEditProperty = (e,property, callback) => {
+    handleEditProperty = (e, property, callback) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
         if(
@@ -60,7 +60,7 @@ class TableItem extends Component {
         }
 
         if(e.key === 'Enter' && !edited) {
-            this.handleEditProperty(e,property, true);
+            this.handleEditProperty(e, property, true);
         } else if (e.key === 'Enter' && edited) {
             this.handleEditProperty(e);
             changeListenOnTrue();
@@ -70,7 +70,7 @@ class TableItem extends Component {
 
     renderCells = (cols, cells) => {
         const {
-            type, docId, rowId, tabId,readonly, mainTable, newRow, changeListenOnTrue,
+            type, docId, rowId, tabId, readonly, mainTable, newRow, changeListenOnTrue,
             tabIndex, entity
         } = this.props;
 
@@ -95,7 +95,7 @@ class TableItem extends Component {
                     key={index}
                     widgetData={widgetData}
                     isEdited={edited === property}
-                    onDoubleClick={(e) => this.handleEditProperty(e,property, true)}
+                    onDoubleClick={(e) => this.handleEditProperty(e, property, true)}
                     onClickOutside={(e) => {this.handleEditProperty(e); changeListenOnTrue()}}
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
