@@ -65,6 +65,19 @@ import de.metas.handlingunits.storage.IProductStorage;
  */
 public class HUListAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {
+	/** @return single HU allocation source/destination */
+	public static HUListAllocationSourceDestination of(final I_M_HU sourceHU)
+	{
+		return new HUListAllocationSourceDestination(sourceHU);
+	}
+
+	/** @return multi-HUs allocation source/destination */
+	public static HUListAllocationSourceDestination of(final Collection<I_M_HU> sourceHUs)
+	{
+		return new HUListAllocationSourceDestination(sourceHUs);
+	}
+
+	
 	// Services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);

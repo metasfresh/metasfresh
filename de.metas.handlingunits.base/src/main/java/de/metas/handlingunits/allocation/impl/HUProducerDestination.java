@@ -1,5 +1,8 @@
 package de.metas.handlingunits.allocation.impl;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,7 +27,9 @@ package de.metas.handlingunits.allocation.impl;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
@@ -33,6 +38,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 /**
  * This producer is used if stuff needs to be allocated into a "flat" HU and no capacity constraints need to be taken into account.
@@ -45,6 +51,29 @@ import de.metas.handlingunits.model.I_M_HU_PI;
  */
 public class HUProducerDestination extends AbstractProducerDestination
 {
+	public static final HUProducerDestination of(final I_M_HU_PI huPI)
+	{
+		return new HUProducerDestination(huPI);
+	}
+
+	/**
+	 * @return producer which will create one VHU
+	 */
+	public static final HUProducerDestination ofVirtualPI()
+	{
+		final I_M_HU_PI vhuPI = Services.get(IHandlingUnitsDAO.class).retrieveVirtualPI(Env.getCtx());
+		return new HUProducerDestination(vhuPI)
+				.setMaxHUsToCreate(1); // we want one VHU
+	}
+	
+	public static final HUProducerDestination ofM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID)
+	{
+		final I_M_HU_PI_Item_Product piItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI huPI = piItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+		return new HUProducerDestination(huPI);
+	}
+
+	
 	private final I_M_HU_PI _huPI;
 
 	private boolean _allowCreateNewHU = true;
@@ -96,14 +125,16 @@ public class HUProducerDestination extends AbstractProducerDestination
 		return true;
 	}
 
-	public void setAllowCreateNewHU(final boolean allowCreateNewHU)
+	public HUProducerDestination setAllowCreateNewHU(final boolean allowCreateNewHU)
 	{
 		_allowCreateNewHU = allowCreateNewHU;
+		return this;
 	}
 
-	public void setMaxHUsToCreate(final int maxHUsToCreate)
+	public HUProducerDestination setMaxHUsToCreate(final int maxHUsToCreate)
 	{
 		this.maxHUsToCreate = maxHUsToCreate;
+		return this;
 	}
 
 	/**
@@ -111,15 +142,12 @@ public class HUProducerDestination extends AbstractProducerDestination
 	 * 
 	 * @param parentHUItem
 	 */
-	public void setParent_HU_Item(final I_M_HU_Item parentHUItem)
+	public HUProducerDestination setParent_HU_Item(final I_M_HU_Item parentHUItem)
 	{
 		this.parentHUItem = parentHUItem;
+		return this;
 	}
 
-	/**
-	 *
-	 * @return <code>null</code>.
-	 */
 	@Override
 	protected I_M_HU_Item getParent_HU_Item()
 	{

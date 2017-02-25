@@ -315,10 +315,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected abstract I_M_HU_Item getParent_HU_Item();
 
 	@Override
-	public final void setM_Locator(final I_M_Locator locator)
+	public final IHUProducerAllocationDestination setM_Locator(final I_M_Locator locator)
 	{
 		assertConfigurable();
 		_locator = locator;
+		return this;
 	}
 
 	@Override
@@ -328,10 +329,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final void setHUStatus(final String huStatus)
+	public final IHUProducerAllocationDestination setHUStatus(final String huStatus)
 	{
 		assertConfigurable();
 		_huStatus = huStatus;
+		return this;
 	}
 
 	@Override
@@ -341,10 +343,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner bpartner)
+	public IHUProducerAllocationDestination setC_BPartner(final I_C_BPartner bpartner)
 	{
 		assertConfigurable();
 		_bpartner = bpartner;
+		return this;
 	}
 
 	@Override
@@ -354,10 +357,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public void setC_BPartner_Location_ID(final int bpartnerLocationId)
+	public IHUProducerAllocationDestination setC_BPartner_Location_ID(final int bpartnerLocationId)
 	{
 		assertConfigurable();
 		_bpartnerLocationId = bpartnerLocationId;
+		return this;
 	}
 
 	@Override
@@ -718,10 +722,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// Do nothing on this level.
 	}
 
-	public final void setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final AbstractProducerDestination setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		assertConfigurable();
 		_lutuConfiguration = lutuConfiguration;
+		return this;
 	}
 
 	public final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()

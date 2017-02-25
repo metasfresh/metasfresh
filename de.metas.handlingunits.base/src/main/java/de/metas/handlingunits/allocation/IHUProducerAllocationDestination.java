@@ -61,7 +61,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param huStatus HUStatus to be used; if null, it will be ignored
 	 */
-	void setHUStatus(String huStatus);
+	IHUProducerAllocationDestination setHUStatus(String huStatus);
 
 	String getHUStatus();
 
@@ -72,7 +72,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param locator
 	 */
-	void setM_Locator(I_M_Locator locator);
+	IHUProducerAllocationDestination setM_Locator(I_M_Locator locator);
 
 	/**
 	 * Sets BPartner to be used for newly created HUs.
@@ -81,7 +81,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param bpartner
 	 */
-	void setC_BPartner(I_C_BPartner bpartner);
+	IHUProducerAllocationDestination setC_BPartner(I_C_BPartner bpartner);
 
 	I_C_BPartner getC_BPartner();
 
@@ -92,7 +92,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param bpartnerLocationId
 	 */
-	void setC_BPartner_Location_ID(int bpartnerLocationId);
+	IHUProducerAllocationDestination setC_BPartner_Location_ID(int bpartnerLocationId);
 
 	int getC_BPartner_Location_ID();
 
