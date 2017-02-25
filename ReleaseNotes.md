@@ -23,6 +23,7 @@ Here come the actual release notes:
   * [#182](https://github.com/metasfresh/metasfresh-webui/issues/182) Material Receipt w/ multiple lines and solitary CU Buckets
   * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone
 upcoming
+  * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service
 
 * metasfresh-webui-frontend
 
