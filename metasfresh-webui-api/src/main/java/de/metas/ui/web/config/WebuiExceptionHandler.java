@@ -83,6 +83,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private final Set<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
 	private final Map<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus> builder()
+			.put(org.elasticsearch.client.transport.NoNodeAvailableException.class, HttpStatus.SERVICE_UNAVAILABLE)
 			.build();
 
 	@Override
