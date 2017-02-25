@@ -5,10 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewAttributes;
@@ -144,6 +150,16 @@ public final class HUDocumentView implements IDocumentView
 		return (int)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
 	}
 
+	public I_M_HU getM_HU()
+	{
+		final int huId = getM_HU_ID();
+		if (huId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	public String getValue()
 	{
 		return (String)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
@@ -169,7 +185,7 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return getType().isPureHU();
 	}
-	
+
 	public boolean isCU()
 	{
 		return getType().isCU();
@@ -185,17 +201,36 @@ public final class HUDocumentView implements IDocumentView
 		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
 		return productLV == null ? -1 : productLV.getKeyAsInt();
 	}
-	
+
+	public I_M_Product getM_Product()
+	{
+		final int productId = getM_Product_ID();
+		if (productId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
+	}
+
 	public int getC_UOM_ID()
 	{
 		final JSONLookupValue uomLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
 		return uomLV == null ? -1 : uomLV.getKeyAsInt();
 	}
-	
+
+	public I_C_UOM getC_UOM()
+	{
+		final int uomId = getC_UOM_ID();
+		if (uomId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
+	}
+
 	public BigDecimal getQtyCU()
 	{
 		return (BigDecimal)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
 	}
-
 
 }
