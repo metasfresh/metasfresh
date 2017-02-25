@@ -14,7 +14,7 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1725141849L;
+	private static final long serialVersionUID = -163052197L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (Properties ctx, int WEBUI_KPI_ID, String trxName)
@@ -56,6 +56,8 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public static final String CHARTTYPE_PieChart = "PC";
 	/** AreaChart = AC */
 	public static final String CHARTTYPE_AreaChart = "AC";
+	/** Metric = M */
+	public static final String CHARTTYPE_Metric = "M";
 	/** Set Chart Type.
 		@param ChartType 
 		Type fo chart to render
