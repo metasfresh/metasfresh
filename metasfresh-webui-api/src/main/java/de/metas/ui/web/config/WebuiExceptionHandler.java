@@ -25,6 +25,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
@@ -43,11 +44,11 @@ import de.metas.ui.web.login.exceptions.NotLoggedInException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -81,17 +82,16 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 	private final Set<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
+	private final Map<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus> builder()
+			.put(org.elasticsearch.client.transport.NoNodeAvailableException.class, HttpStatus.SERVICE_UNAVAILABLE)
+			.build();
+
 	@Override
 	public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response, final Object handler, final Exception ex)
 	{
 		logExceptionIfNeeded(ex, handler);
-		storeErrorAttributes(request, ex);
-		return null;
-	}
-
-	private void storeErrorAttributes(final HttpServletRequest request, final Exception ex)
-	{
 		request.setAttribute(REQUEST_ATTR_EXCEPTION, ex);
+		return null;
 	}
 
 	private void logExceptionIfNeeded(final Exception ex, final Object handler)
@@ -127,7 +127,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	@Override
 	public Map<String, Object> getErrorAttributes(final RequestAttributes requestAttributes, final boolean includeStackTrace)
 	{
-		final Map<String, Object> errorAttributes = new LinkedHashMap<String, Object>();
+		final Map<String, Object> errorAttributes = new LinkedHashMap<>();
 		errorAttributes.put(ATTR_Timestamp, new Date());
 		addStatus(errorAttributes, requestAttributes);
 		addErrorDetails(errorAttributes, requestAttributes, includeStackTrace);
@@ -135,9 +135,31 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		return errorAttributes;
 	}
 
-	private static void addStatus(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes)
+	private void addStatus(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes)
 	{
-		final Integer status = getAttribute(requestAttributes, RequestDispatcher.ERROR_STATUS_CODE);
+		Integer status = null;
+
+		//
+		// Extract HTTP status from EXCEPTION_HTTPSTATUS map
+		final Throwable error = getError(requestAttributes);
+		if (error != null)
+		{
+			final Class<? extends Throwable> errorClass = error.getClass();
+			status = EXCEPTION_HTTPSTATUS
+					.entrySet().stream()
+					.filter(e -> isErrorMatching(e.getKey(), errorClass))
+					.map(e -> e.getValue().value())
+					.findFirst()
+					.orElse(null);
+		}
+
+		//
+		// Extract HTTP status from attributes
+		if (status == null)
+		{
+			status = getAttribute(requestAttributes, RequestDispatcher.ERROR_STATUS_CODE);
+		}
+
 		if (status == null)
 		{
 			errorAttributes.put(ATTR_Status, 999);
@@ -154,6 +176,11 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			// Unable to obtain a reason
 			errorAttributes.put(ATTR_Error, "Http Status " + status);
 		}
+	}
+	
+	private final boolean isErrorMatching(final Class<?> baseClass, final Class<?> clazz)
+	{
+		return baseClass.isAssignableFrom(clazz);
 	}
 
 	private void addErrorDetails(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes, final boolean includeStackTrace)

@@ -86,6 +86,17 @@ public final class UserDashboard
 	{
 		return targetIndicatorItems;
 	}
+	
+	public UserDashboardItem getTargetIndicatorItemById(final int itemId)
+	{
+		final UserDashboardItem item = targetIndicatorItems.get(itemId);
+		if(item == null)
+		{
+			throw new IllegalArgumentException("No target indicator item found for "+itemId);
+		}
+		return item;
+	}
+
 
 	public Collection<UserDashboardItem> getKPIItems()
 	{
