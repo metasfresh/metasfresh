@@ -10,7 +10,6 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -47,14 +46,14 @@ public final class UserDashboard
 	public static final UserDashboard EMPTY = new UserDashboard();
 
 	private final int id;
-	private final List<UserDashboardItem> targetIndicatorItems;
+	private final Map<Integer, UserDashboardItem> targetIndicatorItemsById;
 	private final Map<Integer, UserDashboardItem> kpiItemsById;
 
 	private UserDashboard(final Builder builder)
 	{
 		super();
 		id = builder.id;
-		targetIndicatorItems = ImmutableList.copyOf(builder.targetIndicatorItems);
+		targetIndicatorItemsById = Maps.uniqueIndex(builder.targetIndicatorItems, UserDashboardItem::getId);
 		kpiItemsById = Maps.uniqueIndex(builder.kpiItems, UserDashboardItem::getId);
 	}
 
@@ -62,7 +61,7 @@ public final class UserDashboard
 	{
 		super();
 		id = -1;
-		targetIndicatorItems = ImmutableList.of();
+		targetIndicatorItemsById = ImmutableMap.of();
 		kpiItemsById = ImmutableMap.of();
 	}
 
@@ -72,7 +71,7 @@ public final class UserDashboard
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("id", id)
-				.add("targetIndicatorItems", targetIndicatorItems.isEmpty() ? null : targetIndicatorItems)
+				.add("targetIndicatorItems", targetIndicatorItemsById.isEmpty() ? null : targetIndicatorItemsById)
 				.add("kpiItemsById", kpiItemsById.isEmpty() ? null : kpiItemsById)
 				.toString();
 	}
@@ -82,14 +81,14 @@ public final class UserDashboard
 		return id;
 	}
 	
-	public List<UserDashboardItem> getTargetIndicatorItems()
+	public Collection<UserDashboardItem> getTargetIndicatorItems()
 	{
-		return targetIndicatorItems;
+		return targetIndicatorItemsById.values();
 	}
 	
 	public UserDashboardItem getTargetIndicatorItemById(final int itemId)
 	{
-		final UserDashboardItem item = targetIndicatorItems.get(itemId);
+		final UserDashboardItem item = targetIndicatorItemsById.get(itemId);
 		if(item == null)
 		{
 			throw new IllegalArgumentException("No target indicator item found for "+itemId);
