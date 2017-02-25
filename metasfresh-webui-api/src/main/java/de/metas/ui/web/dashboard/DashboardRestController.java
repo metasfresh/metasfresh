@@ -1,9 +1,12 @@
 package de.metas.ui.web.dashboard;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
@@ -11,6 +14,7 @@ import de.metas.ui.web.dashboard.json.JSONDashboard;
 import de.metas.ui.web.dashboard.json.JSONDashboardChanges;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -25,11 +29,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -51,16 +55,8 @@ public class DashboardRestController
 				.setUserSession(userSession);
 	}
 
-	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
-	@Deprecated
-	public JSONDashboard getUserDashboard_DEPRECATED()
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return getKPIs();
-	}
-
-	@RequestMapping(value = "/kpis", method = RequestMethod.GET)
-	public JSONDashboard getKPIs()
+	@GetMapping("/kpis")
+	public JSONDashboard getKPIsDashboard()
 	{
 		userSession.assertLoggedIn();
 
@@ -68,24 +64,29 @@ public class DashboardRestController
 		return JSONDashboard.of(userDashboard.getKPIItems(), newJSONOpts().build());
 	}
 
-	@RequestMapping(value = { "", "/" }, method = RequestMethod.PATCH)
-	@Deprecated
-	public void changeUserDashboard_DEPRECATED(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		changeKPIs(jsonDashboardChanges);
-	}
-
-	@RequestMapping(value = "/kpis", method = RequestMethod.PATCH)
-	public void changeKPIs(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
+	@PatchMapping("/kpis")
+	public void changeKPIsDashboard(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
 	{
 		userSession.assertLoggedIn();
 
 		userDashboardRepo.changeUserDashboardKPIs(jsonDashboardChanges);
 	}
 
-	@RequestMapping(value = "/targetIndicators", method = RequestMethod.GET)
-	public JSONDashboard getTargetIndicators()
+	@GetMapping("/kpis/{itemId}/data")
+	public KPIData getKPIData( //
+			@PathVariable final int itemId //
+			, @RequestParam("fromMillis") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
+			, @RequestParam("toMillis") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
+	)
+	{
+		return userDashboardRepo.getUserDashboard()
+				.getKPIItemById(itemId)
+				.getKPI()
+				.retrieveData(fromMillis, toMillis);
+	}
+
+	@GetMapping("/targetIndicators")
+	public JSONDashboard getTargetIndicatorsDashboard()
 	{
 		userSession.assertLoggedIn();
 
@@ -93,4 +94,16 @@ public class DashboardRestController
 		return JSONDashboard.of(userDashboard.getTargetIndicatorItems(), newJSONOpts().build());
 	}
 
+	@GetMapping("/targetIndicators/{itemId}/data")
+	public KPIData getTargetIndicatorData( //
+			@PathVariable final int itemId //
+			, @RequestParam("fromMillis") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
+			, @RequestParam("toMillis") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
+	)
+	{
+		return userDashboardRepo.getUserDashboard()
+				.getTargetIndicatorItemById(itemId)
+				.getKPI()
+				.retrieveData(fromMillis, toMillis);
+	}
 }
