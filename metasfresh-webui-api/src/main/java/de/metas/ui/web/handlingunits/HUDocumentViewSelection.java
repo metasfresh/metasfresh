@@ -259,6 +259,18 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader.addHUs(husToAdd);
 		invalidateAll();
 	}
+	
+	public void addHUAndInvalidate(final I_M_HU hu)
+	{
+		if(hu == null)
+		{
+			return;
+		}
+		
+		documentViewsLoader.addHUs(ImmutableSet.of(hu));
+		invalidateAll();
+	}
+
 
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
