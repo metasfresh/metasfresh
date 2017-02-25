@@ -79,6 +79,8 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
 		}
+		
+		// TODO: make sure all rows are for same BPartner
 
 		return ProcessPreconditionsResolution.accept();
 	}
