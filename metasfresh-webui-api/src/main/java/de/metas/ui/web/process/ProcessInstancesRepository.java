@@ -167,8 +167,16 @@ public class ProcessInstancesRepository
 		else if (singleDocumentPath != null)
 		{
 			viewSelectedIdsAsStr = null;
-			tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID(), singleDocumentPath.getDetailId());
-			recordId = singleDocumentPath.getSingleRowId().toInt();
+			if (singleDocumentPath.isRootDocument())
+			{
+				tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID());
+				recordId = singleDocumentPath.getDocumentId().toInt();
+			}
+			else
+			{
+				tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID(), singleDocumentPath.getDetailId());
+				recordId = singleDocumentPath.getSingleRowId().toInt();
+			}
 			sqlWhereClause = null;
 		}
 		//
