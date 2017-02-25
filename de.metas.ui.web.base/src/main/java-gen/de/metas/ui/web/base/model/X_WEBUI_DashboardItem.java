@@ -14,7 +14,7 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -332041592L;
+	private static final long serialVersionUID = -1733510311L;
 
     /** Standard Constructor */
     public X_WEBUI_DashboardItem (Properties ctx, int WEBUI_DashboardItem_ID, String trxName)
@@ -187,5 +187,39 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	public java.lang.String getWEBUI_DashboardWidgetType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_DashboardWidgetType);
+	}
+
+	@Override
+	public de.metas.ui.web.base.model.I_WEBUI_KPI getWEBUI_KPI() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_WEBUI_KPI_ID, de.metas.ui.web.base.model.I_WEBUI_KPI.class);
+	}
+
+	@Override
+	public void setWEBUI_KPI(de.metas.ui.web.base.model.I_WEBUI_KPI WEBUI_KPI)
+	{
+		set_ValueFromPO(COLUMNNAME_WEBUI_KPI_ID, de.metas.ui.web.base.model.I_WEBUI_KPI.class, WEBUI_KPI);
+	}
+
+	/** Set KPI.
+		@param WEBUI_KPI_ID KPI	  */
+	@Override
+	public void setWEBUI_KPI_ID (int WEBUI_KPI_ID)
+	{
+		if (WEBUI_KPI_ID < 1) 
+			set_Value (COLUMNNAME_WEBUI_KPI_ID, null);
+		else 
+			set_Value (COLUMNNAME_WEBUI_KPI_ID, Integer.valueOf(WEBUI_KPI_ID));
+	}
+
+	/** Get KPI.
+		@return KPI	  */
+	@Override
+	public int getWEBUI_KPI_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_KPI_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

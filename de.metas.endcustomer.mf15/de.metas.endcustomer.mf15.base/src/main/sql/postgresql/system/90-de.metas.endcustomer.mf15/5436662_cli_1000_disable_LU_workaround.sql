@@ -1,7 +1,0 @@
-
--- 25.11.2015 10:38
--- URL zum Konzept
-UPDATE M_HU_PI SET IsActive='N', IsDefaultLU='N',Updated=TO_TIMESTAMP('2015-11-25 10:38:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_HU_PI_ID=1000006
-;
-
-
