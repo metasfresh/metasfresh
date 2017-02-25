@@ -355,6 +355,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Feb 24, 2017 11:34 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+alter table WEBUI_DashboardItem add column WEBUI_KPI_ID numeric(10);
 ALTER TABLE WEBUI_DashboardItem ADD CONSTRAINT WEBUIKPI_WEBUIDashboardItem FOREIGN KEY (WEBUI_KPI_ID) REFERENCES WEBUI_KPI DEFERRABLE INITIALLY DEFERRED
 ;
 
@@ -880,6 +881,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Feb 25, 2017 3:34 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+alter table WEBUI_KPI_Field add column AD_Reference_ID numeric(10) not null;
 ALTER TABLE WEBUI_KPI_Field ADD CONSTRAINT ADReference_WEBUIKPIField FOREIGN KEY (AD_Reference_ID) REFERENCES AD_Reference DEFERRABLE INITIALLY DEFERRED
 ;
 
@@ -890,6 +892,7 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2017-02-25 03:35:04',
 
 -- Feb 25, 2017 3:35 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+alter table WEBUI_KPI_Field add column ES_FieldPath VARCHAR(255);
 INSERT INTO t_alter_column values('webui_kpi_field','ES_FieldPath','VARCHAR(255)',null,null)
 ;
 
