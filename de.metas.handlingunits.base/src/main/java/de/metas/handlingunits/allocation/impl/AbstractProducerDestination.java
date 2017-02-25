@@ -95,6 +95,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private I_C_BPartner _bpartner = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+	private boolean _isHUPlanningReceiptOwsnerPM = false; // default false
 
 	/**
 	 *
@@ -301,6 +302,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		//
 		// Link to LU/TU Configuration if any
 		huBuilder.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
+		
+		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwsnerPM());
 
 		return huBuilder;
 	}
@@ -733,6 +736,19 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	{
 		return _lutuConfiguration;
 	}
+	
+	@Override
+	public final IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM)
+	{
+		this._isHUPlanningReceiptOwsnerPM = isHUPlanningReceiptOwsnerPM;
+		return this;
+	}
+	
+	private final boolean isHUPlanningReceiptOwsnerPM()
+	{
+		return _isHUPlanningReceiptOwsnerPM;
+	}
+
 
 	/**
 	 * Sets this producer in "non-configurable" state. No further configuration to this producer will be allowed after calling this method.

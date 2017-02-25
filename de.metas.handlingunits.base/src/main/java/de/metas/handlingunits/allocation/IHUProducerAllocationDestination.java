@@ -97,4 +97,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	int getC_BPartner_Location_ID();
 
 	I_M_Locator getM_Locator();
+	
+	IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM);
 }
