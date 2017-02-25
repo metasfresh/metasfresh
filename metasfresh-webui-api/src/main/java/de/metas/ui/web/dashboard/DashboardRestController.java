@@ -75,14 +75,15 @@ public class DashboardRestController
 	@GetMapping("/kpis/{itemId}/data")
 	public KPIData getKPIData( //
 			@PathVariable final int itemId //
-			, @RequestParam("fromMillis") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
-			, @RequestParam("toMillis") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
+			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
+			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 	)
 	{
 		return userDashboardRepo.getUserDashboard()
 				.getKPIItemById(itemId)
 				.getKPI()
-				.retrieveData(fromMillis, toMillis);
+				.retrieveData(fromMillis, toMillis)
+				.setItemId(itemId);
 	}
 
 	@GetMapping("/targetIndicators")
@@ -97,13 +98,14 @@ public class DashboardRestController
 	@GetMapping("/targetIndicators/{itemId}/data")
 	public KPIData getTargetIndicatorData( //
 			@PathVariable final int itemId //
-			, @RequestParam("fromMillis") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
-			, @RequestParam("toMillis") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
+			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
+			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 	)
 	{
 		return userDashboardRepo.getUserDashboard()
 				.getTargetIndicatorItemById(itemId)
 				.getKPI()
-				.retrieveData(fromMillis, toMillis);
+				.retrieveData(fromMillis, toMillis)
+				.setItemId(itemId);
 	}
 }

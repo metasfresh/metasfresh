@@ -19,6 +19,7 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket;
+import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -70,11 +71,24 @@ public class KPI
 	private KPI(final Builder builder)
 	{
 		super();
+
+		Check.assume(builder.id > 0, "id > 0");
+		Check.assumeNotNull(builder.caption, "Parameter builder.caption is not null");
+		Check.assumeNotNull(builder.description, "Parameter builder.description is not null");
+		Check.assumeNotNull(builder.chartType, "Parameter builder.chartType is not null");
+		Check.assumeNotEmpty(builder.fields, "builder.fields is not empty");
+		Check.assumeNotEmpty(builder.esSearchIndex, "builder.esSearchIndex is not empty");
+		Check.assumeNotEmpty(builder.esSearchTypes, "builder.esSearchTypes is not empty");
+		Check.assumeNotEmpty(builder.esQuery, "builder.esQuery is not empty");
+		Check.assumeNotNull(builder.elasticsearchClient, "Parameter builder.elasticsearchClient is not null");
+
 		id = builder.id;
+
 		caption = builder.caption;
 		description = builder.description;
 		chartType = builder.chartType;
 		timeRange = builder.timeRange;
+
 		fields = ImmutableList.copyOf(builder.fields);
 
 		esSearchIndex = builder.esSearchIndex;
@@ -118,11 +132,36 @@ public class KPI
 		return fields;
 	}
 
-	public KPIData retrieveData(final long fromMillis, final long toMillis)
+	public KPIData retrieveData(long fromMillis, long toMillis)
 	{
 		//
+		// Create query evaluation context
+		if (toMillis <= 0)
+		{
+			toMillis = SystemTime.millis();
+		}
+
+		if (fromMillis <= 0)
+		{
+			if (timeRange.isZero())
+			{
+				fromMillis = 0;
+			}
+			else
+			{
+				fromMillis = toMillis - timeRange.abs().toMillis();
+			}
+		}
+
+		final Evaluatee evalCtx = Evaluatees.mapBuilder()
+				.put("FromMillis", fromMillis)
+				.put("ToMillis", toMillis)
+				.build()
+				// Fallback to user context
+				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
+
+		//
 		// Resolve esQuery's variables
-		final Evaluatee evalCtx = createEvalCtx(fromMillis, toMillis);
 		final String esQueryParsed = esQuery.evaluate(evalCtx, OnVariableNotFound.Preserve);
 
 		//
@@ -137,6 +176,7 @@ public class KPI
 		}
 		catch (final NoNodeAvailableException e)
 		{
+			// elastic search transport error => nothing to do about it
 			throw e;
 		}
 		catch (final Exception e)
@@ -158,7 +198,8 @@ public class KPI
 			}
 			final Aggregation agg = aggs.get(0);
 
-			final KPIData.Builder data = KPIData.builder();
+			final KPIData.Builder data = KPIData.builder()
+					.setTimeRange(fromMillis, toMillis);
 			if (agg instanceof MultiBucketsAggregation)
 			{
 				final String aggName = agg.getName();
@@ -171,13 +212,39 @@ public class KPI
 					final ImmutableList.Builder<Object> values = ImmutableList.builder();
 					for (final KPIField field : getFields())
 					{
-						final Object value = field.getValueExtractor().extractValue(aggName, bucket);
+						final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
 						final Object jsonValue = field.convertValueToJson(value);
 						values.add(jsonValue == null ? Optional.empty() : jsonValue);
 					}
 
 					data.addValue(new KPIValue(key, values.build()));
 				}
+			}
+			else if (agg instanceof NumericMetricsAggregation.SingleValue)
+			{
+				final NumericMetricsAggregation.SingleValue singleValueAggregation = (NumericMetricsAggregation.SingleValue)agg;
+
+				final String key = null; // N/A
+
+				final ImmutableList.Builder<Object> values = ImmutableList.builder();
+				for (final KPIField field : getFields())
+				{
+					final Object value;
+					if ("value".equals(field.getESPathAsString()))
+					{
+						value = singleValueAggregation.value();
+					}
+					else
+					{
+						throw new IllegalStateException("ES_Path not supported for " + field);
+					}
+
+					final Object jsonValue = field.convertValueToJson(value);
+					values.add(jsonValue == null ? Optional.empty() : jsonValue);
+				}
+
+				data.addValue(new KPIValue(key, values.build()));
+
 			}
 			else
 			{
@@ -195,38 +262,10 @@ public class KPI
 		}
 	}
 
-	private Evaluatee createEvalCtx(long fromMillis, long toMillis)
-	{
-		if (toMillis <= 0)
-		{
-			toMillis = SystemTime.millis();
-		}
-
-		if (fromMillis <= 0)
-		{
-			if (timeRange.isZero())
-			{
-				fromMillis = 0;
-			}
-			else
-			{
-				fromMillis = toMillis - timeRange.abs().toMillis();
-			}
-		}
-
-		return Evaluatees.mapBuilder()
-				.put("FromMillis", fromMillis)
-				.put("ToMillis", toMillis)
-				.build()
-				// Fallback to user context
-				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
-
-	}
-
 	public static final class Builder
 	{
 		private int id;
-		private ITranslatableString caption;
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private KPIChartType chartType;
 		private Duration timeRange = Duration.ZERO;
@@ -244,7 +283,6 @@ public class KPI
 
 		public KPI build()
 		{
-			Check.assume(id > 0, "id > 0");
 			return new KPI(this);
 		}
 

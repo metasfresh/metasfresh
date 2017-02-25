@@ -31,6 +31,7 @@ public enum KPIChartType
 	AreaChart(X_WEBUI_KPI.CHARTTYPE_AreaChart) //
 	, BarChart(X_WEBUI_KPI.CHARTTYPE_BarChart) //
 	, PieChart(X_WEBUI_KPI.CHARTTYPE_PieChart) //
+	, Metric(X_WEBUI_KPI.CHARTTYPE_Metric) //
 	;
 	private String code;
 
@@ -63,6 +64,7 @@ public enum KPIChartType
 			.put(AreaChart.getCode(), AreaChart)
 			.put(BarChart.getCode(), BarChart)
 			.put(PieChart.getCode(), PieChart)
+			.put(Metric.getCode(), Metric)
 			.build();
 
 }

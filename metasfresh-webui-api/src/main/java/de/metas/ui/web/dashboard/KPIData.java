@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -35,22 +37,44 @@ public class KPIData
 	{
 		return new Builder();
 	}
+	
+	@JsonProperty("itemId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Integer itemId;
 
+	@JsonProperty("data")
 	private final List<KPIValue> data;
 
-	private KPIData(final List<KPIValue> data)
+	@JsonProperty("fromMillis")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Long fromMillis;
+	@JsonProperty("toMillis")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Long toMillis;
+
+	private KPIData(final Builder builder)
 	{
-		this.data = data;
+		data = builder.data.build();
+		fromMillis = builder.fromMillis <= 0 ? null : builder.fromMillis;
+		toMillis = builder.toMillis <= 0 ? null : builder.toMillis;
 	}
 
 	public List<KPIValue> getData()
 	{
 		return data;
 	}
+	
+	public KPIData setItemId(int itemId)
+	{
+		this.itemId = itemId;
+		return this;
+	}
 
 	public static final class Builder
 	{
 		private final ImmutableList.Builder<KPIValue> data = ImmutableList.builder();
+		private long fromMillis;
+		private long toMillis;
 
 		private Builder()
 		{
@@ -59,7 +83,14 @@ public class KPIData
 
 		public KPIData build()
 		{
-			return new KPIData(data.build());
+			return new KPIData(this);
+		}
+
+		public Builder setTimeRange(final long fromMillis, final long toMillis)
+		{
+			this.fromMillis = fromMillis;
+			this.toMillis = toMillis;
+			return this;
 		}
 
 		public Builder addValue(final KPIValue value)

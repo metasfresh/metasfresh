@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 
 import com.google.common.base.MoreObjects;
@@ -54,24 +55,31 @@ public class KPIField
 	private final ITranslatableString description;
 	private final KPIFieldValueType valueType;
 
+	private final String esPathStr;
 	private final List<String> esPath;
 	private final boolean esTimeField;
-	private final BucketValueExtractor valueExtractor;
+	private final BucketValueExtractor bucketValueExtractor;
 
 	private KPIField(final Builder builder)
 	{
-		super();
+		Check.assumeNotEmpty(builder.fieldName, "builder.fieldName is not empty");
+		Check.assumeNotNull(builder.caption, "Parameter builder.caption is not null");
+		Check.assumeNotNull(builder.description, "Parameter builder.description is not null");
+		Check.assumeNotNull(builder.valueType, "Parameter builder.valueType is not null");
+		Check.assumeNotEmpty(builder.esPath, "builder.esPath is not empty");
+
 		fieldName = builder.fieldName;
 		caption = builder.caption;
 		description = builder.description;
 		valueType = builder.valueType;
 
+		esPathStr = builder.esPathStr;
 		esPath = builder.esPath;
 		esTimeField = builder.esTimeField;
-		valueExtractor = createValueExtractor(esPath);
+		bucketValueExtractor = createBucketValueExtractor(esPath);
 	}
 
-	private static BucketValueExtractor createValueExtractor(final List<String> path)
+	private static BucketValueExtractor createBucketValueExtractor(final List<String> path)
 	{
 		if (path.size() == 1)
 		{
@@ -100,7 +108,7 @@ public class KPIField
 		{
 			case Date:
 			{
-				if(value instanceof String)
+				if (value instanceof String)
 				{
 					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
 					return JSONDate.toJson(date);
@@ -118,7 +126,7 @@ public class KPIField
 			}
 			case DateTime:
 			{
-				if(value instanceof String)
+				if (value instanceof String)
 				{
 					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
 					return JSONDate.toJson(date);
@@ -159,7 +167,7 @@ public class KPIField
 				throw new IllegalStateException("valueType not supported: " + valueType);
 			}
 		}
-		
+
 		// Fallback
 		return value;
 	}
@@ -199,15 +207,20 @@ public class KPIField
 	{
 		return esPath;
 	}
+	
+	public String getESPathAsString()
+	{
+		return esPathStr;
+	}
 
 	public boolean isESTimeField()
 	{
 		return esTimeField;
 	}
 
-	public BucketValueExtractor getValueExtractor()
+	public BucketValueExtractor getBucketValueExtractor()
 	{
-		return valueExtractor;
+		return bucketValueExtractor;
 	}
 
 	public static final class Builder
@@ -217,6 +230,7 @@ public class KPIField
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private KPIFieldValueType valueType;
 		private boolean esTimeField;
+		private String esPathStr;
 		private List<String> esPath;
 
 		private static final Splitter PATH_SPLITTER = Splitter.on('.').trimResults();
@@ -255,9 +269,10 @@ public class KPIField
 			return this;
 		}
 
-		public Builder setESPath(final String esPath)
+		public Builder setESPath(final String esPathStr)
 		{
-			this.esPath = PATH_SPLITTER.splitToList(esPath);
+			this.esPathStr = esPathStr.trim();
+			this.esPath = PATH_SPLITTER.splitToList(this.esPathStr);
 			return this;
 		}
 

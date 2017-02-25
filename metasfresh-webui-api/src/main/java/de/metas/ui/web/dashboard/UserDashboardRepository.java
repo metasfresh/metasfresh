@@ -71,8 +71,10 @@ public class UserDashboardRepository
 	private Client elasticsearchClient;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<UserDashboardKey, UserDashboard> userDashboadCache = CCache.newLRUCache(I_WEBUI_Dashboard.Table_Name + "#UserDashboard", Integer.MAX_VALUE, 0);
-	private final CCache<Integer, KPI> kpisCache = CCache.newLRUCache(I_WEBUI_KPI.Table_Name + "#KPIs", Integer.MAX_VALUE, 0);
+	private final CCache<UserDashboardKey, UserDashboard> userDashboadCache = CCache.<UserDashboardKey, UserDashboard> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#UserDashboard", Integer.MAX_VALUE, 0)
+			.addResetForTableName(I_WEBUI_DashboardItem.Table_Name);
+	private final CCache<Integer, KPI> kpisCache = CCache.<Integer, KPI> newLRUCache(I_WEBUI_KPI.Table_Name + "#KPIs", Integer.MAX_VALUE, 0)
+			.addResetForTableName(I_WEBUI_KPI_Field.Table_Name);
 
 	public UserDashboard getUserDashboard()
 	{
@@ -169,7 +171,7 @@ public class UserDashboardRepository
 				.setKPI(() -> getKPIOrNull(webuiDashboardItem.getWEBUI_KPI_ID()))
 				.build();
 	}
-	
+
 	public void invalidateKPI(final int id)
 	{
 		kpisCache.remove(id);
