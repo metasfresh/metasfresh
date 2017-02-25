@@ -53,6 +53,11 @@ public enum HUDocumentViewType implements IDocumentViewType
 	{
 		return pureHU;
 	}
+	
+	public boolean isCU()
+	{
+		return this == VHU || this == HUStorage;
+	}
 
 	public static final HUDocumentViewType ofHU_UnitType(final String huUnitType)
 	{

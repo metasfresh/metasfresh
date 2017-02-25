@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -13,8 +14,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -67,7 +66,7 @@ public class HUDocumentViewLoader
 
 	private final int adWindowId;
 	private final String referencingTableName;
-	private final Set<Integer> filterOnlyIds;
+	private final CopyOnWriteArraySet<Integer> huIds = new CopyOnWriteArraySet<>();
 
 	private final IDocumentViewAttributesProvider _attributesProvider;
 
@@ -78,20 +77,13 @@ public class HUDocumentViewLoader
 		adWindowId = request.getAD_Window_ID();
 		this.referencingTableName = referencingTableName;
 
-		boolean haveFilters = false;
-
 		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
 		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
 		{
-			this.filterOnlyIds = ImmutableSet.copyOf(filterOnlyIds);
-			haveFilters = true;
-		}
-		else
-		{
-			this.filterOnlyIds = ImmutableSet.of();
+			huIds.addAll(filterOnlyIds);
 		}
 
-		if (!haveFilters)
+		if (huIds.isEmpty())
 		{
 			throw new IllegalArgumentException("No filters specified for " + request);
 		}
@@ -104,9 +96,18 @@ public class HUDocumentViewLoader
 		return _attributesProvider;
 	}
 
+	public void addHUs(final Collection<I_M_HU> husToAdd)
+	{
+		final Set<Integer> huIdsToAdd = husToAdd.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.collect(GuavaCollectors.toImmutableSet());
+
+		this.huIds.addAll(huIdsToAdd);
+	}
+
 	public List<HUDocumentView> retrieveDocumentViews()
 	{
-		return retrieveTopLevelHUs(filterOnlyIds)
+		return retrieveTopLevelHUs(huIds)
 				.stream()
 				.map(hu -> createDocumentView(hu))
 				.collect(GuavaCollectors.toImmutableList());
@@ -133,7 +134,7 @@ public class HUDocumentViewLoader
 	private HUDocumentView createDocumentView(final I_M_HU hu)
 	{
 		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
-		
+
 		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
 		final HUDocumentViewType huRecordType;
 		if (aggregateHU)

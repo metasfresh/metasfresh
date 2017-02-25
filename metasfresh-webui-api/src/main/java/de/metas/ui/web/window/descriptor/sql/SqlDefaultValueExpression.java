@@ -168,7 +168,7 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{

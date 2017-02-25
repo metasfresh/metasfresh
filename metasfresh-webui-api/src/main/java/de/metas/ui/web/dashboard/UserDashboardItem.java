@@ -1,5 +1,7 @@
 package de.metas.ui.web.dashboard;
 
+import java.util.function.Supplier;
+
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
@@ -8,6 +10,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 
 /*
  * #%L
@@ -22,11 +25,11 @@ import de.metas.i18n.ImmutableTranslatableString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,6 +48,7 @@ public final class UserDashboardItem
 	private final String url;
 	private final int seqNo;
 	private final DashboardWidgetType widgetType;
+	private final Supplier<KPI> kpiSupplier;
 
 	private UserDashboardItem(final Builder builder)
 	{
@@ -54,6 +58,7 @@ public final class UserDashboardItem
 		url = builder.url;
 		seqNo = builder.seqNo;
 		widgetType = builder.widgetType;
+		kpiSupplier = builder.kpiSupplier;
 	}
 
 	@Override
@@ -62,7 +67,6 @@ public final class UserDashboardItem
 		return MoreObjects.toStringHelper(this)
 				.add("id", id)
 				.add("caption", caption)
-				.add("url", url)
 				.add("seqNo", seqNo)
 				.add("widgetType", widgetType)
 				.toString();
@@ -73,9 +77,9 @@ public final class UserDashboardItem
 		return id;
 	}
 
-	public ITranslatableString getCaption()
+	public String getCaption(final String adLanguage)
 	{
-		return caption;
+		return caption.translate(adLanguage);
 	}
 
 	public String getUrl()
@@ -93,6 +97,16 @@ public final class UserDashboardItem
 		return widgetType;
 	}
 
+	public KPI getKPI()
+	{
+		final KPI kpi = kpiSupplier == null ? null : kpiSupplier.get();
+		if (kpi == null)
+		{
+			throw new EntityNotFoundException("No KPI defiend for " + this);
+		}
+		return kpi;
+	}
+
 	public static final class Builder
 	{
 		private Integer id;
@@ -100,6 +114,7 @@ public final class UserDashboardItem
 		private String url;
 		private int seqNo;
 		private DashboardWidgetType widgetType;
+		private Supplier<KPI> kpiSupplier;
 
 		private Builder()
 		{
@@ -146,6 +161,12 @@ public final class UserDashboardItem
 		public Builder setWidgetType(final DashboardWidgetType widgetType)
 		{
 			this.widgetType = widgetType;
+			return this;
+		}
+
+		public Builder setKPI(final Supplier<KPI> kpiSupplier)
+		{
+			this.kpiSupplier = kpiSupplier;
 			return this;
 		}
 	}

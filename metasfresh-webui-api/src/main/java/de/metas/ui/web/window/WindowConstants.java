@@ -22,11 +22,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -61,11 +61,17 @@ public final class WindowConstants
 	public static final String FIELDNAME_OrderType = "OrderType";
 	public static final String FIELDNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 	public static final String FIELDNAME_Line = "Line";
-	public static final Set<String> FIELDNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
-	
+
+	public static final String FIELDNAME_AD_Client_ID = "AD_Client_ID";
+	public static final String FIELDNAME_AD_Org_ID = "AD_Org_ID";
+	public static final String FIELDNAME_Created = "Created";
+	public static final String FIELDNAME_CreatedBy = "CreatedBy";
+	public static final String FIELDNAME_Updated = "Updated";
+	public static final String FIELDNAME_UpdatedBy = "UpdatedBy";
+	public static final Set<String> FIELDNAMES_CreatedUpdated = ImmutableSet.of(FIELDNAME_Created, FIELDNAME_CreatedBy, FIELDNAME_Updated, FIELDNAME_UpdatedBy);
+
 	public static final String FIELDNAME_DocumentSummary = "V$DocumentSummary";
 
-	
 	public static final String CONTEXTVAR_NextLineNo = "CtxVar_NextLineNo";
 
 	private WindowConstants()
@@ -82,8 +88,8 @@ public final class WindowConstants
 	public static void setProtocolDebugging(final boolean protocolDebugging)
 	{
 		final boolean protocolDebuggingPrev = WindowConstants.protocolDebugging.getAndSet(protocolDebugging);
-		
-		if(protocolDebuggingPrev == protocolDebugging)
+
+		if (protocolDebuggingPrev == protocolDebugging)
 		{
 			return;
 		}
