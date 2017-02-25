@@ -115,6 +115,11 @@ public final class DocumentSaveStatus
 				&& error == other.error
 				&& Objects.equals(reason, other.reason);
 	}
+	
+	public boolean isSaved()
+	{
+		return !hasChangesToBeSaved && !error;
+	}
 
 	public boolean hasChangesToBeSaved()
 	{

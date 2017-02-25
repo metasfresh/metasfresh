@@ -97,7 +97,7 @@ public final class JSONDocument implements Serializable
 		final DocumentSaveStatus documentSaveStatus = document.getSaveStatus();
 		if (documentSaveStatus != null)
 		{
-			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
+			jsonDocument.setSaveStatus(documentSaveStatus);
 		}
 
 		//
@@ -186,7 +186,7 @@ public final class JSONDocument implements Serializable
 		final DocumentSaveStatus documentSaveStatus = documentChangedEvents.getDocumentSaveStatus();
 		if (documentSaveStatus != null)
 		{
-			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
+			jsonDocument.setSaveStatus(documentSaveStatus);
 		}
 
 		//
@@ -278,6 +278,9 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String validStatus;
 
+	@JsonProperty("saved")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Boolean saved;
 	@JsonProperty("save-status")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String saveStatus;
@@ -369,11 +372,12 @@ public final class JSONDocument implements Serializable
 		return validStatus;
 	}
 
-	private void setSaveStatus(final String saveStatus)
+	private void setSaveStatus(final DocumentSaveStatus documentSaveStatus)
 	{
-		this.saveStatus = saveStatus;
+		this.saveStatus = documentSaveStatus.toJson();
+		this.saved = documentSaveStatus.isSaved();
 	}
-
+	
 	public String getSaveStatus()
 	{
 		return saveStatus;
