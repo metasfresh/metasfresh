@@ -335,13 +335,13 @@ UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2017-02-24
 
 -- Feb 24, 2017 11:33 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE TABLE WEBUI_KPI (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, ChartType VARCHAR(2) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(2000), ES_Query TEXT, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Name VARCHAR(255) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, WEBUI_KPI_ID NUMERIC(10) NOT NULL, CONSTRAINT WEBUI_KPI_Key PRIMARY KEY (WEBUI_KPI_ID))
-;
+-- CREATE TABLE WEBUI_KPI (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, ChartType VARCHAR(2) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(2000), ES_Query TEXT, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Name VARCHAR(255) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, WEBUI_KPI_ID NUMERIC(10) NOT NULL, CONSTRAINT WEBUI_KPI_Key PRIMARY KEY (WEBUI_KPI_ID))
+-- ;
 
 -- Feb 24, 2017 11:33 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE TABLE WEBUI_KPI_Field (AD_Client_ID NUMERIC(10) NOT NULL, AD_Element_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, WEBUI_KPI_Field_ID NUMERIC(10) NOT NULL, WEBUI_KPI_ID NUMERIC(10) NOT NULL, CONSTRAINT ADElement_WEBUIKPIField FOREIGN KEY (AD_Element_ID) REFERENCES AD_Element DEFERRABLE INITIALLY DEFERRED, CONSTRAINT WEBUI_KPI_Field_Key PRIMARY KEY (WEBUI_KPI_Field_ID), CONSTRAINT WEBUIKPI_WEBUIKPIField FOREIGN KEY (WEBUI_KPI_ID) REFERENCES WEBUI_KPI DEFERRABLE INITIALLY DEFERRED)
-;
+-- CREATE TABLE WEBUI_KPI_Field (AD_Client_ID NUMERIC(10) NOT NULL, AD_Element_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, WEBUI_KPI_Field_ID NUMERIC(10) NOT NULL, WEBUI_KPI_ID NUMERIC(10) NOT NULL, CONSTRAINT ADElement_WEBUIKPIField FOREIGN KEY (AD_Element_ID) REFERENCES AD_Element DEFERRABLE INITIALLY DEFERRED, CONSTRAINT WEBUI_KPI_Field_Key PRIMARY KEY (WEBUI_KPI_Field_ID), CONSTRAINT WEBUIKPI_WEBUIKPIField FOREIGN KEY (WEBUI_KPI_ID) REFERENCES WEBUI_KPI DEFERRABLE INITIALLY DEFERRED)
+-- ;
 
 -- Feb 24, 2017 11:34 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -355,9 +355,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Feb 24, 2017 11:34 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-alter table WEBUI_DashboardItem add column WEBUI_KPI_ID numeric(10);
-ALTER TABLE WEBUI_DashboardItem ADD CONSTRAINT WEBUIKPI_WEBUIDashboardItem FOREIGN KEY (WEBUI_KPI_ID) REFERENCES WEBUI_KPI DEFERRABLE INITIALLY DEFERRED
-;
+-- alter table WEBUI_DashboardItem add column WEBUI_KPI_ID numeric(10);
+-- ALTER TABLE WEBUI_DashboardItem ADD CONSTRAINT WEBUIKPI_WEBUIDashboardItem FOREIGN KEY (WEBUI_KPI_ID) REFERENCES WEBUI_KPI DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- Feb 24, 2017 11:35 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -881,9 +881,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Feb 25, 2017 3:34 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-alter table WEBUI_KPI_Field add column AD_Reference_ID numeric(10) not null;
-ALTER TABLE WEBUI_KPI_Field ADD CONSTRAINT ADReference_WEBUIKPIField FOREIGN KEY (AD_Reference_ID) REFERENCES AD_Reference DEFERRABLE INITIALLY DEFERRED
-;
+-- alter table WEBUI_KPI_Field add column AD_Reference_ID numeric(10) not null;
+-- ALTER TABLE WEBUI_KPI_Field ADD CONSTRAINT ADReference_WEBUIKPIField FOREIGN KEY (AD_Reference_ID) REFERENCES AD_Reference DEFERRABLE INITIALLY DEFERRED
+-- ;
 
 -- Feb 25, 2017 3:35 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -892,14 +892,14 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2017-02-25 03:35:04',
 
 -- Feb 25, 2017 3:35 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-alter table WEBUI_KPI_Field add column ES_FieldPath VARCHAR(255);
-INSERT INTO t_alter_column values('webui_kpi_field','ES_FieldPath','VARCHAR(255)',null,null)
-;
+-- alter table WEBUI_KPI_Field add column ES_FieldPath VARCHAR(255);
+-- INSERT INTO t_alter_column values('webui_kpi_field','ES_FieldPath','VARCHAR(255)',null,null)
+--;
 
 -- Feb 25, 2017 3:35 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('webui_kpi_field','ES_FieldPath',null,'NOT NULL',null)
-;
+-- INSERT INTO t_alter_column values('webui_kpi_field','ES_FieldPath',null,'NOT NULL',null)
+-- ;
 
 -- Feb 25, 2017 3:35 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1083,13 +1083,13 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2017-02-25 11:07:25',
 
 -- Feb 25, 2017 11:07 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('webui_kpi_field','Name','VARCHAR(255)',null,null)
-;
+-- INSERT INTO t_alter_column values('webui_kpi_field','Name','VARCHAR(255)',null,null)
+-- ;
 
 -- Feb 25, 2017 11:07 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('webui_kpi_field','Name',null,'NOT NULL',null)
-;
+-- INSERT INTO t_alter_column values('webui_kpi_field','Name',null,'NOT NULL',null)
+-- ;
 
 -- Feb 25, 2017 11:14 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
