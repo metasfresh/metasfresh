@@ -33,9 +33,9 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
+import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcess;
-import de.metas.process.Process;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -49,7 +49,7 @@ import net.sf.jasperreports.engine.JasperPrint;
  * @author Ashley Ramdass
  * @author tsa
  */
-@Process(clientOnly = true)
+@ClientOnlyProcess
 public class ReportStarter implements IProcess
 {
 	// services

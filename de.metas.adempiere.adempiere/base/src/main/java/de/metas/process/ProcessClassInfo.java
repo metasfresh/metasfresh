@@ -42,11 +42,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -285,13 +285,13 @@ public final class ProcessClassInfo
 		if (processAnn != null)
 		{
 			this.existingCurrentRecordRequiredWhenCalledFromGear = processAnn.requiresCurrentRecordWhenCalledFromGear();
-			this.clientOnly = processAnn.clientOnly();
 		}
 		else
 		{
 			this.existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
-			this.clientOnly = false;
 		}
+
+		this.clientOnly = processClass.getAnnotation(ClientOnlyProcess.class) != null;
 
 		//
 		// Load from @Profile annotation
@@ -339,7 +339,8 @@ public final class ProcessClassInfo
 	}
 
 	/**
-	 * @return true if this process shall be executed on client side only
+	 * @return true if this process shall be executed on the same node where it was called.
+	 * @see {@link ClientOnlyProcess}
 	 */
 	public boolean isClientOnly()
 	{

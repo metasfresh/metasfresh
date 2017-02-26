@@ -48,6 +48,7 @@ import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
  * <li>{@link Process} annotation if you add more info about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
  * <li>{@link Profile} annotation if you want want to show/hide this process to/from Gear based on spring profiles
+ * <li>{@link ClientOnlyProcess} annotation if you want to mark the process as client only
  * </ul>
  *
  *

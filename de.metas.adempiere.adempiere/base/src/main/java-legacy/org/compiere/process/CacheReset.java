@@ -18,7 +18,7 @@ package org.compiere.process;
 
 import org.compiere.util.Env;
 
-import de.metas.process.Process;
+import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
 
 /**
@@ -27,7 +27,7 @@ import de.metas.process.JavaProcess;
  * @author Jorg Janke
  * @version $Id: CacheReset.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-@Process(clientOnly = true)
+@ClientOnlyProcess
 public class CacheReset extends JavaProcess
 {
 	@Override
