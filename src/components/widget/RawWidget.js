@@ -484,7 +484,7 @@ class RawWidget extends Component {
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
-                        onKeyDown={e => {e.key === ' ' && 
+                        onKeyDown={e => {e.key === ' ' &&
                             this.handlePatch(widgetField, !widgetData[0].value, id)
                         }}
                     >
