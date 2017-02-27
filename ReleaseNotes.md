@@ -43,6 +43,7 @@ upcoming
   * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service
 
 * metasfresh-webui-frontend
+  * [#377](https://github.com/metasfresh/metasfresh-webui-frontend/issues/377) grid view: when initially clicking on first row, the second one is first selected
 
 ## Fixes
 * metasfresh-backend
