@@ -18,6 +18,10 @@ upcoming
 * metasfresh-backend
   * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
 
+## Fixes
+* metqasfresh-backend
+  * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
+
 # metasfresh 4.58.57 (2017-09)
 
 this week's RC
