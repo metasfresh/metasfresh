@@ -58,6 +58,8 @@ public abstract class Convert
 	private static final transient Logger log = LogManager.getLogger(Convert.class);
 	
 	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
+	
+	public static final String DDL_PREFIX = "/* DDL */ ";
 
 	/**
 	 *  Convert SQL Statement (stops at first error).
@@ -318,6 +320,12 @@ public abstract class Convert
 	
 	private static boolean dontLog(String statement)
 	{
+		// Always log DDL (flagged) commands
+		if(statement.startsWith(DDL_PREFIX))
+		{
+			return false;
+		}
+		
 		// metas: teo_sarca: end
 		final String uppStmt = statement.toUpperCase().trim();
 		

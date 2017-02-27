@@ -21,3 +21,4 @@ If you would like to get in touch with other contributors then just join our cha
 
 ##What's new in metasfresh ERP?##
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).
+

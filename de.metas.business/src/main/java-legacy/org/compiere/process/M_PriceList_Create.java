@@ -51,13 +51,6 @@ public class M_PriceList_Create extends JavaProcess
 			);
 			
 			cloneASIs();
-
-			// FIXME !!!
-			// priceListBL.finishPlvCreation(
-			// PlainContextAware.newWithThreadInheritedTrx(getCtx()),
-			// getTargetPriceListVersion(),
-			// discountSchemaLine,
-			// getAD_PInstance_ID());
 		}
 		finally
 		{
