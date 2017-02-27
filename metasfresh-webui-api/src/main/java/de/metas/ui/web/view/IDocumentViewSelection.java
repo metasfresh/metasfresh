@@ -44,11 +44,11 @@ public interface IDocumentViewSelection
 	String getViewId();
 
 	int getAD_Window_ID();
-	
+
 	long size();
 
 	void close();
-	
+
 	int getQueryLimit();
 
 	boolean isQueryLimitHit();
@@ -123,6 +123,10 @@ public interface IDocumentViewSelection
 
 	<T> List<T> retrieveModelsByIds(Collection<DocumentId> documentIds, Class<T> modelClass);
 
+	/**
+	 * @return a stream which contains only the {@link IDocumentView}s which given <code>documentId</code>s.
+	 *         If a {@link IDocumentView} was not found for given ID, this method simply ignores it.
+	 */
 	Stream<? extends IDocumentView> streamByIds(Collection<DocumentId> documentIds);
 
 	/**
