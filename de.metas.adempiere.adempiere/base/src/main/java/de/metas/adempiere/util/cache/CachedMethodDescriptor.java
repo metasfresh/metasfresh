@@ -261,9 +261,10 @@ import de.metas.adempiere.util.CacheTrx;
 
 		//
 		// Key: Method signature
+		// NOTE: avoid adding Class/Field/Method etc to key => would lead to ClassLoader(s) memory leaks/fucked-up
 		keyBuilder.add(methodDeclaringClass.getName());
 		keyBuilder.add(method.getName());
-		keyBuilder.add(method.getReturnType());
+		keyBuilder.add(method.getReturnType().getName());
 
 		for (final ICachedMethodPartDescriptor descriptor : descriptors)
 		{
