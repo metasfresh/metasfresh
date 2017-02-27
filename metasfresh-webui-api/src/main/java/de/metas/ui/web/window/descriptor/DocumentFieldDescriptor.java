@@ -319,7 +319,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	 *
 	 * @param fieldName field name, needed only for logging purposes
 	 * @param value value to be converted
-	 * @param widgetType widget type
+	 * @param widgetType widget type (optional)
 	 * @param targetType target type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
