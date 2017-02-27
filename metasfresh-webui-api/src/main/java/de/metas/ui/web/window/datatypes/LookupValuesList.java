@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
@@ -40,6 +42,7 @@ import com.google.common.collect.ImmutableMap;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Immutable
 public final class LookupValuesList
 {
 	/**
