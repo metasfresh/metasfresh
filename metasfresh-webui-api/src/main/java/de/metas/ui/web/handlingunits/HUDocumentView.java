@@ -20,6 +20,8 @@ import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -57,6 +59,8 @@ public final class HUDocumentView implements IDocumentView
 	}
 
 	private final IDocumentView delegate;
+	
+	private transient String _summary; // lazy
 
 	private HUDocumentView(final IDocumentView delegate)
 	{
@@ -190,16 +194,59 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return getType().isCU();
 	}
+	
+	public boolean isTU()
+	{
+		return getType() == HUDocumentViewType.TU;
+	}
+	
+	public boolean isLU()
+	{
+		return getType() == HUDocumentViewType.LU;
+	}
+
 
 	public String getSummary()
 	{
-		return getValue();
+		if(_summary == null)
+		{
+			_summary = buildSummary();
+		}
+		return _summary;
+	}
+	
+	private String buildSummary()
+	{
+		StringBuilder summary = new StringBuilder();
+		final String value = getValue();
+		if(!Check.isEmpty(value, true))
+		{
+			summary.append(value);
+		}
+		
+		final String packingInfo = getPackingInfo();
+		if(!Check.isEmpty(packingInfo, true))
+		{
+			if(summary.length() > 0)
+			{
+				summary.append(" ");
+			}
+			summary.append(packingInfo);
+		}
+		
+		return summary.toString();
 	}
 
 	public int getM_Product_ID()
 	{
 		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
 		return productLV == null ? -1 : productLV.getKeyAsInt();
+	}
+	
+	public String getM_Product_DisplayName()
+	{
+		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		return productLV == null ? null : productLV.getName();
 	}
 
 	public I_M_Product getM_Product()
@@ -210,6 +257,12 @@ public final class HUDocumentView implements IDocumentView
 			return null;
 		}
 		return InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
+	}
+	
+	public String getPackingInfo()
+	{
+		final Object packingInfo = delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
+		return packingInfo == null ? null : packingInfo.toString();
 	}
 
 	public int getC_UOM_ID()
@@ -231,6 +284,11 @@ public final class HUDocumentView implements IDocumentView
 	public BigDecimal getQtyCU()
 	{
 		return (BigDecimal)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
+	}
+	
+	public LookupValue toLookupValue()
+	{
+		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
 	}
 
 }
