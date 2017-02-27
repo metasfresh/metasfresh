@@ -135,6 +135,7 @@ public class DLM_MassMigrate extends JavaProcess
 				Loggables.get().addLog(
 						"{}: we now updated {} which is >= maxUpdates={}. Stopping now to give auto vacuum a chance to catch up. Restart this process when ready",
 						dbFunctionName, updates.getValue(), maxUpdates);
+				break;
 			}
 		}
 		while (!done.getValue());
