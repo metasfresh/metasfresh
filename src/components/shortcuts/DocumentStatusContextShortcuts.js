@@ -1,30 +1,23 @@
 import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
-class TableContextShortcuts extends Component {
-    constructor(props){
-        super(props);
-    }
-
-    handleShortcuts = (action) => {
+class DocumentStatusContextShortcuts extends Component {
+    handleShortcuts = (action, event) => {
         const {
-            handleToggleExpand, handleToggleQuickInput
+            handleDocumentCompleteStatus
         } = this.props;
 
         switch (action) {
-            case 'TOGGLE_EXPAND':
-                handleToggleExpand();
-                break;
-            case 'TOGGLE_QUICK_INPUT':
-                handleToggleQuickInput();
-                break;
+            case 'COMPLETE_STATUS':
+                event.preventDefault();
+                return handleDocumentCompleteStatus();
         }
     }
 
     render() {
         return (
             <Shortcuts
-                name="TABLE_CONTEXT"
+                name="DOCUMENT_STATUS_CONTEXT"
                 handler = { this.handleShortcuts }
                 targetNodeSelector = "body"
                 isolate = { true }
@@ -36,4 +29,4 @@ class TableContextShortcuts extends Component {
     }
 }
 
-export default TableContextShortcuts;
+export default DocumentStatusContextShortcuts;

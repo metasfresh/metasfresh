@@ -22,10 +22,10 @@ export default function appHandler(state = initialState, action) {
                 isLogged: false
             })
 
-    	// NOTIFICATION ACTIONS
+        // NOTIFICATION ACTIONS
         case types.ADD_NOTIFICATION:
             return Object.assign({}, state, {
-            	notifications: update(state.notifications, {$push:
+                notifications: update(state.notifications, {$push:
                     [{
                         title: action.title,
                         msg: action.msg,
@@ -33,12 +33,12 @@ export default function appHandler(state = initialState, action) {
                         notifType: action.notifType
                     }]
                 })
-	        });
+            });
 
-	    case types.DELETE_NOTIFICATION:
-	        return Object.assign({}, state, {
-            	notifications: update(state.notifications, {$splice: [[action.id,1]]})
-	        });
+        case types.DELETE_NOTIFICATION:
+            return Object.assign({}, state, {
+                notifications: update(state.notifications, {$splice: [[action.id,1]]})
+            });
         // END OF NOTIFICATION ACTIONS
         case types.GET_NOTIFICATIONS_SUCCESS:
             return Object.assign({}, state, {

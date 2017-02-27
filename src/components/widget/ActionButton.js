@@ -5,6 +5,8 @@ import {
     dropdownRequest
 } from '../../actions/GenericActions';
 
+import DocumentStatusContextShortcuts from '../shortcuts/DocumentStatusContextShortcuts';
+
 class ActionButton extends Component {
     constructor(props) {
         super(props);
@@ -14,26 +16,31 @@ class ActionButton extends Component {
             },
             selected: 0
         }
+
+    }
+
+    componentDidMount(){
+        this.fetchStatusList();
     }
 
     handleKeyDown = (e) => {
         const {list, selected} = this.state;
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 this.navigate(true);
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 this.navigate();
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 if(selected != null){
                     this.handleChangeStatus(list.values[selected]);
                 }
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 this.handleDropdownBlur();
                 break;
@@ -44,56 +51,69 @@ class ActionButton extends Component {
         const {selected,list} = this.state;
         const next = up ? selected + 1 : selected - 1;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: (next >= 0 && next <= list.values.length) ? next : selected
-        }));
+        });
     }
 
     handleDropdownBlur = () => {
         if(this.statusDropdown) {
             this.statusDropdown.classList.remove('dropdown-status-open');
         }
-        
+
     }
 
     handleDropdownFocus = () => {
-        const { dispatch, windowType, fields, dataId, dropdownOpenCallback} = this.props;
+        const {dropdownOpenCallback} = this.props;
 
-        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, "window")).then((res) => {
-            this.setState({list: res.data});
-        });
+        this.fetchStatusList();
         dropdownOpenCallback();
         this.statusDropdown.classList.add('dropdown-status-open');
     }
 
+    fetchStatusList(){
+        const { dispatch, windowType, fields, dataId} = this.props;
+
+        dispatch(
+            dropdownRequest(windowType, fields[1].field, dataId, null, null, 'window')
+        ).then((res) => {
+            this.setState({list: res.data});
+        });
+    }
+
     handleChangeStatus = (status) => {
-        this.props.onChange(status);
+        const { onChange } = this.props;
+        const changePromise = onChange(status);
+
         this.statusDropdown.blur();
+        if (changePromise instanceof Promise){
+            changePromise.then(() => this.fetchStatusList());
+        }
     }
 
     getStatusClassName = (abrev) => {
         const {data} = this.props;
 
         if((data.action.value !== undefined) && Object.keys(data.action.value)[0] !== abrev){
-            return "";
+            return '';
         }
 
         if(abrev === 'DR'){
-            return "dropdown-status-item-def";
+            return 'dropdown-status-item-def';
         }else if (abrev === 'CO'){
-            return "dropdown-status-item-def-1";
+            return 'dropdown-status-item-def-1';
         }else{
-            return "";
+            return '';
         }
     }
 
     getStatusContext = (abrev) => {
         if(abrev === 'DR'){
-            return "primary"
+            return 'primary'
         }else if (abrev === 'CO'){
-            return "success"
+            return 'success'
         }else {
-            return "default"
+            return 'default'
         }
     }
 
@@ -104,8 +124,8 @@ class ActionButton extends Component {
             return <li
                 key={index}
                 className={
-                    "dropdown-status-item " +
-                    (selected === index ? "dropdown-status-item-on-key " : "") +
+                    'dropdown-status-item ' +
+                    (selected === index ? 'dropdown-status-item-on-key ' : '') +
                     this.getStatusClassName(key)
                 }
                 onClick={() => this.handleChangeStatus(item)}
@@ -119,6 +139,7 @@ class ActionButton extends Component {
         const {data} = this.props;
         const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
         const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
+        const { list } = this.state;
 
         return (
             <div
@@ -129,11 +150,16 @@ class ActionButton extends Component {
                 onBlur={this.handleDropdownBlur}
                 onFocus={this.handleDropdownFocus}
             >
-                <div className={"tag tag-" + this.getStatusContext(abrev)}>{value} </div>
-                <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(abrev)} />
+                <div className={'tag tag-' + this.getStatusContext(abrev)}>{value} </div>
+                <i className={'meta-icon-chevron-1 meta-icon-' + this.getStatusContext(abrev)} />
                 <ul className="dropdown-status-list">
-                    {this.renderStatusList(this.state.list)}
+                    {this.renderStatusList(list)}
                 </ul>
+                <DocumentStatusContextShortcuts
+                    handleDocumentCompleteStatus={() => {
+                        this.handleChangeStatus(list.values.filter(elem => !!elem.CO)[0])
+                    }}
+                />
             </div>
         )
     }

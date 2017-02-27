@@ -19,7 +19,7 @@ class Device extends Component {
         this.sockClient = Stomp.Stomp.over(this.sock);
 
         this.sockClient.debug = null;
-        this.sockClient.connect({}, frame => {
+        this.sockClient.connect({}, () => {
             this.sockClient.subscribe(device.websocketEndpoint, msg => {
                 if(!this.state.valueChangeStopper){
                     const body = JSON.parse(msg.body);
@@ -49,22 +49,34 @@ class Device extends Component {
         })
     }
 
+    handleKey = (e) => {
+        const {handleChange} = this.props;
+        const {value} = this.state;
+
+        switch(e.key){
+            case 'Enter':
+                handleChange(value);
+                break;
+        }
+    }
+
     render() {
         const {value, index, isMore} = this.state;
         const {tabIndex} = this.props;
 
-        if(!!value){
+        if(value){
             return (
                 <div
-                    className={"btn btn-device btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev " +
-                        (isMore ? "btn-flagged ": "")
+                    className={'btn btn-device btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev ' +
+                        (isMore ? 'btn-flagged ': '')
                     }
                     onClick={this.handleClick}
-                    tabIndex={tabIndex ? tabIndex : ""}
+                    tabIndex={tabIndex ? tabIndex : ''}
                     onMouseEnter={() => this.handleToggleChangeStopper(true)}
                     onFocus={() => this.handleToggleChangeStopper(true)}
                     onMouseLeave={() => this.handleToggleChangeStopper(false)}
                     onBlur={() => this.handleToggleChangeStopper(false)}
+                    onKeyDown={(e) => this.handleKey(e)}
                 >
                     {isMore && <span className="btn-flag">{index + 1}</span>}
                     {value}

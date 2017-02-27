@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import update from 'react-addons-update';
 
 import RawWidget from '../widget/RawWidget';
 
@@ -10,6 +9,7 @@ class FiltersItem extends Component {
         this.state = {
             filter: props.data
         }
+
     }
 
     componentWillMount() {
@@ -24,12 +24,30 @@ class FiltersItem extends Component {
 
     init = () => {
         const {active} = this.props;
-        active && active.parameters && active.parameters.map(item => {
-            this.mergeData(item.parameterName, item.value, item.valueTo);
-        })
+        const {filter} = this.state;
+
+        if(
+            filter.parameters && active && active.parameters &&
+            (active.filterId === filter.filterId)
+        ){
+            active.parameters.map(item => {
+                this.mergeData(
+                    item.parameterName,
+                    item.value ? item.value : '',
+                    item.valueTo ? item.valueTo : ''
+                );
+            })
+        }else{
+            filter.parameters.map(item => {
+                this.mergeData(
+                    item.parameterName,
+                    ''
+                );
+            })
+        }
     }
 
-    setValue = (property, value, valueTo) => {
+    setValue = (property, value, id, valueTo) => {
         //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
         // IT HAS TO BE UNIFIED
         //
@@ -43,31 +61,35 @@ class FiltersItem extends Component {
         }
     }
 
-    mergeData = (property, value, valueTo = null) => {
-        this.setState(prevState => {
-            return {
+    mergeData = (property, value, valueTo) => {
+        this.setState(prevState => ({
                 filter: Object.assign({}, prevState.filter, {
                     parameters: prevState.filter.parameters.map(param => {
                         if(param.parameterName === property){
-                            return Object.assign({}, param, {
-                                value: value,
-                                valueTo: valueTo
-                            })
+                            return Object.assign({}, param,
+                                valueTo ? {
+                                    value,
+                                    valueTo
+                                } : {
+                                    value
+                                }
+                            )
                         }else{
                             return param;
                         }
                     })
                 })
-            }
-        })
+            })
+        )
     }
 
     handleApply = () => {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
 
-        applyFilters(filter);
-        closeFilterMenu();
+        applyFilters(filter, () => {
+            closeFilterMenu();
+        });
     }
 
     handleClear = () => {
@@ -80,8 +102,7 @@ class FiltersItem extends Component {
 
     render() {
         const {
-            data, applyFilters, notValidFields, isActive, windowType,
-            setSelectedItem, selectedItem, onShow, onHide, viewId
+            data, notValidFields, isActive, windowType, onShow, onHide, viewId
         } = this.props;
 
         const {

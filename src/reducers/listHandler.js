@@ -1,5 +1,4 @@
 import * as types from '../constants/ActionTypes';
-import update from 'react-addons-update';
 
 const initialState = {
     sorting: {
@@ -11,7 +10,7 @@ const initialState = {
         page: 1,
         windowType: null
     },
-    viewId: ""
+    viewId: ''
 }
 
 export default function listHandler(state = initialState, action) {

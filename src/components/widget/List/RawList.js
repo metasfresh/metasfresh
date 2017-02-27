@@ -1,5 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
+import React, { Component } from 'react';
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
@@ -9,18 +8,37 @@ class RawList extends Component {
 
         this.state = {
             selected: props.selected || 0,
-            isOpen: false
+            isOpen: false,
+            dropdownList: []
         }
     }
 
-    handleBlur = (e) => {
+    componentDidUpdate = (prevProps) => {
+        const { list, mandatory } = this.props;
+
+        if(prevProps.list !== list){
+            let dropdown = [];
+
+            if(!mandatory){
+                dropdown.push(0);
+            }
+
+            if(list.length > 0) {
+                this.setState({
+                    dropdownList: dropdown.concat(list)
+                });
+            }
+        }
+    }
+
+    handleBlur = () => {
         const { selected } = this.props;
 
         this.dropdown.blur();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: false,
             selected: selected || 0
-        }))
+        })
     }
 
     handleFocus = (e) => {
@@ -29,9 +47,9 @@ class RawList extends Component {
 
         onFocus && onFocus();
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: true
-        }))
+        })
     }
 
     handleChange = (e) => {
@@ -61,34 +79,41 @@ class RawList extends Component {
     }
 
     navigate = (up) => {
-        const {selected} = this.state;
-        const {list} = this.props;
+        const {selected, dropdownList} = this.state;
 
-        const next = up ? selected + 1 : selected - 1;
+        let selectedIndex = null;
 
-        this.setState(Object.assign({}, this.state, {
-            selected: (next >= 0 && next <= list.length) ? next : selected
-        }));
+        dropdownList.map((item, index) => {
+            if(JSON.stringify(item) === JSON.stringify(selected)){
+                selectedIndex = index;
+            }
+        });
+
+        const next = up ? selectedIndex + 1 : selectedIndex - 1;
+
+        this.setState({
+            selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
+        })
+
     }
 
     handleKeyDown = (e) => {
-        const {list} = this.props;
         const {selected} = this.state;
 
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 this.navigate(true);
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 this.navigate(false);
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
-                this.handleSelect(list[Object.keys(list)[selected-1]])
+                this.handleSelect(selected)
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 this.handleBlur();
                 break;
@@ -137,11 +162,11 @@ class RawList extends Component {
         return (
             <div
                 key={index}
-                className={"input-dropdown-list-option"  +
+                className={'input-dropdown-list-option'  +
                     (
                         this.areOptionsEqual(selected, option) ?
-                        " input-dropdown-list-option-key-on" :
-                        ""
+                        ' input-dropdown-list-option-key-on' :
+                        ''
                     )
                 }
                 onMouseEnter={() => this.handleSwitch(option)}
@@ -164,14 +189,13 @@ class RawList extends Component {
         list.map((option, index) => {
             ret.push(this.getRow(index + 1, option))
         })
-
         return ret;
     }
 
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, mandatory, value, tabIndex
+            rowId, isModal, tabIndex, disabled, mandatory
         } = this.props;
 
         const {
@@ -186,31 +210,35 @@ class RawList extends Component {
                 onBlur={this.handleBlur}
                 onKeyDown={this.handleKeyDown}
                 className={
-                    "input-dropdown-container " +
-                    (readonly ? "input-disabled " : "") +
-                    (rowId ? "input-dropdown-container-static " : "") +
-                    ((rowId && !isModal) ? "input-table " : "")
+                    'input-dropdown-container ' +
+                    (readonly ? 'input-disabled ' : '') +
+                    (rowId ? 'input-dropdown-container-static ' : '') +
+                    ((rowId && !isModal) ? 'input-table ' : '')
                 }
             >
                 <div className={
-                    "input-dropdown input-block input-readonly input-" +
-                    (rank ? rank : "secondary") +
-                    (updated ? " pulse " : " ")
+                    'input-dropdown input-block input-readonly input-' +
+                    (rank ? rank : 'secondary') +
+                    (updated ? ' pulse ' : ' ') +
+                    ((mandatory && !selected) ? 'input-mandatory ' : '')
                 }>
                     <div className={
-                        "input-editable input-dropdown-focused " +
-                        (align ? "text-xs-" + align + " " : "")
+                        'input-editable input-dropdown-focused ' +
+                        (align ? 'text-xs-' + align + ' ' : '')
                     }>
                         <input
                             type="text"
-                            className="input-field js-input-field font-weight-semibold"
+                            className={
+                                'input-field js-input-field font-weight-semibold ' +
+                                (disabled ? 'input-disabled ' : '')
+                            }
                             readOnly
                             tabIndex={-1}
                             placeholder={defaultValue}
-                            value={selected ? selected[Object.keys(selected)[0]] : ""}
+                            value={selected ? selected[Object.keys(selected)[0]] : ''}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
-                            disabled={readonly}
+                            disabled={readonly || disabled}
                         />
                     </div>
                     <div className="input-icon">
@@ -225,7 +253,11 @@ class RawList extends Component {
                     )}
                     {(loading && list.length === 0) && (
                         <div className="input-dropdown-list-header">
-                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                            <ReactCSSTransitionGroup
+                                transitionName="rotate"
+                                transitionEnterTimeout={1000}
+                                transitionLeaveTimeout={1000}
+                            >
                                 <div className="rotate icon-rotate">
                                     <i className="meta-icon-settings"/>
                                 </div>

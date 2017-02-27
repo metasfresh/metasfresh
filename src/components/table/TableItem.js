@@ -10,8 +10,8 @@ class TableItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            edited: "",
-            activeCell: "",
+            edited: '',
+            activeCell: '',
             updatedRow: false
         };
     }
@@ -46,24 +46,22 @@ class TableItem extends Component {
                 }
             })
         }
-
-
     }
 
     handleKey = (e, property) => {
         const elem = document.activeElement;
-        const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        const { changeListenOnTrue } = this.props;
         const { edited, activeCell} = this.state;
 
         if(!elem.className.includes('js-input-field')) {
-          this.setState(Object.assign({}, this.state, {
-              activeCell: elem
-          }))
+            this.setState({
+                activeCell: elem
+            })
         }
 
-        if(e.key === "Enter" && !edited) {
+        if(e.key === 'Enter' && !edited) {
             this.handleEditProperty(e,property, true);
-        } else if (e.key === "Enter" && edited) {
+        } else if (e.key === 'Enter' && edited) {
             this.handleEditProperty(e);
             changeListenOnTrue();
             activeCell && activeCell.focus();
@@ -80,7 +78,7 @@ class TableItem extends Component {
             edited, updatedRow
         } = this.state;
 
-        //iterate over layout settings
+        // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
             let widgetData = item.fields.map(property => findRowByPropName(cells, property.field));
@@ -110,14 +108,13 @@ class TableItem extends Component {
     }
 
     updateRow = () => {
-        this.setState(
-            Object.assign({}, this.state, {
+        this.setState({
                 updatedRow: true
-            }), () => {
+            }, () => {
                 setTimeout(() => {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         updatedRow: false
-                    }))
+                    })
                 }, 1000);
             }
         )
@@ -156,14 +153,13 @@ class TableItem extends Component {
             indentation.push(
                 <div
                     key={i}
-                    className={"indent-item-mid "
-                    }
+                    className="indent-item-mid"
                 >
                     {i === indent.length - 1 && <div className="indent-mid"/>}
                     <div
                         className={
-                            (indent[i] ? "indent-sign " : "") +
-                            ((lastSibling && i === indent.length - 1) ? "indent-sign-bot " : "")
+                            (indent[i] ? 'indent-sign ' : '') +
+                            ((lastSibling && i === indent.length - 1) ? 'indent-sign-bot ' : '')
                         }
                     />
                 </div>
@@ -183,9 +179,9 @@ class TableItem extends Component {
                     <div
                         className="indent-icon"
                     >
-                        {huType == "LU" && <i className="meta-icon-palette"/>}
-                        {huType == "TU" && <i className="meta-icon-package"/>}
-                        {huType == "CU" && <i className="meta-icon-product"/>}
+                        {huType == 'LU' && <i className="meta-icon-palette"/>}
+                        {huType == 'TU' && <i className="meta-icon-package"/>}
+                        {huType == 'CU' && <i className="meta-icon-product"/>}
                     </div>
                 </div>
             );
@@ -196,10 +192,8 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, selectedProducts, rowId, cols,
-            onMouseDown, onDoubleClick, included, tabid, type, docId,
-            tabIndex, mainTable, entity, readonly, indent, odd,
-            handleRightClick, indentSupported, contextType
+            isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick,
+            indentSupported, contextType, item, lastSibling, includedDocuments
         } = this.props;
 
         return (
@@ -208,9 +202,12 @@ class TableItem extends Component {
                 onDoubleClick={onDoubleClick}
                 onContextMenu={handleRightClick}
                 className={
-                    (isSelected ? "row-selected " : "") +
-                    (odd ? "tr-odd ": "") +
-                    (!odd ? "tr-even ": "")
+                    (isSelected ? 'row-selected ' : '') +
+                    (odd ? 'tr-odd ': 'tr-even ') +
+                    (item.processed ? 'row-disabled ': '') +
+                    ((item.processed && lastSibling && !includedDocuments) ?
+                        'row-boundary ': ''
+                    )
                 }
             >
                 {indentSupported &&

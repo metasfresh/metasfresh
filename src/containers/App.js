@@ -6,7 +6,7 @@ import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
 
 import { syncHistoryWithStore, push } from 'react-router-redux';
-import { Router, Route, browserHistory } from 'react-router';
+import { Router, browserHistory } from 'react-router';
 
 import Moment from 'moment';
 
@@ -20,6 +20,7 @@ import {
     getAvailableLang
 } from '../actions/AppActions';
 
+import '../assets/css/styles.css';
 
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
@@ -29,6 +30,10 @@ axios.defaults.withCredentials = true;
 axios.interceptors.response.use(function (response) {
     return response;
 }, function (error) {
+    if(!error.response){
+        store.dispatch(noConnection(true));
+    }
+
     if(error.response.status == 401){
         store.dispatch(logoutSuccess());
         store.dispatch(push('/login?redirect=true'));
@@ -36,10 +41,6 @@ axios.interceptors.response.use(function (response) {
         if(localStorage.isLogged){
             store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
         }
-    }
-
-    if(!error.response){
-        store.dispatch(noConnection(true));
     }
 
     return Promise.reject(error);

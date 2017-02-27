@@ -8,18 +8,21 @@ class PaginationContextShortcuts extends Component {
 
     handleShortcuts = (action, event) => {
         const {
-            handleFirstPage, handleLastPage,
-            handlePrevPage, handleNextPage
+            handleFirstPage, handleLastPage, handlePrevPage, handleNextPage
         } = this.props;
 
         switch (action) {
             case 'FIRST_PAGE':
+                event.preventDefault();
                 return handleFirstPage();
             case 'LAST_PAGE':
+                event.preventDefault();
                 return handleLastPage();
             case 'NEXT_PAGE':
+                event.preventDefault();
                 return handleNextPage();
             case 'PREV_PAGE':
+                event.preventDefault();
                 return handlePrevPage();
         }
     }
@@ -27,9 +30,9 @@ class PaginationContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name={"PAGINATION_CONTEXT"}
+                name="PAGINATION_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }

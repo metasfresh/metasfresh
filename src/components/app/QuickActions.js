@@ -17,6 +17,7 @@ import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class QuickActions extends Component {
+
     constructor(props){
         super(props);
 
@@ -25,7 +26,11 @@ class QuickActions extends Component {
             isDropdownOpen: false
         }
 
-        this.fetchActions();
+        const {fetchOnInit} = this.props;
+
+        if(fetchOnInit){
+            this.fetchActions();
+        }
     }
 
     componentDidUpdate = (prevProps) => {
@@ -52,14 +57,16 @@ class QuickActions extends Component {
 
     handleClick = (action) => {
         const {dispatch, viewId} = this.props;
-        if(!action.disabled){
-            dispatch(
-                openModal(
-                    action.caption, action.processId, "process", null, null, false,
-                    viewId
-                )
-            );
+        if(action.disabled){
+            return;
         }
+
+        dispatch(
+            openModal(
+                action.caption, action.processId, 'process', null, null, false,
+                viewId
+            )
+        );
     }
 
     fetchActions = () => {
@@ -89,18 +96,19 @@ class QuickActions extends Component {
                     <span className="spacer-right">Actions:</span>
                     <div className="quick-actions-wrapper">
                         <div
-                            className={"tag tag-success tag-xlg spacer-right " +
-                                (actions[0].disabled ? "tag-default " : "pointer ")
+                            className={'tag tag-success tag-xlg spacer-right quick-actions-tag ' +
+                                (actions[0].disabled ? 'tag-default ' : 'pointer ')
                             }
                             onClick={() => this.handleClick(actions[0])}
+                            title={actions[0].caption}
                         >
-                            <i className="meta-icon-accept" /> {actions[0].caption}
+                            {actions[0].caption}
                         </div>
 
                         <div
                             className={
-                                "btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer " +
-                                (isDropdownOpen ? "btn-disabled " : "")
+                                'btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer ' +
+                                (isDropdownOpen ? 'btn-disabled ' : '')
                             }
                             onClick={() => this.toggleDropdown(!isDropdownOpen)}
                         >

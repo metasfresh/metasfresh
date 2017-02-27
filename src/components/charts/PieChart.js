@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 class PieChart extends Component {
     constructor(props){
@@ -10,8 +10,8 @@ class PieChart extends Component {
 
         var data = [1, 1, 2, 3, 5, 8, 13, 21];
 
-        var canvas = document.querySelector("canvas"),
-            context = canvas.getContext("2d");
+        var canvas = document.querySelector('canvas'),
+            context = canvas.getContext('2d');
 
         var width = canvas.width,
             height = canvas.height,
@@ -39,22 +39,22 @@ class PieChart extends Component {
         context.beginPath();
         arcs.forEach(arc.padAngle(0));
         context.lineWidth = 1;
-        context.strokeStyle = "#777";
+        context.strokeStyle = '#777';
         context.stroke();
 
         context.beginPath();
         arcs.forEach(arc.padAngle(0.06 * t));
-        context.fillStyle = "#ccc";
+        context.fillStyle = '#ccc';
         context.fill();
         context.lineWidth = 1.5;
-        context.lineJoin = "round";
-        context.strokeStyle = "#000";
+        context.lineJoin = 'round';
+        context.strokeStyle = '#000';
         context.stroke();
 
         context.restore();
         });
     }
-    
+
 
     render() {
 

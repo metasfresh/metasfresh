@@ -10,6 +10,7 @@ import Moment from 'moment';
 import {
     loginRequest,
     loginSuccess,
+    localLoginRequest,
     loginCompletionRequest,
     getUserLang
 } from '../../actions/AppActions';
@@ -19,9 +20,9 @@ class LoginForm extends Component {
         super(props);
 
         this.state = {
-            role: "",
+            role: '',
             roleSelect: false,
-            err: ""
+            err: ''
         }
     }
 
@@ -39,7 +40,7 @@ class LoginForm extends Component {
         e.preventDefault();
 
         this.setState(Object.assign({}, this.state, {
-            err: ""
+            err: ''
         }))
     }
 
@@ -59,32 +60,61 @@ class LoginForm extends Component {
 
     }
 
+    checkIfAlreadyLogged(err){
+        const {dispatch} = this.props;
+        const {router} = this.context;
+
+        return dispatch(localLoginRequest())
+            .then(response => {
+                if (response.data){
+                    return router.push('/')
+                }
+
+                return Promise.reject(err);
+            });
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
-        const {roleSelect, roles, role} = this.state;
+        const {roleSelect, role} = this.state;
 
-        if(roleSelect){
-            dispatch(loginCompletionRequest(role)).then(() => {
-                dispatch(loginSuccess());
-                this.handleSuccess();
-            })
-        }else{
-            dispatch(loginRequest(this.login.value, this.passwd.value)).then(response =>{
-                if(response.data.loginComplete){
-                    this.handleSuccess();
-                }else{
-                    this.setState(Object.assign({}, this.state, {
+        this.setState({
+            pending: true
+        }, () => {
+            if(roleSelect){
+                return dispatch(loginCompletionRequest(role))
+                    .then(() => {
+                        dispatch(loginSuccess());
+                        this.handleSuccess();
+                    })
+            }
+
+            dispatch(loginRequest(this.login.value, this.passwd.value))
+                .then(response =>{
+                    if(response.data.loginComplete){
+                        return this.handleSuccess();
+                    }
+                    this.setState({
                         roleSelect: true,
                         roles: response.data.roles,
                         role: response.data.roles[0]
-                    }))
-                }
-            }).catch(err => {
-                this.setState(Object.assign({}, this.state, {
-                    err: err.response.data.message
-                }));
-            })
-        }
+                    })
+                })
+                .then(() => {
+                    this.setState({
+                        pending: false
+                    })
+                })
+                .catch(err => {
+                    return this.checkIfAlreadyLogged(err);
+                })
+                .catch(err => {
+                    this.setState({
+                        err: err.response.data.message,
+                        pending: false
+                    });
+                })
+        });
     }
 
     handleRoleSelect = (option) => {
@@ -94,19 +124,20 @@ class LoginForm extends Component {
     }
 
     render() {
-        const {roleSelect, roles, err, role} = this.state;
+        const {roleSelect, roles, err, role, pending} = this.state;
         return (
             <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
                     <img src={logo} className="header-logo mt-2 mb-2" />
                 </div>
                 {roleSelect ? <div>
-                    <div className={"form-control-label"}><small>Select role</small></div>
+                    <div className="form-control-label"><small>Select role</small></div>
                         <RawList
                             rank="primary"
                             list={roles}
                             onSelect={option => this.handleRoleSelect(option)}
                             selected={role}
+                            disabled={pending}
                         />
                     </div>:
                     <div>
@@ -116,23 +147,29 @@ class LoginForm extends Component {
                             </div>
                         }
                         <div>
-                            <div className={"form-control-label"}><small>Login</small></div>
+                            <div className="form-control-label"><small>Login</small></div>
                             <input
                                 type="text"
                                 onChange={this.handleOnChange}
                                 className={
-                                    "input-primary input-block " +
-                                    (err ? "input-error " : "")}
+                                    'input-primary input-block ' +
+                                    (err ? 'input-error ' : '') +
+                                    (pending ? 'input-disabled ': '')
+                                }
+                                disabled={pending}
                                 ref={c => this.login = c} />
                         </div>
                         <div>
-                            <div className={"form-control-label"}><small>Password</small></div>
+                            <div className="form-control-label"><small>Password</small></div>
                             <input
                                 type="password"
                                 onChange={this.handleOnChange}
                                 className={
-                                    "input-primary input-block " +
-                                    (err ? "input-error " : "")}
+                                    'input-primary input-block ' +
+                                    (err ? 'input-error ' : '') +
+                                    (pending ? 'input-disabled ' : '')
+                                }
+                                disabled={pending}
                                 ref={c => this.passwd = c}
                             />
                         </div>
@@ -140,7 +177,14 @@ class LoginForm extends Component {
                     </div>
                 }
                 <div className="mt-2">
-                    <button className="btn btn-sm btn-block btn-meta-success" onClick={this.handleLogin}>{roleSelect? "Send" : "Login"}</button>
+
+                    <button
+                        className="btn btn-sm btn-block btn-meta-success"
+                        onClick={this.handleLogin}
+                        disabled={pending}
+                    >
+                        {roleSelect? 'Send' : 'Login'}
+                    </button>
                 </div>
             </div>
         )
@@ -149,6 +193,10 @@ class LoginForm extends Component {
 
 LoginForm.propTypes = {
     dispatch: PropTypes.func.isRequired
+};
+
+LoginForm.contextTypes = {
+    router: PropTypes.object.isRequired
 };
 
 LoginForm = connect()(LoginForm);

@@ -62,19 +62,19 @@ class DatetimeRange extends Component {
                 onShow={onShow}
                 onHide={onHide}
                 locale={{
-                    "firstDay": 1,
-                    "monthNames": Moment.months()
+                    'firstDay': 1,
+                    'monthNames': Moment.months()
                 }}
                 autoApply={false}
             >
                 <button className={
-                    "btn btn-block text-xs-left btn-meta-outline-secondary " +
-                    "btn-distance btn-sm input-icon-container input-primary" +
-                    (mandatory && !startDate && !endDate ? " input-mandatory " : "")
+                    'btn btn-block text-xs-left btn-meta-outline-secondary ' +
+                    'btn-distance btn-sm input-icon-container input-primary' +
+                    (mandatory && !startDate && !endDate ? ' input-mandatory ' : '')
                 }>
                     {!!startDate && !!endDate ?
-                        " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
-                        " All dates available"
+                        ' ' + Moment(startDate).format('L') + ' - ' + Moment(endDate).format('L') :
+                        ' All dates available'
                     }
                     <i className="meta-icon-calendar input-icon-right"/>
                 </button>

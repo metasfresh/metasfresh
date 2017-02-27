@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class GlobalContextShortcuts extends Component {
@@ -7,16 +7,16 @@ class GlobalContextShortcuts extends Component {
 
     }
     handleShortcuts = (action, event) => {
-        const { 
-          handleMenuOverlay, openModal, 
-          handlePrint, handleDelete, handleSideList, handleInboxOpen, 
-          redirect, handleDocStatusToggle, closeOverlays 
+        const {
+          handleMenuOverlay, openModal,
+          handlePrint, handleDelete, handleSideList, handleInboxOpen,
+          redirect, handleDocStatusToggle, closeOverlays
         } = this.props;
         switch (action) {
             case 'OPEN_ACTIONS_MENU':
                 event.preventDefault();
                 closeOverlays('isSubheaderShow');
-                
+
                 break;
             case 'OPEN_NAVIGATION_MENU':
                 event.preventDefault();
@@ -24,8 +24,8 @@ class GlobalContextShortcuts extends Component {
                 break;
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
-                closeOverlays('', (e)=> handleInboxOpen(true));
-                
+                closeOverlays('', ()=> handleInboxOpen(true));
+
                 break;
             case 'OPEN_SIDEBAR_MENU':
                 event.preventDefault();
@@ -69,13 +69,14 @@ class GlobalContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name = { "GLOBAL_CONTEXT" }
+                name = "GLOBAL_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
                 global = {true}
+                dataShortcuts = { true }
             />
         )
     }

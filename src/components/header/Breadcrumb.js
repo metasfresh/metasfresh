@@ -8,25 +8,22 @@ import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../keymap.js';
 
 class Breadcrumb extends Component {
-	constructor(props) {
-		super(props);
-
+    constructor(props) {
+        super(props);
         this.state = {
             tooltipOpen: false
         }
-	}
+    }
 
     linkToPage = (page) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + page));
+        dispatch(push('/window/' + page));
     }
 
     toggleTooltip = (tooltip) => {
-        this.setState(
-            Object.assign({}, this.state, {
-                tooltipOpen: tooltip
-            })
-        );
+        this.setState({
+            tooltipOpen: tooltip
+        })
     }
 
     renderBtn = (menu, index) => {
@@ -35,33 +32,33 @@ class Breadcrumb extends Component {
         } = this.props;
 
         return (<div key={index}>
-            {!!index && <span className="divider">/</span>}
-            <div className={"header-btn tooltip-parent"}>
+            {index ? <span className="divider">/</span> : null}
+            <div className="header-btn tooltip-parent">
                 <div
-                    title={!!index && menu.children.captionBreadcrumb ? menu.children.captionBreadcrumb : ''}
-                    className={"header-item-container pointer " +
-                        (menuOverlay === menu.nodeId ? "header-item-open " : "") +
-                        (!index ? "header-item-container-static ": "")
+                    title={(index && menu.children.captionBreadcrumb) ? menu.children.captionBreadcrumb : ''}
+                    className={'header-item-container pointer ' +
+                        (menuOverlay === menu.nodeId ? 'header-item-open ' : '') +
+                        (!index ? 'header-item-container-static ': '')
                     }
                     onClick={ !(menu && menu.children && menu.children.elementId) ?
                         e => {handleMenuOverlay(e, menu.nodeId), this.toggleTooltip(false)} :
                         (windowType ?
-                            e => {this.linkToPage(windowType), this.toggleTooltip(false)} :
-                            e => this.toggleTooltip(false)
+                            () => {this.linkToPage(windowType), this.toggleTooltip(false)} :
+                            () => this.toggleTooltip(false)
                         )
                     }
-                    onMouseEnter={!!index ? '' : (e) => this.toggleTooltip(true)}
-                    onMouseLeave={(e) => this.toggleTooltip(false)}
+                    onMouseEnter={index ? '' : () => this.toggleTooltip(true)}
+                    onMouseLeave={() => this.toggleTooltip(false)}
                 >
-                    <span className={"header-item icon-sm"}>
-                        {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
+                    <span className="header-item icon-sm">
+                        {index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
                     </span>
                 </div>
                 {menuOverlay === menu.nodeId &&
                     <MenuOverlay
                         nodeId={menu.nodeId}
                         node={menu}
-                        onClickOutside={e => handleMenuOverlay(e, "")}
+                        onClickOutside={e => handleMenuOverlay(e, '')}
                         disableOnClickOutside={menuOverlay !== menu.nodeId}
                         siteName={siteName}
                         handleMenuOverlay={handleMenuOverlay}
@@ -72,10 +69,10 @@ class Breadcrumb extends Component {
         </div>)
     }
 
-	render() {
+    render() {
         const {
             breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData, dataId,
-            siteName, menuOverlay, handleMenuOverlay, openModal
+            siteName
         } = this.props;
 
         const {tooltipOpen} = this.state;
@@ -125,11 +122,11 @@ class Breadcrumb extends Component {
             </div>
 
         )
-	}
+    }
 }
 
 Breadcrumb.propTypes = {
-	dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired
 };
 
 Breadcrumb = connect()(Breadcrumb)

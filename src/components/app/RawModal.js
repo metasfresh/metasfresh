@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import { push } from 'react-router-redux';
 
 import {
     closeRawModal
@@ -21,7 +20,7 @@ class RawModal extends Component {
         // because body is out of react app range
         // and css dont affect parents
         // but we have to change scope of scrollbar
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
@@ -43,7 +42,7 @@ class RawModal extends Component {
     }
 
     handleClose = () => {
-        const {dispatch, closeCallback, modalType} = this.props;
+        const {closeCallback} = this.props;
         const {isNew} = this.state;
 
         closeCallback && closeCallback(isNew);
@@ -51,16 +50,19 @@ class RawModal extends Component {
     }
 
     removeModal = () => {
-        const {dispatch} = this.props;
+        const {dispatch, modalVisible} = this.props;
 
         dispatch(closeRawModal());
-        document.body.style.overflow = "auto";
+
+        if (!modalVisible){
+            document.body.style.overflow = 'auto';
+        }
     }
 
 
     render() {
         const {
-            modalTitle, dataId, modalType, windowType, children
+            modalTitle, children
         } = this.props;
 
         const {
@@ -74,12 +76,12 @@ class RawModal extends Component {
                 <div className="panel panel-modal panel-modal-primary">
                     <div
                         className={
-                            "panel-modal-header " +
-                            (scrolled ? "header-shadow": "")
+                            'panel-modal-header ' +
+                            (scrolled ? 'header-shadow': '')
                         }
                     >
                         <span className="panel-modal-header-title">
-                            {modalTitle ? modalTitle : "Modal"}
+                            {modalTitle ? modalTitle : 'Modal'}
                         </span>
                         <div className="items-row-2">
                             <button
@@ -103,10 +105,15 @@ class RawModal extends Component {
     }
 }
 
+const mapStateToProps = state => ({
+    modalVisible: state.windowHandler.modal.visible || false
+});
+
 RawModal.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    modalVisible: PropTypes.bool
 };
 
-RawModal = connect()(RawModal)
+RawModal = connect(mapStateToProps)(RawModal)
 
 export default RawModal

@@ -50,3 +50,19 @@
     font-size: .9rem;
     font-weight: normal;
 }
+
+.quick-actions-tag {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+@media (max-width: $breakpoint){
+    .quick-actions-tag {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+}
