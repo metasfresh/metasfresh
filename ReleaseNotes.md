@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2017-10)
+# metasfresh 4.59.57 (2017-10)
 
 upcoming
+
+## Features
+* metasfresh-backend
+  * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
 
 # metasfresh 4.58.57 (2017-09)
 
