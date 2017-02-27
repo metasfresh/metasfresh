@@ -22,6 +22,7 @@ upcoming
 ## Fixes
 * metqasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
+  * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
 
 # metasfresh 4.58.57 (2017-09)
 
