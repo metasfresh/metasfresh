@@ -1,13 +1,19 @@
 package de.metas.ui.web.process;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -22,10 +28,16 @@ import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.ProcessParametersRepository;
+import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
+import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -56,8 +68,14 @@ public class ProcessInstancesRepository
 	// Services
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
+	@Autowired
+	private DocumentCollection documentsCollection;
+	@Autowired
+	private IDocumentViewsRepository documentViewsRepo;
+
 
 	private final LoadingCache<DocumentId, ProcessInstance> processInstances = CacheBuilder.newBuilder()
+			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.removalListener(new RemovalListener<DocumentId, ProcessInstance>()
 			{
 				@Override
@@ -72,6 +90,7 @@ public class ProcessInstancesRepository
 	public void cacheReset()
 	{
 		processInstances.invalidateAll();
+		processInstances.cleanUp();
 	}
 
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
@@ -79,22 +98,16 @@ public class ProcessInstancesRepository
 		return processDescriptorFactory.getProcessDescriptor(adProcessId);
 	}
 
-	public void checkin(final ProcessInstance processInstance)
-	{
-		processInstance.saveIfValidAndHasChanges(false); // throwEx=false
-		processInstances.put(processInstance.getAD_PInstance_ID(), processInstance.copy(CopyMode.CheckInReadonly));
-	}
-
-	public ProcessInstance createNewProcessInstance(final ProcessInfo processInfo)
+	public ProcessInstance createNewProcessInstance(final int adProcessId, final JSONCreateProcessInstanceRequest request)
 	{
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
+		final ProcessInfo processInfo = createProcessInfo(adProcessId, request);
 		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
 		final DocumentId adPInstanceId = DocumentId.of(processInfo.getAD_PInstance_ID());
 
 		//
 		// Build the parameters document
-		final int adProcessId = processInfo.getAD_Process_ID();
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
 		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
 		final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
@@ -111,6 +124,71 @@ public class ProcessInstancesRepository
 		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
 		return pinstance;
 	}
+	
+	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
+	{
+		// Validate request's AD_Process_ID
+		// (we are not using it, but just for consistency)
+		if (request.getAD_Process_ID() > 0 && request.getAD_Process_ID() != adProcessId)
+		{
+			throw new IllegalArgumentException("Request's AD_Process_ID is not valid. It shall be " + adProcessId + " or none but it was " + request.getAD_Process_ID());
+		}
+
+		Check.assume(adProcessId > 0, "adProcessId > 0");
+
+		//
+		// Extract process where clause from view, in case the process was called from a view.
+		final String sqlWhereClause;
+		final String viewId = Strings.emptyToNull(request.getViewId());
+		DocumentPath viewSingleDocumentPath = null;
+		if (!Check.isEmpty(viewId))
+		{
+			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
+			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
+
+			if (viewDocumentIds.size() == 1)
+			{
+				final int view_AD_Window_ID = view.getAD_Window_ID();
+				final DocumentId view_singleDocumentId = viewDocumentIds.iterator().next();
+				viewSingleDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_singleDocumentId);
+			}
+		}
+		else
+		{
+			sqlWhereClause = null;
+		}
+
+		//
+		// Extract the (single) referenced document
+		final TableRecordReference documentRef;
+		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
+		if (singleDocumentPath != null)
+		{
+			documentRef = documentsCollection.getTableRecordReference(singleDocumentPath);
+		}
+		else if (viewSingleDocumentPath != null)
+		{
+			documentRef = documentsCollection.getTableRecordReference(viewSingleDocumentPath);
+		}
+		else
+		{
+			documentRef = null;
+		}
+
+		return ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setCreateTemporaryCtx()
+				.setAD_Process_ID(adProcessId)
+				.setRecord(documentRef)
+				.setWhereClause(sqlWhereClause)
+				//
+				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
+				//
+				.build();
+	}
+
 
 	private ProcessInstance retrieveProcessInstance(final DocumentId adPInstanceId)
 	{
@@ -144,11 +222,17 @@ public class ProcessInstancesRepository
 		return new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
 	}
 
-	public ProcessInstance getProcessInstanceForReading(final int pinstanceIdAsInt)
+	public <R> R forProcessInstanceReadonly(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
 	{
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
+		
 		try
 		{
-			return processInstances.get(DocumentId.of(pinstanceIdAsInt));
+			try (final IAutoCloseable readLock = processInstances.get(pinstanceId).lockForReading())
+			{
+				final ProcessInstance processInstance = processInstances.get(pinstanceId);
+				return processor.apply(processInstance);
+			}
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)
 		{
@@ -156,12 +240,24 @@ public class ProcessInstancesRepository
 		}
 	}
 
-	public ProcessInstance getProcessInstanceForWriting(final int pinstanceIdAsInt)
+	public <R> R forProcessInstanceWritable(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
 	{
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
+		
 		try
 		{
-			return processInstances.get(DocumentId.of(pinstanceIdAsInt))
-					.copy(CopyMode.CheckOutWritable);
+			try (final IAutoCloseable writeLock = processInstances.get(pinstanceId).lockForWriting())
+			{
+				final ProcessInstance processInstance = processInstances.get(pinstanceId).copy(CopyMode.CheckOutWritable);
+				
+				final R result = processor.apply(processInstance);
+				
+				// Actually put it back
+				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
+				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
+				
+				return result;
+			}
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)
 		{

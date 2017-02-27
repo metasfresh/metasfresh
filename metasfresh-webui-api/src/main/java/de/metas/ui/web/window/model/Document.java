@@ -24,7 +24,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -126,7 +125,7 @@ public final class Document
 	//
 	// Parent & children
 	private final Document _parentDocument;
-	private final Map<DetailId, IncludedDocumentsCollection> includedDocuments;
+	private final Map<DetailId, IIncludedDocumentsCollection> includedDocuments;
 
 	//
 	// Evaluatee
@@ -195,11 +194,11 @@ public final class Document
 		//
 		// Create included documents containers
 		{
-			final ImmutableMap.Builder<DetailId, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			final ImmutableMap.Builder<DetailId, IIncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
 			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
 			{
 				final DetailId detailId = includedEntityDescriptor.getDetailId();
-				final IncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
+				final IIncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
 				includedDocuments.put(detailId, includedDocumentsForDetailId);
 			}
 			this.includedDocuments = includedDocuments.build();
@@ -293,12 +292,12 @@ public final class Document
 		//
 		// Copy included documents containers
 		{
-			final ImmutableMap.Builder<DetailId, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
-			for (final Map.Entry<DetailId, IncludedDocumentsCollection> e : from.includedDocuments.entrySet())
+			final ImmutableMap.Builder<DetailId, IIncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			for (final Map.Entry<DetailId, IIncludedDocumentsCollection> e : from.includedDocuments.entrySet())
 			{
 				final DetailId detailId = e.getKey();
-				final IncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
-				final IncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this, copyMode);
+				final IIncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
+				final IIncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this, copyMode);
 
 				includedDocuments.put(detailId, includedDocumentsForDetailIdCopy);
 			}
@@ -517,7 +516,7 @@ public final class Document
 		private final Properties ctx;
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
-		private final Evaluatee evaluatee;
+		private final IDocumentEvaluatee _evaluatee;
 		private final DocumentId parentDocumentId;
 
 		private InitialFieldValueSupplier(final Document document, final DocumentValuesSupplier parentSupplier)
@@ -531,7 +530,7 @@ public final class Document
 			documentType = entityDescriptor.getDocumentType();
 			documentTypeId = entityDescriptor.getDocumentTypeId();
 
-			evaluatee = document.asEvaluatee();
+			_evaluatee = document.asEvaluatee();
 
 			final Document parentDocument = document.getParentDocument();
 			parentDocumentId = parentDocument == null ? null : parentDocument.getDocumentId();
@@ -543,7 +542,7 @@ public final class Document
 			return MoreObjects.toStringHelper(this)
 					.add("type", documentType)
 					.add("typeId", documentTypeId)
-					.add("evaluatee", evaluatee)
+					.add("evaluatee", _evaluatee)
 					.toString();
 		}
 
@@ -557,6 +556,15 @@ public final class Document
 		public String getVersion()
 		{
 			return parentSupplier.getVersion();
+		}
+		
+		private final IDocumentEvaluatee getEvaluatee(final DocumentFieldDescriptor fieldInScope)
+		{
+			if (fieldInScope == null)
+			{
+				return _evaluatee;
+			}
+			return _evaluatee.fieldInScope(fieldInScope.getFieldName());
 		}
 
 		@Override
@@ -595,7 +603,8 @@ public final class Document
 			final IExpression<?> defaultValueExpression = fieldDescriptor.getDefaultValueExpression().orElse(null);
 			if (defaultValueExpression != null)
 			{
-				final Object value = defaultValueExpression.evaluate(evaluatee, OnVariableNotFound.Fail);
+				final IDocumentEvaluatee evaluateeEffective = getEvaluatee(fieldDescriptor);
+				final Object value = defaultValueExpression.evaluate(evaluateeEffective, OnVariableNotFound.Fail);
 
 				if (value != null
 						&& String.class.equals(defaultValueExpression.getValueClass())
@@ -946,7 +955,7 @@ public final class Document
 		}
 		return _evaluatee;
 	}
-
+	
 	/**
 	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
 	 *
@@ -1028,7 +1037,7 @@ public final class Document
 		// Refresh it
 		// and also mark all included documents as stale because it might be that processing add/removed/changed some data in included documents too
 		refreshFromRepository();
-		for (final IncludedDocumentsCollection includedDocumentsPerDetail : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsPerDetail : includedDocuments.values())
 		{
 			includedDocumentsPerDetail.markStaleAll();
 		}
@@ -1076,7 +1085,7 @@ public final class Document
 
 			// Skip button callouts because it's expected to execute those callouts ONLY when the button is pressed
 			final DocumentFieldWidgetType widgetType = documentField.getWidgetType();
-			if (widgetType == DocumentFieldWidgetType.Button || widgetType == DocumentFieldWidgetType.ActionButton)
+			if (widgetType.isButton())
 			{
 				return null;
 			}
@@ -1245,13 +1254,13 @@ public final class Document
 
 	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);
 	}
 
 	public List<Document> getIncludedDocuments(final DetailId detailId)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments();
 	}
 
@@ -1260,10 +1269,10 @@ public final class Document
 		getIncludedDocumentsCollection(detailId).assertNewDocumentAllowed();
 	}
 
-	/* package */IncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
+	/* package */IIncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
 	{
 		Check.assumeNotNull(detailId, "Parameter detailId is not null");
-		final IncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
+		final IIncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
 		if (includedDocumentsForDetailId == null)
 		{
 			throw new IllegalArgumentException("detailId '" + detailId + "' not found for " + this);
@@ -1273,13 +1282,13 @@ public final class Document
 
 	/* package */ Document createIncludedDocument(final DetailId detailId)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.createNewDocument();
 	}
 
 	/* package */ void deleteIncludedDocuments(final DetailId detailId, final Set<DocumentId> rowIds)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		includedDocuments.deleteDocuments(rowIds);
 	}
 
@@ -1401,7 +1410,7 @@ public final class Document
 
 		//
 		// Check included documents
-		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
 			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus();
 			if (!validState.isValid())
@@ -1460,7 +1469,7 @@ public final class Document
 
 		//
 		// Check included documents
-		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
 			if (includedDocumentsPerDetailId.hasChangesRecursivelly())
 			{
@@ -1531,7 +1540,7 @@ public final class Document
 
 		//
 		// Try also saving the included documents
-		for (final IncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
 		{
 			includedDocumentsForDetailId.saveIfHasChanges();
 

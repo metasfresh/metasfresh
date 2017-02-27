@@ -243,7 +243,7 @@ public class DocumentCollection
 				.retriveDocumentOrNull();
 		if (document == null)
 		{
-			throw new DocumentNotFoundException(documentKey);
+			throw new DocumentNotFoundException(documentKey.getDocumentPath());
 		}
 
 		return document;
@@ -253,6 +253,7 @@ public class DocumentCollection
 	{
 		// TODO: invalidate only those which are: 1. NOW new; 2. NOT currently editing
 		documents.invalidateAll();
+		documents.cleanUp();
 	}
 
 	public void commit(final Document document)
@@ -399,6 +400,11 @@ public class DocumentCollection
 		public DocumentId getDocumentId()
 		{
 			return documentId;
+		}
+		
+		public DocumentPath getDocumentPath()
+		{
+			return DocumentPath.rootDocumentPath(documentType, documentTypeId, documentId);
 		}
 	} // DocumentKey
 }

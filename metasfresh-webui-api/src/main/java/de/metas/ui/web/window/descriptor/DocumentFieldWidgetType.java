@@ -70,6 +70,7 @@ public enum DocumentFieldWidgetType
 	// Buttons
 	, Button(LayoutAlign.Left, null) //
 	, ActionButton(LayoutAlign.Left, null) //
+	, ProcessButton(LayoutAlign.Left, String.class) //
 
 	//
 	;
@@ -121,6 +122,11 @@ public enum DocumentFieldWidgetType
 	public final boolean isText()
 	{
 		return this == Text || this == LongText;
+	}
+	
+	public final boolean isButton()
+	{
+		return this == Button || this == ActionButton || this == ProcessButton;
 	}
 
 	/**

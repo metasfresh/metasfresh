@@ -1,6 +1,14 @@
 package de.metas.ui.web.view.event;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.adempiere.util.Check;
+
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -15,11 +23,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +38,7 @@ public class DocumentViewChanges
 	private final int adWindowId;
 
 	private boolean fullyChanged;
+	private Set<DocumentId> changedDocumentIds = null;
 
 	/* package */ DocumentViewChanges(final String viewId, final int adWindowId)
 	{
@@ -44,6 +53,15 @@ public class DocumentViewChanges
 		{
 			fullyChanged = true;
 		}
+
+		if (changes.changedDocumentIds != null && !changes.changedDocumentIds.isEmpty())
+		{
+			if (changedDocumentIds == null)
+			{
+				changedDocumentIds = new HashSet<>();
+			}
+			changedDocumentIds.addAll(changes.changedDocumentIds);
+		}
 	}
 
 	@Override
@@ -54,6 +72,7 @@ public class DocumentViewChanges
 				.add("viewId", viewId)
 				.add("AD_Window_ID", adWindowId)
 				.add("fullyChanged", fullyChanged ? Boolean.TRUE : null)
+				.add("changedDocumentIds", changedDocumentIds)
 				.toString();
 	}
 
@@ -77,8 +96,24 @@ public class DocumentViewChanges
 		return fullyChanged;
 	}
 
-	public Boolean getFullyChanged()
+	public void addChangedDocumentId(final DocumentId documentId)
 	{
-		return fullyChanged ? Boolean.TRUE : null;
+		Check.assumeNotNull(documentId, "Parameter documentId is not null");
+
+		if (changedDocumentIds == null)
+		{
+			changedDocumentIds = new HashSet<>();
+		}
+		changedDocumentIds.add(documentId);
+	}
+
+	public boolean hasChangedDocumentIds()
+	{
+		return changedDocumentIds != null && !changedDocumentIds.isEmpty();
+	}
+
+	public Set<DocumentId> getChangedDocumentIds()
+	{
+		return changedDocumentIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(changedDocumentIds);
 	}
 }

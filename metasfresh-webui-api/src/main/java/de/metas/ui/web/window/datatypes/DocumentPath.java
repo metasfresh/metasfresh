@@ -30,11 +30,11 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -95,7 +95,7 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
-	
+
 	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 	{
 		if (documentId == null || documentId.isNew())
@@ -105,7 +105,6 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
-
 
 	public static final List<DocumentPath> rootDocumentPathsList(final DocumentType documentType, final int documentTypeId, final String documentIdsListStr)
 	{
@@ -155,7 +154,7 @@ public final class DocumentPath
 
 	/**
 	 * Creates the path of a single document (root document or included document).
-	 * 
+	 *
 	 * @param adWindowId
 	 * @param idStr
 	 * @param detailId
@@ -189,7 +188,7 @@ public final class DocumentPath
 
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
 		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
-		
+
 		this.documentType = documentType;
 		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
@@ -206,7 +205,7 @@ public final class DocumentPath
 
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
 		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
-		
+
 		this.documentType = documentType;
 		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
@@ -238,7 +237,7 @@ public final class DocumentPath
 
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
 		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
-		
+
 		this.documentType = documentType;
 		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
@@ -412,22 +411,59 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
 	}
-	
+
 	public DocumentPath createChildPath(final DetailId detailId, final DocumentId rowId)
 	{
 		if (detailId == null)
 		{
 			throw new IllegalArgumentException("detailId must be not empty");
 		}
-		
+
 		if (rowId == null || rowId.isNew())
 		{
 			throw new IllegalArgumentException("new or null rowId is not accepted: " + rowId);
 		}
-		
+
 		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
 	}
 
+	public DocumentPath getRootDocumentPath()
+	{
+		if(isRootDocument())
+		{
+			return this;
+		}
+		return rootDocumentPath(documentType, documentTypeId, documentId);
+	}
+	
+	public DocumentPath withDocumentId(final DocumentId id)
+	{
+		if (isRootDocument())
+		{
+			final DocumentId rootDocumentIdNew = id;
+			if (Objects.equals(this.documentId, rootDocumentIdNew))
+			{
+				return this;
+			}
+			else
+			{
+				return new DocumentPath(documentType, documentTypeId, rootDocumentIdNew);
+			}
+		}
+		else
+		{
+			final DocumentId rowIdNew = id;
+			final DocumentId rowId = getSingleRowId();
+			if (Objects.equals(rowId, rowIdNew))
+			{
+				return this;
+			}
+			else
+			{
+				return new DocumentPath(documentType, documentTypeId, this.documentId, detailId, rowIdNew);
+			}
+		}
+	}
 
 	public static final class Builder
 	{
@@ -514,7 +550,7 @@ public final class DocumentPath
 			}
 
 			this.documentType = DocumentType.Window;
-			this.documentTypeId = DocumentId.of(documentTypeIdInt);
+			documentTypeId = DocumentId.of(documentTypeIdInt);
 			return this;
 		}
 
@@ -532,7 +568,7 @@ public final class DocumentPath
 
 		public Builder setDetailId(final String detailIdStr)
 		{
-			this.detailId = DetailId.fromJson(detailIdStr);
+			detailId = DetailId.fromJson(detailIdStr);
 			return this;
 		}
 

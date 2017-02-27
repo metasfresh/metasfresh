@@ -21,6 +21,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
@@ -39,6 +40,7 @@ import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFieldValueLoader;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
+import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -66,11 +68,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -216,6 +218,18 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
+	public int getQueryLimit()
+	{
+		return defaultSelection.getQueryLimit();
+	}
+	
+	@Override
+	public boolean isQueryLimitHit()
+	{
+		return defaultSelection.isQueryLimitHit();
+	}
+
+	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
 		return stickyFilters;
@@ -264,7 +278,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		final String uuid = orderedSelection.getUuid();
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
-		final int lastSeqNo = firstRow + pageLength - 1;
+		final int lastSeqNo = firstRow + pageLength;
 
 		final Object[] sqlParams = new Object[] { uuid, firstSeqNo, lastSeqNo };
 		PreparedStatement pstmt = null;
@@ -297,7 +311,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				cache_documentViewsById.put(documentView.getDocumentId(), documentView);
 			}
 
-			return DocumentViewResult.of(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
+			return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
 		}
 		catch (final SQLException | DBException e)
 		{
@@ -386,9 +400,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return defaultSelection;
 		}
 
-		final String fromUUID = defaultSelection.getUuid();
 		final ImmutableList<DocumentQueryOrderBy> orderBysImmutable = ImmutableList.copyOf(orderBys);
-		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromViewId(fromUUID, orderBysImmutable));
+		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
 	}
 
 	private final DocumentView.Builder newDocumentViewBuilder()
@@ -497,6 +510,19 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))
 				.create()
 				.list(modelClass);
+	}
+
+	@Override
+	public void notifyRecordChanged(final TableRecordReference recordRef)
+	{
+		if (!Objects.equals(getTableName(), recordRef.getTableName()))
+		{
+			return;
+		}
+
+		final DocumentId documentId = DocumentId.of(recordRef.getRecord_ID());
+		DocumentViewChangesCollector.getCurrentOrAutoflush()
+				.collectDocumentChanged(this, documentId);
 	}
 
 	//
@@ -700,6 +726,5 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			Check.assumeNotNull(documentReferencesService, "Parameter documentReferencesService is not null");
 			return documentReferencesService;
 		}
-
 	}
 }

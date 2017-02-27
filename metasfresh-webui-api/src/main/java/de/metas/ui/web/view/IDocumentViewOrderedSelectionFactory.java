@@ -28,5 +28,5 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 public interface IDocumentViewOrderedSelectionFactory
 {
-	DocumentViewOrderedSelection createFromViewId(String fromUUID, List<DocumentQueryOrderBy> orderBys);
+	DocumentViewOrderedSelection createFromView(DocumentViewOrderedSelection fromView, List<DocumentQueryOrderBy> orderBys);
 }

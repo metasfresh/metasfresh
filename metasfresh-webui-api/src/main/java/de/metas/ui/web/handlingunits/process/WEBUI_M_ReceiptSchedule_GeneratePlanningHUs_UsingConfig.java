@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -17,7 +18,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
@@ -82,10 +82,21 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 
 	private static void adjustLUs(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_ReceiptSchedule fromReceiptSchedule)
 	{
-		final BigDecimal qtyToReceiveTU = Services.get(IReceiptScheduleBL.class).getQtyToMove(fromReceiptSchedule);
-
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyToReceiveTU);
+		final BigDecimal totalQtyTU = InterfaceWrapperHelper.create(fromReceiptSchedule.getC_OrderLine(), I_C_OrderLine.class).getQtyEnteredTU();
+		final BigDecimal receivedQtyTU = fromReceiptSchedule.getQtyMovedTU();
+		final BigDecimal toReceiveQtyTU = totalQtyTU.subtract(receivedQtyTU);
+		
+		final int qtyLU;
+		if(toReceiveQtyTU.signum() <= 0)
+		{
+			qtyLU = 0;
+		}
+		else
+		{
+			final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+			qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, toReceiveQtyTU);
+		}
+		
 		lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyLU));
 	}
 

@@ -79,6 +79,9 @@ public final class HUDocumentView implements IDocumentView
 		return delegate.getDocumentId();
 	}
 
+	/**
+	 * @return {@link HUDocumentViewType}; never returns null.
+	 */
 	@Override
 	public HUDocumentViewType getType()
 	{
@@ -154,6 +157,11 @@ public final class HUDocumentView implements IDocumentView
 	public boolean isHUStatusPlanning()
 	{
 		return X_M_HU.HUSTATUS_Planning.equals(getHUStatus());
+	}
+	
+	public boolean isHUStatusActive()
+	{
+		return X_M_HU.HUSTATUS_Active.equals(getHUStatus());
 	}
 
 	public boolean isPureHU()

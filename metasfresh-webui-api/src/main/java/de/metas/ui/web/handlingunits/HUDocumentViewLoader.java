@@ -133,7 +133,6 @@ public class HUDocumentViewLoader
 	private HUDocumentView createDocumentView(final I_M_HU hu)
 	{
 		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
-
 		final String huUnitTypeDisplayName;
 		final HUDocumentViewType huRecordType;
 		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
@@ -149,9 +148,7 @@ public class HUDocumentViewLoader
 		}
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
-		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), I_WEBUI_HU_View.HUSTATUS_AD_Reference_ID, huStatusKey);
-		final JSONLookupValue huStatus = JSONLookupValue.of(huStatusKey, huStatusDisplayName);
+		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 		final boolean processed = extractProcessed(hu);
 
 		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
@@ -172,8 +169,8 @@ public class HUDocumentViewLoader
 		if (singleProductStorage != null)
 		{
 			huViewRecord
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createLookupValue(singleProductStorage.getM_Product()))
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createLookupValue(singleProductStorage.getC_UOM()))
+					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(singleProductStorage.getM_Product()))
+					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(singleProductStorage.getC_UOM()))
 					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, singleProductStorage.getQty());
 		}
 
@@ -237,7 +234,7 @@ public class HUDocumentViewLoader
 			return false;
 		}
 	}
-
+	
 	private Stream<HUDocumentView> streamProductStorageDocumentViews(final I_M_HU hu, final boolean processed)
 	{
 		return Services.get(IHandlingUnitsBL.class).getStorageFactory()
@@ -268,6 +265,7 @@ public class HUDocumentViewLoader
 		final I_M_Product product = huStorage.getM_Product();
 
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
+		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 
 		final DocumentView storageDocument = DocumentView.builder(adWindowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + hu.getM_HU_ID() + "_" + product.getM_Product_ID()))
@@ -278,16 +276,24 @@ public class HUDocumentViewLoader
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				// .putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue()) // NOTE: don't show value on storage level
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createLookupValue(product))
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createLookupValue(huStorage.getC_UOM()))
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(product))
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(huStorage.getC_UOM()))
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty())
 				//
 				.build();
 		return HUDocumentView.of(storageDocument);
 	}
 
-	private JSONLookupValue createLookupValue(final I_M_Product product)
+	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
+	{
+		final String huStatusKey = hu.getHUStatus();
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), I_WEBUI_HU_View.HUSTATUS_AD_Reference_ID, huStatusKey);
+		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
+	}
+
+	private static JSONLookupValue createProductLookupValue(final I_M_Product product)
 	{
 		if (product == null)
 		{
@@ -298,7 +304,7 @@ public class HUDocumentViewLoader
 		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
 	}
 
-	private JSONLookupValue createLookupValue(final I_C_UOM uom)
+	private static JSONLookupValue createUOMLookupValue(final I_C_UOM uom)
 	{
 		if (uom == null)
 		{

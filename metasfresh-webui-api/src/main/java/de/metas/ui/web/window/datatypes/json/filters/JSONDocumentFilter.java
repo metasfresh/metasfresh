@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -32,17 +35,18 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @SuppressWarnings("serial")
-public class JSONDocumentFilter implements Serializable
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+public final class JSONDocumentFilter implements Serializable
 {
 	public static List<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
 	{
@@ -178,9 +182,10 @@ public class JSONDocumentFilter implements Serializable
 			, @JsonProperty("parameters") final List<JSONDocumentFilterParam> parameters //
 	)
 	{
-		super();
+		Check.assumeNotEmpty(filterId, "filterId is not empty");
+		
 		this.filterId = filterId;
-		this.parameters = parameters;
+		this.parameters = parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
 	}
 
 	@Override

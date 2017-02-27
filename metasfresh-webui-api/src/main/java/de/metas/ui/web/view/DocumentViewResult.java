@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.util.Check;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -23,11 +25,11 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,7 +37,10 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
 @Immutable
 public final class DocumentViewResult
 {
-	public static DocumentViewResult of(
+	/**
+	 * Creates a view result having given loaded page
+	 */
+	public static DocumentViewResult ofViewAndPage(
 			final IDocumentViewSelection view //
 			, final int firstRow //
 			, final int pageLength //
@@ -43,16 +48,16 @@ public final class DocumentViewResult
 			, final List<IDocumentView> page //
 	)
 	{
+		Check.assumeNotNull(page, "Parameter page is not null");
 		return new DocumentViewResult(view, firstRow, pageLength, orderBys, page);
 	}
 
-	public static DocumentViewResult of(final IDocumentViewSelection view)
+	/**
+	 * Creates a view result without any loaded page.
+	 */
+	public static DocumentViewResult ofView(final IDocumentViewSelection view)
 	{
-		final int firstRow = 0;
-		final int pageLength = 0;
-		final List<DocumentQueryOrderBy> orderBys = view.getDefaultOrderBys();
-		final List<IDocumentView> page = ImmutableList.of();
-		return new DocumentViewResult(view, firstRow, pageLength, orderBys, page);
+		return new DocumentViewResult(view);
 	}
 
 	private final IDocumentViewSelection view;
@@ -62,6 +67,7 @@ public final class DocumentViewResult
 	private final List<DocumentQueryOrderBy> orderBys;
 	private final List<IDocumentView> page;
 
+	/** View and loaded page constructor */
 	private DocumentViewResult(
 			final IDocumentViewSelection view //
 			, final int firstRow //
@@ -72,23 +78,47 @@ public final class DocumentViewResult
 	{
 		super();
 		this.view = view;
+		filters = ImmutableList.copyOf(view.getFilters());
+		this.orderBys = ImmutableList.copyOf(orderBys);
+
+		//
+		// Page
+		this.page = ImmutableList.copyOf(page);
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
-		this.filters = ImmutableList.copyOf(view.getFilters());
-		this.orderBys = ImmutableList.copyOf(orderBys);
-		this.page = ImmutableList.copyOf(page);
+	}
+
+	/** View (WITHOUT loaded page) constructor */
+	private DocumentViewResult(final IDocumentViewSelection view)
+	{
+		super();
+		this.view = view;
+		filters = ImmutableList.copyOf(view.getFilters());
+		orderBys = view.getDefaultOrderBys();
+
+		//
+		// Page
+		page = null;
+		firstRow = 0;
+		pageLength = 0;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				//
+				// View info
 				.add("view", view)
-				.add("firstRow", firstRow)
-				.add("pageLength", pageLength)
 				.add("filters", filters)
 				.add("orderBys", orderBys)
+				//
+				// Page info
+				.add("firstRow", firstRow)
+				.add("pageLength", pageLength)
 				.add("page", page)
+				//
 				.toString();
 	}
 
@@ -106,7 +136,7 @@ public final class DocumentViewResult
 	{
 		return pageLength;
 	}
-	
+
 	public List<DocumentFilter> getFilters()
 	{
 		return filters;
@@ -117,8 +147,31 @@ public final class DocumentViewResult
 		return orderBys;
 	}
 
+	public boolean isPageLoaded()
+	{
+		return page != null;
+	}
+
+	/**
+	 * @return loaded page
+	 * @throws IllegalStateException if the page is not loaded, see {@link #isPageLoaded()}
+	 */
 	public List<IDocumentView> getPage()
 	{
+		if (page == null)
+		{
+			throw new IllegalStateException("page not loaded for " + this);
+		}
 		return page;
+	}
+	
+	public int getQueryLimit()
+	{
+		return view.getQueryLimit();
+	}
+	
+	public boolean isQueryLimitHit()
+	{
+		return view.isQueryLimitHit();
 	}
 }

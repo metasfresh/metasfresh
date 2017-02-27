@@ -1,6 +1,10 @@
 package de.metas.ui.web.window.model;
 
-import org.compiere.util.Evaluatee;
+import java.util.List;
+import java.util.Set;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.model.Document.CopyMode;
 
 /*
  * #%L
@@ -24,17 +28,27 @@ import org.compiere.util.Evaluatee;
  * #L%
  */
 
-public interface IDocumentEvaluatee extends Evaluatee
+/* package */interface IIncludedDocumentsCollection
 {
+	IIncludedDocumentsCollection copy(Document parentDocumentCopy, CopyMode copyMode);
 
-	/**
-	 * Creates a new evaluatee which has given field in scope.
-	 * 
-	 * The field in scope is the field for whom we actually do the evaluation.
-	 * Documents will not be asked for a field value it the field is in scope.
-	 * 
-	 * @param fieldNameInScope
-	 * @return new evaluatee instance which has the given field in scope
-	 */
-	IDocumentEvaluatee fieldInScope(String fieldNameInScope);
+	List<Document> getDocuments();
+
+	Document getDocumentById(DocumentId documentId);
+
+	void assertNewDocumentAllowed();
+
+	Document createNewDocument();
+
+	void deleteDocuments(Set<DocumentId> documentIds);
+
+	DocumentValidStatus checkAndGetValidStatus();
+
+	boolean hasChangesRecursivelly();
+
+	void saveIfHasChanges();
+
+	void markStaleAll();
+
+	int getNextLineNo();
 }

@@ -16,7 +16,6 @@ import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -61,8 +60,8 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		final DocumentViewLayout huViewLayout = layouts.getOrLoad(adWindowId, () -> createHUViewLayout(adWindowId));
 
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(adWindowId);
-		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
+		// final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(adWindowId);
+		final Collection<DocumentFilterDescriptor> filters = null; // filters are not supported yet
 
 		return JSONDocumentViewLayout.of(huViewLayout, filters, jsonOpts);
 	}

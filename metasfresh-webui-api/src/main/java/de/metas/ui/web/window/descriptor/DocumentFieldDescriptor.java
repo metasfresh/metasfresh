@@ -572,6 +572,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
 
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
+		
+		private int buttonProcessId = -1;
 
 		private Builder(final String fieldName)
 		{
@@ -1151,6 +1153,16 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return callouts;
 		}
-
+		
+		public Builder setButtonProcessId(final int buttonProcessId)
+		{
+			this.buttonProcessId = buttonProcessId;
+			return this;
+		}
+		
+		public int getButtonProcessId()
+		{
+			return buttonProcessId;
+		}
 	}
 }

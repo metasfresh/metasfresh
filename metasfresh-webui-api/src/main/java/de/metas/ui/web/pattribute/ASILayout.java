@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 
 /*
@@ -42,7 +43,7 @@ public class ASILayout
 		return new Builder();
 	}
 
-	private final int M_AttributeSet_ID;
+	private final DocumentId asiDescriptorId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
@@ -51,7 +52,7 @@ public class ASILayout
 	private ASILayout(final Builder builder)
 	{
 		super();
-		M_AttributeSet_ID = builder.M_AttributeSet_ID;
+		asiDescriptorId = builder.asiDescriptorId;
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
 		elements = ImmutableList.copyOf(builder.buildElements());
@@ -62,15 +63,15 @@ public class ASILayout
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("M_AttributeSet_ID", M_AttributeSet_ID)
+				.add("asiDescriptorId", asiDescriptorId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
 	
-	public int getM_AttributeSet_ID()
+	public DocumentId getASIDescriptorId()
 	{
-		return M_AttributeSet_ID;
+		return asiDescriptorId;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -90,7 +91,7 @@ public class ASILayout
 
 	public static final class Builder
 	{
-		public Integer M_AttributeSet_ID;
+		public DocumentId asiDescriptorId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
@@ -118,15 +119,15 @@ public class ASILayout
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("M_AttributeSet_ID", M_AttributeSet_ID)
+					.add("asiDescriptorId", asiDescriptorId)
 					.add("caption", caption)
 					.add("elements-count", elementBuilders.size())
 					.toString();
 		}
 
-		public Builder setM_AttributeSet_ID(final int M_AttributeSet_ID)
+		public Builder setASIDescriptorId(final DocumentId asiDescriptorId)
 		{
-			this.M_AttributeSet_ID = M_AttributeSet_ID;
+			this.asiDescriptorId = asiDescriptorId;
 			return this;
 		}
 

@@ -95,7 +95,7 @@ public final class DocumentQuery
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("tableName", entityDescriptor.getTableName())
+				.add("tableName", entityDescriptor.getTableNameOrNull())
 				.add("recordId", recordId)
 				.add("parentDocument", parentDocument)
 				.add("filters", filters.isEmpty() ? null : filters)

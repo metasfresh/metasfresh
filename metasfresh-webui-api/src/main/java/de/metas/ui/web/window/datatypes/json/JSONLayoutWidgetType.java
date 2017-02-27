@@ -45,7 +45,7 @@ public enum JSONLayoutWidgetType
 
 	, Image
 
-	, Button, ActionButton
+	, Button, ActionButton, ProcessButton
 	//
 	;
 
@@ -83,6 +83,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.Image, JSONLayoutWidgetType.Image)
 			.put(DocumentFieldWidgetType.Button, JSONLayoutWidgetType.Button)
 			.put(DocumentFieldWidgetType.ActionButton, JSONLayoutWidgetType.ActionButton)
+			.put(DocumentFieldWidgetType.ProcessButton, JSONLayoutWidgetType.ProcessButton)
 			.build();
 
 }

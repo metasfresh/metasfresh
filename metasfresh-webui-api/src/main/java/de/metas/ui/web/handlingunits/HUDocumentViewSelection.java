@@ -14,6 +14,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -116,6 +117,18 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 	}
+	
+	@Override
+	public int getQueryLimit()
+	{
+		return -1;
+	}
+	
+	@Override
+	public boolean isQueryLimitHit()
+	{
+		return false;
+	}
 
 	@Override
 	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
@@ -132,7 +145,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 		final List<IDocumentView> page = stream.collect(GuavaCollectors.toImmutableList());
 
-		return DocumentViewResult.of(this, firstRow, pageLength, orderBys, page);
+		return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
 	}
 
 	private static final Comparator<HUDocumentView> createComparatorOrNull(final List<DocumentQueryOrderBy> orderBys)
@@ -202,7 +215,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
 		final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds);
 
-		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIdsAsInts) + ")";
+		return I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(viewDocumentIdsAsInts);
 	}
 
 	@Override
@@ -222,7 +235,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return referencingDocumentPath;
 	}
-	
+
 	public String getReferencingTableName()
 	{
 		return referencingTableName;
@@ -242,9 +255,37 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader.getAttributesProvider().invalidateAll();
 	}
 
+	@Override
+	public void notifyRecordChanged(final TableRecordReference recordRef)
+	{
+		if (!I_M_HU.Table_Name.equals(recordRef.getTableName()))
+		{
+			return;
+		}
+
+		final IndexedDocumentViews records = getRecordsNoLoad();
+		if (records == null)
+		{
+			return;
+		}
+
+		final DocumentId documentId = DocumentId.of(recordRef.getRecord_ID());
+		if (!records.contains(documentId))
+		{
+			return;
+		}
+
+		invalidateAll();
+	}
+
 	private IndexedDocumentViews getRecords()
 	{
 		return _recordsSupplier.get();
+	}
+
+	private IndexedDocumentViews getRecordsNoLoad()
+	{
+		return _recordsSupplier.peek();
 	}
 
 	private IndexedDocumentViews retrieveRecords()
@@ -275,6 +316,11 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 				throw new EntityNotFoundException("No document found for documentId=" + documentId);
 			}
 			return record;
+		}
+
+		public boolean contains(final DocumentId documentId)
+		{
+			return allRecordsById.containsKey(documentId);
 		}
 
 		public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)

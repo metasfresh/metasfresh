@@ -3,9 +3,9 @@ package de.metas.ui.web.window.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,11 +41,11 @@ import de.metas.ui.web.window.descriptor.DetailId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -56,18 +56,47 @@ import de.metas.ui.web.window.descriptor.DetailId;
 
 	private final Document _document;
 
+	//
+	// Scope
+	private final String _fieldNameInScope;
+
 	/* package */ DocumentEvaluatee(@NotNull final Document document)
+	{
+		_document = document; // note: we assume it's not null
+		_fieldNameInScope = null;
+	}
+
+	private DocumentEvaluatee(@NotNull final Document document, final String fieldNameInScope)
 	{
 		super();
 		_document = document; // note: we assume it's not null
+		_fieldNameInScope = fieldNameInScope; // null is also ok
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("fieldInScope", _fieldNameInScope)
 				.addValue(_document)
 				.toString();
+	}
+
+	@Override
+	public IDocumentEvaluatee fieldInScope(final String fieldNameInScope)
+	{
+		if (isFieldInScope(fieldNameInScope))
+		{
+			return this;
+		}
+
+		return new DocumentEvaluatee(_document, fieldNameInScope);
+	}
+
+	private final boolean isFieldInScope(final String fieldName)
+	{
+		return Objects.equals(_fieldNameInScope, fieldName);
 	}
 
 	private Properties getCtx()
@@ -89,11 +118,6 @@ import de.metas.ui.web.window.descriptor.DetailId;
 	private final IDocumentFieldView getDocumentFieldOrNull(final String name)
 	{
 		return _document.getFieldViewOrNull(name);
-	}
-
-	private final Set<String> getAvailableFieldNames()
-	{
-		return _document.getFieldNames();
 	}
 
 	@Override
@@ -171,7 +195,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 
 		return valueObj == null ? defaultValue : convertToBigDecimal(variableName, valueObj);
 	}
-	
+
 	@Override
 	public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
 	{
@@ -183,23 +207,26 @@ import de.metas.ui.web.window.descriptor.DetailId;
 		if (WindowConstants.CONTEXTVAR_NextLineNo.equals(variableName))
 		{
 			final Document parentDocument = _document.getParentDocument();
-			if(parentDocument != null)
+			if (parentDocument != null)
 			{
 				final DetailId detailId = _document.getEntityDescriptor().getDetailId();
 				final int nextLineNo = parentDocument.getIncludedDocumentsCollection(detailId).getNextLineNo();
 				return Optional.of(nextLineNo);
 			}
 		}
-		
-		if(IValidationContext.PARAMETER_ContextTableName.equals(variableName))
+
+		if (IValidationContext.PARAMETER_ContextTableName.equals(variableName))
 		{
 			return Optional.of(_document.getEntityDescriptor().getTableName());
 		}
 
 		//
-		// Check global context variable
+		// Check global context variable if this is an explicit global variable
+		boolean globalContextChecked = false;
+		if (CtxName.isExplicitGlobal(variableName))
 		{
 			final Object value = getGlobalContext(variableName, targetType);
+			globalContextChecked = true;
 			if (value != null)
 			{
 				return Optional.of(value);
@@ -210,12 +237,21 @@ import de.metas.ui.web.window.descriptor.DetailId;
 		//
 		// Document field
 		final IDocumentFieldView documentField = getDocumentFieldOrNull(variableName);
+		boolean inScopeField = false;
 		if (documentField != null)
 		{
-			final Object documentFieldValue = documentField.getValue();
-			if (documentFieldValue != null)
+			inScopeField = isFieldInScope(documentField.getFieldName());
+			if (inScopeField)
 			{
-				return Optional.of(documentFieldValue);
+				logger.trace("Skip evaluation of {} because it's actually the field for whom we do the whole evaluation", documentField);
+			}
+			else
+			{
+				final Object documentFieldValue = documentField.getValue();
+				if (documentFieldValue != null)
+				{
+					return Optional.of(documentFieldValue);
+				}
 			}
 		}
 
@@ -233,13 +269,28 @@ import de.metas.ui.web.window.descriptor.DetailId;
 		//
 		// Check parent
 		final IDocumentEvaluatee parentEvaluatee = getParentEvaluateeOrNull();
-		boolean hasParentEvaluatee = parentEvaluatee != null;
+		final boolean hasParentEvaluatee = parentEvaluatee != null;
 		if (hasParentEvaluatee)
 		{
 			final Optional<Object> value = parentEvaluatee.get_ValueIfExists(variableName, targetType);
 			if (value.isPresent())
 			{
 				return value;
+			}
+		}
+
+		//
+		// If it's about the field in scope, try checking the global context
+		if (inScopeField)
+		{
+			if (!globalContextChecked)
+			{
+				final Object value = getGlobalContext(variableName, targetType);
+				globalContextChecked = true;
+				if (value != null)
+				{
+					return Optional.of(value);
+				}
 			}
 		}
 
@@ -268,10 +319,10 @@ import de.metas.ui.web.window.descriptor.DetailId;
 		// Value not found
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("Variable '{}' not found." //
-					+ "\n Existing properties are: {}" //
-					+ "\n Existing dyn attributes are: {}" //
-					, variableName, getAvailableFieldNames(), _document.getAvailableDynAttributes());
+			logger.trace("Variable '{}' not found.", variableName);
+			logger.trace("Existing properties are: {}", _document.getFieldNames());
+			logger.trace("Existing dyn attributes are: {}", _document.getAvailableDynAttributes());
+			logger.trace("Was field in scope: {} (fieldInScope={})", inScopeField, _fieldNameInScope);
 		}
 		return Optional.empty();
 	}
@@ -289,18 +340,14 @@ import de.metas.ui.web.window.descriptor.DetailId;
 	}
 
 	/**
+	 * Gets variable's value from global context.
 	 *
 	 * @param variableName
 	 * @param targetType
 	 * @return value or <code>null</code> if does not apply
 	 */
-	private Object getGlobalContext(final String variableName, final Class<?> targetType)
+	private final Object getGlobalContext(final String variableName, final Class<?> targetType)
 	{
-		if (!CtxName.isExplicitGlobal(variableName))
-		{
-			return null;
-		}
-
 		if (Integer.class.equals(targetType))
 		{
 			return Env.getContextAsInt(getCtx(), variableName);

@@ -111,7 +111,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		}
 	}
 
-	private final boolean isExcludeFromLogging(final Exception ex)
+	private final boolean isExcludeFromLogging(final Throwable ex)
 	{
 		for (final Class<?> exceptionClass : EXCEPTIONS_ExcludeFromLogging)
 		{
@@ -167,7 +167,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			}
 			errorAttributes.put(ATTR_Exception, error.getClass().getName());
 			addErrorMessage(errorAttributes, error);
-			if (includeStackTrace)
+			if (includeStackTrace && !isExcludeFromLogging(error))
 			{
 				addStackTrace(errorAttributes, error);
 			}

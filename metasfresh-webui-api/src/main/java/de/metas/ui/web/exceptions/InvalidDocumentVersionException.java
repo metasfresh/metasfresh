@@ -1,6 +1,6 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.exceptions;
 
-import org.compiere.util.Evaluatee;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -24,17 +24,11 @@ import org.compiere.util.Evaluatee;
  * #L%
  */
 
-public interface IDocumentEvaluatee extends Evaluatee
+@SuppressWarnings("serial")
+public class InvalidDocumentVersionException extends AdempiereException
 {
-
-	/**
-	 * Creates a new evaluatee which has given field in scope.
-	 * 
-	 * The field in scope is the field for whom we actually do the evaluation.
-	 * Documents will not be asked for a field value it the field is in scope.
-	 * 
-	 * @param fieldNameInScope
-	 * @return new evaluatee instance which has the given field in scope
-	 */
-	IDocumentEvaluatee fieldInScope(String fieldNameInScope);
+	public InvalidDocumentVersionException(final int expectedVersion, final int actualVersion)
+	{
+		super("Invalid version, expected " + expectedVersion + " but it was " + actualVersion);
+	}
 }

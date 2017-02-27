@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -42,16 +43,16 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/class IncludedDocumentsCollection
+/* package */class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
@@ -68,7 +69,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/* package */ IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
-		super();
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
 		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
 
@@ -92,7 +92,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		_staleDocumentIds = new HashSet<>(from._staleDocumentIds);
 
 		// Deep-copy documents map
-		_documents = new LinkedHashMap<>(Maps.transformValues(from._documents, (includedDocumentOrig) -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
+		_documents = new LinkedHashMap<>(Maps.transformValues(from._documents, includedDocumentOrig -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
 	}
 
 	@Override
@@ -132,11 +132,11 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	private final boolean isStale(final DocumentId documentId)
 	{
-		if(_staleDocumentIds.contains(documentId))
+		if (_staleDocumentIds.contains(documentId))
 		{
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -154,6 +154,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		_staleDocumentIds.remove(documentId);
 	}
 
+	@Override
 	public final void markStaleAll()
 	{
 		markNotFullyLoaded();
@@ -168,6 +169,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return entityDescriptor.getDetailId();
 	}
 
+	@Override
 	public synchronized Document getDocumentById(final DocumentId documentId)
 	{
 		if (documentId == null || documentId.isNew())
@@ -200,9 +202,10 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 				.retriveDocumentOrNull();
 		if (documentNew == null)
 		{
-			throw new DocumentNotFoundException("No document found for id=" + documentId + " in " + this + "."
-					+ "\n Parent document: " + parentDocument
-					+ "\n Available document ids are: " + _documents.keySet());
+			final DocumentPath documentPath = parentDocument
+					.getDocumentPath()
+					.createChildPath(entityDescriptor.getDetailId(), documentId);
+			throw new DocumentNotFoundException(documentPath);
 		}
 
 		//
@@ -217,7 +220,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		// Done
 		return documentNew;
 	}
-	
+
 	private void refreshStaleDocumentIfPossible(final Document document)
 	{
 		final DocumentId documentId = document.getDocumentId();
@@ -231,13 +234,14 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			document.refreshFromRepositoryIfStaled();
 		}
-		
+
 		if (!document.isStaled())
 		{
 			markNotStale(documentId);
 		}
 	}
 
+	@Override
 	public synchronized List<Document> getDocuments()
 	{
 		return ImmutableList.copyOf(getInnerDocumentsFullyLoaded());
@@ -263,15 +267,29 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 
 		//
+		// Refresh stale documents
 		final Collection<Document> documents = getInnerDocuments();
-		for(final Document document : documents)
+		for (final Iterator<Document> it = documents.iterator(); it.hasNext();)
 		{
-			refreshStaleDocumentIfPossible(document);
+			final Document document = it.next();
+			try
+			{
+				refreshStaleDocumentIfPossible(document);
+			}
+			catch (final DocumentNotFoundException ex)
+			{
+				// Document was not found.
+				// Re-throw the exception if is not about our current document
+				ex.rethrowIfNotMatching(document.getDocumentPath());
+				// Else, just remove the document from the inner collection.
+				it.remove();
+			}
 		}
-		
+
 		return documents;
 	}
 
+	@Override
 	public synchronized Document createNewDocument()
 	{
 		assertWritable();
@@ -286,6 +304,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return document;
 	}
 
+	@Override
 	public void assertNewDocumentAllowed()
 	{
 		final LogicExpressionResult allowCreateNewDocument = getAllowCreateNewDocument();
@@ -296,7 +315,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 					+ "\n EntityDescriptor: " + entityDescriptor);
 		}
 	}
-	
+
 	public LogicExpressionResult getAllowCreateNewDocument()
 	{
 		if (parentDocument.isProcessed())
@@ -312,12 +331,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	private void assertDeleteDocumentAllowed(final Document document)
 	{
 		final LogicExpressionResult allowDelete = getAllowDeleteDocument();
-		if(allowDelete.isFalse())
+		if (allowDelete.isFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed: " + allowDelete);
 		}
 	}
-	
+
 	private LogicExpressionResult getAllowDeleteDocument()
 	{
 		if (parentDocument.isProcessed())
@@ -377,12 +396,14 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		markFullyLoaded();
 	}
 
-	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
+	@Override
+	public IncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		return new IncludedDocumentsCollection(this, parentDocumentCopy, copyMode);
 	}
 
-	/* package */DocumentValidStatus checkAndGetValidStatus()
+	@Override
+	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		for (final Document document : getInnerDocuments())
 		{
@@ -397,7 +418,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return DocumentValidStatus.valid();
 	}
 
-	/* package */boolean hasChangesRecursivelly()
+	@Override
+	public boolean hasChangesRecursivelly()
 	{
 		for (final Document document : getInnerDocuments())
 		{
@@ -412,7 +434,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	}
 
-	/* package */void saveIfHasChanges()
+	@Override
+	public void saveIfHasChanges()
 	{
 		for (final Document document : getInnerDocuments())
 		{
@@ -421,6 +444,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 	}
 
+	@Override
 	public synchronized void deleteDocuments(final Set<DocumentId> documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
@@ -429,6 +453,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 
 		assertWritable();
+		
+		// TODO: check if application dictionary says that is allowed
 
 		for (final DocumentId documentId : documentIds)
 		{
@@ -447,6 +473,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 	}
 
+	@Override
 	public int getNextLineNo()
 	{
 		final int lastLineNo = getLastLineNo();

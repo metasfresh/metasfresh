@@ -43,7 +43,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		return super.checkPreconditionsApplicable(context)
-				.deriveWithCaptionOverride("Receive to " + buildDefaultPackingInfo(context));
+				.deriveWithCaptionOverride(buildDefaultPackingInfo(context));
 	}
 
 	private String buildDefaultPackingInfo(final IProcessPreconditionsContext context)
@@ -51,7 +51,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
 		if (receiptSchedule == null)
 		{
-			return "...";
+			return null; // no override
 		}
 
 		final I_M_HU_LUTU_Configuration lutuConfig = getCurrentLUTUConfiguration(receiptSchedule);
@@ -60,11 +60,13 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 
 		//
 		// LU
-		final I_M_HU_PI luPI = lutuConfig.getM_LU_HU_PI();
-		if (luPI != null)
-		{
-			packingInfo.append(luPI.getName());
-		}
+		// NOTE: don't show LU info because makes the whole label to long.
+		// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/315#issuecomment-280624562
+		// final I_M_HU_PI luPI = lutuConfig.getM_LU_HU_PI();
+		// if (luPI != null)
+		// {
+		// packingInfo.append(luPI.getName());
+		// }
 
 		//
 		// TU
@@ -106,6 +108,10 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 			}
 		}
 
+		if (packingInfo.length() == 0)
+		{
+			return null; // no override
+		}
 		return packingInfo.toString();
 	}
 

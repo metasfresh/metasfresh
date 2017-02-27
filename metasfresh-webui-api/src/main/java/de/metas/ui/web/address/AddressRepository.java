@@ -16,12 +16,13 @@ import org.springframework.stereotype.Component;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -129,7 +130,7 @@ public class AddressRepository
 		final Document addressDoc = id2addresssDoc.get(addressDocId);
 		if (addressDoc == null)
 		{
-			throw new EntityNotFoundException("No address document found for ID=" + addressDocId);
+			throw new DocumentNotFoundException(DocumentType.Address, AddressDescriptor.DocumentTypeId, addressDocId);
 		}
 		return addressDoc;
 	}

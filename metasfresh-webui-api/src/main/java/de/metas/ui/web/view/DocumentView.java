@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
-import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -253,7 +252,9 @@ public final class DocumentView implements IDocumentView
 		{
 			if(processed == null)
 			{
-				return DisplayType.toBoolean(values.getOrDefault("Processed", false));
+				// NOTE: don't take the "Processed" field if any, because in frontend we will end up with a lot of grayed out completed sales orders, for example.
+				//return DisplayType.toBoolean(values.getOrDefault("Processed", false));
+				return false;
 			}
 			else
 			{

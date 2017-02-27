@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.db.DBConstants;
@@ -162,6 +163,11 @@ public class SqlDocumentQueryBuilder
 	private String getPermissionsKey()
 	{
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
+	}
+	
+	public IUserRolePermissions getPermissions()
+	{
+		return Env.getUserRolePermissions(getCtx());
 	}
 
 	public String getSql(final List<Object> outSqlParams)

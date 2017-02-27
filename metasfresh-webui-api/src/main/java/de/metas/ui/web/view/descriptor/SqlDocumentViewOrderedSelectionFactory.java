@@ -60,13 +60,20 @@ class SqlDocumentViewOrderedSelectionFactory implements IDocumentViewOrderedSele
 	}
 
 	@Override
-	public DocumentViewOrderedSelection createFromViewId(final String fromUUID, final List<DocumentQueryOrderBy> orderBys)
+	public DocumentViewOrderedSelection createFromView(final DocumentViewOrderedSelection fromView, final List<DocumentQueryOrderBy> orderBys)
 	{
+		final String fromUUID = fromView.getUuid();
 		final String newUUID = UUID.randomUUID().toString();
 		final String sqlOrderBys = buildOrderBys(orderBys); // NOTE: we assume it's not empty!
 		final String sqlFinal = sqlCreateFromViewId.replace(SqlDocumentViewBinding.PLACEHOLDER_OrderBy, sqlOrderBys);
 		final int rowCount = DB.executeUpdateEx(sqlFinal, new Object[] { newUUID, fromUUID }, ITrx.TRXNAME_ThreadInherited);
-		return new DocumentViewOrderedSelection(newUUID, rowCount, orderBys);
+		
+		return DocumentViewOrderedSelection.builder()
+				.setUuid(newUUID)
+				.setSize(rowCount)
+				.setOrderBys(orderBys)
+				.setQueryLimit(fromView.getQueryLimit(), fromView.isQueryLimitHit())
+				.build();
 	}
 
 	private final String buildOrderBys(final List<DocumentQueryOrderBy> orderBys)

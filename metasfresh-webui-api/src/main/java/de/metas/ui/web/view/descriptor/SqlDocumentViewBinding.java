@@ -17,6 +17,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
+import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
@@ -24,6 +25,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -52,11 +54,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -384,15 +386,40 @@ public class SqlDocumentViewBinding
 		}
 
 		//
+		// Enforce a LIMIT, to not affect server performances on huge tables
+		final int queryLimit = extractQueryLimit(queryBuilder.getPermissions());
+		if (queryLimit > 0)
+		{
+			sqlBuilder.append("\n LIMIT ?");
+			sqlParams.add(queryLimit);
+
+		}
+
+		//
 		// Evaluate the final SQL query
 		final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
 
 		//
 		// Execute it, so we insert in our T_WEBUI_ViewSelection
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
-		logger.trace("Created selection {}, rowsCount={} -- {} -- {}", uuid, rowsCount, sql, sqlParams);
+		stopwatch.stop();
+		final boolean queryLimitHit = queryLimit > 0 && rowsCount >= queryLimit;
+		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", uuid, rowsCount, stopwatch, sql, sqlParams);
 
-		return new DocumentViewOrderedSelection(uuid, rowsCount, orderBys);
+		return DocumentViewOrderedSelection.builder()
+				.setUuid(uuid)
+				.setSize(rowsCount)
+				.setOrderBys(orderBys)
+				.setQueryLimit(queryLimit, queryLimitHit)
+				.build();
+	}
+
+	private int extractQueryLimit(final IUserRolePermissions permissions)
+	{
+		return permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
+				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
+				.getMaxQueryRecordsPerRole();
 	}
 
 	public IDocumentViewOrderedSelectionFactory createOrderedSelectionFactory(final Evaluatee evalCtx)

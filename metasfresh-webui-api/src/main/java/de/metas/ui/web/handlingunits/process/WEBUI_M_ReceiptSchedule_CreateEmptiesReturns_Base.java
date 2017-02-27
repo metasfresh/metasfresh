@@ -9,7 +9,10 @@ import org.compiere.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -33,8 +36,19 @@ import de.metas.process.JavaProcess;
  * #L%
  */
 
-/* package */ abstract class WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base extends JavaProcess
+/* package */ abstract class WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base extends JavaProcess implements IProcessPrecondition
 {
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	// services
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
@@ -42,7 +56,7 @@ import de.metas.process.JavaProcess;
 	private final String _returnMovementType;
 	private final int _targetWindowId;
 
-	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base(final String returnMovementType, int targetWindowId)
+	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base(final String returnMovementType, final int targetWindowId)
 	{
 		Check.assumeNotEmpty(returnMovementType, "returnMovementType is not empty");
 		Check.assume(targetWindowId > 0, "targetWindowId > 0");

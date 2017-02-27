@@ -104,7 +104,7 @@ public final class JSONDocument implements Serializable
 		// Set debugging info
 		if (WindowConstants.isProtocolDebugging())
 		{
-			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getTableName());
+			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getTableNameOrNull());
 			jsonDocument.putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
@@ -203,7 +203,7 @@ public final class JSONDocument implements Serializable
 				.collect(Collectors.toList());
 	}
 
-	private static JSONDocument ofDocumentView(final IDocumentView documentView)
+	public static JSONDocument ofDocumentView(final IDocumentView documentView)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(documentView.getDocumentPath());
 

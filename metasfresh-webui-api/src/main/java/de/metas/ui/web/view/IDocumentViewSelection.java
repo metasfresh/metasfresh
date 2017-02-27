@@ -2,8 +2,12 @@ package de.metas.ui.web.view;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -26,11 +30,11 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,6 +48,10 @@ public interface IDocumentViewSelection
 	long size();
 
 	void close();
+	
+	int getQueryLimit();
+
+	boolean isQueryLimitHit();
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
@@ -58,6 +66,24 @@ public interface IDocumentViewSelection
 	default IDocumentView getById(final int documentIdInt) throws EntityNotFoundException
 	{
 		return getById(DocumentId.of(documentIdInt));
+	}
+
+	default List<IDocumentView> getByIds(final Set<DocumentId> documentIds)
+	{
+		Check.assumeNotEmpty(documentIds, "documentIds is not empty");
+		return documentIds.stream()
+				.map(documentId -> {
+					try
+					{
+						return getById(documentId);
+					}
+					catch (final EntityNotFoundException e)
+					{
+						return null;
+					}
+				})
+				.filter(document -> document != null)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
@@ -111,4 +137,9 @@ public interface IDocumentViewSelection
 	<T> List<T> retrieveModelsByIds(Collection<DocumentId> documentIds, Class<T> modelClass);
 
 	Stream<? extends IDocumentView> streamByIds(Collection<DocumentId> documentIds);
+
+	/**
+	 * Notify the view that given record has changed.
+	 */
+	void notifyRecordChanged(TableRecordReference recordRef);
 }

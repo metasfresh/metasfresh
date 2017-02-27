@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -17,10 +18,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
@@ -71,6 +73,8 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		final MutableInt checkedDocumentsCount = new MutableInt(0);
 		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUDocumentViewSelection.class)
 				.streamByIds(viewContext.getSelectedDocumentIds())
+				.filter(document -> document.isPureHU())
+				//
 				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
 				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
 				.filter(resolution -> resolution != null) // filter out those which are not errors
@@ -83,8 +87,7 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		}
 		if (checkedDocumentsCount.getValue() <= 0)
 		{
-			// nothing selected
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible rows");
 		}
 
 		// Safe to run the process
@@ -93,13 +96,9 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 
 	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUDocumentView document)
 	{
-		if (!document.isPureHU())
-		{
-			return ProcessPreconditionsResolution.reject("Selected not an HU line: " + document); // TODO: improve message
-		}
 		if (!document.isHUStatusPlanning())
 		{
-			return ProcessPreconditionsResolution.reject("Invalid HU status: " + document); // TODO: improve message
+			return ProcessPreconditionsResolution.reject("Only planning HUs can be received"); // TODO: trl
 		}
 
 		return null;
@@ -120,12 +119,14 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 
 		//
 		// Generate material receipts
-		final List<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.of(getM_ReceiptSchedule());
+		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
+		final List<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.of(receiptSchedule);
 		final Set<I_M_HU> selectedHUs = retrieveHUsToReceive();
 		final boolean collectGeneratedInOuts = true;
 		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(getCtx(), receiptSchedules, selectedHUs, collectGeneratedInOuts);
@@ -134,6 +135,8 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		//
 		// Reset the view's affected HUs
 		getView().invalidateAll();
+		
+		documentViewsRepo.notifyRecordChanged(TableRecordReference.of(receiptSchedule));
 
 		return MSG_OK;
 	}

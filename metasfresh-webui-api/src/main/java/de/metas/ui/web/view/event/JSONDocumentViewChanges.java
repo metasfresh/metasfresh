@@ -1,12 +1,15 @@
 package de.metas.ui.web.view.event;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -21,11 +24,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,13 +51,31 @@ public final class JSONDocumentViewChanges implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean fullyChanged;
 
+	@JsonProperty("changedIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Set<String> changedIds;
+
 	private JSONDocumentViewChanges(final DocumentViewChanges changes)
 	{
 		super();
 		viewId = changes.getViewId();
 		windowId = changes.getAD_Window_ID();
 
-		fullyChanged = changes.getFullyChanged();
+		changedIds = DocumentId.toStringSet(changes.getChangedDocumentIds());
+
+		if (changes.isFullyChanged())
+		{
+			fullyChanged = Boolean.TRUE;
+		}
+		// FIXME: if there are any changed IDs consider as "fullyChanged". Take it out when "changedIds" support will be implemented on frontend side.
+		else if (!changedIds.isEmpty())
+		{
+			fullyChanged = Boolean.TRUE;
+		}
+		else
+		{
+			fullyChanged = null;
+		}
 	}
 
 	@Override
@@ -65,6 +86,7 @@ public final class JSONDocumentViewChanges implements Serializable
 				.add("viewId", viewId)
 				.add("windowId", windowId)
 				.add("fullyChanged", fullyChanged)
+				.add("changedIds", changedIds)
 				.toString();
 	}
 

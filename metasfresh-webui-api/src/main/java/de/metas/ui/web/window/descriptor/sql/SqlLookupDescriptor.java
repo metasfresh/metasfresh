@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
@@ -243,6 +244,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	{
 		// Parameters
 		private String columnName;
+		private DocumentFieldWidgetType widgetType;
 		private Integer displayType;
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
@@ -268,16 +270,22 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			Check.assumeNotNull(displayType, "Parameter displayType is not null");
 			
-			return buildProvider(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
+			return buildProvider(columnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
 
 		private static LookupDescriptorProvider buildProvider(
 				final String sqlColumnName //
+				, final DocumentFieldWidgetType widgetType
 				, final int displayType //
 				, final int AD_Reference_Value_ID //
 				, final int AD_Val_Rule_ID //
 		)
 		{
+			if(widgetType == DocumentFieldWidgetType.ProcessButton)
+			{
+				return LookupDescriptorProvider.NULL;
+			}
+			
 			if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
@@ -530,6 +538,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		public Builder setColumnName(final String columnName)
 		{
 			this.columnName = columnName;
+			return this;
+		}
+		
+		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
+		{
+			this.widgetType = widgetType;
 			return this;
 		}
 

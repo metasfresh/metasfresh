@@ -386,46 +386,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlBuilder.build();
 		}
 
-//		private final IStringExpression buildSqlPagedSelect(final List<IStringExpression> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
-//		{
-//			final String sqlTableName = getTableName();
-//			final String sqlTableAlias = getTableAlias();
-//			final String sqlKeyColumnName = getKeyColumnName();
-//
-//			// NOTE: we don't need access SQL here because we assume the records were already filtered
-//
-//			if (!sqlSelectDisplayNamesList.isEmpty())
-//			{
-//				return IStringExpression.composer()
-//						.append("SELECT ")
-//						.append("\n").append(sqlTableAlias).append(".*") // Value fields
-//						.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList) // DisplayName fields
-//						.append("\n FROM (")
-//						.append("\n   SELECT ")
-//						.append("\n   ").appendAllJoining(", ", sqlSelectValuesList)
-//						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-//						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-//						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-//						.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-//						.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
-//						.append("\n ) " + sqlTableAlias) // FROM
-//						.build();
-//			}
-//			else
-//			{
-//				return IStringExpression.composer()
-//						.append("SELECT ")
-//						.append("\n ").appendAllJoining("\n, ", sqlSelectValuesList)
-//						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-//						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-//						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-//						.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-//						.append("\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
-//								+ ")")
-//						.build();
-//			}
-//		}
-
 		private IStringExpression getSqlWhereClauseExpression()
 		{
 			if (_sqlWhereClauseExpression == null)

@@ -82,6 +82,9 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
+	@JsonProperty("buttonProcessId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer buttonProcessId;
 
 	@JsonProperty("precision")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -122,6 +125,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		description = element.getDescription(adLanguage);
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
+		buttonProcessId = element.getButtonProcessId() > 0 ? element.getButtonProcessId() : null;
 		precision = element.getPrecision().orElse(null);
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
@@ -138,6 +142,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		description = null;
 
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
+		buttonProcessId = null;
 		precision = null;
 
 		type = null;
@@ -156,6 +161,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 			@JsonProperty("caption") final String caption //
 			, @JsonProperty("description") final String description //
 			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
+			, @JsonProperty("buttonProcessId") final int buttonProcessId //
 			, @JsonProperty("precision") final Integer precision //
 			, @JsonProperty("type") final JSONLayoutType type //
 			, @JsonProperty("fields") final Set<JSONDocumentLayoutElementField> fields //
@@ -167,6 +173,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		this.description = description;
 
 		this.widgetType = widgetType;
+		this.buttonProcessId = buttonProcessId;
 		this.precision = precision;
 
 		this.type = type;
@@ -183,6 +190,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				.add("caption", caption)
 				.add("description", description)
 				.add("widgetType", widgetType)
+				.add("buttonProcessId", buttonProcessId)
 				.add("type", type)
 				.add("gridAlign", gridAlign)
 				.add("fields", fields.isEmpty() ? null : fields)
@@ -202,6 +210,11 @@ public final class JSONDocumentLayoutElement implements Serializable
 	public JSONLayoutWidgetType getWidgetType()
 	{
 		return widgetType;
+	}
+	
+	public Integer getButtonProcessId()
+	{
+		return buttonProcessId;
 	}
 
 	public JSONLayoutType getType()
@@ -236,5 +249,4 @@ public final class JSONDocumentLayoutElement implements Serializable
 		otherProperties.put("debug-" + name, jsonValue);
 		return this;
 	}
-
 }

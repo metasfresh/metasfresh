@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import groovy.transform.Immutable;
 
 /*
@@ -110,12 +111,11 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	@Autowired
 	@Lazy
 	private SimpMessagingTemplate websocketMessagingTemplate;
-	
+
 	private final boolean autoflush;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final Map<DocumentViewChangesKey, DocumentViewChanges> viewChangesMap = new LinkedHashMap<>();
-
 
 	private DocumentViewChangesCollector()
 	{
@@ -170,7 +170,14 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	public void collectFullyChanged(final IDocumentViewSelection view)
 	{
 		viewChanges(view).setFullyChanged();
-		
+
+		autoflushIfEnabled();
+	}
+
+	public void collectDocumentChanged(final IDocumentViewSelection view, final DocumentId documentId)
+	{
+		viewChanges(view).addChangedDocumentId(documentId);
+
 		autoflushIfEnabled();
 	}
 
@@ -178,7 +185,7 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	{
 		final DocumentViewChangesKey key = new DocumentViewChangesKey(changes.getViewId(), changes.getAD_Window_ID());
 		viewChanges(key).collectFrom(changes);
-		
+
 		autoflushIfEnabled();
 	}
 
@@ -196,11 +203,11 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	private void flush()
 	{
 		final List<DocumentViewChanges> changesList = getAndClean();
-		if(changesList.isEmpty())
+		if (changesList.isEmpty())
 		{
 			return;
 		}
-		
+
 		//
 		// Try flushing to parent collector if any
 		final DocumentViewChangesCollector parentCollector = getParentOrNull();
@@ -220,24 +227,24 @@ public class DocumentViewChangesCollector implements AutoCloseable
 					.forEach(this::sendToWebsocket);
 		}
 	}
-	
+
 	private void autoflushIfEnabled()
 	{
-		if(!autoflush)
+		if (!autoflush)
 		{
 			return;
 		}
-		
+
 		flush();
 	}
 
 	private List<DocumentViewChanges> getAndClean()
 	{
-		if(viewChangesMap.isEmpty())
+		if (viewChangesMap.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final List<DocumentViewChanges> changesList = ImmutableList.copyOf(viewChangesMap.values());
 		viewChangesMap.clear();
 		return changesList;

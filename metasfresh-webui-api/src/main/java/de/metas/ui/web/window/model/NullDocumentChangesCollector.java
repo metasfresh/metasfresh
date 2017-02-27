@@ -43,12 +43,6 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
-	public Set<String> getFieldNames(final DocumentPath documentPath)
-	{
-		return ImmutableSet.of();
-	}
-
-	@Override
 	public Map<DocumentPath, DocumentChanges> getDocumentChangesByPath()
 	{
 		return ImmutableMap.of();

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -89,19 +88,10 @@ public class LoginRestController
 				.orElseThrow(() -> new NotAuthenticatedException());
 	}
 
-	@PostMapping(value = "/authenticate")
-	public JSONLoginAuthResponse authenticate( //
-			@RequestBody(required = false) JSONLoginAuthRequest request //
-			, @Deprecated @RequestParam(name = "username", required = false) final String username_DEPRECATED //
-			, @Deprecated @RequestParam(name = "password", required = false) final String password_DEPRECATED //
-	)
+	@PostMapping("/authenticate")
+	public JSONLoginAuthResponse authenticate(@RequestBody final JSONLoginAuthRequest request)
 	{
 		userSession.assertNotLoggedIn();
-		
-		if(request == null)
-		{
-			request = new JSONLoginAuthRequest(username_DEPRECATED, password_DEPRECATED);
-		}
 
 		final Login loginService = getLoginService();
 		final MSession session = createMSession(loginService);
