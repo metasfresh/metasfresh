@@ -457,18 +457,10 @@ public final class ProcessInstance
 	{
 		final Document parametersDocument = getParametersDocument();
 		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges();
-		final boolean saved;
-		if (parametersSaveStatus.hasChangesToBeSaved() || parametersSaveStatus.isError())
+		final boolean saved = parametersSaveStatus.isSaved();
+		if (!saved && throwEx)
 		{
-			saved = false;
-			if (throwEx)
-			{
-				throw new ProcessExecutionException(parametersSaveStatus.getReason());
-			}
-		}
-		else
-		{
-			saved = true;
+			throw new ProcessExecutionException(parametersSaveStatus.getReason());
 		}
 
 		return saved;
