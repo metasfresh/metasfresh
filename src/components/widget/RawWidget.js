@@ -483,7 +483,10 @@ class RawWidget extends Component {
                             (rowId && !isModal ? 'input-table ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.rawWidget = c}
+                        onKeyDown={e => {e.key === ' ' &&
+                            this.handlePatch(widgetField, !widgetData[0].value, id)
+                        }}
                     >
                         <input
                             type="checkbox"
@@ -503,7 +506,7 @@ class RawWidget extends Component {
                             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.rawWidget = c}
                     >
                         {widgetData[0].value}
                     </div>
