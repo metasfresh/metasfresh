@@ -31,7 +31,7 @@ import java.sql.SQLException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.model.MProductScalePrice;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -39,8 +39,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 public class MProductScalePriceValidator implements ModelValidator
@@ -97,8 +97,7 @@ public class MProductScalePriceValidator implements ModelValidator
 	@Override
 	public String modelChange(PO po, int type) throws Exception
 	{
-
-		final MProductScalePrice productScalePrice = (MProductScalePrice)po;
+		final I_M_ProductScalePrice productScalePrice = InterfaceWrapperHelper.create(po, I_M_ProductScalePrice.class);
 
 		if (type == ModelValidator.TYPE_BEFORE_CHANGE
 				|| type == ModelValidator.TYPE_BEFORE_NEW)
@@ -133,7 +132,7 @@ public class MProductScalePriceValidator implements ModelValidator
 		return null;
 	}
 
-	private String handleChange(final MProductScalePrice productScalePrice, final String trxName)
+	private String handleChange(final I_M_ProductScalePrice productScalePrice, final String trxName)
 	{
 		if (BigDecimal.ONE.compareTo(productScalePrice.getQty()) != 0)
 		{
@@ -159,11 +158,11 @@ public class MProductScalePriceValidator implements ModelValidator
 				return null;
 			}
 			
-			throw new AdempiereException("Didn't find M_Product_Price for M_ProductSalePrice with id " + productScalePrice.get_ID());
+			throw new AdempiereException("Didn't find M_Product_Price for M_ProductSalePrice with id " + productScalePrice.getM_ProductScalePrice_ID());
 		}
 		catch (SQLException e)
 		{
-			final String msg = "Unable to update M_Product_Price for M_ProductSalePrice with id " + productScalePrice.get_ID();
+			final String msg = "Unable to update M_Product_Price for M_ProductSalePrice with id " + productScalePrice.getM_ProductScalePrice_ID();
 			MetasfreshLastError.saveError(logger, msg, e);
 			throw new DBException(msg, e);
 		}
@@ -173,7 +172,7 @@ public class MProductScalePriceValidator implements ModelValidator
 		}
 	}
 
-	private String handleDelete(final MProductScalePrice productScalePrice)
+	private String handleDelete(final I_M_ProductScalePrice productScalePrice)
 	{
 		if (BigDecimal.ONE.compareTo(productScalePrice.getQty()) == 0)
 		{

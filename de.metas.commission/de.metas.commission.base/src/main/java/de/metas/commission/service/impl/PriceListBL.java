@@ -29,11 +29,11 @@ import java.sql.SQLException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.commission.interfaces.I_M_DiscountSchemaLine;
 import de.metas.commission.service.IPriceListBL;
 import de.metas.logging.LogManager;

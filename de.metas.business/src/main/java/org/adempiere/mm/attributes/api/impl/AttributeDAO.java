@@ -385,10 +385,22 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_AttributeSetInstance copy(final I_M_AttributeSetInstance asi)
 	{
+		final int overrideM_AttributeSet_ID = -1;
+		return copy(asi, overrideM_AttributeSet_ID);
+	}
+
+	@Override
+	public I_M_AttributeSetInstance copy(final I_M_AttributeSetInstance asi, final int overrideM_AttributeSet_ID)
+	{
 		Check.assumeNotNull(asi, "asi not null");
 
 		final I_M_AttributeSetInstance asiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class, asi);
 		InterfaceWrapperHelper.copyValues(asi, asiNew, true); // honorIsCalculated=true
+		if(overrideM_AttributeSet_ID > 0)
+		{
+			asiNew.setM_AttributeSet_ID(overrideM_AttributeSet_ID);
+		}
+		
 		InterfaceWrapperHelper.save(asiNew);
 
 		for (final I_M_AttributeInstance ai : retrieveAttributeInstances(asi))

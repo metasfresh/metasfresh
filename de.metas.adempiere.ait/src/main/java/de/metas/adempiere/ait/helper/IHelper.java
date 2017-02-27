@@ -36,6 +36,7 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MWarehouse;
 import org.compiere.process.DocAction;
 import org.compiere.util.Trx;
@@ -44,7 +45,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -196,9 +196,9 @@ public interface IHelper
 
 	public int getC_Currency_ID(String ISOcode);
 
-	public de.metas.adempiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode);
+	public org.compiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode);
 
-	public de.metas.adempiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode, boolean IsSO);
+	public org.compiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode, boolean IsSO);
 
 	@Deprecated
 	public I_M_ProductPrice setProductPrice(String pricingSystemValue, String currencyCode, String countryCode,

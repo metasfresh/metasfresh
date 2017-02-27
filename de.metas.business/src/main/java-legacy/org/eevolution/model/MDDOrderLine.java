@@ -32,7 +32,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
 
@@ -53,7 +52,7 @@ import de.metas.product.IProductBL;
 public class MDDOrderLine extends X_DD_OrderLine
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8878804332001384969L;
 
@@ -66,15 +65,15 @@ public class MDDOrderLine extends X_DD_OrderLine
 	 *	@param excludeC_OrderLine_ID exclude C_OrderLine_ID
 	 *	@return Unreserved Qty
 	 */
-	public static BigDecimal getNotReserved (Properties ctx, int M_Locator_ID, 
+	public static BigDecimal getNotReserved (Properties ctx, int M_Locator_ID,
 		int M_Product_ID, int M_AttributeSetInstance_ID, int excludeDD_OrderLine_ID)
 	{
-		
-		ArrayList<Object> params = new ArrayList<Object>();
+
+		ArrayList<Object> params = new ArrayList<>();
 		params.add(M_Locator_ID);
 		params.add(M_Product_ID);
 		params.add(excludeDD_OrderLine_ID);
-		
+
 		String sql = "SELECT SUM(QtyOrdered-QtyDelivered-QtyReserved) "
 			+ "FROM DD_OrderLine ol"
 			+ " INNER JOIN DD_Order o ON (ol.DD_Order_ID=o.DD_Order_ID) "
@@ -83,18 +82,18 @@ public class MDDOrderLine extends X_DD_OrderLine
 			+ " AND o.IsSOTrx='N' AND o.DocStatus='DR'"
 			+ " AND QtyOrdered-QtyDelivered-QtyReserved<>0"
 			+ " AND ol.DD_OrderLine_ID<>?";
-		
+
 		if (M_AttributeSetInstance_ID != 0)
-		{	
+		{
 			sql += " AND M_AttributeSetInstance_ID=?";
 			params.add(M_AttributeSetInstance_ID);
-		}			
-		return DB.getSQLValueBD(null, sql.toString(), params);	
+		}
+		return DB.getSQLValueBD(null, sql.toString(), params);
 	}	//	getNotReserved
-	
+
 //	/**	Logger	*/
 //	private static Logger s_log = CLogMgt.getLogger(MDDOrderLine.class);
-	
+
 	/**************************************************************************
 	 *  Default Constructor
 	 *  @param ctx context
@@ -117,26 +116,26 @@ public class MDDOrderLine extends X_DD_OrderLine
 		//	setC_Tax_ID (0);
 		//	setC_UOM_ID (0);
 			//
-			setFreightAmt (Env.ZERO);
-			setLineNetAmt (Env.ZERO);
+			setFreightAmt (BigDecimal.ZERO);
+			setLineNetAmt (BigDecimal.ZERO);
 			//
 			setM_AttributeSetInstance_ID(0);
 			//
-			setQtyEntered (Env.ZERO);
-			setQtyInTransit (Env.ZERO);
-			setConfirmedQty(Env.ZERO);
-			setTargetQty(Env.ZERO);
-			setPickedQty(Env.ZERO);
-			setQtyOrdered (Env.ZERO);	// 1
-			setQtyDelivered (Env.ZERO);
-			setQtyReserved (Env.ZERO);
+			setQtyEntered (BigDecimal.ZERO);
+			setQtyInTransit (BigDecimal.ZERO);
+			setConfirmedQty(BigDecimal.ZERO);
+			setTargetQty(BigDecimal.ZERO);
+			setPickedQty(BigDecimal.ZERO);
+			setQtyOrdered (BigDecimal.ZERO);	// 1
+			setQtyDelivered (BigDecimal.ZERO);
+			setQtyReserved (BigDecimal.ZERO);
 			//
 			setIsDescription (false);	// N
 			setProcessed (false);
 			setLine (0);
 		}
 	}	//	MDDOrderLine
-	
+
 	/**
 	 *  Parent Constructor.
 	 		ol.setM_Product_ID(wbl.getM_Product_ID());
@@ -170,14 +169,14 @@ public class MDDOrderLine extends X_DD_OrderLine
 //	private int 			m_M_PriceList_ID = 0;
 //	//
 //	private boolean			m_IsSOTrx = true;
-//	
+//
 //	/** Cached Currency Precision	*/
 //	private Integer			m_precision = null;
 //	/**	Product					*/
 //	private MProduct 		m_product = null;
 //	/** Parent					*/
 //	private MDDOrder			m_parent = null;
-	
+
 	/**
 	 * 	Set Defaults from Order.
 	 * 	Does not set Parent !!
@@ -191,7 +190,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		//setM_Warehouse_ID(order.getM_Warehouse_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDatePromised(order.getDatePromised());
-		
+
 		//	Don't set Activity, etc as they are overwrites
 	}	//	setOrder
 
@@ -204,7 +203,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	{
 		return LegacyAdapters.convertToPO(getDD_Order());
 	}	//	getParent
-	
+
 
 	/**
 	 * 	Set Product
@@ -226,7 +225,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		setM_AttributeSetInstance_ID(0);
 	}	//	setProduct
 
-	
+
 	/**
 	 * 	Set M_Product_ID
 	 *	@param M_Product_ID product
@@ -240,7 +239,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			super.setM_Product_ID (M_Product_ID);
 		setM_AttributeSetInstance_ID(0);
 	}	//	setM_Product_ID
-	
+
 	/**
 	 * 	Set Product and UOM
 	 *	@param M_Product_ID product
@@ -253,8 +252,8 @@ public class MDDOrderLine extends X_DD_OrderLine
 			super.setC_UOM_ID(C_UOM_ID);
 		setM_AttributeSetInstance_ID(0);
 	}	//	setM_Product_ID
-	
-	
+
+
 	/**
 	 * 	Get Product
 	 *	@return product or null
@@ -265,7 +264,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	{
 		return LegacyAdapters.convertToPO(getM_Product());
 	}	//	getProduct
-	
+
 	/**
 	 * 	Set M_AttributeSetInstance_ID
 	 *	@param M_AttributeSetInstance_ID id
@@ -278,7 +277,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		else
 			super.setM_AttributeSetInstance_ID (M_AttributeSetInstance_ID);
 	}	//	setM_AttributeSetInstance_ID
-	
+
 	/**
 	 * 	Set Warehouse
 	 *	@param M_Warehouse_ID warehouse
@@ -293,7 +292,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			super.setM_Warehouse_ID (M_Warehouse_ID);
 	}	//	setM_Warehouse_ID
 	*/
-	
+
 	/**
 	 * 	Can Change Warehouse
 	 *	@return true if warehouse can be changed
@@ -312,7 +311,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		//	We can change
 		return true;
 	}	//	canChangeWarehouse
-	
+
 	/**
 	 * 	Get C_Project_ID
 	 *	@return project
@@ -325,7 +324,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			ii = getDD_Order().getC_Project_ID();
 		return ii;
 	}	//	getC_Project_ID
-	
+
 	/**
 	 * 	Get C_Activity_ID
 	 *	@return Activity
@@ -338,7 +337,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			ii = getDD_Order().getC_Activity_ID();
 		return ii;
 	}	//	getC_Activity_ID
-	
+
 	/**
 	 * 	Get C_Campaign_ID
 	 *	@return Campaign
@@ -351,7 +350,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			ii = getDD_Order().getC_Campaign_ID();
 		return ii;
 	}	//	getC_Campaign_ID
-	
+
 	/**
 	 * 	Get User2_ID
 	 *	@return User2
@@ -423,7 +422,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		else
 			setDescription(desc + " | " + description);
 	}	//	addDescription
-	
+
 	/**
 	 * 	Get Description Text.
 	 * 	For jsp access (vs. isDescription)
@@ -433,7 +432,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	{
 		return super.getDescription();
 	}	//	getDescriptionText
-	
+
 	/**
 	 * 	Get Name
 	 *	@return get the name of the line (from Product)
@@ -466,7 +465,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * 	Set Qty Entered/Ordered.
-	 * 	Use this Method if the Line UOM is the Product UOM 
+	 * 	Use this Method if the Line UOM is the Product UOM
 	 *	@param Qty QtyOrdered/Entered
 	 */
 	public void setQty (BigDecimal Qty)
@@ -476,7 +475,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	}	//	setQty
 
 	/**
-	 * 	Set Qty Entered - enforce entered UOM 
+	 * 	Set Qty Entered - enforce entered UOM
 	 *	@param QtyEntered
 	 */
 	@Override
@@ -491,7 +490,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	}	//	setQtyEntered
 
 	/**
-	 * 	Set Qty Ordered - enforce Product UOM 
+	 * 	Set Qty Ordered - enforce Product UOM
 	 *	@param QtyOrdered
 	 */
 	@Override
@@ -505,8 +504,8 @@ public class MDDOrderLine extends X_DD_OrderLine
 		}
 		super.setQtyOrdered(QtyOrdered);
 	}	//	setQtyOrdered
-	
-	
+
+
 
 	/**************************************************************************
 	 * 	Before Save
@@ -526,17 +525,17 @@ public class MDDOrderLine extends X_DD_OrderLine
 			setOrder (getParent());*/
 //		if (m_M_PriceList_ID == 0)
 //			setHeaderInfo(getParent());
-		
+
 		//	R/O Check - Product/Warehouse Change
-		if (!newRecord 
-			&& (is_ValueChanged("M_Product_ID") || is_ValueChanged("M_Locator_ID") || is_ValueChanged("M_LocatorTo_ID"))) 
+		if (!newRecord
+			&& (is_ValueChanged("M_Product_ID") || is_ValueChanged("M_Locator_ID") || is_ValueChanged("M_LocatorTo_ID")))
 		{
 			if (!canChangeWarehouse())
 			{
 				throw new AdempiereException("Changing product/locator is not allowed");
 			}
 		}	//	Product Changed
-		
+
 		//	Charge
 		if (getC_Charge_ID() != 0 && getM_Product_ID() != 0)
 				setM_Product_ID(0);
@@ -544,11 +543,11 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (getM_Product_ID() == 0)
 			setM_AttributeSetInstance_ID(0);
 		//	Product
-		
+
 
 		//	UOM
-		if (getC_UOM_ID() == 0 
-			&& (getM_Product_ID() != 0 
+		if (getC_UOM_ID() == 0
+			&& (getM_Product_ID() != 0
 				|| getC_Charge_ID() != 0))
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
@@ -560,7 +559,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			setQtyEntered(getQtyEntered());
 		if (newRecord || is_ValueChanged("QtyOrdered"))
 			setQtyOrdered(getQtyOrdered());
-		
+
 		//	Qty on instance ASI for SO
 		if (getM_AttributeSetInstance_ID() > 0
 			&& (newRecord || is_ValueChanged(COLUMNNAME_M_Product_ID)
@@ -582,10 +581,16 @@ public class MDDOrderLine extends X_DD_OrderLine
 				if (isInstance)
 				{
 					MLocator locator_from = MLocator.get(getCtx(), getM_Locator_ID());
-					MStorage[] storages = MStorage.getWarehouse(getCtx(), 
-							locator_from.getM_Warehouse_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(), 
-						M_AttributeSet_ID, false, null, true, get_TrxName());
-					BigDecimal qty = Env.ZERO;
+					MStorage[] storages = MStorage.getWarehouse(getCtx(),
+							locator_from.getM_Warehouse_ID(),
+							getM_Product_ID(),
+							getM_AttributeSetInstance_ID(),
+							M_AttributeSet_ID,
+							false,
+							null,
+							true,
+							get_TrxName());
+					BigDecimal qty = BigDecimal.ZERO;
 					for (int i = 0; i < storages.length; i++)
 					{
 						if (storages[i].getM_AttributeSetInstance_ID() == getM_AttributeSetInstance_ID())
@@ -593,16 +598,16 @@ public class MDDOrderLine extends X_DD_OrderLine
 					}
 					if (getQtyOrdered().compareTo(qty) > 0)
 					{
-						throw new AdempiereException("@QtyInsufficient@: Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered()); 
+						throw new AdempiereException("@QtyInsufficient@: Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered());
 					}
 				}
 			}	//	stocked
-			
+
 		}	//	SO instance
-		
+
 		//	FreightAmt Not used
-		if (Env.ZERO.compareTo(getFreightAmt()) != 0)
-			setFreightAmt(Env.ZERO);
+		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
+			setFreightAmt(BigDecimal.ZERO);
 
 
 		//	Get Line No
@@ -618,7 +623,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		return true;
 	}	//	beforeSave
 
-	
+
 	/**
 	 * 	Before Delete
 	 *	@return true if it can be deleted
@@ -627,16 +632,16 @@ public class MDDOrderLine extends X_DD_OrderLine
 	protected boolean beforeDelete ()
 	{
 		//	R/O Check - Something delivered. etc.
-		if (Env.ZERO.compareTo(getQtyDelivered()) != 0)
+		if (BigDecimal.ZERO.compareTo(getQtyDelivered()) != 0)
 		{
 			throw new AdempiereException("@QtyDelivered@: "+getQtyDelivered());
 		}
-		if (Env.ZERO.compareTo(getQtyReserved()) != 0)
+		if (BigDecimal.ZERO.compareTo(getQtyReserved()) != 0)
 		{
 			//	For PO should be On Order
 			throw new AdempiereException("@QtyReserved@: "+getQtyReserved());
 		}
-		
+
 		return true;
 	}	//	beforeDelete
 }	//	MDDOrderLine

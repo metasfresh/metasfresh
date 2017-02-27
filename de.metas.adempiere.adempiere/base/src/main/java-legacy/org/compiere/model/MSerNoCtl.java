@@ -69,7 +69,7 @@ public class MSerNoCtl extends X_M_SerNoCtl
 	 */
 	public String createSerNo ()
 	{
-		StringBuffer name = new StringBuffer();
+		StringBuilder name = new StringBuilder();
 		if (getPrefix() != null)
 			name.append(getPrefix());
 		int no = getCurrentNext();

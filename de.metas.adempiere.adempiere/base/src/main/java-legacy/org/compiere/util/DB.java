@@ -619,17 +619,6 @@ public final class DB
 // @formatter:on
 
 	/**************************************************************************
-	 * Prepare Forward Read Only Call
-	 *
-	 * @param SQL sql
-	 * @return Callable Statement
-	 */
-	public static CallableStatement prepareCall(String sql)
-	{
-		return prepareCall(sql, ResultSet.CONCUR_UPDATABLE, null);
-	}
-
-	/**************************************************************************
 	 * Prepare Call
 	 *
 	 * @param SQL sql

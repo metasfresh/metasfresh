@@ -28,6 +28,7 @@ import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MBPartner;
@@ -42,15 +43,12 @@ import org.compiere.model.MProject;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
-import org.compiere.model.MUser;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 
@@ -119,7 +117,7 @@ public class ARequest implements ActionListener
 			.append(" AND Record_ID=").append(m_Record_ID)
 			.append(")");
 		//
-		if (m_AD_Table_ID == MUser.Table_ID)
+		if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 			m_where.append(" OR AD_User_ID=").append(m_Record_ID)
 				.append(" OR SalesRep_ID=").append(m_Record_ID);
 		else if (m_AD_Table_ID == MBPartner.Table_ID)
@@ -223,7 +221,7 @@ public class ARequest implements ActionListener
 			//
 			if (m_AD_Table_ID == MBPartner.Table_ID)
 				tab.setValue("C_BPartner_ID", new Integer(m_Record_ID));
-			else if (m_AD_Table_ID == MUser.Table_ID)
+			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 				tab.setValue("AD_User_ID", new Integer(m_Record_ID));
 			//
 			else if (m_AD_Table_ID == MProject.Table_ID)
