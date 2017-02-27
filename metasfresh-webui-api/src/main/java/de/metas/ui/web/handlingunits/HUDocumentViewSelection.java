@@ -248,29 +248,28 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		_recordsSupplier.forget();
 		documentViewsLoader.getAttributesProvider().invalidateAll();
 	}
-	
+
 	public void addHUsAndInvalidate(final Collection<I_M_HU> husToAdd)
 	{
-		if(husToAdd.isEmpty())
+		if (husToAdd.isEmpty())
 		{
 			return;
 		}
-		
+
 		documentViewsLoader.addHUs(husToAdd);
 		invalidateAll();
 	}
-	
+
 	public void addHUAndInvalidate(final I_M_HU hu)
 	{
-		if(hu == null)
+		if (hu == null)
 		{
 			return;
 		}
-		
+
 		documentViewsLoader.addHUs(ImmutableSet.of(hu));
 		invalidateAll();
 	}
-
 
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
@@ -285,7 +284,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
 				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
 				.anyMatch(records::contains);
-		if(!containsSomeRecords)
+		if (!containsSomeRecords)
 		{
 			return;
 		}
@@ -354,6 +353,22 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		public Stream<HUDocumentView> stream()
 		{
 			return records.stream();
+		}
+
+		public Stream<HUDocumentView> streamRecursive()
+		{
+			return records.stream()
+					.map(row -> streamRecursive(row))
+					.reduce(Stream::concat)
+					.orElse(Stream.of());
+		}
+
+		private Stream<HUDocumentView> streamRecursive(HUDocumentView row)
+		{
+			return row.getIncludedDocuments()
+					.stream()
+					.map(includedRow -> streamRecursive(includedRow))
+					.reduce(Stream.of(row), Stream::concat);
 		}
 
 		public long size()
@@ -466,6 +481,18 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
 	{
 		return getRecords().streamByIds(documentIds);
+	}
+
+	/** @return top level rows stream */
+	public Stream<HUDocumentView> streamAll()
+	{
+		return getRecords().stream();
+	}
+
+	/** @return top level rows and included rows recursive stream */
+	public Stream<HUDocumentView> streamAllRecursive()
+	{
+		return getRecords().streamRecursive();
 	}
 
 	@Override
