@@ -155,12 +155,14 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 		// Retrieve HU items and get children HUs
 		final List<I_M_HU_Item> huItems = handlingUnitsDAO.retrieveItems(hu);
+		final boolean saveOnChange = isSaveOnChange();
 		for (final I_M_HU_Item item : huItems)
 		{
 			final List<I_M_HU> childrenHU = handlingUnitsDAO.retrieveIncludedHUs(item);
 			for (final I_M_HU childHU : childrenHU)
 			{
 				final IAttributeStorage childAttributeSetStorage = storageFactory.getAttributeStorage(childHU);
+				childAttributeSetStorage.setSaveOnChange(saveOnChange); // propagate saveOnChange to child
 				childrenAttributeSetStorages.put(childAttributeSetStorage.getId(), childAttributeSetStorage);
 			}
 		}
