@@ -66,6 +66,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	{
 		return new Builder(lookupTableName);
 	}
+	
+	public static final Builder builderWithoutTableName()
+	{
+		return new Builder(null);
+	}
 
 	public static final String FILTER_Any = "%";
 	private static final String FILTER_Any_SQL = "'%'";
