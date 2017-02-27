@@ -252,7 +252,7 @@ public class JavaProcessTests
 		trxManager.assertTrxNameNull(trxManager.getThreadInheritedTrxName());
 	}
 
-	private ProcessInfo createProcessInfo(final JavaProcess processInstance)
+	private <T extends IProcess> ProcessInfo createProcessInfo(final Class<T> processClass)
 	{
 		final Properties ctx = Env.getCtx();
 		
@@ -268,7 +268,7 @@ public class JavaProcessTests
 				.setCtx(ctx)
 				.setAD_PInstance(pinstance)
 				.setTitle("Test")
-				.setClassname(processInstance == null ? null : processInstance.getClass().getName())
+				.setClassname(processClass == null ? null : processClass.getName())
 				.build();
 		return pi;
 	}
@@ -295,9 +295,9 @@ public class JavaProcessTests
 	@Test
 	public void test_RunAndReturnMessage()
 	{
-		final MockedJavaProcess process = new MockedJavaProcess();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess.class);
+		final MockedJavaProcess process = (MockedJavaProcess)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItReturnMsg = "Process executed";
 		process.startProcess(pi, trx);
@@ -313,9 +313,9 @@ public class JavaProcessTests
 	@Test
 	public void test_RunAndFailOnDoIt()
 	{
-		final MockedJavaProcess process = new MockedJavaProcess();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess.class);
+		final MockedJavaProcess process = (MockedJavaProcess)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
@@ -334,9 +334,9 @@ public class JavaProcessTests
 	@Test
 	public void test_RunAndFailOnPrepare()
 	{
-		final MockedJavaProcess process = new MockedJavaProcess();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess.class);
+		final MockedJavaProcess process = (MockedJavaProcess)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
@@ -355,9 +355,9 @@ public class JavaProcessTests
 	@Test
 	public void test_PrepareOutOfTrx_doItReturnMessage()
 	{
-		final MockedJavaProcess_PrepareOutOfTrx process = new MockedJavaProcess_PrepareOutOfTrx();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess_PrepareOutOfTrx.class);
+		final MockedJavaProcess_PrepareOutOfTrx process = (MockedJavaProcess_PrepareOutOfTrx)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItReturnMsg = "Process executed";
 		process.startProcess(pi, trx);
@@ -373,9 +373,9 @@ public class JavaProcessTests
 	@Test
 	public void test_PrepareOutOfTrxButFail()
 	{
-		final MockedJavaProcess_PrepareOutOfTrx process = new MockedJavaProcess_PrepareOutOfTrx();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess_PrepareOutOfTrx.class);
+		final MockedJavaProcess_PrepareOutOfTrx process = (MockedJavaProcess_PrepareOutOfTrx)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
@@ -394,9 +394,9 @@ public class JavaProcessTests
 	@Test
 	public void test_PrepareOutOfTrxButCancel()
 	{
-		final MockedJavaProcess_PrepareOutOfTrx process = new MockedJavaProcess_PrepareOutOfTrx();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess_PrepareOutOfTrx.class);
+		final MockedJavaProcess_PrepareOutOfTrx process = (MockedJavaProcess_PrepareOutOfTrx)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onPrepareThrowException = new ProcessCanceledException();
 		process.startProcess(pi, trx);
@@ -412,9 +412,9 @@ public class JavaProcessTests
 	@Test
 	public void test_doItOutOfTrx_doItReturnMessage()
 	{
-		final MockedJavaProcess_DoItOutOfTrx process = new MockedJavaProcess_DoItOutOfTrx();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess_DoItOutOfTrx.class);
+		final MockedJavaProcess_DoItOutOfTrx process = (MockedJavaProcess_DoItOutOfTrx)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItReturnMsg = "Process executed";
 		process.startProcess(pi, trx);
@@ -431,9 +431,9 @@ public class JavaProcessTests
 	@Test
 	public void test_doItOutOfTrxButFail()
 	{
-		final MockedJavaProcess_DoItOutOfTrx process = new MockedJavaProcess_DoItOutOfTrx();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess_DoItOutOfTrx.class);
+		final MockedJavaProcess_DoItOutOfTrx process = (MockedJavaProcess_DoItOutOfTrx)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
@@ -452,9 +452,9 @@ public class JavaProcessTests
 	@Test
 	public void test_DoItOutOfTrxButCancel()
 	{
-		final MockedJavaProcess_DoItOutOfTrx process = new MockedJavaProcess_DoItOutOfTrx();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess_DoItOutOfTrx.class);
+		final MockedJavaProcess_DoItOutOfTrx process = (MockedJavaProcess_DoItOutOfTrx)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItThrowException = new ProcessCanceledException();
 		process.startProcess(pi, trx);
@@ -477,9 +477,9 @@ public class JavaProcessTests
 	@Test
 	public void test_RunAndFailOnPostProcess()
 	{
-		final MockedJavaProcess process = new MockedJavaProcess();
+		final ProcessInfo pi = createProcessInfo(MockedJavaProcess.class);
+		final MockedJavaProcess process = (MockedJavaProcess)pi.newProcessClassInstanceOrNull();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onPostProcessThrowException = new RuntimeException("fail on postProcess");
 		Exception startProcess_Exception = startProcessAndExpectToFail(process, pi, trx);

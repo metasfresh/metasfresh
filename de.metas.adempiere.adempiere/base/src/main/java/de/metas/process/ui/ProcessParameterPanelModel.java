@@ -248,36 +248,42 @@ public class ProcessParameterPanelModel
 	 */
 	private void createField(final ResultSet rs)
 	{
-		// Create Field
+		// Parameter field
 		final GridFieldVO gridFieldVO = GridFieldVO.createParameter(ctx, windowNo, tabNo, rs);
-		final boolean mandatoryOverride = processClassInfo.isParameterMandatory(gridFieldVO.getColumnName());
-		if (mandatoryOverride)
 		{
-			gridFieldVO.setMandatory(true);
-		}
-		final GridField gridField = new GridField(gridFieldVO);
-		gridFields.add(gridField);                      // add to Fields
-		gridFieldsAll.add(gridField);
-
-		//
-		final GridField gridFieldTo;
-		if (gridFieldVO.isRange)
-		{
-			final GridFieldVO gridFieldToVO = GridFieldVO.createParameterTo(gridFieldVO);
+			final boolean mandatoryOverride = processClassInfo.isParameterMandatory(gridFieldVO.getColumnName(), false); // parameterTo=false
 			if (mandatoryOverride)
 			{
-				gridFieldToVO.setMandatory(true);
+				gridFieldVO.setMandatory(true);
 			}
-			gridFieldTo = new GridField(gridFieldToVO);
+			final GridField gridField = new GridField(gridFieldVO);
+			gridFields.add(gridField);                      // add to Fields
+			gridFieldsAll.add(gridField);
 		}
-		else
+
+		//
+		// Parameter field To
 		{
-			gridFieldTo = null;
-		}
-		gridFieldsTo.add(gridFieldTo);
-		if (gridFieldTo != null)
-		{
-			gridFieldsAll.add(gridFieldTo);
+			final GridField gridFieldTo;
+			if (gridFieldVO.isRange)
+			{
+				final GridFieldVO gridFieldToVO = GridFieldVO.createParameterTo(gridFieldVO);
+				final boolean mandatoryOverride = processClassInfo.isParameterMandatory(gridFieldVO.getColumnName(), true); // parameterTo=true
+				if (mandatoryOverride)
+				{
+					gridFieldToVO.setMandatory(true);
+				}
+				gridFieldTo = new GridField(gridFieldToVO);
+			}
+			else
+			{
+				gridFieldTo = null;
+			}
+			gridFieldsTo.add(gridFieldTo); // add it even if null, to have the save "index" as in gridFields list
+			if (gridFieldTo != null)
+			{
+				gridFieldsAll.add(gridFieldTo);
+			}
 		}
 	}	// createField
 

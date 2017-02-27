@@ -545,17 +545,20 @@ public final class ProcessExecutor
 
 	private final void startJavaProcess() throws Exception
 	{
-		final String className = pi.getClassName();
-
-		// use context classloader if available
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-			classLoader = getClass().getClassLoader();
-
-		final IProcess process = (IProcess)classLoader.loadClass(className).newInstance();
-
+		final ProcessInfo pi = this.pi;
+		
+		final IProcess process = pi.newProcessClassInstanceOrNull();
+		if(process == null)
+		{
+			throw new AdempiereException("Cannot create process class instance for " + pi); // shall not happen
+		}
+		
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		process.startProcess(pi, trx);
+		
+		try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
+		{
+			process.startProcess(pi, trx);
+		}
 	}
 
 	/**

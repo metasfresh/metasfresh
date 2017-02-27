@@ -2,18 +2,15 @@ package de.metas.process;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
-import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.GuavaCollectors;
 import org.compiere.Adempiere;
 import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
@@ -25,7 +22,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 
@@ -112,13 +110,18 @@ public final class ProcessClassInfo
 			return ProcessClassInfo.NULL;
 		}
 	}
+	
+	public static boolean isNull(final ProcessClassInfo processClassInfo)
+	{
+		return processClassInfo == null || processClassInfo == NULL;
+	}
 
 	/** Reset {@link ProcessClassInfo} cache */
 	public static final void resetCache()
 	{
 		processClassInfoCache.invalidateAll();
 	}
-
+	
 	/** "Process class" to {@link ProcessClassInfo} cache */
 	private static final LoadingCache<Class<?>, ProcessClassInfo> processClassInfoCache = CacheBuilder.newBuilder()
 			.weakKeys() // to prevent ClassLoader memory leaks nightmare
@@ -137,7 +140,7 @@ public final class ProcessClassInfo
 	 * @param processClass
 	 * @return process class info or {@link #NULL} in case of failure.
 	 */
-	static final ProcessClassInfo createProcessClassInfo(final Class<?> processClass)
+	private static final ProcessClassInfo createProcessClassInfo(final Class<?> processClass)
 	{
 		try
 		{
@@ -158,27 +161,31 @@ public final class ProcessClassInfo
 		return paramFields;
 	}
 
-	/** Introspects given process class and creates the {@link ProcessClassParamInfo}s */
-	private static final List<ProcessClassParamInfo> createProcessClassParamInfos(final Class<?> processClass)
+	/**
+	 * Retrieves the fields which were marked as process parameters indexed by field key
+	 * 
+	 * @see ProcessClassParamInfo#createFieldUniqueKey(Field)
+	 */
+	public static final ImmutableMap<ArrayKey, Field> retrieveParameterFieldsIndexedByFieldKey(final Class<?> processClass)
 	{
-		final Set<Field> paramFields = retrieveParameterFields(processClass);
-		if (paramFields.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+		return retrieveParameterFields(processClass)
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(ProcessClassParamInfo::createFieldUniqueKey));
 
-		final List<ProcessClassParamInfo> paramInfos = new ArrayList<>(paramFields.size());
-		for (final Field paramField : paramFields)
-		{
-			final ProcessClassParamInfo paramInfo = createProcessClassParamInfo(paramField);
-			if (paramInfo == null)
-			{
-				continue;
-			}
-			paramInfos.add(paramInfo);
-		}
+	}
 
-		return paramInfos;
+	/**
+	 * Introspect given process class and creates the {@link ProcessClassParamInfo}s
+	 * 
+	 * @return
+	 */
+	private static final ImmutableListMultimap<ArrayKey, ProcessClassParamInfo> createProcessClassParamInfos(final Class<?> processClass)
+	{
+		return retrieveParameterFields(processClass)
+				.stream()
+				.map(field -> createProcessClassParamInfo(field))
+				.filter(paramInfo -> paramInfo != null)
+				.collect(GuavaCollectors.toImmutableListMultimap(ProcessClassParamInfo::getKey));
 	}
 
 	private static ProcessClassParamInfo createProcessClassParamInfo(final Field paramField)
@@ -235,7 +242,7 @@ public final class ProcessClassInfo
 	private final boolean runPrepareOutOfTransaction;
 	private final boolean runDoItOutOfTransaction;
 	private final boolean clientOnly;
-	private final List<ProcessClassParamInfo> parameterInfos;
+	private final ImmutableListMultimap<ArrayKey, ProcessClassParamInfo> parameterInfos;
 
 	private static final boolean DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear = true;
 	private final boolean existingCurrentRecordRequiredWhenCalledFromGear;
@@ -253,7 +260,7 @@ public final class ProcessClassInfo
 		runPrepareOutOfTransaction = false;
 		runDoItOutOfTransaction = false;
 		clientOnly = false;
-		parameterInfos = ImmutableList.of();
+		parameterInfos = ImmutableListMultimap.of();
 		existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
 		onlyForProfiles = null;
 	}
@@ -277,7 +284,7 @@ public final class ProcessClassInfo
 
 		//
 		// Load parameter infos
-		this.parameterInfos = ImmutableList.copyOf(createProcessClassParamInfos(processClass));
+		this.parameterInfos = createProcessClassParamInfos(processClass);
 
 		//
 		// Load from @Process annotation
@@ -347,62 +354,21 @@ public final class ProcessClassInfo
 		return clientOnly;
 	}
 
-	public boolean isParameterMandatory(final String parameterName)
+	public boolean isParameterMandatory(final String parameterName, final boolean parameterTo)
 	{
-		for (final ProcessClassParamInfo paramInfo : parameterInfos)
-		{
-			if (!paramInfo.getParameterName().equalsIgnoreCase(parameterName))
-			{
-				continue;
-			}
-
-			if (paramInfo.isMandatory())
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return getParameterInfos(parameterName, parameterTo)
+				.stream()
+				.anyMatch(paramInfo -> paramInfo.isMandatory());
 	}
 
-	public List<ProcessClassParamInfo> getParameterInfos()
+	public Collection<ProcessClassParamInfo> getParameterInfos()
 	{
-		return parameterInfos;
+		return parameterInfos.values();
 	}
-
-	/**
-	 *
-	 * @param processInstance the process object where we will set the annotated fields to be the loaded parameters. Note that it needs to be an {@link IContextAware}, because we might need to load
-	 *            records from the given <code>source</code>.
-	 * @param source
-	 */
-	public void loadParameterValues(final IContextAware processInstance, final IRangeAwareParams source)
+	
+	public List<ProcessClassParamInfo> getParameterInfos(final String parameterName, final boolean parameterTo)
 	{
-		Check.assumeNotNull(processInstance, "processInstance not null");
-
-		// No parameters => nothing to do
-		if (parameterInfos.isEmpty())
-		{
-			return;
-		}
-
-		//
-		// Retrieve Fields from processInstance's class
-		final Map<ArrayKey, Field> processFields = new HashMap<>();
-		for (final Field processField : retrieveParameterFields(processInstance.getClass()))
-		{
-			final ArrayKey fieldKey = ProcessClassParamInfo.createFieldUniqueKey(processField);
-			processFields.put(fieldKey, processField);
-		}
-
-		//
-		// Iterate all process class info parameters and try to update the corresponding field
-		for (final ProcessClassParamInfo paramInfo : parameterInfos)
-		{
-			final ArrayKey fieldKey = paramInfo.getFieldKey();
-			final Field processField = processFields.get(fieldKey);
-			paramInfo.loadParameterValue(processInstance, processField, source);
-		}
+		return parameterInfos.get(ProcessClassParamInfo.createParameterUniqueKey(parameterName, parameterTo));
 	}
 
 	/**
