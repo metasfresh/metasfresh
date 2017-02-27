@@ -9,6 +9,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
@@ -67,6 +68,8 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	@Override
 	public IDocumentViewSelection getView(final String viewId)
 	{
+		Preconditions.checkNotNull(viewId, "viewId cannot be null");
+		
 		final IDocumentViewSelection view = views.getIfPresent(viewId);
 		if (view == null)
 		{
