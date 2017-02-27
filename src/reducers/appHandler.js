@@ -34,10 +34,10 @@ export default function appHandler(state = initialState, action) {
                     }]
                 })
             });
-            
+
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: update(state.notifications, {$splice: [[action.id,1]]})
+                notifications: update(state.notifications, {$splice: [[action.id, 1]]})
             });
         // END OF NOTIFICATION ACTIONS
         case types.GET_NOTIFICATIONS_SUCCESS:

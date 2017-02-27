@@ -130,7 +130,7 @@ class TableQuickInput extends Component {
 
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
         const {tabId, docType} = this.props;
-        
+
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
@@ -147,7 +147,7 @@ class TableQuickInput extends Component {
                     gridAlign={item.gridAlign}
                     key={id}
                     caption={item.caption}
-                    handlePatch={(prop, value, callback) => this.handlePatch(prop,value, callback)}
+                    handlePatch={(prop, value, callback) => this.handlePatch(prop, value, callback)}
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
                     type="secondary"
@@ -159,7 +159,7 @@ class TableQuickInput extends Component {
 
     onSubmit = (e) => {
         const {dispatch, docType, docId, tabId} = this.props;
-        const {id,data} = this.state;
+        const {id, data} = this.state;
         e.preventDefault();
 
         document.activeElement.blur();

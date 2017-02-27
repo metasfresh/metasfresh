@@ -1,5 +1,3 @@
-/* global config:true */
-
 import axios from 'axios';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS

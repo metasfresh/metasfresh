@@ -1,8 +1,5 @@
-/* global config:true */
-
 import * as types from '../constants/MenuTypes'
 import axios from 'axios';
-
 
 export function setBreadcrumb(breadcrumb){
     return {
@@ -75,16 +72,16 @@ export function queryPathsRequest(query, limit, child) {
     );
 }
 
-export function rootRequest(limit) {
+export function rootRequest(limit, depth=0) {
     return () => axios.get(
         config.API_URL +
-        '/menu/root?depth=10' +
+        '/menu/root?depth=' + depth +
         (limit ? '&childrenLimit=' + limit : ''));
 }
 
 export function getRootBreadcrumb() {
     return (dispatch) => {
-        dispatch(rootRequest(6)).then(root => {
+        dispatch(rootRequest(6, 10)).then(root => {
             dispatch(setHomeMenu({nodeId: '0', children: root.data}));
         });
     }

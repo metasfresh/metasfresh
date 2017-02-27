@@ -1,4 +1,4 @@
-import React, { Component,PropTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import update from 'react/lib/update';
 import DraggableWidget from './DraggableWidget';
@@ -83,28 +83,23 @@ export class DraggableWrapper extends Component {
         })
     }
 
-
     render() {
         const { cards, idMaximized, indicators } = this.state;
         return (
-            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}> 
+            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}>
                 {this.props.dashboard == '/' &&
                     <div className="logo-wrapper">
                         <img src={logo} />
                     </div>
                 }
-                
-                
-                
+
                 {false && indicators.length > 0 && <div className={
                     'indicators-wrapper ' +
                     (idMaximized !== false ? 'indicator-hidden' : '')
                 }>
                     {false && indicators.map((indicator, id) =>
                         <div
-                            className={
-                                "indicator "
-                            }
+                            className="indicator"
                             key={id}
                         >
                             <iframe

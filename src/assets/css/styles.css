@@ -59,8 +59,8 @@ body {
         margin-left: -0.5rem;
         margin-right: -0.5rem;
     }
-    [class^="col-"],
-    [class*=" col-"] {
+    [class^='col-'],
+    [class*=' col-'] {
         padding-left: .5rem;
         padding-right: .5rem;
     }
@@ -365,6 +365,7 @@ body {
 .document-list-header {
     display: flex;
     justify-content: space-between;
+    flex-shrink: 0;
 }
 
 .document-list-header > * {
@@ -433,7 +434,6 @@ body {
 
 .table .YesNo i {
     height: 14px;
-    margin-top: 4px;
     display: inline-block;
 }
 
@@ -951,45 +951,47 @@ td.pulse-off input {
     background-color: $brand-success-dark-color;
 }
 
+.raw-modal {
+    z-index:399;
+}
+
 /*
  *  Animations
  */
- 
- .slidein-enter {
-     right: -100%;
- }
 
- .slidein-enter.slidein-enter-active {
-     right: 0;
-     transition: right .2s;
-     transition-delay: .8s;
- }
+.slidein-enter {
+    right: -100%;
+}
 
- .slidein-leave {
-     right: 0;
-     transition: right .2s;
- }
+.slidein-enter.slidein-enter-active {
+    right: 0;
+    transition: right .2s;
+    transition-delay: .8s;
+}
 
- .slidein-leave.slidein-leave-active {
-     right: -100%;
- }
- 
- 
- 
- .progress-enter {
-     width:100%;
- }
+.slidein-leave {
+    right: 0;
+    transition: right .2s;
+}
 
- .progress-enter.progress-enter-active {
-     width: 0;
-     transition: width 5s linear;
- }
+.slidein-leave.slidein-leave-active {
+    right: -100%;
+}
 
- .progress-leave {
-     width: 0;
-     transition: width 5s linear;
- }
+.progress-enter {
+    width:100%;
+}
 
- .progress-leave.slidein-leave-active {
-     width: 0;
- }
+.progress-enter.progress-enter-active {
+    width: 0;
+    transition: width 5s linear;
+}
+
+.progress-leave {
+    width: 0;
+    transition: width 5s linear;
+}
+
+.progress-leave.slidein-leave-active {
+    width: 0;
+}

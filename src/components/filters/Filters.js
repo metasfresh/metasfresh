@@ -10,14 +10,14 @@ class Filters extends Component {
         this.state = {
             filter: null,
             notValidFields: null,
-            active: null,
             widgetShown: false
         }
     }
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
-        filtersActive && this.init(filtersActive[0]);
+
+        this.init(filtersActive ? filtersActive[0] : null);
     }
 
     componentDidMount() {
@@ -36,20 +36,25 @@ class Filters extends Component {
     /*
      *   This method should update docList
      */
-    applyFilters = (filter) => {
-        const notValid = this.isFilterValid(filter);
+    applyFilters = (filter, cb) => {
+        const valid = this.isFilterValid(filter);
 
-        if (notValid.length) {
-            this.setState({
-                notValidFields: notValid
-            });
-        } else {
-            this.setFilterActive([filter]);
-        }
+        this.setState({
+            notValidFields: !valid
+        }, () => {
+            if (valid){
+                const parsedFilter = filter.parameters ? Object.assign({}, filter, {
+                    parameters: this.parseToPatch(filter.parameters)
+                }) : filter;
+                this.setFilterActive([parsedFilter]);
+                cb && cb();
+            }
+        });
     }
 
     setFilterActive = (filter) => {
         const {updateDocList} = this.props;
+
         this.setState({
             filter: filter
         }, () => {
@@ -71,6 +76,12 @@ class Filters extends Component {
         this.setFilterActive(null)
     }
 
+    dropdownToggled = () => {
+        this.setState({
+            notValidFields: false
+        })
+    }
+
     // PARSING FILTERS ---------------------------------------------------------
 
     sortFilters = (data) => {
@@ -81,16 +92,21 @@ class Filters extends Component {
     }
 
     isFilterValid = (filters) => {
-        return filters.parameters.filter(item => {
-            return item.mandatory && !item.value;
-        })
+        if(filters.parameters){
+            return !(filters.parameters.filter(
+                item => item.mandatory && !item.value
+            ).length);
+        }else{
+            return true;
+        }
     }
 
-    getFiltersStructure = (filterData) => {
-        return filterData.parameters.map((item) => {
-            item.value = null;
-            return item;
-        });
+    parseToPatch = (params) => {
+        return params.map(param =>
+            Object.assign({}, param, {
+                value: param.value === '' ? null : param.value
+            })
+        )
     }
 
     // RENDERING FILTERS -------------------------------------------------------
@@ -114,6 +130,7 @@ class Filters extends Component {
                             applyFilters={this.applyFilters}
                             clearFilters={this.clearFilters}
                             active={filter}
+                            dropdownToggled={this.dropdownToggled}
                         />
                     }
                     {!!notFrequentFilters.length &&
@@ -127,6 +144,7 @@ class Filters extends Component {
                             applyFilters={this.applyFilters}
                             clearFilters={this.clearFilters}
                             active={filter}
+                            dropdownToggled={this.dropdownToggled}
                         />
                     }
                 </div>

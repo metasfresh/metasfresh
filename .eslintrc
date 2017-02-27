@@ -12,13 +12,22 @@
   "rules": {
     "quotes": [2, "single"],
     "jsx-quotes": [2, "prefer-double"],
-    "no-console": 2,
+    "no-console": [2, { allow: ["warn", "error"] }],
     "strict": [2, "never"],
+    "no-class-assign": 0,
+    "no-trailing-spaces": 2,
+    "comma-spacing": 2,
+    "no-multiple-empty-lines": [2, {max: 1, maxEOF: 1, maxBOF: 0}],
     "react/jsx-uses-react": 2,
     "react/jsx-uses-vars": 2,
     "react/react-in-jsx-scope": 2
   },
   "plugins": [
     "react"
-  ]
+  ],
+  "globals": {
+    "localStorage",
+    "Promise",
+    "config"
+  }
 }

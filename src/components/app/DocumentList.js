@@ -1,5 +1,3 @@
-/* global config:true */
-
 import React, { Component, PropTypes } from 'react';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
@@ -45,7 +43,7 @@ class DocumentList extends Component {
 
             clickOutsideLock: false,
             refresh: null,
-            
+
             cachedSelection: null
         }
         this.fetchLayoutAndData();
@@ -57,8 +55,8 @@ class DocumentList extends Component {
             inBackground
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
-        
-        /* 
+
+        /*
          * If we browse list of docs, changing type of Document
          * does not re-construct component, so we need to
          * make it manually while the windowType changes.
@@ -66,7 +64,9 @@ class DocumentList extends Component {
         if(windowType !== this.props.windowType) {
             this.setState({
                 data:null,
-                layout:null
+                layout:null,
+                filters: null,
+                viewId: null
             }, () => {
 
                 this.fetchLayoutAndData();
@@ -100,16 +100,16 @@ class DocumentList extends Component {
             });
             this.connectWS(defaultViewId);
         }
-        
+
         /*
-         * It is case when we need refersh global selection state, 
+         * It is case when we need refersh global selection state,
          * because scope is changed
          *
          * After opening modal cache current selection
          * After closing modal with gridview, refresh selected.
          */
         if(
-            inBackground != this.props.inBackground 
+            inBackground != this.props.inBackground
         ) {
             if(!inBackground){
                 this.props.dispatch(
@@ -146,7 +146,7 @@ class DocumentList extends Component {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
                 const {fullyChanged} = JSON.parse(msg.body);
                 if(fullyChanged == true){
-                    this.browseView();
+                    this.browseView(true);
                 }
             });
         });
@@ -179,20 +179,17 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        dispatch(
-            initLayout('documentView', windowType, null, null, null, null, type, true)
-        ).then(response => {
+        dispatch(initLayout(
+            'documentView', windowType, null, null, null, null, type, true
+        )).then(response => {
             this.setState({
-                layout: response.data,
-                page:1,
-                sort:null
+                layout: response.data
             }, () => {
                 if(viewId && !isNewFilter){
                     this.browseView();
                 }else{
                     this.createView();
                 }
-
                 setModalTitle && setModalTitle(response.data.caption)
             })
         });
@@ -201,11 +198,11 @@ class DocumentList extends Component {
     /*
      *  If viewId exist, than browse that view.
      */
-    browseView = () => {
+    browseView = (refresh) => {
         const {viewId, page, sort} = this.state;
 
         this.getData(
-            viewId, page, sort
+            viewId, page, sort, refresh
         ).catch((err) => {
             if(err.response && err.response.status === 404) {
                 this.createView();
@@ -232,7 +229,7 @@ class DocumentList extends Component {
         })
     }
 
-    getData = (id, page, sortingQuery) => {
+    getData = (id, page, sortingQuery, refresh) => {
         const {dispatch, windowType, updateUri} = this.props;
 
         if(updateUri){
@@ -244,12 +241,14 @@ class DocumentList extends Component {
         return dispatch(
             browseViewRequest(id, page, this.pageLength, sortingQuery, windowType)
         ).then(response => {
-            this.setState({
+
+            this.setState(Object.assign({}, {
                 data: response.data,
                 viewId: response.data.viewId,
-                filters: response.data.filters,
+                filters: response.data.filters
+            }, refresh && {
                 refresh: Date.now()
-            })
+            }))
         });
     }
 
@@ -308,8 +307,8 @@ class DocumentList extends Component {
         } = this.state;
 
         const {
-            dispatch, windowType, type, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit
+            dispatch, windowType, open, closeOverlays, selected, inBackground,
+            fetchQuickActionsOnInit, isModal
         } = this.props;
 
         if(layout && data) {
@@ -317,13 +316,13 @@ class DocumentList extends Component {
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         <div>
-                            {type === 'grid' &&
+                            {layout.supportNewRecord && !isModal &&
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
-                                    title={'New '+layout.caption}
+                                    title={layout.newRecordCaption}
                                 >
-                                    <i className="meta-icon-add" /> New {layout.caption}
+                                    <i className="meta-icon-add" /> {layout.newRecordCaption}
                                 </button>
                             }
                             {layout.filters && <Filters
@@ -359,8 +358,10 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
+                                !isModal &&
                                 dispatch(push('/window/' + windowType + '/' + id))
                             }}
+                            isModal={isModal}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
@@ -375,6 +376,7 @@ class DocumentList extends Component {
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={selected}
+                            queryLimitHit={data.queryLimitHit}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper

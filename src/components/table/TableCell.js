@@ -3,7 +3,6 @@ import onClickOutside from 'react-onclickoutside';
 import Moment from 'moment';
 import MasterWidget from '../widget/MasterWidget';
 
-
 class TableCell extends Component {
     constructor(props) {
         super(props);
@@ -29,7 +28,7 @@ class TableCell extends Component {
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
         const {backdropLock} = this.state;
-        
+
         //We can handle click outside only if
         //nested elements has no click oustide listening pending
         if(!backdropLock){
@@ -63,7 +62,6 @@ class TableCell extends Component {
                     } else {
                         return field[Object.keys(field)[0]];
                     }
-                    break;
                 case 'boolean':
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
                 case 'string':
@@ -72,12 +70,11 @@ class TableCell extends Component {
                     } else {
                         return field;
                     }
-                    break;
                 default:
                     return field;
             }
         }
-        
+
     }
 
     render() {

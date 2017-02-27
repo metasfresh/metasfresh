@@ -53,6 +53,7 @@ class LookupList extends Component {
         const {handleSelect, selected} = this.props;
         const name = item[Object.keys(item)[0]];
         const key = Object.keys(item)[0];
+
         return (
             <div
                 key={key}
@@ -132,7 +133,6 @@ class LookupList extends Component {
 
     }
 }
-
 
 LookupList.propTypes = {
     dispatch: PropTypes.func.isRequired

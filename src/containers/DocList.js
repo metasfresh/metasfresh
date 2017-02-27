@@ -61,7 +61,7 @@ class DocList extends Component {
     render() {
         const {
             windowType, breadcrumb, query, actions, modal, selected, references,
-            rawModal,attachments
+            rawModal, attachments, indicator
         } = this.props;
 
         const {
@@ -92,6 +92,8 @@ class DocList extends Component {
                         query={query}
                         selected={selected}
                         viewId={query.viewId}
+                        rawModalVisible={rawModal.visible}
+                        indicator={indicator}
                      />
                  }
                  {rawModal.visible &&
@@ -104,6 +106,7 @@ class DocList extends Component {
                              defaultViewId={rawModal.viewId}
                              selected={selected}
                              setModalTitle={this.setModalTitle}
+                             isModal={true}
                          />
                      </RawModal>
                  }
@@ -136,6 +139,7 @@ DocList.propTypes = {
     selected: PropTypes.array,
     actions: PropTypes.array.isRequired,
     attachments: PropTypes.array.isRequired,
+    indicator: PropTypes.string.isRequired,
     references: PropTypes.array.isRequired
 }
 
@@ -146,12 +150,14 @@ function mapStateToProps(state) {
         modal,
         rawModal,
         selected,
-        latestNewDocument
+        latestNewDocument,
+        indicator
     } = windowHandler || {
         modal: false,
         rawModal: false,
         selected: [],
-        latestNewDocument: null
+        latestNewDocument: null,
+        indicator: ''
     }
 
     const {
@@ -174,18 +180,9 @@ function mapStateToProps(state) {
         pathname: ''
     }
 
-
     return {
-        modal,
-        breadcrumb,
-        search,
-        pathname,
-        actions,
-        selected,
-        latestNewDocument,
-        references,
-        rawModal,
-        attachments
+        modal, breadcrumb, search, pathname, actions, selected, indicator,
+        latestNewDocument, references, rawModal, attachments
     }
 }
 

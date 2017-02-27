@@ -27,7 +27,6 @@ import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
-
 class Table extends Component {
     constructor(props) {
         super(props);
@@ -35,7 +34,7 @@ class Table extends Component {
         const {defaultSelected} = this.props;
 
         this.state = {
-            selected: defaultSelected || [null],
+            selected: defaultSelected || [undefined],
             listenOnKeys: true,
             contextMenu: {
                 open: false,
@@ -55,7 +54,9 @@ class Table extends Component {
     componentWillUpdate(nextProps, nextState) {
         const {dispatch} = this.props;
 
-        if((JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
+        if(
+            JSON.stringify(nextState.selected) !==
+            JSON.stringify(this.state.selected)
         ){
             dispatch(selectTableItems(nextState.selected));
         }
@@ -63,6 +64,7 @@ class Table extends Component {
 
     componentDidUpdate(prevProps) {
         const {mainTable, open, rowData} = this.props;
+
         if(mainTable && open){
             this.table.focus();
         }
@@ -132,10 +134,11 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => {
+        this.setState(prevState => ({
             selected: prevState.selected.concat([id])
-        }, () => {
-            dispatch(selectTableItems(this.state.selected))
+        }), () => {
+            const {selected} = this.state;
+            dispatch(selectTableItems(selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
@@ -190,14 +193,16 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        const item = event.path;
-        for(let i = 0; i < item.length; i++){
-            if(item[i].classList && item[i].classList.contains('js-not-unselect')){
-                return;
+        if(event.target.parentNode !== document) {
+            const item = event.path;
+            for(let i = 0; i < item.length; i++){
+                if(item[i].classList && item[i].classList.contains('js-not-unselect')){
+                    return;
+                }
             }
-        }
 
-        this.deselectAllProducts();
+            this.deselectAllProducts();
+        }
     }
 
     handleKeyDown = (e) => {
@@ -213,7 +218,7 @@ class Table extends Component {
         }
 
         switch(e.key) {
-            case 'ArrowDown':
+            case 'ArrowDown': {
                 e.preventDefault();
 
                 const actualId = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
@@ -228,7 +233,8 @@ class Table extends Component {
                     }
                 }
                 break;
-            case 'ArrowUp':
+            }
+            case 'ArrowUp': {
                 e.preventDefault();
 
                 const actual = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
@@ -243,6 +249,7 @@ class Table extends Component {
                     }
                 }
                 break;
+            }
             case 'ArrowLeft':
                 e.preventDefault();
                 if(document.activeElement.previousSibling){
@@ -309,7 +316,7 @@ class Table extends Component {
         const selectRange = e.shiftKey;
 
         switch(e.key) {
-            case 'ArrowDown':
+            case 'ArrowDown': {
                 e.preventDefault();
 
                 const array = rows.map((item) => {
@@ -328,7 +335,8 @@ class Table extends Component {
                     }
                 }
                 break;
-            case 'ArrowUp':
+            }
+            case 'ArrowUp': {
                 e.preventDefault();
 
                 const arrays = rows.map((item) => {
@@ -347,6 +355,7 @@ class Table extends Component {
                     }
                 }
                 break;
+            }
             case 'Enter':
                 e.preventDefault();
                 if(selected.length <= 1) {
@@ -362,13 +371,14 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
-            case 'Tab':
+            case 'Tab': {
                 e.preventDefault();
                 const focusedElem = document.getElementsByClassName('js-attributes')[0];
                 if(focusedElem){
                     focusedElem.getElementsByTagName('input')[0].focus();
                 }
                 break;
+            }
         }
     }
 
@@ -431,16 +441,6 @@ class Table extends Component {
         });
     }
 
-    handleFocus = () => {
-        const {rowData, tabid} = this.props;
-        const {selected} = this.state;
-
-         if(selected.length <= 0){
-            const firstId = Object.keys(rowData[tabid])[0];
-            this.selectOneProduct(firstId, 0);
-        }
-    }
-
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
         let arrayIndex;
@@ -462,7 +462,7 @@ class Table extends Component {
             selectIdB
         ];
 
-        selected.sort((a,b) => a - b);
+        selected.sort((a, b) => a - b);
             if(keyProperty === 'id'){
                 return arrayIndex.slice(selected[0], selected[1]+1);
             }else {
@@ -517,8 +517,9 @@ class Table extends Component {
             promptOpen: false,
             selected: []
         }, () => {
-            dispatch(deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected))
-            .then(() => {
+            dispatch(
+                deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected)
+            ).then(() => {
                 if(docId){
                     dispatch(deleteLocal(tabid, selected, 'master'))
                 } else {
@@ -543,7 +544,7 @@ class Table extends Component {
 
     renderTableBody = () => {
         const {
-            tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, 
+            tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
 
@@ -619,8 +620,9 @@ class Table extends Component {
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
-            pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex, indentSupported
+            pageLength, page, mainTable, updateDocList, sort, orderBy,
+            toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
+            queryLimitHit
         } = this.props;
 
         const {
@@ -646,7 +648,7 @@ class Table extends Component {
                         updateDocList={updateDocList}
                         handleAdvancedEdit={() => this.handleAdvancedEdit(type, tabid, selected)}
                         handleOpenNewTab={() => this.handleOpenNewTab(selected)}
-                        handleDelete={() => this.handleDelete()}
+                        handleDelete={!isModal ? () => this.handleDelete() : null}
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
@@ -724,6 +726,7 @@ class Table extends Component {
                                 page={page}
                                 orderBy={orderBy}
                                 deselect={this.deselectAllProducts}
+                                queryLimitHit={queryLimitHit}
                             />
                         </div>
                     </div>

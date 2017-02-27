@@ -7,18 +7,15 @@ import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
 
-
 import {
     rootRequest,
     nodePathsRequest,
-    queryPathsRequest,
-    getWindowBreadcrumb
+    queryPathsRequest
  } from '../actions/MenuActions';
 
 import {
     openModal
 } from '../actions/WindowActions';
-
 
 class NavigationTree extends Component {
     constructor(props){
@@ -35,10 +32,7 @@ class NavigationTree extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch} = this.props;
-
         this.getData();
-        dispatch(getWindowBreadcrumb('143'));
     }
 
     getData = (callback) => {
@@ -78,7 +72,7 @@ class NavigationTree extends Component {
                 query: e.target.value
             });
 
-            dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
+            dispatch(queryPathsRequest(e.target.value, '', true)).then(response => {
 
                 this.setState({
                     queriedResults: response.data.children
@@ -160,8 +154,7 @@ class NavigationTree extends Component {
 
         e.preventDefault();
 
-
-        dispatch(nodePathsRequest(nodeId,4)).then(response => {
+        dispatch(nodePathsRequest(nodeId, 4)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))
@@ -176,12 +169,11 @@ class NavigationTree extends Component {
     }
 
     render() {
-        const {modal, breadcrumb} = this.props;
+        const {rawModalVisible, modal} = this.props;
         const {rootResults} = this.state;
 
         return (
             <Container
-                breadcrumb={breadcrumb.slice(0,1)}
                 siteName = "Sitemap"
             >
                 {modal.visible &&
@@ -195,6 +187,7 @@ class NavigationTree extends Component {
                         modalTitle={modal.title}
                         modalType={modal.modalType}
                         modalViewId={modal.viewId}
+                        rawModalVisible={rawModalVisible}
                      />
                  }
                 {this.renderTree(rootResults)}
@@ -204,30 +197,27 @@ class NavigationTree extends Component {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
+    const { windowHandler } = state;
 
     const {
         modal
     } = windowHandler || {
         modal: {}
     }
-
     const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: []
-    }
+        visible
+    } = windowHandler.rawModal || false;
 
     return {
-        breadcrumb,
-        modal
+        modal,
+        rawModalVisible: visible
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired,
-    modal: PropTypes.object.isRequired
+    modal: PropTypes.object.isRequired,
+    rawModalVisible: PropTypes.bool.isRequired
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);

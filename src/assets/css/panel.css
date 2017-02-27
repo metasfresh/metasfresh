@@ -94,6 +94,7 @@
 .panel-modal-content {
     position: relative;
     max-height: calc(100% - 75px);
+    min-height: calc(100% - 100px);
     width: 100%;
     overflow-y: auto;
     overflow-x: hidden;

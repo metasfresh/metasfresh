@@ -50,12 +50,14 @@ class RawModal extends Component {
     }
 
     removeModal = () => {
-        const {dispatch} = this.props;
+        const {dispatch, modalVisible} = this.props;
 
         dispatch(closeRawModal());
-        document.body.style.overflow = 'auto';
-    }
 
+        if (!modalVisible){
+            document.body.style.overflow = 'auto';
+        }
+    }
 
     render() {
         const {
@@ -68,7 +70,7 @@ class RawModal extends Component {
 
         return (
             <div
-                className="screen-freeze js-not-unselect"
+                className="screen-freeze js-not-unselect raw-modal"
             >
                 <div className="panel panel-modal panel-modal-primary">
                     <div
@@ -102,10 +104,15 @@ class RawModal extends Component {
     }
 }
 
+const mapStateToProps = state => ({
+    modalVisible: state.windowHandler.modal.visible || false
+});
+
 RawModal.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    modalVisible: PropTypes.bool
 };
 
-RawModal = connect()(RawModal)
+RawModal = connect(mapStateToProps)(RawModal)
 
 export default RawModal
