@@ -10,7 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.x.x (2017-10)
+
+upcoming
+
 # metasfresh 4.58.57 (2017-09)
+
+this week's RC
 
 ## Features
 * metasfresh-backend
@@ -40,8 +46,6 @@ upcoming
  
 
 # metasfresh 4.57.56 (2017-08)
-
-this week's RC
 
 ## Features
 * metasfresh 
