@@ -2,6 +2,7 @@
     "rules": {
         "string-quotes": "single",
         "indentation": 4,
-        "declaration-block-no-duplicate-properties": true
+        "declaration-block-no-duplicate-properties": true,
+        "length-zero-no-unit": true
     }
 }
