@@ -337,6 +337,11 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		return allowCreateNew;
 	}
+	
+	private final boolean hasNewDocuments()
+	{
+		return getInnerDocumentsNoLoad().stream().anyMatch(document->document.isNew());
+	}
 
 	private void assertDeleteDocumentAllowed(final Document document)
 	{
