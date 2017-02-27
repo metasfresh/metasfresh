@@ -36,6 +36,7 @@ import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -47,6 +48,17 @@ import com.google.common.collect.Maps;
  */
 public class ProcessParams implements IRangeAwareParams
 {
+	public static final ProcessParams of(final ProcessInfoParameter parameter)
+	{
+		return new ProcessParams(ImmutableList.of(parameter));
+	}
+
+	public static final ProcessParams ofValue(final String parameterName, final Object parameterValue)
+	{
+		final ProcessInfoParameter parameter = ProcessInfoParameter.ofValueObject(parameterName, parameterValue);
+		return new ProcessParams(ImmutableList.of(parameter));
+	}
+
 	private final IReference<List<ProcessInfoParameter>> _parametersLoader;
 	private Map<String, ProcessInfoParameter> _parameterName2parameter;
 
@@ -55,7 +67,7 @@ public class ProcessParams implements IRangeAwareParams
 		super();
 
 		Check.assumeNotNull(parameters, "parameters not null");
-		this._parametersLoader = ImmutableReference.valueOf(parameters);
+		_parametersLoader = ImmutableReference.valueOf(parameters);
 	}
 
 	/**
@@ -68,7 +80,7 @@ public class ProcessParams implements IRangeAwareParams
 		super();
 
 		Check.assumeNotNull(parametersLoader, "parametersLoader not null");
-		this._parametersLoader = parametersLoader;
+		_parametersLoader = parametersLoader;
 	}
 
 	@Override
@@ -87,7 +99,7 @@ public class ProcessParams implements IRangeAwareParams
 					{
 
 						@Override
-						public String apply(ProcessInfoParameter parameter)
+						public String apply(final ProcessInfoParameter parameter)
 						{
 							return parameter.getParameterName();
 						}
@@ -120,7 +132,7 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public String getParameter_ToAsString(String parameterName)
+	public String getParameter_ToAsString(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
@@ -142,7 +154,7 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public int getParameter_ToAsInt(String parameterName)
+	public int getParameter_ToAsInt(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
@@ -153,7 +165,7 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public BigDecimal getParameterAsBigDecimal(String parameterName)
+	public BigDecimal getParameterAsBigDecimal(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
@@ -164,7 +176,7 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public BigDecimal getParameter_ToAsBigDecimal(String parameterName)
+	public BigDecimal getParameter_ToAsBigDecimal(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
@@ -186,7 +198,7 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public boolean getParameter_ToAsBool(String parameterName)
+	public boolean getParameter_ToAsBool(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
@@ -208,7 +220,7 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public Timestamp getParameter_ToAsTimestamp(String parameterName)
+	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
