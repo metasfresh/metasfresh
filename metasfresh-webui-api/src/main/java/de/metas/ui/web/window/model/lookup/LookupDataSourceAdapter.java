@@ -39,7 +39,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-class LookupDataSourceAdapter implements LookupDataSource
+final class LookupDataSourceAdapter implements LookupDataSource
 {
 	public static final LookupDataSourceAdapter of(final LookupDataSourceFetcher fetcher)
 	{
@@ -105,6 +105,7 @@ class LookupDataSourceAdapter implements LookupDataSource
 		//
 		// Build the validation context
 		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingById(idNormalized)
+				.putFilterById(idNormalized)
 				.putShowInactive(true)
 				.build();
 
