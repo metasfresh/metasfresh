@@ -30,39 +30,61 @@ class RawList extends Component {
             }
         }
 
-        const { isOpen, selected } = this.state;
-        if (!isOpen) {
+        const { isOpen } = this.state;
+
+        // no need for updating scroll
+        if (!isOpen || !list.length) {
             return;
         }
 
         const {listScrollWrap, items} = this.refs;
 
-        const listElementHeight = 30;
-        const listVisibleElements = Math.floor(listScrollWrap.clientHeight / listElementHeight);
+        const listElementHeight = this.optionElement.offsetHeight;
+        const listVisibleElements = Math.floor(listScrollWrap.offsetHeight / listElementHeight);
         const shouldListScrollUpdate = listVisibleElements <= items.childNodes.length;
 
-        const selectedIndex = (selected === 0) ? 0 :
-        list.findIndex(item => Object.keys(item)[0] === Object.keys(selected)[0]) + 1;
-
-        // no need for updating scroll
         if (!shouldListScrollUpdate){
             return;
         }
 
+        const selectedIndex = this.getSelectedIndex();
         const visibleMin = listScrollWrap.scrollTop;
-        const visibleMax = listScrollWrap.scrollTop +
-            listVisibleElements * listElementHeight;
+        const visibleMax = visibleMin + listVisibleElements * listElementHeight;
 
         //not visible from down
-        if ((selectedIndex + 1) * listElementHeight > visibleMax){
-            listScrollWrap.scrollTop = listElementHeight *
-                (selectedIndex - listVisibleElements)
+        const scrollFromUp = listElementHeight * (selectedIndex - listVisibleElements);
+        if (
+            (selectedIndex + 1) * listElementHeight > visibleMax &&
+            listScrollWrap.scrollTop !== scrollFromUp
+        ){
+            return listScrollWrap.scrollTop = scrollFromUp;
         }
 
         //not visible from above
-        if (selectedIndex * listElementHeight < visibleMin){
-            listScrollWrap.scrollTop = selectedIndex * listElementHeight
+        const scrollFromDown = selectedIndex * listElementHeight;
+        if (
+            selectedIndex * listElementHeight < visibleMin &&
+            listScrollWrap.scrollTop !== scrollFromDown
+        ){
+            listScrollWrap.scrollTop = scrollFromDown;
         }
+    }
+
+    getSelectedIndex(){
+        const { list, mandatory } = this.props;
+        const { selected } = this.state;
+
+        if (selected === 0){
+            return 0;
+        }
+
+        const baseIndex = list.findIndex(item => Object.keys(item)[0] === Object.keys(selected)[0]);
+
+        if (!mandatory){
+            return baseIndex + 1;
+        }
+
+        return baseIndex;
     }
 
     handleBlur = () => {
@@ -205,6 +227,7 @@ class RawList extends Component {
                 }
                 onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
+                ref={option => this.optionElement = option}
             >
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
             </div>
@@ -214,17 +237,12 @@ class RawList extends Component {
     renderOptions = () => {
         const {list, mandatory, emptyText} = this.props;
 
-        let ret = [];
-
-        if(!mandatory){
-            emptyText && ret.push(this.getRow(0, 0, emptyText));
-        }
-
-        list.map((option, index) => {
-            ret.push(this.getRow(index + 1, option))
-        })
-
-        return <div ref="items">{ret}</div>;
+        return <div ref="items">{[
+            // if field is not mandatory add extra empty row
+            ...(!mandatory && emptyText ? [this.getRow(0, 0, emptyText)] : []),
+            // fill with options
+            ...list.map((option, index) => this.getRow(index + 1, option))
+        ]}</div>;
     }
 
     render() {
