@@ -82,3 +82,4 @@ endpoints
 deserialize
 accessor
 restorable
+autowired
