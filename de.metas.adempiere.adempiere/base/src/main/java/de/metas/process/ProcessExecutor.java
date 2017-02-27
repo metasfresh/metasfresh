@@ -32,7 +32,6 @@ import org.compiere.wf.MWorkflow;
 import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 
 //import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
@@ -150,7 +149,7 @@ public final class ProcessExecutor
 			}
 			catch (InterruptedException ex)
 			{
-				throw Throwables.propagate(ex);
+				throw AdempiereException.wrapIfNeeded(ex);
 			}
 
 			//
