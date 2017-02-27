@@ -191,13 +191,9 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String lookupValuesStaleReason;
 
-	@JsonProperty("valid")
+	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Boolean valid;
-
-	@JsonProperty("validReason")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String validReason;
+	private DocumentValidStatus validStatus;
 
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
@@ -226,8 +222,7 @@ public final class JSONDocumentField implements Serializable
 				.add("displayed-reason", displayedReason)
 				.add("lookupValuesStale", lookupValuesStale)
 				.add("lookupValuesStale-reason", lookupValuesStaleReason)
-				.add("valid", valid)
-				.add("validReason", validReason)
+				.add("validStatus", validStatus)
 				.add("otherProperties", otherProperties)
 				.toString();
 	}
@@ -290,17 +285,7 @@ public final class JSONDocumentField implements Serializable
 
 	/* package */ JSONDocumentField setValidStatus(final DocumentValidStatus validStatus)
 	{
-		if (validStatus == null)
-		{
-			valid = null;
-			validReason = null;
-		}
-		else
-		{
-			valid = validStatus.isValid();
-			validReason = validStatus.getReason();
-		}
-
+		this.validStatus = validStatus;
 		return this;
 	}
 

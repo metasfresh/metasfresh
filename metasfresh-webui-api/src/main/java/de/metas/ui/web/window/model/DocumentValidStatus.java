@@ -2,6 +2,11 @@ package de.metas.ui.web.window.model;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -15,15 +20,16 @@ import java.util.Objects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class DocumentValidStatus
 {
 	public static final DocumentValidStatus inititalInvalid()
@@ -41,25 +47,52 @@ public final class DocumentValidStatus
 		return STATE_Valid;
 	}
 
+	public static final DocumentValidStatus childInvalid()
+	{
+		return STATE_ChildInvalid;
+	}
+
 	public static final DocumentValidStatus invalidMandatoryFieldNotFilled(final String fieldName)
 	{
-		return new DocumentValidStatus(false, "Mandatory field not filled: " + fieldName);
+		return new DocumentValidStatus(false, "Mandatory field not filled", fieldName);
+	}
+
+	public static final DocumentValidStatus invalid(final Throwable error)
+	{
+		return new DocumentValidStatus(false, error.getLocalizedMessage());
 	}
 
 	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, "not validated yet");
 	private static final DocumentValidStatus STATE_Staled = new DocumentValidStatus(false, "staled");
 	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(true, null);
+	private static final DocumentValidStatus STATE_ChildInvalid = new DocumentValidStatus(false, "child invalid");
 
+	@JsonProperty("valid")
 	private final boolean valid;
+	@JsonProperty("reason")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String reason;
+	@JsonProperty("fieldName")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String fieldName;
+
 	private transient Integer _hashcode;
 	private transient String _toString;
 
 	private DocumentValidStatus(final boolean valid, final String reason)
 	{
+		this.valid = valid;
+		this.reason = reason;
+		this.fieldName = null;
+	}
+	
+	private DocumentValidStatus(final boolean valid, final String reason, final String fieldName)
+	{
 		super();
 		this.valid = valid;
 		this.reason = reason;
+		this.fieldName = fieldName;
+		
 	}
 
 	@Override
@@ -76,11 +109,6 @@ public final class DocumentValidStatus
 			_toString = sb.toString();
 		}
 		return _toString;
-	}
-
-	public String toJson()
-	{
-		return toString();
 	}
 
 	@Override

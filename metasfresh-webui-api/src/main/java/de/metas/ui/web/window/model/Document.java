@@ -922,11 +922,13 @@ public final class Document
 	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
 	{
 		Preconditions.checkNotNull(valid, "valid"); // shall not happen
-		final DocumentValidStatus validOld = _valid;
-		if (Objects.equals(validOld, valid))
-		{
-			return validOld; // no change
-		}
+
+		// Don't check if changed because we want ALWAYS to collect the valid status
+		// final DocumentValidStatus validOld = _valid;
+		// if (Objects.equals(validOld, valid))
+		// {
+		// return validOld; // no change
+		// }
 
 		_valid = valid;
 		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
@@ -945,7 +947,7 @@ public final class Document
 		// }
 
 		_saveStatus = saveStatus;
-		Execution.getCurrentDocumentChangesCollector().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
+		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
 		return _saveStatus;
 	}
 
@@ -1418,7 +1420,7 @@ public final class Document
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(validState);
+				return setValidStatusAndReturn(DocumentValidStatus.childInvalid());
 			}
 		}
 
@@ -1516,6 +1518,7 @@ public final class Document
 		{
 			// NOTE: usually if we do the right checkings we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
+			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx));
 			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
 		}
 	}
@@ -1708,6 +1711,18 @@ public final class Document
 			//
 			// Update document's valid status
 			document.checkAndGetValidStatus();
+
+			//
+			// Update document's save status
+			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
+			{
+				document.setSaveStatusAndReturn(DocumentSaveStatus.notSavedJustCreated());
+			}
+			else if (fieldInitializerMode == FieldInitializationMode.Load
+					|| fieldInitializerMode == FieldInitializationMode.Refresh)
+			{
+				document.setSaveStatusAndReturn(DocumentSaveStatus.savedJustLoaded());
+			}
 
 			return document;
 		}

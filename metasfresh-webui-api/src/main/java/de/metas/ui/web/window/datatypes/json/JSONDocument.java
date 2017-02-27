@@ -91,7 +91,7 @@ public final class JSONDocument implements Serializable
 		final DocumentValidStatus documentValidStatus = document.getValidStatus();
 		if (documentValidStatus != null)
 		{
-			jsonDocument.setValidStatus(documentValidStatus.toJson());
+			jsonDocument.setValidStatus(documentValidStatus);
 		}
 
 		final DocumentSaveStatus documentSaveStatus = document.getSaveStatus();
@@ -178,7 +178,7 @@ public final class JSONDocument implements Serializable
 		final DocumentValidStatus documentValidStatus = documentChangedEvents.getDocumentValidStatus();
 		if (documentValidStatus != null)
 		{
-			jsonDocument.setValidStatus(documentValidStatus.toJson());
+			jsonDocument.setValidStatus(documentValidStatus);
 		}
 
 		//
@@ -274,16 +274,13 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String rowId;
 
-	@JsonProperty("valid-status")
+	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String validStatus;
+	private DocumentValidStatus validStatus;
 
-	@JsonProperty("saved")
+	@JsonProperty("saveStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Boolean saved;
-	@JsonProperty("save-status")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String saveStatus;
+	private DocumentSaveStatus saveStatus;
 
 	@JsonProperty("staleTabIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -362,23 +359,22 @@ public final class JSONDocument implements Serializable
 		return rowId;
 	}
 
-	private void setValidStatus(final String validStatus)
+	private void setValidStatus(final DocumentValidStatus validStatus)
 	{
 		this.validStatus = validStatus;
 	}
 
-	public String getValidStatus()
+	public DocumentValidStatus getValidStatus()
 	{
 		return validStatus;
 	}
 
 	private void setSaveStatus(final DocumentSaveStatus documentSaveStatus)
 	{
-		this.saveStatus = documentSaveStatus.toJson();
-		this.saved = documentSaveStatus.isSaved();
+		this.saveStatus = documentSaveStatus;
 	}
 	
-	public String getSaveStatus()
+	public DocumentSaveStatus getSaveStatus()
 	{
 		return saveStatus;
 	}
