@@ -17,7 +17,8 @@ upcoming
 ## Features
 * metasfresh-backend
   * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
-
+  * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
+  
 ## Fixes
 * metqasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
