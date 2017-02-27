@@ -6,6 +6,10 @@ import {
     attachFileAction
 } from '../actions/WindowActions';
 
+import {
+    addNotification
+} from '../actions/AppActions';
+
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
@@ -37,8 +41,8 @@ class MasterWindow extends Component {
         }
     }
 
-    handleDropFile(file){
-        file = file instanceof Array ? file[0] : file;
+    handleDropFile(files){
+        const file = files instanceof Array ? files[0] : files;
 
         if (!(file instanceof File)){
             return Promise.reject();
@@ -52,6 +56,18 @@ class MasterWindow extends Component {
         fd.append('file', file);
 
         return dispatch(attachFileAction(type, dataId, fd));
+    }
+
+    handleRejectDropped(droppedFiles){
+        const { dispatch } = this.props;
+
+        const dropped = droppedFiles instanceof Array ? droppedFiles[0] : droppedFiles;
+
+        dispatch(addNotification(
+            'Attachment', 'Dropped item [' +
+            dropped.type +
+            '] could not be attached', 5000, 'error'
+        ))
     }
 
     setModalTitle = (title) => {
@@ -146,9 +162,8 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     isModal={false}
                     newRow={newRow}
-                    handleDropFile={(accepted, rejected) =>
-                        this.handleDropFile(accepted, rejected)
-                    }
+                    handleDropFile={accepted => this.handleDropFile(accepted)}
+                    handleRejectDropped={rejected => this.handleRejectDropped(rejected)}
                 />
             </Container>
         );
