@@ -329,13 +329,25 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * Creates a pricing context with the given order's <code>Price_UOM</code> and with the given order's <code>QtyEntered</code> already being converted to that priceUOM
+	 * Creates a pricing context with the given orderLine's <code>Price_UOM</code> and with the given order's <code>QtyEntered</code> already being converted to that priceUOM.
+	 * <p>
+	 * Also assumes that the given line's order has a {@code M_PriceList_ID}
 	 */
-	@Override
-	public IEditablePricingContext createPricingContext(org.compiere.model.I_C_OrderLine orderLine)
+	private IEditablePricingContext createPricingContext(org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderLine.getC_Order();
-		final int priceListId = order.getM_PriceList_ID();
+
+		final int priceListId;
+		if (order.getM_PriceList_ID() > 0)
+		{
+			priceListId = order.getM_PriceList_ID();
+		}
+		else
+		{
+			// gh #936: if order.getM_PriceList_ID is 0, then attempt to get the priceListId from the BL.
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			priceListId = orderBL.retrievePriceListId(order);
+		}
 
 		final BigDecimal priceQty = convertQtyEnteredToPriceUOM(orderLine);
 
@@ -484,7 +496,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updatePrices(final I_C_OrderLine orderLine)
 	{
-		// FIXME recfator and/or keep in sync with #setPricesIfNotIgnored
+		// FIXME refactor and/or keep in sync with #setPricesIfNotIgnored
 
 		// Product was not set yet. There is no point to calculate the prices
 		if (orderLine.getM_Product_ID() <= 0)
@@ -791,7 +803,7 @@ public class OrderLineBL implements IOrderLineBL
 			// DO not copy the line if it's packing material. The packaging lines will be created later
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -808,7 +820,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		// link the line with the one from the counter document
 		line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
-		
+
 		if (line.getM_Product_ID() > 0)      // task 09700
 		{
 			final IProductDAO productDAO = Services.get(IProductDAO.class);

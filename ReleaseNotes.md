@@ -10,7 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.59.58 (2017-10)
+
+upcoming
+
+## Features
+* metasfresh-backend
+  * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
+  * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
+  
+## Fixes
+* metqasfresh-backend
+  * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
+
 # metasfresh 4.58.57 (2017-09)
+
+this week's RC
 
 ## Features
 * metasfresh-backend
@@ -40,8 +55,6 @@ upcoming
  
 
 # metasfresh 4.57.56 (2017-08)
-
-this week's RC
 
 ## Features
 * metasfresh 

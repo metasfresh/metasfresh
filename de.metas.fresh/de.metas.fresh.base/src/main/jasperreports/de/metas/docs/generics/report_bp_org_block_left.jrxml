@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-01-05T16:08:17 -->
+<!-- 2017-02-24T13:22:30 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_bpblock" pageWidth="309" pageHeight="842" columnWidth="309" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="6cc02216-72bb-41b0-ae21-d670206ee05e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -48,7 +48,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_i
 				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="221" height="12" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a"/>
+				<reportElement x="0" y="0" width="300" height="12" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a"/>
 				<textElement>
 					<font size="9" isBold="false" isUnderline="true"/>
 				</textElement>

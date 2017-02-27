@@ -31,6 +31,7 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -894,7 +895,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		if (msg != null)
 		{
-			addLog(0, null, null, StringUtils.formatMessage(msg, msgParameters));
+			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
 		}
 	}	// addLog
 
