@@ -398,7 +398,7 @@ public class ModelCacheService implements IModelCacheService
 
 		// Check if PO has the same Context as we required
 		final Properties poCtx = po.getCtx();
-		if(!CacheCtxParamDescriptor.isSameCtx(poCtx, ctx))
+		if(!CacheCtxParamDescriptor.isSameCtx(poCtx, ctx)) // gh #1036
 		{
 			return true;
 		}
