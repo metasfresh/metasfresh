@@ -3,6 +3,7 @@ package de.metas.ui.web.window.controller;
 import java.util.concurrent.Callable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public class Execution implements IAutoCloseable
 		final Execution execution = currentExecutionHolder.get();
 		if (execution == null)
 		{
-			throw new IllegalStateException("No current execution found for thread: " + Thread.currentThread().getName());
+			throw new AdempiereException("No current execution found for thread: " + Thread.currentThread().getName());
 		}
 		return execution;
 	}
@@ -57,7 +58,7 @@ public class Execution implements IAutoCloseable
 		final Execution executionOld = currentExecutionHolder.get();
 		if (executionOld != null)
 		{
-			throw new IllegalStateException("Cannot start execution on thread '" + Thread.currentThread().getName() + "' because there is another execution currently running: " + executionOld);
+			throw new AdempiereException("Cannot start execution on thread '" + Thread.currentThread().getName() + "' because there is another execution currently running: " + executionOld);
 		}
 
 		final Execution execution = new Execution();
@@ -141,7 +142,7 @@ public class Execution implements IAutoCloseable
 		final Execution executionNow = currentExecutionHolder.get();
 		if (this != executionNow)
 		{
-			throw new IllegalStateException("Cannot close the execution because current execution is not the one we expected."
+			throw new AdempiereException("Cannot close the execution because current execution is not the one we expected."
 					+ "\n Expected: " + this
 					+ "\n Current: " + executionNow
 					+ "\n Current thread: " + Thread.currentThread().getName()
