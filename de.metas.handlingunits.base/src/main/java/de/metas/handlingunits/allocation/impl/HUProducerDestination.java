@@ -69,6 +69,11 @@ public class HUProducerDestination extends AbstractProducerDestination
 	public static final HUProducerDestination ofM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		return ofM_HU_PI_Item_Product(piItemProduct);
+	}
+	
+	public static final HUProducerDestination ofM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piItemProduct)
+	{
 		final I_M_HU_PI huPI = piItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 		return new HUProducerDestination(huPI);
 	}
