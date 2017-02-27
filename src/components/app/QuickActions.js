@@ -34,14 +34,15 @@ class QuickActions extends Component {
     }
 
     componentDidUpdate = (prevProps) => {
-        const {selected, refresh, shouldNotUpdate} = this.props;
+        const {selected, refresh, shouldNotUpdate, viewId} = this.props;
         if(shouldNotUpdate){
             return;
         }
 
         if(
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
-            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
+            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh)) ||
+            (JSON.stringify(prevProps.viewId) !== JSON.stringify(viewId))
         ){
             this.fetchActions();
         }
