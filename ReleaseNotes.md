@@ -55,6 +55,7 @@ upcoming
 
 * metasfresh-webui-api
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+  * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
  
 * metasfresh-webui-frontend
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts
