@@ -31,6 +31,8 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 public interface LookupDescriptor
 {
+	LookupDataSourceFetcher getLookupDataSourceFetcher();
+	
 	boolean isHighVolume();
 
 	LookupSource getLookupSourceType();
@@ -45,8 +47,6 @@ public interface LookupDescriptor
 	{
 		return isNumericKey() ? IntegerLookupValue.class : StringLookupValue.class;
 	}
-
-	LookupDataSourceFetcher getLookupDataSourceFetcher();
 
 	default <T extends LookupDescriptor> T cast(final Class<T> lookupDescriptorClass)
 	{
