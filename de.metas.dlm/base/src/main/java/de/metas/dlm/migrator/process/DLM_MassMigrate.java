@@ -52,15 +52,21 @@ public class DLM_MassMigrate extends JavaProcess
 	@Param(mandatory = true, parameterName = "IsRun_update_production_table")
 	private boolean run_update_production_table;
 
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/1035
+	 */
+	@Param(mandatory = true, parameterName = "MaxUpdates")
+	private int maxUpdates;
+
 	@RunOutOfTrx
 	@Override
 	protected String doIt() throws Exception
 	{
 		final Stopwatch stopWatch = Stopwatch.createStarted();
-		
+
 		if (run_load_production_table_rows)
 		{
-			callDBFunctionUntilDone("dlm.load_production_table_rows");
+			callDBFunctionUntilDone("dlm.load_production_table_rows", -1); // maxUpdates <= 0 because this function won't do a large number of updates. 
 		}
 		else
 		{
@@ -69,7 +75,7 @@ public class DLM_MassMigrate extends JavaProcess
 
 		if (run_update_production_table)
 		{
-			callDBFunctionUntilDone("dlm.update_production_table");
+			callDBFunctionUntilDone("dlm.update_production_table", maxUpdates);
 		}
 		else
 		{
@@ -82,9 +88,17 @@ public class DLM_MassMigrate extends JavaProcess
 		return MSG_OK;
 	}
 
-	private void callDBFunctionUntilDone(final String dbFunctionName)
+	/**
+	 * @param maxUpdates if this number is surpassed, stop working even if not yet done.<br>
+	 *            Otherwise we might overwhelm the DB's vacuum process and run out of disk space.<br>
+	 *            Use a value <= 0 to disable the feature.<br>
+	 *            See https://github.com/metasfresh/metasfresh/issues/1035
+	 */
+	private void callDBFunctionUntilDone(final String dbFunctionName, final int maxUpdates)
 	{
 		final Mutable<Boolean> done = new Mutable<>(false);
+
+		final Mutable<Integer> updates = new Mutable<Integer>(0);
 
 		do
 		{
@@ -111,8 +125,18 @@ public class DLM_MassMigrate extends JavaProcess
 					final int massmigrate_id = rs.getInt("massmigrate_id");
 
 					Loggables.get().addLog("{}: MassMigrate_ID={}; elapsed time={}; Table={}; Updated={}", dbFunctionName, massmigrate_id, elapsedTime, tablename, updatecount);
+
+					updates.setValue(updates.getValue() + updatecount);
 				}
 			});
+
+			if (maxUpdates > 0 && updates.getValue() >= maxUpdates)
+			{
+				Loggables.get().addLog(
+						"{}: we now updated {} which is >= maxUpdates={}. Stopping now to give auto vacuum a chance to catch up. Restart this process when ready",
+						dbFunctionName, updates.getValue(), maxUpdates);
+				break;
+			}
 		}
 		while (!done.getValue());
 	}
