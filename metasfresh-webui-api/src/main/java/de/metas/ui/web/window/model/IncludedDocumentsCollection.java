@@ -322,6 +322,16 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
 		}
+		
+		if(parentDocument.isNew())
+		{
+			return LogicExpressionResult.namedConstant("ParentDocumentNew", false);
+		}
+		
+		if(hasNewDocuments())
+		{
+			return LogicExpressionResult.namedConstant("A new document already exists", false);
+		}
 
 		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
