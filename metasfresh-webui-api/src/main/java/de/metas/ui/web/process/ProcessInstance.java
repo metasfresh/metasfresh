@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -24,10 +25,9 @@ import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
@@ -90,14 +90,20 @@ public final class ProcessInstance
 	public static final String PARAM_ViewId = "$WEBUI_ViewId";
 	public static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
 
-	@Autowired
-	@Lazy
-	private IDocumentViewsRepository documentViewsRepo;
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
 
 	private final DocumentId adPInstanceId;
 
 	private final ProcessDescriptor processDescriptor;
 	private final Document parameters;
+	private final Object processClassInstance;
+
+	private final IDocumentViewsRepository viewsRepo;
+	private final String viewId;
+	private final Set<DocumentId> viewSelectedDocumentIds;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
@@ -105,14 +111,18 @@ public final class ProcessInstance
 	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
-	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final DocumentId adPInstanceId, final Document parameters)
+	private ProcessInstance(final Builder builder)
 	{
-		super();
 		Adempiere.autowire(this);
 
-		this.processDescriptor = processDescriptor;
-		this.adPInstanceId = adPInstanceId;
-		this.parameters = parameters;
+		processDescriptor = builder.processDescriptor;
+		adPInstanceId = builder.adPInstanceId;
+		parameters = builder.parameters;
+		processClassInstance = builder.processClassInstance;
+
+		viewsRepo = builder.viewsRepo;
+		viewId = builder.viewId;
+		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(builder.viewSelectedDocumentIds);
 
 		executed = false;
 		executionResult = null;
@@ -125,13 +135,15 @@ public final class ProcessInstance
 	{
 		super();
 
-		// Adempiere.autowire(this);
-		documentViewsRepo = from.documentViewsRepo;
-
 		adPInstanceId = from.adPInstanceId;
 
 		processDescriptor = from.processDescriptor;
 		parameters = from.parameters.copy(copyMode);
+		processClassInstance = from.processClassInstance;
+
+		viewsRepo = from.viewsRepo;
+		viewId = from.viewId;
+		viewSelectedDocumentIds = from.viewSelectedDocumentIds;
 
 		executed = from.executed;
 		executionResult = from.executionResult;
@@ -167,7 +179,7 @@ public final class ProcessInstance
 		return adPInstanceId;
 	}
 
-	public Document getParametersDocument()
+	private Document getParametersDocument()
 	{
 		return parameters;
 	}
@@ -180,6 +192,11 @@ public final class ProcessInstance
 	public ProcessInstance copy(final CopyMode copyMode)
 	{
 		return new ProcessInstance(this, copyMode);
+	}
+	
+	public IAutoCloseable activate()
+	{
+		return JavaProcess.temporaryChangeCurrentInstance(processClassInstance);
 	}
 
 	public LookupValuesList getParameterLookupValues(final String parameterName)
@@ -211,12 +228,12 @@ public final class ProcessInstance
 		return executionResult;
 	}
 
-	public boolean isExecuted()
+	private boolean isExecuted()
 	{
 		return executed;
 	}
 
-	private final void assertNotExecuted()
+	/* package */ final void assertNotExecuted()
 	{
 		if (isExecuted())
 		{
@@ -387,7 +404,7 @@ public final class ProcessInstance
 
 		//
 		// Create the view and set its ID to our process result.
-		final IDocumentViewSelection view = documentViewsRepo.createView(viewRequest);
+		final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
 		return view;
 	}
 
@@ -474,7 +491,7 @@ public final class ProcessInstance
 		return saved;
 	}
 
-	public IAutoCloseable lockForReading()
+	/* package */ final IAutoCloseable lockForReading()
 	{
 		final ReadLock readLock = readwriteLock.readLock();
 		logger.debug("Acquiring read lock for {}: {}", this, readLock);
@@ -487,7 +504,7 @@ public final class ProcessInstance
 		};
 	}
 
-	public IAutoCloseable lockForWriting()
+	/* package */ final IAutoCloseable lockForWriting()
 	{
 		final WriteLock writeLock = readwriteLock.writeLock();
 		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
@@ -499,4 +516,69 @@ public final class ProcessInstance
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
+
+	//
+	//
+	// Builder
+	//
+	//
+	public static class Builder
+	{
+		private ProcessDescriptor processDescriptor;
+		private DocumentId adPInstanceId;
+		private Document parameters;
+
+		private IDocumentViewsRepository viewsRepo;
+		private String viewId;
+		private Set<DocumentId> viewSelectedDocumentIds;
+		private Object processClassInstance;
+
+		private Builder()
+		{
+		}
+
+		public ProcessInstance build()
+		{
+			
+			return new ProcessInstance(this);
+		}
+
+		public Builder setProcessDescriptor(final ProcessDescriptor processDescriptor)
+		{
+			this.processDescriptor = processDescriptor;
+			return this;
+		}
+
+		public Builder setAD_PInstance_ID(final DocumentId adPInstanceId)
+		{
+			this.adPInstanceId = adPInstanceId;
+			return this;
+		}
+
+		public Builder setParameters(final Document parameters)
+		{
+			this.parameters = parameters;
+			return this;
+		}
+
+		public Builder setViewsRepo(final IDocumentViewsRepository viewsRepo)
+		{
+			this.viewsRepo = viewsRepo;
+			return this;
+		}
+
+		public Builder setView(final String viewId, final Set<DocumentId> selectedDocumentIds)
+		{
+			this.viewId = viewId;
+			viewSelectedDocumentIds = selectedDocumentIds;
+			return this;
+		}
+
+		public Builder setProcessClassInstance(Object processClassInstance)
+		{
+			this.processClassInstance = processClassInstance;
+			return this;
+		}
+	}
+
 }

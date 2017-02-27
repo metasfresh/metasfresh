@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -14,6 +15,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
@@ -25,12 +27,15 @@ import org.springframework.stereotype.Service;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -59,11 +64,11 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -94,7 +99,7 @@ public class ProcessDescriptorsFactory
 				.filter(relatedProcess -> relatedProcess.isExecutionGranted(userRolePermissions)) // only those which can be executed by current user permissions
 				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
-	
+
 	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
 	{
 		final int adProcessId = relatedProcess.getAD_Process_ID();
@@ -102,12 +107,11 @@ public class ProcessDescriptorsFactory
 		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
 		return WebuiRelatedProcessDescriptor.of(relatedProcess, processDescriptor, preconditionsResolutionSupplier);
 	}
-	
+
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
 	{
-		return processDescriptorsByProcessId.getOrLoad(adProcessId, ()->retrieveProcessDescriptor(adProcessId));
+		return processDescriptorsByProcessId.getOrLoad(adProcessId, () -> retrieveProcessDescriptor(adProcessId));
 	}
-
 
 	private ProcessDescriptor retrieveProcessDescriptor(final int adProcessId)
 	{
@@ -116,6 +120,8 @@ public class ProcessDescriptorsFactory
 		{
 			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + adProcessId + ")");
 		}
+
+		final WebuiProcessClassInfo webuiProcesClassInfo = WebuiProcessClassInfo.of(adProcess.getClassname());
 
 		final IModelTranslationMap adProcessTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 
@@ -129,18 +135,15 @@ public class ProcessDescriptorsFactory
 				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
 				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
 				.setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
-				.disableCallouts()
-				// Defaults:
-				.setDetailId(null)
-				//
-				;
+				.disableDefaultTableCallouts();
 
-		for (final I_AD_Process_Para adProcessParam : adProcessDAO.retrieveProcessParameters(adProcess))
-		{
-			final DocumentFieldDescriptor.Builder processParaDescriptor = createProcessParaDescriptor(adProcessParam);
-			parametersDescriptor.addField(processParaDescriptor);
-			layout.addElement(createLayoutElement(processParaDescriptor));
-		}
+		// Get AD_Process_Para(s) and populate the entity descriptor and the layout
+		adProcessDAO.retrieveProcessParameters(adProcess)
+				.forEach(adProcessParam -> {
+					final DocumentFieldDescriptor.Builder processParaDescriptor = createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam);
+					parametersDescriptor.addField(processParaDescriptor);
+					layout.addElement(createLayoutElement(processParaDescriptor));
+				});
 
 		return ProcessDescriptor.builder()
 				.setAD_Process_ID(adProcessId)
@@ -151,19 +154,29 @@ public class ProcessDescriptorsFactory
 				.build();
 	}
 
-	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(final I_AD_Process_Para adProcessParam)
+	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(final WebuiProcessClassInfo webuiProcesClassInfo, final I_AD_Process_Para adProcessParam)
 	{
 		final IModelTranslationMap adProcessParaTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcessParam);
-
-		final LookupDescriptorProvider lookupDescriptorProvider = SqlLookupDescriptor.builder()
-				.setColumnName(adProcessParam.getColumnName())
-				.setDisplayType(adProcessParam.getAD_Reference_ID())
-				.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
-				.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
-				.buildProvider();
+		final String parameterName = adProcessParam.getColumnName();
+		final boolean isParameterTo = false; // TODO: implement range parameters support
+		
+		//
+		// Ask the provider if it has some custom lookup descriptor
+		LookupDescriptorProvider lookupDescriptorProvider = webuiProcesClassInfo.getLookupDescriptorProviderOrNull(parameterName);
+		// Fallback: create an SQL lookup descriptor based on adProcessParam
+		if (lookupDescriptorProvider == null)
+		{
+			lookupDescriptorProvider = SqlLookupDescriptor.builder()
+					.setColumnName(parameterName)
+					.setDisplayType(adProcessParam.getAD_Reference_ID())
+					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
+					.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
+					.buildProvider();
+		}
+		//
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(adProcessParam.getColumnName(), adProcessParam.getAD_Reference_ID());
+		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor);
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
@@ -172,13 +185,13 @@ public class ProcessDescriptorsFactory
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
 				adProcessParam.getDefaultValue() //
-				, adProcessParam.getColumnName() //
+				, parameterName //
 				, widgetType //
 				, valueClass //
 				, mandatoryLogic.isConstantTrue() //
 		);
 
-		return DocumentFieldDescriptor.builder(adProcessParam.getColumnName())
+		final DocumentFieldDescriptor.Builder paramDescriptor = DocumentFieldDescriptor.builder(parameterName)
 				.setCaption(adProcessParaTrlsMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, adProcessParam.getName()))
 				.setDescription(adProcessParaTrlsMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, adProcessParam.getDescription()))
 				// .setHelp(adProcessParaTrlsMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Help, adProcessParam.getHelp()))
@@ -186,7 +199,6 @@ public class ProcessDescriptorsFactory
 				.setValueClass(valueClass)
 				.setWidgetType(widgetType)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
-				// .setRange(adProcessParam.isRange()) // TODO
 				//
 				.setDefaultValueExpression(defaultValueExpr)
 				.setReadonlyLogic(readonlyLogic)
@@ -194,8 +206,35 @@ public class ProcessDescriptorsFactory
 				.setMandatoryLogic(mandatoryLogic)
 				//
 				.addCharacteristic(Characteristic.PublicField)
-				//
-				;
+		//
+		;
+
+		// Add a callout to forward process parameter value (UI) to current process instance
+		if(webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName, isParameterTo))
+		{
+			paramDescriptor.addCallout(calloutField -> forwardValueToCurrentProcessInstance(calloutField, isParameterTo));
+		}
+		
+		return paramDescriptor;
+	}
+
+	private static final void forwardValueToCurrentProcessInstance(final ICalloutField calloutField, final boolean isParameterTo)
+	{
+		final JavaProcess processInstance = JavaProcess.currentInstance();
+
+		final String parameterName = calloutField.getColumnName();
+
+		//
+		// Build up our value source
+		Object parameterValue = calloutField.getValue();
+		if(parameterValue instanceof LookupValue)
+		{
+			parameterValue = ((LookupValue)parameterValue).getId();
+		}
+		final IRangeAwareParams source = ProcessParams.ofValue(parameterName, parameterValue);
+
+		// Ask the instance to load the parameter
+		processInstance.loadParameterValueNoFail(parameterName, isParameterTo, source);
 	}
 
 	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final DocumentFieldDescriptor.Builder processParaDescriptor)

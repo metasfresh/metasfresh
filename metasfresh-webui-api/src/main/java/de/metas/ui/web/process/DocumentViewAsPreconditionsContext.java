@@ -33,17 +33,22 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsContext
 {
+	public static final DocumentViewAsPreconditionsContext cast(final IProcessPreconditionsContext context)
+	{
+		return (DocumentViewAsPreconditionsContext)context;
+	}
+
 	public static final DocumentViewAsPreconditionsContext castOrNull(final IProcessPreconditionsContext context)
 	{
 		if (context instanceof DocumentViewAsPreconditionsContext)
@@ -55,12 +60,11 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 			return null;
 		}
 	}
-	
+
 	public static final DocumentViewAsPreconditionsContext newInstance(final IDocumentViewSelection view, final String tableName, final Collection<DocumentId> selectedDocumentIds)
 	{
 		return new DocumentViewAsPreconditionsContext(view, tableName, selectedDocumentIds);
 	}
-
 
 	private static final Logger logger = LogManager.getLogger(DocumentViewAsPreconditionsContext.class);
 
@@ -87,6 +91,11 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 				.add("view", view)
 				.add("selectedDocumentIds", selectedDocumentIds)
 				.toString();
+	}
+
+	public IDocumentViewSelection getView()
+	{
+		return view;
 	}
 
 	public <T extends IDocumentViewSelection> T getView(final Class<T> viewType)

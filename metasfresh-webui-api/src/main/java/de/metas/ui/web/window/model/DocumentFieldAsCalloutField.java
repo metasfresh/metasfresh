@@ -10,6 +10,7 @@ import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
@@ -35,12 +36,18 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * #L%
  */
 
-final class DocumentFieldAsCalloutField implements ICalloutField
+public final class DocumentFieldAsCalloutField implements ICalloutField, IProcessDefaultParameter
 {
-	/* package */static IDocumentField unwrap(final ICalloutField calloutField)
+	/*package */static IDocumentField unwrap(final ICalloutField calloutField)
 	{
 		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
 		return documentFieldAsCalloutField.documentField;
+	}
+	
+	public static Document unwrapDocument(final ICalloutField calloutField)
+	{
+		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
+		return documentFieldAsCalloutField.getDocument();
 	}
 
 	private final IDocumentField documentField;
@@ -179,6 +186,24 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	{
 		final Object valueObj = getDocument().getDynAttribute(name);
 		return DisplayType.toBoolean(valueObj);
+	}
+	
+	@Override
+	public int getContextAsInt(final String name)
+	{
+		final Object valueObj = getDocument().getDynAttribute(name);
+		if(valueObj == null)
+		{
+			return -1;
+		}
+		else if (valueObj instanceof Number)
+		{
+			return ((Number)valueObj).intValue();
+		}
+		else
+		{
+			return Integer.parseInt(valueObj.toString());
+		}
 	}
 
 	@Override
