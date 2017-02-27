@@ -29,8 +29,6 @@ import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.IMutableTableCacheConfig;
@@ -50,6 +48,10 @@ import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.IDCache;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.util.cache.CacheCtxParamDescriptor;
+import de.metas.logging.LogManager;
 
 public class ModelCacheService implements IModelCacheService
 {
@@ -200,41 +202,32 @@ public class ModelCacheService implements IModelCacheService
 		{
 			return null;
 		}
+		
+		//
+		// Get the right transaction
+		final ITrx trx = trxManager.getTrxOrNull(trxName);
+		final boolean inTransaction = trx != null;
+		// Check if we got the right transaction
+		if (trx == null && !trxManager.isNull(trxName) && !Util.same(trxName, ITrx.TRXNAME_ThreadInherited))
+		{
+			final TrxException ex = new TrxException("No transaction was found for " + trxName + ". Skip cache."
+					+ "\ntableName=" + tableName
+					+ "\nrecordId=" + recordId
+					+ "\ntrxName=" + trxName
+					+ "\ntrx=" + trx
+					+ "\nThread TrxName=" + trxManager.getThreadInheritedTrxName()
+					+ "\nActive transactions: " + trxManager.getActiveTransactionsList()
+					+ "\nClosed transactions: " + trxManager.getDebugClosedTransactions()
+					);
+			logger.warn(ex.getLocalizedMessage(), ex);
+
+			// return null (not found)
+			return null;
+		}
 
 		lock.lock();
 		try
 		{
-			//
-			// Get the right transaction
-			final boolean inTransaction = !trxManager.isNull(trxName);
-			final ITrx trx;
-			if (inTransaction)
-			{
-				trx = trxManager.getTrxOrNull(trxName);
-
-				// Check if we got the right transaction
-				if (trx == null && !Util.same(trxName, ITrx.TRXNAME_ThreadInherited))
-				{
-					final TrxException ex = new TrxException("No transaction was found for " + trxName + ". Skip cache."
-							+ "\ntableName=" + tableName
-							+ "\nrecordId=" + recordId
-							+ "\ntrxName=" + trxName
-							+ "\ntrx=" + trx
-							+ "\nThread TrxName=" + trxManager.getThreadInheritedTrxName()
-							+ "\nActive transactions: " + trxManager.getActiveTransactionsList()
-							+ "\nClosed transactions: " + trxManager.getDebugClosedTransactions()
-							);
-					logger.warn(ex.getLocalizedMessage(), ex);
-
-					// return null (not found)
-					return null;
-				}
-			}
-			else
-			{
-				trx = ITrx.TRX_None;
-			}
-
 			//
 			// Search cache on transaction level
 			// (at this point "trx" can be an actual transaction or out-of-transaction=None)
@@ -405,7 +398,7 @@ public class ModelCacheService implements IModelCacheService
 
 		// Check if PO has the same Context as we required
 		final Properties poCtx = po.getCtx();
-		if (poCtx != ctx)
+		if(!CacheCtxParamDescriptor.isSameCtx(poCtx, ctx)) // gh #1036
 		{
 			return true;
 		}
@@ -459,7 +452,7 @@ public class ModelCacheService implements IModelCacheService
 			// and for this table out-of-transaction caching is also enabled
 			// TODO: shall we do this only for "Master Data" tables?
 			// => create a copy in out-of-transaction cache too
-			final boolean inTransaction = !trxManager.isNull(trxName);
+			final boolean inTransaction = trxManager.getTrxOrNull(trxName) != null;
 			if (inTransaction
 					&& isTrxLevelEnabled(cacheConfig, ITrx.TRX_None))
 			{

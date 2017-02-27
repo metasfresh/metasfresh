@@ -10,13 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.x.x (2017-10)
+
+upcoming
+
 # metasfresh 4.58.57 (2017-09)
+
+this week's RC
+
 ## Features
 * metasfresh-backend
   * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
   * [#1028](https://github.com/metasfresh/metasfresh/issues/1028) extract distributable stuff into dedicated repo
   * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
-
+  * [#1036](https://github.com/metasfresh/metasfresh/issues/1036) Harmonize BL for ModelCacheService.IsExpired
+  
 * metasfresh-webui-api
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
   * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
@@ -38,8 +46,6 @@ upcoming
  
 
 # metasfresh 4.57.56 (2017-08)
-
-this week's RC
 
 ## Features
 * metasfresh 
