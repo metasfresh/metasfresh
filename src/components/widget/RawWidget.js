@@ -10,6 +10,8 @@ import ActionButton from './ActionButton';
 import Image from './Image';
 import DevicesWidget from './Devices/DevicesWidget';
 
+import {DATE_FORMAT}  from '../../constants/Constants';
+
 class RawWidget extends Component {
     constructor(props) {
         super(props);
@@ -106,12 +108,17 @@ class RawWidget extends Component {
         switch(widgetType){
             case 'Date':
                 if(range){
-                    //Watch out! The datetimerange widget as exception, is non-controlled
-                    //input! For further usage, needs upgrade.
+                    // Watch out! The datetimerange widget as exception,
+                    // is non-controlled input! For further usage, needs
+                    // upgrade.
                     return (
                         <DatetimeRange
                             onChange={(value, valueTo) =>
-                                this.handlePatch(widgetField, value, null, valueTo)
+                                this.handlePatch(widgetField,
+                                    value ? Moment(value).format(DATE_FORMAT) : null,
+                                    null,
+                                    valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
+                                )
                             }
                             mandatory={widgetData[0].mandatory}
                             onShow={onShow}
@@ -137,15 +144,22 @@ class RawWidget extends Component {
                                 dateFormat={true}
                                 inputProps={{
                                     placeholder: fields[0].emptyText,
-                                    disabled: widgetData[0].readonly || disabled,
+                                    disabled:
+                                        widgetData[0].readonly || disabled,
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
                                 value={widgetData[0].value}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                                patch={(date) => this.handlePatch(
+                                    widgetField,
+                                    date ?
+                                        Moment(date).format(DATE_FORMAT) : null
+                                )}
                                 handleBackdropLock={handleBackdropLock}
                             />
-                            <i className="meta-icon-calendar input-icon-right"></i>
+                            <i
+                                className="meta-icon-calendar input-icon-right"
+                            />
                         </div>
                     )
                 }
@@ -170,7 +184,9 @@ class RawWidget extends Component {
                             }}
                             value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                            patch={(date) => this.handlePatch(widgetField,
+                                date ? Moment(date).format(DATE_FORMAT) : null
+                            )}
                             tabIndex={fullScreen ? -1 : tabIndex}
                             handleBackdropLock={handleBackdropLock}
                         />
@@ -198,7 +214,9 @@ class RawWidget extends Component {
                             }}
                             value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                            patch={(date) => this.handlePatch(widgetField,
+                                date ? Moment(date).format(DATE_FORMAT) : null
+                            )}
                             tabIndex={fullScreen ? -1 : tabIndex}
                             handleBackdropLock={handleBackdropLock}
                         />
