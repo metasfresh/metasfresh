@@ -474,7 +474,8 @@ public class LayoutFactory
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setQueryOnActivate(entityDescriptor.isHighVolume());
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
@@ -558,6 +559,7 @@ public class LayoutFactory
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setQueryOnActivate(entityDescriptor.isHighVolume())
 				.addElements(layoutElements);
 
 		return advancedViewLayout;

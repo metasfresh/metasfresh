@@ -57,6 +57,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final List<DocumentLayoutElementDescriptor> elements;
 	private final Optional<QuickInputLayoutDescriptor> quickInput;
 
+	private final boolean queryOnActivate;
+
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
 		super();
@@ -68,6 +70,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
 		quickInput = builder.buildQuickInput();
+		queryOnActivate = builder.queryOnActivate;
 	}
 
 	@Override
@@ -126,6 +129,11 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return quickInput;
 	}
 
+	public boolean isQueryOnActivate()
+	{
+		return queryOnActivate;
+	}
+
 	public static final class Builder
 	{
 		public Integer AD_Window_ID;
@@ -138,6 +146,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
 		private QuickInputLayoutDescriptor _quickInput;
+
+		private boolean queryOnActivate;
 
 		private Builder()
 		{
@@ -206,6 +216,12 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		public Builder setEmptyResultHint(final ITranslatableString emptyResultHint)
 		{
 			this.emptyResultHint = emptyResultHint;
+			return this;
+		}
+
+		public Builder setQueryOnActivate(final boolean queryOnActivate)
+		{
+			this.queryOnActivate = queryOnActivate;
 			return this;
 		}
 
