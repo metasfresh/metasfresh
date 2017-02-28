@@ -30,7 +30,7 @@ this week's RC
 
 ## Features
 * metasfresh-backend
-  * [#850](https://github.com/metasfresh/metasfresh/issues/850) Add Migration Script to renaem Attribute Set Instance Field
+  * [#850](https://github.com/metasfresh/metasfresh/issues/850) Add Migration Script to rename Attribute Set Instance Field
   * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
   * [#1028](https://github.com/metasfresh/metasfresh/issues/1028) extract distributable stuff into dedicated repo
   * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
