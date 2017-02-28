@@ -213,3 +213,19 @@ export function postImageAction (data) {
     return axios.post(`${config.API_URL}/image`, data)
         .then(response => response.data);
 }
+
+export function getKPIsDashboard() {
+    return () => axios.get(config.API_URL + '/dashboard/kpis');
+}
+
+export function getTargetIndicatorsDashboard() {
+    return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
+}
+
+export function getKPIData(id) {
+    return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+'/data');
+}
+
+export function getTargetIndicatorsData(id) {
+    return () => axios.get(config.API_URL + '/dashboard/targetIndicators/'+id+'/data');
+}
