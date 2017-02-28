@@ -140,15 +140,18 @@ class Lookup extends Component {
 
         // call for more properties
         if(propertiesCopy.length > 0){
-            const batchArray = propertiesCopy.map((item) => {
-                console.log('----item----');
-                console.log(item.field);
-                const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
-                if(objectValue) {
-                    console.log('objectValue exist');
-                }
-                console.log(objectValue);
-                return objectValue && dispatch(dropdownRequest(
+            const batchArray = propertiesCopy.filter((item) => {
+                // console.log('----item----');
+                // console.log(item.field);
+                // const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
+                // if(objectValue) {
+                //     return false;
+                // } else {
+                //     return true;
+                // } 
+                return true;
+            }).map((item) => {
+                return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
                     subentity, subentityId
                 ))
