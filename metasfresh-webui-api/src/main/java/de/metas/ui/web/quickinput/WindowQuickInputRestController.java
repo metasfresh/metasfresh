@@ -227,10 +227,11 @@ public class WindowQuickInputRestController
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
 
-		return forQuickInputWritable(quickInputPath, quickInput -> {
+		forQuickInputWritable(quickInputPath, quickInput -> {
 			quickInput.processValueChanges(events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
+			return null; // void
 		});
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 	}
 
 	@PostMapping("{quickInputId}/complete")

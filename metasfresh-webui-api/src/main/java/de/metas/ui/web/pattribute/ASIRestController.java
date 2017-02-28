@@ -104,10 +104,11 @@ public class ASIRestController
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
 
-		return Execution.callInNewExecution("processChanges", () -> {
+		Execution.callInNewExecution("processChanges", () -> {
 			asiRepo.processASIDocumentChanges(asiDocId, events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+			return null; // void
 		});
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
 	}
 
 	@GetMapping("/{asiDocId}/attribute/{attributeName}/typeahead")

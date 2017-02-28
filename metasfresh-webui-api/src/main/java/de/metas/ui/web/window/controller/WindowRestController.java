@@ -267,11 +267,11 @@ public class WindowRestController
 
 	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
-		return documentCollection.forDocumentWritable(documentPath, document -> {
+		documentCollection.forDocumentWritable(documentPath, document -> {
 			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
+			return null; // void
 		});
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")
@@ -340,10 +340,11 @@ public class WindowRestController
 				.setShowAdvancedFields(false)
 				.build();
 
-		return Execution.callInNewExecution("window.delete", () -> {
+		Execution.callInNewExecution("window.delete", () -> {
 			documentCollection.deleteAll(documentPaths);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
+			return null; // void
 		});
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 	}
 
 	/**
