@@ -14,10 +14,9 @@ class NotificationHandler extends Component {
         return (
             <div className="notification-handler">
 
-            {notifications && notifications.map((item, index) =>
+            {notifications && notifications.map((item) =>
                 <Notification
-                    key={index}
-                    index={index}
+                    key={item.id}
                     item={item}
                 />
             )}

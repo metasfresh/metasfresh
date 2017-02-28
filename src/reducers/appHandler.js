@@ -27,6 +27,7 @@ export default function appHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 notifications: update(state.notifications, {$push:
                     [{
+                        id: action.id,
                         title: action.title,
                         msg: action.msg,
                         time: action.time,
@@ -37,8 +38,11 @@ export default function appHandler(state = initialState, action) {
 
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: update(state.notifications, {$splice: [[action.id, 1]]})
+                notifications: state.notifications.filter(ntf =>
+                    ntf.id !== action.id
+                )
             });
+
         // END OF NOTIFICATION ACTIONS
         case types.GET_NOTIFICATIONS_SUCCESS:
             return Object.assign({}, state, {

@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import {
     deleteNotification
@@ -10,98 +9,86 @@ class Notification extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            notificationMounted: false,
-            isClosing: true
+            isClosing: false
         }
+
+        this.closing = null;
     }
-    
+
     componentDidMount() {
-        const {item, index, dispatch} = this.props;
+        const {item} = this.props;
 
         if(item.time > 0) {
-            setTimeout(function(){
-                dispatch(deleteNotification(index));
-            }, item.time);
+            this.setClosing();
         }
-        
-        let th = this;
-        setTimeout(function(){
+
+        const th = this;
+        setTimeout(() => {
             th.setState({
-                notificationMounted: true
+                isClosing: true
             })
         }, 10);
     }
 
-    componentWillReceiveProps() {
+    setClosing = () => {
+        const {dispatch, item} = this.props;
+        this.closing = setTimeout(() => {
+            dispatch(deleteNotification(item.id));
+        }, item.time);
+    }
+
+    handleCloseButton = () => {
+        const {dispatch, item} = this.props;
+
+        this.closing && clearInterval(this.closing);
+
+        dispatch(deleteNotification(item.id));
+    }
+
+    handleClosing = (shouldClose) => {
+        shouldClose ?
+            this.setClosing() :
+            clearInterval(this.closing);
+
         this.setState({
-            notificationMounted: true
+            isClosing: shouldClose
         })
     }
-    
-    closeNotification = (id) => {
-        const {dispatch} = this.props;
-        
-        this.setState({
-            notificationMounted: false
-        })
-        
-        setTimeout(function(){
-            dispatch(deleteNotification(id));
-        }, 300);
-    }
-    
-    handleMouseEnter = () => {
-        this.setState({
-            isClosing: false
-        })
-    }
-    
-    handleMouseLeave = () => {
-        this.setState({
-            isClosing: true
-        })
-    }
-    
+
     render() {
-        const {item, index} = this.props;
-        const {notificationMounted,isClosing} = this.state;
-        
+        const {item} = this.props;
+        const {isClosing} = this.state;
+
         return (
-            <div 
+            <div
                 className={
-                    'notification-item ' + 
-                    (item.notifType ? item.notifType + ' ' : 'error ') + 
-                    (notificationMounted ? 'notif-animate ' : '')
+                    'notification-item ' +
+                    (item.notifType ? item.notifType + ' ' : 'error ')
                 }
-                onMouseEnter={this.handleMouseEnter}
-                onMouseLeave={this.handleMouseLeave}
+                onMouseEnter={() => this.handleClosing(false)}
+                onMouseLeave={() => this.handleClosing(true)}
             >
-                <div className="notification-header"> 
-                    {item.title} 
-                    <i 
-                        onClick={() => this.closeNotification(index)} 
+                <div className="notification-header">
+                    {item.title}
+                    <i
+                        onClick={() => this.handleCloseButton()}
                         className="meta-icon-close-1"
                     />
                 </div>
                 <div className="notification-content">
                     {item.msg}
                 </div>
-                {isClosing &&
-                    <ReactCSSTransitionGroup 
-                        transitionName="progress"
-                        transitionEnterTimeout={5000} 
-                        transitionLeaveTimeout={0}
-                    >
-                        {(notificationMounted) &&
-                            <div 
-                                className={
-                                    'progress-bar ' +
-                                    (item.notifType ? item.notifType : 'error ')
-                                }
-                            />
-                        }
-                    </ReactCSSTransitionGroup>
-                }
+                <div
+                    className={
+                        'progress-bar ' +
+                        (item.notifType ? item.notifType : 'error ')
+                    }
+                    style={
+                        isClosing ?
+                            {width: 0, transition: 'width 5s linear'} :
+                            {width: '100%', transition: 'width 0.2s linear'}
+                    }
+                />
             </div>
         )
     }

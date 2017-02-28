@@ -100,7 +100,8 @@ export function addNotification(title, msg, time, notifType){
         title: title,
         msg: msg,
         time: time,
-        notifType: notifType
+        notifType: notifType,
+        id: Date.now()
     }
 }
 
