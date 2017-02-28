@@ -19,10 +19,10 @@ class TableHeader extends Component {
     }
 
     renderSorting = (field, caption) => {
-        const {sort,display, orderBy, deselect, page} = this.props;
+        const {sort, orderBy, deselect, page} = this.props;
         let sorting = {};
 
-        orderBy && orderBy.map((item, index) => {
+        orderBy && orderBy.map((item) => {
 
             if(field == item.fieldName){
                 sorting.name = item.fieldName;
@@ -38,6 +38,7 @@ class TableHeader extends Component {
 
         )
     }
+
     renderCols = (cols, mainTable) => {
         return cols && cols.map((item, index) =>
             <th
@@ -51,10 +52,19 @@ class TableHeader extends Component {
             </th>
         );
     }
+
     render() {
-        const {cols, mainTable} = this.props;
+        const {
+            cols, mainTable, indentSupported
+        } = this.props;
+
         return (
             <tr>
+                {indentSupported &&
+                    <th
+                        className="indent"
+                    />
+                }
                 {this.renderCols(cols, mainTable)}
             </tr>
         )

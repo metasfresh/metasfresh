@@ -1,24 +1,24 @@
 .bar {
-	fill: steelblue;
+    fill: steelblue;
 }
 
 .chart-bar .bar {
-	fill: green;
+    fill: green;
 }
 
 .axis text {
-	font: 10px sans-serif;
+    font: 10px sans-serif;
 }
 
 .axis path,
 .axis line {
-	fill: none;
-	stroke: #000;
-	shape-rendering: crispEdges;
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
 }
 
 .x.axis path {
-	display: none;
+    display: none;
 }
 
 .chart-wrapp {
@@ -26,12 +26,12 @@
 }
 
 path.slice{
-	stroke-width:2px;
+    stroke-width:2px;
 }
 
 polyline{
-	opacity: .3;
-	stroke: black;
-	stroke-width: 2px;
-	fill: none;
+    opacity: .3;
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
 }

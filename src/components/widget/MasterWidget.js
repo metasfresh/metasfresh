@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import {
     patch,
     updateProperty,
-    findRowByPropName
+    openModal
 } from '../../actions/WindowActions';
 
 import RawWidget from './RawWidget';
@@ -21,25 +21,27 @@ class MasterWidget extends Component {
 
     componentWillReceiveProps(nextProps) {
         const {widgetData} = this.props;
-        const {edited, editedProp} = this.state;
+        const {edited} = this.state;
 
-        if(JSON.stringify(widgetData[0].value) !== JSON.stringify(nextProps.widgetData[0].value)) {
+        if(
+            JSON.stringify(widgetData[0].value) !==
+            JSON.stringify(nextProps.widgetData[0].value)
+        ){
             if(!edited) {
-                this.setState(
-                    Object.assign({}, this.state, {
+                this.setState({
                         updated: true
-                    }), () => {
+                    }, () => {
                         this.timeout = setTimeout(() => {
-                            this.setState(Object.assign({}, this.state, {
+                            this.setState({
                                 updated: false
-                            }))
+                            })
                         }, 1000);
                     }
                 )
             }else{
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     edited: false
-                }));
+                });
             }
         }
     }
@@ -50,18 +52,18 @@ class MasterWidget extends Component {
 
     handlePatch = (property, value) => {
         const {
-            isModal, widgetType, widgetData, dataId, windowType, dispatch,
-            rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
+            isModal, widgetType, dataId, windowType, dispatch, rowId, tabId,
+            onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
         let currRowId = rowId;
         let ret = null;
 
-        if(rowId === "NEW"){
+        if(rowId === 'NEW'){
             currRowId = relativeDocId;
         }
 
-        if(widgetType !== "Button"){
+        if(widgetType !== 'Button'){
             dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
 
@@ -77,6 +79,7 @@ class MasterWidget extends Component {
 
         return ret;
     }
+
     //
     // This method may looks like a redundant for this one above,
     // but is need to handle controlled components if
@@ -84,21 +87,22 @@ class MasterWidget extends Component {
     //
     handleChange = (property, val) => {
         const {
-            dispatch, tabId, rowId, isModal, relativeDocId, precision, widgetType
+            dispatch, tabId, rowId, isModal, relativeDocId, widgetType
         } = this.props;
 
         let currRowId = rowId;
 
         const dateParse = ['Date', 'DateTime', 'Time'];
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             edited: true
-        }), () => {
-            if(dateParse.indexOf(widgetType) === -1 && !this.validatePrecision(val)){
-                return;
-            }
+        }, () => {
+            if (
+                dateParse.indexOf(widgetType) === -1 &&
+                !this.validatePrecision(val)
+            ){ return; }
 
-            if(rowId === "NEW"){
+            if(rowId === 'NEW'){
                 currRowId = relativeDocId;
             }
 
@@ -108,9 +112,9 @@ class MasterWidget extends Component {
     }
 
     setEditedFlag = (edited) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             edited: edited
-        }));
+        });
     }
 
     validatePrecision = (value) => {
@@ -118,8 +122,8 @@ class MasterWidget extends Component {
         let precisionProcessed = precision;
 
         if(
-            widgetType === "Integer" ||
-            widgetType === "Quantity"
+            widgetType === 'Integer' ||
+            widgetType === 'Quantity'
         ){
             precisionProcessed = 0;
         }
@@ -131,15 +135,25 @@ class MasterWidget extends Component {
         }
     }
 
+    handleProcess = (
+        caption, buttonProcessId, tabId, rowId
+    ) => {
+        const {dispatch} = this.props;
+
+        dispatch(openModal(
+            caption, buttonProcessId, 'process', tabId, rowId, false, false
+        ));
+    }
 
     render() {
         const {
-            caption, widgetType, description, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock, tabIndex, dropdownOpenCallback
+            caption, widgetType, fields, windowType, type, noLabel, widgetData,
+            dataId, rowId, tabId, icon, gridAlign, isModal, entity,
+            handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus,
+            fullScreen, disabled, buttonProcessId
         } = this.props;
 
-        const {updated, edited} = this.state;
+        const {updated} = this.state;
 
         return (
             <RawWidget
@@ -155,6 +169,7 @@ class MasterWidget extends Component {
                 gridAlign={gridAlign}
                 handlePatch={this.handlePatch}
                 handleChange={this.handleChange}
+                handleProcess={this.handleProcess}
                 updated={updated}
                 isModal={isModal}
                 setEditedFlag={this.setEditedFlag}
@@ -164,6 +179,10 @@ class MasterWidget extends Component {
                 handleBackdropLock={handleBackdropLock}
                 tabIndex={tabIndex}
                 dropdownOpenCallback={dropdownOpenCallback}
+                autoFocus={autoFocus}
+                fullScreen={fullScreen}
+                disabled={disabled}
+                buttonProcessId={buttonProcessId}
             />
         )
     }

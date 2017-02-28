@@ -14,15 +14,14 @@ class TableFilter extends Component {
     }
 
     toggleTooltip = (key = null) => {
-        const {isTooltipShow} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isTooltipShow: key
-        }));
+        });
     }
 
     render() {
         const {
-            openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex,
+            openModal, toggleFullScreen, fullScreen, docType, docId, tabId,
             isBatchEntry, handleBatchEntryToggle
         } = this.props;
 
@@ -48,10 +47,10 @@ class TableFilter extends Component {
                             onMouseLeave={this.toggleTooltip}
                             tabIndex="-1"
                         >
-                            {isBatchEntry ? "Close batch entry" : "Batch entry"}
+                            {isBatchEntry ? 'Close batch entry' : 'Batch entry'}
                             {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT && <Tooltips
                                 name={keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT}
-                                action={isBatchEntry ? "Close batch entry" : "Batch entry"}
+                                action={isBatchEntry ? 'Close batch entry' : 'Batch entry'}
                                 type={''}
                             />}
                         </button>}
@@ -76,7 +75,7 @@ class TableFilter extends Component {
 
                     {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND && <Tooltips
                         name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
-                        action={fullScreen ? "Collapse" : "Expand"}
+                        action={fullScreen ? 'Collapse' : 'Expand'}
                         type={''}
                     />}
                 </button>}

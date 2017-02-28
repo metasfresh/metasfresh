@@ -7,20 +7,36 @@ import {
 } from './MenuActions';
 
 import {
-    clearListProps
-} from './ListActions';
-
-import {
     initLayout,
     getData,
     patchRequest,
-    printRequest
+    openFile
 } from './GenericActions';
 
 import {
     addNotification
 } from './AppActions'
 
+export function setLatestNewDocument(id) {
+    return {
+        type: types.SET_LATEST_NEW_DOCUMENT,
+        id: id
+    }
+}
+
+export function openRawModal(windowType, viewId) {
+    return {
+        type: types.OPEN_RAW_MODAL,
+        windowType: windowType,
+        viewId: viewId
+    }
+}
+
+export function closeRawModal() {
+    return {
+        type: types.CLOSE_RAW_MODAL
+    }
+}
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -30,11 +46,12 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope) {
+export function initDataSuccess(data, scope, docId) {
     return {
         type: types.INIT_DATA_SUCCESS,
         data: data,
-        scope: scope
+        scope: scope,
+        docId: docId
     }
 }
 
@@ -110,15 +127,19 @@ export function noConnection(status) {
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId, isAdvanced) {
+export function openModal(
+    title, windowType, type, tabId, rowId, isAdvanced, viewId, viewDocumentIds
+) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
         modalType: type,
         tabId: tabId,
         rowId: rowId,
+        viewId: viewId,
         title: title,
-        isAdvanced: isAdvanced
+        isAdvanced: isAdvanced,
+        viewDocumentIds: viewDocumentIds
     }
 }
 
@@ -158,16 +179,21 @@ export function selectTableItems(ids) {
 /*
  * Main method to generate window
  */
-export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false, isAdvanced) {
+export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = false, isAdvanced) {
     return (dispatch) => {
-        if (docId == "new") {
-            docId = "NEW";
+        if (docId == 'new') {
+            docId = 'NEW';
         }
 
         // this chain is really important,
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
+                if (docId == 'NEW' && !isModal) {
+                    dispatch(setLatestNewDocument(response.data[0].id));
+                    // redirect immedietely
+                    return dispatch(replace('/window/' + windowType + '/' + response.data[0].id));
+                }
 
                 let elem = 0;
 
@@ -177,39 +203,38 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     }
                 });
 
-                if (docId == "NEW" && !isModal) {
-                    dispatch(clearListProps());
-                    dispatch(replace("/window/" + windowType + "/" + response.data[0].id));
-                }
-
                 docId = response.data[elem].id;
                 const preparedData = parseToDisplay(response.data[elem].fields);
 
-                dispatch(initDataSuccess(preparedData, getScope(isModal)));
+                dispatch(initDataSuccess(preparedData, getScope(isModal), docId));
 
-                if (isModal && rowId === "NEW") {
-                    dispatch(mapDataToState([response.data[0]], false, "NEW", docId, windowType))
+                if (isModal && rowId === 'NEW') {
+                    dispatch(mapDataToState([response.data[0]], false, 'NEW', docId, windowType))
                     dispatch(updateModal(response.data[0].rowId));
                 }
 
                 if (!isModal) {
                     dispatch(getWindowBreadcrumb(windowType));
                 }
-            }).then(() =>
-                dispatch(initLayout('window', windowType, tabId, null, null, isAdvanced))
-            ).then(response =>
-                dispatch(initLayoutSuccess(response.data, getScope(isModal)))
-            ).then(response => {
-                let tabTmp = {};
 
-                response.layout.tabs && response.layout.tabs.map(tab => {
-                    tabTmp[tab.tabid] = {};
-                    dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
-                        tabTmp[tab.tabid] = res;
-                        dispatch(addRowData(tabTmp, getScope(isModal)));
-                    })
-                })
+                dispatch(initLayout('window', windowType, tabId, null, null, isAdvanced)
+                    ).then(response =>
+                        dispatch(initLayoutSuccess(response.data, getScope(isModal)))
+                    ).then(response => {
+                        let tabTmp = {};
+
+                        response.layout.tabs && response.layout.tabs.map(tab => {
+                            tabTmp[tab.tabid] = {};
+                            dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
+                                tabTmp[tab.tabid] = res;
+                                dispatch(addRowData(tabTmp, getScope(isModal)));
+                            })
+                        }
+                    )
+            }).catch((err) => {
+                dispatch(addNotification('Error', err.response.data.error, 5000, 'error'));
             });
+        });
     }
 }
 
@@ -230,13 +255,13 @@ function getTab(tabId, windowType, docId) {
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
     return (dispatch) => {
-        if (docId === "NEW") {
+        if (docId === 'NEW') {
             //New master document
             return dispatch(patchRequest('window', windowType, docId))
         } else {
-            if (rowId === "NEW") {
+            if (rowId === 'NEW') {
                 //New row document
-                return dispatch(patchRequest('window', windowType, docId, tabId, "NEW"))
+                return dispatch(patchRequest('window', windowType, docId, tabId, 'NEW'))
             } else if (rowId) {
                 //Existing row document
                 return dispatch(getData('window', windowType, docId, tabId, rowId, null, null, isAdvanced))
@@ -252,7 +277,10 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
  */
-export function patch(entity, windowType, id = "NEW", tabId, rowId, property, value, isModal, isAdvanced) {
+export function patch(
+    entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal,
+    isAdvanced
+) {
     return dispatch => {
         let responsed = false;
 
@@ -272,12 +300,21 @@ export function patch(entity, windowType, id = "NEW", tabId, rowId, property, va
 
         return dispatch(patchRequest(
             entity, windowType, id, tabId, rowId, property, value, null, null,
-            isAdvanced)
-        ).then(response => {
+            isAdvanced
+        )).then(response => {
             responsed = true;
-
-            dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
-        })
+            dispatch(mapDataToState(
+                response.data, isModal, rowId, id, windowType
+            ));
+        }).catch(() => {
+            dispatch(getData(
+                entity, windowType, id, tabId, rowId, null, null, isAdvanced
+            )).then(response => {
+                dispatch(mapDataToState(
+                    response.data, isModal, rowId, id, windowType
+                ));
+            });
+        });
     }
 }
 
@@ -293,8 +330,8 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             })
             // Mapping fields property
             item.fields = parseToDisplay(item.fields);
-            if (rowId === "NEW") {
-                dispatch(addNewRow(item, item.tabid, item.rowId, "master"))
+            if (rowId === 'NEW') {
+                dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
             } else {
                 item.fields.map(field => {
                     if (rowId && !isModal) {
@@ -303,6 +340,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                         if (rowId) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
+
                         dispatch(updateDataSuccess(field, getScope(isModal)));
                     }
                 });
@@ -312,11 +350,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         //Handling staleTabIds
         staleTabIds.map(staleTabId => {
             dispatch(getTab(staleTabId, windowType, id)).then(tab => {
-                const keys = Object.keys(tab);
-
-                keys.map(key => {
-                    dispatch(addNewRow(tab[key], staleTabId, key, "master"))
-                })
+                dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
     }
@@ -325,41 +359,57 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
 export function updateProperty(property, value, tabid, rowid, isModal) {
     return dispatch => {
         if (tabid && rowid) {
-            dispatch(updateRowProperty(property, value, tabid, rowid, "master"))
+            dispatch(updateRowProperty(property, value, tabid, rowid, 'master'))
             if (isModal) {
-                dispatch(updateDataProperty(property, value, "modal"))
+                dispatch(updateDataProperty(property, value, 'modal'))
             }
         } else {
             dispatch(updateDataProperty(property, value, getScope(isModal)))
             if (isModal) {
                 //update the master field too if exist
-                dispatch(updateDataProperty(property, value, "master"))
+                dispatch(updateDataProperty(property, value, 'master'))
             }
         }
     }
 }
 
+export function attachFileAction(windowType, docId, data){
+    return dispatch => {
+        dispatch(addNotification('Attachment', 'Uploading attachment', 5000, 'primary'));
+
+        return axios.post(`${config.API_URL}/window/${windowType}/${docId}/attachments`, data)
+            .then(() => {
+                dispatch(addNotification('Attachment', 'Uploading attachment succeeded.', 5000, 'primary'))
+            })
+            .catch(() => {
+                dispatch(addNotification('Attachment', 'Uploading attachment error.', 5000, 'error'))
+            })
+    }
+}
+
 // PROCESS ACTIONS
 
-export function createProcess(processType, viewId, type, ids) {
+export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
     return (dispatch) =>
-        dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
+        dispatch(
+            getProcessData(processType, viewId, type, ids, tabId, rowId)
+        ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
             pid = response.data.pinstanceId;
             if (preparedData.length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
                     dispatch(handleProcessResponse(response, processType, pid));
                 });
-                throw new Error("close_modal");
+                throw new Error('close_modal');
             }else{
-                dispatch(initDataSuccess(preparedData, "modal"));
+                dispatch(initDataSuccess(preparedData, 'modal'));
 
                 dispatch(initLayout('process', processType)).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })
-                    return dispatch(initLayoutSuccess(preparedLayout, "modal"))
+                    return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 });
 
             }
@@ -368,15 +418,20 @@ export function createProcess(processType, viewId, type, ids) {
 
 export function handleProcessResponse(response, type, id, successCallback) {
     return (dispatch) => {
-        const {error, summary, viewId, viewWindowId, reportFilename} = response.data;
+        const {
+            error, summary, openDocumentId, openDocumentWindowId, reportFilename,
+            openViewId, openViewWindowId
+        } = response.data;
 
         if(error){
-            dispatch(addNotification("Process error", summary, 5000, "error"));
+            dispatch(addNotification('Process error', summary, 5000, 'error'));
         }else{
-            if(viewId && viewWindowId){
-                dispatch(push('/window/' + viewWindowId + '?viewId=' + viewId));
+            if(openViewId && openViewWindowId){
+                dispatch(openRawModal(openViewWindowId, openViewId));
+            }else if(openDocumentWindowId && openDocumentId){
+                dispatch(push('/window/' + openDocumentWindowId + '/' + openDocumentId));
             }else if(reportFilename){
-                dispatch(printRequest('process', type, id, reportFilename))
+                dispatch(openFile('process', type, id, 'print', reportFilename))
             }
 
             if(summary){
@@ -388,7 +443,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
     }
 }
 
-function getProcessData(processId, viewId, type, ids) {
+function getProcessData(processId, viewId, type, ids, tabId, rowId) {
     return () => axios.post(
         config.API_URL +
         '/process/' + processId,
@@ -398,8 +453,10 @@ function getProcessData(processId, viewId, type, ids) {
             viewDocumentIds: ids
         } : {
             processId: processId,
-            documentId: ids,
-            documentType: type
+            documentId: Array.isArray(ids) ? ids[0] : ids,
+            documentType: type,
+            tabId: tabId,
+            rowId: rowId
         }
     );
 }
@@ -423,12 +480,10 @@ export function deleteLocal(tabid, rowsid, scope) {
 
 // END PROCESS ACTIONS
 
-
-
 // UTILITIES
 
 function getScope(isModal) {
-    return isModal ? "modal" : "master";
+    return isModal ? 'modal' : 'master';
 }
 
 export function parseToDisplay(arr) {
@@ -439,7 +494,7 @@ function parseDateToReadable(arr) {
     const dateParse = ['Date', 'DateTime', 'Time'];
     return arr.map(item =>
         (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
-        Object.assign({}, item, { value: item.value ? new Date(item.value) : "" }) :
+        Object.assign({}, item, { value: item.value ? new Date(item.value) : '' }) :
         item
     )
 }
@@ -447,7 +502,7 @@ function parseDateToReadable(arr) {
 function nullToEmptyStrings(arr) {
     return arr.map(item =>
         (item.value === null) ?
-        Object.assign({}, item, { value: "" }) :
+        Object.assign({}, item, { value: '' }) :
         item
     )
 }

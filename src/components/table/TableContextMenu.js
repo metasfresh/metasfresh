@@ -1,12 +1,5 @@
-import React, { Component,PropTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import update from 'react-addons-update';
-
-import {
-    openModal
-} from '../../actions/WindowActions';
-
-import Prompt from '../app/Prompt';
 
 import keymap from '../../keymap.js';
 
@@ -22,8 +15,8 @@ class TableContextMenu extends Component {
     }
 
     componentDidMount() {
-        const {x,y} = this.props;
-        this.setPosition(x,y,this.contextMenu);
+        const {x, y} = this.props;
+        this.setPosition(x, y, this.contextMenu);
     }
 
     getPosition = (dir, pos, element) => {
@@ -39,21 +32,20 @@ class TableContextMenu extends Component {
         }
     }
 
-    setPosition = (x,y,elem) => {
-        this.setState(Object.assign({}, this.state, {
+    setPosition = (x, y, elem) => {
+        this.setState({
             contextMenu: {
                 x: this.getPosition('x', x, elem),
                 y: this.getPosition('y', y, elem)
             }
-        }));
+        });
     }
 
     render() {
         const {
-            isDisplayed, x, y, blur, selected, dispatch, mainTable, handleAdvancedEdit,
-            handleOpenNewTab, handleDelete
+            blur, selected, mainTable, handleAdvancedEdit, handleOpenNewTab, handleDelete
         } = this.props;
-        const {prompt, contextMenu} = this.state;
+        const {contextMenu} = this.state;
 
         const isSelectedOne = selected.length === 1;
         return (
@@ -85,17 +77,18 @@ class TableContextMenu extends Component {
                     </div>
                 }
 
-                <div className="context-menu-item" onClick={handleDelete}>
-                    <i className="meta-icon-trash" /> Delete
-                    <span className="tooltip-inline">
-                        {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
-                    </span>
-                </div>
+                {handleDelete &&
+                    <div className="context-menu-item" onClick={handleDelete}>
+                        <i className="meta-icon-trash" /> Delete
+                        <span className="tooltip-inline">
+                            {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
+                        </span>
+                    </div>
+                }
             </div>
         )
     }
 }
-
 
 TableContextMenu.propTypes = {
     dispatch: PropTypes.func.isRequired

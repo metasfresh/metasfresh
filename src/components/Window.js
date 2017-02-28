@@ -1,5 +1,6 @@
-import React, { Component, PropTypes } from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+
+import Dropzone from './Dropzone';
 
 import {
     findRowByPropName
@@ -9,11 +10,14 @@ import MasterWidget from '../components/widget/MasterWidget';
 import Tabs from '../components/tabs/Tabs';
 import Table from '../components/table/Table';
 
-import logo from '../assets/images/metasfresh_logo_green_thumb.png';
-
 class Window extends Component {
     constructor(props){
         super(props);
+
+        this.state = {
+            fullScreen: null,
+            dragActive: false
+        };
 
         if(props.isModal){
             this.tabIndex = {
@@ -30,14 +34,23 @@ class Window extends Component {
         }
     }
 
+    toggleTableFullScreen = (tabId) => {
+        this.setState({
+            fullScreen: tabId
+        });
+    }
+
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
         const {data, rowData, newRow} = this.props;
-        const dataId = findRowByPropName(data, "ID").value;
+        const {fullScreen} = this.state;
+        const dataId = findRowByPropName(data, 'ID').value;
 
         return(
             <Tabs
                 tabIndex={this.tabIndex.tabs}
+                toggleTableFullScreen={this.toggleTableFullScreen}
+                fullScreen={fullScreen}
             >
                 {tabs.map((elem)=> {
                     const {
@@ -68,7 +81,7 @@ class Window extends Component {
         return sections.map((elem, id)=> {
             const columns = elem.columns;
             return (
-                <div className="row" key={"section" + id}>
+                <div className="row" key={'section' + id}>
                     {columns && this.renderColumns(columns)}
                 </div>
             )
@@ -82,7 +95,7 @@ class Window extends Component {
             const isFirst = (id === 0);
             const elementGroups = elem.elementGroups;
             return (
-                <div className={"col-sm-" + colWidth} key={'col' + id}>
+                <div className={'col-sm-' + colWidth} key={'col' + id}>
                     {elementGroups && this.renderElementGroups(elementGroups, isFirst)}
                 </div>
             )
@@ -94,7 +107,7 @@ class Window extends Component {
             const {type, elementsLine} = elem;
             const shouldBeFocused = isFirst && (id === 0);
 
-            const tabIndex = (type === "primary") ?
+            const tabIndex = (type === 'primary') ?
                 this.tabIndex.firstColumn:
                 this.tabIndex.secondColumn;
 
@@ -104,34 +117,39 @@ class Window extends Component {
                         key={'elemGroups' + id}
                         tabIndex={shouldBeFocused ? 0 : undefined}
                         className={
-                            "panel panel-spaced panel-distance " +
-                            ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
+                            'panel panel-spaced panel-distance ' +
+                            ((type === 'primary') ? 'panel-bordered panel-primary' : 'panel-secondary')
                         }
                     >
-                        {this.renderElementsLine(elementsLine, tabIndex)}
+                        {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
                     </div>
             )
         })
     }
 
-    renderElementsLine = (elementsLine, tabIndex) => {
+    renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
         return elementsLine.map((elem, id)=> {
             const {elements} = elem;
+            const isFocused = shouldBeFocused && (id === 0);
             return (
                 elements && elements.length > 0 &&
-                    <div className="elements-line" key={"line" + id}>
-                        {this.renderElements(elements, tabIndex)}
+                    <div className="elements-line" key={'line' + id}>
+                        {this.renderElements(elements, tabIndex, isFocused)}
                     </div>
             )
         })
     }
 
-    renderElements = (elements, tabIndex) => {
+    renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
-        const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+        const {data, modal, tabId, rowId, dataId, isAdvanced} = this.props;
+        const {fullScreen} = this.state;
+
         return elements.map((elem, id)=> {
+
+            const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
-            let relativeDocId = findRowByPropName(data, "ID").value;
+            let relativeDocId = findRowByPropName(data, 'ID').value;
             return (
                 <MasterWidget
                     entity="window"
@@ -145,6 +163,8 @@ class Window extends Component {
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
+                    autoFocus={autoFocus}
+                    fullScreen={fullScreen}
                     {...elem}
                 />
             )
@@ -152,13 +172,16 @@ class Window extends Component {
     }
 
     render() {
-        const {sections, type, tabs} = this.props.layout;
-        const {data, isModal} = this.props;
+        const {sections, tabs} = this.props.layout;
+        const {handleDropFile, handleRejectDropped} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                <div className="sections-wrapper">
-                    {sections && this.renderSections(sections)}
-                </div>
+                <Dropzone handleDropFile={handleDropFile} handleRejectDropped={handleRejectDropped}>
+                    <div className="sections-wrapper">
+                        {sections && this.renderSections(sections)}
+                    </div>
+                </Dropzone>
+
                 <div className="mt-1 tabs-wrapper">
                     {tabs && this.renderTabs(tabs)}
                 </div>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 class BarChartComponent extends Component {
     constructor(props){
@@ -29,11 +29,10 @@ class BarChartComponent extends Component {
             const wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
             chartWidth = wrapperWidth - margin.left - margin.right;
         }
-         
             return {
                 margin: {
-                    top: margin.top, 
-                    right: margin.right, 
+                    top: margin.top,
+                    right: margin.right,
                     bottom: margin.bottom,
                     left: margin.left 
                 }, 
@@ -42,7 +41,7 @@ class BarChartComponent extends Component {
             };
     }
     setRanges = (width, height, data) => {
-        var x = d3.scaleBand().range([0,width]).padding(0.1);
+        var x = d3.scaleBand().range([0, width]).padding(0.1);
         var y = d3.scaleLinear().range([height, 0]);
 
         x.domain(data.map(function(d) { return d.name; }));
@@ -60,26 +59,26 @@ class BarChartComponent extends Component {
             .attr("transform", 
                 "translate(" + dimensions.margin.left + "," + dimensions.margin.top + ")");
 
-        var bars = svg.selectAll(".bar")
+        svg.selectAll('.bar')
             .data(data)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", function(d) { return ranges.x(d.name); })
-            .attr("width", ranges.x.bandwidth())
-            .attr("y", function(d) { return ranges.y(d.value); })
-            .attr("height", function(d) { return dimensions.height - ranges.y(d.value); })
+            .enter().append('rect')
+            .attr('class', 'bar')
+            .attr('x', function(d) { return ranges.x(d.name); })
+            .attr('width', ranges.x.bandwidth())
+            .attr('y', function(d) { return ranges.y(d.value); })
+            .attr('height', function(d) { return dimensions.height - ranges.y(d.value); })
 
             return svg;
     }
 
     addAxis = (svg, dimensions, ranges) => {
         // add the x Axis
-        svg.append("g")
-            .attr("transform", "translate(0," + dimensions.height + ")")
+        svg.append('g')
+            .attr('transform', 'translate(0,' + dimensions.height + ')')
             .call(d3.axisBottom(ranges.x));
 
         // add the y Axis
-        svg.append("g")
+        svg.append('g')
             .call(d3.axisLeft(ranges.y));
     }
 
@@ -106,7 +105,6 @@ class BarChartComponent extends Component {
         const {chartClass} = this.props;
         document.getElementsByClassName(chartClass)[0].childNodes[0].remove();
     }
-    
 
     render() {
         const {chartClass} = this.props;

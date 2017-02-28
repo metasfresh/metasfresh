@@ -21,3 +21,7 @@
 button:focus {
     outline: 0;
 }
+
+.btn-device:focus {
+    border: 1px solid $brand-font-color;
+}

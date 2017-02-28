@@ -28,7 +28,7 @@
     width: 260px;
     padding: 0;
     margin-top: 3px;
-    z-index: 99999 !important;
+    z-index: 99 !important;
     background: #fff;
     border: 1px solid $brand-light-color;
     border-radius: 3px;

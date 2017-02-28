@@ -1,4 +1,4 @@
-import React, { Component,PropTypes } from 'react';
+import React, { Component } from 'react';
 
 class Tooltips extends Component {
     constructor(props) {
@@ -11,9 +11,9 @@ class Tooltips extends Component {
 
     componentDidMount() {
         this.timeout = setTimeout(() => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 opacity: 1
-            }))
+            })
         }, 1000);
     }
 
@@ -26,14 +26,14 @@ class Tooltips extends Component {
         const {opacity} = this.state;
         return (
             <div style={{opacity: opacity}}>
-                <div 
-                    className={"tooltip-wrapp" + " tooltip-"+type + " " + extraClass}
+                <div
+                    className={'tooltip-wrapp' + ' tooltip-'+type + ' ' + extraClass}
                 >
                     <div className="tooltip-shortcut">{name}</div>
                     <div className="tooltip-name">{action}</div>
-                </div>  
+                </div>
             </div>
-              
+
         )
     }
 }

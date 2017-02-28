@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 
 class TablePagination extends Component {
     constructor(props){
@@ -9,25 +9,24 @@ class TablePagination extends Component {
             secondDotsState: false,
             value: ''
         }
-
     }
 
     handleValue = (e) => {
         e.preventDefault();
-        if(!!e.target.value){
-            this.setState(Object.assign({}, this.state, {
+        if(e.target.value){
+            this.setState({
                 value: e.target.value
-            }));
+            })
         } else {
-            this.setState(Object.assign({}, this.state, {
-                value: ""
-            }))
+            this.setState({
+                value: ''
+            })
         }
     }
 
     handleSubmit = (e, value, pages) => {
         const {handleChangePage, deselect} = this.props;
-        if(e.key === "Enter"){
+        if(e.key === 'Enter'){
             e.preventDefault();
 
             if(value <= pages && value > 0){
@@ -35,11 +34,11 @@ class TablePagination extends Component {
                 handleChangePage(Number(value));
                 deselect();
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     value: '',
                     secondDotsState: false,
                     firstDotsState: false
-                }));
+                });
             }
 
         }
@@ -47,9 +46,9 @@ class TablePagination extends Component {
 
     handleFirstDotsState = () => {
         const {firstDotsState} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             firstDotsState: !firstDotsState
-        }), () => {
+        }, () => {
             if(!firstDotsState){
                 this.goToPage.focus();
             }
@@ -58,9 +57,9 @@ class TablePagination extends Component {
 
     handleSecondDotsState = () => {
         const {secondDotsState} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             secondDotsState: !secondDotsState
-        }), () => {
+        }, () => {
             if(!secondDotsState) {
                 this.goToPage.focus();
             }
@@ -86,7 +85,7 @@ class TablePagination extends Component {
 
     renderFirstPartPagination = (pagination, pages) => {
         const {handleChangePage, deselect} = this.props;
-        const {firstDotsState, secondDotsState, value} = this.state;
+        const {firstDotsState, value} = this.state;
         pagination.push(
             <li className="page-item" key={1} onClick={() => {handleChangePage(1); deselect()} }>
                 <a className="page-link">{1}</a>
@@ -102,7 +101,7 @@ class TablePagination extends Component {
 
     renderLastPartPagination = (pagination, pages) => {
         const {handleChangePage, deselect} = this.props;
-        const {firstDotsState, secondDotsState, value} = this.state;
+        const {secondDotsState, value} = this.state;
 
         pagination.push(
             <li className="page-item page-dots" key={99990}>
@@ -121,7 +120,14 @@ class TablePagination extends Component {
         const {handleChangePage, deselect} = this.props;
         for(let i = start; i <= end; i++){
             pagination.push(
-                <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => {handleChangePage(i); deselect()} }>
+                <li
+                    className={
+                        'page-item ' +
+                        (page === i ? 'active': '')
+                    }
+                    key={i}
+                    onClick={() => {handleChangePage(i); deselect()} }
+                >
                     <a className="page-link">{i}</a>
                 </li>
             );
@@ -129,11 +135,11 @@ class TablePagination extends Component {
     }
 
     render() {
-        const {size, pageLength, selected, handleSelectAll, handleChangePage, page, orderBy, deselect} = this.props;
+        const {
+            size, pageLength, selected, handleSelectAll, handleChangePage, page,
+            deselect, queryLimitHit
+        } = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
-        const startPoint = pages > 1 ? (pages - page <= 4 ? (pages - 4 > 0 ? pages - 4 : 1 ) : page) : 1;
-        const endPoint = pages > 1 ? (startPoint + 4 > pages ? pages : startPoint + 4) : 1;
-
 
         let pagination = [];
 
@@ -161,27 +167,32 @@ class TablePagination extends Component {
             <div className="pagination-wrapper">
                 <div className="pagination-row">
                     <div className="hidden-sm-down">
-                        <div>{selected.length > 0 ? selected.length + " items selected" : "No items selected"}</div>
+                        <div>{selected.length > 0 ? selected.length + ' items selected' : 'No items selected'}</div>
                         <div className="pagination-link pointer" onClick={handleSelectAll}>Select all on this page</div>
                     </div>
 
                     <div className="items-row-2 pagination-part">
                         <div className="hidden-sm-down">
-                            <div>Total items {size}</div>
+                            <div>
+                                Total items {size}
+                                {queryLimitHit &&
+                                    <span className="text-danger"> (limited)</span>
+                                }
+                            </div>
                         </div>
                         <div>
                             <nav>
                                 <ul className="pagination pointer">
                                     <li className="page-item">
-                                        <a className="page-link" onClick={() => { handleChangePage("down"); deselect()} }>
+                                        <a className="page-link" onClick={() => { handleChangePage('down'); deselect()} }>
                                             <span>&laquo;</span>
                                         </a>
                                     </li>
 
                                     {pagination}
 
-                                    <li className={"page-item "}>
-                                        <a className="page-link" onClick={() => {handleChangePage("up"); deselect()} }>
+                                    <li className="page-item ">
+                                        <a className="page-link" onClick={() => {handleChangePage('up'); deselect()} }>
                                             <span>&raquo;</span>
                                         </a>
                                     </li>
@@ -190,11 +201,17 @@ class TablePagination extends Component {
                         </div>
                     </div>
                 </div>
+
+                <PaginationContextShortcuts
+                    handleFirstPage={() => handleChangePage(1)}
+                    handleLastPage={() => handleChangePage(size ? Math.ceil(size / pageLength) : 0)}
+                    handleNextPage={() => handleChangePage('up')}
+                    handlePrevPage={() => handleChangePage('down')}
+                />
             </div>
         );
 
     }
 }
-
 
 export default TablePagination;

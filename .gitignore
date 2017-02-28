@@ -1,8 +1,9 @@
 node_modules
-npm-debug.log
+npm-debug.log*
 .DS_Store
 dist
 .idea
 config.js
 /static
 .vscode
+.history

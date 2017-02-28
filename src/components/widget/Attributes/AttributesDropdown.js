@@ -18,7 +18,7 @@ class AttributesDropdown extends Component {
         }
     }
 
-    componentWillReceiveProps = (props) => {
+    componentWillReceiveProps = () => {
         const {shouldPropagateClickOutside} = this.state;
 
         if(shouldPropagateClickOutside){
@@ -64,8 +64,7 @@ class AttributesDropdown extends Component {
 
     renderFields = () => {
         const {
-            tabIndex, layout, data, dataId, attributeType, handlePatch,
-            handleChange, attrId
+            tabIndex, layout, data, attributeType, handleChange, attrId
         } = this.props;
 
         if(layout){

@@ -5,22 +5,30 @@ const initialState = {
     connectionError: false,
     modal: {
         visible: false,
-        type: "",
+        type: '',
         tabId: null,
         rowId: null,
+        viewId: null,
         layout: {},
         data: [],
         rowData: {},
-        modalTitle: "",
-        modalType: "",
-        isAdvanced: false
+        modalTitle: '',
+        modalType: '',
+        isAdvanced: false,
+        viewDocumentIds: null
+    },
+    rawModal: {
+        visible: false,
+        windowType: null,
+        viewId: null
     },
     master: {
         layout: {},
         data: [],
-        rowData: {},
+        rowData: {}
     },
     indicator: 'saved',
+    latestNewDocument: null,
     viewId: null,
     selected: []
 }
@@ -40,9 +48,11 @@ export default function windowHandler(state = initialState, action) {
                     type: action.windowType,
                     tabId: action.tabId,
                     rowId: action.rowId,
+                    viewId: action.viewId,
                     title: action.title,
                     modalType: action.modalType,
-                    isAdvanced: action.isAdvanced
+                    isAdvanced: action.isAdvanced,
+                    viewDocumentIds: action.viewDocumentIds
                 })
         })
 
@@ -61,7 +71,7 @@ export default function windowHandler(state = initialState, action) {
                     rowId: null,
                     layout: {},
                     data: [],
-                    title: "",
+                    title: '',
                     rowData: {}
                 })
         })
@@ -79,6 +89,7 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     data: action.data,
+                    docId: action.docId,
                     layout: {},
                     rowData: {}
                 })
@@ -126,7 +137,7 @@ export default function windowHandler(state = initialState, action) {
                             [action.rowid]: {
                                 fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map(item =>
                                     item.field === action.item.field ?
-                                        Object.assign({},item,action.item) :
+                                        Object.assign({}, item, action.item) :
                                         item
                                 )}
                             }
@@ -180,13 +191,38 @@ export default function windowHandler(state = initialState, action) {
         case types.CHANGE_INDICATOR_STATE:
             return Object.assign({}, state, {
                 indicator: action.state
-            }
-        );
+            })
+
         // END OF INDICATOR ACTIONS
 
         case types.SELECT_TABLE_ITEMS:
             return Object.assign({}, state, {
                 selected: action.ids
+            })
+
+        // LATEST NEW DOCUMENT CACHE
+        case types.SET_LATEST_NEW_DOCUMENT:
+            return Object.assign({}, state, {
+                latestNewDocument: action.id
+            })
+
+        // RAW Modal
+        case types.CLOSE_RAW_MODAL:
+            return Object.assign({}, state, {
+                rawModal: Object.assign({}, state.rawModal, {
+                    visible: false,
+                    type: null,
+                    viewId: null
+                })
+            })
+
+        case types.OPEN_RAW_MODAL:
+            return Object.assign({}, state, {
+                rawModal: Object.assign({}, state.rawModal, {
+                    visible: true,
+                    type: action.windowType,
+                    viewId: action.viewId
+                })
             })
 
         default:

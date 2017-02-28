@@ -26,7 +26,7 @@ class Inbox extends Component {
         const {dispatch, close} = this.props;
         if(item.target){
             switch(item.target.targetType){
-                case "window":
+                case 'window':
                     dispatch(push('/window/' + item.target.documentType + '/' + item.target.documentId));
                     break;
             }
@@ -63,16 +63,16 @@ class Inbox extends Component {
         const {close} = this.props;
         const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 if (document.activeElement.classList.contains('js-inbox-wrapper')) {
                     if(inboxItem){
                         inboxItem.focus();
                     }
-                    
+
                 }
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 close && close();
                 break;
@@ -84,13 +84,13 @@ class Inbox extends Component {
         return (
             <div className="js-inbox-wrapper" onKeyDown={(e) => this.handleKeyDown(e)} tabIndex={0}>
                 {(all || open) && <div className={
-                    (all ? "inbox-all ": "inbox")
+                    (all ? 'inbox-all ': 'inbox')
                 }>
                     <div className={
-                        "inbox-body " +
-                        (!all ? "breadcrumbs-shadow" : "")
+                        'inbox-body ' +
+                        (!all ? 'breadcrumbs-shadow' : '')
                     }
-                    
+
                     >
                         <div
                             className="inbox-header"
@@ -104,7 +104,7 @@ class Inbox extends Component {
                             </span>
                         </div>
                         <div className={
-                            (!all ? "inbox-list" : "")
+                            (!all ? 'inbox-list' : '')
                         }>
                             {inbox && inbox.notifications.map((item, id) =>
                                 <InboxItem

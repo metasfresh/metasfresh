@@ -3,10 +3,6 @@ import {connect} from 'react-redux';
 
 import Notification from './Notification';
 
-import {
-    addNotification
-} from '../../actions/AppActions';
-
 class NotificationHandler extends Component {
     constructor(props) {
         super(props);
@@ -18,7 +14,7 @@ class NotificationHandler extends Component {
         return (
             <div className="notification-handler">
 
-            {notifications && notifications.map((item,index) =>
+            {notifications && notifications.map((item, index) =>
                 <Notification
                     key={index}
                     index={index}

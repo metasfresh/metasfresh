@@ -76,9 +76,10 @@ export class Dashboard extends Component {
             {name: "Zisa", value: 22},
             {name: "Oom", value: 18}
         ];
+
         return (
             <Container
-                siteName = {"Dashboard"}
+                siteName = "Dashboard"
                 noMargin = {true}
             >
                 <div className="container-fluid dashboard-wrapper">

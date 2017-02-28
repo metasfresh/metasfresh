@@ -1,9 +1,9 @@
 import * as types from '../constants/MenuTypes';
-import update from 'react-addons-update';
 
 const initialState = {
     breadcrumb: [],
     references: [],
+    attachments: [],
     actions: [],
     homemenu: {}
 }
@@ -25,6 +25,10 @@ export default function menuHandler(state = initialState, action) {
         case types.SET_ACTIONS:
             return Object.assign({}, state, {
                 actions: action.actions
+            })
+        case types.SET_ATTACHMENTS:
+            return Object.assign({}, state, {
+                attachments: action.attachments
             })
         case types.SET_GLOBAL_GRID_FILTER:
             return Object.assign({}, state, {

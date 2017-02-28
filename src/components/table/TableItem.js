@@ -10,13 +10,13 @@ class TableItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            edited: "",
-            activeCell: "",
+            edited: '',
+            activeCell: '',
             updatedRow: false
         };
     }
 
-    handleEditProperty = (e,property, callback) => {
+    handleEditProperty = (e, property, callback) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
         if(
@@ -46,24 +46,22 @@ class TableItem extends Component {
                 }
             })
         }
-
-
     }
 
     handleKey = (e, property) => {
         const elem = document.activeElement;
-        const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        const { changeListenOnTrue } = this.props;
         const { edited, activeCell} = this.state;
 
         if(!elem.className.includes('js-input-field')) {
-          this.setState(Object.assign({}, this.state, {
-              activeCell: elem
-          }))
+            this.setState({
+                activeCell: elem
+            })
         }
 
-        if(e.key === "Enter" && !edited) {
-            this.handleEditProperty(e,property, true);
-        } else if (e.key === "Enter" && edited) {
+        if(e.key === 'Enter' && !edited) {
+            this.handleEditProperty(e, property, true);
+        } else if (e.key === 'Enter' && edited) {
             this.handleEditProperty(e);
             changeListenOnTrue();
             activeCell && activeCell.focus();
@@ -72,7 +70,7 @@ class TableItem extends Component {
 
     renderCells = (cols, cells) => {
         const {
-            type, docId, rowId, tabId,readonly, mainTable, newRow, changeListenOnTrue,
+            type, docId, rowId, tabId, readonly, mainTable, newRow, changeListenOnTrue,
             tabIndex, entity
         } = this.props;
 
@@ -80,7 +78,7 @@ class TableItem extends Component {
             edited, updatedRow
         } = this.state;
 
-        //iterate over layout settings
+        // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
             let widgetData = item.fields.map(property => findRowByPropName(cells, property.field));
@@ -97,7 +95,7 @@ class TableItem extends Component {
                     key={index}
                     widgetData={widgetData}
                     isEdited={edited === property}
-                    onDoubleClick={(e) => this.handleEditProperty(e,property, true)}
+                    onDoubleClick={(e) => this.handleEditProperty(e, property, true)}
                     onClickOutside={(e) => {this.handleEditProperty(e); changeListenOnTrue()}}
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
@@ -110,38 +108,113 @@ class TableItem extends Component {
     }
 
     updateRow = () => {
-        this.setState(
-            Object.assign({}, this.state, {
+        this.setState({
                 updatedRow: true
-            }), () => {
+            }, () => {
                 setTimeout(() => {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         updatedRow: false
-                    }))
+                    })
                 }, 1000);
             }
         )
     }
 
+    nestedSelect = (elem, cb) => {
+        let res = [];
 
+        elem && elem.map(item => {
+            res = res.concat([item.id]);
+
+            if(item.includedDocuments){
+                res = res.concat(this.nestedSelect(item.includedDocuments));
+            }else{
+                cb && cb();
+            }
+        })
+
+        return res;
+    }
+
+    handleIndentSelect = (e, id, elem) => {
+        const {handleSelect} = this.props;
+        e.stopPropagation();
+        handleSelect(this.nestedSelect(elem).concat([id]));
+    }
+
+    renderTree = (huType) => {
+        const {
+            indent, lastSibling, includedDocuments, indentSupported, rowId
+        } = this.props;
+
+        let indentation = [];
+
+        for(let i = 0; i < indent.length; i++){
+            indentation.push(
+                <div
+                    key={i}
+                    className="indent-item-mid"
+                >
+                    {i === indent.length - 1 && <div className="indent-mid"/>}
+                    <div
+                        className={
+                            (indent[i] ? 'indent-sign ' : '') +
+                            ((lastSibling && i === indent.length - 1) ? 'indent-sign-bot ' : '')
+                        }
+                    />
+                </div>
+            )
+        }
+
+        if(indentSupported){
+            return (
+                <div
+                    className="indent"
+                    onClick={(e) => this.handleIndentSelect(e, rowId, includedDocuments)}
+                >
+                    {indentation}
+
+                    {includedDocuments && <div className="indent-bot"/>}
+
+                    <div
+                        className="indent-icon"
+                    >
+                        {huType == 'LU' && <i className="meta-icon-palette"/>}
+                        {huType == 'TU' && <i className="meta-icon-package"/>}
+                        {huType == 'CU' && <i className="meta-icon-product"/>}
+                    </div>
+                </div>
+            );
+        }else{
+            return false;
+        }
+    }
 
     render() {
         const {
-            isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
-            onMouseDown, onDoubleClick, includedDocuments, tabid, type, docId,
-            tabIndex, mainTable
+            isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick,
+            indentSupported, contextType, item, lastSibling, includedDocuments
         } = this.props;
-
 
         return (
             <tr
-                onContextMenu = {onContextMenu}
-                onMouseDown ={onMouseDown}
+                onClick={onMouseDown}
                 onDoubleClick={onDoubleClick}
+                onContextMenu={handleRightClick}
                 className={
-                    (isSelected ? "row-selected" : "")
+                    (isSelected ? 'row-selected ' : '') +
+                    (odd ? 'tr-odd ': 'tr-even ') +
+                    (item.processed ? 'row-disabled ': '') +
+                    ((item.processed && lastSibling && !includedDocuments) ?
+                        'row-boundary ': ''
+                    )
                 }
             >
+                {indentSupported &&
+                    <td className="indented">
+                        {this.renderTree(contextType)}
+                    </td>
+                }
                 {this.renderCells(cols, fields)}
             </tr>
         );

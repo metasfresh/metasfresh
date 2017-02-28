@@ -363,12 +363,12 @@
 
 .daterangepicker .next.available:after {
     font-size: 1rem;
-    content: "›"
+    content: '›'
 }
 
 .daterangepicker .prev.available:after {
     font-size: 1rem;
-    content: "‹"
+    content: '‹'
 }
 
 

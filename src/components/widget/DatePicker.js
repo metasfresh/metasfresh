@@ -1,7 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
-import Moment from 'moment';
+import React, { Component } from 'react';
 
 import Datetime from 'react-datetime';
 
@@ -14,31 +11,38 @@ class DatePicker extends Component {
         }
     }
 
+    componentDidMount() {
+        const {handleBackdropLock} = this.props;
+        handleBackdropLock && handleBackdropLock(true);
+    }
+
     handleBlur = (date) => {
-        const {patch, value} = this.props;
+        const {patch, handleBackdropLock} = this.props;
         const {cache} = this.state;
 
         if(JSON.stringify(cache) !== (
-            date !== "" ? JSON.stringify(date && date.toDate()) : ""
+            date !== '' ? JSON.stringify(date && date.toDate()) : ''
         )){
             patch(date);
         }
 
         this.handleClose();
+
+        handleBackdropLock && handleBackdropLock(false);
     }
 
     handleFocus = () => {
         const {value} = this.props;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             cache: value,
             open: true
-        }));
+        });
     }
 
     handleClose = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             open: false
-        }));
+        });
     }
 
     handleClickOutside = () => {
@@ -57,9 +61,6 @@ class DatePicker extends Component {
     }
 
     render() {
-        const {open} = this.state;
-        const {tabIndex} = this.props;
-
         return (<Datetime
             closeOnTab={true}
             renderDay={this.renderDay}
@@ -69,6 +70,5 @@ class DatePicker extends Component {
         />)
     }
 }
-
 
 export default DatePicker

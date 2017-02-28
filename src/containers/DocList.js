@@ -1,10 +1,10 @@
 import React, { Component, PropTypes } from 'react';
-import {push,replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
+import RawModal from '../components/app/RawModal';
 
 import {
     getWindowBreadcrumb
@@ -14,14 +14,37 @@ import {
     updateUri
 } from '../actions/AppActions';
 
+import {
+    selectTableItems,
+    setLatestNewDocument
+} from '../actions/WindowActions';
+
 class DocList extends Component {
     constructor(props){
         super(props);
+
+        this.state = {
+            modalTitle: ''
+        }
     }
 
     componentDidMount = () => {
+        const {dispatch, windowType, latestNewDocument} = this.props;
+
+        dispatch(getWindowBreadcrumb(windowType));
+
+        if(latestNewDocument){
+            dispatch(selectTableItems([latestNewDocument]));
+            dispatch(setLatestNewDocument(null));
+        }
+    }
+
+    componentDidUpdate = (prevProps) => {
         const {dispatch, windowType} = this.props;
-        dispatch(getWindowBreadcrumb(windowType))
+
+        if(prevProps.windowType !== windowType){
+            dispatch(getWindowBreadcrumb(windowType));
+        }
     }
 
     updateUriCallback = (prop, value) => {
@@ -29,21 +52,21 @@ class DocList extends Component {
         dispatch(updateUri(pathname, query, prop, value));
     }
 
-    renderDocumentList = (windowType, query, viewId) => {
-        return (<DocumentList
-            type="grid"
-            updateUri={this.updateUriCallback}
-            windowType={windowType}
-            query={query}
-            viewId={viewId}
-        />)
+    setModalTitle = (title) => {
+        this.setState({
+            modalTitle: title
+        })
     }
 
     render() {
         const {
-            dispatch, windowType, breadcrumb, query, actions, modal, viewId,
-            selected, references
+            windowType, breadcrumb, query, actions, modal, selected, references,
+            rawModal, attachments, indicator
         } = this.props;
+
+        const {
+            modalTitle
+        } = this.state;
 
         return (
             <Container
@@ -52,6 +75,8 @@ class DocList extends Component {
                 windowType={windowType}
                 actions={actions}
                 references={references}
+                attachments={attachments}
+                query={query}
             >
                 {modal.visible &&
                     <Modal
@@ -63,11 +88,41 @@ class DocList extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
-                        viewId={viewId}
+                        modalViewId={modal.viewId}
+                        query={query}
                         selected={selected}
+                        viewId={query.viewId}
+                        rawModalVisible={rawModal.visible}
+                        indicator={indicator}
                      />
                  }
-                {this.renderDocumentList(windowType, query, viewId)}
+                 {rawModal.visible &&
+                     <RawModal
+                         modalTitle={modalTitle}
+                     >
+                         <DocumentList
+                             type="grid"
+                             windowType={parseInt(rawModal.type)}
+                             defaultViewId={rawModal.viewId}
+                             selected={selected}
+                             setModalTitle={this.setModalTitle}
+                             isModal={true}
+                         />
+                     </RawModal>
+                 }
+                 <DocumentList
+                     type="grid"
+                     updateUri={this.updateUriCallback}
+                     windowType={parseInt(windowType)}
+                     defaultViewId={query.viewId}
+                     defaultSort={query.sort}
+                     defaultPage={parseInt(query.page)}
+                     refType={query.refType}
+                     refId={query.refId}
+                     selected={selected}
+                     inBackground={rawModal.visible}
+                     fetchQuickActionsOnInit={true}
+                 />
             </Container>
         );
     }
@@ -80,60 +135,54 @@ DocList.propTypes = {
     search: PropTypes.string.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
-    viewId: PropTypes.string.isRequired,
+    rawModal: PropTypes.object.isRequired,
     selected: PropTypes.array,
     actions: PropTypes.array.isRequired,
+    attachments: PropTypes.array.isRequired,
+    indicator: PropTypes.string.isRequired,
     references: PropTypes.array.isRequired
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler, listHandler, routing } = state;
+    const { windowHandler, menuHandler, routing } = state;
 
     const {
         modal,
-        selected
+        rawModal,
+        selected,
+        latestNewDocument,
+        indicator
     } = windowHandler || {
         modal: false,
-        selected: []
+        rawModal: false,
+        selected: [],
+        latestNewDocument: null,
+        indicator: ''
     }
 
     const {
         actions,
         references,
+        attachments,
         breadcrumb
     } = menuHandler || {
         actions: [],
         refereces: [],
-        breadcrumb: []
+        breadcrumb: [],
+        attachments: []
     }
 
     const {
-        viewId
-    } = listHandler || {
-        viewId: ""
-    }
-
-    const {
-        query,
         search,
         pathname
     } = routing.locationBeforeTransitions || {
-        query: {},
-        search: "",
-        pathname: ""
+        search: '',
+        pathname: ''
     }
 
-
     return {
-        modal,
-        breadcrumb,
-        query,
-        search,
-        pathname,
-        actions,
-        viewId,
-        selected,
-        references
+        modal, breadcrumb, search, pathname, actions, selected, indicator,
+        latestNewDocument, references, rawModal, attachments
     }
 }
 

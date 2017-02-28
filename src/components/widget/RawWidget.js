@@ -1,12 +1,5 @@
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
+import React, { Component } from 'react';
 import Moment from 'moment';
-
-import {
-    patch,
-    updateProperty,
-    findRowByPropName
-} from '../../actions/WindowActions';
 
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
@@ -14,197 +7,223 @@ import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List/List';
 import ActionButton from './ActionButton';
+import Image from './Image';
+import DevicesWidget from './Devices/DevicesWidget';
+
+import {DATE_FORMAT}  from '../../constants/Constants';
 
 class RawWidget extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            textValue: props.selectedItem,
             isEdited: false,
             cachedValue: null
         }
     }
 
-    handleSelectedValue = (item) => {
-        const {setSelectedItem} = this.props
-        this.setState(Object.assign({}, this.state, {
-            textValue: item
-        }))
-
-        setSelectedItem(item);
+    componentDidMount(){
+        const {autoFocus} = this.props
+        if(this.rawWidget && autoFocus){
+            this.rawWidget.focus();
+        }
     }
 
     handleFocus = (e) => {
         const {handleFocus} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isEdited: true,
             cachedValue: e.target.value
-        }));
+        });
 
         handleFocus && handleFocus();
     }
 
-    handlePatch = (property, value, id) => {
+    handlePatch = (property, value, id, valueTo) => {
         const {handlePatch, widgetData} = this.props;
         const {cachedValue} = this.state;
         let ret = null;
 
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
+        // Do patch only when value is not equal state
+        // or cache is set and it is not equal value
 
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+        if(
+            JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
+            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))
+        ){
 
             if(handlePatch) {
-                ret = handlePatch(property, value, id);
+                ret = handlePatch(property, value, id, valueTo);
             }
         }
 
         if(ret){
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 cachedValue: null
-            }));
+            });
         }
 
         return ret;
     }
 
     handleBlur = (widgetField, value, id) => {
-        this.setState(Object.assign({}, this.state, {
+        const {handleBlur} = this.props;
+
+        handleBlur && handleBlur();
+
+        this.setState({
             isEdited: false
-        }));
+        });
 
         this.handlePatch(widgetField, value, id);
     }
 
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
+    handleProcess = () => {
         const {
-            handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
-            dropdownOpenCallback, autoFocus
+            handleProcess, buttonProcessId, tabId, rowId, dataId, windowType,
+            caption
         } = this.props;
 
-        const {textValue, isEdited} = this.state;
-        const widgetData = data[0];
+        handleProcess && handleProcess(
+            caption, buttonProcessId, tabId, rowId, dataId, windowType
+        );
+    }
 
-        let widgetField = "";
-        let selectedField = "";
-        let selectedFieldTo = "";
-        let widgetFields = "";
+    renderWidget = () => {
+        const {
+            handleChange, updated, isModal, filterWidget, filterId, id, range,
+            onHide, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
+            dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
+            windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
+            entity, onShow, disabled, caption
+        } = this.props;
 
+        const {isEdited} = this.state;
 
-        if (filterWidget) {
-            widgetField = parameterName;
-            selectedField = selectedItem;
-            selectedFieldTo = selectedItemTo;
-            widgetFields = fields;
-        } else {
-            widgetField = fields[0].field;
-            selectedField = data[0].value;
-            widgetFields = fields[0];
-        }
+        // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
+        const widgetField = filterWidget ? fields[0].parameterName : fields[0].field;
 
         switch(widgetType){
-            case "Date":
+            case 'Date':
                 if(range){
-                    //Watch out! The datetimerange widget as exception, is non-controlled
-                    //input! For further usage, needs upgrade.
+                    // Watch out! The datetimerange widget as exception,
+                    // is non-controlled input! For further usage, needs
+                    // upgrade.
                     return (
                         <DatetimeRange
-                            onChange={(value, valueTo) => this.handlePatch(widgetField, value, valueTo)}
-                            mandatory={widgetData.mandatory}
-                            isShown={isShown}
-                            isHidden={isHidden}
-                            value={selectedField}
-                            valueTo={selectedFieldTo}
-                            tabIndex={tabIndex}
+                            onChange={(value, valueTo) =>
+                                this.handlePatch(widgetField,
+                                    value ? Moment(value).format(DATE_FORMAT) : null,
+                                    null,
+                                    valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
+                                )
+                            }
+                            mandatory={widgetData[0].mandatory}
+                            onShow={onShow}
+                            onHide={onHide}
+                            value={widgetData[0].value}
+                            valueTo={widgetData[0].valueTo}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                          />
                     )
                 }else{
                     return (
-                        <div className={"input-icon-container input-block " +
-                            (widgetData.readonly ? "input-disabled " : "") +
-                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                            (align ? "text-xs-" + align + " " : "") +
-                            (type === "primary" ? "input-primary " : "input-secondary ") +
-                            (updated ? "pulse-on " : "pulse-off ") +
-                            (rowId && !isModal ? "input-table " : "")
+                        <div className={'input-icon-container input-block ' +
+                            (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                            (updated ? 'pulse-on ' : 'pulse-off ') +
+                            (rowId && !isModal ? 'input-table ' : '')
                         }>
                             <DatePicker
+                                ref={c => this.rawWidget = c}
                                 timeFormat={false}
                                 dateFormat={true}
                                 inputProps={{
-                                    placeholder: widgetFields.emptyText,
-                                    disabled: widgetData.readonly,
-                                    tabIndex: tabIndex
+                                    placeholder: fields[0].emptyText,
+                                    disabled:
+                                        widgetData[0].readonly || disabled,
+                                    tabIndex: fullScreen ? -1 : tabIndex
                                 }}
-                                value={selectedField}
+                                value={widgetData[0].value}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
-                                ref={c => {(c && autoFocus) && c.focus()}}
+                                patch={(date) => this.handlePatch(
+                                    widgetField,
+                                    date ?
+                                        Moment(date).format(DATE_FORMAT) : null
+                                )}
+                                handleBackdropLock={handleBackdropLock}
                             />
-                            <i className="meta-icon-calendar input-icon-right"></i>
+                            <i
+                                className="meta-icon-calendar input-icon-right"
+                            />
                         </div>
                     )
                 }
-            case "DateTime":
+            case 'DateTime':
                 return (
-                    <div className={"input-icon-container input-block " +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        (((rowId && !isModal)) ? "input-table " : "")
+                    <div className={'input-icon-container input-block ' +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        (((rowId && !isModal)) ? 'input-table ' : '')
                     }>
                         <DatePicker
+                            ref={c => this.rawWidget = c}
                             timeFormat={true}
                             dateFormat={true}
                             inputProps={{
-                                placeholder: widgetFields.emptyText,
-                                disabled: widgetData.readonly,
-                                tabIndex: tabIndex
+                                placeholder: fields[0].emptyText,
+                                disabled: widgetData[0].readonly || disabled,
+                                tabIndex: fullScreen ? -1 : tabIndex
                             }}
-                            value={selectedField}
+                            value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            patch={(date) => this.handlePatch(widgetField,
+                                date ? Moment(date).format(DATE_FORMAT) : null
+                            )}
+                            tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
                 )
-            case "Time":
+            case 'Time':
                 return (
-                    <div className={"input-icon-container input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                    <div className={'input-icon-container input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '')
                     }>
                         <DatePicker
+                            ref={c => this.rawWidget = c}
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{
-                                placeholder: widgetFields.emptyText,
-                                disabled: widgetData.readonly,
-                                tabIndex: tabIndex
+                                placeholder: fields[0].emptyText,
+                                disabled: widgetData[0].readonly || disabled,
+                                tabIndex: fullScreen ? -1 : tabIndex
                             }}
-                            value={selectedField}
+                            value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            patch={(date) => this.handlePatch(widgetField,
+                                date ? Moment(date).format(DATE_FORMAT) : null
+                            )}
+                            tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
                 )
-            case "Lookup":
+            case 'Lookup':
                 return (
                     <Lookup
                         entity={entity}
@@ -214,413 +233,454 @@ class RawWidget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        defaultValue={data}
-                        placeholder={widgetFields.emptyText}
-                        readonly={widgetData.readonly}
-                        mandatory={widgetData.mandatory}
+                        defaultValue={widgetData}
+                        placeholder={fields[0].emptyText}
+                        readonly={widgetData[0].readonly || disabled}
+                        mandatory={widgetData[0].mandatory}
                         rank={type}
                         onChange={this.handlePatch}
-                        align={align}
+                        align={gridAlign}
                         isModal={isModal}
                         updated={updated}
                         filterWidget={filterWidget}
                         filterId={filterId}
-                        parameterName={parameterName}
-                        setSelectedItem={setSelectedItem}
-                        selected={selectedField}
+                        parameterName={fields[0].parameterName}
+                        selected={widgetData[0].value}
                         tabId={tabId}
                         rowId={rowId}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
                     />
                 )
-            case "List":
+            case 'List':
                 return (
                     <List
                         dataId={dataId}
                         entity={entity}
                         subentity={subentity}
                         subentityId={subentityId}
-                        defaultValue={widgetFields.emptyText}
-                        selected={selectedField}
+                        defaultValue={fields[0].emptyText}
+                        selected={widgetData[0].value}
                         properties={fields}
-                        readonly={widgetData.readonly}
-                        mandatory={widgetData.mandatory}
+                        readonly={widgetData[0].readonly || disabled}
+                        mandatory={widgetData[0].mandatory}
                         windowType={windowType}
                         rowId={rowId}
                         tabId={tabId}
                         onChange={(option) => this.handlePatch(widgetField, option, id)}
-                        align={align}
+                        align={gridAlign}
                         updated={updated}
                         filterWidget={filterWidget}
                         filterId={filterId}
-                        parameterName={parameterName}
-                        setSelectedItem={setSelectedItem}
-                        emptyText={widgetFields.emptyText}
-                        tabIndex={tabIndex}
+                        parameterName={fields[0].parameterName}
+                        emptyText={fields[0].emptyText}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
                     />
                 )
-            case "Text":
+            case 'Text':
                 return (
                     <div className={
-                            "input-block input-icon-container " +
-                            (type === "primary" ? "input-primary " : "input-secondary ") +
-                            (widgetData.readonly ? "input-disabled " : "") +
-                            (align ? "text-xs-" + align + " " : "") +
-                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                            (updated ? "pulse-on " : "pulse-off ") +
-                            ((rowId && !isModal) ? "input-table " : "") +
-                            (isEdited ? "input-focused " : "")
+                            'input-block input-icon-container ' +
+                            (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                            (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (updated ? 'pulse-on ' : 'pulse-off ') +
+                            ((rowId && !isModal) ? 'input-table ' : '') +
+                            (isEdited ? 'input-focused ' : '')
                         }
                     >
                         <input
                             type="text"
-                            ref={c => this.input = c}
+                            ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
-                            value={selectedField}
-                            placeholder={widgetFields.emptyText}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            placeholder={fields[0].emptyText}
+                            disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
                 )
-            case "LongText":
+            case 'LongText':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
+                            ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
-                            value={filterWidget ? textValue : selectedField}
-                            disabled={widgetData.readonly}
-                            placeholder={widgetFields.emptyText}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
+                            placeholder={fields[0].emptyText}
                             onFocus={this.handleFocus}
-                            onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
-            case "Integer":
+            case 'Integer':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? ' pulse-on' : ' pulse-off') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {autoFocus && c.focus()}}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
-            case "Number":
+            case 'Number':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetFields.field, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(fields[0].field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
-            case "Amount" :
+            case 'Amount' :
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            type="number"
-                            className="input-field js-input-field"
-                            min="0"
-                            step="1"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
-                        />
-                    </div>
-                )
-            case "Quantity":
-                return (
-                    <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
-                    }>
-                        <input
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
-            case "CostPrice":
+            case 'Quantity':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            min="0"
+                            step="1"
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
-            case "YesNo":
+            case 'CostPrice':
+                return (
+                    <div className={
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
+                    }>
+                        <input
+                            ref={c => this.rawWidget = c}
+                            type="number"
+                            className="input-field js-input-field"
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
+                            onFocus={this.handleFocus}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
+                            tabIndex={fullScreen ? -1 : tabIndex}
+                        />
+                    </div>
+                )
+            case 'YesNo':
                 return (
                     <label
                         className={
-                            "input-checkbox " +
-                            (widgetData.readonly ? "input-disabled " : "")
+                            'input-checkbox ' +
+                            (widgetData[0].readonly || disabled ? 'input-disabled ' : '')
                         }
-                        tabIndex={tabIndex}
-                        ref={c => this.input = c}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
                         onKeyDown={e => {
-                            if(e.key === " "){
+                            if(e.key === ' '){
                                 e.preventDefault();
                                 this.checkbox.click();
                             }
                         }}
                     >
                         <input
+                            ref={c => this.rawWidget = c}
                             type="checkbox"
-                            checked={selectedField}
-                            disabled={widgetData.readonly}
+                            checked={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
-                        <div className={"input-checkbox-tick"}/>
+                        <div className="input-checkbox-tick" />
                     </label>
                 )
-            case "Switch":
+            case 'Switch':
                 return (
                     <label
                         className={
-                            "input-switch " +
-                            (widgetData.readonly ? "input-disabled " : "") +
-                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
+                            'input-switch ' +
+                            (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (rowId && !isModal ? 'input-table ' : '')
                         }
-                        tabIndex={tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                        onKeyDown={e => {e.key === ' ' &&
+                            this.handlePatch(widgetField, !widgetData[0].value, id)
+                        }}
                     >
                         <input
                             type="checkbox"
-                            checked={selectedField}
-                            disabled={widgetData.readonly}
+                            checked={widgetData[0].value}
+                            disabled={widgetData[0].readonly || disabled}
                             tabIndex="-1"
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                         />
-                        <div className={"input-slider"} />
+                        <div className="input-slider" />
                     </label>
                 )
-            case "Label":
+            case 'Label':
                 return (
                     <div
                         className={
-                            "tag tag-warning " +
-                            (align ? "text-xs-" + align + " " : "")
+                            'tag tag-warning ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
                         }
-                        tabIndex={tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
                     >
-                        {widgetData.value}
+                        {widgetData[0].value}
                     </div>
                 )
-            case "Button":
+            case 'Button':
                 return (
                     <button
                         className={
-                            "btn btn-sm btn-meta-primary " +
-                            (align ? "text-xs-" + align + " " : "")
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
                         }
-                        onClick={(e) => this.handlePatch(widgetField)}
-                        tabIndex={tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        onClick={() => this.handlePatch(widgetField)}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
                     >
-                        {widgetData.value[Object.keys(widgetData.value)[0]]}
+                        {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
                     </button>
                 )
-            case "ActionButton":
+            case 'ProcessButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
+                        }
+                        onClick={this.handleProcess}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
+                    </button>
+                )
+            case 'ActionButton':
                 return (
                     <ActionButton
-                        data={widgetData}
+                        data={widgetData[0]}
                         windowType={windowType}
                         fields={fields}
                         dataId={dataId}
                         onChange={(option) => this.handlePatch(fields[1].field, option)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         dropdownOpenCallback={dropdownOpenCallback}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.rawWidget = c}
                     />
                 )
-            case "ProductAttributes":
+            case 'ProductAttributes':
                 return (
                     <Attributes
-                        attributeType='pattribute'
+                        attributeType="pattribute"
                         fields={fields}
                         dataId={dataId}
-                        widgetData={widgetData}
+                        widgetData={widgetData[0]}
                         docType={windowType}
                         tabId={tabId}
                         rowId={rowId}
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => this.handlePatch(widgetField, option)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
+                        readonly={widgetData[0].readonly || disabled}
                     />
                 )
-            case "Address":
+            case 'Address':
                 return (
                     <Attributes
-                        attributeType='address'
+                        attributeType="address"
                         fields={fields}
                         dataId={dataId}
-                        widgetData={widgetData}
+                        widgetData={widgetData[0]}
                         docType={windowType}
                         tabId={tabId}
                         rowId={rowId}
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => this.handlePatch(widgetField, option)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
+                        readonly={widgetData[0].readonly || disabled}
                     />
                 )
+            case 'Image':
+                return <Image
+                    fields={fields}
+                    data={widgetData[0]}
+                    handlePatch={this.handlePatch}
+                />;
             default:
-                return (
-                    <div>{widgetType}</div>
-                )
+                return false;
         }
     }
+
     render() {
         const {
-            caption, widgetType, description, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal,
-            tabIndex
+            caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch,
+            widgetType
         } = this.props;
 
-        if(widgetData[0].displayed && widgetData[0].displayed === true){
-            return (
-                <div className={
-                    "form-group row " +
-                    ((rowId && !isModal) ? "form-group-table " : " ")
-                }>
-                    {(!noLabel && caption) &&
-                        <div
-                            key="title"
-                            className={
-                                "form-control-label " +
-                                ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")
-                            }
-                            title={caption}
-                        >
-                            {caption}
-                        </div>
-                    }
-                    <div
-                        className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}
-                    >
-                        {this.renderWidget(
-                            widgetType, fields, windowType, dataId, type, widgetData,
-                            rowId, tabId, icon, gridAlign
-                        )}
-                    </div>
-                </div>
-            )
-        }else{
+        const widgetBody = this.renderWidget();
+
+        // Unsupported widget type
+        if(!widgetBody){
+            console.warn(
+                'The %c' + widgetType,
+                'font-weight:bold;',
+                'is unsupported type of widget.'
+            );
+
             return false;
         }
+
+        // No display value or not displayed
+        if(!widgetData[0].displayed || widgetData[0].displayed !== true){
+            return false;
+        }
+
+        return (
+            <div className={
+                'form-group row ' +
+                ((rowId && !isModal) ? 'form-group-table ' : ' ')
+            }>
+                {(!noLabel && caption) &&
+                    <div
+                        key="title"
+                        className={
+                            'form-control-label ' +
+                            ((type === 'primary') ? 'col-sm-12 panel-title' : 'col-sm-3')
+                        }
+                        title={caption}
+                    >
+                        {caption}
+                    </div>
+                }
+                <div
+                    className={
+                        ((type === 'primary' || noLabel) ? 'col-sm-12 ' : 'col-sm-9 ') +
+                        (fields[0].devices ? 'form-group-flex ': '')
+                    }
+                >
+                    {widgetBody}
+
+                    {fields[0].devices && !widgetData[0].readonly &&
+                        <DevicesWidget
+                            devices={fields[0].devices}
+                            tabIndex={1}
+                            handleChange={(value) =>
+                                handlePatch && handlePatch(fields[0].field, value)
+                            }
+                        />
+                    }
+                </div>
+            </div>
+        )
     }
 }
 
-RawWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-RawWidget = connect()(RawWidget)
-
-export default RawWidget
+export default RawWidget;

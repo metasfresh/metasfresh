@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class TableContextShortcuts extends Component {
@@ -6,7 +6,7 @@ class TableContextShortcuts extends Component {
         super(props);
     }
 
-    handleShortcuts = (action, event) => {
+    handleShortcuts = (action) => {
         const {
             handleToggleExpand, handleToggleQuickInput
         } = this.props;
@@ -24,12 +24,13 @@ class TableContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name={"TABLE_CONTEXT"}
+                name="TABLE_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
+                dataShortcuts = { true }
             />
         )
     }
