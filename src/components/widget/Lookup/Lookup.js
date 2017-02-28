@@ -124,23 +124,43 @@ class Lookup extends Component {
     getAllDropdowns = () => {
         const {
             dispatch, windowType, dataId, select, tabId, rowId, entity, subentity,
-            subentityId
+            subentityId, defaultValue
         } = this.props;
 
         const {
             propertiesCopy
         } = this.state;
 
+        // console.log(propertiesCopy);
+
+        // propertiesCopy.map((item, index) => {
+        //                     const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
+        //                     return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
+        //                 })
+
         // call for more properties
         if(propertiesCopy.length > 0){
-            const batchArray = propertiesCopy.map((item) =>
-                dispatch(dropdownRequest(
+            const batchArray = propertiesCopy.map((item) => {
+                console.log('----item----');
+                console.log(item.field);
+                const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
+                if(objectValue) {
+                    console.log('objectValue exist');
+                }
+                console.log(objectValue);
+                return objectValue && dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
                     subentity, subentityId
                 ))
-            );
+            });
+
+            console.log('batchArray');
+            console.log(batchArray);
+
 
             Promise.all(batchArray).then(props => {
+                 console.log('--props--');
+                console.log(props);
                 const newProps = {};
                 props.map((prop, index) => {
                     newProps[propertiesCopy[index].field] = prop.data.values;
@@ -163,6 +183,8 @@ class Lookup extends Component {
         const {onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
+
+        // console.log(propertiesKeys);
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
@@ -191,7 +213,7 @@ class Lookup extends Component {
             }
         }
 
-        this.handleBlur();
+        // this.handleBlur();
     }
 
     handleAddNew = () => {
