@@ -1,11 +1,9 @@
 package de.metas.ui.web.process;
 
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -18,7 +16,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
@@ -239,17 +236,10 @@ public class ProcessInstancesRepository
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
 
-		try
+		try (final IAutoCloseable readLock = processInstances.getUnchecked(pinstanceId).lockForReading())
 		{
-			try (final IAutoCloseable readLock = processInstances.get(pinstanceId).lockForReading())
-			{
-				final ProcessInstance processInstance = processInstances.get(pinstanceId);
-				return processor.apply(processInstance);
-			}
-		}
-		catch (final UncheckedExecutionException | ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
+			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId);
+			return processor.apply(processInstance);
 		}
 	}
 
@@ -257,24 +247,17 @@ public class ProcessInstancesRepository
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
 
-		try
+		try (final IAutoCloseable writeLock = processInstances.getUnchecked(pinstanceId).lockForWriting())
 		{
-			try (final IAutoCloseable writeLock = processInstances.get(pinstanceId).lockForWriting())
-			{
-				final ProcessInstance processInstance = processInstances.get(pinstanceId).copy(CopyMode.CheckOutWritable);
+			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
 
-				final R result = processor.apply(processInstance);
+			final R result = processor.apply(processInstance);
 
-				// Actually put it back
-				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
-				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
+			// Actually put it back
+			processInstance.saveIfValidAndHasChanges(false); // throwEx=false
+			processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
 
-				return result;
-			}
-		}
-		catch (final UncheckedExecutionException | ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
+			return result;
 		}
 	}
 }

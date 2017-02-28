@@ -1882,6 +1882,13 @@ public final class Document
 		
 		private ReentrantReadWriteLock createLock()
 		{
+			// don't create locks for any other entity which is not window
+			if(entityDescriptor.getDocumentType() != DocumentType.Window)
+			{
+				return null;
+			}
+
+			//
 			if(parentDocument == null)
 			{
 				return new ReentrantReadWriteLock();
