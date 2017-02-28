@@ -60,18 +60,6 @@ public final class JSONProcessInstanceResult implements Serializable
 	private final String reportContentType;
 
 	//
-	// Open view (deprecated)
-	@JsonProperty("viewWindowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private final Integer viewWindowId;
-	//
-	@JsonProperty("viewId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private final String viewId;
-
-	//
 	// Open view
 	@JsonProperty("openViewWindowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -107,9 +95,6 @@ public final class JSONProcessInstanceResult implements Serializable
 		// View
 		openViewWindowId = result.getOpenViewWindowId() > 0 ? result.getOpenViewWindowId() : null;
 		openViewId = result.getOpenViewId();
-		//
-		viewWindowId = openViewWindowId;
-		viewId = openViewId;
 
 		//
 		// Single document

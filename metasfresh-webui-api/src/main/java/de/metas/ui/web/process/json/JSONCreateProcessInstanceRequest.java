@@ -43,19 +43,6 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONCreateProcessInstanceRequest implements Serializable
 {
-	@Deprecated
-	public static JSONCreateProcessInstanceRequest of(final int adProcessId, final int adWindowId, final String idStr)
-	{
-		final String documentType = String.valueOf(adWindowId);
-		final String tabId = null;
-		final String rowId = null;
-		//
-		final String viewId = null;
-		final Set<String> viewDocumentIds = null;
-		//
-		return new JSONCreateProcessInstanceRequest(adProcessId, documentType, idStr, tabId, rowId, viewId, viewDocumentIds);
-	}
-
 	@JsonProperty("processId")
 	private final int processId;
 
