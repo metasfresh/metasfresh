@@ -31,8 +31,10 @@ public interface DocumentsRepository
 {
 	List<Document> retrieveDocuments(DocumentQuery query);
 
+	/** @return document or null */
 	Document retrieveDocument(DocumentQuery query);
 
+	/** @return document or null */
 	default Document retrieveDocumentById(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId)
 	{
 		return retrieveDocument(DocumentQuery.ofRecordId(entityDescriptor, recordId));

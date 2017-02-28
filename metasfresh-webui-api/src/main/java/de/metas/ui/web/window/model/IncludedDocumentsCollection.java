@@ -52,7 +52,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  * #L%
  */
 
-/* package */class IncludedDocumentsCollection implements IIncludedDocumentsCollection
+public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
@@ -67,7 +67,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	private boolean _fullyLoaded;
 	private final Set<DocumentId> _staleDocumentIds;
 
-	/* package */ IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
+	public IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
 		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
@@ -83,7 +83,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	/** copy constructor */
 	private IncludedDocumentsCollection(final IncludedDocumentsCollection from, final Document parentDocumentCopy, final CopyMode copyMode)
 	{
-		super();
 		parentDocument = Preconditions.checkNotNull(parentDocumentCopy);
 		entityDescriptor = from.entityDescriptor;
 
