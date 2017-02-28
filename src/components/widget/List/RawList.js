@@ -13,7 +13,7 @@ class RawList extends Component {
         }
     }
 
-    componentDidUpdate = (prevProps) => {
+    componentDidUpdate = prevProps => {
         const { list, mandatory } = this.props;
 
         if(prevProps.list !== list){
@@ -29,6 +29,62 @@ class RawList extends Component {
                 });
             }
         }
+
+        const { isOpen } = this.state;
+
+        // no need for updating scroll
+        if (!isOpen || !list.length) {
+            return;
+        }
+
+        const {listScrollWrap, items} = this.refs;
+
+        const listElementHeight = this.optionElement.offsetHeight;
+        const listVisibleElements = Math.floor(listScrollWrap.offsetHeight / listElementHeight);
+        const shouldListScrollUpdate = listVisibleElements <= items.childNodes.length;
+
+        if (!shouldListScrollUpdate){
+            return;
+        }
+
+        const selectedIndex = this.getSelectedIndex();
+        const visibleMin = listScrollWrap.scrollTop;
+        const visibleMax = visibleMin + listVisibleElements * listElementHeight;
+
+        //not visible from down
+        const scrollFromUp = listElementHeight * (selectedIndex - listVisibleElements);
+        if (
+            (selectedIndex + 1) * listElementHeight > visibleMax &&
+            listScrollWrap.scrollTop !== scrollFromUp
+        ){
+            return listScrollWrap.scrollTop = scrollFromUp;
+        }
+
+        //not visible from above
+        const scrollFromDown = selectedIndex * listElementHeight;
+        if (
+            selectedIndex * listElementHeight < visibleMin &&
+            listScrollWrap.scrollTop !== scrollFromDown
+        ){
+            listScrollWrap.scrollTop = scrollFromDown;
+        }
+    }
+
+    getSelectedIndex(){
+        const { list, mandatory } = this.props;
+        const { selected } = this.state;
+
+        if (selected === 0){
+            return 0;
+        }
+
+        const baseIndex = list.findIndex(item => Object.keys(item)[0] === Object.keys(selected)[0]);
+
+        if (!mandatory){
+            return baseIndex + 1;
+        }
+
+        return baseIndex;
     }
 
     handleBlur = () => {
@@ -171,6 +227,7 @@ class RawList extends Component {
                 }
                 onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
+                ref={option => this.optionElement = option}
             >
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
             </div>
@@ -180,16 +237,12 @@ class RawList extends Component {
     renderOptions = () => {
         const {list, mandatory, emptyText} = this.props;
 
-        let ret = [];
-
-        if(!mandatory){
-            emptyText && ret.push(this.getRow(0, 0, emptyText));
-        }
-
-        list.map((option, index) => {
-            ret.push(this.getRow(index + 1, option))
-        })
-        return ret;
+        return <div ref="items">{[
+            // if field is not mandatory add extra empty row
+            ...(!mandatory && emptyText ? [this.getRow(0, 0, emptyText)] : []),
+            // fill with options
+            ...list.map((option, index) => this.getRow(index + 1, option))
+        ]}</div>;
     }
 
     render() {
@@ -245,7 +298,7 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                {isOpen && <div className="input-dropdown-list">
+                {isOpen && <div className="input-dropdown-list" ref="listScrollWrap">
                     {(list.length === 0 && loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
