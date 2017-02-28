@@ -103,6 +103,7 @@ class Lookup extends Component {
                         }
                     )}
                 } else {
+                    console.log(property); //TO DO wrong property call
                     onChange(property, select);
 
                     this.setState((prevState) => update(this.state, {
@@ -131,25 +132,15 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
-        // console.log(propertiesCopy);
-
-        // propertiesCopy.map((item, index) => {
-        //                     const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
-        //                     return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
-        //                 })
-
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.filter((item) => {
-                // console.log('----item----');
-                // console.log(item.field);
-                // const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
-                // if(objectValue) {
-                //     return false;
-                // } else {
-                //     return true;
-                // } 
-                return true;
+                const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
+                if(objectValue) {
+                    return false;
+                } else {
+                    return true;
+                } 
             }).map((item) => {
                 return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
@@ -157,13 +148,7 @@ class Lookup extends Component {
                 ))
             });
 
-            console.log('batchArray');
-            console.log(batchArray);
-
-
             Promise.all(batchArray).then(props => {
-                 console.log('--props--');
-                console.log(props);
                 const newProps = {};
                 props.map((prop, index) => {
                     newProps[propertiesCopy[index].field] = prop.data.values;
@@ -186,8 +171,6 @@ class Lookup extends Component {
         const {onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
-
-        // console.log(propertiesKeys);
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
@@ -215,8 +198,6 @@ class Lookup extends Component {
                 this.handleBlur();
             }
         }
-
-        // this.handleBlur();
     }
 
     handleAddNew = () => {

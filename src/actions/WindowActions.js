@@ -302,8 +302,6 @@ export function patch(
             entity, windowType, id, tabId, rowId, property, value, null, null,
             isAdvanced
         )).then(response => {
-            // console.log('--- response ---');
-            // console.log(response.data);
             responsed = true;
             dispatch(mapDataToState(
                 response.data, isModal, rowId, id, windowType
