@@ -55,6 +55,7 @@ upcoming
 * metasfresh-backend
 
 * metasfresh-webui-api
+  * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
   * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
  
