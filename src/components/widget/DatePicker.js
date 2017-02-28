@@ -33,16 +33,16 @@ class DatePicker extends Component {
 
     handleFocus = () => {
         const {value} = this.props;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             cache: value,
             open: true
-        }));
+        });
     }
 
     handleClose = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             open: false
-        }));
+        });
     }
 
     handleClickOutside = () => {

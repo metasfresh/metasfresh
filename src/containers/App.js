@@ -25,10 +25,6 @@ import '../assets/css/styles.css';
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 
-Moment.fn.toString = function() {
-    this.format('YYYY-MM-DD HH:mm:ss:SSSZ');
-}
-
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(function (response) {

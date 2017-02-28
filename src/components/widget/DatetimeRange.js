@@ -43,11 +43,16 @@ class DatetimeRange extends Component {
     render() {
         const ranges = {
             'Today': [Moment(), Moment()],
-            'Yesterday': [Moment().subtract(1, 'days'), Moment().subtract(1, 'days')],
+            'Yesterday': [
+                Moment().subtract(1, 'days'), Moment().subtract(1, 'days')
+            ],
             'Last 7 Days': [Moment().subtract(6, 'days'), Moment()],
             'Last 30 Days': [Moment().subtract(29, 'days'), Moment()],
             'This Month': [Moment().startOf('month'), Moment().endOf('month')],
-            'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
+            'Last Month': [
+                Moment().subtract(1, 'month').startOf('month'),
+                Moment().subtract(1, 'month').endOf('month')
+            ]
         }
         const {startDate, endDate} = this.state;
         const {onShow, onHide, mandatory} = this.props;
@@ -66,6 +71,7 @@ class DatetimeRange extends Component {
                     'monthNames': Moment.months()
                 }}
                 autoApply={false}
+                timePicker={false}
             >
                 <button className={
                     'btn btn-block text-xs-left btn-meta-outline-secondary ' +
@@ -73,7 +79,8 @@ class DatetimeRange extends Component {
                     (mandatory && !startDate && !endDate ? ' input-mandatory ' : '')
                 }>
                     {!!startDate && !!endDate ?
-                        ' ' + Moment(startDate).format('L') + ' - ' + Moment(endDate).format('L') :
+                        ' ' + Moment(startDate).format('L') +
+                        ' - ' + Moment(endDate).format('L') :
                         ' All dates available'
                     }
                     <i className="meta-icon-calendar input-icon-right"/>
