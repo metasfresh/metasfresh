@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.InvalidDocumentVersionException;
@@ -194,10 +193,10 @@ public class Execution implements IAutoCloseable
 					{
 						return trxManager.call(beforeCall);
 					}
-					catch (final Exception e)
+					catch (final Exception ex)
 					{
 						logger.info("Changes that will be discarded: {}", getCurrentDocumentChangesCollectorOrNull());
-						throw Throwables.propagate(e);
+						throw AdempiereException.wrapIfNeeded(ex);
 					}
 				};
 			}
@@ -262,7 +261,7 @@ public class Execution implements IAutoCloseable
 			}
 			catch (final Exception ex)
 			{
-				throw Throwables.propagate(ex);
+				throw AdempiereException.wrapIfNeeded(ex);
 			}
 		}
 

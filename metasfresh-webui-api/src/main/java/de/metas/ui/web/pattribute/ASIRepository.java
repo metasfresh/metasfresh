@@ -113,14 +113,15 @@ public class ASIRepository
 	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
 	{
 		final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
-		final Document document = documentsCollection.getDocument(documentPath);
-		final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
-		final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
-		
-		int attributeSetInstanceId = request.getTemplateId();
-		final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
-		final int callerColumnId = -1; // FIXME implement
-		return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
+		return documentsCollection.forDocumentReadonly(documentPath, document -> {
+			final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
+			final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
+			
+			int attributeSetInstanceId = request.getTemplateId();
+			final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
+			final int callerColumnId = -1; // FIXME implement
+			return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
+		});
 	}
 
 	public ASILayout getLayout(final int asiDocIdInt)

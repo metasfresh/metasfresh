@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -23,6 +26,7 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -109,6 +113,7 @@ public final class Document
 	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
 	private DocumentSaveStatus _saveStatus = DocumentSaveStatus.unknown();
 	private final DocumentStaleState _staleStatus;
+	private final ReentrantReadWriteLock _lock;
 
 	//
 	// Callouts
@@ -161,6 +166,7 @@ public final class Document
 		_writable = builder.isWritable();
 		_new = builder.isNewDocument();
 		_staleStatus = new DocumentStaleState();
+		_lock = builder.createLock();
 
 		//
 		// Create document fields
@@ -249,6 +255,7 @@ public final class Document
 		_valid = from._valid;
 		_saveStatus = from._saveStatus;
 		_staleStatus = new DocumentStaleState(from._staleStatus);
+		_lock = from._lock; // always share the same lock
 
 		if (from._parentDocument != null)
 		{
@@ -759,6 +766,7 @@ public final class Document
 		return entityDescriptor;
 	}
 
+	/** @return parent document or null */
 	/* package */ Document getParentDocument()
 	{
 		return _parentDocument;
@@ -917,6 +925,16 @@ public final class Document
 	public void markAsNotNew()
 	{
 		_new = false;
+	}
+	
+	/* package */ void markAsDeleted()
+	{
+		// TODO: implement
+	}
+	
+	/* package */ boolean isDeleted()
+	{
+		return false; // TODO: implement
 	}
 
 	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
@@ -1601,6 +1619,35 @@ public final class Document
 	{
 		return _staleStatus.isStaled();
 	}
+	
+	public IAutoCloseable lockForReading()
+	{
+		// assume _lock is not null
+		final ReadLock readLock = _lock.readLock();
+		logger.debug("Acquiring read lock for {}: {}", this, readLock);
+		readLock.lock();
+		logger.debug("Acquired read lock for {}: {}", this, readLock);
+
+		return () -> {
+			readLock.unlock();
+			logger.debug("Released read lock for {}: {}", this, readLock);
+		};
+	}
+
+	public IAutoCloseable lockForWriting()
+	{
+		// assume _lock is not null
+		final WriteLock writeLock = _lock.writeLock();
+		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
+		writeLock.lock();
+		logger.debug("Acquired write lock for {}: {}", this, writeLock);
+
+		return () -> {
+			writeLock.unlock();
+			logger.debug("Released write lock for {}: {}", this, writeLock);
+		};
+	}
+
 
 	private final class DocumentStaleState
 	{
@@ -1832,5 +1879,19 @@ public final class Document
 				return parentDocument.isWritable();
 			}
 		}
+		
+		private ReentrantReadWriteLock createLock()
+		{
+			if(parentDocument == null)
+			{
+				return new ReentrantReadWriteLock();
+			}
+			else
+			{
+				// don't create lock for included documents
+				return null;
+			}
+		}
+
 	}
 }

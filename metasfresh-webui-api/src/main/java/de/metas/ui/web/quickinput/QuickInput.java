@@ -2,24 +2,29 @@ package de.metas.ui.web.quickinput;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -63,6 +68,8 @@ public final class QuickInput
 		return quickInput;
 	}
 
+	private static final Logger logger = LogManager.getLogger(QuickInput.class);
+
 	private static final String VERSION_DEFAULT = "0";
 
 	private final QuickInputDescriptor descriptor;
@@ -72,6 +79,10 @@ public final class QuickInput
 	private final Document quickInputDocument;
 
 	private transient Document rootDocument;
+
+	// State
+	private final ReentrantReadWriteLock readwriteLock;
+	private boolean completed;
 
 	private static final String DYNATTR_QuickInput = QuickInput.class.getName();
 
@@ -86,6 +97,10 @@ public final class QuickInput
 		quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
 
 		rootDocument = null;
+		
+		// State
+		readwriteLock = new ReentrantReadWriteLock();
+		completed = false;
 	}
 
 	/** Copy constructor */
@@ -107,6 +122,10 @@ public final class QuickInput
 		}
 
 		rootDocument = null; // we are not copying it on purpose
+		
+		// State
+		readwriteLock = from.readwriteLock; // always shared
+		completed = from.completed;
 	}
 
 	@Override
@@ -116,13 +135,41 @@ public final class QuickInput
 				.omitNullValues()
 				.add("rootDocumentPath", rootDocumentPath)
 				.add("targetDetailId", targetDetailId)
+				.add("completed", completed)
 				.add("quickInputDocument", quickInputDocument)
 				.toString();
 	}
-
-	public int getId()
+	
+	public IAutoCloseable lockForReading()
 	{
-		return quickInputDocument.getDocumentIdAsInt();
+		final ReadLock readLock = readwriteLock.readLock();
+		logger.debug("Acquiring read lock for {}: {}", this, readLock);
+		readLock.lock();
+		logger.debug("Acquired read lock for {}: {}", this, readLock);
+
+		return () -> {
+			readLock.unlock();
+			logger.debug("Released read lock for {}: {}", this, readLock);
+		};
+	}
+
+	public IAutoCloseable lockForWriting()
+	{
+		final WriteLock writeLock = readwriteLock.writeLock();
+		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
+		writeLock.lock();
+		logger.debug("Acquired write lock for {}: {}", this, writeLock);
+
+		return () -> {
+			writeLock.unlock();
+			logger.debug("Released write lock for {}: {}", this, writeLock);
+		};
+	}
+
+
+	public DocumentId getId()
+	{
+		return quickInputDocument.getDocumentId();
 	}
 
 	public String getTargetTableName()
@@ -150,9 +197,9 @@ public final class QuickInput
 		return new QuickInput(this, copyMode);
 	}
 
-	public QuickInput bindRootDocument(final DocumentCollection documentsCollection)
+	public QuickInput bindRootDocument(final Document rootDocument)
 	{
-		rootDocument = documentsCollection.getDocument(rootDocumentPath);
+		this.rootDocument = rootDocument;
 		quickInputDocument.setShadowParentDocumentEvaluatee(rootDocument.asEvaluatee());
 
 		return this;
@@ -196,9 +243,15 @@ public final class QuickInput
 		final IQuickInputProcessor processor = descriptor.createProcessor();
 		final DocumentId documentLineId = processor.process(this);
 		final Document rootDocument = getRootDocument();
-		final Document orderLineDocument = rootDocument.getIncludedDocument(targetDetailId, documentLineId);
+		final Document includedDocumentJustCreated = rootDocument.getIncludedDocument(targetDetailId, documentLineId);
 
-		return orderLineDocument;
+		this.completed = true;
+		return includedDocumentJustCreated;
+	}
+	
+	public boolean isCompleted()
+	{
+		return completed;
 	}
 
 	public JSONLookupValuesList getFieldDropdownValues(final String fieldName)
@@ -232,9 +285,9 @@ public final class QuickInput
 			return new QuickInput(this);
 		}
 
-		public Builder setRootDocumentPath(final int adWindowId, final String documentId)
+		public Builder setRootDocumentPath(final DocumentPath rootDocumentPath)
 		{
-			_rootDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+			_rootDocumentPath = Preconditions.checkNotNull(rootDocumentPath, "rootDocumentPath");
 			return this;
 		}
 
