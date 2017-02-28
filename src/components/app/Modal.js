@@ -212,7 +212,7 @@ class Modal extends Component {
 
         return (
             data.length > 0 && <div
-                className="screen-freeze js-not-unselect"
+                className="screen-freeze"
             >
                 <div className="panel panel-modal panel-modal-primary">
                     <div
