@@ -16,17 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Web Media Model
@@ -137,6 +135,7 @@ public class MMedia extends X_CM_Media
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (isSummary())
@@ -156,6 +155,7 @@ public class MMedia extends X_CM_Media
 	 *	@param success save success
 	 *	@return true if saved
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
@@ -184,6 +184,7 @@ public class MMedia extends X_CM_Media
 	 *	@param success
 	 *	@return deleted
 	 */
+	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		if (!success)
@@ -240,67 +241,5 @@ public class MMedia extends X_CM_Media
 			return MImage.get(getCtx(), getAD_Image_ID());
 		return null;
 	}	//	getImage
-	
-	/**
-	 * 	Get Data as byte array
-	 *	@return data or null
-	 */
-	public byte[] getData()
-	{
-		MImage image = getImage();
-		if (image != null)
-		{
-			byte[] data = image.getData();
-			if (data == null || data.length == 0)
-				log.info("No Image Data");
-		}
-		
-		//	Attachment
-		MAttachment att = getAttachment();
-		if (att == null || att.getEntryCount() == 0)
-		{
-			log.info("No Attachment");
-			return null;
-		}
-		if (att.getEntryCount() > 1)
-			log.warn(getName() + " - more then one attachment - " + att.getEntryCount());
-		//
-		MAttachmentEntry entry = att.getEntry(0);
-		if (entry == null)
-		{
-			log.info("No Attachment Entry");
-			return null;
-		}
-		byte[] buffer = entry.getData();
-		if (buffer == null || buffer.length == 0)
-		{
-			log.info("No Attachment Entry Data");
-			return null;
-		}
-		return buffer;
-	}	//	getData
 
-	/**
-	 * 	Get Input Stream
-	 *	@return imput stream or null
-	 */
-	public InputStream getInputStream()
-	{
-		byte[] buffer = getData();
-		ByteArrayInputStream is = new ByteArrayInputStream(buffer);
-		return is;
-	}	//	getInputStream
-
-	/**
-	 * 	Get Updated timestamp of Attachment
-	 *	@return updated or null if no attchment
-	 */
-	public Timestamp getAttachmentUpdated()
-	{
-		MAttachment att = getAttachment();
-		if (att == null)
-			return null;
-		return att.getUpdated();
-	}	//	getAttachmentUpdated
-	
 }	//	MMedia

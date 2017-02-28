@@ -319,8 +319,6 @@ public abstract class PO
 	 * Compared to {@link #m_createNew} this flag will be never ever reset so can always know if this PO was created now.
 	 */
 	private boolean m_wasJustCreated = false;
-	/** Attachment with entries */
-	private MAttachment m_attachment = null;
 	/** Deleted ID */
 	private int m_idOld = 0;
 	/** Custom Columns */
@@ -4013,7 +4011,6 @@ public abstract class PO
 
 			// Housekeeping
 			m_IDs[0] = I_ZERO;
-			m_attachment = null;
 
 			if (log.isDebugEnabled())
 				log.debug("[" + m_trxName + "] - complete");
@@ -4469,118 +4466,6 @@ public abstract class PO
 	{
 		return m_trxName;
 	}	// getTrx
-
-	/**************************************************************************
-	 * Get Attachments.
-	 * An attachment may have multiple entries
-	 *
-	 * @return Attachment or null
-	 */
-	public final MAttachment getAttachment()
-	{
-		return getAttachment(false);
-	}	// getAttachment
-
-	/**
-	 * Get Attachments
-	 *
-	 * @param requery requery
-	 * @return Attachment or null
-	 */
-	public final MAttachment getAttachment(boolean requery)
-	{
-		// Make sure the attachment is for current PO ID
-		if (m_attachment != null && m_attachment.getRecord_ID() != get_ID())
-		{
-			m_attachment = null;
-		}
-
-		if (m_attachment == null || requery)
-		{
-			m_attachment = MAttachment.get(getCtx(), p_info.getAD_Table_ID(), get_ID());
-		}
-		return m_attachment;
-	}	// getAttachment
-
-	/**
-	 * Create/return Attachment for PO.
-	 * If not exist, create new
-	 *
-	 * @return attachment
-	 */
-	public final MAttachment createAttachment()
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			m_attachment = new MAttachment(getCtx(), p_info.getAD_Table_ID(), get_ID(), ITrx.TRXNAME_None);
-		return m_attachment;
-	}	// createAttachment
-
-	/**
-	 * Do we have a Attachment of type
-	 *
-	 * @param extension extension e.g. .pdf
-	 * @return true if there is a attachment of type
-	 */
-	public final boolean isAttachment(String extension)
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			return false;
-		for (int i = 0; i < m_attachment.getEntryCount(); i++)
-		{
-			if (m_attachment.getEntryName(i).endsWith(extension))
-			{
-				if (log.isDebugEnabled())
-					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
-				return true;
-			}
-		}
-		return false;
-	}	// isAttachment
-
-	/**
-	 * Get Attachment Data of type
-	 *
-	 * @param extension extension e.g. .pdf
-	 * @return data or null
-	 */
-	public final byte[] getAttachmentData(String extension)
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			return null;
-		for (int i = 0; i < m_attachment.getEntryCount(); i++)
-		{
-			if (m_attachment.getEntryName(i).endsWith(extension))
-			{
-				if (log.isDebugEnabled())
-					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
-				return m_attachment.getEntryData(i);
-			}
-		}
-		return null;
-	}	// getAttachmentData
-
-	/**
-	 * Do we have a PDF Attachment
-	 *
-	 * @return true if there is a PDF attachment
-	 */
-	public boolean isPdfAttachment()
-	{
-		return isAttachment(".pdf");
-	}	// isPdfAttachment
-
-	/**
-	 * Get PDF Attachment Data
-	 *
-	 * @return data or null
-	 */
-	public byte[] getPdfAttachment()
-	{
-		return getAttachmentData(".pdf");
-	}	// getPDFAttachment
 
 	/**************************************************************************
 	 * Dump Record
@@ -5370,7 +5255,6 @@ public abstract class PO
 		poCopy.p_ctx = this.p_ctx;
 		poCopy.m_trxName = this.m_trxName;
 		poCopy.isAssignedID = this.isAssignedID;
-		poCopy.m_attachment = null;
 		poCopy.m_createNew = this.m_createNew;
 		poCopy.m_wasJustCreated = this.m_wasJustCreated;
 		poCopy.m_idOld = this.m_idOld;
