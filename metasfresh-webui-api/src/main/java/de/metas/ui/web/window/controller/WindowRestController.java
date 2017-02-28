@@ -5,9 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.service.IAttachmentBL;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.MAttachmentEntry;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -281,8 +278,7 @@ public class WindowRestController
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
 						+ "\n Missed (but collected now) field names were: {}" //
 						+ "\n Document path: {}"
-						+ "\n Patch requests: {}"
-						, collectedFieldNames, documentPath, events);
+						+ "\n Patch requests: {}", collectedFieldNames, documentPath, events);
 			}
 		}
 
@@ -533,13 +529,9 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final String name = file.getOriginalFilename();
-		final byte[] data = file.getBytes();
-
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		final Document document = documentCollection.getDocument(documentPath);
-
-		Services.get(IAttachmentBL.class).createAttachment(document, name, data);
+		documentCollection.getDocumentAttachments(documentPath)
+				.addEntry(file);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/attachments")
@@ -551,12 +543,8 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		final Document document = documentCollection.getDocument(documentPath);
-
-		return Services.get(IAttachmentBL.class).getEntiresForModel(document)
-				.stream()
-				.map(JSONAttachment::of)
-				.collect(GuavaCollectors.toImmutableList());
+		return documentCollection.getDocumentAttachments(documentPath)
+				.toJson();
 	}
 
 	@GetMapping("/{windowId}/{documentId}/attachments/{id}")
@@ -568,13 +556,8 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		final Document document = documentCollection.getDocument(documentPath);
-
-		final MAttachmentEntry entry = Services.get(IAttachmentBL.class).getEntryForModelById(document, id);
-		if (entry == null)
-		{
-			throw new EntityNotFoundException("No attachment found (ID=" + id + ")");
-		}
+		final MAttachmentEntry entry = documentCollection.getDocumentAttachments(documentPath)
+				.getEntry(id);
 
 		final String entryFilename = entry.getFilename();
 		final byte[] entryData = entry.getData();
@@ -603,9 +586,8 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		final Document document = documentCollection.getDocument(documentPath);
-
-		Services.get(IAttachmentBL.class).deleteEntryForModel(document, id);
+		documentCollection.getDocumentAttachments(documentPath)
+				.deleteEntry(id);
 	}
 
 }

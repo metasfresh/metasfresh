@@ -325,6 +325,12 @@ public class DocumentCollection
 		final int recordId = documentPath.getSingleRowId().toInt();
 		return TableRecordReference.of(tableName, recordId);
 	}
+	
+	public DocumentAttachments getDocumentAttachments(final DocumentPath documentPath)
+	{
+		final TableRecordReference recordRef = getTableRecordReference(documentPath);
+		return DocumentAttachments.of(recordRef);
+	}
 
 	private static final class DocumentKey
 	{
