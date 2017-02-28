@@ -104,14 +104,13 @@ public class DocumentViewAttributesRestController
 	{
 		userSession.assertLoggedIn();
 
-		Execution.callInNewExecution("processChanges", () -> {
+		return Execution.callInNewExecution("processChanges", () -> {
 			documentViewsRepo.getView(viewId)
 					.getById(documentId)
 					.getAttributes()
 					.processChanges(events);
-			return null; // void
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 		});
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 	}
 
 	@GetMapping("/attribute/{attributeName}/typeahead")

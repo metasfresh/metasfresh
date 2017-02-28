@@ -152,21 +152,19 @@ public class WindowQuickInputRestController
 
 	private final <R> R forQuickInputWritable(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
 	{
-		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
-			return documentsCollection.forRootDocumentWritable(quickInputPath.getRootDocumentPath(), rootDocument -> {
-				try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForWriting())
-				{
-					final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckOutWritable)
-							.bindRootDocument(rootDocument)
-							.assertTargetWritable();
+		return documentsCollection.forRootDocumentWritable(quickInputPath.getRootDocumentPath(), rootDocument -> {
+			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForWriting())
+			{
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckOutWritable)
+						.bindRootDocument(rootDocument)
+						.assertTargetWritable();
 
-					final R result = quickInputProcessor.apply(quickInput);
+				final R result = quickInputProcessor.apply(quickInput);
 
-					commit(quickInput);
+				commit(quickInput);
 
-					return result;
-				}
-			});
+				return result;
+			}
 		});
 	}
 
@@ -227,11 +225,13 @@ public class WindowQuickInputRestController
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
 
-		forQuickInputWritable(quickInputPath, quickInput -> {
-			quickInput.processValueChanges(events);
-			return null; // void
+		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
+			forQuickInputWritable(quickInputPath, quickInput -> {
+				quickInput.processValueChanges(events);
+				return null; // void
+			});
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 		});
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 	}
 
 	@PostMapping("{quickInputId}/complete")
@@ -245,9 +245,11 @@ public class WindowQuickInputRestController
 		userSession.assertLoggedIn();
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
-		return forQuickInputWritable(quickInputPath, quickInput -> {
-			final Document document = quickInput.complete();
-			return JSONDocument.ofDocument(document, newJSONOptions());
+		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
+			return forQuickInputWritable(quickInputPath, quickInput -> {
+				final Document document = quickInput.complete();
+				return JSONDocument.ofDocument(document, newJSONOptions());
+			});
 		});
 	}
 

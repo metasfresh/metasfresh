@@ -340,11 +340,10 @@ public class WindowRestController
 				.setShowAdvancedFields(false)
 				.build();
 
-		Execution.callInNewExecution("window.delete", () -> {
+		return Execution.callInNewExecution("window.delete", () -> {
 			documentCollection.deleteAll(documentPaths);
-			return null; // void
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 		});
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 	}
 
 	/**

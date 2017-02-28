@@ -105,11 +105,10 @@ public class AddressRestController
 	{
 		userSession.assertLoggedIn();
 
-		Execution.callInNewExecution("processChanges", () -> {
+		return Execution.callInNewExecution("processChanges", () -> {
 			addressRepo.processAddressDocumentChanges(docId, events);
-			return null; // void
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
 		});
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
 	}
 
 	@RequestMapping(value = "/{docId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
