@@ -20,7 +20,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 -- mk drop backup
-drop table backup.webui_ad_treenodemm;
+drop table IF EXISTS backup.webui_ad_treenodemm;
 
 --
 -- Name: webui_ad_treenodemm; Type: TABLE; Schema: backup; Owner: metasfresh
