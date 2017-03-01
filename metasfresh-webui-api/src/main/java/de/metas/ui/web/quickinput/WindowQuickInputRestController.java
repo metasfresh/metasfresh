@@ -7,6 +7,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,7 +70,7 @@ public class WindowQuickInputRestController
 
 	@Autowired
 	private UserSession userSession;
-	
+
 	@Autowired
 	private MenuTreeRepository menuRepo;
 
@@ -85,6 +87,29 @@ public class WindowQuickInputRestController
 		return JSONOptions.builder(userSession)
 				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
 				.build();
+	}
+
+	@RequestMapping(method = RequestMethod.HEAD)
+	public ResponseEntity<Object> checkSupported(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
+			, @PathVariable("tabId") final String tabIdStr //
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
+
+		if(quickInputDescriptors.hasQuickInputEntityDescriptor(includedDocumentDescriptor))
+		{
+			return new ResponseEntity<>(HttpStatus.OK);
+		}
+		else
+		{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
 	}
 
 	@GetMapping("/layout")
