@@ -328,6 +328,10 @@ public final class DocumentPath
 		return documentId;
 	}
 
+	/**
+	 * @return true if the {@link #getDocumentId()} is the "new document" marker.
+	 * @see {@link #isSingleNewIncludedDocument()} - to check if this is an included new document please use
+	 */
 	public boolean isNewDocument()
 	{
 		return documentId != null && documentId.isNew();
@@ -429,13 +433,13 @@ public final class DocumentPath
 
 	public DocumentPath getRootDocumentPath()
 	{
-		if(isRootDocument())
+		if (isRootDocument())
 		{
 			return this;
 		}
 		return rootDocumentPath(documentType, documentTypeId, documentId);
 	}
-	
+
 	public DocumentPath withDocumentId(final DocumentId id)
 	{
 		if (isRootDocument())

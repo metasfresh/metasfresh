@@ -43,6 +43,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.Doc
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import de.metas.ui.web.window.model.IncludedDocumentsCollection;
 
 /*
  * #%L
@@ -91,8 +96,10 @@ public class DocumentEntityDescriptor
 	private final DocumentFieldDescriptor idField;
 
 	private final Map<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
+	private final IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
+	private final boolean highVolume;
 
 	private final DocumentFieldDependencyMap dependencies;
 
@@ -130,7 +137,9 @@ public class DocumentEntityDescriptor
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idField = builder.getIdField();
 		includedEntitiesByDetailId = builder.buildIncludedEntitiesByDetailId();
+		includedDocumentsCollectionFactory = builder.getIncludedDocumentsCollectionFactory();
 		dataBinding = builder.getOrBuildDataBinding();
+		highVolume = builder.isHighVolume();
 		dependencies = builder.buildDependencies();
 
 		//
@@ -277,6 +286,11 @@ public class DocumentEntityDescriptor
 				.map(field->field.getFieldName())
 				.collect(GuavaCollectors.toImmutableSet());
 	}
+	
+	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument)
+	{
+		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this);
+	}
 
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()
 	{
@@ -301,6 +315,11 @@ public class DocumentEntityDescriptor
 	public DocumentEntityDataBindingDescriptor getDataBinding()
 	{
 		return dataBinding;
+	}
+	
+	public boolean isHighVolume()
+	{
+		return highVolume;
 	}
 
 	public DocumentFieldDependencyMap getDependencies()
@@ -385,6 +404,7 @@ public class DocumentEntityDescriptor
 		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
+		private boolean _highVolume;
 
 		private DetailId _detailId;
 
@@ -404,6 +424,7 @@ public class DocumentEntityDescriptor
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<Boolean> _isSOTrx = Optional.empty();
+
 
 		private Builder()
 		{
@@ -581,6 +602,26 @@ public class DocumentEntityDescriptor
 		{
 			return ImmutableMap.copyOf(_includedEntitiesByDetailId);
 		}
+		
+		public IIncludedDocumentsCollectionFactory getIncludedDocumentsCollectionFactory()
+		{
+			if (isHighVolume())
+			{
+				if (getReadonlyLogic().isConstantTrue())
+				{
+					return HighVolumeReadonlyIncludedDocumentsCollection::new;
+				}
+				else
+				{
+					// TODO implement an IIncludedDocumentCollection which does not cache the documents but which allows New/Delete
+					// Case: e.g. Product->Price, Product->CU-TU etc 
+				}
+			}
+			
+			// Fallback
+			return IncludedDocumentsCollection::new; 
+		}
+
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
 		{
@@ -600,6 +641,18 @@ public class DocumentEntityDescriptor
 			Preconditions.checkNotNull(_dataBinding, "dataBinding");
 			return _dataBinding.getOrBuild();
 		}
+		
+		public Builder setHighVolume(final boolean highVolume)
+		{
+			this._highVolume = highVolume;
+			return this;
+		}
+		
+		public boolean isHighVolume()
+		{
+			return _highVolume;
+		}
+
 
 		private DocumentFieldDependencyMap buildDependencies()
 		{
@@ -785,7 +838,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public ILogicExpression getReadonlyLogic()
+		private ILogicExpression getReadonlyLogic()
 		{
 			return _readonlyLogic;
 		}

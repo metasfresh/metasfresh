@@ -208,7 +208,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				}
 			}
 		}
-		catch (final Exception e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}

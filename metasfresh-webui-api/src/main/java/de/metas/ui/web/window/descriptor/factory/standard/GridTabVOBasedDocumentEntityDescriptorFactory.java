@@ -113,11 +113,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return documentEntity().getDisplayLogic();
 	}
 
-	public ILogicExpression getTabReadonlyLogic()
-	{
-		return documentEntity().getReadonlyLogic();
-	}
-
 	private static ILogicExpression extractTabReadonlyLogic(final GridTabVO gridTabVO)
 	{
 		if (gridTabVO.isView())
@@ -190,6 +185,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setDisplayLogic(displayLogic)
 				//
 				.setDataBinding(dataBinding)
+				.setHighVolume(gridTabVO.IsHighVolume)
 				//
 				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
 				.setTableName(tableName) // legacy

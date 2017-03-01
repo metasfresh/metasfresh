@@ -1,7 +1,6 @@
 package de.metas.ui.web.process;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,11 +73,6 @@ public class ProcessRestController
 				.setUserSession(userSession)
 				.build();
 	}
-	
-	private <R> R forProcessInstanceWritable(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
-	{
-		return Execution.callInNewExecution("", () -> instancesRepository.forProcessInstanceWritable(pinstanceIdAsInt, processor));
-	}
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public JSONProcessLayout getLayout(
@@ -114,7 +108,7 @@ public class ProcessRestController
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
 	}
-	
+
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters", method = RequestMethod.PATCH)
 	public List<JSONDocument> processParametersChangeEvents_DEPRECATED(
 			@PathVariable("pinstanceId") final int pinstanceId //
@@ -132,9 +126,12 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
-		
-		return forProcessInstanceWritable(pinstanceId, processInstance -> {
-			processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+
+		return Execution.callInNewExecution("", () -> {
+			instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+				return null; // void
+			});
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
 		});
 	}
@@ -146,10 +143,12 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
-		
-		return forProcessInstanceWritable(pinstanceId, processInstance -> {
-			final ProcessInstanceResult result = processInstance.startProcess();
-			return JSONProcessInstanceResult.of(result);
+
+		return Execution.callInNewExecution("", () -> {
+			return instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+				final ProcessInstanceResult result = processInstance.startProcess();
+				return JSONProcessInstanceResult.of(result);
+			});
 		});
 	}
 

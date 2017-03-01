@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
@@ -238,6 +239,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		{
 			exception = getAttribute(requestAttributes, RequestDispatcher.ERROR_EXCEPTION);
 		}
+		
+		exception = AdempiereException.extractCause(exception);
+		
 		return exception;
 	}
 

@@ -1,11 +1,9 @@
 package de.metas.ui.web.process;
 
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -19,7 +17,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
@@ -273,16 +270,14 @@ public class ProcessInstancesRepository
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
 
-		try
+		try (final IAutoCloseable readLock = processInstances.getUnchecked(pinstanceId).lockForReading())
 		{
-			try (final IAutoCloseable readLock = processInstances.get(pinstanceId).lockForReading())
-			{
-				final ProcessInstance processInstance = processInstances.get(pinstanceId);
+			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId);
 				try (final IAutoCloseable c = processInstance.activate())
 				{
-					return processor.apply(processInstance);
-				}
-			}
+			return processor.apply(processInstance);
+		}
+	}
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)
 		{
@@ -294,11 +289,9 @@ public class ProcessInstancesRepository
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
 
-		try
+		try (final IAutoCloseable writeLock = processInstances.getUnchecked(pinstanceId).lockForWriting())
 		{
-			try (final IAutoCloseable writeLock = processInstances.get(pinstanceId).lockForWriting())
-			{
-				final ProcessInstance processInstance = processInstances.get(pinstanceId).copy(CopyMode.CheckOutWritable);
+			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
 
 				// Make sure the process was not already executed.
 				// If it was executed we are not allowed to change it.

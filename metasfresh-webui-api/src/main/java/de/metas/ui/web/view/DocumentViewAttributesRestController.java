@@ -109,7 +109,6 @@ public class DocumentViewAttributesRestController
 					.getById(documentId)
 					.getAttributes()
 					.processChanges(events);
-
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 		});
 	}

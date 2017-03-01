@@ -28,7 +28,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  * #L%
  */
 
-/* package */interface IIncludedDocumentsCollection
+public interface IIncludedDocumentsCollection
 {
 	IIncludedDocumentsCollection copy(Document parentDocumentCopy, CopyMode copyMode);
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,9 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -70,22 +74,13 @@ public class WindowQuickInputRestController
 	@Autowired
 	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
-	private final CCache<Integer, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
+	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
 	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.builder()
 				.setUserSession(userSession)
 				.build();
-	}
-
-	private QuickInputDescriptor getQuickInputDescriptor(final int adWindowId, final String tabIdStr)
-	{
-		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
-				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
-
-		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
-		return quickInputDescriptor;
 	}
 
 	@GetMapping("/layout")
@@ -97,7 +92,10 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInputDescriptor quickInputDescriptor = getQuickInputDescriptor(adWindowId, tabIdStr);
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
+
+		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
 		if (quickInputDescriptor == null)
 		{
 			return null;
@@ -116,143 +114,162 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInput quickInput = createQuickInput(adWindowId, documentIdStr, tabIdStr);
-		putQuickInput(quickInput);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
+		final DetailId detailId = DetailId.fromJson(tabIdStr);
 
-		return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
+		return Execution.callInNewExecution("quickInput.create", () -> {
+			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
+				final DocumentEntityDescriptor includedDocumentDescriptor = rootDocument.getEntityDescriptor().getIncludedEntityByDetailId(detailId);
+
+				final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
+
+				return QuickInput.builder()
+						.setQuickInputDescriptor(quickInputDescriptor)
+						.setRootDocumentPath(rootDocument.getDocumentPath())
+						.build()
+						.bindRootDocument(rootDocument)
+						.assertTargetWritable();
+			});
+
+			commit(quickInput);
+
+			return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
+		});
+	}
+
+	private final <R> R forQuickInputReadonly(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
+	{
+		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
+			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForReading())
+			{
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly)
+						.bindRootDocument(rootDocument)
+						.assertTargetWritable();
+				return quickInputProcessor.apply(quickInput);
+			}
+		});
+	}
+
+	private final <R> R forQuickInputWritable(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
+	{
+		return documentsCollection.forRootDocumentWritable(quickInputPath.getRootDocumentPath(), rootDocument -> {
+			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForWriting())
+			{
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckOutWritable)
+						.bindRootDocument(rootDocument)
+						.assertTargetWritable();
+
+				final R result = quickInputProcessor.apply(quickInput);
+
+				commit(quickInput);
+
+				return result;
+			}
+		});
 	}
 
 	@GetMapping("/{quickInputId}")
-	public JSONDocument get(@PathVariable("quickInputId") final int quickInputId)
+	public JSONDocument getById(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @PathVariable("quickInputId") final String quickInputIdStr //
+	)
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInput quickInput = getQuickInputReadonly(quickInputId);
-
-		return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
+		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		return forQuickInputReadonly(quickInputPath, quickInput -> JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions()));
 	}
 
 	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getFieldTypeaheadValues(
-			@PathVariable("quickInputId") final int quickInputId //
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @PathVariable("quickInputId") final String quickInputIdStr //
 			, @PathVariable("fieldName") final String fieldName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		return getQuickInputReadonly(quickInputId)
-				.getFieldTypeaheadValues(fieldName, query);
+		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldTypeaheadValues(fieldName, query));
 	}
 
 	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getFieldDropdownValues(
-			@PathVariable("quickInputId") final int quickInputId //
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @PathVariable("quickInputId") final String quickInputIdStr //
 			, @PathVariable("fieldName") final String fieldName //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		return getQuickInputReadonly(quickInputId)
-				.getFieldDropdownValues(fieldName);
+		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldDropdownValues(fieldName));
 	}
 
 	@PatchMapping("/{quickInputId}")
 	public List<JSONDocument> processChanges(
-			@PathVariable("quickInputId") final int quickInputId //
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @PathVariable("quickInputId") final String quickInputIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
 
-		return processQuickInput(quickInputId, (quickInput) -> {
-			quickInput.processValueChanges(events);
+		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+
+		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
+			forQuickInputWritable(quickInputPath, quickInput -> {
+				quickInput.processValueChanges(events);
+				return null; // void
+			});
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 		});
 	}
 
 	@PostMapping("{quickInputId}/complete")
-	public JSONDocument complete(@PathVariable("quickInputId") final int quickInputId)
+	public JSONDocument complete(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @PathVariable("quickInputId") final String quickInputIdStr //
+	)
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInput quickInput = getQuickInputReadonly(quickInputId);
-
-		final JSONDocument jsonDocument = Execution.callInNewExecution("quickInput.complete", () -> {
-			final Document document = quickInput.complete();
-			return JSONDocument.ofDocument(document, newJSONOptions());
-		});
-
-		removeQuickInput(quickInput);
-
-		return jsonDocument;
-	}
-
-	@PatchMapping("{quickInputId}/complete")
-	@Deprecated
-	public JSONDocument complete_DEPRECATED(@PathVariable("quickInputId") final int quickInputId)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return complete(quickInputId);
-	}
-
-	private <RT> RT processQuickInput(final int quickInputId, final Function<QuickInput, RT> processor)
-	{
-		return Execution.callInNewExecution("processQuickInput-" + quickInputId, () -> {
-			final QuickInput quickInput = getQuickInputForWriting(quickInputId);
-			final RT retValue = processor.apply(quickInput);
-
-			putQuickInput(quickInput);
-
-			return retValue;
-		});
-
-	}
-
-	private QuickInput createQuickInput(final int adWindowId, final String documentIdStr, final String tabIdStr)
-	{
-		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
-				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
-
-		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
-
-		return Execution.callInNewExecution("quickInput.create", () -> {
-			return QuickInput.builder()
-					.setQuickInputDescriptor(quickInputDescriptor)
-					.setRootDocumentPath(adWindowId, documentIdStr)
-					.build()
-					.bindRootDocument(documentsCollection)
-					.assertTargetWritable();
+		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
+			return forQuickInputWritable(quickInputPath, quickInput -> {
+				final Document document = quickInput.complete();
+				return JSONDocument.ofDocument(document, newJSONOptions());
+			});
 		});
 	}
 
-	private QuickInput getQuickInputForWriting(final int quickInputId)
-	{
-		return getQuickInput(quickInputId, CopyMode.CheckOutWritable);
-	}
-
-	private QuickInput getQuickInputReadonly(final int quickInputId)
-	{
-		return getQuickInput(quickInputId, CopyMode.CheckInReadonly);
-	}
-
-	private QuickInput getQuickInput(final int quickInputId, final CopyMode copyMode)
+	private final QuickInput getQuickInputNoLock(final QuickInputPath quickInputPath)
 	{
 		return _quickInputDocuments
-				.getOrElseThrow(quickInputId, () -> new EntityNotFoundException("No quick input document found for ID=" + quickInputId))
-				.copy(copyMode)
-				.bindRootDocument(documentsCollection)
-				.assertTargetWritable();
+				.getOrElseThrow(quickInputPath.getQuickInputId(), () -> new EntityNotFoundException("No quick input document found for " + quickInputPath));
 	}
 
-	private void putQuickInput(final QuickInput quickInput)
+	private void commit(final QuickInput quickInput)
 	{
 		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");
-		_quickInputDocuments.put(quickInput.getId(), quickInput.copy(CopyMode.CheckInReadonly));
-	}
 
-	private void removeQuickInput(final QuickInput quickInput)
-	{
-		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");
-		_quickInputDocuments.remove(quickInput.getId());
+		if (quickInput.isCompleted())
+		{
+			_quickInputDocuments.remove(quickInput.getId());
+		}
+		else
+		{
+			_quickInputDocuments.put(quickInput.getId(), quickInput.copy(CopyMode.CheckInReadonly));
+		}
 	}
 }

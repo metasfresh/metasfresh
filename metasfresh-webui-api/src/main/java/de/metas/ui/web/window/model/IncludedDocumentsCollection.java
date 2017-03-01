@@ -52,7 +52,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  * #L%
  */
 
-/* package */class IncludedDocumentsCollection implements IIncludedDocumentsCollection
+public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
@@ -67,7 +67,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	private boolean _fullyLoaded;
 	private final Set<DocumentId> _staleDocumentIds;
 
-	/* package */ IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
+	public IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
 		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
@@ -83,7 +83,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	/** copy constructor */
 	private IncludedDocumentsCollection(final IncludedDocumentsCollection from, final Document parentDocumentCopy, final CopyMode copyMode)
 	{
-		super();
 		parentDocument = Preconditions.checkNotNull(parentDocumentCopy);
 		entityDescriptor = from.entityDescriptor;
 
@@ -250,7 +249,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	/**
 	 * @return inner documents as they are now (no refresh, internal writable collection)
 	 */
-	private final Collection<Document> getInnerDocuments()
+	private final Collection<Document> getInnerDocumentsNoLoad()
 	{
 		return _documents.values();
 	}
@@ -263,12 +262,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		if (isStale() || !isFullyLoaded())
 		{
 			loadAll();
-			return getInnerDocuments();
+			return getInnerDocumentsNoLoad();
 		}
 
 		//
 		// Refresh stale documents
-		final Collection<Document> documents = getInnerDocuments();
+		final Collection<Document> documents = getInnerDocumentsNoLoad();
 		for (final Iterator<Document> it = documents.iterator(); it.hasNext();)
 		{
 			final Document document = it.next();
@@ -322,10 +321,25 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
 		}
+		
+		if(parentDocument.isNew())
+		{
+			return LogicExpressionResult.namedConstant("ParentDocumentNew", false);
+		}
+		
+		if(hasNewDocuments())
+		{
+			return LogicExpressionResult.namedConstant("A new document already exists", false);
+		}
 
 		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		return allowCreateNew;
+	}
+	
+	private final boolean hasNewDocuments()
+	{
+		return getInnerDocumentsNoLoad().stream().anyMatch(document->document.isNew());
 	}
 
 	private void assertDeleteDocumentAllowed(final Document document)
@@ -405,7 +419,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	@Override
 	public DocumentValidStatus checkAndGetValidStatus()
 	{
-		for (final Document document : getInnerDocuments())
+		for (final Document document : getInnerDocumentsNoLoad())
 		{
 			final DocumentValidStatus validState = document.checkAndGetValidStatus();
 			if (!validState.isValid())
@@ -421,7 +435,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	@Override
 	public boolean hasChangesRecursivelly()
 	{
-		for (final Document document : getInnerDocuments())
+		for (final Document document : getInnerDocumentsNoLoad())
 		{
 			if (document.hasChangesRecursivelly())
 			{
@@ -437,7 +451,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	@Override
 	public void saveIfHasChanges()
 	{
-		for (final Document document : getInnerDocuments())
+		for (final Document document : getInnerDocumentsNoLoad())
 		{
 			document.saveIfHasChanges();
 			// TODO: if saved and refreshed, we shall mark it as not stale !!!

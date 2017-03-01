@@ -148,12 +148,4 @@ public class AddressRestController
 				.transform(JSONLookupValue::ofLookupValue));
 		
 	}
-	
-	@RequestMapping(value = "/{docId}/complete", method = RequestMethod.GET)
-	@Deprecated
-	public JSONLookupValue complete_DEPRECATED(@PathVariable("docId") final int docId)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return complete(docId);
-	}
 }
