@@ -698,16 +698,20 @@ public final class Document
 
 	/* package */final void assertWritable()
 	{
-		if (isWritable())
-		{
-			return;
-		}
 		if (_initializing)
 		{
 			return;
 		}
+		
+		if (!isWritable())
+		{
+			throw new InvalidDocumentStateException(this, "not a writable copy");
+		}
 
-		throw new InvalidDocumentStateException(this, "not a writable copy");
+		if(isDeleted())
+		{
+			throw new DocumentNotFoundException(getDocumentPath());
+		}
 	}
 
 	/* package */final void destroy()
