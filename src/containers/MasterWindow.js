@@ -79,7 +79,7 @@ class MasterWindow extends Component {
     render() {
         const {
             master, modal, breadcrumb, references, actions, attachments,
-            rawModal, selected, indicator
+            rawModal, selected, indicator, dispatch
         } = this.props;
 
         const {newRow, modalTitle} = this.state;
@@ -121,6 +121,8 @@ class MasterWindow extends Component {
                 attachments={attachments}
                 showSidelist={true}
             >
+            {/*TO REMOVE, ONLY DEV PURPOSE*/}
+            <div onClick={() => {dispatch(addNotification('test', 'test', 5000))}}>NOTIFICATION</div>
                 {modal.visible &&
                     <Modal
                         relativeType={type}
