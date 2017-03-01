@@ -47,6 +47,7 @@ this week's RC
 upcoming
   * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service
   * [#191](https://github.com/metasfresh/metasfresh-webui/issues/191) "Not saved yet" info in REST-API
+  * [#200](https://github.com/metasfresh/metasfresh-webui/issues/200) Generic "add new" search field functionality
 
 * metasfresh-webui-frontend
   * [#377](https://github.com/metasfresh/metasfresh-webui-frontend/issues/377) grid view: when initially clicking on first row, the second one is first selected
