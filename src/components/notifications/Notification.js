@@ -29,11 +29,25 @@ class Notification extends Component {
             })
         }, 10);
     }
+    
+    componentWillUpdate(nextProps) {
+        const {item} = this.props;
+        
+        if(item.count !== nextProps.item.count) {
+            this.handleClosing(false)
+            
+            const th = this;
+            
+            setTimeout(() => {
+                th.handleClosing(true);
+            }, 10)
+        }
+    }
 
     setClosing = () => {
         const {dispatch, item} = this.props;
         this.closing = setTimeout(() => {
-            dispatch(deleteNotification(item.id));
+            dispatch(deleteNotification(item.title));
         }, item.time);
     }
 
@@ -42,7 +56,7 @@ class Notification extends Component {
 
         this.closing && clearInterval(this.closing);
 
-        dispatch(deleteNotification(item.id));
+        dispatch(deleteNotification(item.title));
     }
 
     handleClosing = (shouldClose) => {
@@ -69,7 +83,7 @@ class Notification extends Component {
                 onMouseLeave={() => this.handleClosing(true)}
             >
                 <div className="notification-header">
-                    {item.title}
+                    {item.title} <span>({item.count})</span>
                     <i
                         onClick={() => this.handleCloseButton()}
                         className="meta-icon-close-1"
@@ -86,7 +100,7 @@ class Notification extends Component {
                     style={
                         isClosing ?
                             {width: 0, transition: 'width 5s linear'} :
-                            {width: '100%', transition: 'width 0.2s linear'}
+                            {width: '100%', transition: 'width 0s linear'}
                     }
                 />
             </div>

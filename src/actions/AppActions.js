@@ -105,10 +105,10 @@ export function addNotification(title, msg, time, notifType){
     }
 }
 
-export function deleteNotification(id){
+export function deleteNotification(key){
     return {
         type: types.DELETE_NOTIFICATION,
-        id: id
+        key: key
     }
 }
 

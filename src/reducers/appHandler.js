@@ -2,7 +2,7 @@ import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
 
 const initialState = {
-	notifications: [],
+	notifications: {},
     isLogged: false,
     inbox: {
         notifications: [],
@@ -25,22 +25,26 @@ export default function appHandler(state = initialState, action) {
         // NOTIFICATION ACTIONS
         case types.ADD_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: update(state.notifications, {$push:
-                    [{
-                        id: action.id,
+                notifications: Object.assign({}, state.notifications, {
+                    [action.title]: {
                         title: action.title,
                         msg: action.msg,
                         time: action.time,
-                        notifType: action.notifType
-                    }]
+                        notifType: action.notifType,
+                        count: state.notifications[action.title] ? 
+                            state.notifications[action.title].count + 1 : 0
+                    }
                 })
             });
 
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: state.notifications.filter(ntf =>
-                    ntf.id !== action.id
-                )
+                notifications: Object.keys(state.notifications).reduce((res, key) => {
+                    if(key !== action.key) {
+                        res[key] = state.notifications[key];
+                    }
+                    return res;
+                }, {})
             });
 
         // END OF NOTIFICATION ACTIONS
