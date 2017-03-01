@@ -121,8 +121,6 @@ class MasterWindow extends Component {
                 attachments={attachments}
                 showSidelist={true}
             >
-            {/*TO REMOVE, ONLY DEV PURPOSE*/}
-            <div onClick={() => {dispatch(addNotification('test', 'test', 5000))}}>NOTIFICATION</div>
                 {modal.visible &&
                     <Modal
                         relativeType={type}
