@@ -79,7 +79,7 @@ class MasterWindow extends Component {
     render() {
         const {
             master, modal, breadcrumb, references, actions, attachments,
-            rawModal, selected, indicator, dispatch
+            rawModal, selected, indicator
         } = this.props;
 
         const {newRow, modalTitle} = this.state;
