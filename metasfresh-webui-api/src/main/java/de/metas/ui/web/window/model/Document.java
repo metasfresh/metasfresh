@@ -57,6 +57,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
+import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
@@ -108,6 +109,7 @@ public final class Document
 	//
 	// Status
 	private boolean _new;
+	private boolean _deleted;
 	private final boolean _writable;
 	private boolean _initializing = false;
 	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
@@ -165,6 +167,7 @@ public final class Document
 		windowNo = builder.getWindowNo();
 		_writable = builder.isWritable();
 		_new = builder.isNewDocument();
+		_deleted = false;
 		_staleStatus = new DocumentStaleState();
 		_lock = builder.createLock();
 
@@ -252,6 +255,7 @@ public final class Document
 		_writable = copyMode.isWritable();
 
 		_new = from._new;
+		_deleted = from._deleted;
 		_valid = from._valid;
 		_saveStatus = from._saveStatus;
 		_staleStatus = new DocumentStaleState(from._staleStatus);
@@ -929,12 +933,12 @@ public final class Document
 
 	/* package */ void markAsDeleted()
 	{
-		// TODO: implement
+		_deleted = true;
 	}
 
 	/* package */ boolean isDeleted()
 	{
-		return false; // TODO: implement
+		return _deleted;
 	}
 
 	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
@@ -1595,6 +1599,7 @@ public final class Document
 	/* package */void deleteFromRepository()
 	{
 		getDocumentRepository().delete(this);
+		markAsDeleted();
 	}
 
 	/* package */void refreshFromRepository()
