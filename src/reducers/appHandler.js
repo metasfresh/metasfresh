@@ -29,6 +29,7 @@ export default function appHandler(state = initialState, action) {
                     [action.title]: {
                         title: action.title,
                         msg: action.msg,
+                        shortMsg: action.shortMsg,
                         time: action.time,
                         notifType: action.notifType,
                         count: state.notifications[action.title] ?

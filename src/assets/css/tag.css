@@ -35,9 +35,21 @@
     background-color: #fd8b0f;
 }
 
+.tag-error {
+    background-color:$brand-danger-color;
+    color: #fff;
+}
+
 .tag-secondary {
     background-color: #80909a;
     color: #fff;
+}
+
+.tag-sm {
+    font-size: .6rem;
+    padding: 0 .3rem;
+    position: relative;
+    top:-2px;
 }
 
 .tag-lg {
