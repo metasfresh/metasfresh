@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,6 +44,7 @@ import io.swagger.annotations.ApiModel;
 
 @ApiModel("tab")
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutTab implements Serializable
 {
 	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONOptions jsonOpts)
@@ -95,9 +98,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
 
-	@JsonProperty("quickInput")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final JSONQuickInputLayoutDescriptor quickInput;
+	@JsonProperty("supportQuickInput")
+	private final boolean supportQuickInput;
 
 	@JsonProperty("queryOnActivate")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -139,7 +141,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 
-		quickInput = JSONQuickInputLayoutDescriptor.fromNullable(detail.getQuickInput().orElse(null), jsonOpts);
+		supportQuickInput = detail.isSupportQuickInput();
 		queryOnActivate = detail.isQueryOnActivate();
 	}
 
@@ -153,7 +155,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty("quickInput") final JSONQuickInputLayoutDescriptor quickInput //
+			, @JsonProperty("supportQuickInput") final boolean supportQuickInput //
 			, @JsonProperty("queryOnActivate") final boolean queryOnActivate //
 	)
 	{
@@ -168,7 +170,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
-		this.quickInput = quickInput;
+		this.supportQuickInput = supportQuickInput;
 		this.queryOnActivate = queryOnActivate;
 	}
 
