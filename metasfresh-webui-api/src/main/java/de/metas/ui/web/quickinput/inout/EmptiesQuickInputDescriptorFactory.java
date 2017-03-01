@@ -23,8 +23,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
@@ -113,26 +111,10 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final DocumentFieldDescriptor field_M_HU_PackingMaterial_ID = entityDescriptor.getField(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID);
-		final DocumentFieldDescriptor field_Qty = entityDescriptor.getField(IEmptiesQuickInput.COLUMNNAME_Qty);
-
-		final QuickInputLayoutDescriptor.Builder quickInputLayout = QuickInputLayoutDescriptor.builder()
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption(field_M_HU_PackingMaterial_ID.getCaption())
-						.setWidgetType(field_M_HU_PackingMaterial_ID.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PackingMaterial_ID.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_M_HU_PackingMaterial_ID.getLookupSourceType())
-								.setLookupTableName(field_M_HU_PackingMaterial_ID.getLookupTableName())))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption(field_Qty.getCaption())
-						.setWidgetType(field_Qty.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_Qty.getLookupSourceType())
-								.setLookupTableName(field_Qty.getLookupTableName())));
-
-		return quickInputLayout.build();
+		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+				{ IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID } //
+				, { IEmptiesQuickInput.COLUMNNAME_Qty }
+		});
 	}
 
 }
