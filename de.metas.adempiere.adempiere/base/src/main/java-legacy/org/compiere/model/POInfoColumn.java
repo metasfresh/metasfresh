@@ -148,9 +148,7 @@ public final class POInfoColumn implements Serializable
 		//
 		FieldLength = fieldLength;
 		ValueMin = valueMin;
-		ValueMin_BD =
-
-		toBigDecimalOrNull(ValueMin, "ValueMin");
+		ValueMin_BD = toBigDecimalOrNull(ValueMin, "ValueMin");
 		ValueMax = valueMax;
 		ValueMax_BD = toBigDecimalOrNull(ValueMax, "ValueMax");
 		IsTranslated = isTranslated;
