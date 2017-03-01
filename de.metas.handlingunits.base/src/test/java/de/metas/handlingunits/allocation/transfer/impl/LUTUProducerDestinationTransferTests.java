@@ -204,7 +204,7 @@ public class LUTUProducerDestinationTransferTests
 			// Validate the palet HU
 			{
 				final Node huPaletXML = HUXmlConverter.toXml(huPalet);
-				System.out.println(HUXmlConverter.toString(huPaletXML));
+				// System.out.println(HUXmlConverter.toString(huPaletXML));
 
 				// loaded 23kg tomatoes into a LU with TUs that can hold 40kg each => expecting one LU with one TU
 				assertThat(huPaletXML, hasXPath("count(/HU-LU_Palet)", Matchers.equalTo("1")));

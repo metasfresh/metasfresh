@@ -127,7 +127,7 @@ import de.metas.logging.LogManager;
 
 		//
 		// Create and configure Loader
-		final HULoader loader = new HULoader(husSource, orderBOMLinesDestination);
+		final HULoader loader = HULoader.of(husSource, orderBOMLinesDestination);
 		loader.setAllowPartialLoads(true);
 
 		//

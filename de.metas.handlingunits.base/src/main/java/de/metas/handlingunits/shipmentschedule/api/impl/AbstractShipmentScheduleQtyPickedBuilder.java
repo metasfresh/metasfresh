@@ -433,9 +433,9 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 			final HUListAllocationSourceDestination source = new HUListAllocationSourceDestination(vhu);
 			final HUListAllocationSourceDestination destination = new HUListAllocationSourceDestination(targetHU);
 
-			final HULoader loader = new HULoader(source, destination);
-			loader.setAllowPartialUnloads(false);
-			loader.setAllowPartialLoads(true);
+			final HULoader loader = HULoader.of(source, destination)
+					.setAllowPartialUnloads(false)
+					.setAllowPartialLoads(true);
 
 			final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyPicked, uom);
 

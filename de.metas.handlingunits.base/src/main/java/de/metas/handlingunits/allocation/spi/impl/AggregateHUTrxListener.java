@@ -174,10 +174,10 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
 
 			// the destination is a new HU that shall be attached as a sibling of the aggregate VHU
-			final HUProducerDestination destination = new HUProducerDestination(splitHUPIItem.getIncluded_HU_PI());
+			final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
 
 			destination.setParent_HU_Item(splitHUParentItem);
-			final HULoader loader = new HULoader(source, destination);
+			final HULoader loader = HULoader.of(source, destination);
 
 			// Create allocation request
 			final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, trx.getProduct(), splitQty, trx.getQuantity().getUOM(), huContext.getDate());

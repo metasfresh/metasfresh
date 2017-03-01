@@ -42,7 +42,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 
 /**
- * Note the "load" means "to create HUs and load qty into them from somehwere else". It's not about performance and stuff.
+ * Note the "load" means "to create HUs and load qty into them from somewhere else". It's not about performance and stuff.
  */
 public class LUTUProducerDestinationLoadTests
 {

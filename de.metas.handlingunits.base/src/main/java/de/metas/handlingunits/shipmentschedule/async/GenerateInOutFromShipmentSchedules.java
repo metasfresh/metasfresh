@@ -480,10 +480,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Execute transfer
-		final HULoader loader = new HULoader(allocationSource, allocationDestination);
-		loader.setAllowPartialLoads(false);
-		loader.setAllowPartialUnloads(false);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(allocationSource, allocationDestination)
+				.setAllowPartialLoads(false)
+				.setAllowPartialUnloads(false)
+				.load(request);
 		Check.assume(result.isCompleted(), "Result shall be completed: {}", result);
 
 		// NOTE: at this point we shall have QtyPicked records with M_LU_HU_ID set

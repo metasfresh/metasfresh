@@ -260,8 +260,8 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 		//
 		// Move Qty from shipment schedules to current HU
-		final HULoader loader = new HULoader(source, destination);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(source, destination)
+				.load(request);
 
 		// Make sure result is completed
 		// NOTE: this shall not happen because "forceQtyAllocation" is set to true

@@ -278,9 +278,9 @@ public class HUSplitBuilder implements IHUSplitBuilder
 
 		//
 		// Perform allocation
-		final HULoader loader = new HULoader(source, destination);
-		loader.setAllowPartialLoads(true);
-		loader.load(splitQtyRequest);
+		HULoader.of(source, destination)
+				.setAllowPartialLoads(true)
+				.load(splitQtyRequest);
 		// NOTE: we are not checking if everything was fully allocated because we can leave the remaining Qty into initial "huToSplit"
 
 		//

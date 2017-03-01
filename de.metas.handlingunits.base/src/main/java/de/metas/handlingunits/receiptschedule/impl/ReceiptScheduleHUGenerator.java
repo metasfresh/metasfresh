@@ -414,7 +414,7 @@ public class ReceiptScheduleHUGenerator
 
 		//
 		// Execute transfer
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 
 		// Allow Partial Unloads (from source): no, we need to over allocated if required
 		loader.setAllowPartialUnloads(false);

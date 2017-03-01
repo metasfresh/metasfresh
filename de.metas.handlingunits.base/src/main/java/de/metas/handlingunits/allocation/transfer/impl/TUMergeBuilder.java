@@ -149,10 +149,10 @@ public class TUMergeBuilder implements ITUMergeBuilder
 
 		//
 		// Perform allocation
-		final HULoader loader = new HULoader(source, destination);
-		loader.setAllowPartialUnloads(true); // force allow partial unloads when merging
-		loader.setAllowPartialLoads(true); // force allow partial loads when merging
-		loader.load(allocationRequest); // execute it; we don't care about the result
+		HULoader.of(source, destination)
+				.setAllowPartialUnloads(true) // force allow partial unloads when merging
+				.setAllowPartialLoads(true) // force allow partial loads when merging
+				.load(allocationRequest); // execute it; we don't care about the result
 
 		//
 		// Destroy HUs which had their storage emptied

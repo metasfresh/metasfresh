@@ -88,9 +88,8 @@ public class HULoader
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public HULoader(final IAllocationSource source, final IAllocationDestination destination)
+	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
 	{
-		super();
 		// this.huContext = huContext;
 		this.source = source;
 		this.destination = destination;

@@ -113,8 +113,8 @@ public class PackingService implements IPackingService
 
 		//
 		// Move Qty from HU to shipment schedule (i.e. un-pick)
-		final HULoader loader = new HULoader(source, destination);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(source, destination)
+				.load(request);
 
 		// Make sure result is completed
 		// NOTE: this issue could happen if we want to take out more then we have in our HU

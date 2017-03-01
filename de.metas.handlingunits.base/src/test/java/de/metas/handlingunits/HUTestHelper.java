@@ -1472,9 +1472,9 @@ public class HUTestHelper
 				true // fullyLoaded => empty
 		);
 
-		final HUProducerDestination destination = new HUProducerDestination(huPI);
+		final HUProducerDestination destination = HUProducerDestination.of(huPI);
 
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 
 		final Object referenceModel = null;
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
@@ -1523,7 +1523,7 @@ public class HUTestHelper
 
 		//
 		// Execute transfer => HUs will be generated
-		final HULoader loader = new HULoader(allocationSource, allocationDestination);
+		final HULoader loader = HULoader.of(allocationSource, allocationDestination);
 		final IAllocationResult result = loader.load(request);
 		Assert.assertTrue("Result shall be completed: " + result, result.isCompleted());
 
@@ -1635,9 +1635,9 @@ public class HUTestHelper
 	{
 		final IAllocationSource source = createDummySourceDestination(cuProduct, IHUCapacityDefinition.INFINITY, loadCuUOM, true);
 
-		final HULoader huLoader = new HULoader(source, lutuProducer);
-		huLoader.setAllowPartialUnloads(false);
-		huLoader.setAllowPartialLoads(false);
+		final HULoader huLoader = HULoader.of(source, lutuProducer)
+				.setAllowPartialUnloads(false)
+				.setAllowPartialLoads(false);
 
 		final IMutableHUContext huContext0 = createMutableHUContextOutOfTransaction();
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
@@ -1684,7 +1684,7 @@ public class HUTestHelper
 		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
 		lutuProducer.setTUPI(piItemsForChildHU.get(0).getIncluded_HU_PI());
 
-		final HULoader loader = new HULoader(source, lutuProducer);
+		final HULoader loader = HULoader.of(source, lutuProducer);
 
 		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
@@ -1727,7 +1727,7 @@ public class HUTestHelper
 
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
 
-		final HULoader loader = new HULoader(source, lutuProducer);
+		final HULoader loader = HULoader.of(source, lutuProducer);
 
 		// allowing partial loads and unloads because that's interesting cases to test
 		loader.setAllowPartialUnloads(true);
@@ -1761,8 +1761,8 @@ public class HUTestHelper
 		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
 
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
-		final HUProducerDestination destination = new HUProducerDestination(destinationHuPI);
-		final HULoader loader = new HULoader(source, destination);
+		final HUProducerDestination destination = HUProducerDestination.of(destinationHuPI);
+		final HULoader loader = HULoader.of(source, destination);
 
 		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getHandlingUOM(product);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
@@ -1792,7 +1792,7 @@ public class HUTestHelper
 
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
 		final IAllocationDestination destination = new MTransactionAllocationSourceDestination(outgoingTrx);
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 
 		final I_M_Product product = outgoingTrx.getM_Product();
 		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(outgoingTrx);
@@ -1823,8 +1823,8 @@ public class HUTestHelper
 				"mtrx shall be inbound transaction: {}", mtrx);
 
 		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
-		final HUProducerDestination destination = new HUProducerDestination(huPI);
-		final HULoader loader = new HULoader(source, destination);
+		final HUProducerDestination destination = HUProducerDestination.of(huPI);
+		final HULoader loader = HULoader.of(source, destination);
 
 		//
 		// Create allocation request
@@ -1858,7 +1858,7 @@ public class HUTestHelper
 	{
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
 		final IAllocationDestination destination = new HUListAllocationSourceDestination(destinationHUs);
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 
 		//
 		// Create allocation request

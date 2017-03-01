@@ -92,7 +92,7 @@ public class HUProducerDestination extends AbstractProducerDestination
 
 	private I_M_HU_Item parentHUItem;
 
-	public HUProducerDestination(final I_M_HU_PI huPI)
+	private HUProducerDestination(final I_M_HU_PI huPI)
 	{
 		Check.assumeNotNull(huPI, "huPI not null");
 		_huPI = huPI;

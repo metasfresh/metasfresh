@@ -329,7 +329,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		allocationRequest = huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, receiptSchedule);
 		logger.debug("Allocation request: {}", allocationRequest);
 
-		final HULoader huloader = new HULoader(source, destination);
+		final HULoader huloader = HULoader.of(source, destination);
 		// Don't transfer the attributes because this will override the ones that were set by the user in Wareneingang-POS (see FRESH-92)
 		huloader.setSkipAttributesTransfer(true);
 		logger.debug("HULoader: {}", huloader);

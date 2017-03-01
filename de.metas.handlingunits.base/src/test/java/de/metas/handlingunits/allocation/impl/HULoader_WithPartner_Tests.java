@@ -79,9 +79,9 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 		final MockedAllocationSourceDestination allocationSource = new MockedAllocationSourceDestination();
 		allocationSource.setQtyToUnload(MockedAllocationSourceDestination.ANY);
 
-		allocationDestination = new HUProducerDestination(huDefIFCO);
+		allocationDestination = HUProducerDestination.of(huDefIFCO);
 
-		loader = new HULoader(allocationSource, allocationDestination);
+		loader = HULoader.of(allocationSource, allocationDestination);
 
 	}
 
