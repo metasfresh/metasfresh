@@ -29,15 +29,15 @@ class Notification extends Component {
             })
         }, 10);
     }
-    
+
     componentWillUpdate(nextProps) {
         const {item} = this.props;
-        
+
         if(item.count !== nextProps.item.count) {
             this.handleClosing(false)
-            
+
             const th = this;
-            
+
             setTimeout(() => {
                 th.handleClosing(true);
             }, 10)

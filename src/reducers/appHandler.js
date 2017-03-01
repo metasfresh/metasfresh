@@ -31,7 +31,7 @@ export default function appHandler(state = initialState, action) {
                         msg: action.msg,
                         time: action.time,
                         notifType: action.notifType,
-                        count: state.notifications[action.title] ? 
+                        count: state.notifications[action.title] ?
                             state.notifications[action.title].count + 1 : 0
                     }
                 })
