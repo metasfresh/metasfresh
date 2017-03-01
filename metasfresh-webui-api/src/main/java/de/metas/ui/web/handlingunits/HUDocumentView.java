@@ -16,6 +16,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -149,11 +150,19 @@ public final class HUDocumentView implements IDocumentView
 		return includedHUDocuments;
 	}
 
+	/**
+	 * 
+	 * @return the ID of the wrapped HU or a value {@code <= 0} if there is none.
+	 */
 	public int getM_HU_ID()
 	{
 		return (int)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
 	}
 
+	/**
+	 * 
+	 * @return the wrapped HU or {@code null} if there is none.
+	 */
 	public I_M_HU getM_HU()
 	{
 		final int huId = getM_HU_ID();
@@ -265,12 +274,20 @@ public final class HUDocumentView implements IDocumentView
 		return packingInfo == null ? null : packingInfo.toString();
 	}
 
+	/**
+	 * 
+	 * @return the ID of the wrapped UOM or {@code -1} if there is none.
+	 */
 	public int getC_UOM_ID()
 	{
 		final JSONLookupValue uomLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
 		return uomLV == null ? -1 : uomLV.getKeyAsInt();
 	}
 
+	/**
+	 * 
+	 * @return the wrapped UOM or {@code null} if there is none.
+	 */
 	public I_C_UOM getC_UOM()
 	{
 		final int uomId = getC_UOM_ID();
@@ -281,6 +298,9 @@ public final class HUDocumentView implements IDocumentView
 		return InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
 	}
 
+	/**
+	 * The CU qty of this line. Generally {@code null}, unless this line represents exactly one {@link IHUProductStorage}.
+	 */
 	public BigDecimal getQtyCU()
 	{
 		return (BigDecimal)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
