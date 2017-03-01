@@ -61,9 +61,7 @@ public class AddressRestController
 
 	private JSONOptions newJsonOpts()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)

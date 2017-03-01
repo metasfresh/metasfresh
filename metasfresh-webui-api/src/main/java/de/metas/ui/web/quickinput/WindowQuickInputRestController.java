@@ -78,9 +78,7 @@ public class WindowQuickInputRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
 	@GetMapping("/layout")

@@ -45,9 +45,14 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 public final class JSONOptions
 {
-	public static final Builder builder()
+	public static final Builder builder(final UserSession userSession)
 	{
-		return new Builder();
+		return new Builder(userSession);
+	}
+	
+	public static final JSONOptions of(final UserSession userSession)
+	{
+		return new Builder(userSession).build();
 	}
 
 	public static final String DEBUG_ATTRNAME = "json-options";
@@ -313,14 +318,16 @@ public final class JSONOptions
 
 	public static final class Builder
 	{
-		private UserSession _userSession;
+		private final UserSession _userSession;
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
 		private String adLanguage;
+		private MenuTree userSessionMenuTree;
 
-		private Builder()
+		private Builder(final UserSession userSession)
 		{
 			super();
+			this._userSession = userSession;
 		}
 
 		public JSONOptions build()
@@ -328,12 +335,6 @@ public final class JSONOptions
 			return new JSONOptions(this);
 		}
 
-		public Builder setUserSession(final UserSession userSession)
-		{
-			this._userSession = userSession;
-			return this;
-		}
-		
 		public Builder setAD_Language(final String adLanguage)
 		{
 			this.adLanguage = adLanguage;

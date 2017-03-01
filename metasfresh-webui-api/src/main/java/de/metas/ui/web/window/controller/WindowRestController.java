@@ -102,8 +102,7 @@ public class WindowRestController
 
 	private JSONOptions.Builder newJSONOptions()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession);
+		return JSONOptions.builder(userSession);
 	}
 
 	@GetMapping("/{windowId}/layout")

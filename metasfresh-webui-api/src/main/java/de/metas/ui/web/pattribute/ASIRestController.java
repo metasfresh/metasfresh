@@ -62,9 +62,7 @@ public class ASIRestController
 
 	private JSONOptions newJsonOpts()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
 	@PostMapping({ "", "/" })

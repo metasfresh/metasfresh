@@ -49,10 +49,9 @@ public class DashboardRestController
 	@Autowired
 	private UserDashboardRepository userDashboardRepo;
 
-	private JSONOptions.Builder newJSONOpts()
+	private JSONOptions newJSONOpts()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession);
+		return JSONOptions.of(userSession);
 	}
 
 	@GetMapping("/kpis")
@@ -61,7 +60,7 @@ public class DashboardRestController
 		userSession.assertLoggedIn();
 
 		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
-		return JSONDashboard.of(userDashboard.getKPIItems(), newJSONOpts().build());
+		return JSONDashboard.of(userDashboard.getKPIItems(), newJSONOpts());
 	}
 
 	@PatchMapping("/kpis")
@@ -92,7 +91,7 @@ public class DashboardRestController
 		userSession.assertLoggedIn();
 
 		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
-		return JSONDashboard.of(userDashboard.getTargetIndicatorItems(), newJSONOpts().build());
+		return JSONDashboard.of(userDashboard.getTargetIndicatorItems(), newJSONOpts());
 	}
 
 	@GetMapping("/targetIndicators/{itemId}/data")
