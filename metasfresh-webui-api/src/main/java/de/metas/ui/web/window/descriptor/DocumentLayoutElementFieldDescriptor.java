@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
@@ -59,10 +60,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	private final String internalName;
 	private final String field;
-	private final LookupSource lookupSource;
 	private final FieldType fieldType;
 	private final boolean publicField;
 
+	private final LookupSource lookupSource;
+	private final Optional<String> lookupTableName;
+	
 	private final ITranslatableString emptyText;
 
 	private final List<JSONDeviceDescriptor> devices;
@@ -73,11 +76,13 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		internalName = builder.internalName;
 		field = builder.getFieldName();
-		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
 		publicField = builder.publicField;
 		emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
 		devices = builder.getDevices();
+		
+		lookupSource = builder.lookupSource;
+		lookupTableName = builder.getLookupTableName();
 	}
 
 	@Override
@@ -121,6 +126,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	public LookupSource getLookupSource()
 	{
 		return lookupSource;
+	}
+	
+	public Optional<String> getLookupTableName()
+	{
+		return lookupTableName;
 	}
 
 	public FieldType getFieldType()
@@ -172,18 +182,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			this.fieldName = fieldName;
 		}
 
-		private Builder(final Builder from)
-		{
-			internalName = from.internalName;
-			fieldName = from.fieldName;
-			lookupSource = from.lookupSource;
-			fieldType = from.fieldType;
-			emptyText = from.emptyText;
-			publicField = from.publicField;
-			consumed = false;
-
-		}
-
 		@Override
 		public String toString()
 		{
@@ -204,11 +202,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 			logger.trace("Build {} for {}", result, this);
 			return result;
-		}
-
-		public Builder copy()
-		{
-			return new Builder(this);
 		}
 
 		public Builder setInternalName(final String internalName)
@@ -237,6 +230,21 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		public boolean isLookup()
 		{
 			return lookupSource != null;
+		}
+		
+		public Optional<String> getLookupTableName()
+		{
+			if(!isLookup())
+			{
+				return Optional.empty();
+			}
+			
+			if(documentFieldBuilder == null)
+			{
+				return Optional.empty();
+			}
+			
+			return documentFieldBuilder.getLookupTableName();
 		}
 
 		public Builder setFieldType(final FieldType fieldType)

@@ -73,7 +73,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		Preconditions.checkNotNull(lookupDescriptor);
 		final SqlLookupDescriptor sqlLookupDescriptor = lookupDescriptor.cast(SqlLookupDescriptor.class);
-		lookupTableName = sqlLookupDescriptor.getTableName();
+		lookupTableName = sqlLookupDescriptor.getTableName().get();
 		numericKey = sqlLookupDescriptor.isNumericKey();
 		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();

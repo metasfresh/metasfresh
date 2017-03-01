@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -71,6 +72,8 @@ public final class JSONOptions
 	private Predicate<DocumentLayoutElementDescriptor> _documentLayoutElementFilter; // lazy
 	private Predicate<IDocumentFieldView> _documentFieldFilter; // lazy
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
+
+	private final MenuTree userSessionMenuTree;
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
 	{
@@ -229,6 +232,8 @@ public final class JSONOptions
 		showAdvancedFields = builder.showAdvancedFields;
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
 		debugShowColumnNamesForCaption = builder.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
+		
+		userSessionMenuTree = builder.getUserSessionMenuTree();
 	}
 
 	@Override
@@ -315,6 +320,14 @@ public final class JSONOptions
 
 		return new FILTER_DocumentFieldChange_ByFieldNamesSet(dataFieldNamesSet, filter);
 	}
+	
+	/**
+	 * @return user's menu tree or null
+	 */
+	public MenuTree getUserSessionMenuTree()
+	{
+		return userSessionMenuTree;
+	}
 
 	public static final class Builder
 	{
@@ -376,6 +389,17 @@ public final class JSONOptions
 			}
 			
 			return defaultValue;
+		}
+		
+		private MenuTree getUserSessionMenuTree()
+		{
+			return userSessionMenuTree;
+		}
+		
+		public Builder setUserSessionMenuTree(MenuTree userSessionMenuTree)
+		{
+			this.userSessionMenuTree = userSessionMenuTree;
+			return this;
 		}
 	}
 }

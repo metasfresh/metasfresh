@@ -153,6 +153,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 				, (JSONLookupSource)null // lookupSource
 				, "no " + fieldName // emptyText
 				, (List<JSONDeviceDescriptor>)null // devices
+				, (String)null // newRecordWindowId
+				, (String)null // newRecordCaption
 		));
 	}
 

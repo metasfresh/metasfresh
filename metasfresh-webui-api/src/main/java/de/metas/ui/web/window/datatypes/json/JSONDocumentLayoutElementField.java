@@ -17,6 +17,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
+import de.metas.ui.web.menu.MenuNode;
+import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -35,18 +37,18 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @ApiModel("field")
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutElementField implements Serializable
 {
 	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors, final JSONOptions jsonOpts)
@@ -126,10 +128,18 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonProperty("emptyText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
-	
+
 	@JsonProperty("devices")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDeviceDescriptor> devices;
+
+	@JsonProperty("newRecordWindowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String newRecordWindowId;
+
+	@JsonProperty("newRecordCaption")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String newRecordCaption;
 
 	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
 	{
@@ -139,16 +149,29 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
 		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
 		devices = fieldDescriptor.getDevices();
+
+		final MenuNode lookupMenuNode = findLookupMenuNode(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
+		if (lookupMenuNode != null)
+		{
+			newRecordWindowId = String.valueOf(lookupMenuNode.getElementId());
+			newRecordCaption = lookupMenuNode.getCaption();
+		}
+		else
+		{
+			newRecordWindowId = null;
+			newRecordCaption = null;
+		}
 	}
 
 	@JsonCreator
-	/*package*/ JSONDocumentLayoutElementField(
+	/* package */ JSONDocumentLayoutElementField(
 			@JsonProperty("field") final String field //
 			, @JsonProperty("type") final JSONFieldType type //
 			, @JsonProperty("source") final JSONLookupSource source //
 			, @JsonProperty("emptyText") final String emptyText //
-			, @JsonProperty("devices") final List<JSONDeviceDescriptor> devices
-	)
+			, @JsonProperty("devices") final List<JSONDeviceDescriptor> devices //
+			, @JsonProperty("newRecordWindowId") final String newRecordWindowId //
+			, @JsonProperty("newRecordCaption") final String newRecordCaption)
 	{
 		super();
 		this.field = field;
@@ -156,6 +179,9 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		this.source = source;
 		this.emptyText = emptyText;
 		this.devices = devices == null ? ImmutableList.of() : ImmutableList.copyOf(devices);
+
+		this.newRecordWindowId = newRecordWindowId;
+		this.newRecordCaption = newRecordCaption;
 	}
 
 	@Override
@@ -168,31 +194,24 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.add("source", source)
 				.add("emptyText", emptyText)
 				.add("actions", devices.isEmpty() ? null : devices)
+				.add("newRecordWindowId", newRecordWindowId)
 				.toString();
 	}
 
-	public String getField()
+	private static final MenuNode findLookupMenuNode(final String lookupTableName, final JSONOptions jsonOpts)
 	{
-		return field;
-	}
-
-	public JSONFieldType getType()
-	{
-		return type;
-	}
-
-	public JSONLookupSource getSource()
-	{
-		return source;
-	}
-
-	public String getEmptyText()
-	{
-		return emptyText;
-	}
-	
-	public List<JSONDeviceDescriptor> getDevices()
-	{
-		return devices;
+		if (lookupTableName == null)
+		{
+			return null;
+		}
+		
+		final MenuTree menuTree = jsonOpts.getUserSessionMenuTree();
+		if(menuTree == null)
+		{
+			return null;
+		}
+		
+		final MenuNode lookupMenuNode = menuTree.getNewRecordNodeForTableName(lookupTableName).orElse(null);
+		return lookupMenuNode;
 	}
 }

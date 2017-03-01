@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
@@ -77,7 +78,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 	private static final int WINDOWNO_Dummy = 99999;
 
-	private final String tableName;
+	private final Optional<String> tableName;
 	private final ICachedStringExpression sqlForFetchingExpression;
 	private final ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final int entityTypeIndex;
@@ -95,7 +96,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	{
 		super();
 
-		tableName = builder.sqlTableName;
+		tableName = Optional.of(builder.sqlTableName);
 		sqlForFetchingExpression = builder.sqlForFetchingExpression;
 		sqlForFetchingDisplayNameByIdExpression = builder.sqlForFetchingDisplayNameByIdExpression;
 		entityTypeIndex = builder.entityTypeIndex;
@@ -182,7 +183,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return numericKey;
 	}
 
-	public String getTableName()
+	@Override
+	public Optional<String> getTableName()
 	{
 		return tableName;
 	}

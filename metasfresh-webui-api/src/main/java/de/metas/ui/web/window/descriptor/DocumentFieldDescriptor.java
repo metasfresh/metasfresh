@@ -786,6 +786,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 			return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 		}
+		
+		public Optional<String> getLookupTableName()
+		{
+			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
+			return lookupDescriptor == null ? null : lookupDescriptor.getTableName();
+		}
 
 		public Builder setValueClass(final Class<?> valueClass)
 		{
