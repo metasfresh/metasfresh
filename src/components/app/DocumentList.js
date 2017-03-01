@@ -16,7 +16,8 @@ import {
 } from '../../actions/GenericActions';
 
 import {
-    selectTableItems
+    selectTableItems,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
@@ -148,6 +149,17 @@ class DocumentList extends Component {
                 }
             });
         });
+    }
+    
+    isSelectionExist(selected) {
+        const {data} = this.state;
+        // When the rows are changing we should ensure
+        // that selection still exist
+        return (selected[0] &&
+            getItemsByProperty(
+                data.result, 'id', selected[0]
+            ).length
+        );
     }
 
     disconnectWS = () => {
@@ -308,6 +320,8 @@ class DocumentList extends Component {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal
         } = this.props;
+        
+        const selectionValid = this.isSelectionExist(selected);
 
         if(layout && data) {
             return (
@@ -334,7 +348,7 @@ class DocumentList extends Component {
                         <QuickActions
                             windowType={windowType}
                             viewId={viewId}
-                            selected={data.size && selected}
+                            selected={selectionValid && selected}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
                             fetchOnInit={fetchQuickActionsOnInit}
@@ -386,8 +400,10 @@ class DocumentList extends Component {
                                     <SelectionAttributes
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={data.size && selected}
-                                        shouldNotUpdate={inBackground}
+                                        selected={selected}
+                                        shouldNotUpdate={
+                                            inBackground
+                                        }
                                     />
                                 </DataLayoutWrapper>
                             }

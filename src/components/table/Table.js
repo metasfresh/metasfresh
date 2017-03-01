@@ -6,7 +6,8 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteLocal
+    deleteLocal,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
