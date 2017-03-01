@@ -2,6 +2,7 @@
 **/.settings/
 **/.classpath
 **/.project
+**/bin/
 **/metasfresh.properties
 
 metasfresh-webui-api/activemq-data/
