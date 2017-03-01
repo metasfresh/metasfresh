@@ -75,7 +75,7 @@ class Table extends Component {
         ){
             this.getIndentData();
         }
-        
+
         if(
             JSON.stringify(prevProps.defaultSelected) !==
             JSON.stringify(defaultSelected)
