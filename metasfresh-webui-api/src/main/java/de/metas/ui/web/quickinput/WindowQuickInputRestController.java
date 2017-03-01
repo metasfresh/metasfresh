@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -67,6 +68,9 @@ public class WindowQuickInputRestController
 
 	@Autowired
 	private UserSession userSession;
+	
+	@Autowired
+	private MenuTreeRepository menuRepo;
 
 	@Autowired
 	private DocumentCollection documentsCollection;
@@ -78,7 +82,9 @@ public class WindowQuickInputRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.of(userSession);
+		return JSONOptions.builder(userSession)
+				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
+				.build();
 	}
 
 	@GetMapping("/layout")

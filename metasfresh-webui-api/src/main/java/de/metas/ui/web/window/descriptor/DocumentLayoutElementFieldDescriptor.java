@@ -166,11 +166,13 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		private String internalName;
 		private final String fieldName;
-		private LookupSource lookupSource;
 		private FieldType fieldType;
 		private ITranslatableString emptyText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
 		private List<JSONDeviceDescriptor> _devices;
+		
+		private LookupSource lookupSource;
+		private Optional<String> lookupTableName = null;
 
 		private boolean consumed = false;
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
@@ -232,19 +234,25 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return lookupSource != null;
 		}
 		
+		public Builder setLookupTableName(final Optional<String> lookupTableName)
+		{
+			Check.assumeNotNull(lookupTableName, "Parameter lookupTableName is not null");
+			this.lookupTableName = lookupTableName;
+			return this;
+		}
+		
 		public Optional<String> getLookupTableName()
 		{
-			if(!isLookup())
+			if(lookupTableName != null)
 			{
-				return Optional.empty();
+				return lookupTableName;
+			}
+			if(documentFieldBuilder != null)
+			{
+				return documentFieldBuilder.getLookupTableName();
 			}
 			
-			if(documentFieldBuilder == null)
-			{
-				return Optional.empty();
-			}
-			
-			return documentFieldBuilder.getLookupTableName();
+			return Optional.empty();
 		}
 
 		public Builder setFieldType(final FieldType fieldType)
@@ -287,7 +295,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			documentFieldBuilder = field;
 			return this;
 		}
-
+		
 		public boolean isSpecialField()
 		{
 			return documentFieldBuilder != null && documentFieldBuilder.isSpecialField();

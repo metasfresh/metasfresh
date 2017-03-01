@@ -122,13 +122,15 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 						.setWidgetType(field_M_HU_PackingMaterial_ID.getWidgetType())
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PackingMaterial_ID.getFieldName())
 								.setPublicField(true)
-								.setLookupSource(field_M_HU_PackingMaterial_ID.getLookupSourceType())))
+								.setLookupSource(field_M_HU_PackingMaterial_ID.getLookupSourceType())
+								.setLookupTableName(field_M_HU_PackingMaterial_ID.getLookupTableName())))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaption(field_Qty.getCaption())
 						.setWidgetType(field_Qty.getWidgetType())
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
 								.setPublicField(true)
-								.setLookupSource(field_Qty.getLookupSourceType())));
+								.setLookupSource(field_Qty.getLookupSourceType())
+								.setLookupTableName(field_Qty.getLookupTableName())));
 
 		return quickInputLayout.build();
 	}

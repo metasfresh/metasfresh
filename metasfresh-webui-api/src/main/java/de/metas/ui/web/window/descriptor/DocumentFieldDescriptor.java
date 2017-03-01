@@ -220,7 +220,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return valueClass;
 	}
-
+	
 	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
 	{
 		return lookupDescriptorProvider.provideForScope(scope);
@@ -230,6 +230,17 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 		return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+	}
+	
+	public Optional<String> getLookupTableName()
+	{
+		return extractLookupTableName(lookupDescriptorProvider);
+	}
+	
+	private static final Optional<String> extractLookupTableName(final LookupDescriptorProvider lookupDescriptorProvider)
+	{
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
+		return lookupDescriptor == null ? Optional.empty() : lookupDescriptor.getTableName();
 	}
 
 	@Nullable
@@ -789,8 +800,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		
 		public Optional<String> getLookupTableName()
 		{
-			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
-			return lookupDescriptor == null ? null : lookupDescriptor.getTableName();
+			return extractLookupTableName(lookupDescriptorProvider);
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)

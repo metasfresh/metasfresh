@@ -157,17 +157,20 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 						.setWidgetType(field_M_Product_ID.getWidgetType())
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_Product_ID.getFieldName())
 								.setPublicField(true)
-								.setLookupSource(field_M_Product_ID.getLookupSourceType()))
+								.setLookupSource(field_M_Product_ID.getLookupSourceType())
+								.setLookupTableName(field_M_Product_ID.getLookupTableName()))
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PI_Item_Product_ID.getFieldName())
 								.setPublicField(true)
-								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())))
+								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())
+								.setLookupTableName(field_M_HU_PI_Item_Product_ID.getLookupTableName())))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaption(field_Qty.getCaption())
 						// .setDescription(field_Qty.getDescription())
 						.setWidgetType(field_Qty.getWidgetType())
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
 								.setPublicField(true)
-								.setLookupSource(field_Qty.getLookupSourceType())));
+								.setLookupSource(field_Qty.getLookupSourceType())
+								.setLookupTableName(field_Qty.getLookupTableName())));
 
 		return quickInputLayout.build();
 	}
