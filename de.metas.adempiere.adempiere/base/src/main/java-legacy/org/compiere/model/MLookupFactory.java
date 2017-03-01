@@ -690,7 +690,14 @@ public class MLookupFactory
 		// date
 		else if (DisplayType.isDate(ldc.getDisplayType()))
 		{
-			return DB.TO_CHAR(columnSQL, ldc.getDisplayType());
+			
+			// #1046
+			// Make sure the date doesn't have time too
+			final StringBuilder stringForDate = new StringBuilder()
+					.append(columnSQL)
+					.append("::")
+					.append("date");
+			return DB.TO_CHAR(stringForDate.toString(), ldc.getDisplayType());
 		}
 		// TableDir
 		else if ((ldc.getDisplayType() == DisplayType.TableDir
