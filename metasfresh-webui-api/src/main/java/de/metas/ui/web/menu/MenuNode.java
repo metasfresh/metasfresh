@@ -30,11 +30,11 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -52,7 +52,7 @@ public final class MenuNode
 		, Window, NewRecord //
 		, Process, Report //
 	}
-	
+
 	@FunctionalInterface
 	public static interface MenuNodeFilter
 	{
@@ -69,9 +69,12 @@ public final class MenuNode
 	private final String captionBreadcrumb;
 	private final MenuNodeType type;
 	private final int elementId;
-	private final List<MenuNode> children;
-	private MenuNode parent;
+	private final String mainTableName;
 	
+	private final List<MenuNode> children;
+	
+	private MenuNode parent;
+
 	//
 	// Characteristics
 	private final boolean matchedByFilter;
@@ -89,17 +92,18 @@ public final class MenuNode
 		captionBreadcrumb = builder.captionBreadcrumb;
 		type = builder.type;
 		elementId = builder.elementId;
+		mainTableName = builder.mainTableName;
 
 		children = ImmutableList.copyOf(Iterables.concat(builder.childrenFirst, builder.childrenRest));
 		for (final MenuNode child : children)
 		{
 			child.parent = this;
 		}
-		
+
 		matchedByFilter = false;
-		
+
 		// Validate
-		if(type != MenuNodeType.Group && !children.isEmpty())
+		if (type != MenuNodeType.Group && !children.isEmpty())
 		{
 			throw new IllegalArgumentException("Only grouping nodes can have children");
 		}
@@ -114,13 +118,14 @@ public final class MenuNode
 		captionBreadcrumb = node.captionBreadcrumb;
 		type = node.type;
 		elementId = node.elementId;
+		mainTableName = node.mainTableName;
 
 		this.children = ImmutableList.copyOf(children);
 		for (final MenuNode child : this.children)
 		{
 			child.parent = this;
 		}
-		
+
 		this.matchedByFilter = matchedByFilter;
 	}
 
@@ -133,6 +138,7 @@ public final class MenuNode
 				.add("caption", caption)
 				.add("type", type)
 				.add("elementId", elementId)
+				.add("mainTableName", mainTableName)
 				.add("children-count", children.size())
 				.add("matchedByFilter", matchedByFilter ? Boolean.TRUE : null)
 				.toString();
@@ -177,7 +183,7 @@ public final class MenuNode
 	{
 		return caption;
 	}
-	
+
 	public String getCaptionBreadcrumb()
 	{
 		return captionBreadcrumb;
@@ -187,7 +193,7 @@ public final class MenuNode
 	{
 		return parent;
 	}
-	
+
 	public String getParentId()
 	{
 		return parent == null ? null : parent.getId();
@@ -206,6 +212,12 @@ public final class MenuNode
 	public int getElementId()
 	{
 		return elementId;
+	}
+	
+	/** @return window's main table name or null */
+	public String getMainTableName()
+	{
+		return mainTableName;
 	}
 
 	public void iterate(final Consumer<MenuNode> consumer)
@@ -240,21 +252,21 @@ public final class MenuNode
 		for (final MenuNode child : children)
 		{
 			final IPair<MenuNode, MenuNodeFilterResolution> childCopyAndResolution = child.deepCopy0(filter);
-			if(childCopyAndResolution == null)
+			if (childCopyAndResolution == null)
 			{
 				continue;
 			}
-			
+
 			final MenuNode childCopy = childCopyAndResolution.getLeft();
 			if (childCopy == null)
 			{
 				continue;
 			}
-			
+
 			childrenCopy.add(childCopy);
-			
+
 			final MenuNodeFilterResolution childResolution = childCopyAndResolution.getRight();
-			switch(childResolution)
+			switch (childResolution)
 			{
 				case Accept:
 				case AcceptIfHasChildren:
@@ -272,7 +284,7 @@ public final class MenuNode
 		{
 			return null;
 		}
-		
+
 		final boolean matchedByFilter = resolution == MenuNodeFilterResolution.Accept;
 		final MenuNode thisCopy = new MenuNode(this, childrenCopy, matchedByFilter);
 		return ImmutablePair.of(thisCopy, resolution);
@@ -287,19 +299,19 @@ public final class MenuNode
 	{
 		return type == MenuNodeType.Group;
 	}
-	
+
 	/**
 	 * Returns true if this node is effectively a leaf node.
-	 * 
+	 *
 	 * An effectively leaf node it's a node which it's not a grouping node, or even if it's grouping node, it does no have any children.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isEffectiveLeafNode()
 	{
 		return children.isEmpty();
 	}
-	
+
 	public boolean isMatchedByFilter()
 	{
 		return matchedByFilter;
@@ -313,6 +325,7 @@ public final class MenuNode
 		private String captionBreadcrumb;
 		private MenuNodeType type;
 		private int elementId;
+		private String mainTableName;
 		private final List<MenuNode> childrenFirst = new ArrayList<>();
 		private final List<MenuNode> childrenRest = new ArrayList<>();
 
@@ -343,8 +356,8 @@ public final class MenuNode
 			this.caption = caption;
 			return this;
 		}
-		
-		public Builder setCaptionBreadcrumb(String captionBreadcrumb)
+
+		public Builder setCaptionBreadcrumb(final String captionBreadcrumb)
 		{
 			this.captionBreadcrumb = captionBreadcrumb;
 			return this;
@@ -378,7 +391,13 @@ public final class MenuNode
 				return this;
 			}
 
-			this.childrenRest.addAll(children);
+			childrenRest.addAll(children);
+			return this;
+		}
+
+		public Builder setMainTableName(final String mainTableName)
+		{
+			this.mainTableName = mainTableName;
 			return this;
 		}
 	}
