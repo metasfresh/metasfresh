@@ -926,12 +926,12 @@ public final class Document
 	{
 		_new = false;
 	}
-	
+
 	/* package */ void markAsDeleted()
 	{
 		// TODO: implement
 	}
-	
+
 	/* package */ boolean isDeleted()
 	{
 		return false; // TODO: implement
@@ -1416,6 +1416,9 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
+	/**
+	 * Checks document's valid status, sets it and returns it.
+	 */
 	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		//
@@ -1455,6 +1458,12 @@ public final class Document
 		return _saveStatus;
 	}
 
+	/**
+	 * Checks if this document has changes.
+	 * NOTE: it's not checking the included documents.
+	 * 
+	 * @return true if it has changes.
+	 */
 	private boolean hasChanges()
 	{
 		// If this is a new document then always consider it as changed
@@ -1480,6 +1489,11 @@ public final class Document
 		return changes;
 	}
 
+	/**
+	 * Checks if this document or any of it's included documents has changes.
+	 * 
+	 * @return true if it this document or any of it's included documents has changes.
+	 */
 	/* package */boolean hasChangesRecursivelly()
 	{
 		//
@@ -1619,7 +1633,7 @@ public final class Document
 	{
 		return _staleStatus.isStaled();
 	}
-	
+
 	public IAutoCloseable lockForReading()
 	{
 		// assume _lock is not null
@@ -1647,7 +1661,6 @@ public final class Document
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-
 
 	private final class DocumentStaleState
 	{
@@ -1879,17 +1892,17 @@ public final class Document
 				return parentDocument.isWritable();
 			}
 		}
-		
+
 		private ReentrantReadWriteLock createLock()
 		{
 			// don't create locks for any other entity which is not window
-			if(entityDescriptor.getDocumentType() != DocumentType.Window)
+			if (entityDescriptor.getDocumentType() != DocumentType.Window)
 			{
 				return null;
 			}
 
 			//
-			if(parentDocument == null)
+			if (parentDocument == null)
 			{
 				return new ReentrantReadWriteLock();
 			}
