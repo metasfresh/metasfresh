@@ -273,15 +273,10 @@ public class ProcessInstancesRepository
 		try (final IAutoCloseable readLock = processInstances.getUnchecked(pinstanceId).lockForReading())
 		{
 			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId);
-				try (final IAutoCloseable c = processInstance.activate())
-				{
-			return processor.apply(processInstance);
-		}
-	}
-		}
-		catch (final UncheckedExecutionException | ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
+			try (final IAutoCloseable c = processInstance.activate())
+			{
+				return processor.apply(processInstance);
+			}
 		}
 	}
 
@@ -293,26 +288,21 @@ public class ProcessInstancesRepository
 		{
 			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
 
-				// Make sure the process was not already executed.
-				// If it was executed we are not allowed to change it.
-				processInstance.assertNotExecuted();
+			// Make sure the process was not already executed.
+			// If it was executed we are not allowed to change it.
+			processInstance.assertNotExecuted();
 
-				try (final IAutoCloseable c = processInstance.activate())
-				{
-					// Call the given processor to apply changes to this process instance.
-					final R result = processor.apply(processInstance);
+			try (final IAutoCloseable c = processInstance.activate())
+			{
+				// Call the given processor to apply changes to this process instance.
+				final R result = processor.apply(processInstance);
 
-					// Actually put it back
-					processInstance.saveIfValidAndHasChanges(false); // throwEx=false
-					processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
+				// Actually put it back
+				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
+				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
 
-					return result;
-				}
+				return result;
 			}
-		}
-		catch (final UncheckedExecutionException | ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 }
