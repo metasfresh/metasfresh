@@ -41,7 +41,6 @@ package org.eevolution.model.wrapper;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.compiere.model.MAttachment;
 import org.compiere.model.PO;
 
 /**
@@ -443,90 +442,4 @@ public abstract class AbstractPOWrapper {
 		
 		return po.get_TrxName(); //	getTrx
 	}
-
-	/**************************************************************************
-	 * 	Get Attachments.
-	 * 	An attachment may have multiple entries
-	 *	@return Attachment or null
-	 */
-	public MAttachment getAttachment() {
-		
-		return po.getAttachment(); //	getAttachment
-	}
-
-	/**
-	 * 	Get Attachments
-	 * 	@param requery requery
-	 *	@return Attachment or null
-	 */
-	public MAttachment getAttachment(boolean requery) {
-		
-		return po.getAttachment(requery); //	getAttachment
-	}
-
-	/**
-	 * 	Create/return Attachment for PO.
-	 * 	If not exist, create new
-	 *	@return attachment
-	 */
-	public MAttachment createAttachment() {
-		
-		return po.createAttachment(); //	createAttachment
-	}
-
-	/**
-	 * 	Do we have a Attachment of type
-	 * 	@param extension extension e.g. .pdf
-	 * 	@return true if there is a attachment of type
-	 */
-	public boolean isAttachment(String extension) {
-		
-		return po.isAttachment(extension); //	isAttachment
-	}
-
-	/**
-	 * 	Get Attachment Data of type
-	 * 	@param extension extension e.g. .pdf
-	 *	@return data or null
-	 */
-	public byte[] getAttachmentData(String extension) {
-		
-		return po.getAttachmentData(extension); //	getAttachmentData
-	}
-
-	/**
-	 * 	Do we have a PDF Attachment
-	 * 	@return true if there is a PDF attachment
-	 */
-	public boolean isPdfAttachment() {
-		
-		return po.isPdfAttachment(); //	isPdfAttachment
-	}
-
-	/**
-	 * 	Get PDF Attachment Data
-	 *	@return data or null
-	 */
-	public byte[] getPdfAttachment() {
-		
-		return po.getPdfAttachment(); //	getPDFAttachment
-	}
-
-	/**************************************************************************
-	 *  Dump Record
-	 */
-	public void dump() {
-		
-		po.dump(); //  dump
-	}
-
-	/**
-	 *  Dump column
-	 *  @param index index
-	 */
-	public void dump(int index) {
-		
-		po.dump(index); //  dump
-	}
-
 }

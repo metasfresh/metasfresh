@@ -22,6 +22,7 @@ upcoming
 ## Fixes
 * metqasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
+  * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
 
 # metasfresh 4.58.57 (2017-09)
 
@@ -29,6 +30,7 @@ this week's RC
 
 ## Features
 * metasfresh-backend
+  * [#850](https://github.com/metasfresh/metasfresh/issues/850) Add Migration Script to rename Attribute Set Instance Field
   * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
   * [#1028](https://github.com/metasfresh/metasfresh/issues/1028) extract distributable stuff into dedicated repo
   * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
@@ -47,13 +49,18 @@ upcoming
 * metasfresh-webui-frontend
   * [#377](https://github.com/metasfresh/metasfresh-webui-frontend/issues/377) grid view: when initially clicking on first row, the second one is first selected
   * [#392](https://github.com/metasfresh/metasfresh-webui-frontend/issues/392) Filters are not respecting mandatory property
+  * [#428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/428) When calling a process from HU editor open the process parameters on top of the HU editor modal
   * [#435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/435) filter in Material Receipt Candidates does not work
+  * [#1004](https://github.com/metasfresh/metasfresh/issues/1004) Order by C_Order_ID desc in Sales Order Window
+  * [#1007](https://github.com/metasfresh/metasfresh/issues/1007) Window for PMM_PurchaseCandidate in WebUI
 
 ## Fixes
 * metasfresh-backend
 
 * metasfresh-webui-api
+  * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+  * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
  
 * metasfresh-webui-frontend
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts

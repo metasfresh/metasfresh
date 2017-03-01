@@ -1749,32 +1749,6 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		return sb;
 	}	// getHTMLpart
 
-	/**************************************************************************
-	 * Does the underlying PO (!) object have a PDF Attachment
-	 *
-	 * @return true if there is a pdf attachment
-	 */
-	@Override
-	public boolean isPdfAttachment()
-	{
-		if (getPO() == null)
-			return false;
-		return m_po.isPdfAttachment();
-	}	// isPDFAttachment
-
-	/**
-	 * Get PDF Attachment of underlying PO (!) object
-	 *
-	 * @return pdf data or null
-	 */
-	@Override
-	public byte[] getPdfAttachment()
-	{
-		if (getPO() == null)
-			return null;
-		return m_po.getPdfAttachment();
-	}	// getPdfAttachment
-
 	/**
 	 * String Representation
 	 *

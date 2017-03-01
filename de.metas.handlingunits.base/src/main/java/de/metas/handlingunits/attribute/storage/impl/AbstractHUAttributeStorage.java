@@ -90,7 +90,16 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 			}
 		}
 
+		//
+		// Propagate the flag to currently loaded children 
+		getChildAttributeStorages(false).forEach(childAttributeStorage -> childAttributeStorage.setSaveOnChange(saveOnChange));
+
 		this.saveOnChange = saveOnChange;
+	}
+	
+	protected final boolean isSaveOnChange()
+	{
+		return this.saveOnChange;
 	}
 
 	@Override
@@ -316,7 +325,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	 */
 	private final IAttributeValue toAttributeValue(final I_M_HU_Attribute huAttribute)
 	{
-		final HUAttributeValue huAttributeValue = new HUAttributeValue(this, huAttribute, saveOnChange);
+		final HUAttributeValue huAttributeValue = new HUAttributeValue(this, huAttribute, isSaveOnChange());
 		return huAttributeValue;
 	}
 
