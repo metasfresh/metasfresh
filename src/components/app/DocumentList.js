@@ -52,7 +52,7 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground
+            inBackground, dispatch
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
 
@@ -68,7 +68,7 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-
+                dispatch(selectTableItems([]))
                 this.fetchLayoutAndData();
             });
         }
@@ -112,9 +112,7 @@ class DocumentList extends Component {
             inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                this.props.dispatch(
-                    selectTableItems(cachedSelection)
-                )
+                dispatch(selectTableItems(cachedSelection))
             }else{
                 this.setState({
                     cachedSelection: selected

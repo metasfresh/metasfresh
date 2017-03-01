@@ -63,7 +63,7 @@ class Table extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {mainTable, open, rowData} = this.props;
+        const {mainTable, open, rowData, defaultSelected} = this.props;
 
         if(mainTable && open){
             this.table.focus();
@@ -74,6 +74,15 @@ class Table extends Component {
             JSON.stringify(rowData)
         ){
             this.getIndentData();
+        }
+        
+        if(
+            JSON.stringify(prevProps.defaultSelected) !==
+            JSON.stringify(defaultSelected)
+        ){
+            this.setState({
+                selected: defaultSelected
+            })
         }
     }
 
