@@ -94,11 +94,12 @@ export function createViewRequest(
     });
 }
 
-export function addNotification(title, msg, time, notifType){
+export function addNotification(title, msg, time, notifType, shortMsg){
     return {
         type: types.ADD_NOTIFICATION,
         title: title,
         msg: msg,
+        shortMsg: shortMsg,
         time: time,
         notifType: notifType,
         id: Date.now()

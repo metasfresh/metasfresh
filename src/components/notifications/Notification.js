@@ -9,7 +9,8 @@ class Notification extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isClosing: false
+            isClosing: false,
+            isDisplayedMore: false
         }
 
         this.closing = null;
@@ -69,9 +70,15 @@ class Notification extends Component {
         })
     }
 
+    handleToggleMore = () => {
+        this.setState({
+            isDisplayedMore: true
+        })
+    }
+
     render() {
         const {item} = this.props;
-        const {isClosing} = this.state;
+        const {isClosing, isDisplayedMore} = this.state;
 
         return (
             <div
@@ -83,14 +90,28 @@ class Notification extends Component {
                 onMouseLeave={() => this.handleClosing(true)}
             >
                 <div className="notification-header">
-                    {item.title} <span>({item.count})</span>
+                    {item.title} {item.count ?
+                        <span
+                            className={
+                                'tag tag-sm tag-default ' +
+                                ('tag-' + (item.notifType ? item.notifType : 'error '))
+                            }>{item.count}</span> : ''}
                     <i
                         onClick={() => this.handleCloseButton()}
                         className="meta-icon-close-1"
                     />
                 </div>
                 <div className="notification-content">
-                    {item.msg}
+                    {item.shortMsg ? item.shortMsg + ' ' : item.msg}
+                    {(item.shortMsg && item.msg && !isDisplayedMore) &&
+                        <u
+                            className="text-xs-right text-small pointer"
+                            onClick={this.handleToggleMore}
+                        >
+                            (read more)
+                        </u>
+                    }
+                    {isDisplayedMore ? <p>{item.msg}</p> : ''}
                 </div>
                 <div
                     className={
