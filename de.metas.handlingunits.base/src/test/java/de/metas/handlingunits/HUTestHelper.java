@@ -45,7 +45,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.inout.service.IMTransactionBL;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
@@ -63,6 +62,7 @@ import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
@@ -1621,6 +1621,8 @@ public class HUTestHelper
 	 * Take the given {@code lutuProducer} and load the given {@code loadCuQty} and {@code loadCuUOM} of the given {@code cuProduct} into new HUs.
 	 * <p>
 	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * <p>
+	 * Note: this method performs the load using an {@link IHUContext} that was created with {@link #createMutableHUContextOutOfTransaction()}.
 	 * 
 	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
 	 * @param cuProduct
@@ -1698,7 +1700,7 @@ public class HUTestHelper
 
 		return lutuProducer.getCreatedHUs();
 	}
-	
+
 	/**
 	 * Sets up a {@link HUListAllocationSourceDestination} for the given {@code sourceHUs} and loads them to the given {@code lutuProducer}.
 	 * <p>

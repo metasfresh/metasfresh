@@ -95,7 +95,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private I_C_BPartner _bpartner = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
-	private boolean _isHUPlanningReceiptOwsnerPM = false; // default false
+	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
 
 	/**
 	 *
@@ -303,7 +303,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// Link to LU/TU Configuration if any
 		huBuilder.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
 		
-		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwsnerPM());
+		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
 		return huBuilder;
 	}
@@ -738,15 +738,15 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 	
 	@Override
-	public final IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM)
+	public final IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwnerPM)
 	{
-		this._isHUPlanningReceiptOwsnerPM = isHUPlanningReceiptOwsnerPM;
+		this._isHUPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM;
 		return this;
 	}
 	
-	private final boolean isHUPlanningReceiptOwsnerPM()
+	public final boolean isHUPlanningReceiptOwnerPM()
 	{
-		return _isHUPlanningReceiptOwsnerPM;
+		return _isHUPlanningReceiptOwnerPM;
 	}
 
 
