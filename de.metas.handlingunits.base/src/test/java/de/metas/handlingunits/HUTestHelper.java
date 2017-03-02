@@ -2112,4 +2112,16 @@ public class HUTestHelper
 		Services.get(ITrxManager.class).commit(trxName);
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(hu)));
 	}
+
+	/**
+	 * Similar to {@link #commitAndDumpHU(I_M_HU)}.
+	 * 
+	 * @param hus
+	 */
+	@Deprecated
+	public void commitAndDumpHUs(List<I_M_HU> hus)
+	{
+		Services.get(ITrxManager.class).commit(trxName);
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("HUs", hus)));
+	}
 }

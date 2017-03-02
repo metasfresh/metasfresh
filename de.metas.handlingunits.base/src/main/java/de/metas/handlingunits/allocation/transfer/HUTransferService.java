@@ -24,6 +24,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -131,6 +132,7 @@ public class HUTransferService
 
 		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
 				.withPropagateHUValues()
+				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
 
 		return destination.getCreatedHUs();
@@ -160,6 +162,7 @@ public class HUTransferService
 
 		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
 				.withPropagateHUValues()
+				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
 	}
 
@@ -196,6 +199,7 @@ public class HUTransferService
 		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
+				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
 
 		return destination.getCreatedHUs();
@@ -238,7 +242,7 @@ public class HUTransferService
 		Preconditions.checkNotNull(tuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
 
-		final List<IHUProductStorage> productStorages = retrieveAllPRoductStorages(tuHU);
+		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(tuHU);
 
 		// TODO cases to cover:
 		// 1. cuRows.isEmpty() for whatever reason: in this case, the TU shall be destroyed already, so this method can't be called with such a TU; throw an exception
@@ -249,11 +253,24 @@ public class HUTransferService
 
 		// deal with the first of potentially many cuHUs and their storages
 		{
-			final IHUProductStorage firstCuProductStorage = productStorages.get(0);
+			final IHUProductStorage firstProductStorage = productStorages.get(0);
 
-			final BigDecimal qtyCUperTU = Preconditions.checkNotNull(firstCuProductStorage.getQty(), "Qty of firstCuProductStorage=%s may not be null", firstCuProductStorage);
-			final I_M_Product cuProduct = Preconditions.checkNotNull(firstCuProductStorage.getM_Product(), "M_Product of firstCuProductStorage=%s may not be null", firstCuProductStorage);
-			final I_C_UOM cuUOM = Preconditions.checkNotNull(firstCuProductStorage.getC_UOM(), "C_UOM of firstCuProductStorage=%s may not be null", firstCuProductStorage);
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			final BigDecimal qtyOfStorage = Preconditions.checkNotNull(firstProductStorage.getQty(), "Qty of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
+			final BigDecimal qtyCUperTU;
+			if (handlingUnitsBL.isAggregateHU(tuHU))
+			{
+				final I_M_HU_Item tuHUsParentItem = tuHU.getM_HU_Item_Parent(); // can't be null because if is was isAggregateHU() would return false.
+				final BigDecimal representedTUsCount = tuHUsParentItem.getQty();
+				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, tuHU, tuHUsParentItem);
+				qtyCUperTU = qtyOfStorage.divide(representedTUsCount);
+			}
+			else
+			{
+				qtyCUperTU = qtyOfStorage;
+			}
+			final I_M_Product cuProduct = Preconditions.checkNotNull(firstProductStorage.getM_Product(), "M_Product of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
+			final I_C_UOM cuUOM = Preconditions.checkNotNull(firstProductStorage.getC_UOM(), "C_UOM of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
 
 			final LUTUProducerDestination destination = new LUTUProducerDestination();
 			destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
@@ -265,18 +282,17 @@ public class HUTransferService
 			{
 				destination.setLUItemPI(luPIItem);
 				destination.setLUPI(luPIItem.getM_HU_PI_Version().getM_HU_PI());
-				destination.setMaxLUs(1);
 			}
-			destination.setMaxTUsForRemainingQty(qtyTU.intValueExact());
 			destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
-			destination.addTUCapacity(cuProduct, qtyCUperTU, cuUOM);
+			destination.addTUCapacity(cuProduct, tuPIItemProduct.getQty(), cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
 			final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyTU.multiply(qtyCUperTU));
 
 			HUSplitBuilderCoreEngine.of(huContext, tuHU, request, destination)
 					.withPropagateHUValues()
 					.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
+					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
 
 			createdTUs = destination.getCreatedHUs();
@@ -296,7 +312,7 @@ public class HUTransferService
 		return createdTUs;
 	}
 
-	private List<IHUProductStorage> retrieveAllPRoductStorages(final I_M_HU tuHU)
+	private List<IHUProductStorage> retrieveAllProductStorages(final I_M_HU tuHU)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -304,27 +320,33 @@ public class HUTransferService
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final List<IHUProductStorage> productStorages = new ArrayList<>();
-		handlingUnitsDAO.retrieveIncludedHUs(tuHU)
-				.forEach(cuHU -> {
-					productStorages.addAll(storageFactory.getStorage(cuHU).getProductStorages());
-				});
 
-		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages of HUs the are included in tuHU=%s may not be empty", tuHU);
+		if (handlingUnitsBL.isAggregateHU(tuHU))
+		{
+			productStorages.addAll(storageFactory.getStorage(tuHU).getProductStorages());
+		}
+		else
+		{
+			handlingUnitsDAO.retrieveIncludedHUs(tuHU)
+					.forEach(cuHU -> {
+						productStorages.addAll(storageFactory.getStorage(cuHU).getProductStorages());
+					});
+		}
+		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages below the given 'tuHU' may not be empty; tuHU=%s", tuHU);
 		return productStorages;
 	}
 
 	public void action_SplitTU_To_ExistingLU(
 			final I_M_HU tuHU //
 			, final BigDecimal qtyTU //
-			, final I_M_HU luHU //
-			, final boolean isOwnPackingMaterials //
+			, final I_M_HU luHU
 	)
 	{
 		Preconditions.checkNotNull(tuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
 		Preconditions.checkNotNull(luHU, "Param 'luHU' may not be null");
 
-		final List<IHUProductStorage> productStorages = retrieveAllPRoductStorages(tuHU);
+		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(tuHU);
 
 		for (final IHUProductStorage productStorage : productStorages)
 		{
@@ -335,10 +357,8 @@ public class HUTransferService
 			// Transfer Qty
 			HUSplitBuilderCoreEngine.of(huContext, tuHU, request, destination)
 					.withPropagateHUValues()
+					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
 		}
-
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		handlingUnitsBL.destroyIfEmptyStorage(tuHU);
 	}
 }

@@ -46,6 +46,7 @@ public class HUSplitBuilderCoreEngine
 	private I_M_HU_PI_Item tuPIItem;
 
 	private IHUDocumentLine documentLine;
+	private boolean allowPartialUnloads;
 
 	private HUSplitBuilderCoreEngine(final IHUContext huContext,
 			final I_M_HU huToSplit,
@@ -129,6 +130,18 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
+	 * Set a value to be passed to the {@link HULoader#setAllowPartialUnloads(boolean)} when {@link #performSplit()} is done. The default is {@code false} because of backwards compatibility.
+	 * 
+	 * @param allowPartialUnloads
+	 * @return
+	 */
+	public HUSplitBuilderCoreEngine withAllowPartialUnloads(final boolean allowPartialUnloads)
+	{
+		this.allowPartialUnloads = allowPartialUnloads;
+		return this;
+	}
+
+	/**
 	 * Note: if this instance's {@link #destination} is {@link IHUProducerAllocationDestination}, you can retrieve the created HUs via {@link IHUProducerAllocationDestination#getCreatedHUs()}.
 	 */
 	public void performSplit()
@@ -141,6 +154,7 @@ public class HUSplitBuilderCoreEngine
 		// Perform allocation
 		HULoader.of(source, destination)
 				.setAllowPartialLoads(true)
+				.setAllowPartialUnloads(allowPartialUnloads)
 				.load(request);
 		// NOTE: we are not checking if everything was fully allocated because we can leave the remaining Qty into initial "huToSplit"
 
@@ -208,7 +222,7 @@ public class HUSplitBuilderCoreEngine
 
 	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductToUse(final I_M_HU hu)
 	{
-		if(tuPIItem == null)
+		if (tuPIItem == null)
 		{
 			return null;
 		}

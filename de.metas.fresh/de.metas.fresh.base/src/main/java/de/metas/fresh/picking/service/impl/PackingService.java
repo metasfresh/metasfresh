@@ -25,7 +25,6 @@ package de.metas.fresh.picking.service.impl;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -75,7 +74,7 @@ public class PackingService implements IPackingService
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final IContextAware contextProvider = new PlainContextAware(ctx, localTrxName);
+				final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 				final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
 				for (final Map.Entry<I_M_ShipmentSchedule, BigDecimal> e : schedules2qty.entrySet())
@@ -109,7 +108,7 @@ public class PackingService implements IPackingService
 
 		//
 		// Allocation Source
-		final IAllocationSource source = new HUListAllocationSourceDestination(Collections.singletonList(hu));
+		final IAllocationSource source = HUListAllocationSourceDestination.of(hu);
 
 		//
 		// Move Qty from HU to shipment schedule (i.e. un-pick)

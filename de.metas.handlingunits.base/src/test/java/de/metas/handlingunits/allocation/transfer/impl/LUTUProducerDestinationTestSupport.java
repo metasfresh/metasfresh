@@ -59,7 +59,8 @@ public class LUTUProducerDestinationTestSupport
 	public final I_M_HU_PI_Item_Product piTU_Item_Product_IFCO_40KgTomatoes;
 
 	/**
-	 * The PI for the "Bag" TU. By default one bag TU can hold 8kg of {@link HUTestHelper#pTomato} or 5pce of {@link HUTestHelper#pSalad}.
+	 * The PI for the "Bag" TU. By default one bag TU can hold 8kg of {@link HUTestHelper#pTomato} or 5pce of {@link HUTestHelper#pSalad}. 
+	 * Also see {@link #piTU_Item_Product_Bag_8KgTomatoes}.
 	 */
 	public I_M_HU_PI piTU_Bag;
 
@@ -73,7 +74,7 @@ public class LUTUProducerDestinationTestSupport
 	public I_M_HU_PI_Item piLU_Item_IFCO;
 
 	/**
-	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_Bag} sub-PI.
+	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_Bag} sub-PI. One LU can hold two bags.
 	 */
 	public I_M_HU_PI_Item piLU_Item_Bag;
 

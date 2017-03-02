@@ -28,7 +28,6 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -103,7 +102,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	{
 		final IPackingContext packingContext = getPackingContext();
 		final Properties ctx = packingContext.getCtx();
-		final PlainContextAware contextProvider = new PlainContextAware(ctx, ITrx.TRXNAME_ThreadInherited);
+		final PlainContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(ctx);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(contextProvider);
 		return huContext;
 	}
@@ -256,7 +255,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		//
 		// Allocation Destination
 		final I_M_HU targetHU = getTargetHU();
-		final HUListAllocationSourceDestination destination = new HUListAllocationSourceDestination(targetHU);
+		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(targetHU);
 
 		//
 		// Move Qty from shipment schedules to current HU

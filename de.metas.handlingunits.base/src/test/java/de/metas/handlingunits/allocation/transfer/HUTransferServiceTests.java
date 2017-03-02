@@ -309,15 +309,13 @@ public class HUTransferServiceTests
 	}
 
 	@Theory
-	public void testSplitRealCU_To_ExistingRealTU(
-			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	public void testSplitRealCU_To_ExistingRealTU()
 	{
 		// prepare the existing TU
+		// just use the testee as a tool here, to create our "real" TU.
 		final I_M_HU cuHU = mkRealCUToSplit("20");
-
-		// just use the testee as a tool here.
 		final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, isOwnPackingMaterials);
+				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 		assertThat(existingTUs.size(), is(1));
 		final I_M_HU existingTU = existingTUs.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(existingTU), is(false));
@@ -345,9 +343,8 @@ public class HUTransferServiceTests
 		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 
-	@Theory
-	public void testSplitRealCU_To_ExistingAggregateTU(
-			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	@Test
+	public void testSplitRealCU_To_ExistingAggregateTU()
 	{
 		final I_M_HU existingTU = mkAggregateCUToSplit("80");
 
@@ -373,10 +370,179 @@ public class HUTransferServiceTests
 
 		final I_M_HU fullTargetHU = existingTU.getM_HU_Item_Parent().getM_HU();
 		final Node fullTargetHUXML = HUXmlConverter.toXml(fullTargetHU);
-		//data.helper.commitAndDumpHU(fullTargetHU);
+		// data.helper.commitAndDumpHU(fullTargetHU);
 		assertThat(fullTargetHUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_HU_ID)", is(Integer.toString(existingTU.getM_HU_ID())))); // fullTargetHU contains existingTU
 		assertThat(fullTargetHUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("20.000"))); // fullTargetHU also contains a real IFCO with 20
 
+	}
+
+	@Theory
+	public void testSplitAggregateTU_To_NewTUs(
+			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		final I_M_HU tuToSplit = mkAggregateCUToSplit("80");
+
+		// invoke the method under test
+		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
+				.action_SplitTU_To_NewTUs(tuToSplit,
+						new BigDecimal("4"), // tuQty=4; we only have 2 TUs in the source, so we will will only expect 2x40 to be actually loaded
+						data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+		assertThat(newTUs.size(), is(10)); // we transfer 80kg, one bag holds 8kg, so we expect 10 full bags
+
+		newTUs.forEach(newTU -> {
+
+			final Node newTUXML = HUXmlConverter.toXml(newTU);
+			assertThat(newTUXML, not(hasXPath("HU-TU_Bag/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
+			assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+			assertThat(newTUXML, hasXPath("string(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("8.000")));
+		});
+	}
+
+	@Theory
+	public void testSplitRealTU_To_NewTUs(
+			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		// prepare the existing TU
+		// just use the testee as a tool here, to create our "real" TU.
+		final I_M_HU cuHU = mkRealCUToSplit("20");
+		final List<I_M_HU> tusToSplit = HUTransferService.get(data.helper.getHUContext())
+				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+		assertThat(tusToSplit.size(), is(1));
+		final I_M_HU tuToSplit = tusToSplit.get(0);
+		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
+
+		// invoke the method under test
+		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
+				.action_SplitTU_To_NewTUs(tuToSplit,
+						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only hold 20kg, so we will will only expect 1x20 to be actually loaded
+						data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+		assertThat(newTUs.size(), is(3)); // we transfer 20kg, one bag holds 8kg, so we expect 2 full bags and one partially filled bag
+
+		{
+			final Node newTU1XML = HUXmlConverter.toXml(newTUs.get(0));
+			assertThat(newTU1XML, not(hasXPath("HU-TU_Bag/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
+			assertThat(newTU1XML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+			assertThat(newTU1XML, hasXPath("string(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("8.000")));
+		}
+		{
+			final Node newTU2XML = HUXmlConverter.toXml(newTUs.get(1));
+			assertThat(newTU2XML, not(hasXPath("HU-TU_Bag/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
+			assertThat(newTU2XML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+			assertThat(newTU2XML, hasXPath("string(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("8.000")));
+		}
+		{
+			final Node newTU3XML = HUXmlConverter.toXml(newTUs.get(2));
+			assertThat(newTU3XML, not(hasXPath("HU-TU_Bag/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
+			assertThat(newTU3XML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+			assertThat(newTU3XML, hasXPath("string(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
+		}
+	}
+
+	@Theory
+	public void testSplitAggregateTU_To_NewLU(
+			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		final I_M_HU tuToSplit = mkAggregateCUToSplit("80");
+
+		// invoke the method under test
+		final List<I_M_HU> newLUs = HUTransferService.get(data.helper.getHUContext())
+				.action_SplitTU_To_NewLU(tuToSplit,
+						new BigDecimal("4"), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
+						data.piTU_Item_Product_Bag_8KgTomatoes,
+						data.piLU_Item_Bag,
+						isOwnPackingMaterials);
+
+		assertThat(newLUs.size(), is(5)); // we transfer 80kg, one bag holds 8kg, one LU holds two bags so we expect 10 full bags and therefore 5 LUs
+
+		newLUs.forEach(newLU -> {
+			final Node newTU3XML = HUXmlConverter.toXml(newLU);
+			assertThat(newTU3XML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
+			assertThat(newTU3XML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+
+			assertThat(newTU3XML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("16.000")));
+			assertThat(newTU3XML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2'])", is("1")));
+			assertThat(newTU3XML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("16.000")));
+		});
+	}
+
+	@Theory
+	public void testSplitRealTU_To_NewLU(
+			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		// prepare the existing TU
+		// just use the testee as a tool here, to create our "real" TU.
+		final I_M_HU cuHU = mkRealCUToSplit("20");
+		final List<I_M_HU> tusToSplit = HUTransferService.get(data.helper.getHUContext())
+				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+		assertThat(tusToSplit.size(), is(1));
+		final I_M_HU tuToSplit = tusToSplit.get(0);
+		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
+
+		// invoke the method under test
+		final List<I_M_HU> newLUs = HUTransferService.get(data.helper.getHUContext())
+				.action_SplitTU_To_NewLU(tuToSplit,
+						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will will expect 1x20 to be actually loaded
+						data.piTU_Item_Product_Bag_8KgTomatoes,
+						data.piLU_Item_Bag,
+						isOwnPackingMaterials);
+
+		assertThat(newLUs.size(), is(2)); // we transfer 20kg, one bag holds 8kg, one LU holds two bags so we expect one LU with two full bags and one LU with one partially loaded bag
+
+		{
+			final Node newLU1XML = HUXmlConverter.toXml(newLUs.get(0));
+			assertThat(newLU1XML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
+			assertThat(newLU1XML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+
+			assertThat(newLU1XML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("16.000")));
+			assertThat(newLU1XML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2'])", is("1")));
+			assertThat(newLU1XML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("16.000")));
+		}
+
+		{
+			// the second LU shall contain a "real" TU
+			final Node newLU2XML = HUXmlConverter.toXml(newLUs.get(1));
+			assertThat(newLU2XML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
+			assertThat(newLU2XML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+
+			assertThat(newLU2XML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
+			assertThat(newLU2XML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
+		}
+	}
+
+	@Test
+	public void testSplitAggregateTU_To_existingLU()
+	{
+		final I_M_HU existingLU;
+		{
+			// use the testee as a tool to get our existing LU
+			final I_M_HU cuHU = mkRealCUToSplit("20");
+			final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
+					.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+			assertThat(existingTUs.size(), is(1));
+			final I_M_HU exitingTu = existingTUs.get(0);
+			assertThat(handlingUnitsBL.isAggregateHU(exitingTu), is(false)); // guard; make sure it's "real"
+
+			final List<I_M_HU> existingLUs = HUTransferService.get(data.helper.getHUContext())
+					.action_SplitTU_To_NewLU(exitingTu,
+							new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will will expect 1x20 to be actually loaded
+							data.piTU_Item_Product_Bag_8KgTomatoes,
+							data.piLU_Item_Bag,
+							false);
+			existingLU = existingLUs.get(1); // this is the partially filled LU from the last test; it contains a qty of 4
+		}
+		
+		
+		final I_M_HU tuToSplit = mkAggregateCUToSplit("80");
+
+		// invoke the method under test
+		HUTransferService.get(data.helper.getHUContext())
+				.action_SplitTU_To_ExistingLU(tuToSplit, 
+						new BigDecimal("4"), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded 
+						existingLU);
+		
+		final Node existingLUXML = HUXmlConverter.toXml(existingLU);
+		assertThat(existingLUXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("84.000")));
+		//data.helper.commitAndDumpHU(existingLU);
 	}
 
 	private I_M_HU mkRealCUToSplit(final String strCuQty)
