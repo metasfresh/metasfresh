@@ -28,10 +28,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
 import org.junit.Test;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;

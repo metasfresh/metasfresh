@@ -35,6 +35,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table_Process;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -281,7 +282,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			// Add some more Text attributes to this PI (just to see how it works in UI)
 			for (int i = 1; i <= 10; i++)
 			{
-				final org.adempiere.mm.attributes.model.I_M_Attribute attr_Text = this.createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+				final I_M_Attribute attr_Text = this.createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 				createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Text)
 						.setM_HU_PI(huDefNone));
 			}

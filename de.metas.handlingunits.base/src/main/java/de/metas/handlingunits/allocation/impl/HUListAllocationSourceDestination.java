@@ -65,6 +65,19 @@ import de.metas.handlingunits.storage.IProductStorage;
  */
 public class HUListAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {
+	/** @return single HU allocation source/destination */
+	public static HUListAllocationSourceDestination of(final I_M_HU sourceHU)
+	{
+		return new HUListAllocationSourceDestination(sourceHU);
+	}
+
+	/** @return multi-HUs allocation source/destination */
+	public static HUListAllocationSourceDestination of(final Collection<I_M_HU> sourceHUs)
+	{
+		return new HUListAllocationSourceDestination(sourceHUs);
+	}
+
+	
 	// Services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
@@ -82,7 +95,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	private boolean storeCUQtyBeforeProcessing = true;
 
-	public HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
+	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
 	{
 		// NOTE: we don't need contextProvider because we are creating nothing
 		// when needed HUContext from Request will be used
@@ -92,13 +105,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		lastIndex = sourceHUs.size() - 1;
 	}
 
-	/**
-	 * Convenient constructor for a single HU
-	 *
-	 * @param contextProvider
-	 * @param sourceHU
-	 */
-	public HUListAllocationSourceDestination(final I_M_HU sourceHU)
+	private HUListAllocationSourceDestination(final I_M_HU sourceHU)
 	{
 		this(Collections.singletonList(sourceHU));
 

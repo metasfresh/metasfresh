@@ -123,7 +123,7 @@ public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 	@Override
 	public IAllocationSource createAllocationSource(final I_M_HU hu)
 	{
-		return new HUListAllocationSourceDestination(hu);
+		return HUListAllocationSourceDestination.of(hu);
 	}
 
 	@Override

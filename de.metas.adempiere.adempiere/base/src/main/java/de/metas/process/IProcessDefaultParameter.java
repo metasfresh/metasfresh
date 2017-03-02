@@ -1,9 +1,5 @@
 package de.metas.process;
 
-import java.util.Properties;
-
-import org.compiere.util.Env;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,16 +32,5 @@ public interface IProcessDefaultParameter
 {
 	String getColumnName();
 
-	//
-	// Private methods
-	//@formatter:off
-	Properties getCtx();
-	int getWindowNo();
-	//@formatter:on
-
-	default int getContextAsInt(final String name)
-	{
-		return Env.getContextAsInt(getCtx(), getWindowNo(), name);
-	}
-
+	int getContextAsInt(final String name);
 }
