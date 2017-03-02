@@ -13,11 +13,11 @@ package de.metas.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.impl.PlainTrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.junit.After;
@@ -153,8 +154,8 @@ public class JavaProcessTests
 
 		public void assertPostProcessExecuted(final boolean expectedSuccess)
 		{
-			Assert.assertTrue("postProcess method executed", this.postProcess_Executed);
-			Assert.assertEquals("postProcess - success parameter", expectedSuccess, this.postProcess_Param_Success);
+			Assert.assertTrue("postProcess method executed", postProcess_Executed);
+			Assert.assertEquals("postProcess - success parameter", expectedSuccess, postProcess_Param_Success);
 		}
 
 		private final I_AD_PInstance retrieveAD_PInstance()
@@ -255,11 +256,11 @@ public class JavaProcessTests
 	private <T extends IProcess> ProcessInfo createProcessInfo(final Class<T> processClass)
 	{
 		final Properties ctx = Env.getCtx();
-		
+
 		// Create the AD_PInstance record
-		int AD_Process_ID = 0; // N/A
-		int AD_Table_ID = 0;
-		int recordId = 0;
+		final int AD_Process_ID = 0; // N/A
+		final int AD_Table_ID = 0;
+		final int recordId = 0;
 		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, AD_Process_ID, AD_Table_ID, recordId);
 
 		//
@@ -272,16 +273,25 @@ public class JavaProcessTests
 				.build();
 		return pi;
 	}
-	
+
+	private ProcessExecutionResult startProcess(final JavaProcess process, final ProcessInfo pi, final ITrx trx)
+	{
+		try (IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(process))
+		{
+			process.startProcess(pi, trx);
+			return pi.getResult();
+		}
+	}
+
 	private Exception startProcessAndExpectToFail(final JavaProcess process, final ProcessInfo pi, final ITrx trx)
 	{
-		try
+		try (IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(process))
 		{
 			process.startProcess(pi, trx);
 			Assert.fail("Process is expected to fail");
 			return null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			return e;
 		}
@@ -300,8 +310,7 @@ public class JavaProcessTests
 		final ITrx trx = ITrx.TRX_None;
 
 		process.onDoItReturnMsg = "Process executed";
-		process.startProcess(pi, trx);
-		final ProcessExecutionResult result = pi.getResult();
+		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
 		Assert.assertEquals("Invalid ProcessInfo.IsError", "Process executed", result.getSummary());
@@ -321,7 +330,7 @@ public class JavaProcessTests
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
 		Assert.assertEquals("Thrown exception", process.onDoItThrowException, exceptionActual);
-		
+
 		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
@@ -342,7 +351,7 @@ public class JavaProcessTests
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
 		Assert.assertEquals("Thrown exception", process.onPrepareThrowException, exceptionActual);
-		
+
 		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
@@ -360,8 +369,7 @@ public class JavaProcessTests
 		final ITrx trx = ITrx.TRX_None;
 
 		process.onDoItReturnMsg = "Process executed";
-		process.startProcess(pi, trx);
-		final ProcessExecutionResult result = pi.getResult();
+		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
 		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", result.getSummary());
@@ -381,7 +389,7 @@ public class JavaProcessTests
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
 		Assert.assertEquals("Thrown exception", process.onPrepareThrowException, exceptionActual);
-		
+
 		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
@@ -399,8 +407,7 @@ public class JavaProcessTests
 		final ITrx trx = ITrx.TRX_None;
 
 		process.onPrepareThrowException = new ProcessCanceledException();
-		process.startProcess(pi, trx);
-		final ProcessExecutionResult result = pi.getResult();
+		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
 		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", result.getSummary());
@@ -417,9 +424,7 @@ public class JavaProcessTests
 		final ITrx trx = ITrx.TRX_None;
 
 		process.onDoItReturnMsg = "Process executed";
-		process.startProcess(pi, trx);
-
-		final ProcessExecutionResult result = pi.getResult();
+		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
 		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", result.getSummary());
@@ -457,9 +462,7 @@ public class JavaProcessTests
 		final ITrx trx = ITrx.TRX_None;
 
 		process.onDoItThrowException = new ProcessCanceledException();
-		process.startProcess(pi, trx);
-
-		final ProcessExecutionResult result = pi.getResult();
+		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
 		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", result.getSummary());
@@ -482,7 +485,7 @@ public class JavaProcessTests
 		final ITrx trx = ITrx.TRX_None;
 
 		process.onPostProcessThrowException = new RuntimeException("fail on postProcess");
-		Exception startProcess_Exception = startProcessAndExpectToFail(process, pi, trx);
+		final Exception startProcess_Exception = startProcessAndExpectToFail(process, pi, trx);
 		Assert.assertSame("startProcess exception", process.onPostProcessThrowException, startProcess_Exception);
 	}
 }
