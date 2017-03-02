@@ -148,7 +148,7 @@ public class OrderBL implements IOrderBL
 		// * overridePriceSystem is false and M_PricingSystem_ID was not changed: in this case we shall NOT update the price list because it might be that we were called for a completed Order and we don't want to change the data.
 		if (overridePricingSystem || previousPricingSystemId != order.getM_PricingSystem_ID()
 				|| order.getM_PriceList_ID() <= 0 // gh #936: attempt to set the pricelist, if we don't have it yet (i don't understand the error, but this might solve it. going to try it out)
-				)
+		)
 		{
 			setPriceList(order);
 		}
@@ -586,7 +586,10 @@ public class OrderBL implements IOrderBL
 		}
 
 		setBPLocation(order, bp);
-		setBillLocation(order, bp, null);
+
+		// #1056
+		// find if the partner doesn't have a bill relation with another partner. In such a case, that partner will have priority.
+		setBillLocation(order);
 
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
