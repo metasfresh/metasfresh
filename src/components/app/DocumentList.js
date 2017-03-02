@@ -155,7 +155,7 @@ class DocumentList extends Component {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
-        return (data && data.size && selected[0] &&
+        return (data && data.size && data.result && selected[0] &&
             getItemsByProperty(
                 data.result, 'id', selected[0]
             ).length
@@ -348,7 +348,7 @@ class DocumentList extends Component {
                         <QuickActions
                             windowType={windowType}
                             viewId={viewId}
-                            selected={selectionValid && selected}
+                            selected={selectionValid ? selected : undefined}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
                             fetchOnInit={fetchQuickActionsOnInit}
@@ -400,7 +400,7 @@ class DocumentList extends Component {
                                     <SelectionAttributes
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={selectionValid && selected}
+                                        selected={selectionValid ? selected : undefined}
                                         shouldNotUpdate={
                                             inBackground
                                         }
