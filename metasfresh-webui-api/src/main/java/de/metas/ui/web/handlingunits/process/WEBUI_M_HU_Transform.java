@@ -1,25 +1,17 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.HUTransferService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -116,8 +108,6 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 
 	//
 	// Services
-	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	// private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	public static enum ActionType
@@ -281,33 +271,6 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		return luPI_Item;
 	}
 
-	private IAllocationRequest createCUAllocationRequest(final HUDocumentView cuRow, final BigDecimal qtyCU)
-	{
-		//
-		// Create allocation request for the quantity user entered
-		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(getCtx());
-		final IAllocationRequest allocationRequest = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContextInitial)
-				.setDateAsToday()
-				.setProduct(cuRow.getM_Product())
-				.setQuantity(new Quantity(cuRow.getQtyCU(), cuRow.getC_UOM()))
-				// .setFromReferencedModel(rs) // TODO: do we need it?
-				.setForceQtyAllocation(true)
-				.create();
-
-		if (allocationRequest.isZeroQty())
-		{
-			throw new AdempiereException("@QtyCU@ shall be greather than zero");
-		}
-
-		// task 09717
-		// make sure the attributes are initialized in case of multiple row selection, also
-		// TODO: do we need this?
-		// huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, ImmutableList.of(receiptSchedule));
-
-		return allocationRequest;
-	}
-
 	/**
 	 * Split selected CU to a new CU.
 	 *
@@ -316,20 +279,11 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	 */
 	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
 	{
-		final IAllocationRequest request = createCUAllocationRequest(cuRow, qtyCU);
-		final IAllocationSource source = HUListAllocationSourceDestination.of(cuRow.getM_HU());
-		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
+		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.action_SplitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
 
-		//
-		// Transfer Qty
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(request);
-
-		//
 		// Notify
-		getView().addHUsAndInvalidate(destination.getCreatedHUs());
+		getView().addHUsAndInvalidate(createdHUs);
 	}
 
 	/**
@@ -341,18 +295,9 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	 */
 	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final BigDecimal qtyCU, final I_M_HU tuHU)
 	{
-		final IAllocationRequest request = createCUAllocationRequest(cuRow, qtyCU);
-		final IAllocationSource source = HUListAllocationSourceDestination.of(cuRow.getM_HU());
-		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(tuHU);
+		HUTransferService.get(getCtx())
+				.action_SplitCU_To_ExistingTU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuHU);
 
-		//
-		// Transfer Qty
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(request);
-
-		//
 		// Notify
 		getView().addHUAndInvalidate(tuHU);
 	}
@@ -367,26 +312,15 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	 */
 	private void action_SplitCU_To_NewTUs(final HUDocumentView cuRow, final BigDecimal qtyCU, final I_M_HU_PI_Item_Product tuPIItemProduct, final boolean isOwnPackingMaterials)
 	{
-		final IAllocationRequest request = createCUAllocationRequest(cuRow, qtyCU);
-		final IAllocationSource source = HUListAllocationSourceDestination.of(cuRow.getM_HU());
-		final IHUProducerAllocationDestination destination = HUProducerDestination.ofM_HU_PI_Item_Product(tuPIItemProduct)
-				.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
+		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.action_SplitCU_To_NewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 
-		//
-		// Transfer Qty
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(request);
-
-		//
 		// Notify
-		getView().addHUsAndInvalidate(destination.getCreatedHUs());
-
+		getView().addHUsAndInvalidate(createdHUs);
 	}
 
 	/**
-	 * Split a given number of TUs from current selected TU(aggregated) line to new TUs.
+	 * Split a given number of TUs from current selected TU line to new TUs.
 	 *
 	 * @param tuRow
 	 * @param qtyTU
@@ -399,8 +333,11 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			, final boolean isOwnPackingMaterials //
 	)
 	{
-		// TODO: implement
-		throw new UnsupportedOperationException();
+		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.action_SplitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, tuPIItemProduct, isOwnPackingMaterials);
+
+		// Notify
+		getView().addHUsAndInvalidate(createdHUs);
 	}
 
 	/**
@@ -414,14 +351,17 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	 */
 	private void action_SplitTU_To_NewLU( //
 			final HUDocumentView tuRow //
-			, final BigDecimal QtyTU //
+			, final BigDecimal qtyTU //
 			, final I_M_HU_PI_Item_Product tuPIItemProduct //
 			, final I_M_HU_PI_Item luPIItem //
 			, final boolean isOwnPackingMaterials //
 	)
 	{
-		// TODO: implement
-		throw new UnsupportedOperationException();
+		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.action_SplitTU_To_NewLU(tuRow.getM_HU(), qtyTU, tuPIItemProduct, luPIItem, isOwnPackingMaterials);
+
+		// Notify
+		getView().addHUsAndInvalidate(createdHUs);
 	}
 
 	// Params:
@@ -429,12 +369,15 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	// * QtyTUs
 	private void action_SplitTU_To_ExistingLU(
 			final HUDocumentView tuRow //
-			, final BigDecimal QtyTU //
+			, final BigDecimal qtyTU //
 			, final I_M_HU luHU //
 			, final boolean isOwnPackingMaterials //
 	)
 	{
-		// TODO: implement
-		throw new UnsupportedOperationException();
+		HUTransferService.get(getCtx())
+				.action_SplitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU, isOwnPackingMaterials);
+
+		// Notify
+		getView().addHUAndInvalidate(luHU);
 	}
 }

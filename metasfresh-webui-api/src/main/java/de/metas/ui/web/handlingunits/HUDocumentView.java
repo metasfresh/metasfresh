@@ -47,6 +47,12 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  * #L%
  */
 
+/**
+ * Instances of this class are created by {@link HUDocumentViewLoader}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class HUDocumentView implements IDocumentView
 {
 	public static final HUDocumentView of(final IDocumentView delegate)
