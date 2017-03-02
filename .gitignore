@@ -5,6 +5,8 @@
 **/bin/
 **/metasfresh.properties
 
+*.launch
+
 metasfresh-webui-api/activemq-data/
 metasfresh-webui-api/data/
 metasfresh-webui-api/log/
