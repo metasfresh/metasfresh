@@ -28,6 +28,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -90,6 +91,9 @@ public class WindowRestController
 
 	@Autowired
 	private UserSession userSession;
+	
+	@Autowired
+	private MenuTreeRepository menuRepo;
 
 	@Autowired
 	private DocumentCollection documentCollection;
@@ -102,8 +106,7 @@ public class WindowRestController
 
 	private JSONOptions.Builder newJSONOptions()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession);
+		return JSONOptions.builder(userSession);
 	}
 
 	@GetMapping("/{windowId}/layout")
@@ -120,6 +123,7 @@ public class WindowRestController
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
+				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
 				.build();
 
 		return JSONDocumentLayout.ofHeaderLayout(layout, jsonOpts);
@@ -140,6 +144,7 @@ public class WindowRestController
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
+				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
 				.build();
 
 		final DetailId detailId = DetailId.fromJson(tabIdStr);

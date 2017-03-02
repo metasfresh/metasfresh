@@ -7,6 +7,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -69,6 +72,9 @@ public class WindowQuickInputRestController
 	private UserSession userSession;
 
 	@Autowired
+	private MenuTreeRepository menuRepo;
+
+	@Autowired
 	private DocumentCollection documentsCollection;
 
 	@Autowired
@@ -78,9 +84,32 @@ public class WindowQuickInputRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
+		return JSONOptions.builder(userSession)
+				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
 				.build();
+	}
+
+	@RequestMapping(method = RequestMethod.HEAD)
+	public ResponseEntity<Object> checkSupported(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
+			, @PathVariable("tabId") final String tabIdStr //
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
+
+		if(quickInputDescriptors.hasQuickInputEntityDescriptor(includedDocumentDescriptor))
+		{
+			return new ResponseEntity<>(HttpStatus.OK);
+		}
+		else
+		{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
 	}
 
 	@GetMapping("/layout")

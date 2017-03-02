@@ -2,6 +2,7 @@ package de.metas.ui.web.quickinput;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -9,6 +10,8 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 
 /*
@@ -24,11 +27,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,6 +41,30 @@ public class QuickInputLayoutDescriptor
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static final QuickInputLayoutDescriptor build(final DocumentEntityDescriptor entityDescriptor, String[][] fieldNames)
+	{
+		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
+		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+
+		final Builder layoutBuilder = new Builder();
+		
+		for (final String[] elementFieldNames : fieldNames)
+		{
+			if (elementFieldNames == null || elementFieldNames.length == 0)
+			{
+				continue;
+			}
+
+			final DocumentFieldDescriptor[] elementFields = Stream.of(elementFieldNames)
+					.map(fieldName -> entityDescriptor.getField(fieldName))
+					.toArray(size -> new DocumentFieldDescriptor[size]);
+			
+			layoutBuilder.addElement(DocumentLayoutElementDescriptor.builder(elementFields));
+		}
+		
+		return layoutBuilder.build();
 	}
 
 	private final List<DocumentLayoutElementDescriptor> elements;

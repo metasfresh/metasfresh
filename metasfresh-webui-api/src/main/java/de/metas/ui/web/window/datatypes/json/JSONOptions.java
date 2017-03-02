@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -45,9 +46,14 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 public final class JSONOptions
 {
-	public static final Builder builder()
+	public static final Builder builder(final UserSession userSession)
 	{
-		return new Builder();
+		return new Builder(userSession);
+	}
+	
+	public static final JSONOptions of(final UserSession userSession)
+	{
+		return new Builder(userSession).build();
 	}
 
 	public static final String DEBUG_ATTRNAME = "json-options";
@@ -66,6 +72,8 @@ public final class JSONOptions
 	private Predicate<DocumentLayoutElementDescriptor> _documentLayoutElementFilter; // lazy
 	private Predicate<IDocumentFieldView> _documentFieldFilter; // lazy
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
+
+	private final MenuTree userSessionMenuTree;
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
 	{
@@ -224,6 +232,8 @@ public final class JSONOptions
 		showAdvancedFields = builder.showAdvancedFields;
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
 		debugShowColumnNamesForCaption = builder.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
+		
+		userSessionMenuTree = builder.getUserSessionMenuTree();
 	}
 
 	@Override
@@ -310,17 +320,27 @@ public final class JSONOptions
 
 		return new FILTER_DocumentFieldChange_ByFieldNamesSet(dataFieldNamesSet, filter);
 	}
+	
+	/**
+	 * @return user's menu tree or null
+	 */
+	public MenuTree getUserSessionMenuTree()
+	{
+		return userSessionMenuTree;
+	}
 
 	public static final class Builder
 	{
-		private UserSession _userSession;
+		private final UserSession _userSession;
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
 		private String adLanguage;
+		private MenuTree userSessionMenuTree;
 
-		private Builder()
+		private Builder(final UserSession userSession)
 		{
 			super();
+			this._userSession = userSession;
 		}
 
 		public JSONOptions build()
@@ -328,12 +348,6 @@ public final class JSONOptions
 			return new JSONOptions(this);
 		}
 
-		public Builder setUserSession(final UserSession userSession)
-		{
-			this._userSession = userSession;
-			return this;
-		}
-		
 		public Builder setAD_Language(final String adLanguage)
 		{
 			this.adLanguage = adLanguage;
@@ -375,6 +389,17 @@ public final class JSONOptions
 			}
 			
 			return defaultValue;
+		}
+		
+		private MenuTree getUserSessionMenuTree()
+		{
+			return userSessionMenuTree;
+		}
+		
+		public Builder setUserSessionMenuTree(MenuTree userSessionMenuTree)
+		{
+			this.userSessionMenuTree = userSessionMenuTree;
+			return this;
 		}
 	}
 }

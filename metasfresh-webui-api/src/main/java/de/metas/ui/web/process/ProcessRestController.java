@@ -69,9 +69,7 @@ public class ProcessRestController
 
 	private JSONOptions newJsonOpts()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)

@@ -50,6 +50,29 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return new Builder();
 	}
+	
+	public static final Builder builder(final DocumentFieldDescriptor ... fields)
+	{
+		Check.assumeNotEmpty(fields, "fields is not empty");
+		
+		final DocumentFieldDescriptor firstField = fields[0];
+		
+		final Builder elementBuilder = new Builder()
+				.setCaption(firstField.getCaption())
+				// .setDescription(firstField.getDescription())
+				.setWidgetType(firstField.getWidgetType());
+		
+		for (final DocumentFieldDescriptor field : fields)
+		{
+			elementBuilder.addField(DocumentLayoutElementFieldDescriptor.builder(field.getFieldName())
+					.setPublicField(true)
+					.setLookupSource(field.getLookupSourceType())
+					.setLookupTableName(field.getLookupTableName()));
+		}
+		
+		return elementBuilder;
+	}
+
 
 	private final String internalName;
 

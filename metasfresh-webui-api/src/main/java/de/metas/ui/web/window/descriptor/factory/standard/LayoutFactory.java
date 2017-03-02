@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -516,13 +515,13 @@ public class LayoutFactory
 		//
 		// Quick input
 		{
-			final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor( //
+			final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor( //
 					entityDescriptor.getDocumentType() //
 					, entityDescriptor.getDocumentTypeId() //
 					, entityDescriptor.getTableNameOrNull() //
 					, entityDescriptor.getDetailId() //
 			);
-			layoutDetail.setQuickInput(quickInputDescriptor == null ? null : quickInputDescriptor.getLayout());
+			layoutDetail.setSupportQuickInput(supportQuickInput);
 		}
 
 		return layoutDetail;

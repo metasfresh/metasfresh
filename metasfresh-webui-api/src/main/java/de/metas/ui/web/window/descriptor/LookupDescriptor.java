@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Optional;
 import java.util.Set;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -31,8 +32,13 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 public interface LookupDescriptor
 {
+	default Optional<String> getTableName()
+	{
+		return Optional.empty();
+	}
+
 	LookupDataSourceFetcher getLookupDataSourceFetcher();
-	
+
 	boolean isHighVolume();
 
 	LookupSource getLookupSourceType();
@@ -66,5 +72,4 @@ public interface LookupDescriptor
 
 		return null;
 	}
-
 }

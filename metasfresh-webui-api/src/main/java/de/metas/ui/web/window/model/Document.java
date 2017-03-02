@@ -57,6 +57,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
+import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
@@ -108,6 +109,7 @@ public final class Document
 	//
 	// Status
 	private boolean _new;
+	private boolean _deleted;
 	private final boolean _writable;
 	private boolean _initializing = false;
 	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
@@ -165,6 +167,7 @@ public final class Document
 		windowNo = builder.getWindowNo();
 		_writable = builder.isWritable();
 		_new = builder.isNewDocument();
+		_deleted = false;
 		_staleStatus = new DocumentStaleState();
 		_lock = builder.createLock();
 
@@ -252,6 +255,7 @@ public final class Document
 		_writable = copyMode.isWritable();
 
 		_new = from._new;
+		_deleted = from._deleted;
 		_valid = from._valid;
 		_saveStatus = from._saveStatus;
 		_staleStatus = new DocumentStaleState(from._staleStatus);
@@ -694,16 +698,20 @@ public final class Document
 
 	/* package */final void assertWritable()
 	{
-		if (isWritable())
-		{
-			return;
-		}
 		if (_initializing)
 		{
 			return;
 		}
+		
+		if (!isWritable())
+		{
+			throw new InvalidDocumentStateException(this, "not a writable copy");
+		}
 
-		throw new InvalidDocumentStateException(this, "not a writable copy");
+		if(isDeleted())
+		{
+			throw new DocumentNotFoundException(getDocumentPath());
+		}
 	}
 
 	/* package */final void destroy()
@@ -926,15 +934,15 @@ public final class Document
 	{
 		_new = false;
 	}
-	
+
 	/* package */ void markAsDeleted()
 	{
-		// TODO: implement
+		_deleted = true;
 	}
-	
+
 	/* package */ boolean isDeleted()
 	{
-		return false; // TODO: implement
+		return _deleted;
 	}
 
 	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
@@ -1416,6 +1424,9 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
+	/**
+	 * Checks document's valid status, sets it and returns it.
+	 */
 	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		//
@@ -1455,6 +1466,12 @@ public final class Document
 		return _saveStatus;
 	}
 
+	/**
+	 * Checks if this document has changes.
+	 * NOTE: it's not checking the included documents.
+	 * 
+	 * @return true if it has changes.
+	 */
 	private boolean hasChanges()
 	{
 		// If this is a new document then always consider it as changed
@@ -1480,6 +1497,11 @@ public final class Document
 		return changes;
 	}
 
+	/**
+	 * Checks if this document or any of it's included documents has changes.
+	 * 
+	 * @return true if it this document or any of it's included documents has changes.
+	 */
 	/* package */boolean hasChangesRecursivelly()
 	{
 		//
@@ -1581,6 +1603,7 @@ public final class Document
 	/* package */void deleteFromRepository()
 	{
 		getDocumentRepository().delete(this);
+		markAsDeleted();
 	}
 
 	/* package */void refreshFromRepository()
@@ -1619,7 +1642,7 @@ public final class Document
 	{
 		return _staleStatus.isStaled();
 	}
-	
+
 	public IAutoCloseable lockForReading()
 	{
 		// assume _lock is not null
@@ -1647,7 +1670,6 @@ public final class Document
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-
 
 	private final class DocumentStaleState
 	{
@@ -1879,17 +1901,17 @@ public final class Document
 				return parentDocument.isWritable();
 			}
 		}
-		
+
 		private ReentrantReadWriteLock createLock()
 		{
 			// don't create locks for any other entity which is not window
-			if(entityDescriptor.getDocumentType() != DocumentType.Window)
+			if (entityDescriptor.getDocumentType() != DocumentType.Window)
 			{
 				return null;
 			}
 
 			//
-			if(parentDocument == null)
+			if (parentDocument == null)
 			{
 				return new ReentrantReadWriteLock();
 			}

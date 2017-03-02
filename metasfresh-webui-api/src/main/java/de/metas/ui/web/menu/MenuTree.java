@@ -55,7 +55,9 @@ public final class MenuTree
 
 	private final MenuNode rootNode;
 	private final Map<String, MenuNode> nodesById;
+
 	private final ListMultimap<ArrayKey, MenuNode> nodesByTypeAndElementId;
+	private final ListMultimap<String, MenuNode> nodesByMainTableName;
 
 	private MenuTree(final MenuNode rootNode)
 	{
@@ -65,12 +67,20 @@ public final class MenuTree
 
 		final ImmutableMap.Builder<String, MenuNode> nodesByIdBuilder = ImmutableMap.builder();
 		final ImmutableListMultimap.Builder<ArrayKey, MenuNode> nodesByTypeAndElementIdBuilder = ImmutableListMultimap.builder();
+		final ImmutableListMultimap.Builder<String, MenuNode> nodesByMainTableNameBuilder = ImmutableListMultimap.builder();
 		rootNode.iterate(node -> {
 			nodesByIdBuilder.put(node.getId(), node);
 			nodesByTypeAndElementIdBuilder.put(mkTypeAndElementIdKey(node.getType(), node.getElementId()), node);
+
+			final String mainTableName = node.getMainTableName();
+			if (mainTableName != null)
+			{
+				nodesByMainTableNameBuilder.put(mainTableName, node);
+			}
 		});
 		nodesById = nodesByIdBuilder.build();
 		nodesByTypeAndElementId = nodesByTypeAndElementIdBuilder.build();
+		nodesByMainTableName = nodesByMainTableNameBuilder.build();
 	}
 
 	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final int elementId)
@@ -109,10 +119,10 @@ public final class MenuTree
 		{
 			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
 		}
-		
+
 		return nodes.get(0);
 	}
-	
+
 	public Optional<MenuNode> getNewRecordNodeForWindowId(final int adWindowId)
 	{
 		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, adWindowId);
@@ -121,9 +131,17 @@ public final class MenuTree
 		{
 			return Optional.empty();
 		}
-		
+
 		final MenuNode newRecordNode = nodes.get(0);
 		return Optional.of(newRecordNode);
+	}
+
+	public Optional<MenuNode> getNewRecordNodeForTableName(final String tableName)
+	{
+		return nodesByMainTableName.get(tableName)
+				.stream()
+				.filter(node -> node.getType() == MenuNodeType.NewRecord)
+				.findFirst();
 	}
 
 	public List<MenuNode> getPath(final String nodeId)

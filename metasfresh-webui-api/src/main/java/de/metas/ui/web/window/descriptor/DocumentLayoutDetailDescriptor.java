@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -15,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 
 /*
  * #%L
@@ -55,7 +53,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final ITranslatableString emptyResultHint;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
-	private final Optional<QuickInputLayoutDescriptor> quickInput;
+	private final boolean supportQuickInput;
 
 	private final boolean queryOnActivate;
 
@@ -69,7 +67,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
-		quickInput = builder.buildQuickInput();
+		supportQuickInput = builder.isSupportQuickInput();
 		queryOnActivate = builder.queryOnActivate;
 	}
 
@@ -124,9 +122,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return !elements.isEmpty();
 	}
 
-	public Optional<QuickInputLayoutDescriptor> getQuickInput()
+	public boolean isSupportQuickInput()
 	{
-		return quickInput;
+		return supportQuickInput;
 	}
 
 	public boolean isQueryOnActivate()
@@ -145,7 +143,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
-		private QuickInputLayoutDescriptor _quickInput;
+		private boolean _supportQuickInput;
 
 		private boolean queryOnActivate;
 
@@ -276,15 +274,15 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
 
-		public Builder setQuickInput(final QuickInputLayoutDescriptor quickInput)
+		public Builder setSupportQuickInput(final boolean supportQuickInput)
 		{
-			_quickInput = quickInput;
+			_supportQuickInput = supportQuickInput;
 			return this;
 		}
 
-		private Optional<QuickInputLayoutDescriptor> buildQuickInput()
+		public boolean isSupportQuickInput()
 		{
-			return Optional.ofNullable(_quickInput);
+			return _supportQuickInput;
 		}
 	}
 }

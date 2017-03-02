@@ -159,7 +159,8 @@ public final class MenuTreeLoader
 		final MenuNode.Builder builder = MenuNode.builder()
 				.setId(nodeModel.getNode_ID())
 				.setCaption(caption)
-				.setCaptionBreadcrumb(captionBreadcrumb);
+				.setCaptionBreadcrumb(captionBreadcrumb)
+				.setMainTableName(nodeModel.getMainTableName());
 
 		final String action = nodeModel.getImageIndiactor();
 		if (nodeModel.isSummary())
@@ -219,6 +220,7 @@ public final class MenuTreeLoader
 				.setCaption(captionEffective)
 				.setCaptionBreadcrumb(captionBreadcrumbEffective)
 				.setType(MenuNodeType.NewRecord, node.getElementId())
+				.setMainTableName(node.getMainTableName())
 				.build();
 	}
 

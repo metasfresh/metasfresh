@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
@@ -59,10 +60,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	private final String internalName;
 	private final String field;
-	private final LookupSource lookupSource;
 	private final FieldType fieldType;
 	private final boolean publicField;
 
+	private final LookupSource lookupSource;
+	private final Optional<String> lookupTableName;
+	
 	private final ITranslatableString emptyText;
 
 	private final List<JSONDeviceDescriptor> devices;
@@ -73,11 +76,13 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		internalName = builder.internalName;
 		field = builder.getFieldName();
-		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
 		publicField = builder.publicField;
 		emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
 		devices = builder.getDevices();
+		
+		lookupSource = builder.lookupSource;
+		lookupTableName = builder.getLookupTableName();
 	}
 
 	@Override
@@ -122,6 +127,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		return lookupSource;
 	}
+	
+	public Optional<String> getLookupTableName()
+	{
+		return lookupTableName;
+	}
 
 	public FieldType getFieldType()
 	{
@@ -156,11 +166,13 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		private String internalName;
 		private final String fieldName;
-		private LookupSource lookupSource;
 		private FieldType fieldType;
 		private ITranslatableString emptyText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
 		private List<JSONDeviceDescriptor> _devices;
+		
+		private LookupSource lookupSource;
+		private Optional<String> lookupTableName = null;
 
 		private boolean consumed = false;
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
@@ -170,18 +182,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			super();
 			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 			this.fieldName = fieldName;
-		}
-
-		private Builder(final Builder from)
-		{
-			internalName = from.internalName;
-			fieldName = from.fieldName;
-			lookupSource = from.lookupSource;
-			fieldType = from.fieldType;
-			emptyText = from.emptyText;
-			publicField = from.publicField;
-			consumed = false;
-
 		}
 
 		@Override
@@ -204,11 +204,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 			logger.trace("Build {} for {}", result, this);
 			return result;
-		}
-
-		public Builder copy()
-		{
-			return new Builder(this);
 		}
 
 		public Builder setInternalName(final String internalName)
@@ -237,6 +232,27 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		public boolean isLookup()
 		{
 			return lookupSource != null;
+		}
+		
+		public Builder setLookupTableName(final Optional<String> lookupTableName)
+		{
+			Check.assumeNotNull(lookupTableName, "Parameter lookupTableName is not null");
+			this.lookupTableName = lookupTableName;
+			return this;
+		}
+		
+		public Optional<String> getLookupTableName()
+		{
+			if(lookupTableName != null)
+			{
+				return lookupTableName;
+			}
+			if(documentFieldBuilder != null)
+			{
+				return documentFieldBuilder.getLookupTableName();
+			}
+			
+			return Optional.empty();
 		}
 
 		public Builder setFieldType(final FieldType fieldType)
@@ -279,7 +295,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			documentFieldBuilder = field;
 			return this;
 		}
-
+		
 		public boolean isSpecialField()
 		{
 			return documentFieldBuilder != null && documentFieldBuilder.isSpecialField();

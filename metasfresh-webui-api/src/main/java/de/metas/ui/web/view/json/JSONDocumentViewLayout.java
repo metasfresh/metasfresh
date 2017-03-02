@@ -42,7 +42,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentViewLayout implements Serializable
 {
 	public static JSONDocumentViewLayout of(
