@@ -29,7 +29,7 @@ class QuickActions extends Component {
         const {fetchOnInit} = this.props;
 
         if(fetchOnInit){
-            this.fetchActions('constructor');
+            this.fetchActions();
         }
     }
 
