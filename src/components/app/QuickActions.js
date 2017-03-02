@@ -29,7 +29,7 @@ class QuickActions extends Component {
         const {fetchOnInit} = this.props;
 
         if(fetchOnInit){
-            this.fetchActions();
+            this.fetchActions('constructor');
         }
     }
 
@@ -73,7 +73,9 @@ class QuickActions extends Component {
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
-        dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
+        dispatch(
+            quickActionsRequest(windowType, viewId, selected)
+        ).then(response => {
             this.setState({
                 actions: response.data.actions
             })
