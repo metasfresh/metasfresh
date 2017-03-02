@@ -47,7 +47,7 @@ import de.metas.logging.LogManager;
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  *
  */
-public class GenericZoomProvider implements IZoomProvider
+/*package*/ class GenericZoomProvider implements IZoomProvider
 {
 	public static final GenericZoomProvider instance = new GenericZoomProvider();
 	
