@@ -28,8 +28,8 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_Transaction;

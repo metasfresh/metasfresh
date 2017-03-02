@@ -47,11 +47,6 @@ import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 	private ITableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
 
-	public AllocationRequestBuilder()
-	{
-		super();
-	}
-
 	@Override
 	public String toString()
 	{

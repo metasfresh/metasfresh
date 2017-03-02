@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.compiere.model.Null;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ui.ProcessParameterPanelModel;
 
 /*
  * #%L
@@ -61,7 +61,7 @@ public final class ProcessDefaultParametersUpdater
 		super();
 	}
 
-	public ProcessDefaultParametersUpdater addDefaultParametersProvider(final IProcessDefaultParametersProvider provider)
+	public ProcessDefaultParametersUpdater addDefaultParametersProvider(@Nullable final IProcessDefaultParametersProvider provider)
 	{
 		if (provider == null || provider == NULL_DefaultPrametersProvider)
 		{
@@ -89,49 +89,29 @@ public final class ProcessDefaultParametersUpdater
 		return this;
 	}
 
-	private static IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final ProcessInfo pi)
+	public static IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final ProcessInfo pi)
 	{
 		Check.assumeNotNull(pi, "Parameter pi is not null");
 
-		final String classname = pi.getClassName();
-		if (Check.isEmpty(classname, true))
-		{
-			return NULL_DefaultPrametersProvider;
-		}
-
 		try
 		{
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			if (classLoader == null)
-			{
-				classLoader = ProcessParameterPanelModel.class.getClassLoader();
-			}
-
-			final Class<?> processClass = classLoader.loadClass(classname);
-			if (!IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
+			final Object processClassInstance = pi.newProcessClassInstanceOrNull();
+			if(processClassInstance == null)
 			{
 				return NULL_DefaultPrametersProvider;
 			}
-
-			final IProcessDefaultParametersProvider defaultsProvider = (IProcessDefaultParametersProvider)processClass.newInstance();
-			if (defaultsProvider instanceof JavaProcess)
+			else if(IProcessDefaultParametersProvider.class.isAssignableFrom(processClassInstance.getClass()))
 			{
-				((JavaProcess)defaultsProvider).init(pi);
-			}
-			return defaultsProvider;
-
-		}
-		catch (final Throwable e)
-		{
-			if (pi.isServerProcess() && Ini.isClient())
-			{
-				// NOTE: in case of server process, it might be that the class is not present, which could be fine
-				logger.debug("Failed instantiating class '{}'. Skipped.", classname, e);
+				return (IProcessDefaultParametersProvider)processClassInstance;
 			}
 			else
 			{
-				logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
+				return NULL_DefaultPrametersProvider;
 			}
+		}
+		catch (final Throwable e)
+		{
+			logger.warn("Failed creating the defaults provider for '{}'. Skipped.", pi, e);
 			return NULL_DefaultPrametersProvider;
 		}
 	}
@@ -199,11 +179,16 @@ public final class ProcessDefaultParametersUpdater
 	 */
 	public <T> void updateDefaultValue(final Collection<T> parameterObjs, final Function<T, IProcessDefaultParameter> processDefaultParameterConverter)
 	{
+		if(defaultParametersProviders.isEmpty())
+		{
+			return;
+		}
+		
 		if (parameterObjs == null || parameterObjs.isEmpty())
 		{
 			return;
 		}
-
+		
 		parameterObjs.stream() // stream parameter objects
 				.map(processDefaultParameterConverter) // convert parameter object to IProcessDefaultParameter
 				.forEach(this::updateDefaultValue) // update the default value if available
