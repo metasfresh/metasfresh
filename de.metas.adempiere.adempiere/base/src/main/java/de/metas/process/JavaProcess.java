@@ -149,7 +149,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 
-	public static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance, final boolean overrideCurrentInstance)
+	private static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance, final boolean overrideCurrentInstance)
 	{
 		Check.assumeNotNull(instance, "Parameter instance is not null");
 
