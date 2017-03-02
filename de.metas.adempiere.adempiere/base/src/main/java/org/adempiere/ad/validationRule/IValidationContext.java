@@ -53,7 +53,7 @@ public interface IValidationContext extends Evaluatee
 	/**
 	 * Table Name from which validation records are
 	 * 
-	 * @return table name
+	 * @return table name or <code>null</code>
 	 */
 	String getTableName();
 

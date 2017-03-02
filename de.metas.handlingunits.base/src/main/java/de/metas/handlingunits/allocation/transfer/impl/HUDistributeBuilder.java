@@ -155,19 +155,19 @@ public class HUDistributeBuilder
 
 		//
 		// Allocate FROM VHU
-		final IAllocationSource source = new HUListAllocationSourceDestination(vhu);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(vhu);
 
 		//
 		// Allocate TO selected TUs
-		final IAllocationDestination destination = new HUListAllocationSourceDestination(tuHU);
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(tuHU);
 
 		//
 		// Perform allocation
-		final HULoader loader = new HULoader(source, destination);
-		loader.setAllowPartialUnloads(true); // it's OK to have partial unloads (i.e. the VHU has not enough quantity)
-		loader.setAllowPartialLoads(false);
-		loader.setForceLoad(true); // always force the loading to TU
-		loader.load(allocationRequest);
+		HULoader.of(source, destination)
+				.setAllowPartialUnloads(true) // it's OK to have partial unloads (i.e. the VHU has not enough quantity)
+				.setAllowPartialLoads(false)
+				.setForceLoad(true) // always force the loading to TU
+				.load(allocationRequest);
 
 		//
 		// Destroy VHU if empty

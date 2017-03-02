@@ -3,13 +3,14 @@ package de.metas.process;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
@@ -52,17 +53,24 @@ public final class ProcessClassParamInfo
 	static final ArrayKey createFieldUniqueKey(final Field field)
 	{
 		// NOTE: when building the make, make sure we don't have any references to Class, Field or other java reflection classes
-		return Util.mkKey(field.getType().getName(), field.getDeclaringClass().getName(), field.getName());
+		return ArrayKey.of(field.getType().getName(), field.getDeclaringClass().getName(), field.getName());
+	}
+	
+	static final ArrayKey createParameterUniqueKey(final String parameterName, final boolean parameterTo)
+	{
+		return ArrayKey.of(parameterName, parameterTo);
 	}
 
+	private boolean parameterTo;
 	private final String parameterName;
+	private final ArrayKey parameterKey;
+	
 	private final boolean mandatory;
 
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
 	// Remember that we are caching this object.
 	private final ArrayKey fieldKey;
-	private final Class<?> fieldType;
-	private boolean parameterTo;
+	private final Class<?> fieldType; // FIXME: get rid of this to avoid class loader memory leaks
 
 
 	private ProcessClassParamInfo(final Builder builder)
@@ -70,14 +78,16 @@ public final class ProcessClassParamInfo
 		super();
 
 		Check.assumeNotEmpty(builder.parameterName, "parameter name not empty");
-		parameterName = builder.parameterName;
-
 		Check.assumeNotNull(builder.field, "field not null");
+		
+		parameterName = builder.parameterName;
+		parameterTo = builder.parameterTo;
+		parameterKey = createParameterUniqueKey(parameterName, parameterTo);
+
 		fieldKey = createFieldUniqueKey(builder.field);
 		fieldType = builder.field.getType();
 
 		mandatory = builder.mandatory;
-		parameterTo = builder.parameterTo;
 	}
 
 	/**
@@ -87,22 +97,15 @@ public final class ProcessClassParamInfo
 	 *            records from the given <code>source</code>
 	 * @param processField
 	 * @param source
-	 * @param paramTo if <code>true</code>, then the value will be loaded from one of the source's <code>getParameter_ToAs..()</code> methods.
+	 * @param failIfNotValid
 	 */
-	public void loadParameterValue(final IContextAware processInstance, final Field processField, final IRangeAwareParams source)
+	public void loadParameterValue(final JavaProcess processInstance, final Field processField, final IRangeAwareParams source, final boolean failIfNotValid)
 	{
 		Check.assumeNotNull(processField, "processField not null");
 
-		// Make sure the mandatory parameter exists
-		if (mandatory && !source.hasParameter(parameterName))
-		{
-			throw new FillMandatoryException(parameterName);
-		}
-
 		//
 		// Get the parameter value from source
-		final Class<?> fieldType = processField.getType();
-		final Object value = extractParameterValue(processInstance, fieldType, source);
+		final Object value = extractParameterValue(processInstance, processField, source);
 
 		//
 		// Handle the case when the value is null
@@ -110,7 +113,14 @@ public final class ProcessClassParamInfo
 		{
 			if (mandatory)
 			{
-				throw new FillMandatoryException(parameterName);
+				if(failIfNotValid)
+				{
+					throw new FillMandatoryException(parameterName);
+				}
+				else
+				{
+					return;
+				}
 			}
 			if (fieldType.isPrimitive())
 			{
@@ -138,8 +148,8 @@ public final class ProcessClassParamInfo
 	}
 
 	private final Object extractParameterValue(
-			final IContextAware ctxAware,
-			final Class<?> fieldType,
+			final JavaProcess processInstance,
+			final Field processField,
 			final IRangeAwareParams source)
 	{
 		if (!source.hasParameter(parameterName))
@@ -150,6 +160,7 @@ public final class ProcessClassParamInfo
 		//
 		// Get the parameter value from source
 		final Object value;
+		final Class<?> fieldType = processField.getType();
 		if (fieldType.isAssignableFrom(BigDecimal.class))
 		{
 			value = parameterTo ? source.getParameter_ToAsBigDecimal(parameterName) : source.getParameterAsBigDecimal(parameterName);
@@ -178,14 +189,37 @@ public final class ProcessClassParamInfo
 		}
 		else if (InterfaceWrapperHelper.isModelInterface(fieldType))
 		{
-			final int key = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
-			if (key <= 0)
+			final int id = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			if (id <= 0)
 			{
 				value = null;
 			}
 			else
 			{
-				value = InterfaceWrapperHelper.create(ctxAware.getCtx(), key, fieldType, ctxAware.getTrxName());
+				Object valueOld;
+				try
+				{
+					if(!processField.isAccessible())
+					{
+						processField.setAccessible(true);
+					}
+					valueOld = processField.get(processInstance);
+				}
+				catch (IllegalArgumentException | IllegalAccessException e)
+				{
+					// shall not happen
+					throw AdempiereException.wrapIfNeeded(e);
+				}
+				
+				final int idOld = valueOld == null ? -1 : InterfaceWrapperHelper.getId(valueOld);
+				if (id != idOld)
+				{
+					value = InterfaceWrapperHelper.create(processInstance.getCtx(), id, fieldType, ITrx.TRXNAME_ThreadInherited);
+				}
+				else
+				{
+					value = valueOld;
+				}
 			}
 		}
 		else
@@ -206,6 +240,11 @@ public final class ProcessClassParamInfo
 				.add("parameterTo", parameterTo)
 				.add("field", fieldKey)
 				.toString();
+	}
+	
+	public ArrayKey getKey()
+	{
+		return parameterKey;
 	}
 
 	public String getParameterName()

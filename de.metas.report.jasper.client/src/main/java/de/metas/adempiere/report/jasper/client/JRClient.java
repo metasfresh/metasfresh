@@ -196,6 +196,10 @@ public final class JRClient
 			logger.info("JasperServer instance: " + server);
 			return server;
 		}
+		catch(ClassNotFoundException e)
+		{
+			throw new AdempiereException("Jasper server class not found", e);
+		}
 		catch (Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);

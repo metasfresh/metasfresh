@@ -64,6 +64,11 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public class HULoader
 {
+	public static final HULoader of(final IAllocationSource source, final IAllocationDestination destination)
+	{
+		return new HULoader(source, destination);
+	}
+	
 	private final IAllocationSource source;
 	private final IAllocationDestination destination;
 
@@ -83,9 +88,8 @@ public class HULoader
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public HULoader(final IAllocationSource source, final IAllocationDestination destination)
+	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
 	{
-		super();
 		// this.huContext = huContext;
 		this.source = source;
 		this.destination = destination;
@@ -110,9 +114,10 @@ public class HULoader
 	 *
 	 * @param allowPartialUnloads true if partial unloads are allowed (i.e. source does not have all the requested qty)
 	 */
-	public void setAllowPartialUnloads(final boolean allowPartialUnloads)
+	public HULoader setAllowPartialUnloads(final boolean allowPartialUnloads)
 	{
 		this.allowPartialUnloads = allowPartialUnloads;
+		return this;
 	}
 
 	/**
@@ -128,9 +133,10 @@ public class HULoader
 	 *
 	 * @param allowPartialLoads true if partial loads are allowed (i.e. if it is OK in case the destination can not accept all qty that was unloaded from source).
 	 */
-	public void setAllowPartialLoads(final boolean allowPartialLoads)
+	public HULoader setAllowPartialLoads(final boolean allowPartialLoads)
 	{
 		this.allowPartialLoads = allowPartialLoads;
+		return this;
 	}
 
 	/**
@@ -140,9 +146,10 @@ public class HULoader
 	 * 
 	 * @param forceLoad
 	 */
-	public void setForceLoad(final boolean forceLoad)
+	public HULoader setForceLoad(final boolean forceLoad)
 	{
 		this.forceLoad = forceLoad;
+		return this;
 	}
 
 	/**
@@ -606,9 +613,10 @@ public class HULoader
 	 * 
 	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
 	 */
-	public void setSkipAttributesTransfer(final boolean skipAttributesTransfer)
+	public HULoader setSkipAttributesTransfer(final boolean skipAttributesTransfer)
 	{
 		this.skipAttributesTransfer = skipAttributesTransfer;
+		return this;
 	}
 
 	/**

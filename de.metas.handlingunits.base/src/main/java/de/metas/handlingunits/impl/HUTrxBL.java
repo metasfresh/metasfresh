@@ -130,7 +130,7 @@ public class HUTrxBL implements IHUTrxBL
 		Check.assumeNotNull(destination, "destination not null");
 		Check.assumeNotNull(request, "request not null");
 
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 		loader.load(request);
 	}
 

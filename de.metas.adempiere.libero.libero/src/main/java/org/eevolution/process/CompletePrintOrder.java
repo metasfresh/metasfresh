@@ -28,16 +28,16 @@ import org.compiere.print.ReportEngine;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPOrder;
 
-import de.metas.process.Process;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Complete & Print Manufacturing Order
  * @author victor.perez@e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
-@Process(clientOnly = true)
+@ClientOnlyProcess
 public class CompletePrintOrder extends JavaProcess
 {
 	/** The Order */

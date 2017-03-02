@@ -654,7 +654,8 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		producer.setM_Locator(getM_Locator());
 		producer.setC_BPartner(getC_BPartner());
 		producer.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
-
+		producer.setIsHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
+		
 		return producer;
 	}
 
