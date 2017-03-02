@@ -695,7 +695,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 						final BigDecimal tareOfHU = WeightTareAttributeValueCallout.calculateWeightTare(hu);
 
 						final BigDecimal taresOfChildren = attributeStorage
-								.getChildAttributeStorages(false).stream()
+								.getChildAttributeStorages(true) // loadIfNeeded=true because we need to make sure to have all tares that exist. not matter if those storages are already on memory or no.
+								.stream()
 								.filter(s -> s.hasAttribute(weightTareAttribute))
 								.map(s -> s.getValueAsBigDecimal(weightTareAttribute))
 								.reduce(BigDecimal.ZERO, BigDecimal::add);
