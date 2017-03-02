@@ -490,11 +490,11 @@ stage('Invoke downstream jobs')
 			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])
 		];
 	
-	final buildResult = build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH);, 
+	build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
 		parameters: distJobParameters, 
 		wait: false;
 		
-	final buildResult = build job: getEffectiveDownStreamJobName('metasfresh-dist-federation', MF_UPSTREAM_BRANCH);, 
+	build job: getEffectiveDownStreamJobName('metasfresh-dist-federation', MF_UPSTREAM_BRANCH),
 		parameters: distJobParameters, 
 		wait: false;
 }
