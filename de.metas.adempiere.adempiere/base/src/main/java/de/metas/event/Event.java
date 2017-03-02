@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -188,7 +189,7 @@ public final class Event
 
 	public boolean isLocalEvent()
 	{
-		return Check.equals(EventBusConstants.getSenderId(), senderId);
+		return Objects.equals(EventBusConstants.getSenderId(), senderId);
 	}
 
 	public Set<Integer> getRecipientUserIds()

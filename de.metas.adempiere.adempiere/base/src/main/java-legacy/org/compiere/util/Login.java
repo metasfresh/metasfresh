@@ -199,14 +199,14 @@ public class Login
 
 		if (Check.isEmpty(username, true))
 		{
-			throw new AdempiereException("No user"); // TODO: trl
+			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
 
 		//
 		// Authentification
 		if (Check.isEmpty(password, false))
 		{
-			throw new AdempiereException("UserPwdError"); // TODO: trl
+			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
 
 		//
