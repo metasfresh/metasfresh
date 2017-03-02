@@ -2,7 +2,9 @@ package de.metas.dlm.migrator.process;
 
 import java.sql.ResultSet;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
@@ -66,7 +68,7 @@ public class DLM_MassMigrate extends JavaProcess
 
 		if (run_load_production_table_rows)
 		{
-			callDBFunctionUntilDone("dlm.load_production_table_rows", -1); // maxUpdates <= 0 because this function won't do a large number of updates. 
+			callDBFunctionUntilDone("dlm.load_production_table_rows", -1, false); // maxUpdates <= 0 because this function won't do a large number of updates.
 		}
 		else
 		{
@@ -75,7 +77,7 @@ public class DLM_MassMigrate extends JavaProcess
 
 		if (run_update_production_table)
 		{
-			callDBFunctionUntilDone("dlm.update_production_table", maxUpdates);
+			callDBFunctionUntilDone("dlm.update_production_table", maxUpdates, true);
 		}
 		else
 		{
@@ -94,11 +96,13 @@ public class DLM_MassMigrate extends JavaProcess
 	 *            Use a value <= 0 to disable the feature.<br>
 	 *            See https://github.com/metasfresh/metasfresh/issues/1035
 	 */
-	private void callDBFunctionUntilDone(final String dbFunctionName, final int maxUpdates)
+	private void callDBFunctionUntilDone(final String dbFunctionName, final int maxUpdates, final boolean vacuum)
 	{
 		final Mutable<Boolean> done = new Mutable<>(false);
 
 		final Mutable<Integer> updates = new Mutable<Integer>(0);
+		final Mutable<String> lastTableName = new Mutable<>();
+		final Mutable<Integer> lastTableUpdates = new Mutable<>(0);
 
 		do
 		{
@@ -127,8 +131,22 @@ public class DLM_MassMigrate extends JavaProcess
 					Loggables.get().addLog("{}: MassMigrate_ID={}; elapsed time={}; Table={}; Updated={}", dbFunctionName, massmigrate_id, elapsedTime, tablename, updatecount);
 
 					updates.setValue(updates.getValue() + updatecount);
+
+					lastTableName.setValue(tablename);
+					lastTableUpdates.setValue(updatecount);
 				}
 			});
+
+			if (vacuum && !Check.isEmpty(lastTableName.getValue()) && lastTableUpdates.getValue() > 0)
+			{ 
+				// note that we can't include the vacuum calls in the DB function because of some transaction stuffs
+				final Stopwatch stopWatch = Stopwatch.createStarted();
+				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM " + lastTableName.getValue(), new Object[0]);
+				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM dlm.massmigrate_records", new Object[0]);
+				final String elapsedTime = stopWatch.stop().toString();
+
+				Loggables.get().addLog("{}: Vacuumed {} and dlm.massmigrate_records; elapsed time={}", dbFunctionName, lastTableName.getValue(), elapsedTime);
+			}
 
 			if (maxUpdates > 0 && updates.getValue() >= maxUpdates)
 			{
