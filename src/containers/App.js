@@ -50,9 +50,10 @@ axios.interceptors.response.use(function (response) {
                         return 'Client error';
                 }
             }
+            const {data, status} = error.response;
             store.dispatch(addNotification(
-                'Error', error.response.data.message, 5000, 'error',
-                errorMessenger(error.response.status))
+                'Error: ' + data.message.split(' ', 4).join(' ') + '...', 
+                data.message, 5000, 'error', errorMessenger(status))
             );
         }
     }
