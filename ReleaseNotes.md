@@ -18,6 +18,9 @@ upcoming
 * metasfresh-backend
   * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
   * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
+
+* metasfresh-webui-api
+  * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
   
 ## Fixes
 * metqasfresh-backend
