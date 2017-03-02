@@ -51,10 +51,12 @@ class Window extends Component {
                 tabIndex={this.tabIndex.tabs}
                 toggleTableFullScreen={this.toggleTableFullScreen}
                 fullScreen={fullScreen}
+                windowType={type}
             >
                 {tabs.map((elem)=> {
                     const {
-                        tabid, caption, elements, emptyResultText, emptyResultHint
+                        tabid, caption, elements, emptyResultText,
+                        emptyResultHint, queryOnActivate
                     } = elem;
                     return (
                         <Table
@@ -70,6 +72,7 @@ class Window extends Component {
                             emptyHint={emptyResultHint}
                             newRow={newRow}
                             tabIndex={this.tabIndex.tabs}
+                            queryOnActivate={queryOnActivate}
                         />
                     )
                 })}

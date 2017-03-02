@@ -223,12 +223,16 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
                     ).then(response => {
                         let tabTmp = {};
 
-                        response.layout.tabs && response.layout.tabs.map(tab => {
+                        response.layout.tabs && response.layout.tabs.map((tab, index) => {
                             tabTmp[tab.tabid] = {};
-                            dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
-                                tabTmp[tab.tabid] = res;
-                                dispatch(addRowData(tabTmp, getScope(isModal)));
-                            })
+
+                            if(index === 0 || !tab.queryOnActivate){
+                                dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
+                                    tabTmp[tab.tabid] = res;
+                                    dispatch(addRowData(tabTmp, getScope(isModal)));
+                                })
+                            }
+
                         }
                     )
             }).catch((err) => {
@@ -238,7 +242,7 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
     }
 }
 
-function getTab(tabId, windowType, docId) {
+export function getTab(tabId, windowType, docId) {
     return dispatch =>
         dispatch(getData('window', windowType, docId, tabId))
             .then(res => {
