@@ -83,7 +83,7 @@ class SelectionAttributes extends Component {
         } = this.props;
 
         return (
-            <div>
+            <div className="js-not-unselect">
                 <div className="attributes-selector-header">
                     Selection attributes
                 </div>
