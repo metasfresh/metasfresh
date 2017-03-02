@@ -52,7 +52,7 @@ axios.interceptors.response.use(function (response) {
             }
             const {data, status} = error.response;
             store.dispatch(addNotification(
-                'Error: ' + data.message.split(' ', 4).join(' ') + '...', 
+                'Error: ' + data.message.split(' ', 4).join(' ') + '...',
                 data.message, 5000, 'error', errorMessenger(status))
             );
         }

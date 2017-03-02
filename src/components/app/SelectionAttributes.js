@@ -32,7 +32,7 @@ class SelectionAttributes extends Component {
         ){
                 DLWrapperSetData([], null, () => {
                     DLWrapperSetLayout([], () => {
-                        if(selected.length === 1){
+                        if(selected && selected.length === 1){
                             if(selected[0] == 0){
                                 return;
                             }
