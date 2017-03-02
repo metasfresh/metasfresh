@@ -150,12 +150,12 @@ class DocumentList extends Component {
             });
         });
     }
-    
+
     isSelectionExist(selected) {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
-        return (selected[0] &&
+        return (data && data.size && selected[0] &&
             getItemsByProperty(
                 data.result, 'id', selected[0]
             ).length
@@ -320,7 +320,7 @@ class DocumentList extends Component {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal
         } = this.props;
-        
+
         const selectionValid = this.isSelectionExist(selected);
 
         if(layout && data) {
@@ -400,7 +400,7 @@ class DocumentList extends Component {
                                     <SelectionAttributes
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={selected}
+                                        selected={selectionValid && selected}
                                         shouldNotUpdate={
                                             inBackground
                                         }
