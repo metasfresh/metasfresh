@@ -280,7 +280,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.action_SplitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
+				.splitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -296,7 +296,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final BigDecimal qtyCU, final I_M_HU tuHU)
 	{
 		HUTransferService.get(getCtx())
-				.action_SplitCU_To_ExistingTU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuHU);
+				.splitCU_To_ExistingTU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuHU);
 
 		// Notify
 		getView().addHUAndInvalidate(tuHU);
@@ -313,7 +313,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	private void action_SplitCU_To_NewTUs(final HUDocumentView cuRow, final BigDecimal qtyCU, final I_M_HU_PI_Item_Product tuPIItemProduct, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.action_SplitCU_To_NewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
+				.splitCU_To_NewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -334,7 +334,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.action_SplitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, tuPIItemProduct, isOwnPackingMaterials);
+				.splitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, tuPIItemProduct, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -358,7 +358,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.action_SplitTU_To_NewLU(tuRow.getM_HU(), qtyTU, tuPIItemProduct, luPIItem, isOwnPackingMaterials);
+				.splitTU_To_NewLU(tuRow.getM_HU(), qtyTU, tuPIItemProduct, luPIItem, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -374,7 +374,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	)
 	{
 		HUTransferService.get(getCtx())
-				.action_SplitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
+				.splitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
 		getView().addHUAndInvalidate(luHU);
