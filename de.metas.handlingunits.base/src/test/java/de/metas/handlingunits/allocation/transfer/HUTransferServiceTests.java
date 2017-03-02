@@ -77,7 +77,7 @@ public class HUTransferServiceTests
 	}
 
 	/**
-	 * Tests {@link HUTransferService#action_SplitCU_To_NewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)} by splitting one tomato onto a new CU.
+	 * Tests {@link HUTransferService#splitCU_To_NewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)} by splitting one tomato onto a new CU.
 	 */
 	@Test
 	public void testSplitCU_To_NewCU_1Tomato()
@@ -115,7 +115,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE);
+				.splitCU_To_NewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE);
 
 		assertThat(newCUs.size(), is(1));
 
@@ -165,7 +165,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("2"));
+				.splitCU_To_NewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("2"));
 
 		assertThat(newCUs.size(), is(1));
 
@@ -191,7 +191,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.splitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -209,7 +209,7 @@ public class HUTransferServiceTests
 	}
 
 	/**
-	 * Tests {@link HUTransferService#action_SplitCU_To_NewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
+	 * Tests {@link HUTransferService#splitCU_To_NewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
 	 * by creating an <b>aggregate</b> HU with a qty of 80 (representing two IFCOs) and then splitting one.
 	 * 
 	 * @param isOwnPackingMaterials
@@ -222,7 +222,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.splitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -256,7 +256,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("2"), data.piTU_Item_Product_IFCO_40KgTomatoes, isOwnPackingMaterials);
+				.splitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("2"), data.piTU_Item_Product_IFCO_40KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -274,7 +274,7 @@ public class HUTransferServiceTests
 	}
 
 	/**
-	 * Run {@link HUTransferService#action_SplitCU_To_NewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
+	 * Run {@link HUTransferService#splitCU_To_NewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
 	 * by splitting a CU-quantity of 40 onto new TUs with a CU-capacity of 8 each.
 	 * 
 	 * @param isOwnPackingMaterials
@@ -288,7 +288,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("40"), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.splitCU_To_NewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("40"), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(5));
 
@@ -315,7 +315,7 @@ public class HUTransferServiceTests
 		// just use the testee as a tool here, to create our "real" TU.
 		final I_M_HU cuHU = mkRealCUToSplit("20");
 		final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+				.splitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 		assertThat(existingTUs.size(), is(1));
 		final I_M_HU existingTU = existingTUs.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(existingTU), is(false));
@@ -330,7 +330,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
+				.splitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
 
 		// the cu we split from is destroyed
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
@@ -356,7 +356,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
+				.splitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
 
 		// the cu we split from is destroyed
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
@@ -384,7 +384,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitTU_To_NewTUs(tuToSplit,
+				.splitTU_To_NewTUs(tuToSplit,
 						new BigDecimal("4"), // tuQty=4; we only have 2 TUs in the source, so we will will only expect 2x40 to be actually loaded
 						data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 		assertThat(newTUs.size(), is(10)); // we transfer 80kg, one bag holds 8kg, so we expect 10 full bags
@@ -406,14 +406,14 @@ public class HUTransferServiceTests
 		// just use the testee as a tool here, to create our "real" TU.
 		final I_M_HU cuHU = mkRealCUToSplit("20");
 		final List<I_M_HU> tusToSplit = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+				.splitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 		assertThat(tusToSplit.size(), is(1));
 		final I_M_HU tuToSplit = tusToSplit.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitTU_To_NewTUs(tuToSplit,
+				.splitTU_To_NewTUs(tuToSplit,
 						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only hold 20kg, so we will will only expect 1x20 to be actually loaded
 						data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 		assertThat(newTUs.size(), is(3)); // we transfer 20kg, one bag holds 8kg, so we expect 2 full bags and one partially filled bag
@@ -446,7 +446,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitTU_To_NewLU(tuToSplit,
+				.splitTU_To_NewLU(tuToSplit,
 						new BigDecimal("4"), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded
 						data.piTU_Item_Product_Bag_8KgTomatoes,
 						data.piLU_Item_Bag,
@@ -473,14 +473,14 @@ public class HUTransferServiceTests
 		// just use the testee as a tool here, to create our "real" TU.
 		final I_M_HU cuHU = mkRealCUToSplit("20");
 		final List<I_M_HU> tusToSplit = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+				.splitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 		assertThat(tusToSplit.size(), is(1));
 		final I_M_HU tuToSplit = tusToSplit.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransferService.get(data.helper.getHUContext())
-				.action_SplitTU_To_NewLU(tuToSplit,
+				.splitTU_To_NewLU(tuToSplit,
 						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will will expect 1x20 to be actually loaded
 						data.piTU_Item_Product_Bag_8KgTomatoes,
 						data.piLU_Item_Bag,
@@ -517,13 +517,13 @@ public class HUTransferServiceTests
 			// use the testee as a tool to get our existing LU
 			final I_M_HU cuHU = mkRealCUToSplit("20");
 			final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
-					.action_SplitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+					.splitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 			assertThat(existingTUs.size(), is(1));
 			final I_M_HU exitingTu = existingTUs.get(0);
 			assertThat(handlingUnitsBL.isAggregateHU(exitingTu), is(false)); // guard; make sure it's "real"
 
 			final List<I_M_HU> existingLUs = HUTransferService.get(data.helper.getHUContext())
-					.action_SplitTU_To_NewLU(exitingTu,
+					.splitTU_To_NewLU(exitingTu,
 							new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will will expect 1x20 to be actually loaded
 							data.piTU_Item_Product_Bag_8KgTomatoes,
 							data.piLU_Item_Bag,
@@ -536,7 +536,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		HUTransferService.get(data.helper.getHUContext())
-				.action_SplitTU_To_ExistingLU(tuToSplit, 
+				.splitTU_To_ExistingLU(tuToSplit, 
 						new BigDecimal("4"), // tuQty=4; we only have 2 TU in the source which hold 40kg each, so we will will expect 2x40 to be actually loaded 
 						existingLU);
 		

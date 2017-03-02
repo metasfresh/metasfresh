@@ -53,8 +53,8 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  */
 
 /**
- * This class contains the business logic run by clients when they transform HUs.
- * Use {@link #get(Properties)} to obtain an instance.
+ * This class contains business logic run by clients when they transform HUs.
+ * Use {@link #get(Properties)} or {@link #get(IHUContext)} to obtain an instance.
  * 
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui/issues/181
@@ -115,7 +115,7 @@ public class HUTransferService
 	 * @param cuRow
 	 * @param qtyCU
 	 */
-	public List<I_M_HU> action_SplitCU_To_NewCU(
+	public List<I_M_HU> splitCU_To_NewCU(
 			final I_M_HU cuHU,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
@@ -145,7 +145,7 @@ public class HUTransferService
 	 * @param qtyCU quantity to split
 	 * @param tuHU
 	 */
-	public void action_SplitCU_To_ExistingTU(
+	public void splitCU_To_ExistingTU(
 			final I_M_HU cuHU,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
@@ -174,7 +174,7 @@ public class HUTransferService
 	 * @param tuPIItemProductId to TU
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> action_SplitCU_To_NewTUs(
+	public List<I_M_HU> splitCU_To_NewTUs(
 			final I_M_HU cuHU,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
@@ -213,13 +213,13 @@ public class HUTransferService
 	 * @param tuPIItemProductId
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> action_SplitTU_To_NewTUs(
+	public List<I_M_HU> splitTU_To_NewTUs(
 			final I_M_HU tuHU, final BigDecimal qtyTU //
 			, final I_M_HU_PI_Item_Product tuPIItemProduct //
 			, final boolean isOwnPackingMaterials //
 	)
 	{
-		return action_SplitTU_To_NewLU(tuHU, qtyTU, tuPIItemProduct, null, isOwnPackingMaterials);
+		return splitTU_To_NewLU(tuHU, qtyTU, tuPIItemProduct, null, isOwnPackingMaterials);
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class HUTransferService
 	 * @param luPIItemId
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> action_SplitTU_To_NewLU( //
+	public List<I_M_HU> splitTU_To_NewLU( //
 			final I_M_HU tuHU //
 			, final BigDecimal qtyTU //
 			, final I_M_HU_PI_Item_Product tuPIItemProduct //
@@ -305,7 +305,7 @@ public class HUTransferService
 
 			final BigDecimal qtyCU = Preconditions.checkNotNull(currentHuProductStorage.getQty(), "Qty of currentHuProductStorage=%s may not be null", currentHuProductStorage);
 			createdTUs.forEach(createdTU -> {
-				action_SplitCU_To_ExistingTU(currentHuProductStorage.getM_HU(), currentHuProductStorage.getM_Product(), currentHuProductStorage.getC_UOM(), qtyCU, createdTU);
+				splitCU_To_ExistingTU(currentHuProductStorage.getM_HU(), currentHuProductStorage.getM_Product(), currentHuProductStorage.getC_UOM(), qtyCU, createdTU);
 			});
 		}
 
@@ -336,11 +336,10 @@ public class HUTransferService
 		return productStorages;
 	}
 
-	public void action_SplitTU_To_ExistingLU(
+	public void splitTU_To_ExistingLU(
 			final I_M_HU tuHU //
 			, final BigDecimal qtyTU //
-			, final I_M_HU luHU
-	)
+			, final I_M_HU luHU)
 	{
 		Preconditions.checkNotNull(tuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
