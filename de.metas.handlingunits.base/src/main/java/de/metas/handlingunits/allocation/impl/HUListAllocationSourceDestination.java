@@ -95,7 +95,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	private boolean storeCUQtyBeforeProcessing = true;
 
-	public HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
+	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
 	{
 		// NOTE: we don't need contextProvider because we are creating nothing
 		// when needed HUContext from Request will be used
@@ -105,13 +105,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		lastIndex = sourceHUs.size() - 1;
 	}
 
-	/**
-	 * Convenient constructor for a single HU
-	 *
-	 * @param contextProvider
-	 * @param sourceHU
-	 */
-	public HUListAllocationSourceDestination(final I_M_HU sourceHU)
+	private HUListAllocationSourceDestination(final I_M_HU sourceHU)
 	{
 		this(Collections.singletonList(sourceHU));
 

@@ -141,11 +141,11 @@ public class TUMergeBuilder implements ITUMergeBuilder
 
 		//
 		// Source: Selected handling units
-		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 
 		//
 		// Destination: Handling unit we want to merge on
-		final IAllocationDestination destination = new HUListAllocationSourceDestination(targetHU);
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(targetHU);
 
 		//
 		// Perform allocation

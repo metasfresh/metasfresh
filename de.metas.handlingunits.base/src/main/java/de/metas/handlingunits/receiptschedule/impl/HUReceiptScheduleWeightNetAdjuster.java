@@ -349,7 +349,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 	private HUListAllocationSourceDestination createSourceOrDestForVHU(final I_M_HU vhu)
 	{
-		final HUListAllocationSourceDestination huListAllocationSourceDestination = new HUListAllocationSourceDestination(vhu);
+		final HUListAllocationSourceDestination huListAllocationSourceDestination = HUListAllocationSourceDestination.of(vhu);
 		
 		// gh #943: in case of aggregate HUs we *only* want to change the storage. we don't want AggregateHUTrxListener do change the TU-per-CU quantity or do other stuff.
 		huListAllocationSourceDestination.setStoreCUQtyBeforeProcessing(false);

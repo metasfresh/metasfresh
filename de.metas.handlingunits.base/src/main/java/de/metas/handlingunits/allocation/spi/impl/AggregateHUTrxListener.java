@@ -170,7 +170,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final I_M_HU_Item splitHUParentItem = handlingUnitsDAO.createHUItemIfNotExists(item.getM_HU(), splitHUPIItem).getLeft();
 
 			// the source is the aggregate item's aggregate VHU
-			final HUListAllocationSourceDestination source = new HUListAllocationSourceDestination(handlingUnitsDAO.retrieveIncludedHUs(item));
+			final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(handlingUnitsDAO.retrieveIncludedHUs(item));
 			source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
 
 			// the destination is a new HU that shall be attached as a sibling of the aggregate VHU

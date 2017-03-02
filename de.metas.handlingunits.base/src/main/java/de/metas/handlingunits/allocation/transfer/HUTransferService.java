@@ -18,11 +18,10 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -128,16 +127,11 @@ public class HUTransferService
 
 		final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyCU);
 
-		final IAllocationSource source = HUListAllocationSourceDestination.of(cuHU);
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 
-		// Transfer Qty
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(request);
-
-		Services.get(IHandlingUnitsBL.class).destroyIfEmptyStorage(cuHU);
+		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
+				.withPropagateHUValues()
+				.performSplit();
 
 		return destination.getCreatedHUs();
 	}
@@ -162,15 +156,11 @@ public class HUTransferService
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyCU);
-		final IAllocationSource source = HUListAllocationSourceDestination.of(cuHU);
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(tuHU);
 
-		//
-		// Transfer Qty
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(request);
+		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
+				.withPropagateHUValues()
+				.performSplit();
 	}
 
 	/**
@@ -198,19 +188,15 @@ public class HUTransferService
 
 		final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyCU);
 
-		final IAllocationSource source = HUListAllocationSourceDestination.of(cuHU);
-
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 		destination.setNoLU();
 
-		//
-		// Transfer Qty
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(request);
+		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
+				.withPropagateHUValues()
+				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
+				.performSplit();
 
 		return destination.getCreatedHUs();
 	}
@@ -269,8 +255,6 @@ public class HUTransferService
 			final I_M_Product cuProduct = Preconditions.checkNotNull(firstCuProductStorage.getM_Product(), "M_Product of firstCuProductStorage=%s may not be null", firstCuProductStorage);
 			final I_C_UOM cuUOM = Preconditions.checkNotNull(firstCuProductStorage.getC_UOM(), "C_UOM of firstCuProductStorage=%s may not be null", firstCuProductStorage);
 
-			final IAllocationSource source = HUListAllocationSourceDestination.of(tuHU);
-
 			final LUTUProducerDestination destination = new LUTUProducerDestination();
 			destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 			if (luPIItem == null)
@@ -290,10 +274,11 @@ public class HUTransferService
 
 			final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyTU.multiply(qtyCUperTU));
 
-			HULoader.of(source, destination)
-					.setAllowPartialUnloads(false)
-					.setAllowPartialLoads(false)
-					.load(request);
+			HUSplitBuilderCoreEngine.of(huContext, tuHU, request, destination)
+					.withPropagateHUValues()
+					.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
+					.performSplit();
+
 			createdTUs = destination.getCreatedHUs();
 		}
 
@@ -345,14 +330,15 @@ public class HUTransferService
 		{
 
 			final IAllocationRequest request = createCUAllocationRequest(productStorage.getM_Product(), productStorage.getC_UOM(), productStorage.getQty());
-			final IAllocationSource source = HUListAllocationSourceDestination.of(tuHU);
 			final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(luHU);
 
 			// Transfer Qty
-			HULoader.of(source, destination)
-					.setAllowPartialUnloads(false)
-					.setAllowPartialLoads(false)
-					.load(request);
+			HUSplitBuilderCoreEngine.of(huContext, tuHU, request, destination)
+					.withPropagateHUValues()
+					.performSplit();
 		}
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		handlingUnitsBL.destroyIfEmptyStorage(tuHU);
 	}
 }

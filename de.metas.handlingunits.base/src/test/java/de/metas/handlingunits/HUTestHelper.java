@@ -1727,7 +1727,7 @@ public class HUTestHelper
 		final IMutableHUContext huContext = getHUContext();
 		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
 
-		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 
 		final HULoader loader = HULoader.of(source, lutuProducer);
 
@@ -1762,7 +1762,7 @@ public class HUTestHelper
 		final IMutableHUContext huContext = getHUContext();
 		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
 
-		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 		final HUProducerDestination destination = HUProducerDestination.of(destinationHuPI);
 		final HULoader loader = HULoader.of(source, destination);
 
@@ -1792,7 +1792,7 @@ public class HUTestHelper
 		final IMutableHUContext huContext = getHUContext();
 		final Date date = getTodayDate();
 
-		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 		final IAllocationDestination destination = new MTransactionAllocationSourceDestination(outgoingTrx);
 		final HULoader loader = HULoader.of(source, destination);
 
@@ -1858,8 +1858,8 @@ public class HUTestHelper
 	 */
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
-		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
-		final IAllocationDestination destination = new HUListAllocationSourceDestination(destinationHUs);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(destinationHUs);
 		final HULoader loader = HULoader.of(source, destination);
 
 		//
@@ -1873,11 +1873,17 @@ public class HUTestHelper
 		loader.load(request);
 	}
 
-	public I_C_BPartner createBPartner(final String name)
+	/**
+	 * Creates and saves a simple {@link I_C_BPartner}
+	 * 
+	 * @param nameAndValue
+	 * @return
+	 */
+	public I_C_BPartner createBPartner(final String nameAndValue)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
-		bpartner.setValue(name);
-		bpartner.setName(name);
+		bpartner.setValue(nameAndValue);
+		bpartner.setName(nameAndValue);
 		InterfaceWrapperHelper.save(bpartner);
 
 		return bpartner;

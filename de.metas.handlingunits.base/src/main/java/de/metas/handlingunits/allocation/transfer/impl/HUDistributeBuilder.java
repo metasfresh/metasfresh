@@ -155,11 +155,11 @@ public class HUDistributeBuilder
 
 		//
 		// Allocate FROM VHU
-		final IAllocationSource source = new HUListAllocationSourceDestination(vhu);
+		final IAllocationSource source = HUListAllocationSourceDestination.of(vhu);
 
 		//
 		// Allocate TO selected TUs
-		final IAllocationDestination destination = new HUListAllocationSourceDestination(tuHU);
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(tuHU);
 
 		//
 		// Perform allocation
