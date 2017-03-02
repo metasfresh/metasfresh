@@ -201,7 +201,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			}
 			case TU_To_ExistingLU:
 			{
-				action_SplitTU_To_ExistingLU(row, p_QtyTU, p_M_LU_HU, p_HUPlanningReceiptOwnerPM);
+				action_SplitTU_To_ExistingLU(row, p_QtyTU, p_M_LU_HU);
 				break;
 			}
 			//
@@ -370,12 +370,11 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	private void action_SplitTU_To_ExistingLU(
 			final HUDocumentView tuRow //
 			, final BigDecimal qtyTU //
-			, final I_M_HU luHU //
-			, final boolean isOwnPackingMaterials //
+			, final I_M_HU luHU
 	)
 	{
 		HUTransferService.get(getCtx())
-				.action_SplitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU, isOwnPackingMaterials);
+				.action_SplitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
 		getView().addHUAndInvalidate(luHU);
