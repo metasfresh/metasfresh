@@ -1,9 +1,8 @@
 package de.metas.ui.web.handlingunits.process;
 
-import org.springframework.context.annotation.Profile;
-
-import de.metas.process.IProcessPrecondition;
-import de.metas.ui.web.WebRestApiApplication;
+import de.metas.ui.web.handlingunits.HUDocumentView;
+import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
+import de.metas.ui.web.process.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -15,12 +14,12 @@ import de.metas.ui.web.WebRestApiApplication;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,20 +27,22 @@ import de.metas.ui.web.WebRestApiApplication;
  */
 
 /**
- * Join selected TUs to a new LU or to an existing LU
- *
+ * A {@link ViewBasedProcessTemplate} implementation template which add convenient functionalities around {@link HUDocumentViewSelection}.
+ * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Profile(value = WebRestApiApplication.PROFILE_Webui)
-public class WEBUI_M_HU_JoinTUsToLU extends HUViewProcessTemplate implements IProcessPrecondition
+public abstract class HUViewProcessTemplate extends ViewBasedProcessTemplate
 {
 	@Override
-	protected String doIt() throws Exception
+	protected final HUDocumentViewSelection getView()
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-		// return MSG_OK;
+		return super.getView(HUDocumentViewSelection.class);
 	}
 
+	@Override
+	protected final HUDocumentView getSingleSelectedRow()
+	{
+		return HUDocumentView.cast(super.getSingleSelectedRow());
+	}
 }

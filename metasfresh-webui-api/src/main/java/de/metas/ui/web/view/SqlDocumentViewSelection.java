@@ -493,7 +493,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
 		// and the records recently retrieved have a big chance to be cached.
 		return documentIds.stream()
-				.map(this::getOrRetrieveById)
+				.distinct()
+				.map(documentId -> {
+					try
+					{
+						return getOrRetrieveById(documentId);
+					}
+					catch (final EntityNotFoundException e)
+					{
+						return null;
+					}
+				})
 				.filter(document -> document != null);
 	}
 

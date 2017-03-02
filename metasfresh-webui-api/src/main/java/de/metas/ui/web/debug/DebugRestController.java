@@ -107,6 +107,8 @@ public class DebugRestController
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
 		pinstancesRepo.cacheReset();
+		
+		System.gc();
 	}
 
 	private static final void logResourceValueChanged(final String name, final Object value, final Object valueOld)

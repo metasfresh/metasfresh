@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -44,11 +44,11 @@ public interface IDocumentViewSelection
 	String getViewId();
 
 	int getAD_Window_ID();
-	
+
 	long size();
 
 	void close();
-	
+
 	int getQueryLimit();
 
 	boolean isQueryLimitHit();
@@ -70,20 +70,7 @@ public interface IDocumentViewSelection
 
 	default List<IDocumentView> getByIds(final Set<DocumentId> documentIds)
 	{
-		Check.assumeNotEmpty(documentIds, "documentIds is not empty");
-		return documentIds.stream()
-				.map(documentId -> {
-					try
-					{
-						return getById(documentId);
-					}
-					catch (final EntityNotFoundException e)
-					{
-						return null;
-					}
-				})
-				.filter(document -> document != null)
-				.collect(GuavaCollectors.toImmutableList());
+		return streamByIds(documentIds).collect(ImmutableList.toImmutableList());
 	}
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
@@ -136,6 +123,10 @@ public interface IDocumentViewSelection
 
 	<T> List<T> retrieveModelsByIds(Collection<DocumentId> documentIds, Class<T> modelClass);
 
+	/**
+	 * @return a stream which contains only the {@link IDocumentView}s which given <code>documentId</code>s.
+	 *         If a {@link IDocumentView} was not found for given ID, this method simply ignores it.
+	 */
 	Stream<? extends IDocumentView> streamByIds(Collection<DocumentId> documentIds);
 
 	/**

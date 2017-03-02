@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import com.google.common.cache.RemovalNotification;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -100,23 +103,35 @@ public class ProcessInstancesRepository
 		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
 		final DocumentId adPInstanceId = DocumentId.of(processInfo.getAD_PInstance_ID());
 
-		//
-		// Build the parameters document
-		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
-		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-		final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
+		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
+		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
+		{
+			//
+			// Build the parameters document
+			final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
+			final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
+			final int windowNo = parametersDoc.getWindowNo();
 
-		// Set parameters's default values
-		ProcessDefaultParametersUpdater.newInstance()
-				.addDefaultParametersProvider(processInfo)
-				.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(parameter.getColumnName(), value, () -> "default parameter value"))
-				.updateDefaultValue(parametersDoc.getFieldViews(), DocumentFieldAsProcessDefaultParameter::of);
+			// Set parameters's default values
+			ProcessDefaultParametersUpdater.newInstance()
+					.addDefaultParametersProvider(processClassInstance instanceof IProcessDefaultParametersProvider ? (IProcessDefaultParametersProvider)processClassInstance : null)
+					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(parameter.getColumnName(), value, () -> "default parameter value"))
+					.updateDefaultValue(parametersDoc.getFieldViews(), field -> DocumentFieldAsProcessDefaultParameter.of(windowNo, field));
 
-		//
-		// Create (webui) process instance and add it to our internal cache.
-		final ProcessInstance pinstance = new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
-		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
-		return pinstance;
+			//
+			// Create (webui) process instance and add it to our internal cache.
+			final ProcessInstance pinstance = ProcessInstance.builder()
+					.setProcessDescriptor(processDescriptor)
+					.setAD_PInstance_ID(adPInstanceId)
+					.setParameters(parametersDoc)
+					.setViewsRepo(documentViewsRepo)
+					.setView(request.getViewId(), request.getViewDocumentIds())
+					.setProcessClassInstance(processClassInstance)
+					.build();
+			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
+			return pinstance;
+		}
 	}
 
 	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
@@ -213,23 +228,42 @@ public class ProcessInstancesRepository
 				.setAD_PInstance_ID(adPInstanceId.toInt())
 				.build();
 
-		//
-		// Build the parameters document
-		final int adProcessId = processInfo.getAD_Process_ID();
-		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
+		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
+		{
+			//
+			// Build the parameters document
+			final int adProcessId = processInfo.getAD_Process_ID();
+			final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
 
-		//
-		// Build the parameters (as document)
-		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-		final Document parametersDoc = parametersDescriptor
-				.getDataBinding()
-				.getDocumentsRepository()
-				.retrieveDocumentById(parametersDescriptor, adPInstanceId);
+			//
+			// Build the parameters (as document)
+			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
+			final Document parametersDoc = parametersDescriptor
+					.getDataBinding()
+					.getDocumentsRepository()
+					.retrieveDocumentById(parametersDescriptor, adPInstanceId);
 
-		// TODO: handle the case when the process was already executed
-		// In that case we need to load the result and provide it to ProcessInstance constructor
+			// TODO: handle the case when the process was already executed
+			// In that case we need to load the result and provide it to ProcessInstance constructor
 
-		return new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
+			//
+			// View informations
+			final IRangeAwareParams processInfoParams = processInfo.getParameterAsIParams();
+			final String viewId = processInfoParams.getParameterAsString(ProcessInstance.PARAM_ViewId);
+			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ProcessInstance.PARAM_ViewSelectedIds);
+			final Set<DocumentId> viewSelectedIds = DocumentId.ofCommaSeparatedString(viewSelectedIdsStr);
+
+			//
+			return ProcessInstance.builder()
+					.setProcessDescriptor(processDescriptor)
+					.setAD_PInstance_ID(adPInstanceId)
+					.setParameters(parametersDoc)
+					.setViewsRepo(documentViewsRepo)
+					.setView(viewId, viewSelectedIds)
+					.setProcessClassInstance(processClassInstance)
+					.build();
+		}
 	}
 
 	public <R> R forProcessInstanceReadonly(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
@@ -239,7 +273,10 @@ public class ProcessInstancesRepository
 		try (final IAutoCloseable readLock = processInstances.getUnchecked(pinstanceId).lockForReading())
 		{
 			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId);
-			return processor.apply(processInstance);
+			try (final IAutoCloseable c = processInstance.activate())
+			{
+				return processor.apply(processInstance);
+			}
 		}
 	}
 
@@ -251,13 +288,21 @@ public class ProcessInstancesRepository
 		{
 			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
 
-			final R result = processor.apply(processInstance);
+			// Make sure the process was not already executed.
+			// If it was executed we are not allowed to change it.
+			processInstance.assertNotExecuted();
 
-			// Actually put it back
-			processInstance.saveIfValidAndHasChanges(false); // throwEx=false
-			processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
+			try (final IAutoCloseable c = processInstance.activate())
+			{
+				// Call the given processor to apply changes to this process instance.
+				final R result = processor.apply(processInstance);
 
-			return result;
+				// Actually put it back
+				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
+				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
+
+				return result;
+			}
 		}
 	}
 }

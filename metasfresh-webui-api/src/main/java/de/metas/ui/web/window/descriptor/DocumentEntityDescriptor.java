@@ -844,7 +844,7 @@ public class DocumentEntityDescriptor
 		}
 
 		/**
-		 * Advises the descriptor that Document instances which will be created based on this descriptor will not have callouts.
+		 * Advises the descriptor that Document instances which will be created based on this descriptor will not have ANY callouts.
 		 */
 		public Builder disableCallouts()
 		{

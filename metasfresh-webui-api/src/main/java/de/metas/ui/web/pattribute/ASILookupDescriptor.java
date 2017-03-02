@@ -54,11 +54,6 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		return new ASILookupDescriptor(attributeValuesProvider);
 	}
 
-	public static final ASILookupDescriptor of(final IAttributeValuesProvider attributeValuesProvider)
-	{
-		return new ASILookupDescriptor(attributeValuesProvider);
-	}
-
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
 
 	private final IAttributeValuesProvider attributeValuesProvider;
