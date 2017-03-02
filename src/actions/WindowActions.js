@@ -228,10 +228,11 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
 
                             if(index === 0 || !tab.queryOnActivate){
                                 dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
-                                tabTmp[tab.tabid] = res;
-                            })}
+                                    tabTmp[tab.tabid] = res;
+                                    dispatch(addRowData(tabTmp, getScope(isModal)));
+                                })
+                            }
 
-                            dispatch(addRowData(tabTmp, getScope(isModal)));
                         }
                     )
             }).catch((err) => {

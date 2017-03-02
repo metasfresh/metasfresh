@@ -16,7 +16,7 @@ class Tab extends Component {
 
         if(queryOnActivate){
             dispatch(getTab(tabid, windowType, docId)).then(res => {
-                dispatch(addRowData(res, 'master'));
+                dispatch(addRowData({[tabid]: res}, 'master'));
             });
         }
     }
