@@ -94,6 +94,29 @@ public interface I_WEBUI_KPI
     public static final String COLUMNNAME_ChartType = "ChartType";
 
 	/**
+	 * Set Offset.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCompareOffset (java.lang.String CompareOffset);
+
+	/**
+	 * Get Offset.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCompareOffset();
+
+    /** Column definition for CompareOffset */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_CompareOffset = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "CompareOffset", null);
+    /** Column name CompareOffset */
+    public static final String COLUMNNAME_CompareOffset = "CompareOffset";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -266,6 +289,29 @@ public interface I_WEBUI_KPI
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Compare.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsGenerateComparation (boolean IsGenerateComparation);
+
+	/**
+	 * Get Compare.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isGenerateComparation();
+
+    /** Column definition for IsGenerateComparation */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsGenerateComparation = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "IsGenerateComparation", null);
+    /** Column name IsGenerateComparation */
+    public static final String COLUMNNAME_IsGenerateComparation = "IsGenerateComparation";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -289,6 +335,29 @@ public interface I_WEBUI_KPI
     public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Polling interval (sec).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPollIntervalSec (int PollIntervalSec);
+
+	/**
+	 * Get Polling interval (sec).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getPollIntervalSec();
+
+    /** Column definition for PollIntervalSec */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_PollIntervalSec = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "PollIntervalSec", null);
+    /** Column name PollIntervalSec */
+    public static final String COLUMNNAME_PollIntervalSec = "PollIntervalSec";
 
 	/**
 	 * Get Aktualisiert.

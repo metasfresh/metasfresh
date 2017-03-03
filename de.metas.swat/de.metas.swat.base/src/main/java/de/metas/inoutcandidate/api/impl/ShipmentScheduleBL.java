@@ -280,47 +280,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			if (saveSchedules)
 			{
-				final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-
 				InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 
 				if (!docActionBL.isStatusCompletedOrClosedOrReversed(orderDocStatus) // task 07355: thread closed orders like completed orders
-						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won'T work ^^
-						&& sched.getQtyDelivered().signum() == 0 // also don'T try to delete if there is already a picked or delivered Qty.
+						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
+						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
 						&& sched.getQtyPickList().signum() == 0)
 				{
-					final List<I_M_IolCandHandler_Log> olHandlerLogs = inOutCandHandlerBL.retrieveOLHandlerLogs(ctx, sched.getM_IolCandHandler_ID(), sched.getC_OrderLine_ID(), trxName);
-					for (final I_M_IolCandHandler_Log logRecord : olHandlerLogs)
-					{
-						// we can s this log now
-						InterfaceWrapperHelper.delete(logRecord);
-					}
-					logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
+						logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
 							+ "; QtyReserved=" + sched.getQtyReserved()
 							+ "; DocStatus=" + orderDocStatus
 							+ "; => Deleting " + sched);
 
-					// Retrieve the M_ShipmentSchedule_QtyPicked entries for this schedule
-					final List<I_M_ShipmentSchedule_QtyPicked> allocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(sched, I_M_ShipmentSchedule_QtyPicked.class);
-					for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
-					{
-						// delete the qtyPicked entries
-
-						if (alloc.getQtyPicked().signum() != 0)
-						{
-							final String msg = "Found QtyPicked record with non-zero qty even if the shipment schedule has QtyDelivered=0"
-									+ "\n M_ShipmentSchedule_ID = " + sched.getM_ShipmentSchedule_ID()
-									+ "\n QtyPicked = " + alloc.getQtyPicked();
-							Loggables.get().addLog(msg);
-
-							final AdempiereException ex = new AdempiereException(msg);
-							logger.warn(ex.getLocalizedMessage(), ex);
-
-							continue;
-						}
-						InterfaceWrapperHelper.delete(alloc);
-					}
-					// we can delete this schedule now
 					InterfaceWrapperHelper.delete(sched);
 					continue;
 				}
@@ -538,7 +509,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final ShipmentCandidates candidates = mkCandidatesToUse(lines, firstRun);
 
 		final ShipmentScheduleQtyOnHandStorage qtyOnHands = new ShipmentScheduleQtyOnHandStorage();
-		qtyOnHands.setContext(new PlainContextAware(ctx, trxName));
+		qtyOnHands.setContext(PlainContextAware.newWithTrxName(ctx, trxName));
 		qtyOnHands.setDate(date);
 		qtyOnHands.setCachedObjects(co);
 
@@ -742,7 +713,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (toDeliver.signum() < 0)
 		{
-			toDeliver = Env.ZERO;
+			toDeliver = BigDecimal.ZERO;
 			logInfo.append(" (set to 0)");
 		}
 		logger.debug(logInfo.toString());
@@ -837,7 +808,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(inOutPA.createNewLine(candidate, trxName), I_M_InOutLine.class);
 
 			final int locatorId = 0;
-			inOutPA.setLineOrderLine(inoutLine, orderLine, locatorId, Env.ZERO);
+			inOutPA.setLineOrderLine(inoutLine, orderLine, locatorId, BigDecimal.ZERO);
 			inOutPA.setLineQty(inoutLine, qty); // Correct UOM
 
 			// 05292 : Propagate ASI to InOutLine
@@ -934,7 +905,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final I_M_Locator locator = storage.getLocator();
 				final int M_Locator_ID = locator.getM_Locator_ID();
-				inOutPA.setLineOrderLine(inoutLine, orderLine, M_Locator_ID, order.isSOTrx() ? deliver : Env.ZERO);
+				inOutPA.setLineOrderLine(inoutLine, orderLine, M_Locator_ID, order.isSOTrx() ? deliver : BigDecimal.ZERO);
 				inOutPA.setLineQty(inoutLine, deliver);
 
 				inoutLines.add(inoutLine);
