@@ -203,29 +203,6 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_ES_FieldPath = "ES_FieldPath";
 
 	/**
-	 * Set Elasticseach time field.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setES_TimeField (boolean ES_TimeField);
-
-	/**
-	 * Get Elasticseach time field.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isES_TimeField();
-
-    /** Column definition for ES_TimeField */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_ES_TimeField = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "ES_TimeField", null);
-    /** Column name ES_TimeField */
-    public static final String COLUMNNAME_ES_TimeField = "ES_TimeField";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -251,6 +228,31 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Gruppieren.
+	 * After a group change, totals, etc. are printed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsGroupBy (boolean IsGroupBy);
+
+	/**
+	 * Get Gruppieren.
+	 * After a group change, totals, etc. are printed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isGroupBy();
+
+    /** Column definition for IsGroupBy */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_IsGroupBy = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "IsGroupBy", null);
+    /** Column name IsGroupBy */
+    public static final String COLUMNNAME_IsGroupBy = "IsGroupBy";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -274,31 +276,6 @@ public interface I_WEBUI_KPI_Field
     public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setType (java.lang.String Type);
-
-	/**
-	 * Get Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getType();
-
-    /** Column definition for Type */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Type", null);
-    /** Column name Type */
-    public static final String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Set Symbol.

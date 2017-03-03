@@ -14,7 +14,7 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1759778584L;
+	private static final long serialVersionUID = 1390478179L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (Properties ctx, int WEBUI_KPI_ID, String trxName)
@@ -25,6 +25,8 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 			setChartType (null);
 			setES_Index (null);
 			setES_Type (null);
+			setIsGenerateComparation (false);
+// N
 			setName (null);
 			setPollIntervalSec (0);
 // 10
@@ -78,6 +80,22 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public java.lang.String getChartType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ChartType);
+	}
+
+	/** Set Offset.
+		@param CompareOffset Offset	  */
+	@Override
+	public void setCompareOffset (java.lang.String CompareOffset)
+	{
+		set_Value (COLUMNNAME_CompareOffset, CompareOffset);
+	}
+
+	/** Get Offset.
+		@return Offset	  */
+	@Override
+	public java.lang.String getCompareOffset () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CompareOffset);
 	}
 
 	/** Set Beschreibung.
@@ -161,6 +179,29 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public java.lang.String getES_Type () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ES_Type);
+	}
+
+	/** Set Compare.
+		@param IsGenerateComparation Compare	  */
+	@Override
+	public void setIsGenerateComparation (boolean IsGenerateComparation)
+	{
+		set_Value (COLUMNNAME_IsGenerateComparation, Boolean.valueOf(IsGenerateComparation));
+	}
+
+	/** Get Compare.
+		@return Compare	  */
+	@Override
+	public boolean isGenerateComparation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsGenerateComparation);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Name.
