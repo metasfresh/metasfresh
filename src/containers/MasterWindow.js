@@ -120,6 +120,7 @@ class MasterWindow extends Component {
                 actions={actions}
                 attachments={attachments}
                 showSidelist={true}
+                showIndicator={!modal.visible}
             >
                 {modal.visible &&
                     <Modal
