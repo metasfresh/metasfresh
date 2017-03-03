@@ -57,6 +57,7 @@ public class KPIField
 	private final boolean groupBy;
 
 	private final ITranslatableString caption;
+	private final ITranslatableString offsetCaption;
 	private final ITranslatableString description;
 	private final String unit;
 	private final KPIFieldValueType valueType;
@@ -79,6 +80,7 @@ public class KPIField
 		groupBy = builder.groupBy;
 
 		caption = builder.caption;
+		offsetCaption = builder.offsetCaption;
 		description = builder.description;
 		unit = builder.unit;
 		valueType = builder.valueType;
@@ -205,13 +207,12 @@ public class KPIField
 	{
 		return fieldName;
 	}
-	
+
 	public String getOffsetFieldName()
 	{
 		return fieldName + "_offset";
 	}
 
-	
 	public boolean isGroupBy()
 	{
 		return groupBy;
@@ -220,6 +221,11 @@ public class KPIField
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
+	}
+
+	public String getOffsetCaption(final String adLanguage)
+	{
+		return offsetCaption.translate(adLanguage);
 	}
 
 	public String getDescription(final String adLanguage)
@@ -260,8 +266,9 @@ public class KPIField
 	public static final class Builder
 	{
 		private String fieldName;
-		private boolean groupBy;
-		private ITranslatableString caption;
+		private boolean groupBy = false;
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString offsetCaption = ImmutableTranslatableString.empty();
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private String unit;
 		private KPIFieldValueType valueType;
@@ -288,8 +295,8 @@ public class KPIField
 			this.fieldName = fieldName;
 			return this;
 		}
-		
-		public Builder setGroupBy(boolean groupBy)
+
+		public Builder setGroupBy(final boolean groupBy)
 		{
 			this.groupBy = groupBy;
 			return this;
@@ -297,12 +304,21 @@ public class KPIField
 
 		public Builder setCaption(final ITranslatableString caption)
 		{
+			Check.assumeNotNull(caption, "Parameter caption is not null");
 			this.caption = caption;
+			return this;
+		}
+
+		public Builder setOffsetCaption(final ITranslatableString offsetCaption)
+		{
+			Check.assumeNotNull(offsetCaption, "Parameter offsetCaption is not null");
+			this.offsetCaption = offsetCaption;
 			return this;
 		}
 
 		public Builder setDescription(final ITranslatableString description)
 		{
+			Check.assumeNotNull(description, "Parameter description is not null");
 			this.description = description;
 			return this;
 		}

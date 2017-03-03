@@ -214,7 +214,7 @@ public class UserDashboardRepository
 					.setCaption(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Name, kpiDef.getName()))
 					.setDescription(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Description, kpiDef.getDescription()))
 					.setChartType(KPIChartType.forCode(kpiDef.getChartType()))
-					.setFields(retrieveKPIFields(WEBUI_KPI_ID))
+					.setFields(retrieveKPIFields(WEBUI_KPI_ID, kpiDef.isGenerateComparation()))
 					//
 					.setCompareOffset(compareOffset)
 					.setDefaultTimeRange(timeRange)
@@ -229,7 +229,7 @@ public class UserDashboardRepository
 		});
 	}
 
-	private List<KPIField> retrieveKPIFields(final int WEBUI_KPI_ID)
+	private List<KPIField> retrieveKPIFields(final int WEBUI_KPI_ID, final boolean isComputeOffset)
 	{
 		return queryBL.createQueryBuilder(I_WEBUI_KPI_Field.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_WEBUI_KPI_Field.COLUMN_WEBUI_KPI_ID, WEBUI_KPI_ID)
@@ -242,17 +242,18 @@ public class UserDashboardRepository
 				//
 				.create()
 				.stream(I_WEBUI_KPI_Field.class)
-				.map(kpiField -> createKPIField(kpiField))
+				.map(kpiField -> createKPIField(kpiField, isComputeOffset))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final KPIField createKPIField(final I_WEBUI_KPI_Field kpiFieldDef)
+	private static final KPIField createKPIField(final I_WEBUI_KPI_Field kpiFieldDef, final boolean isComputeOffset)
 	{
 		final I_AD_Element adElement = kpiFieldDef.getAD_Element();
 		final String fieldName = adElement.getColumnName();
 
 		//
 		// Extract field caption and description
+		final IModelTranslationMap kpiFieldDefTrl = InterfaceWrapperHelper.getModelTranslationMap(kpiFieldDef);
 		final ITranslatableString caption;
 		final ITranslatableString description;
 		if (Check.isEmpty(kpiFieldDef.getName(), true))
@@ -263,8 +264,24 @@ public class UserDashboardRepository
 		}
 		else
 		{
-			caption = ImmutableTranslatableString.constant(kpiFieldDef.getName());
+			caption = kpiFieldDefTrl.getColumnTrl(I_WEBUI_KPI_Field.COLUMNNAME_Name, kpiFieldDef.getName());
 			description = ImmutableTranslatableString.empty();
+		}
+
+		//
+		// Extract offset field's caption and description
+		final ITranslatableString offsetCaption;
+		if (!isComputeOffset)
+		{
+			offsetCaption = ImmutableTranslatableString.empty();
+		}
+		else if (Check.isEmpty(kpiFieldDef.getOffsetName(), true))
+		{
+			offsetCaption = caption;
+		}
+		else
+		{
+			offsetCaption = kpiFieldDefTrl.getColumnTrl(I_WEBUI_KPI_Field.COLUMNNAME_OffsetName, kpiFieldDef.getOffsetName());
 		}
 
 		return KPIField.builder()
@@ -272,6 +289,7 @@ public class UserDashboardRepository
 				.setGroupBy(kpiFieldDef.isGroupBy())
 				//
 				.setCaption(caption)
+				.setOffsetCaption(offsetCaption)
 				.setDescription(description)
 				.setUnit(kpiFieldDef.getUOMSymbol())
 				.setValueType(KPIFieldValueType.fromDisplayType(kpiFieldDef.getAD_Reference_ID()))

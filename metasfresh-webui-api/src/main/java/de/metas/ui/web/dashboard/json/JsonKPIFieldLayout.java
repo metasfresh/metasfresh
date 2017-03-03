@@ -33,14 +33,16 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonKPIFieldLayout
 {
-	public static final JsonKPIFieldLayout of(final KPIField kpiField, final JSONOptions jsonOpts)
+	public static final JsonKPIFieldLayout field(final KPIField kpiField, final JSONOptions jsonOpts)
 	{
-		return new JsonKPIFieldLayout(kpiField, kpiField.getFieldName(), jsonOpts);
+		final boolean isOffsetField = false;
+		return new JsonKPIFieldLayout(kpiField, isOffsetField, jsonOpts);
 	}
-	
-	public static final JsonKPIFieldLayout of(final KPIField kpiField, final String fieldName, final JSONOptions jsonOpts)
+
+	public static final JsonKPIFieldLayout offsetField(final KPIField kpiField, final JSONOptions jsonOpts)
 	{
-		return new JsonKPIFieldLayout(kpiField, fieldName, jsonOpts);
+		final boolean isOffsetField = true;
+		return new JsonKPIFieldLayout(kpiField, isOffsetField, jsonOpts);
 	}
 
 	@JsonProperty("caption")
@@ -49,13 +51,13 @@ public class JsonKPIFieldLayout
 	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String description;
-	
+
 	@JsonProperty("unit")
 	private final String unit;
-	
+
 	@JsonProperty("fieldName")
 	private final String fieldName;
-	
+
 	@JsonProperty("groupBy")
 	private final boolean groupBy;
 
@@ -65,19 +67,37 @@ public class JsonKPIFieldLayout
 	@JsonProperty("color")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String color;
-	
-	public JsonKPIFieldLayout(final KPIField kpiField, String fieldName, final JSONOptions jsonOpts)
+
+	public JsonKPIFieldLayout(final KPIField kpiField, final boolean isOffsetField, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
-		caption = kpiField.getCaption(adLanguage);
+		// Caption
+		if (isOffsetField)
+		{
+			caption = kpiField.getOffsetCaption(adLanguage);
+		}
+		else
+		{
+			caption = kpiField.getCaption(adLanguage);
+		}
+
+		// FieldName
+		if (isOffsetField)
+		{
+			fieldName = kpiField.getOffsetFieldName();
+		}
+		else
+		{
+			fieldName = kpiField.getFieldName();
+		}
+
 		description = kpiField.getDescription(adLanguage);
 		unit = kpiField.getUnit();
-		
-		this.fieldName = fieldName;
+
 		groupBy = kpiField.isGroupBy();
 		dataType = kpiField.getValueType().toJson();
-		
+
 		color = kpiField.getColor();
 	}
 

@@ -57,7 +57,7 @@ public class JsonKPILayout
 
 	@JsonProperty("pollIntervalSec")
 	private final int pollIntervalSec;
-
+	
 	@JsonProperty("fields")
 	private final List<JsonKPIFieldLayout> fields;
 
@@ -76,11 +76,11 @@ public class JsonKPILayout
 		final boolean hasCompareOffset = kpi.hasCompareOffset();
 		for (final KPIField kpiField : kpi.getFields())
 		{
-			jsonFields.add(JsonKPIFieldLayout.of(kpiField, jsonOpts));
+			jsonFields.add(JsonKPIFieldLayout.field(kpiField, jsonOpts));
 
 			if (hasCompareOffset && !kpiField.isGroupBy())
 			{
-				jsonFields.add(JsonKPIFieldLayout.of(kpiField, kpiField.getOffsetFieldName(), jsonOpts));
+				jsonFields.add(JsonKPIFieldLayout.offsetField(kpiField, jsonOpts));
 			}
 		}
 		fields = jsonFields.build();
