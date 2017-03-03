@@ -130,6 +130,9 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		return DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
+	/**
+	 * This process is applicable if there is exactly one HU-row selected
+	 */
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -176,7 +179,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 				{
 					throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
 				}
-				final I_C_BPartner bpartner = null; // TODO
+				final I_C_BPartner bpartner = getSingleSelectedRow().getM_HU().getC_BPartner();
 				final I_M_HU_PI_Item luPIItem = findLU_HU_PI_Item(p_M_HU_PI_Item_Product, p_M_LU_HU_PI_ID, bpartner);
 				action_SplitTU_To_NewLU(row, p_QtyTU, p_M_HU_PI_Item_Product, luPIItem, p_HUPlanningReceiptOwnerPM);
 				break;
@@ -189,7 +192,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			//
 			default:
 			{
-				throw new AdempiereException("@Unknown@ " + action);
+				throw new AdempiereException("@Unknown@ @Action@ " + action);
 			}
 		}
 
