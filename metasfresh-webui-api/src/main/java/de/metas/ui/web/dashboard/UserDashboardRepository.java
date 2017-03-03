@@ -20,7 +20,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,8 +66,6 @@ public class UserDashboardRepository
 	// Services
 	@Autowired
 	private UserSession userSession;
-	@Autowired
-	private Client elasticsearchClient;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<UserDashboardKey, UserDashboard> userDashboadCache = CCache.<UserDashboardKey, UserDashboard> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#UserDashboard", Integer.MAX_VALUE, 0)
@@ -205,6 +202,13 @@ public class UserDashboardRepository
 			final String timeRangeStr = kpiDef.getES_TimeRange();
 			final Duration timeRange = Check.isEmpty(timeRangeStr, true) ? Duration.ZERO : Duration.parse(timeRangeStr);
 
+			Duration compareOffset = null;
+			if (kpiDef.isGenerateComparation())
+			{
+				final String compareOffetStr = kpiDef.getCompareOffset();
+				compareOffset = Duration.parse(compareOffetStr);
+			}
+
 			return KPI.builder()
 					.setId(kpiDef.getWEBUI_KPI_ID())
 					.setCaption(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Name, kpiDef.getName()))
@@ -212,14 +216,14 @@ public class UserDashboardRepository
 					.setChartType(KPIChartType.forCode(kpiDef.getChartType()))
 					.setFields(retrieveKPIFields(WEBUI_KPI_ID))
 					//
-					.setTimeRange(timeRange)
+					.setCompareOffset(compareOffset)
+					.setDefaultTimeRange(timeRange)
 					//
 					.setPollIntervalSec(kpiDef.getPollIntervalSec())
 					//
 					.setESSearchIndex(kpiDef.getES_Index())
 					.setESSearchTypes(kpiDef.getES_Type())
 					.setESQuery(kpiDef.getES_Query())
-					.setElasticsearchClient(elasticsearchClient)
 					//
 					.build();
 		});
@@ -263,7 +267,7 @@ public class UserDashboardRepository
 
 		return KPIField.builder()
 				.setFieldName(fieldName)
-				.setFieldType(KPIFieldType.fromNullableCode(kpiFieldDef.getType()))
+				.setGroupBy(kpiFieldDef.isGroupBy())
 				//
 				.setCaption(caption)
 				.setDescription(description)
@@ -272,7 +276,6 @@ public class UserDashboardRepository
 				.setColor(kpiFieldDef.getColor())
 				//
 				.setESPath(kpiFieldDef.getES_FieldPath())
-				.setESTimeField(kpiFieldDef.isES_TimeField())
 				.build();
 	}
 

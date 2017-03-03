@@ -60,4 +60,9 @@ public enum KPIFieldValueType
 	{
 		return name();
 	}
+
+	public boolean isDate()
+	{
+		return this == Date || this == DateTime;
+	}
 }

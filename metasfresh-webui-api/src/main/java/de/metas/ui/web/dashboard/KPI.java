@@ -3,33 +3,17 @@ package de.metas.ui.web.dashboard;
 import java.time.Duration;
 import java.util.List;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket;
-import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -61,20 +45,20 @@ public class KPI
 		return new Builder();
 	}
 
-	private static final Logger logger = LogManager.getLogger(KPI.class);
-
 	private final int id;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 	private final KPIChartType chartType;
-	private final Duration timeRange;
+	private final Duration compareOffset;
+	private final Duration defaultTimeRange;
+
 	private final List<KPIField> fields;
+	private final KPIField groupByField;
 
 	private final String esSearchIndex;
 	private final String esSearchTypes;
 	private final IStringExpression esQuery;
-	private final Client elasticsearchClient;
-	
+
 	private final int pollIntervalSec;
 
 	private KPI(final Builder builder)
@@ -89,22 +73,25 @@ public class KPI
 		Check.assumeNotEmpty(builder.esSearchIndex, "builder.esSearchIndex is not empty");
 		Check.assumeNotEmpty(builder.esSearchTypes, "builder.esSearchTypes is not empty");
 		Check.assumeNotEmpty(builder.esQuery, "builder.esQuery is not empty");
-		Check.assumeNotNull(builder.elasticsearchClient, "Parameter builder.elasticsearchClient is not null");
 
 		id = builder.id;
 
 		caption = builder.caption;
 		description = builder.description;
 		chartType = builder.chartType;
-		timeRange = builder.timeRange;
+		compareOffset = builder.compareOffset;
+		defaultTimeRange = builder.defaultTimeRange;
 
 		fields = ImmutableList.copyOf(builder.fields);
+		groupByField = fields.stream()
+				.filter(KPIField::isGroupBy)
+				.findFirst()
+				.orElse(null);
 
 		esSearchIndex = builder.esSearchIndex;
 		esSearchTypes = builder.esSearchTypes;
 		esQuery = StringExpressionCompiler.instance.compile(builder.esQuery);
-		elasticsearchClient = builder.elasticsearchClient;
-		
+
 		pollIntervalSec = builder.pollIntervalSec;
 	}
 
@@ -142,167 +129,49 @@ public class KPI
 	{
 		return fields;
 	}
-	
+
+	public KPIField getGroupByField()
+	{
+		if (groupByField == null)
+		{
+			throw new IllegalStateException("KPI has no group by field defined");
+		}
+		return groupByField;
+	}
+
+	public Duration getDefaultTimeRange()
+	{
+		return defaultTimeRange;
+	}
+
+	public boolean hasCompareOffset()
+	{
+		return compareOffset != null;
+	}
+
+	public Duration getCompareOffset()
+	{
+		return compareOffset;
+	}
+
 	public int getPollIntervalSec()
 	{
 		return pollIntervalSec;
 	}
 
-	public KPIDataResult retrieveData(long fromMillis, long toMillis)
+	public IStringExpression getESQuery()
 	{
-		final Stopwatch duration = Stopwatch.createStarted();
-		
-		//
-		// Create query evaluation context
-		if (toMillis <= 0)
-		{
-			toMillis = SystemTime.millis();
-		}
+		return esQuery;
+	}
 
-		if (fromMillis <= 0)
-		{
-			if (timeRange.isZero())
-			{
-				fromMillis = 0;
-			}
-			else
-			{
-				fromMillis = toMillis - timeRange.abs().toMillis();
-			}
-		}
+	public String getESSearchIndex()
+	{
+		return esSearchIndex;
+	}
 
-		final Evaluatee evalCtx = Evaluatees.mapBuilder()
-				.put("FromMillis", fromMillis)
-				.put("ToMillis", toMillis)
-				.build()
-				// Fallback to user context
-				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
-
-		//
-		// Resolve esQuery's variables
-		final String esQueryParsed = esQuery.evaluate(evalCtx, OnVariableNotFound.Preserve);
-
-		// TODO: remove it, For debugging
-		// if(true)
-		// {
-		// try
-		// {
-		// esQueryParsed = Files.toString(new File("c:\\tmp\\es_query.json"), Charset.forName("UTF-8"));
-		// }
-		// catch (IOException e)
-		// {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-
-		//
-		// Execute the query
-		final SearchResponse response;
-		try
-		{
-			logger.trace("Executing: \n{}", esQueryParsed);
-			
-			response = elasticsearchClient.prepareSearch(esSearchIndex)
-					.setTypes(esSearchTypes)
-					.setSource(esQueryParsed)
-					// .setExplain(true) // enable it only for debugging
-					.get();
-			
-			logger.info("Got response: \n{}", response);
-		}
-		catch (final NoNodeAvailableException e)
-		{
-			// elastic search transport error => nothing to do about it
-			throw e;
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException("Failed executing query for " + this + ": " + e.getLocalizedMessage()
-					+ "\nQuery: " + esQueryParsed, e);
-		}
-
-		//
-		// Fetch data
-		try
-		{
-			final List<Aggregation> aggregations = response.getAggregations().asList();
-
-			final KPIDataResult.Builder data = KPIDataResult.builder()
-					.setTimeRange(fromMillis, toMillis);
-
-			for (final Aggregation agg : aggregations)
-			{
-				if (agg instanceof MultiBucketsAggregation)
-				{
-					final String aggName = agg.getName();
-					final MultiBucketsAggregation multiBucketsAggregation = (MultiBucketsAggregation)agg;
-
-					final ImmutableList.Builder<KPIDataSetValue> values = ImmutableList.builder();
-					for (final Bucket bucket : multiBucketsAggregation.getBuckets())
-					{
-						final KPIDataSetValue.Builder dataSetValue = KPIDataSetValue.builder();
-						for (final KPIField field : getFields())
-						{
-							final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
-							final Object jsonValue = field.convertValueToJson(value);
-							if (jsonValue == null)
-							{
-								continue;
-							}
-
-							dataSetValue.add(field.getFieldName(), jsonValue);
-						}
-
-						values.add(dataSetValue.build());
-					}
-
-					data.addDataSet(new KPIDataSet(aggName, values.build()));
-				}
-				else if (agg instanceof NumericMetricsAggregation.SingleValue)
-				{
-					final NumericMetricsAggregation.SingleValue singleValueAggregation = (NumericMetricsAggregation.SingleValue)agg;
-
-					final String key = null; // N/A
-
-					final KPIDataSetValue.Builder dataSetValue = KPIDataSetValue.builder();
-					for (final KPIField field : getFields())
-					{
-						final Object value;
-						if ("value".equals(field.getESPathAsString()))
-						{
-							value = singleValueAggregation.value();
-						}
-						else
-						{
-							throw new IllegalStateException("Only ES path ending with 'value' allowed for field: " + field);
-						}
-
-						final Object jsonValue = field.convertValueToJson(value);
-						dataSetValue.add(field.getFieldName(), jsonValue);
-					}
-
-					data.addDataSet(new KPIDataSet(key, ImmutableList.of(dataSetValue.build())));
-				}
-				else
-				{
-					new AdempiereException("Aggregation type not supported: " + agg.getClass())
-							.throwIfDeveloperModeOrLogWarningElse(logger);
-				}
-			}
-
-			return data
-					.setTook(duration.stop())
-					.build();
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException(e.getLocalizedMessage()
-					+ "\n KPI: " + this
-					+ "\n Query: " + esQueryParsed
-					+ "\n Response: " + response, e);
-
-		}
+	public String getESSearchTypes()
+	{
+		return esSearchTypes;
 	}
 
 	public static final class Builder
@@ -311,13 +180,13 @@ public class KPI
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private KPIChartType chartType;
-		private Duration timeRange = Duration.ZERO;
+		private Duration compareOffset;
+		private Duration defaultTimeRange = Duration.ZERO;
 		private List<KPIField> fields;
 
 		private String esSearchTypes;
 		private String esSearchIndex;
 		private String esQuery;
-		private Client elasticsearchClient;
 		private int pollIntervalSec;
 
 		private Builder()
@@ -360,6 +229,12 @@ public class KPI
 			return this;
 		}
 
+		public Builder setCompareOffset(final Duration compareOffset)
+		{
+			this.compareOffset = compareOffset;
+			return this;
+		}
+
 		public Builder setESSearchIndex(final String esSearchIndex)
 		{
 			this.esSearchIndex = esSearchIndex;
@@ -378,15 +253,9 @@ public class KPI
 			return this;
 		}
 
-		public Builder setTimeRange(final Duration timeRange)
+		public Builder setDefaultTimeRange(final Duration defaultTimeRange)
 		{
-			this.timeRange = timeRange == null ? Duration.ZERO : timeRange;
-			return this;
-		}
-
-		public Builder setElasticsearchClient(final Client elasticsearchClient)
-		{
-			this.elasticsearchClient = elasticsearchClient;
+			this.defaultTimeRange = defaultTimeRange == null ? Duration.ZERO : defaultTimeRange;
 			return this;
 		}
 
@@ -395,5 +264,6 @@ public class KPI
 			this.pollIntervalSec = pollIntervalSec;
 			return this;
 		}
+
 	}
 }

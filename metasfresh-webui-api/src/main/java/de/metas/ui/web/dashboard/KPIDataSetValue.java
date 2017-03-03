@@ -1,11 +1,13 @@
 package de.metas.ui.web.dashboard;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
 
 /*
  * #%L
@@ -31,17 +33,14 @@ import com.google.common.collect.ImmutableMap;
 
 public class KPIDataSetValue
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
+	@JsonProperty("_key")
+	private final Object _key;
 	@JsonIgnore
-	private final Map<String, Object> map;
+	private final Map<String, Object> map = new HashMap<>();
 
-	private KPIDataSetValue(final Builder builder)
+	public KPIDataSetValue(final Object key)
 	{
-		map = builder.mapBuilder.build();
+		_key = key;
 	}
 
 	@Override
@@ -58,24 +57,9 @@ public class KPIDataSetValue
 		return map;
 	}
 
-	public static class Builder
+	@JsonAnySetter
+	public void put(final String fieldName, final Object jsonValue)
 	{
-		private final ImmutableMap.Builder<String, Object> mapBuilder = ImmutableMap.builder();
-
-		private Builder()
-		{
-		}
-
-		public KPIDataSetValue build()
-		{
-			return new KPIDataSetValue(this);
-		}
-
-		public Builder add(final String key, final Object value)
-		{
-			mapBuilder.put(key, value);
-			return this;
-		}
+		map.put(fieldName, jsonValue);
 	}
-
 }

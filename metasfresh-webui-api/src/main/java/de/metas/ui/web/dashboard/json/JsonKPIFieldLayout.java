@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.KPIField;
-import de.metas.ui.web.dashboard.KPIFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -36,7 +35,12 @@ public class JsonKPIFieldLayout
 {
 	public static final JsonKPIFieldLayout of(final KPIField kpiField, final JSONOptions jsonOpts)
 	{
-		return new JsonKPIFieldLayout(kpiField, jsonOpts);
+		return new JsonKPIFieldLayout(kpiField, kpiField.getFieldName(), jsonOpts);
+	}
+	
+	public static final JsonKPIFieldLayout of(final KPIField kpiField, final String fieldName, final JSONOptions jsonOpts)
+	{
+		return new JsonKPIFieldLayout(kpiField, fieldName, jsonOpts);
 	}
 
 	@JsonProperty("caption")
@@ -52,23 +56,17 @@ public class JsonKPIFieldLayout
 	@JsonProperty("fieldName")
 	private final String fieldName;
 	
-	@JsonProperty("fieldType")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final KPIFieldType fieldType;
+	@JsonProperty("groupBy")
+	private final boolean groupBy;
 
 	@JsonProperty("dataType")
 	private final String dataType;
-	
-
-	@JsonProperty("timeField")
-	private final boolean timeField;
-	
 
 	@JsonProperty("color")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String color;
 	
-	public JsonKPIFieldLayout(final KPIField kpiField, final JSONOptions jsonOpts)
+	public JsonKPIFieldLayout(final KPIField kpiField, String fieldName, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
@@ -76,11 +74,9 @@ public class JsonKPIFieldLayout
 		description = kpiField.getDescription(adLanguage);
 		unit = kpiField.getUnit();
 		
-		fieldName = kpiField.getFieldName();
-		fieldType = kpiField.getFieldType() == null ? null : kpiField.getFieldType();
-		
+		this.fieldName = fieldName;
+		groupBy = kpiField.isGroupBy();
 		dataType = kpiField.getValueType().toJson();
-		timeField = kpiField.isESTimeField();
 		
 		color = kpiField.getColor();
 	}

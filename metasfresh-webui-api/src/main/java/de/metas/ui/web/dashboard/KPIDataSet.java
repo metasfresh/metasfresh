@@ -1,6 +1,9 @@
 package de.metas.ui.web.dashboard;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -41,14 +44,15 @@ public final class KPIDataSet
 	private final String unit;
 
 	@JsonProperty("values")
-	private final List<KPIDataSetValue> values;
+	private final List<KPIDataSetValue> values = new ArrayList<>();
 
-	KPIDataSet(final String name, final List<KPIDataSetValue> values)
+	private final transient Map<Object, KPIDataSetValue> _valuesByKey = new LinkedHashMap<>();
+
+	KPIDataSet(final String name)
 	{
 		super();
 		this.name = name;
 		unit = null;
-		this.values = values;
 	}
 
 	public String getName()
@@ -56,8 +60,15 @@ public final class KPIDataSet
 		return name;
 	}
 
-	public List<KPIDataSetValue> getValues()
+	public void putValue(final Object dataSetValueKey, final String fieldName, final Object jsonValue)
 	{
-		return values;
+		_valuesByKey.computeIfAbsent(dataSetValueKey, k -> {
+			final KPIDataSetValue value = new KPIDataSetValue(dataSetValueKey);
+			
+			values.add(value);
+			return value;
+		})
+				.put(fieldName, jsonValue);
 	}
+
 }

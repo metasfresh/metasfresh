@@ -2,15 +2,15 @@ package de.metas.ui.web.dashboard.json;
 
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.dashboard.KPI;
+import de.metas.ui.web.dashboard.KPIField;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -54,7 +54,7 @@ public class JsonKPILayout
 
 	@JsonProperty("chartType")
 	private final String chartType;
-	
+
 	@JsonProperty("pollIntervalSec")
 	private final int pollIntervalSec;
 
@@ -69,12 +69,20 @@ public class JsonKPILayout
 		caption = kpi.getCaption(adLanguage);
 		description = Strings.emptyToNull(kpi.getDescription(adLanguage));
 		chartType = kpi.getChartType().toJson();
-		
+
 		pollIntervalSec = kpi.getPollIntervalSec();
 
-		fields = kpi.getFields()
-				.stream()
-				.map(kpiField -> JsonKPIFieldLayout.of(kpiField, jsonOpts))
-				.collect(GuavaCollectors.toImmutableList());
+		final ImmutableList.Builder<JsonKPIFieldLayout> jsonFields = ImmutableList.builder();
+		final boolean hasCompareOffset = kpi.hasCompareOffset();
+		for (final KPIField kpiField : kpi.getFields())
+		{
+			jsonFields.add(JsonKPIFieldLayout.of(kpiField, jsonOpts));
+
+			if (hasCompareOffset && !kpiField.isGroupBy())
+			{
+				jsonFields.add(JsonKPIFieldLayout.of(kpiField, kpiField.getOffsetFieldName(), jsonOpts));
+			}
+		}
+		fields = jsonFields.build();
 	}
 }

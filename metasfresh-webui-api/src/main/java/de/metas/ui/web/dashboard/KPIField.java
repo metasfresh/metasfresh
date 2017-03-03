@@ -54,7 +54,7 @@ public class KPIField
 	}
 
 	private final String fieldName;
-	private final KPIFieldType fieldType;
+	private final boolean groupBy;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -65,7 +65,6 @@ public class KPIField
 
 	private final String esPathStr;
 	private final List<String> esPath;
-	private final boolean esTimeField;
 	private final BucketValueExtractor bucketValueExtractor;
 
 	private KPIField(final Builder builder)
@@ -77,7 +76,7 @@ public class KPIField
 		Check.assumeNotEmpty(builder.esPath, "builder.esPath is not empty");
 
 		fieldName = builder.fieldName;
-		fieldType = builder.fieldType;
+		groupBy = builder.groupBy;
 
 		caption = builder.caption;
 		description = builder.description;
@@ -88,7 +87,6 @@ public class KPIField
 
 		esPathStr = builder.esPathStr;
 		esPath = builder.esPath;
-		esTimeField = builder.esTimeField;
 		bucketValueExtractor = createBucketValueExtractor(esPath);
 	}
 
@@ -197,7 +195,7 @@ public class KPIField
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("fieldName", fieldName)
-				.add("fieldType", fieldType)
+				.add("groupBy", groupBy)
 				.add("esPath", esPath)
 				.add("valueType", valueType)
 				.toString();
@@ -207,10 +205,16 @@ public class KPIField
 	{
 		return fieldName;
 	}
-
-	public KPIFieldType getFieldType()
+	
+	public String getOffsetFieldName()
 	{
-		return fieldType;
+		return fieldName + "_offset";
+	}
+
+	
+	public boolean isGroupBy()
+	{
+		return groupBy;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -243,11 +247,6 @@ public class KPIField
 		return esPathStr;
 	}
 
-	public boolean isESTimeField()
-	{
-		return esTimeField;
-	}
-
 	public String getColor()
 	{
 		return color;
@@ -261,7 +260,7 @@ public class KPIField
 	public static final class Builder
 	{
 		private String fieldName;
-		private KPIFieldType fieldType;
+		private boolean groupBy;
 		private ITranslatableString caption;
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private String unit;
@@ -269,7 +268,6 @@ public class KPIField
 
 		private String color;
 
-		private boolean esTimeField;
 		private String esPathStr;
 		private List<String> esPath;
 
@@ -290,10 +288,10 @@ public class KPIField
 			this.fieldName = fieldName;
 			return this;
 		}
-
-		public Builder setFieldType(final KPIFieldType fieldType)
+		
+		public Builder setGroupBy(boolean groupBy)
 		{
-			this.fieldType = fieldType;
+			this.groupBy = groupBy;
 			return this;
 		}
 
@@ -333,12 +331,5 @@ public class KPIField
 			esPath = PATH_SPLITTER.splitToList(this.esPathStr);
 			return this;
 		}
-
-		public Builder setESTimeField(final boolean esTimeField)
-		{
-			this.esTimeField = esTimeField;
-			return this;
-		}
-
 	}
 }
