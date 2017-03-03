@@ -58,8 +58,9 @@ public class JsonKPIFieldLayout
 	@JsonProperty("fieldName")
 	private final String fieldName;
 
-	@JsonProperty("groupBy")
-	private final boolean groupBy;
+	// NOTE: not needed because we are providing a separate groupByField in JsonKPILayout
+	// @JsonProperty("groupBy")
+	// private final boolean groupBy;
 
 	@JsonProperty("dataType")
 	private final String dataType;
@@ -95,7 +96,7 @@ public class JsonKPIFieldLayout
 		description = kpiField.getDescription(adLanguage);
 		unit = kpiField.getUnit();
 
-		groupBy = kpiField.isGroupBy();
+		// groupBy = kpiField.isGroupBy();
 		dataType = kpiField.getValueType().toJson();
 
 		color = kpiField.getColor();

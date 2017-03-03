@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -83,10 +85,21 @@ public class KPI
 		defaultTimeRange = builder.defaultTimeRange;
 
 		fields = ImmutableList.copyOf(builder.fields);
-		groupByField = fields.stream()
+		final List<KPIField> groupByFieldsList = fields.stream()
 				.filter(KPIField::isGroupBy)
-				.findFirst()
-				.orElse(null);
+				.collect(GuavaCollectors.toImmutableList());
+		if (groupByFieldsList.isEmpty())
+		{
+			groupByField = null;
+		}
+		else if (groupByFieldsList.size() == 1)
+		{
+			groupByField = groupByFieldsList.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Only one group by field allowed but we found: " + groupByFieldsList);
+		}
 
 		esSearchIndex = builder.esSearchIndex;
 		esSearchTypes = builder.esSearchTypes;
@@ -132,10 +145,16 @@ public class KPI
 
 	public KPIField getGroupByField()
 	{
+		final KPIField groupByField = getGroupByFieldOrNull();
 		if (groupByField == null)
 		{
 			throw new IllegalStateException("KPI has no group by field defined");
 		}
+		return groupByField;
+	}
+
+	public KPIField getGroupByFieldOrNull()
+	{
 		return groupByField;
 	}
 

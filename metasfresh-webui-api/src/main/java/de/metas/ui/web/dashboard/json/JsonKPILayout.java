@@ -57,7 +57,11 @@ public class JsonKPILayout
 
 	@JsonProperty("pollIntervalSec")
 	private final int pollIntervalSec;
-	
+
+	@JsonProperty("groupByField")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JsonKPIFieldLayout groupByField;
+
 	@JsonProperty("fields")
 	private final List<JsonKPIFieldLayout> fields;
 
@@ -72,10 +76,21 @@ public class JsonKPILayout
 
 		pollIntervalSec = kpi.getPollIntervalSec();
 
+		//
+		// Group by field
+		final KPIField groupByField = kpi.getGroupByFieldOrNull();
+		this.groupByField = groupByField == null ? null : JsonKPIFieldLayout.field(groupByField, jsonOpts);
+
 		final ImmutableList.Builder<JsonKPIFieldLayout> jsonFields = ImmutableList.builder();
 		final boolean hasCompareOffset = kpi.hasCompareOffset();
 		for (final KPIField kpiField : kpi.getFields())
 		{
+			// Don't add the group by field to our fields list
+			if (kpiField.isGroupBy())
+			{
+				continue;
+			}
+
 			jsonFields.add(JsonKPIFieldLayout.field(kpiField, jsonOpts));
 
 			if (hasCompareOffset && !kpiField.isGroupBy())
