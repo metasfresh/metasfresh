@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -41,15 +42,19 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 /**
- * Process Information (Value Object)
+ * Process Instance informations.
+ * 
+ * NOTE to developers: when changing this class, please keep in mind that it always shall be fully restorable from AD_PInstance_ID. 
  *
  * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
  * @author metas-dev <dev@metasfresh.com>
@@ -57,6 +62,8 @@ import de.metas.document.engine.IDocActionBL;
 @SuppressWarnings("serial")
 public final class ProcessInfo implements Serializable
 {
+	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
+
 	public static final ProcessInfoBuilder builder()
 	{
 		return new ProcessInfoBuilder();
@@ -136,7 +143,8 @@ public final class ProcessInfo implements Serializable
 	private final int tabNo;
 	/** Class Name */
 	private final Optional<String> className;
-	private transient ProcessClassInfo processClassInfo = null; // lazy
+	private transient ProcessClassInfo _processClassInfo = null; // lazy
+
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
 	private final int adWorkflowId;
@@ -243,6 +251,51 @@ public final class ProcessInfo implements Serializable
 	public String getClassName()
 	{
 		return className.orElse(null);
+	}
+	
+	/**
+	 * Creates a new instance of {@link #getClassName()}.
+	 * If the classname is empty, null will be returned.
+	 * @return new instance or null
+	 */
+	public final IProcess newProcessClassInstanceOrNull()
+	{
+		final String classname = getClassName();
+		if(Check.isEmpty(classname, true))
+		{
+			return null;
+		}
+		
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = getClass().getClassLoader();
+		}
+		
+		try
+		{
+			final Class<?> processClass = classLoader.loadClass(classname);
+			final IProcess processClassInstance = (IProcess)processClass.newInstance();
+			if (processClassInstance instanceof JavaProcess)
+			{
+				((JavaProcess)processClassInstance).init(this);
+			}
+			
+			return processClassInstance;
+		}
+		catch (final Throwable e)
+		{
+			if (isServerProcess() && Ini.isClient())
+			{
+				// NOTE: in case of server process, it might be that the class is not present, which could be fine
+				logger.debug("Failed instantiating class '{}'. Skipped.", classname, e);
+			}
+			else
+			{
+				logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
+			}
+			return null;
+		}
 	}
 
 	public Optional<String> getDBProcedureName()
@@ -367,7 +420,7 @@ public final class ProcessInfo implements Serializable
 			return Optional.empty();
 		}
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
-		if (!Check.equals(tableName, modelTableName))
+		if (!Objects.equals(tableName, modelTableName))
 		{
 			return Optional.empty();
 		}
@@ -584,11 +637,11 @@ public final class ProcessInfo implements Serializable
 	 */
 	public ProcessClassInfo getProcessClassInfo()
 	{
-		if (processClassInfo == null)
+		if (_processClassInfo == null)
 		{
-			processClassInfo = ProcessClassInfo.ofClassname(getClassName());
+			_processClassInfo = ProcessClassInfo.ofClassname(getClassName());
 		}
-		return processClassInfo;
+		return _processClassInfo;
 	}
 
 	public static final class ProcessInfoBuilder

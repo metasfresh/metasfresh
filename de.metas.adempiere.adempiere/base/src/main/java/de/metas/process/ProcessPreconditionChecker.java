@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
@@ -26,11 +27,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -80,21 +81,26 @@ public class ProcessPreconditionChecker
 				return resolution;
 			}
 		}
-		
+
 		ProcessPreconditionsResolution resolution = null;
-		
 
 		final Class<? extends IProcessPrecondition> preconditionsClass = getPreconditionsClass();
 		if (preconditionsClass != null)
 		{
 			try
 			{
-				final IProcessPrecondition preconditions = createProcessPreconditions(preconditionsClass);
-				resolution = preconditions.checkPreconditionsApplicable(getPreconditionsContext());
-				if (resolution.isRejected())
+				IProcessPreconditionsContext preconditionsContext = getPreconditionsContext();
+				final IProcessPrecondition preconditions = createProcessPreconditions(preconditionsClass, preconditionsContext);
+
+				try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstance(preconditions))
 				{
-					return resolution;
+					resolution = preconditions.checkPreconditionsApplicable(preconditionsContext);
+					if (resolution.isRejected())
+					{
+						return resolution;
+					}
 				}
+
 			}
 			catch (final Exception ex)
 			{
@@ -108,9 +114,14 @@ public class ProcessPreconditionChecker
 		return resolution != null ? resolution : ProcessPreconditionsResolution.accept();
 	}
 
-	private static final IProcessPrecondition createProcessPreconditions(final Class<? extends IProcessPrecondition> preconditionsClass) throws Exception
+	private static final IProcessPrecondition createProcessPreconditions(final Class<? extends IProcessPrecondition> preconditionsClass, IProcessPreconditionsContext context) throws Exception
 	{
-		return preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
+		final IProcessPrecondition processPreconditions = preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
+		if(processPreconditions instanceof JavaProcess)
+		{
+			((JavaProcess)processPreconditions).init(context);
+		}
+		return processPreconditions;
 	}
 
 	public ProcessPreconditionChecker setProcess(final String processClassname)
@@ -144,8 +155,10 @@ public class ProcessPreconditionChecker
 		return this;
 	}
 
-	public ProcessPreconditionChecker setProcess(final I_AD_Process adProcess)
+	public ProcessPreconditionChecker setProcess(final RelatedProcessDescriptor relatedProcess)
 	{
+		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), relatedProcess.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+		
 		_processClass = null;
 		_preconditionsClass = null;
 		_processClassInfo = null;
@@ -199,12 +212,6 @@ public class ProcessPreconditionChecker
 		return this;
 	}
 
-	public ProcessPreconditionChecker setProcess(final RelatedProcessDescriptor relatedProcess)
-	{
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), relatedProcess.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
-		return setProcess(adProcess);
-	}
-
 	private final Class<?> loadClass(final String classname, final boolean isServerProcess)
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -246,11 +253,10 @@ public class ProcessPreconditionChecker
 
 	}
 
-	private final ProcessPreconditionsResolution presetRejectWithInternalReason(final String errorMessage, final Throwable ex)
+	private final void presetRejectWithInternalReason(final String errorMessage, final Throwable ex)
 	{
 		logger.warn("Marked checker as not applicable: {} because {}", this, errorMessage, ex);
-		final ProcessPreconditionsResolution resolution = _presetResolution = ProcessPreconditionsResolution.rejectWithInternalReason(errorMessage);
-		return resolution;
+		_presetResolution = ProcessPreconditionsResolution.rejectWithInternalReason(errorMessage);
 	}
 
 	private final ProcessPreconditionsResolution getPresetResolution()

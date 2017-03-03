@@ -35,8 +35,8 @@ import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
- * Implementors perform HU merges. In a merge, we load stuff from source HUs to <b>already existing</b> destination HUs.<br>
- * That the destination HUs already exists is the main different between merge an split and makes merging "simpler" (i.e. we can internally use a {@link HUListAllocationSourceDestination} instead of a {@link ILUTUProducerAllocationDestination}).
+ * Implementors perform HU merges. In a merge, we load stuff from source HUs to an <b>already existing</b> destination HU.<br>
+ * That the destination HU already exists is the main different between merge an split and makes merging "simpler" (i.e. we can internally use a {@link HUListAllocationSourceDestination} instead of a {@link ILUTUProducerAllocationDestination}).
  * <p>
  * Use the constructor of {@link TUMergeBuilder} to get an instance.
  * 

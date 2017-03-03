@@ -95,6 +95,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private I_C_BPartner _bpartner = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
 
 	/**
 	 *
@@ -301,6 +302,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		//
 		// Link to LU/TU Configuration if any
 		huBuilder.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
+		
+		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
 		return huBuilder;
 	}
@@ -315,10 +318,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected abstract I_M_HU_Item getParent_HU_Item();
 
 	@Override
-	public final void setM_Locator(final I_M_Locator locator)
+	public final IHUProducerAllocationDestination setM_Locator(final I_M_Locator locator)
 	{
 		assertConfigurable();
 		_locator = locator;
+		return this;
 	}
 
 	@Override
@@ -328,10 +332,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final void setHUStatus(final String huStatus)
+	public final IHUProducerAllocationDestination setHUStatus(final String huStatus)
 	{
 		assertConfigurable();
 		_huStatus = huStatus;
+		return this;
 	}
 
 	@Override
@@ -341,10 +346,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner bpartner)
+	public IHUProducerAllocationDestination setC_BPartner(final I_C_BPartner bpartner)
 	{
 		assertConfigurable();
 		_bpartner = bpartner;
+		return this;
 	}
 
 	@Override
@@ -354,10 +360,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public void setC_BPartner_Location_ID(final int bpartnerLocationId)
+	public IHUProducerAllocationDestination setC_BPartner_Location_ID(final int bpartnerLocationId)
 	{
 		assertConfigurable();
 		_bpartnerLocationId = bpartnerLocationId;
+		return this;
 	}
 
 	@Override
@@ -688,7 +695,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 						final BigDecimal tareOfHU = WeightTareAttributeValueCallout.calculateWeightTare(hu);
 
 						final BigDecimal taresOfChildren = attributeStorage
-								.getChildAttributeStorages(false).stream()
+								.getChildAttributeStorages(true) // loadIfNeeded=true because we need to make sure to have all tares that exist. not matter if those storages are already on memory or no.
+								.stream()
 								.filter(s -> s.hasAttribute(weightTareAttribute))
 								.map(s -> s.getValueAsBigDecimal(weightTareAttribute))
 								.reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -718,16 +726,30 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// Do nothing on this level.
 	}
 
-	public final void setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final AbstractProducerDestination setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		assertConfigurable();
 		_lutuConfiguration = lutuConfiguration;
+		return this;
 	}
 
 	public final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		return _lutuConfiguration;
 	}
+	
+	@Override
+	public final IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwnerPM)
+	{
+		this._isHUPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM;
+		return this;
+	}
+	
+	public final boolean isHUPlanningReceiptOwnerPM()
+	{
+		return _isHUPlanningReceiptOwnerPM;
+	}
+
 
 	/**
 	 * Sets this producer in "non-configurable" state. No further configuration to this producer will be allowed after calling this method.

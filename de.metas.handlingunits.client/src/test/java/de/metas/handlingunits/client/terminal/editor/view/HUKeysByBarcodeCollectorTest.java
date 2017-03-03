@@ -29,10 +29,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -45,9 +45,6 @@ import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 
 public class HUKeysByBarcodeCollectorTest
 {

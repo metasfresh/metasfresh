@@ -14,7 +14,7 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1460794933L;
+	private static final long serialVersionUID = 1501863475L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI_Field (Properties ctx, int WEBUI_KPI_Field_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 			setAD_Element_ID (0);
 			setAD_Reference_ID (0);
 			setES_FieldPath (null);
-			setES_TimeField (false);
+			setIsGroupBy (false);
 // N
 			setName (null);
 			setWEBUI_KPI_Field_ID (0);
@@ -122,6 +122,22 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 		return ii.intValue();
 	}
 
+	/** Set Color.
+		@param Color Color	  */
+	@Override
+	public void setColor (java.lang.String Color)
+	{
+		set_Value (COLUMNNAME_Color, Color);
+	}
+
+	/** Get Color.
+		@return Color	  */
+	@Override
+	public java.lang.String getColor () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Color);
+	}
+
 	/** Set Elasticsearch field path.
 		@param ES_FieldPath Elasticsearch field path	  */
 	@Override
@@ -138,20 +154,23 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 		return (java.lang.String)get_Value(COLUMNNAME_ES_FieldPath);
 	}
 
-	/** Set Elasticseach time field.
-		@param ES_TimeField Elasticseach time field	  */
+	/** Set Gruppieren.
+		@param IsGroupBy 
+		After a group change, totals, etc. are printed
+	  */
 	@Override
-	public void setES_TimeField (boolean ES_TimeField)
+	public void setIsGroupBy (boolean IsGroupBy)
 	{
-		set_Value (COLUMNNAME_ES_TimeField, Boolean.valueOf(ES_TimeField));
+		set_Value (COLUMNNAME_IsGroupBy, Boolean.valueOf(IsGroupBy));
 	}
 
-	/** Get Elasticseach time field.
-		@return Elasticseach time field	  */
+	/** Get Gruppieren.
+		@return After a group change, totals, etc. are printed
+	  */
 	@Override
-	public boolean isES_TimeField () 
+	public boolean isGroupBy () 
 	{
-		Object oo = get_Value(COLUMNNAME_ES_TimeField);
+		Object oo = get_Value(COLUMNNAME_IsGroupBy);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -178,6 +197,25 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Symbol.
+		@param UOMSymbol 
+		Symbol für die Maßeinheit
+	  */
+	@Override
+	public void setUOMSymbol (java.lang.String UOMSymbol)
+	{
+		set_Value (COLUMNNAME_UOMSymbol, UOMSymbol);
+	}
+
+	/** Get Symbol.
+		@return Symbol für die Maßeinheit
+	  */
+	@Override
+	public java.lang.String getUOMSymbol () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UOMSymbol);
 	}
 
 	/** Set WEBUI_KPI_Field.

@@ -2246,4 +2246,10 @@ public class GridField
 		Check.assumeNotNull(gridTab, "gridTab not null");
 		return gridTab;
 	}
+	
+	@Override
+	public int getContextAsInt(String name)
+	{
+		return Env.getContextAsInt(getCtx(), getWindowNo(), name);
+	}
 }

@@ -127,6 +127,29 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
+	 * Set Color.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setColor (java.lang.String Color);
+
+	/**
+	 * Get Color.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getColor();
+
+    /** Column definition for Color */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Color = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Color", null);
+    /** Column name Color */
+    public static final String COLUMNNAME_Color = "Color";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -180,29 +203,6 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_ES_FieldPath = "ES_FieldPath";
 
 	/**
-	 * Set Elasticseach time field.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setES_TimeField (boolean ES_TimeField);
-
-	/**
-	 * Get Elasticseach time field.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isES_TimeField();
-
-    /** Column definition for ES_TimeField */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_ES_TimeField = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "ES_TimeField", null);
-    /** Column name ES_TimeField */
-    public static final String COLUMNNAME_ES_TimeField = "ES_TimeField";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -228,6 +228,31 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Gruppieren.
+	 * After a group change, totals, etc. are printed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsGroupBy (boolean IsGroupBy);
+
+	/**
+	 * Get Gruppieren.
+	 * After a group change, totals, etc. are printed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isGroupBy();
+
+    /** Column definition for IsGroupBy */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_IsGroupBy = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "IsGroupBy", null);
+    /** Column name IsGroupBy */
+    public static final String COLUMNNAME_IsGroupBy = "IsGroupBy";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -251,6 +276,31 @@ public interface I_WEBUI_KPI_Field
     public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Symbol.
+	 * Symbol für die Maßeinheit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUOMSymbol (java.lang.String UOMSymbol);
+
+	/**
+	 * Get Symbol.
+	 * Symbol für die Maßeinheit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUOMSymbol();
+
+    /** Column definition for UOMSymbol */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_UOMSymbol = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "UOMSymbol", null);
+    /** Column name UOMSymbol */
+    public static final String COLUMNNAME_UOMSymbol = "UOMSymbol";
 
 	/**
 	 * Get Aktualisiert.

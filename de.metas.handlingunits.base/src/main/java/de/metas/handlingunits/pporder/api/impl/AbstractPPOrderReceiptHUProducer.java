@@ -159,9 +159,9 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 
 		//
 		// Execute transfer
-		final HULoader loader = new HULoader(ppOrderAllocationSource, huProducerDestination);
-		loader.setAllowPartialUnloads(false);
-		loader.setAllowPartialLoads(false);
+		final HULoader loader = HULoader.of(ppOrderAllocationSource, huProducerDestination)
+				.setAllowPartialUnloads(false)
+				.setAllowPartialLoads(false);
 		final IAllocationResult allocationResult = loader.load(allocationRequest);
 		Check.assume(allocationResult.isCompleted(), "Result shall be completed: {}", allocationResult);
 
