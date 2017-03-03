@@ -72,7 +72,7 @@ public class DashboardRestController
 	}
 
 	@GetMapping("/kpis/{itemId}/data")
-	public KPIData getKPIData( //
+	public KPIDataResult getKPIData( //
 			@PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
@@ -95,7 +95,7 @@ public class DashboardRestController
 	}
 
 	@GetMapping("/targetIndicators/{itemId}/data")
-	public KPIData getTargetIndicatorData( //
+	public KPIDataResult getTargetIndicatorData( //
 			@PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //

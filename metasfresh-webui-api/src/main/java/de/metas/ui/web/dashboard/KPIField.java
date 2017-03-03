@@ -7,6 +7,8 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 
@@ -37,6 +39,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class KPIField
 {
 	public static final Builder builder()
@@ -51,9 +54,14 @@ public class KPIField
 	}
 
 	private final String fieldName;
+	private final KPIFieldType fieldType;
+
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
+	private final String unit;
 	private final KPIFieldValueType valueType;
+
+	private final String color;
 
 	private final String esPathStr;
 	private final List<String> esPath;
@@ -69,9 +77,14 @@ public class KPIField
 		Check.assumeNotEmpty(builder.esPath, "builder.esPath is not empty");
 
 		fieldName = builder.fieldName;
+		fieldType = builder.fieldType;
+
 		caption = builder.caption;
 		description = builder.description;
+		unit = builder.unit;
 		valueType = builder.valueType;
+
+		color = builder.color;
 
 		esPathStr = builder.esPathStr;
 		esPath = builder.esPath;
@@ -122,7 +135,10 @@ public class KPIField
 					final long millis = ((Number)value).longValue();
 					return JSONDate.toJson(millis);
 				}
-				break;
+				else
+				{
+					return value;
+				}
 			}
 			case DateTime:
 			{
@@ -140,7 +156,10 @@ public class KPIField
 					final long millis = ((Number)value).longValue();
 					return JSONDate.toJson(millis);
 				}
-				break;
+				else
+				{
+					return value;
+				}
 			}
 			case Number:
 			{
@@ -156,7 +175,10 @@ public class KPIField
 				{
 					return BigDecimal.valueOf(((Number)value).intValue());
 				}
-				break;
+				else
+				{
+					return value;
+				}
 			}
 			case String:
 			{
@@ -167,9 +189,6 @@ public class KPIField
 				throw new IllegalStateException("valueType not supported: " + valueType);
 			}
 		}
-
-		// Fallback
-		return value;
 	}
 
 	@Override
@@ -178,6 +197,7 @@ public class KPIField
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("fieldName", fieldName)
+				.add("fieldType", fieldType)
 				.add("esPath", esPath)
 				.add("valueType", valueType)
 				.toString();
@@ -186,6 +206,11 @@ public class KPIField
 	public String getFieldName()
 	{
 		return fieldName;
+	}
+
+	public KPIFieldType getFieldType()
+	{
+		return fieldType;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -203,11 +228,16 @@ public class KPIField
 		return valueType;
 	}
 
+	public String getUnit()
+	{
+		return unit;
+	}
+
 	public List<String> getESPath()
 	{
 		return esPath;
 	}
-	
+
 	public String getESPathAsString()
 	{
 		return esPathStr;
@@ -218,6 +248,11 @@ public class KPIField
 		return esTimeField;
 	}
 
+	public String getColor()
+	{
+		return color;
+	}
+
 	public BucketValueExtractor getBucketValueExtractor()
 	{
 		return bucketValueExtractor;
@@ -226,9 +261,14 @@ public class KPIField
 	public static final class Builder
 	{
 		private String fieldName;
+		private KPIFieldType fieldType;
 		private ITranslatableString caption;
 		private ITranslatableString description = ImmutableTranslatableString.empty();
+		private String unit;
 		private KPIFieldValueType valueType;
+
+		private String color;
+
 		private boolean esTimeField;
 		private String esPathStr;
 		private List<String> esPath;
@@ -251,6 +291,12 @@ public class KPIField
 			return this;
 		}
 
+		public Builder setFieldType(final KPIFieldType fieldType)
+		{
+			this.fieldType = fieldType;
+			return this;
+		}
+
 		public Builder setCaption(final ITranslatableString caption)
 		{
 			this.caption = caption;
@@ -263,16 +309,28 @@ public class KPIField
 			return this;
 		}
 
+		public Builder setUnit(final String unit)
+		{
+			this.unit = unit;
+			return this;
+		}
+
 		public Builder setValueType(final KPIFieldValueType valueType)
 		{
 			this.valueType = valueType;
 			return this;
 		}
 
+		public Builder setColor(final String color)
+		{
+			this.color = color;
+			return this;
+		}
+
 		public Builder setESPath(final String esPathStr)
 		{
 			this.esPathStr = esPathStr.trim();
-			this.esPath = PATH_SPLITTER.splitToList(this.esPathStr);
+			esPath = PATH_SPLITTER.splitToList(this.esPathStr);
 			return this;
 		}
 

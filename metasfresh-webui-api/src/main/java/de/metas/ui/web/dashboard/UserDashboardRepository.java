@@ -214,6 +214,8 @@ public class UserDashboardRepository
 					//
 					.setTimeRange(timeRange)
 					//
+					.setPollIntervalSec(kpiDef.getPollIntervalSec())
+					//
 					.setESSearchIndex(kpiDef.getES_Index())
 					.setESSearchTypes(kpiDef.getES_Type())
 					.setESQuery(kpiDef.getES_Query())
@@ -261,9 +263,14 @@ public class UserDashboardRepository
 
 		return KPIField.builder()
 				.setFieldName(fieldName)
+				.setFieldType(KPIFieldType.fromNullableCode(kpiFieldDef.getType()))
+				//
 				.setCaption(caption)
 				.setDescription(description)
+				.setUnit(kpiFieldDef.getUOMSymbol())
 				.setValueType(KPIFieldValueType.fromDisplayType(kpiFieldDef.getAD_Reference_ID()))
+				.setColor(kpiFieldDef.getColor())
+				//
 				.setESPath(kpiFieldDef.getES_FieldPath())
 				.setESTimeField(kpiFieldDef.isES_TimeField())
 				.build();

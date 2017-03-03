@@ -29,31 +29,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class KPIValue
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+public final class KPIDataSet
 {
-	@JsonProperty("key")
+	@JsonProperty("name")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String key;
-	
-	@JsonProperty("values")
-	private final List<Object> values;
+	private final String name;
 
-	KPIValue(final String key, final List<Object> values)
+	@JsonProperty("unit")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String unit;
+
+	@JsonProperty("values")
+	private final List<KPIDataSetValue> values;
+
+	KPIDataSet(final String name, final List<KPIDataSetValue> values)
 	{
 		super();
-		this.key = key;
+		this.name = name;
+		unit = null;
 		this.values = values;
 	}
 
-	public String getKey()
+	public String getName()
 	{
-		return key;
+		return name;
 	}
 
-	public List<Object> getValues()
+	public List<KPIDataSetValue> getValues()
 	{
 		return values;
 	}
-
 }

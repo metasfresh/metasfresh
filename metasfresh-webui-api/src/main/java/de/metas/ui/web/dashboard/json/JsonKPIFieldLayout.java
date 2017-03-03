@@ -2,8 +2,11 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.KPIField;
+import de.metas.ui.web.dashboard.KPIFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -29,7 +32,6 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@SuppressWarnings("unused")
 public class JsonKPIFieldLayout
 {
 	public static final JsonKPIFieldLayout of(final KPIField kpiField, final JSONOptions jsonOpts)
@@ -37,19 +39,50 @@ public class JsonKPIFieldLayout
 		return new JsonKPIFieldLayout(kpiField, jsonOpts);
 	}
 
+	@JsonProperty("caption")
 	private final String caption;
-	private final String description;
-	private final String type;
-	private final boolean timeField;
 
+	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String description;
+	
+	@JsonProperty("unit")
+	private final String unit;
+	
+	@JsonProperty("fieldName")
+	private final String fieldName;
+	
+	@JsonProperty("fieldType")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final KPIFieldType fieldType;
+
+	@JsonProperty("dataType")
+	private final String dataType;
+	
+
+	@JsonProperty("timeField")
+	private final boolean timeField;
+	
+
+	@JsonProperty("color")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String color;
+	
 	public JsonKPIFieldLayout(final KPIField kpiField, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
 		caption = kpiField.getCaption(adLanguage);
 		description = kpiField.getDescription(adLanguage);
-		type = kpiField.getValueType().toJson();
+		unit = kpiField.getUnit();
+		
+		fieldName = kpiField.getFieldName();
+		fieldType = kpiField.getFieldType() == null ? null : kpiField.getFieldType();
+		
+		dataType = kpiField.getValueType().toJson();
 		timeField = kpiField.isESTimeField();
+		
+		color = kpiField.getColor();
 	}
 
 }

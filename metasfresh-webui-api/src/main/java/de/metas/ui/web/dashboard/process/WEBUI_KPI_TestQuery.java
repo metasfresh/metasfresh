@@ -17,7 +17,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.KPI;
-import de.metas.ui.web.dashboard.KPIData;
+import de.metas.ui.web.dashboard.KPIDataResult;
 import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 
@@ -85,7 +85,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 
 		final long fromMillis = p_DateFrom == null ? -1 : p_DateFrom.getTime();
 		final long toMillis = p_DateTo == null ? -1 : p_DateTo.getTime();
-		final KPIData kpiData = kpi.retrieveData(fromMillis, toMillis);
+		final KPIDataResult kpiData = kpi.retrieveData(fromMillis, toMillis);
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);
 		log.info("jsonData:\n {}", jsonData);
