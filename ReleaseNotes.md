@@ -21,7 +21,8 @@ upcoming
 
 * metasfresh-webui-api
   * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
-  
+  * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service 
+
 ## Fixes
 * metqasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
