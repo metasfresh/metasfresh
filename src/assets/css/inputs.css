@@ -444,8 +444,7 @@ input:checked + .input-slider:before {
     border-color: $brand-danger-color;
 }
 
-.input-error,
-.input-error * {
+.input-error input {
     color: $brand-font-color-danger;
 }
 
