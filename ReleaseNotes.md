@@ -84,13 +84,17 @@ this week's RC
   * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
     * Fixed a Bug that occured in one time situation and restricted the retrieving of included documents. 
   * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
+    * Fix Material Receipt in WebUI to avoid interfering attachments api that cause error in minor cases when receiving HU.
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+    * Fixes an issue that only showed 3 Attribute lines when opening the Attribute Editor.
   * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
     * Harmonized the date ranges selected in WebUI Frontend with the Parameter Date Ranges used for filtering of data in Backend.
   * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
+    * Now the Quality discount is considered in Material Receipt WebUI.
  
 * metasfresh-webui-frontend
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts
+    * Fixes an issue that connected the wrong viewID in "created material receipt" workflow using keyboard navigation and selection.
  
 
 # metasfresh 4.57.56 (2017-08)
