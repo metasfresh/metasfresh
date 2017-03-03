@@ -50,11 +50,14 @@ this week's RC
     * Now allowing the recording/ editing of Packing Items in CU:TU Configuration of Product.
   * [#182](https://github.com/metasfresh/metasfresh-webui/issues/182) Material Receipt w/ multiple lines and solitary CU Buckets
     * Implementation of multi line receiving in Material Receipt and Handling Unit Editor.
-  * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone
-upcoming
+  * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone upcoming
+    * When parsing JSON Dates without time, always ignoring the sent timezone.
   * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service
+    * First prototype Implementation for new metasfresh WebUI Dashboard with usage of D3JS Charts.
   * [#191](https://github.com/metasfresh/metasfresh-webui/issues/191) "Not saved yet" info in REST-API
+    * Now providing the information up to Frontend that if data has been saved yet in database. This implementation allows to give the user more feedback about editing errors or missing mandatory data.
   * [#200](https://github.com/metasfresh/metasfresh-webui/issues/200) Generic "add new" search field functionality
+    * Implementation of a generic functionality to add new data when not found during autocomplete search workflow. This new functionality will be used in search widget and allows to record data on the fly that belongs to the search field column and ID.
 
 * metasfresh-webui-frontend
   * [#377](https://github.com/metasfresh/metasfresh-webui-frontend/issues/377) grid view: when initially clicking on first row, the second one is first selected
