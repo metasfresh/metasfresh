@@ -112,23 +112,24 @@ public class KPIDataLoader
 		{
 			timeRanges.add(TimeRange.offset(mainTimeRange, compareOffset));
 
+			fieldNameExtractor = (field, timeRange) -> {
+				if (timeRange.isMainTimeRange())
+				{
+					return field.getFieldName();
+				}
+				else if (field.isGroupBy())
+				{
+					return "_" + field.getOffsetFieldName();
+				}
+				else
+				{
+					return field.getOffsetFieldName();
+				}
+			};
+
 			final KPIField groupByField = kpi.getGroupByField();
 			if (groupByField.getValueType().isDate())
 			{
-				fieldNameExtractor = (field, timeRange) -> {
-					if (timeRange.isMainTimeRange())
-					{
-						return field.getFieldName();
-					}
-					else if (field.isGroupBy())
-					{
-						return "_" + field.getOffsetFieldName();
-					}
-					else
-					{
-						return field.getOffsetFieldName();
-					}
-				};
 				dataSetValueKeyExtractor = (bucket, timeRange) -> {
 					final long millis = convertToMillis(bucket.getKey());
 					return JSONDate.toJson(timeRange.subtractOffset(millis));
@@ -136,7 +137,7 @@ public class KPIDataLoader
 			}
 			else
 			{
-				throw new AdempiereException("Only fields of type Date are supported for groupping by with offset");
+				dataSetValueKeyExtractor = (bucket, timeRange) -> groupByField.convertValueToJson(bucket.getKey());
 			}
 		}
 
