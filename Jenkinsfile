@@ -494,7 +494,7 @@ stage('Invoke downstream jobs')
 		parameters: distJobParameters, 
 		wait: false;
 		
-	build job: getEffectiveDownStreamJobName('metasfresh-dist-federation', MF_UPSTREAM_BRANCH),
+	build job: getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
 		parameters: distJobParameters, 
 		wait: false;
 }
