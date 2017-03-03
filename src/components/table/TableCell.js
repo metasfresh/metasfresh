@@ -40,15 +40,22 @@ class TableCell extends Component {
         }
     }
 
-    createDate = (field) => {
-        if(field){
-            let d = new Date(field);
-            let date = Moment(d).format('DD.MM.YYYY');
-            return date;
-        } else {
-            // specified case to avoid parsing "error" text
-            return '';
+    getDateFormat = (type) => {
+        switch(type) {
+            case 'DateTime':
+                return 'DD.MM.YYYY HH:mm:ss';
+            case 'Date':
+                return 'DD.MM.YYYY';
+            case 'Time':
+                return 'HH:mm:ss';
+            default:
+                return 'DD.MM.YYYY';
         }
+    }
+
+    createDate = (field, type) => {
+        return field ?
+            Moment(new Date(field)).format(this.getDateFormat(type)) : '';
     }
 
     fieldToString = (field, type) => {
@@ -58,7 +65,7 @@ class TableCell extends Component {
             switch(typeof field){
                 case 'object':
                     if(type === 'Date' || type === 'DateTime' || type === 'Time'){
-                        return this.createDate(field);
+                        return this.createDate(field, type);
                     } else {
                         return field[Object.keys(field)[0]];
                     }
@@ -66,7 +73,7 @@ class TableCell extends Component {
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
                 case 'string':
                     if(type === 'Date' || type === 'DateTime' || type === 'Time'){
-                        return this.createDate(field);
+                        return this.createDate(field, type);
                     } else {
                         return field;
                     }
