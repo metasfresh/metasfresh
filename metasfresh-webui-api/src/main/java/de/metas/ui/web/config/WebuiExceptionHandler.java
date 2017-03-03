@@ -178,7 +178,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			errorAttributes.put(ATTR_Error, "Http Status " + status);
 		}
 	}
-	
+
 	private final boolean isErrorMatching(final Class<?> baseClass, final Class<?> clazz)
 	{
 		return baseClass.isAssignableFrom(clazz);
@@ -239,9 +239,12 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		{
 			exception = getAttribute(requestAttributes, RequestDispatcher.ERROR_EXCEPTION);
 		}
-		
-		exception = AdempiereException.extractCause(exception);
-		
+
+		if (exception != null)
+		{
+			exception = AdempiereException.extractCause(exception);
+		}
+
 		return exception;
 	}
 
