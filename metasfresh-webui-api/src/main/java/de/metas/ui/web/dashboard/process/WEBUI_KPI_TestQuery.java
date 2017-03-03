@@ -65,7 +65,6 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 	@Autowired
 	private Client elasticsearchClient;
 
-
 	@Param(parameterName = "DateFrom")
 	private Date p_DateFrom;
 	@Param(parameterName = "DateTo")
@@ -92,6 +91,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		final long toMillis = p_DateTo == null ? -1 : p_DateTo.getTime();
 		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi)
 				.setTimeRange(fromMillis, toMillis)
+				.assertESTypesExists()
 				.retrieveData();
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);

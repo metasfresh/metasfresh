@@ -1,6 +1,7 @@
 package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -12,8 +13,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
@@ -139,6 +142,43 @@ public class KPIDataLoader
 
 		this.timeRanges = timeRanges.build();
 
+		return this;
+	}
+
+	/**
+	 * Checks if KPI's elasticsearch Index and Type exists
+	 */
+	public KPIDataLoader assertESTypesExists()
+	{
+		final IndicesAdminClient admin = elasticsearchClient.admin()
+				.indices();
+
+		//
+		// Check index exists
+		final String esSearchIndex = kpi.getESSearchIndex();
+		final GetIndexResponse indexResponse = admin.prepareGetIndex()
+				.addIndices(esSearchIndex)
+				.get();
+		final List<String> indexesFound = Arrays.asList(indexResponse.getIndices());
+		if (!indexesFound.contains(esSearchIndex))
+		{
+			throw new AdempiereException("ES index '" + esSearchIndex + "' not found in " + indexesFound);
+		}
+		logger.debug("Indexes found: {}", indexesFound);
+
+		//
+		// Check type exists
+		final String esTypes = kpi.getESSearchTypes();
+		final boolean esTypesExists = admin.prepareTypesExists(esSearchIndex)
+				.setTypes(kpi.getESSearchTypes())
+				.get()
+				.isExists();
+		if (!esTypesExists)
+		{
+			throw new AdempiereException("Elasticseatch types " + esTypes + " does not exist");
+		}
+
+		// All good
 		return this;
 	}
 
