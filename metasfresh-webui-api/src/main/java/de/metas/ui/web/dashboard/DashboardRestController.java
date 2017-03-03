@@ -79,6 +79,7 @@ public class DashboardRestController
 			@PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
+			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -89,6 +90,7 @@ public class DashboardRestController
 		
 		return KPIDataLoader.newInstance(elasticsearchClient, kpi)
 				.setTimeRange(fromMillis, toMillis)
+				.setFormatValues(prettyValues)
 				.retrieveData()
 				.setItemId(itemId);
 	}

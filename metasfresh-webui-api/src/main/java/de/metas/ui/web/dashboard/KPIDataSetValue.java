@@ -62,4 +62,10 @@ public class KPIDataSetValue
 	{
 		map.put(fieldName, jsonValue);
 	}
+
+	@JsonIgnore
+	public void putIfAbsent(final String fieldName, final Object jsonValue)
+	{
+		map.putIfAbsent(fieldName, jsonValue);
+	}
 }

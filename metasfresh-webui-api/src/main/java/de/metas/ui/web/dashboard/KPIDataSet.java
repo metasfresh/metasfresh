@@ -60,15 +60,24 @@ public final class KPIDataSet
 		return name;
 	}
 
-	public void putValue(final Object dataSetValueKey, final String fieldName, final Object jsonValue)
+	private final KPIDataSetValue dataSetValue(final Object dataSetValueKey)
 	{
-		_valuesByKey.computeIfAbsent(dataSetValueKey, k -> {
+		return _valuesByKey.computeIfAbsent(dataSetValueKey, k -> {
 			final KPIDataSetValue value = new KPIDataSetValue(dataSetValueKey);
-			
+
 			values.add(value);
 			return value;
-		})
-				.put(fieldName, jsonValue);
+		});
+	}
+
+	public void putValue(final Object dataSetValueKey, final String fieldName, final Object jsonValue)
+	{
+		dataSetValue(dataSetValueKey).put(fieldName, jsonValue);
+	}
+
+	public void putValueIfAbsent(final Object dataSetValueKey, final String fieldName, final Object jsonValue)
+	{
+		dataSetValue(dataSetValueKey).putIfAbsent(fieldName, jsonValue);
 	}
 
 }
