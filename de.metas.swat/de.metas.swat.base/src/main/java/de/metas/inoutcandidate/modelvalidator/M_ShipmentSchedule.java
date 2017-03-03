@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -47,6 +46,7 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IInOutCandHandlerDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
@@ -54,6 +54,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule
@@ -127,6 +128,20 @@ public class M_ShipmentSchedule
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteShipmentScheduleQtyPicked(final I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+
+		// Retrieve the M_ShipmentSchedule_QtyPicked entries for this schedule
+		final List<I_M_ShipmentSchedule_QtyPicked> allocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
+		{
+			// delete the qtyPicked entries
+			InterfaceWrapperHelper.delete(alloc);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
 	public void invalidate(final I_M_ShipmentSchedule schedule)
 	{
@@ -175,9 +190,7 @@ public class M_ShipmentSchedule
 	 *
 	 * @param shipmentSchedule
 	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override })
 	public void updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -195,7 +208,7 @@ public class M_ShipmentSchedule
 			throw new AdempiereException(ERR_QtyDeliveredGreatedThanQtyOrdered, new Object[] { qtyDelivered });
 		}
 
-		if(adTableDAO.retrieveTableId(I_C_OrderLine.Table_Name) != shipmentSchedule.getAD_Table_ID())
+		if (adTableDAO.retrieveTableId(I_C_OrderLine.Table_Name) != shipmentSchedule.getAD_Table_ID())
 		{
 			return;
 		}
