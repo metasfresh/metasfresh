@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -25,6 +26,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParameter;
@@ -141,6 +143,11 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 
 		}
+		if (getSingleSelectedRow().isLU())
+		{
+			return ProcessPreconditionsResolution.reject("Only applicable for CUs and TUs");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -265,8 +272,8 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	/**
 	 * Split TU to new LU (only one LU!).
 	 *
-	 * @param tuRow
-	 * @param QtyTU
+	 * @param tuRow represents the TU (or TUs in the aggregate-HU-case) that is our split source
+	 * @param qtyTU the number of TUs we want to split from the given {@code tuRow}
 	 * @param tuPIItemProductId
 	 * @param luPIItemId
 	 * @param isOwnPackingMaterials
@@ -320,6 +327,10 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		return luPI_Item;
 	}
 
+	/**
+	 * 
+	 * @return the action that are available according to which row is currently selected and to also according to whether there are already existing TUs or LUs in the context.
+	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
 	private LookupValuesList getActions()
 	{
@@ -366,6 +377,32 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 				.collect(LookupValuesList.collect());
 	}
 
+	/**
+	 * 
+	 * @return existing TUs that are available in the current HU editor context.
+	 */
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
+	private LookupValuesList getTULookupValues()
+	{
+		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
+		if (actionType == ActionType.CU_To_ExistingTU)
+		{
+			return getView()
+					.streamAllRecursive()
+					.filter(row -> row.isTU())
+					.map(row -> row.toLookupValue())
+					.collect(LookupValuesList.collect());
+		}
+		else
+		{
+			return LookupValuesList.EMPTY;
+		}
+	}
+
+	/**
+	 * 
+	 * @return existing LUs that are available in the current HU editor context.
+	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
 	private LookupValuesList getLULookupValues()
 	{
@@ -395,27 +432,12 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 
 			case TU_To_NewTUs:
 				return retrieveHUPItemProductsForNewTU();
+				
+			case TU_To_NewLU:
+				return retrieveHUPItemProductsForNewTU(); // here we also create new TUs, in addition to the new LU
 
 			default:
 				return LookupValuesList.EMPTY;
-		}
-	}
-
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
-	private LookupValuesList getTULookupValues()
-	{
-		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
-		if (actionType == ActionType.CU_To_ExistingTU)
-		{
-			return getView()
-					.streamAllRecursive()
-					.filter(row -> row.isTU())
-					.map(row -> row.toLookupValue())
-					.collect(LookupValuesList.collect());
-		}
-		else
-		{
-			return LookupValuesList.EMPTY;
 		}
 	}
 
@@ -430,6 +452,35 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 				.stream();
 		return stream
 				.map(huPIItemProduct -> IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName()))
+				.collect(LookupValuesList.collect());
+	}
+
+	/**
+	 * Retrieves all LU packing instructions that can be used with the currently selected {@link #PARAM_M_HU_PI_Item_Product_ID}.
+	 * 
+	 * @return
+	 */
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_PI_ID, dependsOn = { PARAM_Action, PARAM_M_HU_PI_Item_Product_ID }, numericKey = true)
+	private LookupValuesList getM_LU_HU_PI_ID()
+	{
+		if (p_M_HU_PI_Item_Product == null)
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		final I_M_HU_PI tuPI = p_M_HU_PI_Item_Product.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+		final List<I_M_HU_PI> luPIs = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class, this)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, tuPI.getM_HU_PI_ID())
+				.andCollect(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_HU_PI_Version.COLUMN_M_HU_PI_ID)
+				.addOnlyActiveRecordsFilter()
+				.orderBy().addColumn(I_M_HU_PI.COLUMN_M_HU_PI_ID).endOrderBy()
+				.create()
+				.list();
+
+		return luPIs.stream().map(luPI -> IntegerLookupValue.of(luPI.getM_HU_PI_ID(), luPI.getName()))
 				.collect(LookupValuesList.collect());
 	}
 }
