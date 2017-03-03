@@ -14,6 +14,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -334,7 +335,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			final Collection<SqlDocumentFieldDataBindingDescriptor> fields = getFieldsByFieldName().values();
 			if (fields.isEmpty())
 			{
-				throw new IllegalStateException("No SQL fields found");
+				throw new AdempiereException("No SQL fields found");
 			}
 
 			final List<IStringExpression> sqlSelectValuesList = new ArrayList<>(fields.size());
