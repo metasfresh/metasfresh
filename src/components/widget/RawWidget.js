@@ -53,7 +53,7 @@ class RawWidget extends Component {
         if(
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
             JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
-            (cachedValue !== null && 
+            (cachedValue !== null &&
                 (JSON.stringify(cachedValue) !== JSON.stringify(value)))
         ){
 
@@ -105,12 +105,16 @@ class RawWidget extends Component {
             widgetData, disabled, gridAlign, type, updated, rowId, isModal
         } = this.props;
 
+        const {isEdited} = this.state;
+
         return 'input-block ' +
             (icon ? 'input-icon-container ' : '') +
             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-            (widgetData[0].validStatus &&
-                !widgetData[0].validStatus.valid ? 'input-error ' : '') +
-            (widgetData[0].mandatory && 
+            ((widgetData[0].validStatus &&
+                !widgetData[0].validStatus.valid &&
+                !isEdited)  ? 'input-error ' : '') +
+            (widgetData[0].mandatory &&
+                widgetData[0].value &&
                 widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
             (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
@@ -129,7 +133,7 @@ class RawWidget extends Component {
     renderWidget = () => {
         const {
             handleChange, updated, isModal, filterWidget, filterId, id, range,
-            onHide, handleBackdropLock, subentity, subentityId, tabIndex, 
+            onHide, handleBackdropLock, subentity, subentityId, tabIndex,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId
@@ -138,7 +142,7 @@ class RawWidget extends Component {
         const {isEdited} = this.state;
 
         // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
-        const widgetField = filterWidget ? 
+        const widgetField = filterWidget ?
             fields[0].parameterName : fields[0].field;
 
         switch(widgetType){
@@ -151,12 +155,12 @@ class RawWidget extends Component {
                         <DatetimeRange
                             onChange={(value, valueTo) =>
                                 this.handlePatch(widgetField,
-                                    value ? 
-                                        Moment(value).format(DATE_FORMAT) : 
+                                    value ?
+                                        Moment(value).format(DATE_FORMAT) :
                                         null,
                                     null,
-                                    valueTo ? 
-                                        Moment(valueTo).format(DATE_FORMAT) : 
+                                    valueTo ?
+                                        Moment(valueTo).format(DATE_FORMAT) :
                                         null
                                 )
                             }
@@ -183,7 +187,7 @@ class RawWidget extends Component {
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
                                 value={widgetData[0].value}
-                                onChange={(date) => 
+                                onChange={(date) =>
                                     handleChange(widgetField, date)}
                                 patch={(date) => this.handlePatch(
                                     widgetField,
@@ -477,16 +481,22 @@ class RawWidget extends Component {
                     <label
                         className={
                             'input-switch ' +
-                            (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
-                            (validStatus &&
-                                !validStatus.valid ? 'input-error ' : '') +
+                            (widgetData[0].readonly || disabled ?
+                                'input-disabled ' : '') +
+                            (widgetData[0].mandatory &&
+                                widgetData[0].value.length === 0 ?
+                                    'input-mandatory ' : '') +
+                            (widgetData[0].validStatus &&
+                                !widgetData[0].validStatus.valid ?
+                                'input-error ' : '') +
                             (rowId && !isModal ? 'input-table ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
                         onKeyDown={e => {e.key === ' ' &&
-                            this.handlePatch(widgetField, !widgetData[0].value, id)
+                            this.handlePatch(
+                                widgetField, !widgetData[0].value, id
+                            )
                         }}
                     >
                         <input

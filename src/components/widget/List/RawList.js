@@ -247,7 +247,7 @@ class RawList extends Component {
 
     render() {
         const {
-            list, rank, readonly, defaultValue, selected, align, updated, 
+            list, rank, readonly, defaultValue, selected, align, updated,
             loading, rowId, isModal, tabIndex, disabled, mandatory, validStatus
         } = this.props;
 
@@ -268,7 +268,8 @@ class RawList extends Component {
                     (rowId ? 'input-dropdown-container-static ' : '') +
                     ((rowId && !isModal) ? 'input-table ' : '') +
                     (validStatus &&
-                        !validStatus.valid ? 'input-error ' : '')
+                        !validStatus.valid &&
+                        !isOpen ? 'input-error ' : '')
                 }
             >
                 <div className={

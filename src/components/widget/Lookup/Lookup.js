@@ -390,8 +390,8 @@ class Lookup extends Component {
                     (readonly ? 'input-disabled ' : '') +
                     (rowId ? 'input-dropdown-container-static ' : '') +
                     ((rowId && !isModal)? 'input-table ' : '') +
-                    (validStatus &&
-                        !validStatus.valid ? 'input-error ' : '')
+                    ((validStatus &&
+                        !validStatus.valid) ? 'input-error ' : '')
                 }
             >
                 <div className={

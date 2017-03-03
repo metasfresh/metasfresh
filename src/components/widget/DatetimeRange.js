@@ -76,7 +76,7 @@ class DatetimeRange extends Component {
                 <button className={
                     'btn btn-block text-xs-left btn-meta-outline-secondary ' +
                     'btn-distance btn-sm input-icon-container input-primary ' +
-                    ((mandatory && !startDate && !endDate) ? 
+                    ((mandatory && !startDate && !endDate) ?
                         'input-mandatory ' : '') +
                     ((validStatus && !validStatus.valid) ?
                         'input-error ' : '')
