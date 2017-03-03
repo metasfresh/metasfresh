@@ -24,12 +24,10 @@ package de.metas.handlingunits.allocation.transfer.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -39,12 +37,9 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
 import de.metas.handlingunits.document.IHUDocumentLine;
@@ -53,11 +48,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 public class HUSplitBuilder implements IHUSplitBuilder
 {
-	//
-	// Services
-
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-
 	private final IHUContext huContextInitial;
 
 	private I_M_HU _huToSplit;
@@ -190,52 +180,29 @@ public class HUSplitBuilder implements IHUSplitBuilder
 	@Override
 	public List<I_M_HU> split()
 	{
-		final List<I_M_HU> splitHUs = new ArrayList<I_M_HU>();
+		//
+		// Destination: Split HUs
+		final ILUTUProducerAllocationDestination destination = createLUTUProducerDestination();
 
-		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext0)
-					{
-						// Make a copy of the processing context, we will need to modify it
-						final IMutableHUContext huContext = huContext0.copyAsMutable();
+		//
+		// Request is configured with full qty on the CU key and upper limits for max split LU/TUs will be handled in the destination
+		final Function<IHUContext, IAllocationRequest> splitQtyRequestProvider = huContext -> createSplitAllocationRequest(huContext);
 
-						// Register our split HUTrxListener so that the other listeners' onSplit() methods will be called
-						huContext.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
-
-						// Perform the actual split
-						final List<I_M_HU> splitHUsInTrx = split0(huContext);
-
-						//
-						// Make created HUs to be out-of-transaction to be used elsewhere
-						for (final I_M_HU splitHU : splitHUsInTrx)
-						{
-							InterfaceWrapperHelper.setTrxName(splitHU, ITrx.TRXNAME_None);
-							splitHUs.add(splitHU);
-						}
-
-						return NULL_RESULT; // we don't care about the result
-					}
-				});
+		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine
+				.of(huContextInitial,
+						getHUToSplit(),
+						splitQtyRequestProvider,
+						destination)
+				.withPropagateHUValues()
+				.withDocumentLine(documentLine)
+				.withTuPIItem(tuPIItem)
+				.performSplit();
 
 		return splitHUs;
 	}
 
-	private List<I_M_HU> split0(final IHUContext huContext)
+	private ILUTUProducerAllocationDestination createLUTUProducerDestination()
 	{
-		final I_M_HU huToSplit = getHUToSplit();
-
-		//
-		// using thread-inherited to let this split key work in transaction and out of transaction
-		InterfaceWrapperHelper.setTrxName(huToSplit, ITrx.TRXNAME_ThreadInherited);
-
-		//
-		// Request is configured with full qty on the CU key and upper limits for max split LU/TUs will be handled in the destination
-		final IAllocationRequest splitQtyRequest = createSplitAllocationRequest(huContext);
-
-		//
-		// Destination: Split HUs
 		final ILUTUProducerAllocationDestination destination;
 		{
 			final IHUSplitDefinition splitDefinition = createSplitDefinition(luPIItem, tuPIItem, cuProduct, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate);
@@ -256,14 +223,7 @@ public class HUSplitBuilder implements IHUSplitBuilder
 				destination.setCreateTUsForRemainingQty(false);
 			}
 		}
-
-		HUSplitBuilderCoreEngine.of(huContext, getHUToSplit(), splitQtyRequest, destination)
-				.withPropagateHUValues()
-				.withDocumentLine(documentLine)
-				.withTuPIItem(tuPIItem)
-				.performSplit();
-
-		return destination.getCreatedHUs();
+		return destination;
 	}
 
 	private IHUSplitDefinition createSplitDefinition(

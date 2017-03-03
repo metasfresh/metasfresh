@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
@@ -99,17 +98,6 @@ public interface IInOutCandHandlerBL extends ISingletonService
 	 * @return
 	 */
 	I_M_IolCandHandler retrieveHandlerRecordOrNull(Properties ctx, String className, String trxName);
-
-	/**
-	 * retrieve handler log
-	 *
-	 * @param ctx
-	 * @param M_IolCandHandler_ID
-	 * @param recordID
-	 * @param trxName
-	 * @return
-	 */
-	List<I_M_IolCandHandler_Log> retrieveOLHandlerLogs(final Properties ctx, final int M_IolCandHandler_ID, final int recordID, final String trxName);
 
 	/**
 	 * Invokes the given <code>sched</code>'s {@link IInOutCandHandler} to get a {@link IDeliverRequest} instance.

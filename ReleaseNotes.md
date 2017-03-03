@@ -18,7 +18,8 @@ upcoming
 * metasfresh-backend
   * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
   * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
-
+  * [#1046](https://github.com/metasfresh/metasfresh/issues/1046) Automatic Naming of Pricelist Version Name
+  
 * metasfresh-webui-api
   * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
   
@@ -27,7 +28,8 @@ upcoming
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
   * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
   * [#1056](https://github.com/metasfresh/metasfresh/issues/1056) Purchase Order from Sales Order process, wrong InvoiceBPartner
-  
+  * [#1059](https://github.com/metasfresh/metasfresh/issues/1059) ShipmentScheduleBL.updateSchedules fails after C_Order was voided
+
 # metasfresh 4.58.57 (2017-09)
 
 this week's RC
@@ -35,44 +37,70 @@ this week's RC
 ## Features
 * metasfresh-backend
   * [#850](https://github.com/metasfresh/metasfresh/issues/850) Add Migration Script to rename Attribute Set Instance Field
+    * Global renaming of Label "Attribute Set Instance" to "Attribute".
   * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
+    * Optimizing the Continuous Integration workflow to allow the build of WebUI in default Rollout Process.
   * [#1028](https://github.com/metasfresh/metasfresh/issues/1028) extract distributable stuff into dedicated repo
-  * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
-  * [#1036](https://github.com/metasfresh/metasfresh/issues/1036) Harmonize BL for ModelCacheService.IsExpired
+    * Create a dedicated repository and moved distributably stuff there for betterseperation of core and customized implementations.
   * [#1040](https://github.com/metasfresh/metasfresh/issues/1040) Have new request type opportunity
+    * Included the new Request Type "Opportunity". First step preparing data structure for our new Opportunity Dashboard in WebUI.
   * [#1049](https://github.com/metasfresh/metasfresh/issues/1049) inDispute Fields and Quality% missing in main Invoice Candidate Window
+    * Adjustments in Invoice Candidates Window of WebUI. Included Fields with infomration about the Dispute Status and Quality Inspection information of Material Receipt.
   
 * metasfresh-webui-api
-  * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
-  * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
+    * Now allowing the recording/ editing of Packing Items in CU:TU Configuration of Product.
   * [#182](https://github.com/metasfresh/metasfresh-webui/issues/182) Material Receipt w/ multiple lines and solitary CU Buckets
-  * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone
-upcoming
+    * Implementation of multi line receiving in Material Receipt and Handling Unit Editor.
+  * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone upcoming
+    * When parsing JSON Dates without time, always ignoring the sent timezone.
   * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service
+    * First prototype Implementation for new metasfresh WebUI Dashboard with usage of D3JS Charts.
   * [#191](https://github.com/metasfresh/metasfresh-webui/issues/191) "Not saved yet" info in REST-API
+    * Now providing the information up to Frontend that if data has been saved yet in database. This implementation allows to give the user more feedback about editing errors or missing mandatory data.
   * [#200](https://github.com/metasfresh/metasfresh-webui/issues/200) Generic "add new" search field functionality
+    * Implementation of a generic functionality to add new data when not found during autocomplete search workflow. This new functionality will be used in search widget and allows to record data on the fly that belongs to the search field column and ID.
 
 * metasfresh-webui-frontend
   * [#377](https://github.com/metasfresh/metasfresh-webui-frontend/issues/377) grid view: when initially clicking on first row, the second one is first selected
+    * Changed the focus behavior in Grid View rows. The cursor "jump" is now eliminated. The user can use the keyboard arrow down to now firstly focus and further navigate trhough the grid.
   * [#392](https://github.com/metasfresh/metasfresh-webui-frontend/issues/392) Filters are not respecting mandatory property
+    * Adjustment on filter datils for webUI. Now respecting and showing if parameter/ filter fields are mandatory to be filled.
   * [#416](https://github.com/metasfresh/metasfresh-webui-frontend/issues/416) moving scrollbar on arrow key in dropdown
+    * Large dropdown lists now scroll down together with keyboard arrow down navigation.
   * [#428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/428) When calling a process from HU editor open the process parameters on top of the HU editor modal
+    * Now allowing modal over modal process windows, to allow the usage of actions also in modal overlays.
   * [#435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/435) filter in Material Receipt Candidates does not work
+    * Fixing a minor issue that occured when creating and using a filter criteria that does not have any variable parameters.
   * [#458](https://github.com/metasfresh/metasfresh-webui-frontend/issues/458) HU Editor Attribute editing not possible
+    * Fixing a Bug that occured when trying to edit attributes in HU Editor for a selected HU Level.
   * [#1004](https://github.com/metasfresh/metasfresh/issues/1004) Order by C_Order_ID desc in Sales Order Window
+    * New Order by criteria in Order Window, so that newest Orders always occur at Tio initially.
   * [#1007](https://github.com/metasfresh/metasfresh/issues/1007) Window for PMM_PurchaseCandidate in WebUI
+    * New Window in WebUI for Procurement candidates.
+  * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
+    * Adjustments to the Material Receipt Candidates fintuning. Rearranged and reduced the columns shown, so allow a better recognition of important data for the Material Receipt end user.
 
 ## Fixes
 * metasfresh-backend
+  * [#1036](https://github.com/metasfresh/metasfresh/issues/1036) Harmonize BL for ModelCacheService.IsExpired
+    * Fixing a Bug in the ModelCacheService that considered records to be expired under certain conditions although they weren't.
 
 * metasfresh-webui-api
+  * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
+    * Fixed a Bug that occured in one time situation and restricted the retrieving of included documents. 
   * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
+    * Fix Material Receipt in WebUI to avoid interfering attachments api that cause error in minor cases when receiving HU.
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+    * Fixes an issue that only showed 3 Attribute lines when opening the Attribute Editor.
+  * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
+    * Harmonized the date ranges selected in WebUI Frontend with the Parameter Date Ranges used for filtering of data in Backend.
   * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
+    * Now the Quality discount is considered in Material Receipt WebUI.
  
 * metasfresh-webui-frontend
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts
+    * Fixes an issue that connected the wrong viewID in "created material receipt" workflow using keyboard navigation and selection.
  
 
 # metasfresh 4.57.56 (2017-08)
