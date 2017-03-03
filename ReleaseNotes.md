@@ -46,10 +46,10 @@ this week's RC
     * Adjustments in Invoice Candidates Window of WebUI. Included Fields with infomration about the Dispute Status and Quality Inspection information of Material Receipt.
   
 * metasfresh-webui-api
-  * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
-  * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
+    * Now allowing the recording/ editing of Packing Items in CU:TU Configuration of Product.
   * [#182](https://github.com/metasfresh/metasfresh-webui/issues/182) Material Receipt w/ multiple lines and solitary CU Buckets
+    * Implementation of multi line receiving in Material Receipt and Handling Unit Editor.
   * [#183](https://github.com/metasfresh/metasfresh-webui/issues/183) Implement userSession endpoint which also provides the timeZone
 upcoming
   * [#184](https://github.com/metasfresh/metasfresh-webui/issues/184) Implement KPI service
@@ -74,8 +74,12 @@ upcoming
     * Fixing a Bug in the ModelCacheService that considered records to be expired under certain conditions although they weren't.
 
 * metasfresh-webui-api
+  * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
+    * Fixed a Bug that occured in one time situation and restricted the retrieving of included documents. 
   * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
+  * [#177](https://github.com/metasfresh/metasfresh-webui/issues/177) Date range parameters are not consistent with the ones I introduce
+    * Harmonized the date ranges selected in WebUI Frontend with the Parameter Date Ranges used for filtering of data in Backend.
   * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
  
 * metasfresh-webui-frontend
