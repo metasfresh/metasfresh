@@ -14,7 +14,7 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1501863475L;
+	private static final long serialVersionUID = -2054035884L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI_Field (Properties ctx, int WEBUI_KPI_Field_ID, String trxName)
@@ -197,6 +197,22 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Offset name.
+		@param OffsetName Offset name	  */
+	@Override
+	public void setOffsetName (java.lang.String OffsetName)
+	{
+		set_Value (COLUMNNAME_OffsetName, OffsetName);
+	}
+
+	/** Get Offset name.
+		@return Offset name	  */
+	@Override
+	public java.lang.String getOffsetName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OffsetName);
 	}
 
 	/** Set Symbol.

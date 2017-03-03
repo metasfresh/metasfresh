@@ -278,6 +278,29 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Offset name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOffsetName (java.lang.String OffsetName);
+
+	/**
+	 * Get Offset name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOffsetName();
+
+    /** Column definition for OffsetName */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_OffsetName = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "OffsetName", null);
+    /** Column name OffsetName */
+    public static final String COLUMNNAME_OffsetName = "OffsetName";
+
+	/**
 	 * Set Symbol.
 	 * Symbol für die Maßeinheit
 	 *
