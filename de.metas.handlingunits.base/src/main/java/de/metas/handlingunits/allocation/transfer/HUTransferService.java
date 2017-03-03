@@ -87,6 +87,7 @@ public class HUTransferService
 	}
 
 	private IAllocationRequest createCUAllocationRequest(
+			final IHUContext huContext,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
 			final BigDecimal cuQty)
@@ -126,11 +127,14 @@ public class HUTransferService
 		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
-		final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyCU);
-
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 
-		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
+		HUSplitBuilderCoreEngine
+				.of(
+						huContext,
+						cuHU,
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU),
+						destination)
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
@@ -157,10 +161,13 @@ public class HUTransferService
 		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
-		final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyCU);
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(tuHU);
 
-		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
+		HUSplitBuilderCoreEngine
+				.of(huContext,
+						cuHU,
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU),
+						destination)
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
@@ -189,14 +196,16 @@ public class HUTransferService
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 		Preconditions.checkNotNull(tuPIItemProduct, "Param 'tuPIItemProduct' may not be null");
 
-		final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyCU);
-
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 		destination.setNoLU();
 
-		HUSplitBuilderCoreEngine.of(huContext, cuHU, request, destination)
+		HUSplitBuilderCoreEngine
+				.of(huContext,
+						cuHU,
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU),
+						destination)
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -287,9 +296,11 @@ public class HUTransferService
 
 			destination.addTUCapacity(cuProduct, tuPIItemProduct.getQty(), cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
-			final IAllocationRequest request = createCUAllocationRequest(cuProduct, cuUOM, qtyTU.multiply(qtyCUperTU));
-
-			HUSplitBuilderCoreEngine.of(huContext, tuHU, request, destination)
+			HUSplitBuilderCoreEngine
+					.of(huContext,
+							tuHU,
+							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(qtyCUperTU)),
+							destination)
 					.withPropagateHUValues()
 					.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -349,12 +360,14 @@ public class HUTransferService
 
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-
-			final IAllocationRequest request = createCUAllocationRequest(productStorage.getM_Product(), productStorage.getC_UOM(), productStorage.getQty());
 			final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(luHU);
 
 			// Transfer Qty
-			HUSplitBuilderCoreEngine.of(huContext, tuHU, request, destination)
+			HUSplitBuilderCoreEngine
+					.of(huContext,
+							tuHU,
+							huContext -> createCUAllocationRequest(huContext, productStorage.getM_Product(), productStorage.getC_UOM(), productStorage.getQty()),
+							destination)
 					.withPropagateHUValues()
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();

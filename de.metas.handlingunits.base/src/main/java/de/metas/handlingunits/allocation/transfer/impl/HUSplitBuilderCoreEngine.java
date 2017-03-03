@@ -1,23 +1,32 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Preconditions;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -34,13 +43,14 @@ public class HUSplitBuilderCoreEngine
 {
 	//
 	// Services
+	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
 
-	private final IHUContext huContext;
+	private final IHUContext huContextInitital;
 	private final I_M_HU huToSplit;
-	private final IAllocationRequest request;
+	private final Function<IHUContext, IAllocationRequest> requestProvider;
 	private final IAllocationDestination destination;
 
 	private I_M_HU_PI_Item tuPIItem;
@@ -48,35 +58,35 @@ public class HUSplitBuilderCoreEngine
 	private IHUDocumentLine documentLine;
 	private boolean allowPartialUnloads;
 
-	private HUSplitBuilderCoreEngine(final IHUContext huContext,
+	private HUSplitBuilderCoreEngine(final IHUContext huContextInitital,
 			final I_M_HU huToSplit,
-			final IAllocationRequest request,
+			final Function<IHUContext, IAllocationRequest> requestProvider,
 			final IAllocationDestination destination)
 	{
-		this.huContext = huContext;
+		this.huContextInitital = huContextInitital;
 		this.huToSplit = huToSplit;
-		this.request = request;
+		this.requestProvider = requestProvider;
 		this.destination = destination;
 	}
 
 	/**
-	 * Creates and returns a new instance. Note that all four paramters are mandatory.
+	 * Creates and returns a new instance. Note that all four parameters are mandatory.
 	 * 
-	 * @param huContext
+	 * @param huContextInitital an intitial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
 	 * @param huToSplit
-	 * @param request
+	 * @param requestProvider a function which will be applied from within the {@link #performSplit()} method to get the actual request, using the "inner" mutable copy of {@code huContextInitital}.
 	 * @param destination
 	 * @return
 	 */
-	public static HUSplitBuilderCoreEngine of(final IHUContext huContext,
+	public static HUSplitBuilderCoreEngine of(final IHUContext huContextInitital,
 			final I_M_HU huToSplit,
-			final IAllocationRequest request,
+			final Function<IHUContext, IAllocationRequest> requestProvider,
 			final IAllocationDestination destination)
 	{
 		return new HUSplitBuilderCoreEngine(
-				Preconditions.checkNotNull(huContext, "Param 'huContext' may not be null"),
+				Preconditions.checkNotNull(huContextInitital, "Param 'huContextInitital' may not be null"),
 				Preconditions.checkNotNull(huToSplit, "Param 'huToSplit' may not be null"),
-				Preconditions.checkNotNull(request, "Param 'request' may not be null"),
+				Preconditions.checkNotNull(requestProvider, "Param 'requestProvider' may not be null"),
 				Preconditions.checkNotNull(destination, "Param 'destination' may not be null"));
 	}
 
@@ -142,13 +152,57 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * Note: if this instance's {@link #destination} is {@link IHUProducerAllocationDestination}, you can retrieve the created HUs via {@link IHUProducerAllocationDestination#getCreatedHUs()}.
+	 * Performs the actual split. Also see {@link #of(IHUContext, I_M_HU, Function, IAllocationDestination)}.
+	 * <p>
+	 * Note: if this instance's {@link #destination} is not {@code instanceof} {@link IHUProducerAllocationDestination}, then this method will always return an empty list.
+	 * 
+	 * @return
 	 */
-	public void performSplit()
+	public List<I_M_HU> performSplit()
 	{
+		final List<I_M_HU> splitHUs = new ArrayList<I_M_HU>();
+
+		huTrxBL.createHUContextProcessorExecutor(huContextInitital)
+				.run(new IHUContextProcessor()
+				{
+					@Override
+					public IMutableAllocationResult process(final IHUContext localHuContext)
+					{
+						// Make a copy of the processing context, we will need to modify it
+						final IMutableHUContext localHuContextCopy = localHuContext.copyAsMutable();
+
+						// Register our split HUTrxListener so that the other listeners' onSplit() methods will be called
+						localHuContextCopy.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
+
+						// Perform the actual split
+						final List<I_M_HU> splitHUsInTrx = performSplit0(localHuContextCopy);
+
+						//
+						// Make created HUs to be out-of-transaction to be used elsewhere
+						for (final I_M_HU splitHU : splitHUsInTrx)
+						{
+							InterfaceWrapperHelper.setTrxName(splitHU, ITrx.TRXNAME_None);
+							splitHUs.add(splitHU);
+						}
+
+						return NULL_RESULT; // we don't care about the result
+					}
+				});
+
+		return splitHUs;
+	}
+
+	private List<I_M_HU> performSplit0(final IHUContext localHuContextCopy)
+	{
+		//
+		// using thread-inherited to let this split key work in transaction and out of transaction
+		InterfaceWrapperHelper.setTrxName(huToSplit, ITrx.TRXNAME_ThreadInherited);
+
 		//
 		// Source: our handling unit
 		final IAllocationSource source = HUListAllocationSourceDestination.of(huToSplit);
+
+		final IAllocationRequest request = requestProvider.apply(localHuContextCopy);
 
 		//
 		// Perform allocation
@@ -157,6 +211,8 @@ public class HUSplitBuilderCoreEngine
 				.setAllowPartialUnloads(allowPartialUnloads)
 				.load(request);
 		// NOTE: we are not checking if everything was fully allocated because we can leave the remaining Qty into initial "huToSplit"
+
+		final List<I_M_HU> result;
 
 		final IHUProducerAllocationDestination huProducerAllocationDestination = destinationCastOrNull();
 		if (huProducerAllocationDestination != null)
@@ -167,7 +223,7 @@ public class HUSplitBuilderCoreEngine
 
 			//
 			// Transfer PI Item Product from HU to split to all HUs that we created
-			setM_HU_PI_Item_Product(huToSplit, createdHUs);
+			setM_HU_PI_Item_Product(huToSplit, request.getProduct(), createdHUs);
 
 			//
 			// Assign createdHUs to documentLine
@@ -177,11 +233,18 @@ public class HUSplitBuilderCoreEngine
 			{
 				documentLine.getHUAllocations().addAssignedHUs(createdHUs);
 			}
+
+			result = huProducerAllocationDestination.getCreatedHUs();
+		}
+		else
+		{
+			result = Collections.emptyList();
 		}
 		//
 		// Destroy empty HUs from huToSplit
-		handlingUnitsBL.destroyIfEmptyStorage(huContext, huToSplit);
+		handlingUnitsBL.destroyIfEmptyStorage(localHuContextCopy, huToSplit);
 
+		return result;
 	}
 
 	/**
@@ -190,9 +253,9 @@ public class HUSplitBuilderCoreEngine
 	 * @param sourceHU
 	 * @param husToConfigure
 	 */
-	private void setM_HU_PI_Item_Product(final I_M_HU sourceHU, final List<I_M_HU> husToConfigure)
+	private void setM_HU_PI_Item_Product(final I_M_HU sourceHU, final I_M_Product product, final List<I_M_HU> husToConfigure)
 	{
-		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductToUse(sourceHU);
+		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductToUse(sourceHU, product);
 		if (piip == null)
 		{
 			return;
@@ -202,12 +265,12 @@ public class HUSplitBuilderCoreEngine
 		{
 			if (handlingUnitsBL.isLoadingUnit(hu))
 			{
-				setM_HU_PI_Item_Product(sourceHU, handlingUnitsDAO.retrieveIncludedHUs(hu));
+				setM_HU_PI_Item_Product(sourceHU, product, handlingUnitsDAO.retrieveIncludedHUs(hu));
 				continue;
 			}
 			else if (handlingUnitsBL.isTransportUnit(hu))
 			{
-				setM_HU_PI_Item_Product(sourceHU, handlingUnitsDAO.retrieveIncludedHUs(hu));
+				setM_HU_PI_Item_Product(sourceHU, product, handlingUnitsDAO.retrieveIncludedHUs(hu));
 			}
 
 			if (hu.getM_HU_PI_Item_Product_ID() > 0)
@@ -220,13 +283,13 @@ public class HUSplitBuilderCoreEngine
 		}
 	}
 
-	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductToUse(final I_M_HU hu)
+	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductToUse(final I_M_HU hu, final I_M_Product product)
 	{
 		if (tuPIItem == null)
 		{
 			return null;
 		}
-		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(tuPIItem, hu.getC_BPartner(), request.getProduct(), SystemTime.asDate());
+		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(tuPIItem, hu.getC_BPartner(), product, SystemTime.asDate());
 		return piip;
 	}
 }
