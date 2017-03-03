@@ -1,15 +1,24 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransferService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -17,6 +26,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -26,6 +36,8 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 /*
@@ -53,63 +65,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 @Profile(value = WebRestApiApplication.PROFILE_Webui)
 public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
-	{
-		if (getSelectedDocumentIds().size() != 1)
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-
-		}
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
-	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
-	{
-		return DEFAULT_VALUE_NOTAVAILABLE;
-	}
-
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
-	private LookupValuesList getLULookupValues()
-	{
-		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
-		if (actionType == ActionType.TU_To_ExistingLU)
-		{
-			return getView()
-					.streamAllRecursive()
-					.filter(row -> row.isLU())
-					.map(row -> row.toLookupValue())
-					.collect(LookupValuesList.collect());
-		}
-		else
-		{
-			return LookupValuesList.EMPTY;
-		}
-	}
-
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
-	private LookupValuesList getTULookupValues()
-	{
-		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
-		if (actionType == ActionType.CU_To_ExistingTU)
-		{
-			return getView()
-					.streamAllRecursive()
-					.filter(row -> row.isTU())
-					.map(row -> row.toLookupValue())
-					.collect(LookupValuesList.collect());
-		}
-		else
-		{
-			return LookupValuesList.EMPTY;
-		}
-	}
-
-	//
-	// Services
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 	public static enum ActionType
 	{
 		CU_To_NewCU //
@@ -123,40 +78,70 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	//
 	// Parameters
 	private static final String PARAM_Action = "Action";
-	@Param(parameterName = PARAM_Action, mandatory = true)
-	private String p_Action;
+
 	//
 	private static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
-	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
+
 	//
 	private static final String PARAM_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
-	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
-	private int p_M_LU_HU_PI_ID;
+
 	//
 	private static final String PARAM_M_TU_HU_ID = "M_TU_HU_ID";
-	@Param(parameterName = PARAM_M_TU_HU_ID)
-	private I_M_HU p_M_TU_HU;
+
 	//
 	private static final String PARAM_M_LU_HU_ID = "M_LU_HU_ID";
-	@Param(parameterName = PARAM_M_LU_HU_ID)
-	private I_M_HU p_M_LU_HU;
+
 	//
 	private static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal p_QtyCU;
+
 	//
 	private static final String PARAM_QtyTU = "QtyTU";
-	@Param(parameterName = PARAM_QtyTU)
-	private BigDecimal p_QtyTU;
 
 	private static final String PARAM_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
+
+	//
+	// Services
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@Param(parameterName = PARAM_Action, mandatory = true)
+	private String p_Action;
+	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
+	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
+	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
+	private int p_M_LU_HU_PI_ID;
+	@Param(parameterName = PARAM_M_TU_HU_ID)
+	private I_M_HU p_M_TU_HU;
+	@Param(parameterName = PARAM_M_LU_HU_ID)
+	private I_M_HU p_M_LU_HU;
+	@Param(parameterName = PARAM_QtyCU)
+	private BigDecimal p_QtyCU;
+	@Param(parameterName = PARAM_QtyTU)
+	private BigDecimal p_QtyTU;
 	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM)
 	private boolean p_HUPlanningReceiptOwnerPM;
 
 	public WEBUI_M_HU_Transform()
 	{
 		Adempiere.autowire(this);
+	}
+
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		return DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
+	/**
+	 * This process is applicable if there is exactly one HU-row selected
+	 */
+	@Override
+	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	{
+		if (getSelectedDocumentIds().size() != 1)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+
+		}
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
@@ -194,7 +179,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 				{
 					throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
 				}
-				final I_C_BPartner bpartner = null; // TODO
+				final I_C_BPartner bpartner = getSingleSelectedRow().getM_HU().getC_BPartner();
 				final I_M_HU_PI_Item luPIItem = findLU_HU_PI_Item(p_M_HU_PI_Item_Product, p_M_LU_HU_PI_ID, bpartner);
 				action_SplitTU_To_NewLU(row, p_QtyTU, p_M_HU_PI_Item_Product, luPIItem, p_HUPlanningReceiptOwnerPM);
 				break;
@@ -207,83 +192,11 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			//
 			default:
 			{
-				throw new AdempiereException("@Unknown@ " + action);
+				throw new AdempiereException("@Unknown@ @Action@ " + action);
 			}
 		}
 
 		return MSG_OK;
-	}
-
-	// private void actionSplitCUToNew(final HUDocumentView cuRow)
-	// {
-	// Check.assume(cuRow.isCU(), "CU Row: {}", cuRow);
-	//
-	// final IMutableHUContext huContextInitial = handlingUnitsBL.createMutableHUContextForProcessing(this);
-	// final IHUSplitBuilder splitBuilder = new HUSplitBuilder(huContextInitial);
-	//
-	// //
-	// // "Our" HU, the one which the user selected for split
-	// final I_M_HU huToSplit = cuRow.getM_HU();
-	// splitBuilder.setHUToSplit(huToSplit);
-	//
-	// //
-	// // DocumentLine / Trx Referenced model (if available)
-	// final IHUDocumentLine documentLine = null; // TODO huToSplitKey.findDocumentLineOrNull();
-	// splitBuilder.setDocumentLine(documentLine);
-	// splitBuilder.setCUTrxReferencedModel(documentLine == null ? null : documentLine.getTrxReferencedModel());
-	//
-	// splitBuilder.setCUProduct(cuRow.getM_Product());
-	// splitBuilder.setCUQty(cuRow.getQtyCU());
-	// splitBuilder.setCUUOM(cuRow.getC_UOM());
-	//
-	// splitBuilder.setCUPerTU(p_QtyCU);
-	// splitBuilder.setTUPerLU(p_QtyTU);
-	// splitBuilder.setMaxLUToAllocate(BigDecimal.valueOf(Integer.MAX_VALUE));
-	//
-	// final I_M_HU_PI_Item_Product tuPI_ItemProduct = InterfaceWrapperHelper.create(getCtx(), p_M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
-	// final I_M_HU_PI_Item tuPI_Item = tuPI_ItemProduct.getM_HU_PI_Item();
-	// splitBuilder.setTU_M_HU_PI_Item(tuPI_Item);
-	//
-	// // LU
-	// final I_M_HU_PI tuPI = tuPI_Item.getM_HU_PI_Version().getM_HU_PI();
-	// final I_C_BPartner bpartner = huToSplit.getC_BPartner();
-	// final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner)
-	// .stream()
-	// .filter(piItem -> piItem.getM_HU_PI_Version().getM_HU_PI_ID() == p_M_LU_HU_PI_ID)
-	// .findFirst()
-	// .orElseThrow(() -> new AdempiereException(tuPI.getName() + " cannot be loaded to " + p_M_LU_HU_PI_ID));
-	// splitBuilder.setLU_M_HU_PI_Item(luPI_Item);
-	//
-	// final List<I_M_HU> husAfterSplit = splitBuilder.split();
-	// getView().addHUsAndInvalidate(husAfterSplit);
-	// }
-
-	private final I_M_HU_PI_Item findLU_HU_PI_Item(final I_M_HU_PI_Item_Product tuPIItemProduct, final int luPI_ID, final I_C_BPartner bpartner)
-	{
-		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-
-		final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner)
-				.stream()
-				.filter(piItem -> piItem.getM_HU_PI_Version().getM_HU_PI_ID() == luPI_ID)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException(tuPI.getName() + " cannot be loaded to " + p_M_LU_HU_PI_ID));
-
-		return luPI_Item;
-	}
-
-	/**
-	 * Split selected CU to a new CU.
-	 *
-	 * @param cuRow
-	 * @param qtyCU
-	 */
-	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
-	{
-		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
-
-		// Notify
-		getView().addHUsAndInvalidate(createdHUs);
 	}
 
 	/**
@@ -303,6 +216,21 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	}
 
 	/**
+	 * Split selected CU to a new CU.
+	 *
+	 * @param cuRow
+	 * @param qtyCU
+	 */
+	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
+	{
+		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.splitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
+
+		// Notify
+		getView().addHUsAndInvalidate(createdHUs);
+	}
+
+	/**
 	 * Split selected CU to new top level TUs
 	 *
 	 * @param cuRow cu row to split
@@ -319,25 +247,19 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		getView().addHUsAndInvalidate(createdHUs);
 	}
 
-	/**
-	 * Split a given number of TUs from current selected TU line to new TUs.
-	 *
-	 * @param tuRow
-	 * @param qtyTU
-	 * @param tuPIItemProductId
-	 * @param isOwnPackingMaterials
-	 */
-	private void action_SplitTU_To_NewTUs(final HUDocumentView tuRow //
+	// Params:
+	// * existing LU (M_HU_ID)
+	// * QtyTUs
+	private void action_SplitTU_To_ExistingLU(
+			final HUDocumentView tuRow //
 			, final BigDecimal qtyTU //
-			, final I_M_HU_PI_Item_Product tuPIItemProduct //
-			, final boolean isOwnPackingMaterials //
-	)
+			, final I_M_HU luHU)
 	{
-		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, tuPIItemProduct, isOwnPackingMaterials);
+		HUTransferService.get(getCtx())
+				.splitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
-		getView().addHUsAndInvalidate(createdHUs);
+		getView().addHUAndInvalidate(luHU);
 	}
 
 	/**
@@ -364,19 +286,150 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		getView().addHUsAndInvalidate(createdHUs);
 	}
 
-	// Params:
-	// * existing LU (M_HU_ID)
-	// * QtyTUs
-	private void action_SplitTU_To_ExistingLU(
-			final HUDocumentView tuRow //
+	/**
+	 * Split a given number of TUs from current selected TU line to new TUs.
+	 *
+	 * @param tuRow
+	 * @param qtyTU
+	 * @param tuPIItemProductId
+	 * @param isOwnPackingMaterials
+	 */
+	private void action_SplitTU_To_NewTUs(final HUDocumentView tuRow //
 			, final BigDecimal qtyTU //
-			, final I_M_HU luHU
+			, final I_M_HU_PI_Item_Product tuPIItemProduct //
+			, final boolean isOwnPackingMaterials //
 	)
 	{
-		HUTransferService.get(getCtx())
-				.splitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
+		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.splitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, tuPIItemProduct, isOwnPackingMaterials);
 
 		// Notify
-		getView().addHUAndInvalidate(luHU);
+		getView().addHUsAndInvalidate(createdHUs);
+	}
+
+	private final I_M_HU_PI_Item findLU_HU_PI_Item(final I_M_HU_PI_Item_Product tuPIItemProduct, final int luPI_ID, final I_C_BPartner bpartner)
+	{
+		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+
+		final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner)
+				.stream()
+				.filter(piItem -> piItem.getM_HU_PI_Version().getM_HU_PI_ID() == luPI_ID)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException(tuPI.getName() + " cannot be loaded to " + p_M_LU_HU_PI_ID));
+
+		return luPI_Item;
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
+	private LookupValuesList getActions()
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+
+		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(getCtx(), getProcessInfo().getAD_Process_ID(), PARAM_Action);
+		final Collection<I_AD_Ref_List> allActionItems = adReferenceDAO.retrieveListItems(getCtx(), processParameter.getAD_Reference_Value_ID());
+
+		final Set<String> selectableTypes = new HashSet<>();
+
+		if (getSingleSelectedRow().isCU())
+		{
+			final boolean existsTU = getView()
+					.streamAllRecursive()
+					.anyMatch(row -> row.isTU());
+
+			selectableTypes.add(ActionType.CU_To_NewCU.toString());
+			selectableTypes.add(ActionType.CU_To_NewTUs.toString());
+			if (existsTU)
+			{
+				selectableTypes.add(ActionType.CU_To_ExistingTU.toString());
+			}
+		}
+
+		if (getSingleSelectedRow().isTU())
+		{
+			final boolean existsLU = getView()
+					.streamAllRecursive()
+					.anyMatch(row -> row.isLU());
+
+			selectableTypes.add(ActionType.TU_To_NewTUs.toString());
+			selectableTypes.add(ActionType.TU_To_NewLU.toString());
+			if (existsLU)
+			{
+				selectableTypes.add(ActionType.TU_To_ExistingLU.toString());
+			}
+		}
+
+		return allActionItems.stream()
+				.filter(item -> selectableTypes.contains(item.getValueName()))
+				.map(item -> InterfaceWrapperHelper.translate(item, I_AD_Ref_List.class)) // replace 'item' with its translated version
+				.map(item -> StringLookupValue.of(item.getValueName(), item.getName()))
+				.collect(LookupValuesList.collect());
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
+	private LookupValuesList getLULookupValues()
+	{
+		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
+		if (actionType == ActionType.TU_To_ExistingLU)
+		{
+			return getView()
+					.streamAllRecursive()
+					.filter(row -> row.isLU())
+					.map(row -> row.toLookupValue())
+					.collect(LookupValuesList.collect());
+		}
+		else
+		{
+			return LookupValuesList.EMPTY;
+		}
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = PARAM_Action, numericKey = true)
+	private LookupValuesList getM_HU_PI_Item_Products()
+	{
+		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
+		switch (actionType)
+		{
+			case CU_To_NewTUs:
+				return retrieveHUPItemProductsForNewTU();
+
+			case TU_To_NewTUs:
+				return retrieveHUPItemProductsForNewTU();
+
+			default:
+				return LookupValuesList.EMPTY;
+		}
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
+	private LookupValuesList getTULookupValues()
+	{
+		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
+		if (actionType == ActionType.CU_To_ExistingTU)
+		{
+			return getView()
+					.streamAllRecursive()
+					.filter(row -> row.isTU())
+					.map(row -> row.toLookupValue())
+					.collect(LookupValuesList.collect());
+		}
+		else
+		{
+			return LookupValuesList.EMPTY;
+		}
+	}
+
+	private LookupValuesList retrieveHUPItemProductsForNewTU()
+	{
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+		final HUDocumentView huRow = getSingleSelectedRow();
+
+		final Stream<I_M_HU_PI_Item_Product> stream = hupiItemProductDAO
+				.retrieveTUs(getCtx(), huRow.getM_Product(), huRow.getM_HU().getC_BPartner())
+				.stream();
+		return stream
+				.map(huPIItemProduct -> IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName()))
+				.collect(LookupValuesList.collect());
 	}
 }
