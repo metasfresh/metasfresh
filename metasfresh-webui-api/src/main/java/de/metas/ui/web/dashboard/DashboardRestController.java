@@ -81,6 +81,8 @@ public class DashboardRestController
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final KPI kpi = userDashboardRepo.getUserDashboard()
 				.getKPIItemById(itemId)
 				.getKPI();
@@ -107,6 +109,8 @@ public class DashboardRestController
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final KPI kpi = userDashboardRepo.getUserDashboard()
 				.getTargetIndicatorItemById(itemId)
 				.getKPI();
