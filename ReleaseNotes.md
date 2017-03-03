@@ -69,9 +69,13 @@ this week's RC
   * [#428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/428) When calling a process from HU editor open the process parameters on top of the HU editor modal
     * Now allowing modal over modal process windows, to allow the usage of actions also in modal overlays.
   * [#435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/435) filter in Material Receipt Candidates does not work
+    * Fixing a minor issue that occured when creating and using a filter criteria that does not have any variable parameters.
   * [#458](https://github.com/metasfresh/metasfresh-webui-frontend/issues/458) HU Editor Attribute editing not possible
+    * Fixing a Bug that occured when trying to edit attributes in HU Editor for a selected HU Level.
   * [#1004](https://github.com/metasfresh/metasfresh/issues/1004) Order by C_Order_ID desc in Sales Order Window
+    * New Order by criteria in Order Window, so that newest Orders always occur at Tio initially.
   * [#1007](https://github.com/metasfresh/metasfresh/issues/1007) Window for PMM_PurchaseCandidate in WebUI
+    * New Window in WebUI for Procurement candidates.
   * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
     * Adjustments to the Material Receipt Candidates fintuning. Rearranged and reduced the columns shown, so allow a better recognition of important data for the Material Receipt end user.
 
