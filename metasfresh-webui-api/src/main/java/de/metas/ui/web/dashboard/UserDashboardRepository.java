@@ -251,6 +251,8 @@ public class UserDashboardRepository
 		final I_AD_Element adElement = kpiFieldDef.getAD_Element();
 		final String fieldName = adElement.getColumnName();
 
+		//
+		// Extract field caption and description
 		final ITranslatableString caption;
 		final ITranslatableString description;
 		if (Check.isEmpty(kpiFieldDef.getName(), true))
