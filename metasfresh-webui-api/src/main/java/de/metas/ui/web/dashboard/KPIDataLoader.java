@@ -28,7 +28,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
 
 /*
  * #%L
@@ -67,6 +66,8 @@ public class KPIDataLoader
 
 	private TimeRange mainTimeRange;
 	private List<TimeRange> timeRanges;
+
+	private boolean formatValues = false;
 
 	private BiFunction<KPIField, TimeRange, String> fieldNameExtractor = (field, timeRange) -> field.getFieldName();
 	private BiFunction<Bucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
@@ -136,18 +137,32 @@ public class KPIDataLoader
 			{
 				dataSetValueKeyExtractor = (bucket, timeRange) -> {
 					final long millis = convertToMillis(bucket.getKey());
-					return JSONDate.toJson(timeRange.subtractOffset(millis));
+					return formatValue(groupByField, timeRange.subtractOffset(millis));
 				};
 			}
 			else
 			{
-				dataSetValueKeyExtractor = (bucket, timeRange) -> groupByField.convertValueToJson(bucket.getKey());
+				dataSetValueKeyExtractor = (bucket, timeRange) -> formatValue(groupByField, bucket.getKey());
 			}
 		}
 
 		this.timeRanges = timeRanges.build();
 
 		return this;
+	}
+
+	/**
+	 * @param formatValues true if the loader shall format the values and make them user friendly
+	 */
+	public KPIDataLoader setFormatValues(final boolean formatValues)
+	{
+		this.formatValues = formatValues;
+		return this;
+	}
+
+	private boolean isFormatValues()
+	{
+		return formatValues;
 	}
 
 	/**
@@ -268,7 +283,7 @@ public class KPIDataLoader
 						for (final KPIField field : kpi.getFields())
 						{
 							final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
-							final Object jsonValue = field.convertValueToJson(value);
+							final Object jsonValue = formatValue(field, value);
 							if (jsonValue == null)
 							{
 								continue;
@@ -277,6 +292,15 @@ public class KPIDataLoader
 							final String fieldName = fieldNameExtractor.apply(field, timeRange);
 
 							data.putValue(aggName, key, fieldName, jsonValue);
+						}
+
+						//
+						// Make sure the groupByField's value is present in our dataSet value.
+						// If not exist, we can use the key as it's value.
+						final KPIField groupByField = kpi.getGroupByFieldOrNull();
+						if (groupByField != null)
+						{
+							data.putValueIfAbsent(aggName, key, groupByField.getFieldName(), key);
 						}
 					}
 				}
@@ -316,6 +340,18 @@ public class KPIDataLoader
 					+ "\n Query: " + esQueryParsed
 					+ "\n Response: " + response, e);
 
+		}
+	}
+
+	private Object formatValue(final KPIField field, final Object value)
+	{
+		if (isFormatValues())
+		{
+			return field.convertValueToJsonUserFriendly(value);
+		}
+		else
+		{
+			return field.convertValueToJson(value);
 		}
 	}
 

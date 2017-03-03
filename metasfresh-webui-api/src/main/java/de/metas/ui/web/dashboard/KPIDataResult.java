@@ -118,6 +118,14 @@ public class KPIDataResult
 					.putValue(dataSetValueKey, fieldName, jsonValue);
 			return this;
 		}
+		
+		public Builder putValueIfAbsent(final String dataSetName, final Object dataSetValueKey, final String fieldName, final Object jsonValue)
+		{
+			dataSet(dataSetName)
+					.putValueIfAbsent(dataSetValueKey, fieldName, jsonValue);
+			return this;
+		}
+
 
 	}
 }

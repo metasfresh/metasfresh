@@ -91,6 +91,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		final long toMillis = p_DateTo == null ? -1 : p_DateTo.getTime();
 		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi)
 				.setTimeRange(fromMillis, toMillis)
+				.setFormatValues(true)
 				.assertESTypesExists()
 				.retrieveData();
 

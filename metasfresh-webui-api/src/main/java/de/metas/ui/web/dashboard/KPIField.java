@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -188,6 +189,71 @@ public class KPIField
 			{
 				throw new IllegalStateException("valueType not supported: " + valueType);
 			}
+		}
+	}
+
+	public final Object convertValueToJsonUserFriendly(final Object value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		if (valueType == KPIFieldValueType.Date)
+		{
+			if (value instanceof String)
+			{
+				final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
+				return DisplayType.getDateFormat(DisplayType.Date)
+						.format(date);
+			}
+			else if (value instanceof Date)
+			{
+				final Date date = (Date)value;
+				return DisplayType.getDateFormat(DisplayType.Date)
+						.format(date);
+			}
+			else if (value instanceof Number)
+			{
+				final long millis = ((Number)value).longValue();
+				final Date date = new Date(millis);
+				return DisplayType.getDateFormat(DisplayType.Date)
+						.format(date);
+			}
+			else
+			{
+				return value.toString();
+			}
+		}
+		else if (valueType == KPIFieldValueType.DateTime)
+		{
+			if (value instanceof String)
+			{
+				final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
+				return DisplayType.getDateFormat(DisplayType.DateTime)
+						.format(date);
+			}
+			else if (value instanceof Date)
+			{
+				final Date date = (Date)value;
+				return DisplayType.getDateFormat(DisplayType.DateTime)
+						.format(date);
+			}
+			else if (value instanceof Number)
+			{
+				final long millis = ((Number)value).longValue();
+				final Date date = new Date(millis);
+				return DisplayType.getDateFormat(DisplayType.DateTime)
+						.format(date);
+			}
+			else
+			{
+				return value.toString();
+			}
+		}
+		else
+		{
+			return convertValueToJson(value);
 		}
 	}
 
