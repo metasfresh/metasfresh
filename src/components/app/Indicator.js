@@ -1,9 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import {connect} from 'react-redux';
 
 class Indicator extends Component {
     constructor(props){
         super(props);
     }
+
     renderIndicator = (state) => {
         switch(state){
             case 'saved':
@@ -14,8 +16,10 @@ class Indicator extends Component {
                 return 'indicator-error';
         }
     }
+
     render() {
         const {indicator} = this.props;
+
         return (
             <div>
                 <div className={'indicator-bar indicator-' + indicator} />
@@ -23,5 +27,25 @@ class Indicator extends Component {
         )
     }
 }
+
+function mapStateToProps(state) {
+    const {windowHandler} = state;
+
+    const {
+        indicator
+    } = windowHandler || {
+        indicator: ''
+    }
+
+    return {
+        indicator
+    }
+}
+
+Indicator.propTypes = {
+    indicator: PropTypes.string.isRequired
+}
+
+Indicator = connect(mapStateToProps)(Indicator)
 
 export default Indicator

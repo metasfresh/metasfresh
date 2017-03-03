@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 
 import Window from '../Window';
 import Process from '../Process';
+import Indicator from './Indicator';
 
 import {
     closeModal,
@@ -251,6 +252,7 @@ class Modal extends Component {
                             }
                         </div>
                     </div>
+                    <Indicator />
                     <div
                         className={
                             `panel-modal-content js-panel-modal-content

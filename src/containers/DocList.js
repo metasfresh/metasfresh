@@ -77,6 +77,7 @@ class DocList extends Component {
                 references={references}
                 attachments={attachments}
                 query={query}
+                showIndicator={!modal.visible && !rawModal.visible}
             >
                 {modal.visible &&
                     <Modal
