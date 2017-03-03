@@ -70,7 +70,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _validStatus = DocumentValidStatus.inititalInvalid();
+	private DocumentValidStatus _validStatus = DocumentValidStatus.fieldInitiallyInvalid();
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -80,7 +80,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 		_lookupDataSource = descriptor.createLookupDataSource(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		_validStatus = DocumentValidStatus.inititalInvalid();
+		_validStatus = DocumentValidStatus.fieldInitiallyInvalid();
 	}
 
 	/** copy constructor */
@@ -187,7 +187,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		//
 		// Set valid state to Staled
 		final DocumentValidStatus validOld = _validStatus;
-		final DocumentValidStatus validNew = DocumentValidStatus.staled();
+		final DocumentValidStatus validNew = DocumentValidStatus.fieldInitiallyStaled();
 		_validStatus = validNew;
 		if (logger.isDebugEnabled() && !Objects.equals(validOld, validNew))
 		{
@@ -449,12 +449,19 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 	private final DocumentValidStatus checkValid()
 	{
-		if (isMandatory() && getValue() == null)
+		// Consider virtual fields as valid because there is nothing we can do about them
+		if(isVirtualField())
 		{
-			return DocumentValidStatus.invalidMandatoryFieldNotFilled(getFieldName());
+			return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
 		}
 
-		return DocumentValidStatus.valid();
+		// Check mandatory constraint
+		if (isMandatory() && getValue() == null)
+		{
+			return DocumentValidStatus.invalidFieldMandatoryNotFilled(getFieldName(), isInitialValue());
+		}
+
+		return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
 	}
 
 	/**
@@ -474,6 +481,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 			return false;
 		}
 		
-		return !DataTypes.equals(_value, _initialValue);
+		return !isInitialValue();
+	}
+	
+	private boolean isInitialValue()
+	{
+		return DataTypes.equals(_value, _initialValue);
 	}
 }

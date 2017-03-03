@@ -106,7 +106,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	@Override
 	public DocumentValidStatus checkAndGetValidStatus()
 	{
-		return DocumentValidStatus.valid();
+		return DocumentValidStatus.documentValid();
 	}
 
 	@Override

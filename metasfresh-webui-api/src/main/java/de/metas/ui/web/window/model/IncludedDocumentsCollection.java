@@ -429,7 +429,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 			}
 		}
 
-		return DocumentValidStatus.valid();
+		return DocumentValidStatus.documentValid();
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -112,7 +111,7 @@ public final class Document
 	private boolean _deleted;
 	private final boolean _writable;
 	private boolean _initializing = false;
-	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
+	private DocumentValidStatus _valid = DocumentValidStatus.documentInitiallyInvalid();
 	private DocumentSaveStatus _saveStatus = DocumentSaveStatus.unknown();
 	private final DocumentStaleState _staleStatus;
 	private final ReentrantReadWriteLock _lock;
@@ -441,7 +440,7 @@ public final class Document
 			}
 			else
 			{
-				throw Throwables.propagate(e);
+				throw AdempiereException.wrapIfNeeded(e);
 			}
 		}
 
@@ -1449,11 +1448,11 @@ public final class Document
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(DocumentValidStatus.childInvalid());
+				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument());
 			}
 		}
 
-		return setValidStatusAndReturn(DocumentValidStatus.valid()); // valid
+		return setValidStatusAndReturn(DocumentValidStatus.documentValid()); // valid
 	}
 
 	public DocumentValidStatus getValidStatus()
