@@ -975,7 +975,7 @@ td.pulse-off input {
 .fade-leave.fade-leave-active {
     opacity: 0.01;
     transition: opacity .2s;
- }
+}
 
 .slidein-enter {
     right: -100%;
