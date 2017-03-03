@@ -35,12 +35,15 @@ this week's RC
 ## Features
 * metasfresh-backend
   * [#850](https://github.com/metasfresh/metasfresh/issues/850) Add Migration Script to rename Attribute Set Instance Field
+    * Global renaming of Label "Attribute Set Instance" to "Attribute".
   * [#968](https://github.com/metasfresh/metasfresh/issues/968) Include webui in the normal rollout process
+    * Optimizing the Continuous Integration workflow to allow the build of WebUI in default Rollout Process.
   * [#1028](https://github.com/metasfresh/metasfresh/issues/1028) extract distributable stuff into dedicated repo
-  * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
-  * [#1036](https://github.com/metasfresh/metasfresh/issues/1036) Harmonize BL for ModelCacheService.IsExpired
+    * Create a dedicated repository and moved distributably stuff there for betterseperation of core and customized implementations.
   * [#1040](https://github.com/metasfresh/metasfresh/issues/1040) Have new request type opportunity
+    * Included the new Request Type "Opportunity". First step preparing data structure for our new Opportunity Dashboard in WebUI.
   * [#1049](https://github.com/metasfresh/metasfresh/issues/1049) inDispute Fields and Quality% missing in main Invoice Candidate Window
+    * Adjustments in Invoice Candidates Window of WebUI. Included Fields with infomration about the Dispute Status and Quality Inspection information of Material Receipt.
   
 * metasfresh-webui-api
   * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
@@ -62,9 +65,13 @@ upcoming
   * [#458](https://github.com/metasfresh/metasfresh-webui-frontend/issues/458) HU Editor Attribute editing not possible
   * [#1004](https://github.com/metasfresh/metasfresh/issues/1004) Order by C_Order_ID desc in Sales Order Window
   * [#1007](https://github.com/metasfresh/metasfresh/issues/1007) Window for PMM_PurchaseCandidate in WebUI
+  * [#1032](https://github.com/metasfresh/metasfresh/issues/1032) Material Receipt Candidates Grid View finetuning
+    * Adjustments to the Material Receipt Candidates fintuning. Rearranged and reduced the columns shown, so allow a better recognition of important data for the Material Receipt end user.
 
 ## Fixes
 * metasfresh-backend
+  * [#1036](https://github.com/metasfresh/metasfresh/issues/1036) Harmonize BL for ModelCacheService.IsExpired
+    * Fixing a Bug in the ModelCacheService that considered records to be expired under certain conditions although they weren't.
 
 * metasfresh-webui-api
   * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
