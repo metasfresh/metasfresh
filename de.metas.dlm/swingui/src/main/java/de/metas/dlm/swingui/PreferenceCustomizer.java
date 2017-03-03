@@ -87,7 +87,10 @@ public class PreferenceCustomizer
 				preference -> {
 					// do this on store
 					final ValueNamePair selectedItem = dlmLevelField.getSelectedItem();
-					Ini.setProperty(DLMPermanentIniCustomizer.INI_P_DLM_DLM_LEVEL, selectedItem.getValue());
+					if(selectedItem != null)
+					{
+						Ini.setProperty(DLMPermanentIniCustomizer.INI_P_DLM_DLM_LEVEL, selectedItem.getValue());
+					}
 				});
 	}
 
