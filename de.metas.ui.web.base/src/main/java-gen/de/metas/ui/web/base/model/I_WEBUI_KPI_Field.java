@@ -127,6 +127,29 @@ public interface I_WEBUI_KPI_Field
     public static final String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
+	 * Set Color.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setColor (java.lang.String Color);
+
+	/**
+	 * Get Color.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getColor();
+
+    /** Column definition for Color */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Color = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Color", null);
+    /** Column name Color */
+    public static final String COLUMNNAME_Color = "Color";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -251,6 +274,56 @@ public interface I_WEBUI_KPI_Field
     public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setType (java.lang.String Type);
+
+	/**
+	 * Get Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getType();
+
+    /** Column definition for Type */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "Type", null);
+    /** Column name Type */
+    public static final String COLUMNNAME_Type = "Type";
+
+	/**
+	 * Set Symbol.
+	 * Symbol für die Maßeinheit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUOMSymbol (java.lang.String UOMSymbol);
+
+	/**
+	 * Get Symbol.
+	 * Symbol für die Maßeinheit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUOMSymbol();
+
+    /** Column definition for UOMSymbol */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object> COLUMN_UOMSymbol = new org.adempiere.model.ModelColumn<I_WEBUI_KPI_Field, Object>(I_WEBUI_KPI_Field.class, "UOMSymbol", null);
+    /** Column name UOMSymbol */
+    public static final String COLUMNNAME_UOMSymbol = "UOMSymbol";
 
 	/**
 	 * Get Aktualisiert.

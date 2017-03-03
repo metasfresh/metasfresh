@@ -14,7 +14,7 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1460794933L;
+	private static final long serialVersionUID = 1961711316L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI_Field (Properties ctx, int WEBUI_KPI_Field_ID, String trxName)
@@ -122,6 +122,22 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 		return ii.intValue();
 	}
 
+	/** Set Color.
+		@param Color Color	  */
+	@Override
+	public void setColor (java.lang.String Color)
+	{
+		set_Value (COLUMNNAME_Color, Color);
+	}
+
+	/** Get Color.
+		@return Color	  */
+	@Override
+	public java.lang.String getColor () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Color);
+	}
+
 	/** Set Elasticsearch field path.
 		@param ES_FieldPath Elasticsearch field path	  */
 	@Override
@@ -178,6 +194,52 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * Type AD_Reference_ID=540703
+	 * Reference name: WEBUI_KPI_Field_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=540703;
+	/** XAxis = X */
+	public static final String TYPE_XAxis = "X";
+	/** Set Art.
+		@param Type 
+		Type of Validation (SQL, Java Script, Java Language)
+	  */
+	@Override
+	public void setType (java.lang.String Type)
+	{
+
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	/** Get Art.
+		@return Type of Validation (SQL, Java Script, Java Language)
+	  */
+	@Override
+	public java.lang.String getType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Type);
+	}
+
+	/** Set Symbol.
+		@param UOMSymbol 
+		Symbol für die Maßeinheit
+	  */
+	@Override
+	public void setUOMSymbol (java.lang.String UOMSymbol)
+	{
+		set_Value (COLUMNNAME_UOMSymbol, UOMSymbol);
+	}
+
+	/** Get Symbol.
+		@return Symbol für die Maßeinheit
+	  */
+	@Override
+	public java.lang.String getUOMSymbol () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UOMSymbol);
 	}
 
 	/** Set WEBUI_KPI_Field.

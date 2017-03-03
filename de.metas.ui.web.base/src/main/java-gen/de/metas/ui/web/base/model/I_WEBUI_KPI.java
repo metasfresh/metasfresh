@@ -291,6 +291,29 @@ public interface I_WEBUI_KPI
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Polling interval (sec).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPollIntervalSec (int PollIntervalSec);
+
+	/**
+	 * Get Polling interval (sec).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getPollIntervalSec();
+
+    /** Column definition for PollIntervalSec */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_PollIntervalSec = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "PollIntervalSec", null);
+    /** Column name PollIntervalSec */
+    public static final String COLUMNNAME_PollIntervalSec = "PollIntervalSec";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

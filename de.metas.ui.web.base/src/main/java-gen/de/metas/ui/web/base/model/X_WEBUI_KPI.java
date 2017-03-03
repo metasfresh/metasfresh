@@ -14,7 +14,7 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -163052197L;
+	private static final long serialVersionUID = 1759778584L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (Properties ctx, int WEBUI_KPI_ID, String trxName)
@@ -26,6 +26,8 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 			setES_Index (null);
 			setES_Type (null);
 			setName (null);
+			setPollIntervalSec (0);
+// 10
 			setWEBUI_KPI_ID (0);
         } */
     }
@@ -178,6 +180,25 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Polling interval (sec).
+		@param PollIntervalSec Polling interval (sec)	  */
+	@Override
+	public void setPollIntervalSec (int PollIntervalSec)
+	{
+		set_Value (COLUMNNAME_PollIntervalSec, Integer.valueOf(PollIntervalSec));
+	}
+
+	/** Get Polling interval (sec).
+		@return Polling interval (sec)	  */
+	@Override
+	public int getPollIntervalSec () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PollIntervalSec);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set KPI.
