@@ -372,7 +372,7 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
-            filterWidget, mandatory, rowId, tabIndex
+            filterWidget, mandatory, rowId, tabIndex, validStatus
         } = this.props;
 
         const {
@@ -389,7 +389,9 @@ class Lookup extends Component {
                     (isOpen ? 'input-focused ' : '') +
                     (readonly ? 'input-disabled ' : '') +
                     (rowId ? 'input-dropdown-container-static ' : '') +
-                    ((rowId && !isModal)? 'input-table ' : '')
+                    ((rowId && !isModal)? 'input-table ' : '') +
+                    (validStatus &&
+                        !validStatus.valid ? 'input-error ' : '')
                 }
             >
                 <div className={
