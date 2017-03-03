@@ -112,6 +112,8 @@ public class KPIDataLoader
 		{
 			timeRanges.add(TimeRange.offset(mainTimeRange, compareOffset));
 
+			//
+			// Offset fieldName extractor
 			fieldNameExtractor = (field, timeRange) -> {
 				if (timeRange.isMainTimeRange())
 				{
@@ -127,6 +129,8 @@ public class KPIDataLoader
 				}
 			};
 
+			//
+			// Offset dataSet value(item) key extractor (i.e. on which key we shall join the result of our queries)
 			final KPIField groupByField = kpi.getGroupByField();
 			if (groupByField.getValueType().isDate())
 			{
