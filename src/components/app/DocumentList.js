@@ -151,11 +151,11 @@ class DocumentList extends Component {
         });
     }
 
-    isSelectionExist(selected) {
+    doesSelectionExist(selected) {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
-        return (data && data.size && data.result && selected[0] &&
+        return (data && data.size && data.result && selected && selected[0] &&
             getItemsByProperty(
                 data.result, 'id', selected[0]
             ).length
@@ -321,7 +321,7 @@ class DocumentList extends Component {
             fetchQuickActionsOnInit, isModal
         } = this.props;
 
-        const selectionValid = this.isSelectionExist(selected);
+        const selectionValid = this.doesSelectionExist(selected);
 
         if(layout && data) {
             return (
