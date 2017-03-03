@@ -240,9 +240,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_VERSION'),
 		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
-		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
-Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
-			name: 'MF_SKIP_DEPLOYMENT'),
 		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
 			name: 'MF_SKIP_TO_DIST'),	
 		string(defaultValue: '', 
