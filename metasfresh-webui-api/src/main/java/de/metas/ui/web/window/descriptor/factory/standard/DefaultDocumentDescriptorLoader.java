@@ -106,6 +106,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		// Layout: Create UI details from child tabs
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(mainTabVO.getTabNo()))
 		{
+			// Skip sort tabs because they are not supported
+			if(detailTabVO.IsSortTab)
+			{
+				continue;
+			}
+			
 			final LayoutFactory detailLayoutFactory = new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
 			final DocumentLayoutDetailDescriptor.Builder layoutDetail = detailLayoutFactory.layoutDetail();
 			layoutBuilder.addDetailIfValid(layoutDetail);
