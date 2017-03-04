@@ -61,10 +61,22 @@ import de.metas.process.RunOutOfTrx;
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
-		// Receipt schedule shall not be already closed
 		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
+		
+		// guard against null (might happen if the selected ID is not valid)
+		if(receiptSchedule == null)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		
+		return checkEligibleForReceivingHUs(receiptSchedule);
+	}
+
+	/** @return true if given receipt schedule is eligible for receiving HUs */
+	public static final ProcessPreconditionsResolution checkEligibleForReceivingHUs(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		// Receipt schedule shall not be already closed
+		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		if (receiptScheduleBL.isClosed(receiptSchedule))
 		{
 			return ProcessPreconditionsResolution.reject("receipt schedule closed");
@@ -77,6 +89,7 @@ import de.metas.process.RunOutOfTrx;
 		}
 
 		return ProcessPreconditionsResolution.accept();
+		
 	}
 
 	protected static I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)

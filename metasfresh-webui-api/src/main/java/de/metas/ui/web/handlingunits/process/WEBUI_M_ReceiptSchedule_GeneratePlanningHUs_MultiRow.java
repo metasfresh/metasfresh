@@ -75,16 +75,62 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 1)
+		if (context.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
-		// TODO: make sure all rows are for same BPartner
 
+		// NOTE: we shall allow one line only
+		// if (context.getSelectionSize() <= 1)
+		// {
+		// return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
+		// }
+
+		//
+		// Fetch the receipt schedules which have some qty available for receiving
+		final List<I_M_ReceiptSchedule> receiptSchedules = context.getSelectedModels(I_M_ReceiptSchedule.class)
+				.stream()
+				.filter(receiptSchedule -> getAvailableQtyToReceive(receiptSchedule).signum() > 0)
+				.collect(ImmutableList.toImmutableList());
+		if(receiptSchedules.isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject("nothing to receive");
+		}
+
+		//
+		// Make sure each of them are eligible for receiving
+		{
+			ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
+					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
+					.filter(resolution -> !resolution.isAccepted())
+					.findFirst()
+					.orElse(null);
+			if (rejectResolution != null)
+			{
+				return rejectResolution;
+			}
+		}
+
+		//
+		// If more than one line selected, make sure the lines make sense together
+		// * enforce same BPartner (task https://github.com/metasfresh/metasfresh-webui/issues/207)
+		if (receiptSchedules.size() > 1)
+		{
+			final long bpartnersCount = receiptSchedules
+					.stream()
+					.map(receiptSchedule -> receiptScheduleBL.getC_BPartner_Effective_ID(receiptSchedule))
+					.distinct()
+					.count();
+			if (bpartnersCount != 1)
+			{
+				return ProcessPreconditionsResolution.reject("select only one BPartner");
+			}
+		}
+
+		//
 		return ProcessPreconditionsResolution.accept();
 	}
-
+	
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -142,11 +188,16 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		InterfaceWrapperHelper.setTrxName(vhu, ITrx.TRXNAME_None);
 		return vhu;
 	}
+	
+	private final BigDecimal getAvailableQtyToReceive(final I_M_ReceiptSchedule rs)
+	{
+		return receiptScheduleBL.getQtyToMove(rs);
+	}
 
 	private final IAllocationRequest createAllocationRequest(final I_M_ReceiptSchedule rs)
 	{
 		// Get Qty
-		final BigDecimal qty = receiptScheduleBL.getQtyToMove(rs);
+		final BigDecimal qty = getAvailableQtyToReceive(rs);
 		if (qty == null || qty.signum() <= 0)
 		{
 			// nothing to do
