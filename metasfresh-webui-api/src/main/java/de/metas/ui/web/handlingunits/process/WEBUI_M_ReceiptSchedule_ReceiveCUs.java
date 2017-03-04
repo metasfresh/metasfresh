@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,11 +67,24 @@ import de.metas.ui.web.WebRestApiApplication;
  *
  */
 @Profile(WebRestApiApplication.PROFILE_Webui)
-public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaProcess implements IProcessPrecondition
+public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements IProcessPrecondition
 {
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
+	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
+
+	protected final void setAllowMultipleReceiptsSchedules(final boolean allowMultipleReceiptsSchedules)
+	{
+		this.allowMultipleReceiptsSchedules = allowMultipleReceiptsSchedules;
+	}
+
+	protected final void setAllowNoQuantityAvailable(final boolean allowNoQuantityAvailable)
+	{
+		this.allowNoQuantityAvailable = allowNoQuantityAvailable;
+	}
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -87,12 +101,19 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		// }
 
 		//
+		// Check if we are allowed to select multiple lines
+		if (!allowMultipleReceiptsSchedules && context.getSelectionSize() > 1)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select only one line");
+		}
+
+		//
 		// Fetch the receipt schedules which have some qty available for receiving
 		final List<I_M_ReceiptSchedule> receiptSchedules = context.getSelectedModels(I_M_ReceiptSchedule.class)
 				.stream()
-				.filter(receiptSchedule -> getAvailableQtyToReceive(receiptSchedule).signum() > 0)
+				.filter(receiptSchedule -> allowNoQuantityAvailable || getDefaultAvailableQtyToReceive(receiptSchedule).signum() > 0)
 				.collect(ImmutableList.toImmutableList());
-		if(receiptSchedules.isEmpty())
+		if (receiptSchedules.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject("nothing to receive");
 		}
@@ -100,7 +121,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		//
 		// Make sure each of them are eligible for receiving
 		{
-			ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
+			final ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
 					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
 					.filter(resolution -> !resolution.isAccepted())
 					.findFirst()
@@ -130,14 +151,12 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		//
 		return ProcessPreconditionsResolution.accept();
 	}
-	
+
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected final String doIt() throws Exception
 	{
-		final List<I_M_HU> hus = retrieveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
-				.create()
-				.stream(I_M_ReceiptSchedule.class)
+		final List<I_M_HU> hus = streamReceiptSchedulesToReceive()
 				.map(this::createPlanningVHU)
 				.filter(hu -> hu != null)
 				.collect(GuavaCollectors.toImmutableList());
@@ -145,6 +164,13 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
 
 		return MSG_OK;
+	}
+
+	protected Stream<I_M_ReceiptSchedule> streamReceiptSchedulesToReceive()
+	{
+		return retrieveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
+				.create()
+				.stream(I_M_ReceiptSchedule.class);
 	}
 
 	private I_M_HU createPlanningVHU(final I_M_ReceiptSchedule receiptSchedule)
@@ -188,17 +214,24 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		InterfaceWrapperHelper.setTrxName(vhu, ITrx.TRXNAME_None);
 		return vhu;
 	}
-	
-	private final BigDecimal getAvailableQtyToReceive(final I_M_ReceiptSchedule rs)
+
+	protected final BigDecimal getDefaultAvailableQtyToReceive(final I_M_ReceiptSchedule rs)
 	{
-		return receiptScheduleBL.getQtyToMove(rs);
+		final BigDecimal qty = receiptScheduleBL.getQtyToMove(rs);
+		return qty == null || qty.signum() <= 0 ? BigDecimal.ZERO : qty;
+	}
+	
+	protected BigDecimal getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)
+	{
+		BigDecimal defaultAvailableQtyToReceive = getDefaultAvailableQtyToReceive(rs);
+		return defaultAvailableQtyToReceive;
 	}
 
 	private final IAllocationRequest createAllocationRequest(final I_M_ReceiptSchedule rs)
 	{
 		// Get Qty
-		final BigDecimal qty = getAvailableQtyToReceive(rs);
-		if (qty == null || qty.signum() <= 0)
+		final BigDecimal qty = getEffectiveQtyToReceive(rs);
+		if (qty.signum() <= 0)
 		{
 			// nothing to do
 			return null;
