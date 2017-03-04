@@ -152,12 +152,21 @@ public class WindowQuickInputRestController
 
 				final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
 
-				return QuickInput.builder()
-						.setQuickInputDescriptor(quickInputDescriptor)
-						.setRootDocumentPath(rootDocument.getDocumentPath())
-						.build()
-						.bindRootDocument(rootDocument)
-						.assertTargetWritable();
+				try
+				{
+					return QuickInput.builder()
+							.setQuickInputDescriptor(quickInputDescriptor)
+							.setRootDocumentPath(rootDocument.getDocumentPath())
+							.build()
+							.bindRootDocument(rootDocument)
+							.assertTargetWritable();
+				}
+				catch(Exception ex)
+				{
+					// Avoid showing "weird" exception to use, so we return HTTP 404 which is interpreted by frontend
+					// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/487
+					throw EntityNotFoundException.wrapIfNeeded(ex);
+				}
 			});
 
 			commit(quickInput);
