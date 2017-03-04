@@ -45,8 +45,6 @@ public class HUIterator extends AbstractHUIterator
 {
 	public HUIterator()
 	{
-		super();
-
 		registerNodeIterator(I_M_HU.class, new HUNodeIterator());
 		registerNodeIterator(I_M_HU_Item.class, new HUItemNodeIterator());
 
