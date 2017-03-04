@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -373,6 +374,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		return allActionItems.stream()
 				.filter(item -> selectableTypes.contains(item.getValueName()))
 				.map(item -> InterfaceWrapperHelper.translate(item, I_AD_Ref_List.class)) // replace 'item' with its translated version
+				.sorted(Comparator.comparing(I_AD_Ref_List::getName))
 				.map(item -> StringLookupValue.of(item.getValueName(), item.getName()))
 				.collect(LookupValuesList.collect());
 	}
@@ -390,6 +392,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			return getView()
 					.streamAllRecursive()
 					.filter(row -> row.isTU())
+					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -412,6 +415,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 			return getView()
 					.streamAllRecursive()
 					.filter(row -> row.isLU())
+					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -432,7 +436,7 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 
 			case TU_To_NewTUs:
 				return retrieveHUPItemProductsForNewTU();
-				
+
 			case TU_To_NewLU:
 				return retrieveHUPItemProductsForNewTU(); // here we also create new TUs, in addition to the new LU
 
@@ -450,7 +454,9 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 		final Stream<I_M_HU_PI_Item_Product> stream = hupiItemProductDAO
 				.retrieveTUs(getCtx(), huRow.getM_Product(), huRow.getM_HU().getC_BPartner())
 				.stream();
+
 		return stream
+				.sorted(Comparator.comparing(I_M_HU_PI_Item_Product::getName))
 				.map(huPIItemProduct -> IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName()))
 				.collect(LookupValuesList.collect());
 	}
@@ -480,7 +486,9 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 				.create()
 				.list();
 
-		return luPIs.stream().map(luPI -> IntegerLookupValue.of(luPI.getM_HU_PI_ID(), luPI.getName()))
+		return luPIs.stream()
+				.sorted(Comparator.comparing(I_M_HU_PI::getName))
+				.map(luPI -> IntegerLookupValue.of(luPI.getM_HU_PI_ID(), luPI.getName()))
 				.collect(LookupValuesList.collect());
 	}
 }
