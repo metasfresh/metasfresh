@@ -93,7 +93,7 @@ public final class NoDataFoundHandlers
 		for (final INoDataFoundHandler currentHandler : noDataFoundHandlers)
 		{
 			final boolean currentHandlerFixedIt = invokeCurrentHandler(currentHandler, tableName, ids, ctx);
-			// final boolean currentHandlerFixedIt = currentHandler.invoke(tableName, ids, ctx);
+
 			if (currentHandlerFixedIt && !atLeastOneHandlerFixedIt)
 			{
 				atLeastOneHandlerFixedIt = true;
