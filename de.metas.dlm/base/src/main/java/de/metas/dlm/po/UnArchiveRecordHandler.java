@@ -40,7 +40,7 @@ import de.metas.logging.LogManager;
  */
 
 /**
- * This handler öoads the given record (even if that record is archived) and sets its {@link IDLMAware#COLUMNNAME_DLM_Level} to {@link IMigratorService#DLM_Level_LIVE}.
+ * This handler loads the given record (even if that record is archived) and sets its {@link IDLMAware#COLUMNNAME_DLM_Level} to {@link IMigratorService#DLM_Level_LIVE}.
  * For details, see {@link #invoke(String, Object[], IContextAware)}.
  *
  * @author metas-dev <dev@metasfresh.com>
