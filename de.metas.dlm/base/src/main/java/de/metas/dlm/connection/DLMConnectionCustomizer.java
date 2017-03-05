@@ -47,7 +47,8 @@ public class DLMConnectionCustomizer
 	}
 
 	/**
-	 * Returns an instance with both DLM level and DLM coalesce level beeing the maximum value that a PostgreSQL {@code SMALLINT} can hold. Therefore, while this customizer is active, all records will be visislbe.
+	 * Returns an instance with both DLM level and DLM coalesce level being the maximum value that a PostgreSQL {@code SMALLINT} can hold.<br>
+	 * Therefore, while this customizer is active, all records will be visible.
 	 * <p>
 	 * See <a href="https://www.postgresql.org/docs/9.5/static/datatype-numeric.html">PostgreSQL Numeric Types</a> documentation.
 	 *

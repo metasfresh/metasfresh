@@ -3,12 +3,16 @@ package de.metas.dlm.po;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import de.metas.connection.IConnectionCustomizerService;
@@ -58,7 +62,7 @@ public class UnArchiveRecordHandler implements INoDataFoundHandler
 	}
 
 	/**
-	 * This method attempts to load the record using {@link DLMConnectionCustomizer#seeThemAllCustomizer()}. 
+	 * This method attempts to load the record using {@link DLMConnectionCustomizer#seeThemAllCustomizer()}.
 	 * If this succeeds and the record's {@code DLM_Level} is not {@link IMigratorService#DLM_Level_LIVE}, it will set the record's level to that value and save the record.
 	 *
 	 * @param tableName the table name to load from. May be empty or null. In that case, the metohd will return {@code false}.
@@ -83,30 +87,43 @@ public class UnArchiveRecordHandler implements INoDataFoundHandler
 			return false;
 		}
 
+		final Mutable<Boolean> unArchiveWorked = new Mutable<>(false);
+
 		// attempt to load the record
 		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
 		try (final AutoCloseable customizer = connectionCustomizerService.registerTemporaryCustomizer(DLMConnectionCustomizer.seeThemAllCustomizer()))
 		{
-			final TableRecordReference reference = TableRecordReference.of(tableName, (int)ids[0]);
-			final IDLMAware model = reference.getModel(ctx, IDLMAware.class);
-
-			if (model == null)
+			Services.get(ITrxManager.class).run(new TrxRunnable()
 			{
-				logger.info("Unable to load record for reference={}; returning false.", reference);
-				return false;
-			}
+				@Override
+				public void run(final String localTrxName) throws Exception
+				{
+					final PlainContextAware localCtx = PlainContextAware.newWithTrxName(ctx.getCtx(), localTrxName);
 
-			if (model.getDLM_Level() == IMigratorService.DLM_Level_LIVE)
-			{
-				logger.info("The record could be loaded, but already had DLM_Level={}; returning false; reference={}; ", IMigratorService.DLM_Level_LIVE, reference);
-				return false;
-			}
+					final TableRecordReference reference = TableRecordReference.of(tableName, (int)ids[0]);
+					final IDLMAware model = reference.getModel(localCtx, IDLMAware.class);
 
-			logger.info("Setting DLM_Level to {} for {}", IMigratorService.DLM_Level_LIVE, reference);
+					if (model == null)
+					{
+						logger.info("Unable to load record for reference={}; returning false.", reference);
+						return;
+					}
 
-			model.setDLM_Level(IMigratorService.DLM_Level_LIVE);
-			InterfaceWrapperHelper.save(model);
-			return true;
+					if (model.getDLM_Level() == IMigratorService.DLM_Level_LIVE)
+					{
+						logger.info("The record could be loaded, but already had DLM_Level={}; returning false; reference={}; ", IMigratorService.DLM_Level_LIVE, reference);
+						return;
+					}
+
+					logger.info("Setting DLM_Level to {} for {}", IMigratorService.DLM_Level_LIVE, reference);
+
+					model.setDLM_Level(IMigratorService.DLM_Level_LIVE);
+					InterfaceWrapperHelper.save(model);
+					unArchiveWorked.setValue(true);
+				}
+			});
+
+			return unArchiveWorked.getValue();
 		}
 		catch (final Exception e)
 		{
