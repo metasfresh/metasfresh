@@ -539,3 +539,35 @@ export function getItemsByProperty(arr, prop, value) {
 
     return ret;
 }
+
+export function mapIncluded(node, indent, isParentLastChild = false) {
+    let ind = indent ? indent : [];
+    let result = [];
+
+    const nodeCopy = Object.assign({}, node, {
+        indent: ind
+    });
+
+    result = result.concat([nodeCopy]);
+
+    if(isParentLastChild){
+        ind[ind.length - 2] = false;
+    }
+
+    if(node.includedDocuments){
+        for(let i = 0; i < node.includedDocuments.length; i++){
+            let copy = node.includedDocuments[i];
+            if(i === node.includedDocuments.length - 1){
+                copy = Object.assign({}, copy, {
+                    lastChild: true
+                });
+            }
+
+            result = result.concat(
+                mapIncluded(copy, ind.concat([true]), node.lastChild)
+            )
+        }
+    }
+
+    return result;
+}

@@ -6,7 +6,8 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteLocal
+    deleteLocal,
+    mapIncluded
 } from '../../actions/WindowActions';
 
 import {
@@ -97,7 +98,7 @@ class Table extends Component {
             let rowsData = [];
 
             rowData[tabid].map(item => {
-                rowsData = rowsData.concat(this.mapIncluded(item));
+                rowsData = rowsData.concat(mapIncluded(item));
             })
 
             this.setState({
@@ -123,7 +124,7 @@ class Table extends Component {
 
         rows.map( item => {
             if(item.id == selected[0]){
-                leafs = this.mapIncluded(item);
+                leafs = mapIncluded(item);
             }
         });
 
@@ -281,38 +282,6 @@ class Table extends Component {
                 }
                 break;
         }
-    }
-
-    mapIncluded = (node, indent, isParentLastChild = false) => {
-        let ind = indent ? indent : [];
-        let result = [];
-
-        const nodeCopy = Object.assign({}, node, {
-            indent: ind
-        });
-
-        result = result.concat([nodeCopy]);
-
-        if(isParentLastChild){
-            ind[ind.length - 2] = false;
-        }
-
-        if(node.includedDocuments){
-            for(let i = 0; i < node.includedDocuments.length; i++){
-                let copy = node.includedDocuments[i];
-                if(i === node.includedDocuments.length - 1){
-                    copy = Object.assign({}, copy, {
-                        lastChild: true
-                    });
-                }
-
-                result = result.concat(
-                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
-                )
-            }
-        }
-
-        return result;
     }
 
     handleKeyDownDocList = (e) => {
