@@ -392,7 +392,7 @@ class DocumentList extends Component {
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
-                                    className="table-flex-wrapper attributes-selector"
+                                    className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
                                     windowType={windowType}
                                     viewId={viewId}

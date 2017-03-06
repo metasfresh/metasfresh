@@ -677,7 +677,7 @@ class Table extends Component {
 
                     <div
                         className={
-                            'panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table ' +
+                            'panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table js-not-unselect' +
                             ((
                                 (rowData && rowData[tabid] &&
                                 Object.keys(rowData[tabid]).length === 0) ||
