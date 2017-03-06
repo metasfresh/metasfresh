@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.dbPort.Convert;
 import org.compiere.util.CCache;
 import org.compiere.util.CtxName;
 import org.compiere.util.DB;
@@ -707,7 +708,9 @@ public class MColumn extends X_AD_Column
 	{
 		if (addingSingleColumn && isAddColumnDDL(statement))
 		{
-			DB.executeFunctionCallEx(get_TrxName(), "SELECT public.db_alter_table(?,?)", new Object[] { tableName, statement });
+			final String sql = Convert.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(statement) + ")";
+			final Object[] sqlParams = null; // IMPORTANT: don't use any parameters because we want to log this command to migration script file
+			DB.executeFunctionCallEx(get_TrxName(), sql, sqlParams);
 		}
 		else
 		{

@@ -302,4 +302,31 @@ public interface I_WEBUI_DashboardItem
     public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_WEBUI_DashboardWidgetType = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "WEBUI_DashboardWidgetType", null);
     /** Column name WEBUI_DashboardWidgetType */
     public static final String COLUMNNAME_WEBUI_DashboardWidgetType = "WEBUI_DashboardWidgetType";
+
+	/**
+	 * Set KPI.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_KPI_ID (int WEBUI_KPI_ID);
+
+	/**
+	 * Get KPI.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getWEBUI_KPI_ID();
+
+	public de.metas.ui.web.base.model.I_WEBUI_KPI getWEBUI_KPI();
+
+	public void setWEBUI_KPI(de.metas.ui.web.base.model.I_WEBUI_KPI WEBUI_KPI);
+
+    /** Column definition for WEBUI_KPI_ID */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, de.metas.ui.web.base.model.I_WEBUI_KPI> COLUMN_WEBUI_KPI_ID = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, de.metas.ui.web.base.model.I_WEBUI_KPI>(I_WEBUI_DashboardItem.class, "WEBUI_KPI_ID", de.metas.ui.web.base.model.I_WEBUI_KPI.class);
+    /** Column name WEBUI_KPI_ID */
+    public static final String COLUMNNAME_WEBUI_KPI_ID = "WEBUI_KPI_ID";
 }

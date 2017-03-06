@@ -1,6 +1,8 @@
 package org.adempiere.mm.attributes.util;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -13,6 +15,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -78,7 +81,7 @@ public final class ASIEditingInfo
 
 	// Deducted values
 	private final I_M_AttributeSet _attributeSet;
-	private List<MAttribute> _availableAttributes;
+	private ImmutableList<MAttribute> _availableAttributes;
 	private MAttributeSetInstance _attributeSetInstance;
 	private final boolean _allowSelectExistingASI;
 	private final boolean isLotEnabled;
@@ -329,7 +332,15 @@ public final class ASIEditingInfo
 		return _availableAttributes;
 	}
 
-	private List<MAttribute> retrieveAvailableAttributes()
+	public Set<Integer> getAvailableAttributeIds()
+	{
+		return getAvailableAttributes()
+				.stream()
+				.map(attribute -> attribute.getM_Attribute_ID())
+				.collect(GuavaCollectors.toImmutableSet());
+	}
+
+	private ImmutableList<MAttribute> retrieveAvailableAttributes()
 	{
 		final WindowType type = getWindowType();
 		final MAttributeSet attributeSet = LegacyAdapters.convertToPO(getM_AttributeSet());
@@ -342,7 +353,8 @@ public final class ASIEditingInfo
 			case Regular:
 			{
 				Check.assumeNotNull(attributeSet, "Parameter attributeSet is not null");
-				attributes = Stream.of(attributeSet.getMAttributes(true)); // all instance attributes
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID())
+						.stream();
 				break;
 			}
 			case ProductWindow:
@@ -396,6 +408,46 @@ public final class ASIEditingInfo
 		return attributes
 				.filter(attribute -> attributeSet == null || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSet, callerColumnId, isSOTrx))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	/**
+	 * 
+	 * @param attributeSet
+	 * @param attributeSetInstanceId
+	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
+	 */
+	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(final MAttributeSet attributeSet, final int attributeSetInstanceId)
+	{
+		//
+		// Retrieve attribute set's instance attributes,
+		// and index them by M_Attribute_ID
+		final Map<Integer, MAttribute> attributes = Stream.of(attributeSet.getMAttributes(true))
+				.map(attribute -> GuavaCollectors.entry(attribute.getM_Attribute_ID(), attribute))
+				.collect(GuavaCollectors.toLinkedHashMap()); // preserve the order
+
+		//
+		// If we have an ASI then fetch the attributes from ASI which are missing in attributeSet
+		// and add them to our "attributes" index.
+		if (attributeSetInstanceId > 0)
+		{
+			Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_AttributeInstance.class, attributeSet)
+					.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
+					//
+					.andCollect(I_M_AttributeInstance.COLUMN_M_Attribute_ID)
+					.addNotInArrayFilter(I_M_Attribute.COLUMN_M_Attribute_ID, attributes.keySet()) // skip already loaded attributes
+					.orderBy()
+					.addColumn(I_M_Attribute.COLUMN_Name)
+					.addColumn(I_M_Attribute.COLUMN_M_Attribute_ID)
+					.endOrderBy()
+					//
+					.create()
+					.stream(MAttribute.class)
+					.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
+		}
+
+		//
+		return ImmutableList.copyOf(attributes.values());
 	}
 
 	public static enum WindowType

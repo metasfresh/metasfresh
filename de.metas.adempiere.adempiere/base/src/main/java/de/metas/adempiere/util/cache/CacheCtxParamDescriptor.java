@@ -143,14 +143,11 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 	 * <li>AD_User_ID
 	 * <li>AD_Language
 	 * </ul>
-	 * The aim of this method is to be used for hot fixes, where we can not implement services which annotated cached methods, but want just to fix the issue.
-	 * That's also why the method is flagged as deprecated from the very beginning.
 	 *
 	 * @param ctx1
 	 * @param ctx2
 	 * @return true if given contexts shall be considered equal from caching perspective
 	 */
-	@Deprecated
 	public static final boolean isSameCtx(final Properties ctx1, final Properties ctx2)
 	{
 		if (ctx1 == ctx2)

@@ -2,7 +2,6 @@ package de.metas.commission.pricing.spi.impl;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL.IPlvCreationListener;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -17,12 +16,12 @@ import de.metas.logging.LogManager;
  * @author ts
  * @task http://dewiki908/mediawiki/index.php/07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
  */
-public class CommissionPlvCreationListener implements IPlvCreationListener
+public class CommissionPlvCreationListener // implements IPlvCreationListener
 {
 
 	private static final Logger logger = LogManager.getLogger(CommissionPlvCreationListener.class);
 
-	@Override
+//	@Override
 	public void onPlvCreation(final IContextAware ctxAware,
 			final I_M_PriceList_Version targetPriceListVersion,
 			final org.compiere.model.I_M_DiscountSchemaLine dsl,
@@ -68,7 +67,7 @@ public class CommissionPlvCreationListener implements IPlvCreationListener
 	 * 	This further means that the commission aspect can work with the results created by the swat aspect.
 	 * </pre>
 	 */
-	@Override
+//	@Override
 	public int getExecutionOrderSeqNo()
 	{
 		return 10;

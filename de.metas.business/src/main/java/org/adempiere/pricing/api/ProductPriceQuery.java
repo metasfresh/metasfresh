@@ -571,13 +571,17 @@ public class ProductPriceQuery
 
 		private static boolean isAttributeInstanceMatching(final I_M_AttributeInstance expected, final I_M_AttributeInstance actual)
 		{
+			final int expectedAttributeValueId = Util.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
+			
+			final int actualAttributeValueId;
 			if (actual == null)
 			{
-				return false;
+				actualAttributeValueId = 0;
 			}
-
-			final int expectedAttributeValueId = Util.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
-			final int actualAttributeValueId = Util.firstGreaterThanZero(actual.getM_AttributeValue_ID(), 0);
+			else
+			{
+				actualAttributeValueId = Util.firstGreaterThanZero(actual.getM_AttributeValue_ID(), 0);
+			}
 
 			if (expectedAttributeValueId != actualAttributeValueId)
 			{

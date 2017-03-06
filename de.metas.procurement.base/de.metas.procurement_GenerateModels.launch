@@ -16,5 +16,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/de/metas/procurement/base/model/&#13;&#10;de.metas.procurement.base.model&#13;&#10;'de.metas.procurement'"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.procurement.base"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:de.metas.endcustomer.mf15}/metasfresh.properties"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-dist}/metasfresh.properties"/>
 </launchConfiguration>

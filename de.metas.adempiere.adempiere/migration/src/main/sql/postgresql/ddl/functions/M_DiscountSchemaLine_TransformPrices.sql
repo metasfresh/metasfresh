@@ -7,7 +7,7 @@
 	, /* p_Target_Currency_ID */ numeric
 	, /* p_Conv_Client_ID */ numeric
 	, /* p_Conv_Org_ID */ numeric
-	, /* p_IsSeasonFixedPrice */ char(1)
+	, /* p_ApplyDiscountSchema */ boolean
 )
 ;
 DROP FUNCTION IF EXISTS M_DiscountSchemaLine_ROUND
@@ -74,7 +74,7 @@ CREATE OR REPLACE FUNCTION M_DiscountSchemaLine_TransformPrices
 	, p_Target_Currency_ID numeric
 	, p_Conv_Client_ID numeric
 	, p_Conv_Org_ID numeric
-	, p_IsSeasonFixedPrice char(1) = 'N'
+	, p_ApplyDiscountSchema boolean = true
 )
 RETURNS M_DiscountSchemaLine_TransformResult AS
 $BODY$
@@ -95,7 +95,7 @@ BEGIN
 
 	--
 	-- Apply discount schema line rules, if not a "season fixed price"
-	if (coalesce(p_IsSeasonFixedPrice, 'N') = 'N') then
+	if (p_ApplyDiscountSchema) then
 		--
 		-- Copy/apply discount schema line rules:
 		-- * copy base price based on M_DiscountSchemaLine.*_Base (S - PriceStd, L - PriceList, X - PriceLimit), NOTE: F-Fixed price will be applied later

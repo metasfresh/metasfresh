@@ -60,7 +60,7 @@ public class DLM_MassMigrate extends JavaProcess
 		
 		if (run_load_production_table_rows)
 		{
-			callDBFunctionUntilDone("select * from dlm.load_production_table_rows();");
+			callDBFunctionUntilDone("dlm.load_production_table_rows");
 		}
 		else
 		{
@@ -69,7 +69,7 @@ public class DLM_MassMigrate extends JavaProcess
 
 		if (run_update_production_table)
 		{
-			callDBFunctionUntilDone("select * from dlm.update_production_table();");
+			callDBFunctionUntilDone("dlm.update_production_table");
 		}
 		else
 		{
@@ -82,7 +82,7 @@ public class DLM_MassMigrate extends JavaProcess
 		return MSG_OK;
 	}
 
-	private void callDBFunctionUntilDone(final String sql)
+	private void callDBFunctionUntilDone(final String dbFunctionName)
 	{
 		final Mutable<Boolean> done = new Mutable<>(false);
 
@@ -93,7 +93,7 @@ public class DLM_MassMigrate extends JavaProcess
 				@Override
 				public void run(String localTrxName) throws Exception
 				{
-					final CPreparedStatement stmt = DB.prepareStatement(sql, localTrxName);
+					final CPreparedStatement stmt = DB.prepareStatement("select * from " + dbFunctionName + "();", localTrxName);
 
 					final Stopwatch stopWatch = Stopwatch.createStarted();
 					final ResultSet rs = stmt.executeQuery();
@@ -102,7 +102,7 @@ public class DLM_MassMigrate extends JavaProcess
 					if (!rs.next())
 					{
 						done.setValue(true);
-						Loggables.get().addLog("load_production_table_rows: we are done");
+						Loggables.get().addLog("{}: we are done", dbFunctionName);
 						return;
 					}
 
@@ -110,7 +110,7 @@ public class DLM_MassMigrate extends JavaProcess
 					final int updatecount = rs.getInt("updatecount");
 					final int massmigrate_id = rs.getInt("massmigrate_id");
 
-					Loggables.get().addLog("load_production_table_rows: MassMigrate_ID={}; elapsed time={}; Table={}; Updated={}", massmigrate_id, elapsedTime, tablename, updatecount);
+					Loggables.get().addLog("{}: MassMigrate_ID={}; elapsed time={}; Table={}; Updated={}", dbFunctionName, massmigrate_id, elapsedTime, tablename, updatecount);
 				}
 			});
 		}

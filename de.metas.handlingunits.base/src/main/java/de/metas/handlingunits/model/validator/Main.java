@@ -195,7 +195,7 @@ public final class Main extends AbstractModuleInterceptor
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new HUC_Invoice_Candidate_GridTabSummaryInfoProvider(), true); // forceOverride
 	}
 
-	private void setupPricing()
+	public static void setupPricing()
 	{
 		ProductPriceQuery.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
 

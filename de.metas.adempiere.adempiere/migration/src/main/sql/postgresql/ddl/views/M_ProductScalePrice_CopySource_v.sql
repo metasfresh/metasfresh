@@ -35,7 +35,7 @@ from (
 			, p_Target_Currency_ID := target_pl.C_Currency_ID
 			, p_Conv_Client_ID := target_plv.AD_Client_ID
 			, p_Conv_Org_ID := target_plv.AD_Org_ID
-			, p_IsSeasonFixedPrice := source_pp.IsSeasonFixedPrice
+			, p_ApplyDiscountSchema := source_pp.IsSeasonFixedPrice='N' and source_pp.IsActive='Y' and source_psp.IsActive='Y'
 		) as prices
 		--
 		, target_plv.AD_Client_ID
