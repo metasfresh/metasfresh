@@ -153,3 +153,44 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsAdvancedField='N',Updated=TO_TIMESTAMP('2017-03-06 14:04:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542028
 ;
 
+-- 06.03.2017 15:21
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Bestellt',Updated=TO_TIMESTAMP('2017-03-06 15:21:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=552537
+;
+
+-- 06.03.2017 15:21
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=552537
+;
+
+-- 06.03.2017 15:22
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='TU bestellt',Updated=TO_TIMESTAMP('2017-03-06 15:22:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557932
+;
+
+-- 06.03.2017 15:22
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=557932
+;
+
+-- 06.03.2017 15:22
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='TU bewegt',Updated=TO_TIMESTAMP('2017-03-06 15:22:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554875
+;
+
+-- 06.03.2017 15:22
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=554875
+;
+
+-- 06.03.2017 15:23
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mengeneinheit',Updated=TO_TIMESTAMP('2017-03-06 15:23:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=552570
+;
+
+-- 06.03.2017 15:23
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=552570
+;
+
+
