@@ -17,7 +17,8 @@ import {
 
 import {
     selectTableItems,
-    getItemsByProperty
+    getItemsByProperty,
+    mapIncluded
 } from '../../actions/WindowActions';
 
 import {
@@ -155,11 +156,22 @@ class DocumentList extends Component {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
+                
+        let rows = [];
+        
+        data && data.result.map(item => {
+            rows = rows.concat(mapIncluded(item));
+        });
+        
         return (data && data.size && data.result && selected && selected[0] &&
             getItemsByProperty(
-                data.result, 'id', selected[0]
+                rows, 'id', selected[0]
             ).length
         );
+    }
+    
+    getTableData = (data) => {
+        return data;
     }
 
     disconnectWS = () => {
@@ -315,6 +327,7 @@ class DocumentList extends Component {
         const {
             layout, data, viewId, clickOutsideLock, refresh, page, filters
         } = this.state;
+        
 
         const {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
@@ -323,7 +336,7 @@ class DocumentList extends Component {
 
         const selectionValid = this.doesSelectionExist(selected);
 
-        if(layout && data) {
+        if(layout && data) {            
             return (
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
@@ -389,6 +402,7 @@ class DocumentList extends Component {
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={selected}
                             queryLimitHit={data.queryLimitHit}
+                            doesSelectionExist={this.doesSelectionExist}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
