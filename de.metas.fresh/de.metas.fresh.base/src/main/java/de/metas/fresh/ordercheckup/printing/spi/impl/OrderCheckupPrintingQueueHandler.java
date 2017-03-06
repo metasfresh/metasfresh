@@ -125,11 +125,9 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		//
 		// Set the new recipient
 		Services.get(IPrintingQueueBL.class).setPrintoutForOtherUsers(queueItem, ImmutableSet.of(userToPrintId));
-
 	}
 
 	private OrderCheckupPrintingQueueHandler()
 	{
-		super();
 	}
 }
