@@ -279,6 +279,8 @@ class RawWidget extends Component {
                         viewId={viewId}
                         autoFocus={autoFocus}
                         validStatus={widgetData[0].validStatus}
+                        newRecordCaption={fields[0].newRecordCaption}
+                        newRecordWindowId={fields[0].newRecordWindowId}
                     />
                 )
             case 'List':

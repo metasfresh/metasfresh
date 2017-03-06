@@ -126,7 +126,7 @@ class MasterWindow extends Component {
                     <Modal
                         relativeType={type}
                         windowType={modal.type}
-                        dataId={dataId}
+                        dataId={modal.dataId ? modal.dataId : dataId}
                         data={modal.data}
                         layout={modal.layout}
                         rowData={modal.rowData}

@@ -195,10 +195,11 @@ class Lookup extends Component {
     }
 
     handleAddNew = () => {
-        const {dispatch, windowType} = this.props;
-
-        //TODO: Waiting for windowType from API for the new instance of entity
-        dispatch(openModal('Add new', windowType, 'window'));
+        const {dispatch, newRecordWindowId, newRecordCaption} = this.props;
+        dispatch(openModal(
+            newRecordCaption, newRecordWindowId, 'window', null, null, null, 
+            null, null, 'new'
+        ));
     }
 
     handleBlur = (callback) => {
@@ -372,7 +373,8 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
-            filterWidget, mandatory, rowId, tabIndex, validStatus
+            filterWidget, mandatory, rowId, tabIndex, validStatus,
+            newRecordCaption
         } = this.props;
 
         const {
@@ -447,6 +449,7 @@ class Lookup extends Component {
                         disableOnClickOutside={!isOpen}
                         query={query}
                         creatingNewDisabled={isModal}
+                        newRecordCaption={newRecordCaption}
                     />
                 }
             </div>

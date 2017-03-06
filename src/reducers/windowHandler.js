@@ -6,6 +6,7 @@ const initialState = {
     modal: {
         visible: false,
         type: '',
+        dataId: null,
         tabId: null,
         rowId: null,
         viewId: null,
