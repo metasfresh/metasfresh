@@ -34,10 +34,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Greeting;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -46,6 +45,7 @@ import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 
 public class AddressBuilder
 {
@@ -436,7 +436,7 @@ public class AddressBuilder
 		if (bPartner.isCompany()
 				|| user == null
 				|| user.getAD_User_ID() == 0
-				|| Check.isEmpty(user.getLastName(), true))
+				|| Check.isEmpty(user.getLastname(), true))
 		{
 			bpName = bPartner.getName();
 			bpName2 = bPartner.getName2();
@@ -468,8 +468,8 @@ public class AddressBuilder
 			userGreeting = greetingOfUser.getName();
 		}
 
-		final String userName = user.getLastName();
-		final String userVorname = user.getFirstName();
+		final String userName = user.getLastname();
+		final String userVorname = user.getFirstname();
 		final String userTitle = user.getTitle();
 
 		String token;
@@ -603,8 +603,8 @@ public class AddressBuilder
 			{
 				userGreeting = greetingOfUser.getName();
 			}
-			final String userName = user.getLastName();
-			final String userVorname = user.getFirstName();
+			final String userName = user.getLastname();
+			final String userVorname = user.getFirstname();
 			final String userTitle = user.getTitle();
 
 			// Greeting
