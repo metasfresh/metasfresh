@@ -66,7 +66,9 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  */
 
 @Profile(value = WebRestApiApplication.PROFILE_Webui)
-public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
+public class WEBUI_M_HU_Transform
+		extends HUViewProcessTemplate
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	public static enum ActionType
 	{
@@ -79,46 +81,47 @@ public class WEBUI_M_HU_Transform extends HUViewProcessTemplate implements IProc
 	}
 
 	//
+	// Services
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	//
 	// Parameters
+	//
 	private static final String PARAM_Action = "Action";
+	@Param(parameterName = PARAM_Action, mandatory = true)
+	private String p_Action;
 
 	//
 	private static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
+	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
 
 	//
 	private static final String PARAM_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
+	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
+	private int p_M_LU_HU_PI_ID;
 
 	//
 	private static final String PARAM_M_TU_HU_ID = "M_TU_HU_ID";
+	@Param(parameterName = PARAM_M_TU_HU_ID)
+	private I_M_HU p_M_TU_HU;
 
 	//
 	private static final String PARAM_M_LU_HU_ID = "M_LU_HU_ID";
+	@Param(parameterName = PARAM_M_LU_HU_ID)
+	private I_M_HU p_M_LU_HU;
 
 	//
 	private static final String PARAM_QtyCU = "QtyCU";
+	@Param(parameterName = PARAM_QtyCU)
+	private BigDecimal p_QtyCU;
 
 	//
 	private static final String PARAM_QtyTU = "QtyTU";
-
-	private static final String PARAM_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
-
-	//
-	// Services
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	@Param(parameterName = PARAM_Action, mandatory = true)
-	private String p_Action;
-	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
-	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
-	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
-	private int p_M_LU_HU_PI_ID;
-	@Param(parameterName = PARAM_M_TU_HU_ID)
-	private I_M_HU p_M_TU_HU;
-	@Param(parameterName = PARAM_M_LU_HU_ID)
-	private I_M_HU p_M_LU_HU;
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal p_QtyCU;
 	@Param(parameterName = PARAM_QtyTU)
 	private BigDecimal p_QtyTU;
+
+	private static final String PARAM_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
 	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM)
 	private boolean p_HUPlanningReceiptOwnerPM;
 
