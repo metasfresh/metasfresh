@@ -266,17 +266,21 @@ class RawList extends Component {
                     'input-dropdown-container ' +
                     (readonly ? 'input-disabled ' : '') +
                     (rowId ? 'input-dropdown-container-static ' : '') +
-                    ((rowId && !isModal) ? 'input-table ' : '') +
-                    (validStatus &&
-                        !validStatus.valid &&
-                        !isOpen ? 'input-error ' : '')
+                    ((rowId && !isModal) ? 'input-table ' : '')
                 }
             >
                 <div className={
                     'input-dropdown input-block input-readonly input-' +
                     (rank ? rank : 'secondary') +
                     (updated ? ' pulse ' : ' ') +
-                    ((mandatory && !selected) ? 'input-mandatory ' : '')
+                    ((mandatory && !selected) ? 'input-mandatory ' : '') +
+                    (validStatus &&
+                        (
+                            !validStatus.valid &&
+                            !validStatus.initialValue
+
+                        ) &&
+                        !isOpen ? 'input-error ' : '')
                 }>
                     <div className={
                         'input-editable input-dropdown-focused ' +

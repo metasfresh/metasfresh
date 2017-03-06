@@ -450,12 +450,13 @@ input:checked + .input-slider:before {
 
 .input-error.input-primary,
 .input-error.input-primary * {
-    background-color: $brand-danger-light-color;
+    border-color: $brand-danger-color !important;
+    background-color: $brand-danger-light-color !important;
 }
 
 .input-error.input-secondary,
 .input-error.input-secondary * {
-    border-width: 2px;
+    border-color: $brand-danger-color !important;
 }
 
 .input-secondary .input-icon {

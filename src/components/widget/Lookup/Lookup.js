@@ -389,16 +389,20 @@ class Lookup extends Component {
                     (isOpen ? 'input-focused ' : '') +
                     (readonly ? 'input-disabled ' : '') +
                     (rowId ? 'input-dropdown-container-static ' : '') +
-                    ((rowId && !isModal)? 'input-table ' : '') +
-                    ((validStatus &&
-                        !validStatus.valid) ? 'input-error ' : '')
+                    ((rowId && !isModal)? 'input-table ' : '')
                 }
             >
                 <div className={
                     'input-dropdown input-block input-' + (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
-                    (mandatory && isInputEmpty ? ' input-mandatory ' : '')
+                    (mandatory && isInputEmpty ? ' input-mandatory ' : '') +
+                    ((validStatus &&
+                        (
+                            !validStatus.valid &&
+                            !validStatus.initialValue
+                        )
+                    ) ? 'input-error ' : '')
                 }>
                     <div className={
                         'input-editable ' +
