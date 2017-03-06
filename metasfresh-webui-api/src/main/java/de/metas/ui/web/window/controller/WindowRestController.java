@@ -2,6 +2,7 @@ package de.metas.ui.web.window.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MAttachmentEntry;
@@ -44,6 +45,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
@@ -463,13 +465,18 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
-
-		final int printProcessId = documentCollection.getDocumentEntityDescriptor(adWindowId).getPrintProcessId();
+		
+		final Document document = documentCollection.forDocumentReadonly(documentPath, Function.identity());
+		final int windowNo = document.getWindowNo();
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		
+		final int printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 
 		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setAD_Process_ID(printProcessId)
+				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
 				.setRecord(recordRef)
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
