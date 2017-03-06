@@ -41,7 +41,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		extends HUViewProcessTemplate
 		implements IProcessPrecondition
 {
-	@Param(mandatory = true, parameterName = "copies")
+	@Param(mandatory = true, parameterName = "Copies")
 	private int p_copies = 1;
 
 	@Override
