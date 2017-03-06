@@ -25,7 +25,7 @@ class Tab extends Component {
         const {children} = this.props;
 
         return (
-            <div>
+            <div className="table-flex-wrapper">
                 {children}
             </div>
         );
