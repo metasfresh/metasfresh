@@ -93,7 +93,7 @@ public class WindowRestController
 
 	@Autowired
 	private UserSession userSession;
-	
+
 	@Autowired
 	private MenuTreeRepository menuRepo;
 
@@ -465,11 +465,11 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
-		
+
 		final Document document = documentCollection.forDocumentReadonly(documentPath, Function.identity());
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-		
+
 		final int printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 
@@ -496,6 +496,19 @@ public class WindowRestController
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 		final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		return response;
+	}
+
+	@GetMapping("/{windowId}/{documentId}/processTemplate")
+	public int processRecord(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
+
+		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, document -> document.processTemplate()));
 	}
 
 	/**
