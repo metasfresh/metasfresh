@@ -247,8 +247,8 @@ class RawList extends Component {
 
     render() {
         const {
-            list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, tabIndex, disabled, mandatory
+            list, rank, readonly, defaultValue, selected, align, updated,
+            loading, rowId, isModal, tabIndex, disabled, mandatory, validStatus
         } = this.props;
 
         const {
@@ -273,7 +273,14 @@ class RawList extends Component {
                     'input-dropdown input-block input-readonly input-' +
                     (rank ? rank : 'secondary') +
                     (updated ? ' pulse ' : ' ') +
-                    ((mandatory && !selected) ? 'input-mandatory ' : '')
+                    ((mandatory && !selected) ? 'input-mandatory ' : '') +
+                    (validStatus &&
+                        (
+                            !validStatus.valid &&
+                            !validStatus.initialValue
+
+                        ) &&
+                        !isOpen ? 'input-error ' : '')
                 }>
                     <div className={
                         'input-editable input-dropdown-focused ' +

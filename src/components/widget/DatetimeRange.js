@@ -55,7 +55,7 @@ class DatetimeRange extends Component {
             ]
         }
         const {startDate, endDate} = this.state;
-        const {onShow, onHide, mandatory} = this.props;
+        const {onShow, onHide, mandatory, validStatus} = this.props;
 
         return (
             <DateRangePicker
@@ -75,8 +75,11 @@ class DatetimeRange extends Component {
             >
                 <button className={
                     'btn btn-block text-xs-left btn-meta-outline-secondary ' +
-                    'btn-distance btn-sm input-icon-container input-primary' +
-                    (mandatory && !startDate && !endDate ? ' input-mandatory ' : '')
+                    'btn-distance btn-sm input-icon-container input-primary ' +
+                    ((mandatory && !startDate && !endDate) ?
+                        'input-mandatory ' : '') +
+                    ((validStatus && !validStatus.valid) ?
+                        'input-error ' : '')
                 }>
                     {!!startDate && !!endDate ?
                         ' ' + Moment(startDate).format('L') +

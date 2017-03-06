@@ -372,7 +372,7 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
-            filterWidget, mandatory, rowId, tabIndex
+            filterWidget, mandatory, rowId, tabIndex, validStatus
         } = this.props;
 
         const {
@@ -396,7 +396,13 @@ class Lookup extends Component {
                     'input-dropdown input-block input-' + (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
-                    (mandatory && isInputEmpty ? ' input-mandatory ' : '')
+                    (mandatory && isInputEmpty ? ' input-mandatory ' : '') +
+                    ((validStatus &&
+                        (
+                            !validStatus.valid &&
+                            !validStatus.initialValue
+                        )
+                    ) ? 'input-error ' : '')
                 }>
                     <div className={
                         'input-editable ' +
