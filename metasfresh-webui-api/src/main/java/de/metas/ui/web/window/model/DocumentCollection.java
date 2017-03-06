@@ -5,6 +5,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -21,6 +25,7 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -62,6 +67,10 @@ public class DocumentCollection
 
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
+	
+	@Autowired
+	private UserSession userSession;
+	
 
 	private final LoadingCache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder()
 			.removalListener(new RemovalListener<DocumentKey, Document>()
@@ -234,11 +243,23 @@ public class DocumentCollection
 
 		final int adWindowId = documentPath.getAD_Window_ID();
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
+		assertNewDocumentAllowed(entityDescriptor);
+		
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
 		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
+	}
+	
+	private void assertNewDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
+		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
+		if (allow.isFalse())
+		{
+			throw new AdempiereException("Create not allowed");
+		}
 	}
 
 	/** Retrieves document from repository */
@@ -304,6 +325,9 @@ public class DocumentCollection
 
 	public void delete(final DocumentPath documentPath)
 	{
+		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(documentPath);
+		assertDeleteDocumentAllowed(entityDescriptor);
+		
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		if(rootDocumentPath.isNewDocument())
 		{
@@ -331,6 +355,16 @@ public class DocumentCollection
 			
 			return null; // nothing to return
 		});
+	}
+
+	private void assertDeleteDocumentAllowed(DocumentEntityDescriptor entityDescriptor)
+	{
+		final ILogicExpression allowExpr = entityDescriptor.getAllowDeleteLogic();
+		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
+		if (allow.isFalse())
+		{
+			throw new AdempiereException("Delete not allowed");
+		}
 	}
 
 	public void deleteAll(final List<DocumentPath> documentPaths)
