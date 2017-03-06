@@ -186,6 +186,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return sqlWhereClause;
 	}
+	
+	public String getSqlWhereClauseById(final int recordId)
+	{
+		return sqlTableName + "." + sqlKeyColumnName + " = " + recordId;
+	}
 
 	public List<DocumentQueryOrderBy> getOrderBys()
 	{
