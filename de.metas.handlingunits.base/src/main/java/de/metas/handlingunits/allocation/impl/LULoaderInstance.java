@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -222,7 +224,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 		
 		//
 		// Check if it's a handling unit item
-		if (!Check.equals(handlingUnitsBL.getItemType(luItem), X_M_HU_Item.ITEMTYPE_HandlingUnit))
+		if (!Objects.equals(handlingUnitsBL.getItemType(luItem), X_M_HU_Item.ITEMTYPE_HandlingUnit))
 		{
 			// Note: we aren't even interested in items with type "HUAggregate" / "HA", because this here is about adding TUs that already exist to an LU.
 			// In the other hand, "HUAggregate" items are all about *not* having to add an actual TU, but sortof cover it in a "bag", together with others.
@@ -284,7 +286,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 		//
 		// Check same HUStatus
 		final String huStatus = tuHU.getHUStatus();
-		if (!Check.equals(huStatus, this.huStatus))
+		if (!Objects.equals(huStatus, this.huStatus))
 		{
 			return false;
 		}
