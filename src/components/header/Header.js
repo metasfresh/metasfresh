@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -227,7 +228,7 @@ class Header extends Component {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions,
             viewId, inbox, homemenu, selected, entity, query, attachments,
-            showIndicator
+            showIndicator, isDocumentNotSaved
         } = this.props;
 
         const {
@@ -291,6 +292,20 @@ class Header extends Component {
                                 <img src={logo} className="header-logo pointer" onClick={() => this.handleDashboardLink()} />
                             </div>
                             <div className="header-right-side">
+                                <ReactCSSTransitionGroup
+                                    transitionName="fade"
+                                    transitionEnterTimeout={300}
+                                    transitionLeaveTimeout={300}
+                                >
+                                    {isDocumentNotSaved &&
+                                        <div className="document-save-indicator header-item-container">
+                                            <div className="text-xs-center">
+                                                <i className="meta-icon-upload" />    
+                                            </div>
+                                            <small>Not saved</small>
+                                        </div>
+                                    }
+                                </ReactCSSTransitionGroup>
                                 {docStatus &&
                                     <div
                                         className="hidden-sm-down tooltip-parent"

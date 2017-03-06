@@ -46,12 +46,13 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope, docId) {
+export function initDataSuccess(data, scope, docId, saveStatus) {
     return {
         type: types.INIT_DATA_SUCCESS,
-        data: data,
-        scope: scope,
-        docId: docId
+        data,
+        scope,
+        docId,
+        saveStatus
     }
 }
 
@@ -63,11 +64,12 @@ export function addRowData(data, scope) {
     }
 }
 
-export function updateDataSuccess(item, scope) {
+export function updateDataSuccess(item, scope, saveStatus) {
     return {
         type: types.UPDATE_DATA_SUCCESS,
-        item: item,
-        scope: scope
+        item,
+        saveStatus,
+        scope
     }
 }
 
@@ -206,7 +208,10 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
                 docId = response.data[elem].id;
                 const preparedData = parseToDisplay(response.data[elem].fields);
 
-                dispatch(initDataSuccess(preparedData, getScope(isModal), docId));
+                dispatch(initDataSuccess(
+                    preparedData, getScope(isModal), docId, 
+                    response.data[0].saveStatus
+                ));
 
                 if (isModal && rowId === 'NEW') {
                     dispatch(mapDataToState([response.data[0]], false, 'NEW', docId, windowType))
@@ -345,7 +350,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
 
-                        dispatch(updateDataSuccess(field, getScope(isModal)));
+                        dispatch(updateDataSuccess(field, getScope(isModal), data[0].saveStatus));
                     }
                 });
             }
