@@ -657,7 +657,7 @@ public final class ProcessInfo implements Serializable
 		 * please do a text search and check the code which is actually relying on this list.
 		 */
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
-		private static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
 		private int adPInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -1445,12 +1445,10 @@ public final class ProcessInfo implements Serializable
 		private Language findReportingLanguage()
 		{
 			final Properties ctx = getCtx();
-			final int windowNo = getWindowNo();
 			final TableRecordReference recordRef = getRecordOrNull(); // NOTE: loaded here because recordRef is caching the model so we will have to load it once
 
 			//
 			// Get status of the InOut Document, if any, to have de_CH in case that document in DR or IP (03614)
-			if (Env.isRegularWindowNo(windowNo))
 			{
 				final Language lang = extractLanguageFromDraftInOut(ctx, recordRef);
 				if (lang != null)
@@ -1462,7 +1460,7 @@ public final class ProcessInfo implements Serializable
 			//
 			// Extract Language directly from window context, if any (08966)
 			{
-				final Language lang = extractLanguageFromWindowContext(ctx, windowNo);
+				final Language lang = extractLanguageFromWindowContext(ctx, getWindowNo());
 				if(lang != null)
 				{
 					return lang;
@@ -1605,7 +1603,7 @@ public final class ProcessInfo implements Serializable
 		{
 			Check.assumeNotNull(ctx, "Parameter ctx is not null");
 			
-			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JasperLanguage, true);
+			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UseLoginLanguageForDraftDocuments, true);
 
 			// in case the sys config is not set, there is no need to continue
 			if (!isUseLoginLanguage)
