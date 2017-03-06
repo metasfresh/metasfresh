@@ -632,11 +632,11 @@ public final class Document
 			}
 
 			//
-			// Window User Preferences
-			final String fieldName = fieldDescriptor.getFieldName();
-			if (documentType == DocumentType.Window)
+			// Window User Preferences (only if it's not a virtual field)
+			if (documentType == DocumentType.Window && !fieldDescriptor.isVirtualField())
 			{
 				final int adWindowId = documentTypeId.toInt();
+				final String fieldName = fieldDescriptor.getFieldName();
 
 				//
 				// Preference (user) - P|
