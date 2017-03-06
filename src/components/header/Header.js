@@ -416,7 +416,6 @@ class Header extends Component {
     }
 }
 
-
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     indicator: PropTypes.string.isRequired,
@@ -427,7 +426,7 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const {windowHandler,listHandler, appHandler, menuHandler} = state;
+    const {windowHandler, listHandler, appHandler, menuHandler} = state;
 
     const {
         viewId

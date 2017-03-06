@@ -58,7 +58,6 @@ class Notification extends Component {
         })
     }
 
-
     render() {
         const {item, index} = this.props;
         return (
@@ -72,7 +71,6 @@ class Notification extends Component {
 Notification.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
-
 
 Notification = connect()(Notification)
 

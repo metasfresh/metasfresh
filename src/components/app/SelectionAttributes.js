@@ -76,7 +76,6 @@ class SelectionAttributes extends Component {
         document.getElementsByClassName('js-table')[0].focus();
     }
 
-
     render() {
         const {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,

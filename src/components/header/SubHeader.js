@@ -298,7 +298,6 @@ class Subheader extends Component {
     }
 }
 
-
 Subheader.propTypes = {
     dispatch: PropTypes.func.isRequired
 };

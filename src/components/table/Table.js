@@ -27,7 +27,6 @@ import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
-
 class Table extends Component {
     constructor(props) {
         super(props);
@@ -463,7 +462,7 @@ class Table extends Component {
             selectIdB
         ];
 
-        selected.sort((a,b) => a - b);
+        selected.sort((a, b) => a - b);
             if(keyProperty === 'id'){
                 return arrayIndex.slice(selected[0], selected[1]+1);
             }else {
@@ -621,8 +620,9 @@ class Table extends Component {
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
-            pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex, indentSupported, isModal
+            pageLength, page, mainTable, updateDocList, sort, orderBy,
+            toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
+            queryLimitHit
         } = this.props;
 
         const {
@@ -726,6 +726,7 @@ class Table extends Component {
                                 page={page}
                                 orderBy={orderBy}
                                 deselect={this.deselectAllProducts}
+                                queryLimitHit={queryLimitHit}
                             />
                         </div>
                     </div>

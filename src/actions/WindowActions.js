@@ -127,7 +127,9 @@ export function noConnection(status) {
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId, isAdvanced, viewId) {
+export function openModal(
+    title, windowType, type, tabId, rowId, isAdvanced, viewId, viewDocumentIds
+) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
@@ -136,7 +138,8 @@ export function openModal(title, windowType, type, tabId, rowId, isAdvanced, vie
         rowId: rowId,
         viewId: viewId,
         title: title,
-        isAdvanced: isAdvanced
+        isAdvanced: isAdvanced,
+        viewDocumentIds: viewDocumentIds
     }
 }
 
@@ -181,7 +184,6 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
         if (docId == 'new') {
             docId = 'NEW';
         }
-
 
         // this chain is really important,
         // to do not re-render widgets on init
@@ -276,7 +278,8 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  *  when responses should merge store
  */
 export function patch(
-    entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal, isAdvanced
+    entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal,
+    isAdvanced
 ) {
     return dispatch => {
         let responsed = false;
@@ -297,15 +300,19 @@ export function patch(
 
         return dispatch(patchRequest(
             entity, windowType, id, tabId, rowId, property, value, null, null,
-            isAdvanced)
-        ).then(response => {
+            isAdvanced
+        )).then(response => {
             responsed = true;
-            dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+            dispatch(mapDataToState(
+                response.data, isModal, rowId, id, windowType
+            ));
         }).catch(() => {
-            dispatch(
-                getData(entity, windowType, id, tabId, rowId, null, null, isAdvanced)
-            ).then(response => {
-                dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+            dispatch(getData(
+                entity, windowType, id, tabId, rowId, null, null, isAdvanced
+            )).then(response => {
+                dispatch(mapDataToState(
+                    response.data, isModal, rowId, id, windowType
+                ));
             });
         });
     }
@@ -382,10 +389,12 @@ export function attachFileAction(windowType, docId, data){
 
 // PROCESS ACTIONS
 
-export function createProcess(processType, viewId, type, ids) {
+export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
     return (dispatch) =>
-        dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
+        dispatch(
+            getProcessData(processType, viewId, type, ids, tabId, rowId)
+        ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
             pid = response.data.pinstanceId;
             if (preparedData.length === 0) {
@@ -434,7 +443,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
     }
 }
 
-function getProcessData(processId, viewId, type, ids) {
+function getProcessData(processId, viewId, type, ids, tabId, rowId) {
     return () => axios.post(
         config.API_URL +
         '/process/' + processId,
@@ -445,7 +454,9 @@ function getProcessData(processId, viewId, type, ids) {
         } : {
             processId: processId,
             documentId: Array.isArray(ids) ? ids[0] : ids,
-            documentType: type
+            documentType: type,
+            tabId: tabId,
+            rowId: rowId
         }
     );
 }
@@ -468,8 +479,6 @@ export function deleteLocal(tabid, rowsid, scope) {
 }
 
 // END PROCESS ACTIONS
-
-
 
 // UTILITIES
 

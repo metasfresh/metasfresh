@@ -6,6 +6,10 @@ import {
     attachFileAction
 } from '../actions/WindowActions';
 
+import {
+    addNotification
+} from '../actions/AppActions';
+
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
@@ -37,8 +41,8 @@ class MasterWindow extends Component {
         }
     }
 
-    handleDropFile(file){
-        file = file instanceof Array ? file[0] : file;
+    handleDropFile(files){
+        const file = files instanceof Array ? files[0] : files;
 
         if (!(file instanceof File)){
             return Promise.reject();
@@ -54,6 +58,18 @@ class MasterWindow extends Component {
         return dispatch(attachFileAction(type, dataId, fd));
     }
 
+    handleRejectDropped(droppedFiles){
+        const { dispatch } = this.props;
+
+        const dropped = droppedFiles instanceof Array ? droppedFiles[0] : droppedFiles;
+
+        dispatch(addNotification(
+            'Attachment', 'Dropped item [' +
+            dropped.type +
+            '] could not be attached', 5000, 'error'
+        ))
+    }
+
     setModalTitle = (title) => {
         this.setState({
             modalTitle: title
@@ -62,13 +78,21 @@ class MasterWindow extends Component {
 
     render() {
         const {
-            master, modal, breadcrumb, references, actions, attachments, rawModal,
-            selected
+            master, modal, breadcrumb, references, actions, attachments,
+            rawModal, selected, indicator
         } = this.props;
+
         const {newRow, modalTitle} = this.state;
-        const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
+
+        const {
+            documentNoElement, docActionElement, documentSummaryElement, type
+        } = master.layout;
+
         const dataId = master.docId;
-        const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
+
+        const docNoData = findRowByPropName(
+            master.data, documentNoElement && documentNoElement.fields[0].field
+        );
 
         const docStatusData = {
             'status': findRowByPropName(master.data, 'DocStatus'),
@@ -112,8 +136,10 @@ class MasterWindow extends Component {
                         modalViewId={modal.viewId}
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
+                        modalViewDocumentIds={modal.viewDocumentIds}
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
+                        indicator={indicator}
                      />
                  }
                  {rawModal.visible &&
@@ -136,7 +162,8 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     isModal={false}
                     newRow={newRow}
-                    handleDropFile={(accepted, rejected) => this.handleDropFile(accepted, rejected)}
+                    handleDropFile={accepted => this.handleDropFile(accepted)}
+                    handleRejectDropped={rejected => this.handleRejectDropped(rejected)}
                 />
             </Container>
         );
@@ -152,7 +179,8 @@ MasterWindow.propTypes = {
     attachments: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array,
-    rawModal: PropTypes.object.isRequired
+    rawModal: PropTypes.object.isRequired,
+    indicator: PropTypes.string.isRequired,
 };
 
 function mapStateToProps(state) {
@@ -161,12 +189,14 @@ function mapStateToProps(state) {
         master,
         modal,
         rawModal,
-        selected
+        selected,
+        indicator
     } = windowHandler || {
         master: {},
         modal: false,
         rawModal: {},
-        selected: []
+        selected: [],
+        indicator: ''
     }
 
     const {
@@ -189,7 +219,8 @@ function mapStateToProps(state) {
         actions,
         attachments,
         selected,
-        rawModal
+        rawModal,
+        indicator
     }
 }
 

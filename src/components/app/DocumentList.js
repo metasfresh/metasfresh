@@ -179,20 +179,17 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        dispatch(
-            initLayout('documentView', windowType, null, null, null, null, type, true)
-        ).then(response => {
+        dispatch(initLayout(
+            'documentView', windowType, null, null, null, null, type, true
+        )).then(response => {
             this.setState({
-                layout: response.data,
-                page:1,
-                sort:null
+                layout: response.data
             }, () => {
                 if(viewId && !isNewFilter){
                     this.browseView();
                 }else{
                     this.createView();
                 }
-
                 setModalTitle && setModalTitle(response.data.caption)
             })
         });
@@ -314,7 +311,6 @@ class DocumentList extends Component {
             fetchQuickActionsOnInit, isModal
         } = this.props;
 
-
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
@@ -380,6 +376,7 @@ class DocumentList extends Component {
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={selected}
+                            queryLimitHit={data.queryLimitHit}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper

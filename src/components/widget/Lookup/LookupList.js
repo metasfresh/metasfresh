@@ -134,7 +134,6 @@ class LookupList extends Component {
     }
 }
 
-
 LookupList.propTypes = {
     dispatch: PropTypes.func.isRequired
 }

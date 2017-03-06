@@ -79,7 +79,7 @@ class MenuOverlay extends Component {
     handleDeeper = (e, nodeId) => {
         const {dispatch} = this.props;
         e.preventDefault();
-        dispatch(nodePathsRequest(nodeId,8)).then(response => {
+        dispatch(nodePathsRequest(nodeId, 8)).then(response => {
             this.setState({
                 deepNode: response.data
             })
@@ -90,7 +90,7 @@ class MenuOverlay extends Component {
 
     handleSubDeeper = (nodeId) => {
         const {dispatch} = this.props;
-        dispatch(nodePathsRequest(nodeId,8)).then(response => {
+        dispatch(nodePathsRequest(nodeId, 8)).then(response => {
             this.setState({
                 deepSubNode: response.data
             })
@@ -199,7 +199,7 @@ class MenuOverlay extends Component {
                     </p>
                 }
                 <div className="column-wrapper">
-                    {node && node.children.map((item,index) =>
+                    {node && node.children.map((item, index) =>
                         <MenuOverlayContainer
                             key={index}
                             handleClickOnFolder={this.handleDeeper}
@@ -287,7 +287,7 @@ class MenuOverlay extends Component {
                 break;
             case 'Escape':
                 e.preventDefault();
-                handleMenuOverlay('','');
+                handleMenuOverlay('', '');
         }
     }
 

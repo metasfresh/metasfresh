@@ -59,8 +59,8 @@ body {
         margin-left: -0.5rem;
         margin-right: -0.5rem;
     }
-    [class^="col-"],
-    [class*=" col-"] {
+    [class^='col-'],
+    [class*=' col-'] {
         padding-left: .5rem;
         padding-right: .5rem;
     }
@@ -434,7 +434,6 @@ body {
 
 .table .YesNo i {
     height: 14px;
-    margin-top: 4px;
     display: inline-block;
 }
 
@@ -949,4 +948,8 @@ td.pulse-off input {
         overflow: hidden;
         text-overflow: ellipsis;
     }
+}
+
+.raw-modal {
+    z-index:399;
 }

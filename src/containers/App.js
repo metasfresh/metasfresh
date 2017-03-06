@@ -25,6 +25,10 @@ import '../assets/css/styles.css';
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 
+Moment.fn.toString = function() {
+    this.format('YYYY-MM-DD HH:mm:ss:SSSZ');
+}
+
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(function (response) {
@@ -39,7 +43,9 @@ axios.interceptors.response.use(function (response) {
         store.dispatch(push('/login?redirect=true'));
     }else if(error.response.status != 404){
         if(localStorage.isLogged){
-            store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
+            store.dispatch(addNotification(
+                'Error', error.response.data.message, 5000, 'error')
+            );
         }
     }
 

@@ -34,11 +34,11 @@ class TablePagination extends Component {
                 handleChangePage(Number(value));
                 deselect();
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     value: '',
                     secondDotsState: false,
                     firstDotsState: false
-                }));
+                });
             }
 
         }
@@ -46,9 +46,9 @@ class TablePagination extends Component {
 
     handleFirstDotsState = () => {
         const {firstDotsState} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             firstDotsState: !firstDotsState
-        }), () => {
+        }, () => {
             if(!firstDotsState){
                 this.goToPage.focus();
             }
@@ -57,9 +57,9 @@ class TablePagination extends Component {
 
     handleSecondDotsState = () => {
         const {secondDotsState} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             secondDotsState: !secondDotsState
-        }), () => {
+        }, () => {
             if(!secondDotsState) {
                 this.goToPage.focus();
             }
@@ -137,7 +137,7 @@ class TablePagination extends Component {
     render() {
         const {
             size, pageLength, selected, handleSelectAll, handleChangePage, page,
-            deselect
+            deselect, queryLimitHit
         } = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
 
@@ -173,7 +173,12 @@ class TablePagination extends Component {
 
                     <div className="items-row-2 pagination-part">
                         <div className="hidden-sm-down">
-                            <div>Total items {size}</div>
+                            <div>
+                                Total items {size}
+                                {queryLimitHit &&
+                                    <span className="text-danger"> (limited)</span>
+                                }
+                            </div>
                         </div>
                         <div>
                             <nav>
