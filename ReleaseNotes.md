@@ -31,6 +31,7 @@ upcoming
   * [#452](https://github.com/metasfresh/metasfresh-webui-frontend/issues/452) Saving Indicator Bar in modal window
   * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
   * [#487](https://github.com/metasfresh/metasfresh-webui-frontend/issues/487) Expand batch entry when completed docuement
+  * [#1073](https://github.com/metasfresh/metasfresh/issues/1073) Material Receipt Candidates order by Purchase Order ID desc
   
 ## Fixes
 * metasfresh-backend
