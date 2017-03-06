@@ -34,6 +34,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 
@@ -179,17 +180,20 @@ public class ProcessInstancesRepository
 		else if (singleDocumentPath != null)
 		{
 			viewSelectedIdsAsStr = null;
+			
+			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(singleDocumentPath);
+			tableName = entityDescriptor.getTableNameOrNull();
 			if (singleDocumentPath.isRootDocument())
 			{
-				tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID());
 				recordId = singleDocumentPath.getDocumentId().toInt();
 			}
 			else
 			{
-				tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID(), singleDocumentPath.getDetailId());
 				recordId = singleDocumentPath.getSingleRowId().toInt();
 			}
-			sqlWhereClause = null;
+			sqlWhereClause = entityDescriptor
+					.getDataBinding(SqlDocumentEntityDataBindingDescriptor.class)
+					.getSqlWhereClauseById(recordId);
 		}
 		//
 		// From menu
