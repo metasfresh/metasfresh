@@ -82,9 +82,18 @@
     border-bottom: 2px solid #ddd;
 }
 
+.row-not-saved {
+    background-color: #FEDADA !important;
+    border-top: 2px solid #e78484;
+    border-bottom: 2px solid #e78484;
+}
 
 .row-selected {
     background-color: #d5e3ec !important;
+}
+
+.row-selected.row-not-saved {
+    background-color: #d6a4a4 !important;
 }
 
 .table-sub-summary-row {
