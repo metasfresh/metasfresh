@@ -49,10 +49,14 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(getCtx());
+		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(getCtx());
 		if (!process.isPresent())
 		{
 			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
+		}
+		if (getSelectedDocumentIds().size() != 0)
+		{
+			return ProcessPreconditionsResolution.reject("No (single) row selected");
 		}
 
 		final I_M_HU hu = getSingleSelectedRow().getM_HU();
@@ -76,7 +80,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(getCtx());
+		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(getCtx());
 		final I_M_HU hu = getSingleSelectedRow().getM_HU();
 
 		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, process.get());
