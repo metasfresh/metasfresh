@@ -12,6 +12,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ import com.google.common.cache.RemovalNotification;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -325,8 +328,11 @@ public class DocumentCollection
 
 	public void delete(final DocumentPath documentPath)
 	{
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(documentPath);
-		assertDeleteDocumentAllowed(entityDescriptor);
+		if(documentPath.isRootDocument())
+		{
+			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(documentPath);
+			assertDeleteDocumentAllowed(entityDescriptor);
+		}
 		
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		if(rootDocumentPath.isNewDocument())
@@ -359,8 +365,12 @@ public class DocumentCollection
 
 	private void assertDeleteDocumentAllowed(DocumentEntityDescriptor entityDescriptor)
 	{
+		final Evaluatee evalCtx = Evaluatees.mapBuilder()
+				.put(WindowConstants.FIELDNAME_Processed, false)
+				.build()
+				.andComposeWith(userSession.toEvaluatee());
 		final ILogicExpression allowExpr = entityDescriptor.getAllowDeleteLogic();
-		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
+		final LogicExpressionResult allow = allowExpr.evaluateToResult(evalCtx, OnVariableNotFound.ReturnNoResult);
 		if (allow.isFalse())
 		{
 			throw new AdempiereException("Delete not allowed");
