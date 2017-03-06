@@ -62,11 +62,11 @@ import de.metas.ui.web.window.model.IncludedDocumentsCollection;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -283,10 +283,10 @@ public class DocumentEntityDescriptor
 		return getFields()
 				.stream()
 				.filter(field -> field.hasCharacteristic(characteristic))
-				.map(field->field.getFieldName())
+				.map(field -> field.getFieldName())
 				.collect(GuavaCollectors.toImmutableSet());
 	}
-	
+
 	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument)
 	{
 		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this);
@@ -316,7 +316,14 @@ public class DocumentEntityDescriptor
 	{
 		return dataBinding;
 	}
-	
+
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> bindingType)
+	{
+		@SuppressWarnings("unchecked")
+		final T dataBindingCasted = (T)dataBinding;
+		return dataBindingCasted;
+	}
+
 	public boolean isHighVolume()
 	{
 		return highVolume;
@@ -424,7 +431,6 @@ public class DocumentEntityDescriptor
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<Boolean> _isSOTrx = Optional.empty();
-
 
 		private Builder()
 		{
@@ -563,7 +569,7 @@ public class DocumentEntityDescriptor
 					.stream()
 					.filter(fieldBuilder -> fieldBuilder.isKey())
 					.collect(Collectors.toList());
-			if(idFields.isEmpty())
+			if (idFields.isEmpty())
 			{
 				return null;
 			}
@@ -602,7 +608,7 @@ public class DocumentEntityDescriptor
 		{
 			return ImmutableMap.copyOf(_includedEntitiesByDetailId);
 		}
-		
+
 		public IIncludedDocumentsCollectionFactory getIncludedDocumentsCollectionFactory()
 		{
 			if (isHighVolume())
@@ -614,14 +620,13 @@ public class DocumentEntityDescriptor
 				else
 				{
 					// TODO implement an IIncludedDocumentCollection which does not cache the documents but which allows New/Delete
-					// Case: e.g. Product->Price, Product->CU-TU etc 
+					// Case: e.g. Product->Price, Product->CU-TU etc
 				}
 			}
-			
-			// Fallback
-			return IncludedDocumentsCollection::new; 
-		}
 
+			// Fallback
+			return IncludedDocumentsCollection::new;
+		}
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
 		{
@@ -641,18 +646,17 @@ public class DocumentEntityDescriptor
 			Preconditions.checkNotNull(_dataBinding, "dataBinding");
 			return _dataBinding.getOrBuild();
 		}
-		
+
 		public Builder setHighVolume(final boolean highVolume)
 		{
-			this._highVolume = highVolume;
+			_highVolume = highVolume;
 			return this;
 		}
-		
+
 		public boolean isHighVolume()
 		{
 			return _highVolume;
 		}
-
 
 		private DocumentFieldDependencyMap buildDependencies()
 		{
@@ -667,7 +671,7 @@ public class DocumentEntityDescriptor
 			_documentTypeId = documentTypeId;
 			return this;
 		}
-		
+
 		public Builder setDocumentType(final DocumentType documentType, final int documentTypeIdInt)
 		{
 			setDocumentType(documentType, DocumentId.of(documentTypeIdInt));
@@ -724,7 +728,7 @@ public class DocumentEntityDescriptor
 		{
 			return _tableName.orElse(null);
 		}
-		
+
 		public boolean isTableName(final String expectedTableName)
 		{
 			return Objects.equals(expectedTableName, _tableName.orElse(null));
@@ -912,7 +916,7 @@ public class DocumentEntityDescriptor
 
 			//
 			// Standard callouts provider (which will fetch the callouts from application dictionary)
-			if(isDefaultTableCalloutsEnabled())
+			if (isDefaultTableCalloutsEnabled())
 			{
 				calloutExecutorBuilder.addDefaultCalloutProvider();
 			}
