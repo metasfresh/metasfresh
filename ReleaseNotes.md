@@ -45,6 +45,7 @@ upcoming
   * [#1056](https://github.com/metasfresh/metasfresh/issues/1056) Purchase Order from Sales Order process, wrong InvoiceBPartner
   * [#1059](https://github.com/metasfresh/metasfresh/issues/1059) ShipmentScheduleBL.updateSchedules fails after C_Order was voided
   * [#1068](https://github.com/metasfresh/metasfresh/issues/1068) Settings on Swing Client are saved but window does not close
+  * [#1081](https://github.com/metasfresh/metasfresh/issues/1081) Allow the generic configuration of C_Printing_Queue_Recipient_IDs for system users
   * [#1088](https://github.com/metasfresh/metasfresh/issues/1088) pricing problem wrt proccurement candidates
   
 * metasfresh-webui-api
