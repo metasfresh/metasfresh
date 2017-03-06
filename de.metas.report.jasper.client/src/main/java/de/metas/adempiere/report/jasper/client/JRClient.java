@@ -227,6 +227,7 @@ public final class JRClient
 
 		// task 09740
 		// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner
+		// TODO: i think this one is no longer needed because we already checking this case in ProcessInfo.findReportingLanguage()
 		if (lang == null)
 		{
 			final IRangeAwareParams parameterAsIParams = pi.getParameterAsIParams();
