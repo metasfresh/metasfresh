@@ -65,7 +65,7 @@
 
 .quick-actions-tag {
     max-width: 180px;
-    min-width: 100px;
+    min-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
@@ -74,6 +74,7 @@
 @media (max-width: $breakpoint){
     .quick-actions-tag {
         max-width: 120px;
+        min-width: 120px;
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;
