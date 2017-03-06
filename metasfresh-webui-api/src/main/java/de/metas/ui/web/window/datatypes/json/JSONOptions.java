@@ -9,10 +9,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -73,7 +73,7 @@ public final class JSONOptions
 	private Predicate<IDocumentFieldView> _documentFieldFilter; // lazy
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
 
-	private final MenuTree userSessionMenuTree;
+	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
 	{
@@ -233,7 +233,7 @@ public final class JSONOptions
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
 		debugShowColumnNamesForCaption = builder.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
 		
-		userSessionMenuTree = builder.getUserSessionMenuTree();
+		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
 	}
 
 	@Override
@@ -322,11 +322,11 @@ public final class JSONOptions
 	}
 	
 	/**
-	 * @return user's menu tree or null
+	 * @return NewRecordDescriptorsProvider or null
 	 */
-	public MenuTree getUserSessionMenuTree()
+	public NewRecordDescriptorsProvider getNewRecordDescriptorsProvider()
 	{
-		return userSessionMenuTree;
+		return newRecordDescriptorsProvider;
 	}
 
 	public static final class Builder
@@ -335,7 +335,7 @@ public final class JSONOptions
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
 		private String adLanguage;
-		private MenuTree userSessionMenuTree;
+		private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 		private Builder(final UserSession userSession)
 		{
@@ -391,14 +391,14 @@ public final class JSONOptions
 			return defaultValue;
 		}
 		
-		private MenuTree getUserSessionMenuTree()
+		private NewRecordDescriptorsProvider getNewRecordDescriptorsProvider()
 		{
-			return userSessionMenuTree;
+			return newRecordDescriptorsProvider;
 		}
 		
-		public Builder setUserSessionMenuTree(MenuTree userSessionMenuTree)
+		public Builder setNewRecordDescriptorsProvider(NewRecordDescriptorsProvider newRecordDescriptorsProvider)
 		{
-			this.userSessionMenuTree = userSessionMenuTree;
+			this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
 			return this;
 		}
 	}

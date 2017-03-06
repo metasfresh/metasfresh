@@ -23,13 +23,10 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -1075,36 +1072,6 @@ public final class Document
 		}
 	}
 	
-	/**
-	 * Process this document (as a template) and create the resulting record
-	 * 
-	 * @return resulting record ID
-	 * @task https://github.com/metasfresh/metasfresh/issues/1090
-	 */
-	public int processTemplate()
-	{
-		final String tableName = getEntityDescriptor().getTableName();
-		if(I_C_BPartner_QuickInput.Table_Name.equals(tableName)) // FIXME hardcoded
-		{
-			saveIfValidAndHasChanges();
-			if (hasChangesRecursivelly())
-			{
-				throw new AdempiereException("Not saved");
-			}
-			
-			final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(this);
-			Services.get(IBPartnerBL.class).createFromTemplate(template);
-			refreshFromRepository();
-			
-			final int bpartnerId = template.getC_BPartner_ID();
-			return bpartnerId;
-		}
-		else
-		{
-			throw new UnsupportedOperationException();
-		}
-	}
-
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final IDocumentField documentField = getField(fieldName);
@@ -1534,7 +1501,7 @@ public final class Document
 	 * 
 	 * @return true if it this document or any of it's included documents has changes.
 	 */
-	/* package */boolean hasChangesRecursivelly()
+	public boolean hasChangesRecursivelly()
 	{
 		//
 		// Check this document

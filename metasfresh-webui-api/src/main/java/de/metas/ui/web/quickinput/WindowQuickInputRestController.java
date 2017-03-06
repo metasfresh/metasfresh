@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -34,6 +33,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -72,20 +72,19 @@ public class WindowQuickInputRestController
 	private UserSession userSession;
 
 	@Autowired
-	private MenuTreeRepository menuRepo;
-
-	@Autowired
 	private DocumentCollection documentsCollection;
 
 	@Autowired
 	private QuickInputDescriptorFactoryService quickInputDescriptors;
+	@Autowired
+	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
 	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.builder(userSession)
-				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
+				.setNewRecordDescriptorsProvider(newRecordDescriptorsProvider)
 				.build();
 	}
 

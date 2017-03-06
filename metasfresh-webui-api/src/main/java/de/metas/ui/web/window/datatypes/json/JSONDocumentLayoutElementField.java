@@ -17,11 +17,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
-import de.metas.ui.web.menu.MenuNode;
-import de.metas.ui.web.menu.MenuTree;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -150,11 +150,11 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
 		devices = fieldDescriptor.getDevices();
 
-		final MenuNode lookupMenuNode = findLookupMenuNode(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
-		if (lookupMenuNode != null)
+		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
+		if (newRecordEntityDescriptor != null)
 		{
-			newRecordWindowId = String.valueOf(lookupMenuNode.getElementId());
-			newRecordCaption = lookupMenuNode.getCaption();
+			newRecordWindowId = newRecordEntityDescriptor.getDocumentTypeId().toJson();
+			newRecordCaption = newRecordEntityDescriptor.getCaption().translate(jsonOpts.getAD_Language());
 		}
 		else
 		{
@@ -198,20 +198,19 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.toString();
 	}
 
-	private static final MenuNode findLookupMenuNode(final String lookupTableName, final JSONOptions jsonOpts)
+	private static final DocumentEntityDescriptor findNewRecordEntityDescriptor(final String lookupTableName, final JSONOptions jsonOpts)
 	{
 		if (lookupTableName == null)
 		{
 			return null;
 		}
 		
-		final MenuTree menuTree = jsonOpts.getUserSessionMenuTree();
-		if(menuTree == null)
+		final NewRecordDescriptorsProvider newRecordDescriptorsProvider = jsonOpts.getNewRecordDescriptorsProvider();
+		if(newRecordDescriptorsProvider == null)
 		{
 			return null;
 		}
 		
-		final MenuNode lookupMenuNode = menuTree.getNewRecordNodeForTableName(lookupTableName).orElse(null);
-		return lookupMenuNode;
+		return newRecordDescriptorsProvider.getNewRecordEntityDescriptorIfAvailable(lookupTableName);
 	}
 }

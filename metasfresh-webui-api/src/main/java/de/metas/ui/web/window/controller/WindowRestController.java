@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MAttachmentEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,6 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -48,6 +48,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -95,10 +96,9 @@ public class WindowRestController
 	private UserSession userSession;
 
 	@Autowired
-	private MenuTreeRepository menuRepo;
-
-	@Autowired
 	private DocumentCollection documentCollection;
+	@Autowired
+	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
@@ -108,7 +108,8 @@ public class WindowRestController
 
 	private JSONOptions.Builder newJSONOptions()
 	{
-		return JSONOptions.builder(userSession);
+		return JSONOptions.builder(userSession)
+				.setNewRecordDescriptorsProvider(newRecordDescriptorsProvider);
 	}
 
 	@GetMapping("/{windowId}/layout")
@@ -125,7 +126,6 @@ public class WindowRestController
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
-				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
 				.build();
 
 		return JSONDocumentLayout.ofHeaderLayout(layout, jsonOpts);
@@ -146,7 +146,6 @@ public class WindowRestController
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
-				.setUserSessionMenuTree(menuRepo.getUserSessionMenuTree())
 				.build();
 
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
@@ -498,7 +497,10 @@ public class WindowRestController
 		return response;
 	}
 
-	@GetMapping("/{windowId}/{documentId}/processTemplate")
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/1090
+	 */
+	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
 			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentIdStr //
@@ -508,7 +510,18 @@ public class WindowRestController
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
 
-		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, document -> document.processTemplate()));
+		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, document -> {
+			document.saveIfValidAndHasChanges();
+			if (document.hasChangesRecursivelly())
+			{
+				throw new AdempiereException("Not saved");
+			}
+			
+			final int newRecordId = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
+					.getProcessor()
+					.processNewRecordDocument(document);
+			return newRecordId;
+		}));
 	}
 
 	/**
