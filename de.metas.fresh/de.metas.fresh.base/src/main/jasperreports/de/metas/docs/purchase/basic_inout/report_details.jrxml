@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-03-06T09:49:48 -->
+<!-- 2017-03-06T12:18:06 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -93,7 +93,7 @@ FROM
 			LEFT OUTER JOIN M_InOutLine rdl ON iol.ReversalLine_ID = rdl.M_InOutLine_ID AND rdl.isActive = 'Y'
 			LEFT OUTER JOIN M_InOut rd ON rdl.M_InOut_ID = rd.M_InOut_ID AND rd.isActive = 'Y'
 			-- Reversal line - All InOuts for the original order of the reversal line
-			LEFT OUTER JOIN (
+			/*LEFT OUTER JOIN (
 				SELECT DISTINCT
 					ol.C_Order_ID, rdl_all.M_InOut_ID
 				FROM
@@ -104,10 +104,12 @@ FROM
 				WHERE
 					ol.C_Order_ID IS NOT NULL AND rdl_all.isActive = 'Y'
 			) o ON rd.M_InOut_ID = o.M_InOut_ID
-			LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
-			LEFT OUTER JOIN M_ReceiptSchedule ors ON ors.AD_Table_ID = (SELECT Get_Table_ID ('C_OrderLine')) AND ors.Record_ID = ol.C_OrderLine_ID AND ors.isActive = 'Y'
-			LEFT OUTER JOIN M_ReceiptSchedule_Alloc orsa ON ors.M_ReceiptSchedule_ID = orsa.M_ReceiptSchedule_ID AND orsa.isActive = 'Y'
-			LEFT OUTER JOIN M_InOutLine ordl ON orsa.M_InOutLine_ID = ordl.M_InOutLine_ID AND ordl.isActive = 'Y'
+			LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y' */
+			LEFT OUTER JOIN C_OrderLine ol ON rdl.C_OrderLine_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
+			--LEFT OUTER JOIN M_ReceiptSchedule ors ON ors.AD_Table_ID = (SELECT Get_Table_ID ('C_OrderLine')) AND ors.Record_ID = ol.C_OrderLine_ID AND ors.isActive = 'Y'
+			--LEFT OUTER JOIN M_ReceiptSchedule_Alloc orsa ON ors.M_ReceiptSchedule_ID = orsa.M_ReceiptSchedule_ID AND orsa.isActive = 'Y'
+			--LEFT OUTER JOIN M_InOutLine ordl ON orsa.M_InOutLine_ID = ordl.M_InOutLine_ID AND ordl.isActive = 'Y'
+			LEFT OUTER JOIN M_InOutLine ordl ON ol.C_OrderLine_ID = ordl.C_OrderLine_ID AND ordl.isActive = 'Y'
 			-- No ReversalLine - Only RMA
 			LEFT OUTER JOIN M_RMALine rl ON iol.M_RMALine_ID = rl.M_RMALine_ID AND rl.isActive = 'Y'
 			LEFT OUTER JOIN M_InOutLine riol ON rl.M_InOutLine_ID = riol.M_InOutLine_ID AND riol.isActive = 'Y'
