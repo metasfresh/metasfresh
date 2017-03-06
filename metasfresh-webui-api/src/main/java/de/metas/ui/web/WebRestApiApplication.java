@@ -71,7 +71,7 @@ public class WebRestApiApplication
 		Ini.setRunMode(RunMode.WEBUI);
 
 		new SpringApplicationBuilder(WebRestApiApplication.class)
-				.headless(false) // FIXME: we need it for initial connection setup popup (if any)
+				.headless(true)
 				.web(true)
 				.profiles(PROFILE_Webui)
 				.run(args);
