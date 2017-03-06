@@ -153,7 +153,7 @@ class DocumentList extends Component {
 
         let rows = [];
 
-        data && data.result.map(item => {
+        data && data.result && data.result.map(item => {
             rows = rows.concat(mapIncluded(item));
         });
 
