@@ -99,7 +99,6 @@ class DocumentList extends Component {
             this.setState({
                 viewId: defaultViewId
             });
-            this.connectWS(defaultViewId);
         }
 
         /*
@@ -120,11 +119,6 @@ class DocumentList extends Component {
                 })
             }
         }
-    }
-
-    componentDidMount() {
-        const {viewId} = this.state;
-        this.connectWS(viewId);
     }
 
     componentWillUnmount() {
@@ -258,7 +252,9 @@ class DocumentList extends Component {
                 filters: response.data.filters
             }, refresh && {
                 refresh: Date.now()
-            }))
+            }), () => {
+                this.connectWS(response.data.viewId);
+            })
         });
     }
 
