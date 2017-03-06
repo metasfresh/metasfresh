@@ -46,6 +46,9 @@ upcoming
   
 * metasfresh-webui-api
   * [#213](https://github.com/metasfresh/metasfresh-webui/issues/213) Use document's BPartner language when printing
+  
+* metasfresh-webui-frontend
+  * [#485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/485) Subtab 100% height broken again
 
 # metasfresh 4.58.57 (2017-09)
 
