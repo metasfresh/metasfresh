@@ -209,7 +209,7 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
                 const preparedData = parseToDisplay(response.data[elem].fields);
 
                 dispatch(initDataSuccess(
-                    preparedData, getScope(isModal), docId, 
+                    preparedData, getScope(isModal), docId,
                     response.data[0].saveStatus
                 ));
 

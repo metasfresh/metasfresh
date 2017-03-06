@@ -300,7 +300,7 @@ class Header extends Component {
                                     {isDocumentNotSaved &&
                                         <div className="document-save-indicator header-item-container">
                                             <div className="text-xs-center">
-                                                <i className="meta-icon-upload" />    
+                                                <i className="meta-icon-upload" />
                                             </div>
                                             <small>Not saved</small>
                                         </div>
