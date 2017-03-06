@@ -83,7 +83,7 @@ public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 		final I_Fresh_QtyOnHand onHand = getProcessInfo().getRecord(I_Fresh_QtyOnHand.class);
 		final Timestamp dateDoc = onHand.getDateDoc();
 
-		final PlainContextAware contextProviderForNewRecords = new PlainContextAware(getCtx(), getTrxName());
+		final PlainContextAware contextProviderForNewRecords = PlainContextAware.newWithTrxName(getCtx(), getTrxName());
 
 		final I_AD_User_SortPref_Line newLine = resetAndRetrieveSortPrefLineOrNull(contextProviderForNewRecords, dateDoc);
 		if (newLine == null)

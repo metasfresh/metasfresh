@@ -57,6 +57,7 @@ import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.IPrintingQueueHandler;
+import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.IADPInstanceDAO;
 
@@ -67,10 +68,12 @@ import de.metas.process.IADPInstanceDAO;
 public class PrintingQueueBL implements IPrintingQueueBL
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
-	// private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 
-	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler();
-
+	/**
+	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
+	 */
+	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
+		
 	@Override
 	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive printOut)
 	{
