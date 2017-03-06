@@ -54,7 +54,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		{
 			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 		}
-		if (getSelectedDocumentIds().size() != 0)
+		if (getSelectedDocumentIds().size() != 1)
 		{
 			return ProcessPreconditionsResolution.reject("No (single) row selected");
 		}
