@@ -57,6 +57,20 @@ public interface DocumentDescriptorFactory
 		}
 	}
 	
+	default DocumentEntityDescriptor getDocumentEntityDescriptor(final DocumentPath documentPath)
+	{
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
+
+		if (documentPath.isRootDocument())
+		{
+			return rootEntityDescriptor;
+		}
+		else
+		{
+			return rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
+		}
+	}
+	
 	default TableRecordReference getTableRecordReference(final DocumentPath documentPath)
 	{
 		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
