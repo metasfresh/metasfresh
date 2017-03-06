@@ -34,12 +34,27 @@ axios.interceptors.response.use(function (response) {
         store.dispatch(noConnection(true));
     }
 
+    //
+    // Authorization error
+    //
     if(error.response.status == 401){
         store.dispatch(logoutSuccess());
         store.dispatch(push('/login?redirect=true'));
     }else if(error.response.status != 404){
         if(localStorage.isLogged){
-            store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
+            const errorMessenger = (code) => {
+                switch(code){
+                    case 500:
+                        return 'Server error';
+                    case 400:
+                        return 'Client error';
+                }
+            }
+            const {data, status} = error.response;
+            store.dispatch(addNotification(
+                'Error: ' + data.message.split(' ', 4).join(' ') + '...',
+                data.message, 5000, 'error', errorMessenger(status))
+            );
         }
     }
 

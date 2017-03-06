@@ -26,7 +26,7 @@ export default {
         ADVANCED_EDIT: mod + '+' + 'a',
         //===================  POS  ======================
         SELECT_ALL_LEAFS: mod + '+' + 's'
-        
+
     },
     TABLE_CONTEXT: {
         TOGGLE_QUICK_INPUT: mod + '+' + 'q',

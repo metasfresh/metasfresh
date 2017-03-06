@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
- 
+
 class DocumentListContextShortcuts extends Component {
     constructor(props){
         super(props);
@@ -9,7 +9,7 @@ class DocumentListContextShortcuts extends Component {
         const {
             handleAdvancedEdit, handleOpenNewTab, handleDelete, getAllLeafs
         } = this.props;
-        
+
         switch (action) {
         case 'OPEN_SELECTED':
             event.preventDefault();
@@ -44,7 +44,7 @@ class DocumentListContextShortcuts extends Component {
             targetNodeSelector="body"
             isolate = { true }
             preventDefault = { true }
-            stopPropagation = { true } 
+            stopPropagation = { true }
         />
         )
     }

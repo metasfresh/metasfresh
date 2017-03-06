@@ -108,7 +108,7 @@ class Image extends Component{
 
     stopUsingCamera(){
         const { stream } = this.state;
-        
+
         return new Promise(resolve => {
             this.setState({
                 usingCamera: false

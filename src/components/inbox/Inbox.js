@@ -69,7 +69,7 @@ class Inbox extends Component {
                     if(inboxItem){
                         inboxItem.focus();
                     }
-                    
+
                 }
                 break;
             case 'Escape':
@@ -90,7 +90,7 @@ class Inbox extends Component {
                         'inbox-body ' +
                         (!all ? 'breadcrumbs-shadow' : '')
                     }
-                    
+
                     >
                         <div
                             className="inbox-header"

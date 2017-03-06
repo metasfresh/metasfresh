@@ -54,10 +54,8 @@ class PieChart extends Component {
         context.restore();
         });
     }
-    
 
     render() {
-
 
         return (
             <div className="chart-wrapp">

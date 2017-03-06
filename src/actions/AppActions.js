@@ -65,14 +65,24 @@ export function getUserDashboardIndicators() {
     return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
 }
 
-export function browseViewRequest(viewId, page, pageLength, orderBy, windowType){
+export function browseViewRequest(
+    viewId, page, pageLength, orderBy, windowType
+){
     return () => axios.get(
-        config.API_URL + '/documentView/' + windowType +
-        '/' + viewId + '?firstRow=' + pageLength * (page - 1) +
-        '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
+        config.API_URL +
+        '/documentView/' +
+        windowType + '/' +
+        viewId +
+        '?firstRow=' + pageLength * (page - 1) +
+        '&pageLength=' + pageLength +
+        (orderBy ? '&orderBy=' + orderBy : '')
+    );
 }
 
-export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
+export function createViewRequest(
+    windowType, viewType, pageLength, filters, refDocType = null,
+    refDocId = null
+){
     return () => axios.post(config.API_URL + '/documentView/' + windowType, {
         'documentType': windowType,
         'viewType': viewType,
@@ -84,20 +94,22 @@ export function createViewRequest(windowType, viewType, pageLength, filters, ref
     });
 }
 
-export function addNotification(title, msg, time, notifType){
+export function addNotification(title, msg, time, notifType, shortMsg){
     return {
         type: types.ADD_NOTIFICATION,
         title: title,
         msg: msg,
+        shortMsg: shortMsg,
         time: time,
-        notifType: notifType
+        notifType: notifType,
+        id: Date.now()
     }
 }
 
-export function deleteNotification(id){
+export function deleteNotification(key){
     return {
         type: types.DELETE_NOTIFICATION,
-        id: id
+        key: key
     }
 }
 
@@ -166,7 +178,6 @@ export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, ro
         }
     });
 }
-
 
 export function getNotificationsSuccess(notifications, unreadCount) {
     return {

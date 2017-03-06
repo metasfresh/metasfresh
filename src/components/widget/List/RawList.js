@@ -8,8 +8,83 @@ class RawList extends Component {
 
         this.state = {
             selected: props.selected || 0,
-            isOpen: false
+            isOpen: false,
+            dropdownList: []
         }
+    }
+
+    componentDidUpdate = prevProps => {
+        const { list, mandatory } = this.props;
+
+        if(prevProps.list !== list){
+            let dropdown = [];
+
+            if(!mandatory){
+                dropdown.push(0);
+            }
+
+            if(list.length > 0) {
+                this.setState({
+                    dropdownList: dropdown.concat(list)
+                });
+            }
+        }
+
+        const { isOpen } = this.state;
+
+        // no need for updating scroll
+        if (!isOpen || !list.length) {
+            return;
+        }
+
+        const {listScrollWrap, items} = this.refs;
+
+        const listElementHeight = this.optionElement.offsetHeight;
+        const listVisibleElements = Math.floor(listScrollWrap.offsetHeight / listElementHeight);
+        const shouldListScrollUpdate = listVisibleElements <= items.childNodes.length;
+
+        if (!shouldListScrollUpdate){
+            return;
+        }
+
+        const selectedIndex = this.getSelectedIndex();
+        const visibleMin = listScrollWrap.scrollTop;
+        const visibleMax = visibleMin + listVisibleElements * listElementHeight;
+
+        //not visible from down
+        const scrollFromUp = listElementHeight * (selectedIndex - listVisibleElements);
+        if (
+            (selectedIndex + 1) * listElementHeight > visibleMax &&
+            listScrollWrap.scrollTop !== scrollFromUp
+        ){
+            return listScrollWrap.scrollTop = scrollFromUp;
+        }
+
+        //not visible from above
+        const scrollFromDown = selectedIndex * listElementHeight;
+        if (
+            selectedIndex * listElementHeight < visibleMin &&
+            listScrollWrap.scrollTop !== scrollFromDown
+        ){
+            listScrollWrap.scrollTop = scrollFromDown;
+        }
+    }
+
+    getSelectedIndex(){
+        const { list, mandatory } = this.props;
+        const { selected } = this.state;
+
+        if (selected === 0){
+            return 0;
+        }
+
+        const baseIndex = list.findIndex(item => Object.keys(item)[0] === Object.keys(selected)[0]);
+
+        if (!mandatory){
+            return baseIndex + 1;
+        }
+
+        return baseIndex;
     }
 
     handleBlur = () => {
@@ -60,18 +135,25 @@ class RawList extends Component {
     }
 
     navigate = (up) => {
-        const {selected} = this.state;
-        const {list} = this.props;
+        const {selected, dropdownList} = this.state;
 
-        const next = up ? selected + 1 : selected - 1;
+        let selectedIndex = null;
 
-        this.setState(Object.assign({}, this.state, {
-            selected: (next >= 0 && next <= list.length) ? next : selected
-        }));
+        dropdownList.map((item, index) => {
+            if(JSON.stringify(item) === JSON.stringify(selected)){
+                selectedIndex = index;
+            }
+        });
+
+        const next = up ? selectedIndex + 1 : selectedIndex - 1;
+
+        this.setState({
+            selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
+        })
+
     }
 
     handleKeyDown = (e) => {
-        const {list} = this.props;
         const {selected} = this.state;
 
         switch(e.key){
@@ -85,7 +167,7 @@ class RawList extends Component {
                 break;
             case 'Enter':
                 e.preventDefault();
-                this.handleSelect(list[Object.keys(list)[selected-1]])
+                this.handleSelect(selected)
                 break;
             case 'Escape':
                 e.preventDefault();
@@ -145,6 +227,7 @@ class RawList extends Component {
                 }
                 onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
+                ref={option => this.optionElement = option}
             >
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
             </div>
@@ -154,23 +237,18 @@ class RawList extends Component {
     renderOptions = () => {
         const {list, mandatory, emptyText} = this.props;
 
-        let ret = [];
-
-        if(!mandatory){
-            emptyText && ret.push(this.getRow(0, 0, emptyText));
-        }
-
-        list.map((option, index) => {
-            ret.push(this.getRow(index + 1, option))
-        })
-
-        return ret;
+        return <div ref="items">{[
+            // if field is not mandatory add extra empty row
+            ...(!mandatory && emptyText ? [this.getRow(0, 0, emptyText)] : []),
+            // fill with options
+            ...list.map((option, index) => this.getRow(index + 1, option))
+        ]}</div>;
     }
 
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, tabIndex, disabled
+            rowId, isModal, tabIndex, disabled, mandatory
         } = this.props;
 
         const {
@@ -194,7 +272,8 @@ class RawList extends Component {
                 <div className={
                     'input-dropdown input-block input-readonly input-' +
                     (rank ? rank : 'secondary') +
-                    (updated ? ' pulse ' : ' ')
+                    (updated ? ' pulse ' : ' ') +
+                    ((mandatory && !selected) ? 'input-mandatory ' : '')
                 }>
                     <div className={
                         'input-editable input-dropdown-focused ' +
@@ -219,7 +298,7 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                {isOpen && <div className="input-dropdown-list">
+                {isOpen && <div className="input-dropdown-list" ref="listScrollWrap">
                     {(list.length === 0 && loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
@@ -227,7 +306,11 @@ class RawList extends Component {
                     )}
                     {(loading && list.length === 0) && (
                         <div className="input-dropdown-list-header">
-                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                            <ReactCSSTransitionGroup
+                                transitionName="rotate"
+                                transitionEnterTimeout={1000}
+                                transitionLeaveTimeout={1000}
+                            >
                                 <div className="rotate icon-rotate">
                                     <i className="meta-icon-settings"/>
                                 </div>

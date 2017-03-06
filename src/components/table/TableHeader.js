@@ -57,7 +57,7 @@ class TableHeader extends Component {
         const {
             cols, mainTable, indentSupported
         } = this.props;
-        
+
         return (
             <tr>
                 {indentSupported &&

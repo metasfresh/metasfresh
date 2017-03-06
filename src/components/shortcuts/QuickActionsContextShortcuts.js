@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
- 
-class DocumentListContextShortcuts extends Component {
+
+class QuickActionsContextShortcuts extends Component {
     constructor(props){
         super(props);
     }
     handleShortcuts = (action, event) => {
         const {handleClick} = this.props;
-        
+
         switch (action) {
         case 'QUICK_ACTION_POS':
             event.preventDefault();
@@ -24,10 +24,10 @@ class DocumentListContextShortcuts extends Component {
             targetNodeSelector = "body"
             isolate = { true }
             preventDefault = { true }
-            stopPropagation = { true } 
+            stopPropagation = { true }
         />
         )
     }
 }
 
-export default DocumentListContextShortcuts;
+export default QuickActionsContextShortcuts;

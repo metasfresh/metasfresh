@@ -8,7 +8,7 @@ import Subheader from './SubHeader';
 import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../widget/MasterWidget';
 import SideList from './SideList';
-import Indicator from './Indicator';
+import Indicator from '../app/Indicator';
 import Inbox from '../inbox/Inbox';
 import Tooltips from '../tooltips/Tooltips';
 import Prompt from '../app/Prompt';
@@ -225,8 +225,9 @@ class Header extends Component {
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
-            windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu, selected, entity, query, attachments
+            windowType, dataId, breadcrumb, showSidelist, references, actions,
+            viewId, inbox, homemenu, selected, entity, query, attachments,
+            showIndicator
         } = this.props;
 
         const {
@@ -370,7 +371,7 @@ class Header extends Component {
                             </div>
                         </div>
                     </div>
-                    <Indicator indicator={indicator} />
+                    {showIndicator && <Indicator />}
                 </nav>
 
                 {isSubheaderShow && <Subheader
@@ -416,10 +417,8 @@ class Header extends Component {
     }
 }
 
-
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    indicator: PropTypes.string.isRequired,
     selected: PropTypes.array.isRequired,
     viewId: PropTypes.string,
     homemenu: PropTypes.object.isRequired,
@@ -427,7 +426,7 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const {windowHandler,listHandler, appHandler, menuHandler} = state;
+    const {windowHandler, listHandler, appHandler, menuHandler} = state;
 
     const {
         viewId
@@ -448,15 +447,12 @@ function mapStateToProps(state) {
     }
 
     const {
-        indicator,
         selected
     } = windowHandler || {
-        indicator: '',
         selected: []
     }
 
     return {
-        indicator,
         selected,
         viewId,
         inbox,

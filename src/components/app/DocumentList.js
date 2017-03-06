@@ -16,7 +16,8 @@ import {
 } from '../../actions/GenericActions';
 
 import {
-    selectTableItems
+    selectTableItems,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
@@ -43,7 +44,7 @@ class DocumentList extends Component {
 
             clickOutsideLock: false,
             refresh: null,
-            
+
             cachedSelection: null
         }
         this.fetchLayoutAndData();
@@ -52,11 +53,11 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground
+            inBackground, dispatch
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
-        
-        /* 
+
+        /*
          * If we browse list of docs, changing type of Document
          * does not re-construct component, so we need to
          * make it manually while the windowType changes.
@@ -68,7 +69,7 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-
+                dispatch(selectTableItems([]))
                 this.fetchLayoutAndData();
             });
         }
@@ -100,21 +101,19 @@ class DocumentList extends Component {
             });
             this.connectWS(defaultViewId);
         }
-        
+
         /*
-         * It is case when we need refersh global selection state, 
+         * It is case when we need refersh global selection state,
          * because scope is changed
          *
          * After opening modal cache current selection
          * After closing modal with gridview, refresh selected.
          */
         if(
-            inBackground != this.props.inBackground 
+            inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                this.props.dispatch(
-                    selectTableItems(cachedSelection)
-                )
+                dispatch(selectTableItems(cachedSelection))
             }else{
                 this.setState({
                     cachedSelection: selected
@@ -146,10 +145,21 @@ class DocumentList extends Component {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
                 const {fullyChanged} = JSON.parse(msg.body);
                 if(fullyChanged == true){
-                    this.browseView();
+                    this.browseView(true);
                 }
             });
         });
+    }
+
+    doesSelectionExist(selected) {
+        const {data} = this.state;
+        // When the rows are changing we should ensure
+        // that selection still exist
+        return (data && data.size && data.result && selected && selected[0] &&
+            getItemsByProperty(
+                data.result, 'id', selected[0]
+            ).length
+        );
     }
 
     disconnectWS = () => {
@@ -179,20 +189,17 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        dispatch(
-            initLayout('documentView', windowType, null, null, null, null, type, true)
-        ).then(response => {
+        dispatch(initLayout(
+            'documentView', windowType, null, null, null, null, type, true
+        )).then(response => {
             this.setState({
-                layout: response.data,
-                page:1,
-                sort:null
+                layout: response.data
             }, () => {
                 if(viewId && !isNewFilter){
                     this.browseView();
                 }else{
                     this.createView();
                 }
-
                 setModalTitle && setModalTitle(response.data.caption)
             })
         });
@@ -201,11 +208,11 @@ class DocumentList extends Component {
     /*
      *  If viewId exist, than browse that view.
      */
-    browseView = () => {
+    browseView = (refresh) => {
         const {viewId, page, sort} = this.state;
 
         this.getData(
-            viewId, page, sort
+            viewId, page, sort, refresh
         ).catch((err) => {
             if(err.response && err.response.status === 404) {
                 this.createView();
@@ -232,7 +239,7 @@ class DocumentList extends Component {
         })
     }
 
-    getData = (id, page, sortingQuery) => {
+    getData = (id, page, sortingQuery, refresh) => {
         const {dispatch, windowType, updateUri} = this.props;
 
         if(updateUri){
@@ -244,12 +251,14 @@ class DocumentList extends Component {
         return dispatch(
             browseViewRequest(id, page, this.pageLength, sortingQuery, windowType)
         ).then(response => {
-            this.setState({
+
+            this.setState(Object.assign({}, {
                 data: response.data,
                 viewId: response.data.viewId,
-                filters: response.data.filters,
+                filters: response.data.filters
+            }, refresh && {
                 refresh: Date.now()
-            });
+            }))
         });
     }
 
@@ -311,7 +320,8 @@ class DocumentList extends Component {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal
         } = this.props;
-        
+
+        const selectionValid = this.doesSelectionExist(selected);
 
         if(layout && data) {
             return (
@@ -322,7 +332,7 @@ class DocumentList extends Component {
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
-                                    title={'New '+ layout.newRecordCaption}
+                                    title={layout.newRecordCaption}
                                 >
                                     <i className="meta-icon-add" /> {layout.newRecordCaption}
                                 </button>
@@ -338,7 +348,7 @@ class DocumentList extends Component {
                         <QuickActions
                             windowType={windowType}
                             viewId={viewId}
-                            selected={data.size && selected}
+                            selected={selectionValid ? selected : undefined}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
                             fetchOnInit={fetchQuickActionsOnInit}
@@ -378,6 +388,7 @@ class DocumentList extends Component {
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={selected}
+                            queryLimitHit={data.queryLimitHit}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
@@ -389,8 +400,10 @@ class DocumentList extends Component {
                                     <SelectionAttributes
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={data.size && selected}
-                                        shouldNotUpdate={inBackground}
+                                        selected={selectionValid ? selected : undefined}
+                                        shouldNotUpdate={
+                                            inBackground
+                                        }
                                     />
                                 </DataLayoutWrapper>
                             }

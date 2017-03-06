@@ -1,18 +1,15 @@
 ### Type of issue
-
 Bug / Feature request
-
 ### Current behavior
 
 ### Expected behavior
 
 ### Steps to reproduce
-
 Remove this part if feature request.
 
 **Window:** enter window ID or Navigation menu step-by-step.
 
-**Entity:** enter dockument ID or steps to reproduce environment.
+**Entity:** enter document ID or steps to reproduce environment.
 
 /or/
 

@@ -51,7 +51,7 @@ class Subheader extends Component {
         if(windowType){
             if(selected.length === 1 || dataId){
                 const id = dataId ? dataId : selected[0];
-                
+
                 /*
                  * These actions always are called in window context
                  * because it is or window, or anywhere else but
@@ -62,7 +62,7 @@ class Subheader extends Component {
                 ).then((response) => {
                     dispatch(setReferences(response.data.references));
                 });
-                
+
                 dispatch(
                     attachmentsRequest('window', windowType, id)
                 ).then((response) => {
@@ -81,19 +81,19 @@ class Subheader extends Component {
             });
         }
     }
-    
+
     handleAttachmentClick = (id) => {
         const {dispatch, windowType, dataId, selected} = this.props;
         dispatch(openFile(
             'window', windowType, dataId ? dataId : selected[0], 'attachments', id
         ));
     }
-    
+
     handleAttachmentDelete = (e, id) => {
         const {dispatch, windowType, dataId, selected} = this.props;
         e.stopPropagation();
         dispatch(deleteRequest(
-            'window', windowType, dataId ? dataId : selected[0], null, null, 
+            'window', windowType, dataId ? dataId : selected[0], null, null,
             'attachments', id
         )).then(() => {
             return dispatch(
@@ -167,7 +167,7 @@ class Subheader extends Component {
                 break;
         }
     }
-    
+
     toggleAttachmentDelete = (value) => {
         this.setState({
             attachmentHovered: value
@@ -201,7 +201,7 @@ class Subheader extends Component {
 
     render() {
         const {
-            windowType, references, actions, dataId, docNo, openModal, handlePrint, 
+            windowType, references, actions, dataId, docNo, openModal, handlePrint,
             handleDelete, redirect, handleClone, closeSubheader, attachments
         } = this.props;
 
@@ -272,13 +272,13 @@ class Subheader extends Component {
                                             onClick={() => this.handleAttachmentClick(item.id)}
                                         >
                                             {item.name}
-                                            <ReactCSSTransitionGroup 
+                                            <ReactCSSTransitionGroup
                                                 transitionName="slidein"
-                                                transitionEnterTimeout={1000} 
+                                                transitionEnterTimeout={1000}
                                                 transitionLeaveTimeout={0}
                                             >
                                                 {attachmentHovered === item.id &&
-                                                    <div 
+                                                    <div
                                                         className="subheader-additional-box"
                                                         onClick={(e) => this.handleAttachmentDelete(e, item.id)}
                                                     >
@@ -297,7 +297,6 @@ class Subheader extends Component {
         )
     }
 }
-
 
 Subheader.propTypes = {
     dispatch: PropTypes.func.isRequired

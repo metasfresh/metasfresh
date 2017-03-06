@@ -32,7 +32,7 @@ class SelectionAttributes extends Component {
         ){
                 DLWrapperSetData([], null, () => {
                     DLWrapperSetLayout([], () => {
-                        if(selected.length === 1){
+                        if(selected && selected.length === 1){
                             if(selected[0] == 0){
                                 return;
                             }
@@ -76,7 +76,6 @@ class SelectionAttributes extends Component {
         document.getElementsByClassName('js-table')[0].focus();
     }
 
-
     render() {
         const {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
@@ -84,7 +83,7 @@ class SelectionAttributes extends Component {
         } = this.props;
 
         return (
-            <div>
+            <div className="js-not-unselect">
                 <div className="attributes-selector-header">
                     Selection attributes
                 </div>

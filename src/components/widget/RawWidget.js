@@ -10,6 +10,8 @@ import ActionButton from './ActionButton';
 import Image from './Image';
 import DevicesWidget from './Devices/DevicesWidget';
 
+import {DATE_FORMAT}  from '../../constants/Constants';
+
 class RawWidget extends Component {
     constructor(props) {
         super(props);
@@ -38,21 +40,22 @@ class RawWidget extends Component {
         handleFocus && handleFocus();
     }
 
-    handlePatch = (property, value, id) => {
+    handlePatch = (property, value, id, valueTo) => {
         const {handlePatch, widgetData} = this.props;
         const {cachedValue} = this.state;
         let ret = null;
 
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
+        // Do patch only when value is not equal state
+        // or cache is set and it is not equal value
 
-        if( 
+        if(
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
             (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))
         ){
 
             if(handlePatch) {
-                ret = handlePatch(property, value, id);
+                ret = handlePatch(property, value, id, valueTo);
             }
         }
 
@@ -77,13 +80,24 @@ class RawWidget extends Component {
         this.handlePatch(widgetField, value, id);
     }
 
+    handleProcess = () => {
+        const {
+            handleProcess, buttonProcessId, tabId, rowId, dataId, windowType,
+            caption
+        } = this.props;
+
+        handleProcess && handleProcess(
+            caption, buttonProcessId, tabId, rowId, dataId, windowType
+        );
+    }
+
     renderWidget = () => {
         const {
             handleChange, updated, isModal, filterWidget, filterId, id, range,
             onHide, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled
+            entity, onShow, disabled, caption
         } = this.props;
 
         const {isEdited} = this.state;
@@ -94,12 +108,17 @@ class RawWidget extends Component {
         switch(widgetType){
             case 'Date':
                 if(range){
-                    //Watch out! The datetimerange widget as exception, is non-controlled
-                    //input! For further usage, needs upgrade.
+                    // Watch out! The datetimerange widget as exception,
+                    // is non-controlled input! For further usage, needs
+                    // upgrade.
                     return (
                         <DatetimeRange
                             onChange={(value, valueTo) =>
-                                this.handlePatch(widgetField, value, null, valueTo)
+                                this.handlePatch(widgetField,
+                                    value ? Moment(value).format(DATE_FORMAT) : null,
+                                    null,
+                                    valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
+                                )
                             }
                             mandatory={widgetData[0].mandatory}
                             onShow={onShow}
@@ -125,15 +144,22 @@ class RawWidget extends Component {
                                 dateFormat={true}
                                 inputProps={{
                                     placeholder: fields[0].emptyText,
-                                    disabled: widgetData[0].readonly || disabled,
+                                    disabled:
+                                        widgetData[0].readonly || disabled,
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
                                 value={widgetData[0].value}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                                patch={(date) => this.handlePatch(
+                                    widgetField,
+                                    date ?
+                                        Moment(date).format(DATE_FORMAT) : null
+                                )}
                                 handleBackdropLock={handleBackdropLock}
                             />
-                            <i className="meta-icon-calendar input-icon-right"></i>
+                            <i
+                                className="meta-icon-calendar input-icon-right"
+                            />
                         </div>
                     )
                 }
@@ -158,7 +184,9 @@ class RawWidget extends Component {
                             }}
                             value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                            patch={(date) => this.handlePatch(widgetField,
+                                date ? Moment(date).format(DATE_FORMAT) : null
+                            )}
                             tabIndex={fullScreen ? -1 : tabIndex}
                             handleBackdropLock={handleBackdropLock}
                         />
@@ -186,7 +214,9 @@ class RawWidget extends Component {
                             }}
                             value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                            patch={(date) => this.handlePatch(widgetField,
+                                date ? Moment(date).format(DATE_FORMAT) : null
+                            )}
                             tabIndex={fullScreen ? -1 : tabIndex}
                             handleBackdropLock={handleBackdropLock}
                         />
@@ -467,10 +497,14 @@ class RawWidget extends Component {
                         className={
                             'input-switch ' +
                             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '')
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (rowId && !isModal ? 'input-table ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.rawWidget = c}
+                        onKeyDown={e => {e.key === ' ' &&
+                            this.handlePatch(widgetField, !widgetData[0].value, id)
+                        }}
                     >
                         <input
                             type="checkbox"
@@ -490,7 +524,7 @@ class RawWidget extends Component {
                             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.rawWidget = c}
                     >
                         {widgetData[0].value}
                     </div>
@@ -508,6 +542,21 @@ class RawWidget extends Component {
                         ref={c => this.rawWidget = c}
                     >
                         {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
+                    </button>
+                )
+            case 'ProcessButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
+                        }
+                        onClick={this.handleProcess}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
                     </button>
                 )
             case 'ActionButton':
@@ -575,25 +624,25 @@ class RawWidget extends Component {
             caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch,
             widgetType
         } = this.props;
-        
+
         const widgetBody = this.renderWidget();
 
         // Unsupported widget type
         if(!widgetBody){
             console.warn(
-                'The %c' + widgetType, 
-                'font-weight:bold;', 
+                'The %c' + widgetType,
+                'font-weight:bold;',
                 'is unsupported type of widget.'
             );
-            
+
             return false;
         }
-        
+
         // No display value or not displayed
         if(!widgetData[0].displayed || widgetData[0].displayed !== true){
             return false;
         }
-        
+
         return (
             <div className={
                 'form-group row ' +
@@ -618,7 +667,7 @@ class RawWidget extends Component {
                     }
                 >
                     {widgetBody}
-                    
+
                     {fields[0].devices && !widgetData[0].readonly &&
                         <DevicesWidget
                             devices={fields[0].devices}

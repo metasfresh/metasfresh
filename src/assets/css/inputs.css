@@ -308,6 +308,16 @@ button {
     margin-bottom:0;
 }
 
+.input-switch:focus .input-slider {
+    box-shadow: inset 0 0 5px #000;
+}
+
+.input-switch.input-table {
+    height: 15px;
+    width: 30px;
+    margin-top: 0;
+}
+
 .input-switch input {
     display:none;
 }
@@ -326,7 +336,7 @@ button {
 
 .input-slider:before {
     position: absolute;
-    content: "";
+    content: '';
     height: 18px;
     width: 18px;
     left: 2px;
@@ -334,6 +344,12 @@ button {
     background-color: white;
     transition: .4s;
     border-radius: 50%;
+}
+
+.input-table .input-slider:before {
+    height:11px;
+    width: 11px;
+    left: 2px;
 }
 
 input:checked + .input-slider {
@@ -348,6 +364,9 @@ input:checked + .input-slider:before {
     transform: translateX(22px);
 }
 
+.input-table input:checked + .input-slider:before {
+    transform: translateX(15px);
+}
 
 
 /*
@@ -550,8 +569,8 @@ input:checked + .input-slider:before {
     background-color: transparent;
 }
 
-.form-control-meta[type="number"]::-webkit-outer-spin-button,
-.form-control-meta[type="number"]::-webkit-inner-spin-button {
+.form-control-meta[type='number']::-webkit-outer-spin-button,
+.form-control-meta[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
 }
 

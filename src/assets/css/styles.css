@@ -59,8 +59,8 @@ body {
         margin-left: -0.5rem;
         margin-right: -0.5rem;
     }
-    [class^="col-"],
-    [class*=" col-"] {
+    [class^='col-'],
+    [class*=' col-'] {
         padding-left: .5rem;
         padding-right: .5rem;
     }
@@ -434,7 +434,6 @@ body {
 
 .table .YesNo i {
     height: 14px;
-    margin-top: 4px;
     display: inline-block;
 }
 
@@ -924,6 +923,42 @@ td.pulse-off input {
     display: block;
 }
 
+@media (max-width: $breakpoint-md){
+    .btn-new-document {
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.progress-bar {
+    position: absolute;
+    bottom:0;
+    left:0;
+    height: 3px;
+    background-color: rgba(0,0,0,.3);
+}
+
+.progress-bar.error {
+    background-color: $brand-danger-color;
+}
+
+.progress-bar.warning {
+    background-color: $brand-warning-color;
+}
+
+.progress-bar.success {
+    background-color: $brand-success-dark-color;
+}
+
+.raw-modal {
+    z-index:399;
+}
+
+/*
+ *  Animations
+ */
+
 .slidein-enter {
     right: -100%;
 }
@@ -943,10 +978,20 @@ td.pulse-off input {
     right: -100%;
 }
 
-@media (max-width: $breakpoint-md){
-    .btn-new-document {
-        max-width: 140px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+.progress-enter {
+    width:100%;
+}
+
+.progress-enter.progress-enter-active {
+    width: 0;
+    transition: width 5s linear;
+}
+
+.progress-leave {
+    width: 0;
+    transition: width 5s linear;
+}
+
+.progress-leave.slidein-leave-active {
+    width: 0;
 }

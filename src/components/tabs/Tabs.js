@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import Tab from './Tab';
+
 class Tabs extends Component {
     constructor(props) {
         super(props);
@@ -24,6 +26,7 @@ class Tabs extends Component {
     renderPills = (pills) => {
         const {tabIndex} = this.props;
         const maxWidth = (95 / pills.length) + '%';
+        const {selected} = this.state;
 
         return pills.map((item) => {
             return (
@@ -35,15 +38,25 @@ class Tabs extends Component {
                     onKeyDown={(e) => this.handlePillKeyDown(e, item.key)}
                     style={{ maxWidth }}
                 >
-                    <a className={'nav-link ' + ((this.state.selected === item.key) ? 'active' : '')}>{item.props.caption}</a>
+                    <a
+                        className={
+                            'nav-link ' +
+                            ((selected === item.key) ? 'active' : '')
+                        }
+                    >
+                        {item.props.caption}
+                    </a>
                 </li>
             );
         });
     }
 
     renderTabs = (tabs) => {
-        const {toggleTableFullScreen, fullScreen} = this.props;
+        const {
+            toggleTableFullScreen, fullScreen, windowType
+        } = this.props;
         const {selected} = this.state;
+
         return tabs.map((item) => {
             const itemWithProps = Object.assign({}, item, {
                 props: Object.assign({}, item.props, {
@@ -53,12 +66,16 @@ class Tabs extends Component {
             });
 
             if(selected == item.key){
+                const {tabid, queryOnActivate, docId} = item.props;
+
                 return (
                     <div
                         key={'pane' + item.key}
                         className="tab-pane active"
                     >
-                        {itemWithProps}
+                        <Tab {...{queryOnActivate, tabid, docId, windowType}}>
+                            {itemWithProps}
+                        </Tab>
                     </div>
                 );
             }else{
@@ -70,6 +87,7 @@ class Tabs extends Component {
 
     render() {
         const {children, tabIndex, fullScreen} = this.props;
+
         return (
             <div className={
                 'mb-1 ' +

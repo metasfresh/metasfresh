@@ -12,10 +12,17 @@ class DropzoneWrapper extends Component {
     }
 
     handleDropFile(accepted, rejected){
-        const { handleDropFile } = this.props;
+        const { handleDropFile, handleRejectDropped } = this.props;
 
         this.handleDragEnd();
-        handleDropFile(accepted, rejected);
+
+        if (accepted.length){
+            handleDropFile(accepted);
+        }
+
+        if (rejected.length){
+            handleRejectDropped(rejected);
+        }
     }
 
     handleDragStart(){
@@ -39,6 +46,7 @@ class DropzoneWrapper extends Component {
                     'document-file-dropzone' +
                     (dragActive ? ' document-file-dropzone-active' : '')
                 }
+                disablePreview={true}
                 multiple={false}
                 disableClick={true}
                 onDragEnter={() => this.handleDragStart()}

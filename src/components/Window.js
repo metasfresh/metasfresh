@@ -51,10 +51,12 @@ class Window extends Component {
                 tabIndex={this.tabIndex.tabs}
                 toggleTableFullScreen={this.toggleTableFullScreen}
                 fullScreen={fullScreen}
+                windowType={type}
             >
                 {tabs.map((elem)=> {
                     const {
-                        tabid, caption, elements, emptyResultText, emptyResultHint
+                        tabid, caption, elements, emptyResultText,
+                        emptyResultHint, queryOnActivate
                     } = elem;
                     return (
                         <Table
@@ -70,6 +72,7 @@ class Window extends Component {
                             emptyHint={emptyResultHint}
                             newRow={newRow}
                             tabIndex={this.tabIndex.tabs}
+                            queryOnActivate={queryOnActivate}
                         />
                     )
                 })}
@@ -142,11 +145,11 @@ class Window extends Component {
 
     renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
-        const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+        const {data, modal, tabId, rowId, dataId, isAdvanced} = this.props;
         const {fullScreen} = this.state;
 
         return elements.map((elem, id)=> {
-            
+
             const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, 'ID').value;
@@ -173,10 +176,10 @@ class Window extends Component {
 
     render() {
         const {sections, tabs} = this.props.layout;
-        const {handleDropFile} = this.props;
+        const {handleDropFile, handleRejectDropped} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                <Dropzone handleDropFile={handleDropFile}>
+                <Dropzone handleDropFile={handleDropFile} handleRejectDropped={handleRejectDropped}>
                     <div className="sections-wrapper">
                         {sections && this.renderSections(sections)}
                     </div>
