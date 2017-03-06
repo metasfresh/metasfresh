@@ -70,12 +70,10 @@ public class C_Printing_Queue_RecipientHandler extends PrintingQueueHandlerAdapt
 		{
 			return false;
 		}
+		
+		// return true if the item's user has a C_Printing_Queue_Recipient
 		final I_AD_User queueUser = InterfaceWrapperHelper.create(queueItem.getAD_User(), I_AD_User.class);
-		if (queueUser.getC_Printing_Queue_Recipient_ID() <= 0)
-		{
-			return false;
-		}
-		return true;
+		return queueUser.getC_Printing_Queue_Recipient_ID() > 0;
 	}
 
 	/**
