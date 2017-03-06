@@ -220,7 +220,7 @@ public class DocumentViewRestController
 				.assertWindowIdMatches(adWindowId);
 
 		return view.streamActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
-				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
+				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 

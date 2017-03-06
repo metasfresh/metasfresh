@@ -2,9 +2,12 @@ package de.metas.ui.web.dashboard.json;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.UserDashboardItem;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -21,16 +24,17 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDashboardItem implements Serializable
 {
 	/* package */static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
@@ -42,19 +46,27 @@ public class JSONDashboardItem implements Serializable
 	private final int id;
 	@JsonProperty("caption")
 	private final String caption;
+	@JsonProperty("seqNo")
+	private final int seqNo;
+
 	@JsonProperty("url")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String url;
-	@JsonProperty("seqNo")
-	private final int seqNo;
+
+	@JsonProperty("kpi")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JsonKPILayout kpi;
 
 	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
 	{
 		super();
 		id = dashboardItem.getId();
-		caption = dashboardItem.getCaption().translate(jsonOpts.getAD_Language());
+		caption = dashboardItem.getCaption(jsonOpts.getAD_Language());
 		url = dashboardItem.getUrl();
 		seqNo = dashboardItem.getSeqNo();
+
+		final KPI kpi = dashboardItem.getKPI();
+		this.kpi = kpi == null ? null : JsonKPILayout.of(kpi, jsonOpts);
 	}
 
 	public int getId()
@@ -75,5 +87,10 @@ public class JSONDashboardItem implements Serializable
 	public int getSeqNo()
 	{
 		return seqNo;
+	}
+
+	public JsonKPILayout getKPI()
+	{
+		return kpi;
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.ui.web.view.event;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,9 +175,9 @@ public class DocumentViewChangesCollector implements AutoCloseable
 		autoflushIfEnabled();
 	}
 
-	public void collectDocumentChanged(final IDocumentViewSelection view, final DocumentId documentId)
+	public void collectDocumentsChanged(final IDocumentViewSelection view, final Collection<DocumentId> documentIds)
 	{
-		viewChanges(view).addChangedDocumentId(documentId);
+		viewChanges(view).addChangedDocumentId(documentIds);
 
 		autoflushIfEnabled();
 	}

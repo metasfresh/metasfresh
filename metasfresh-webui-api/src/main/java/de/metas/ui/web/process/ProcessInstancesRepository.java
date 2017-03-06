@@ -8,7 +8,6 @@ import java.util.function.Function;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,11 +32,10 @@ import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -69,10 +67,9 @@ public class ProcessInstancesRepository
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
 	@Autowired
-	private DocumentCollection documentsCollection;
+	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
-
 
 	private final LoadingCache<DocumentId, ProcessInstance> processInstances = CacheBuilder.newBuilder()
 			.expireAfterAccess(10, TimeUnit.MINUTES)
@@ -124,7 +121,7 @@ public class ProcessInstancesRepository
 		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
 		return pinstance;
 	}
-	
+
 	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
 	{
 		// Validate request's AD_Process_ID
@@ -136,59 +133,75 @@ public class ProcessInstancesRepository
 
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 
-		//
-		// Extract process where clause from view, in case the process was called from a view.
+		final String tableName;
+		final int recordId;
 		final String sqlWhereClause;
+
+		//
+		// View
 		final String viewId = Strings.emptyToNull(request.getViewId());
-		DocumentPath viewSingleDocumentPath = null;
+		final String viewSelectedIdsAsStr;
+		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
 		if (!Check.isEmpty(viewId))
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
-			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
+			viewSelectedIdsAsStr = DocumentId.toCommaSeparatedString(viewDocumentIds);
+			final int view_AD_Window_ID = view.getAD_Window_ID();
+			tableName = documentDescriptorFactory.getTableNameOrNull(view_AD_Window_ID);
 
 			if (viewDocumentIds.size() == 1)
 			{
-				final int view_AD_Window_ID = view.getAD_Window_ID();
-				final DocumentId view_singleDocumentId = viewDocumentIds.iterator().next();
-				viewSingleDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_singleDocumentId);
+				final DocumentId singleDocumentId = viewDocumentIds.iterator().next();
+				recordId = singleDocumentId.toIntOr(-1);
 			}
+			else
+			{
+				recordId = -1;
+			}
+
+			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
 		}
-		else
+		//
+		// Single document call
+		else if (singleDocumentPath != null)
 		{
+			viewSelectedIdsAsStr = null;
+			if (singleDocumentPath.isRootDocument())
+			{
+				tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID());
+				recordId = singleDocumentPath.getDocumentId().toInt();
+			}
+			else
+			{
+				tableName = documentDescriptorFactory.getTableNameOrNull(singleDocumentPath.getAD_Window_ID(), singleDocumentPath.getDetailId());
+				recordId = singleDocumentPath.getSingleRowId().toInt();
+			}
 			sqlWhereClause = null;
 		}
-
 		//
-		// Extract the (single) referenced document
-		final TableRecordReference documentRef;
-		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
-		if (singleDocumentPath != null)
-		{
-			documentRef = documentsCollection.getTableRecordReference(singleDocumentPath);
-		}
-		else if (viewSingleDocumentPath != null)
-		{
-			documentRef = documentsCollection.getTableRecordReference(viewSingleDocumentPath);
-		}
+		// From menu
 		else
 		{
-			documentRef = null;
+			viewSelectedIdsAsStr = null;
+			tableName = null;
+			recordId = -1;
+			sqlWhereClause = null;
 		}
 
 		return ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(adProcessId)
-				.setRecord(documentRef)
+				.setRecord(tableName, recordId)
 				.setWhereClause(sqlWhereClause)
 				//
 				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
 				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
+				.addParameter(ProcessInstance.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
 				//
 				.build();
 	}
-
 
 	private ProcessInstance retrieveProcessInstance(final DocumentId adPInstanceId)
 	{
@@ -225,7 +238,7 @@ public class ProcessInstancesRepository
 	public <R> R forProcessInstanceReadonly(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
-		
+
 		try
 		{
 			try (final IAutoCloseable readLock = processInstances.get(pinstanceId).lockForReading())
@@ -243,19 +256,19 @@ public class ProcessInstancesRepository
 	public <R> R forProcessInstanceWritable(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
 	{
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
-		
+
 		try
 		{
 			try (final IAutoCloseable writeLock = processInstances.get(pinstanceId).lockForWriting())
 			{
 				final ProcessInstance processInstance = processInstances.get(pinstanceId).copy(CopyMode.CheckOutWritable);
-				
+
 				final R result = processor.apply(processInstance);
-				
+
 				// Actually put it back
 				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
 				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
-				
+
 				return result;
 			}
 		}

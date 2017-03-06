@@ -92,6 +92,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final boolean mandatory;
 	private final boolean keyColumn;
 
+	private final DocumentFieldWidgetType widgetType;
 	private final Class<?> valueClass;
 	private final DocumentFieldValueLoader documentFieldValueLoader;
 
@@ -120,6 +121,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		mandatory = builder.mandatory;
 		keyColumn = builder.keyColumn;
 
+		widgetType = builder.widgetType;
 		valueClass = builder.valueClass;
 		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
 
@@ -204,6 +206,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public boolean isMandatory()
 	{
 		return mandatory;
+	}
+	
+	public DocumentFieldWidgetType getWidgetType()
+	{
+		return widgetType;
 	}
 
 	public Class<?> getValueClass()

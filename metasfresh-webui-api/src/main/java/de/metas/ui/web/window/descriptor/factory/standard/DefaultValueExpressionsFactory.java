@@ -33,14 +33,14 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -58,6 +58,10 @@ public class DefaultValueExpressionsFactory
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Zero_Integer;
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_NextLineNo;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_AD_Client_ID;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_AD_Org_ID;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_ContextDate;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_ContextUser_ID;
 
 	static
 	{
@@ -69,18 +73,23 @@ public class DefaultValueExpressionsFactory
 		DEFAULT_VALUE_EXPRESSION_Zero_Integer = Optional.of(expressionFactory.compile("0", IntegerStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_NextLineNo = Optional.of(expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IntegerStringExpression.class));
+
+		DEFAULT_VALUE_AD_Client_ID = Optional.of(expressionFactory.compile("@" + WindowConstants.FIELDNAME_AD_Client_ID + "@", IntegerStringExpression.class));
+		DEFAULT_VALUE_AD_Org_ID = Optional.of(expressionFactory.compile("@" + WindowConstants.FIELDNAME_AD_Org_ID + "@", IntegerStringExpression.class));
+		DEFAULT_VALUE_ContextUser_ID = Optional.of(expressionFactory.compile("@#AD_User_ID@", IntegerStringExpression.class));
+		DEFAULT_VALUE_ContextDate = Optional.of(expressionFactory.compile("@#Date@", DateStringExpression.class));
 	}
 
 	//
 	// Parameters
 	private final boolean _isDetailTab;
-	
+
 	public DefaultValueExpressionsFactory(final boolean isDetailTab)
 	{
 		super();
-		this._isDetailTab = isDetailTab;
+		_isDetailTab = isDetailTab;
 	}
-	
+
 	private boolean isDetailTab()
 	{
 		return _isDetailTab;
@@ -92,10 +101,10 @@ public class DefaultValueExpressionsFactory
 			, final DocumentFieldWidgetType widgetType //
 			, final Class<?> fieldValueClass //
 			, final boolean isMandatory //
-			)
+	)
 	{
 		final boolean isDetailTab = isDetailTab();
-		
+
 		//
 		// Case: "Line" field in included tabs
 		if (WindowConstants.FIELDNAME_Line.equals(columnName)
@@ -109,7 +118,25 @@ public class DefaultValueExpressionsFactory
 		// If there is no default value expression, use some defaults
 		if (defaultValueStr == null || defaultValueStr.isEmpty())
 		{
-			if (Boolean.class.equals(fieldValueClass))
+			if (WindowConstants.FIELDNAME_AD_Client_ID.equals(columnName))
+			{
+				return DEFAULT_VALUE_AD_Client_ID;
+			}
+			else if (WindowConstants.FIELDNAME_AD_Org_ID.equals(columnName))
+			{
+				return DEFAULT_VALUE_AD_Org_ID;
+			}
+			else if (WindowConstants.FIELDNAME_Created.equals(columnName)
+					|| WindowConstants.FIELDNAME_Updated.equals(columnName))
+			{
+				return DEFAULT_VALUE_ContextDate;
+			}
+			else if (WindowConstants.FIELDNAME_CreatedBy.equals(columnName)
+					|| WindowConstants.FIELDNAME_UpdatedBy.equals(columnName))
+			{
+				return DEFAULT_VALUE_ContextUser_ID;
+			}
+			else if (Boolean.class.equals(fieldValueClass))
 			{
 				if (WindowConstants.FIELDNAME_IsActive.equals(columnName))
 				{
@@ -221,7 +248,7 @@ public class DefaultValueExpressionsFactory
 	 * <li>we have some cases where a List default value is something like 'P'
 	 * <li>we have some cases where a Table's reference default value is something like 'de.metas.swat'
 	 * </ul>
-	 * 
+	 *
 	 * @param expressionStr
 	 * @return fixed expression or same expression if does not apply
 	 */

@@ -41,6 +41,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
@@ -576,7 +577,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			// Check if value was changed, compared with PO's current value
 			final Object poValue = po.get_Value(poColumnIndex);
 			final Class<?> poValueClass = poInfo.getColumnClass(poColumnIndex);
-			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, poValueClass);
+			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, documentField.getWidgetType(), poValueClass);
 			if (DataTypes.equals(fieldValueConv, poValue))
 			{
 				logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
@@ -587,7 +588,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			// Check if the field value was changed from when we last queried it
 			if (!po.is_new())
 			{
-				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, poValueClass);
+				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, documentField.getWidgetType(), poValueClass);
 				if (!DataTypes.equals(fieldInitialValueConv, poValue))
 				{
 					throw new AdempiereException("Document's field was changed from when we last queried it. Please re-query."
@@ -617,7 +618,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	static Object convertValueToPO(final Object value, final String columnName, final Class<?> targetClass)
+	static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
 	{
 		final Class<?> valueClass = value == null ? null : value.getClass();
 
@@ -681,7 +682,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 			else if (value instanceof String)
 			{
-				final java.util.Date valueDate = JSONDate.fromJson(value.toString());
+				final java.util.Date valueDate = JSONDate.fromJson(value.toString(), widgetType);
 				return TimeUtil.asTimestamp(valueDate);
 			}
 		}

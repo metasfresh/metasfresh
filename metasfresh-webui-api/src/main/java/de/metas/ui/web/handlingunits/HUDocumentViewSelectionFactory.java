@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 import org.compiere.util.CCache;
@@ -70,6 +71,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		return DocumentViewLayout.builder()
 				.setAD_Window_ID(adWindowId)
+				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
@@ -125,11 +127,12 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 
 		//
 		// Referencing path and tableName (i.e. from where are we coming)
-		final DocumentPath referencingDocumentPath = jsonRequest.getReferencingDocumentPathOrNull();
+		final Set<DocumentPath> referencingDocumentPaths = jsonRequest.getReferencingDocumentPaths();
 		final String referencingTableName;
-		if (referencingDocumentPath != null)
+		if (!referencingDocumentPaths.isEmpty())
 		{
-			referencingTableName = documentDescriptorFactory.getDocumentEntityDescriptor(referencingDocumentPath.getAD_Window_ID())
+			final int referencingWindowId = referencingDocumentPaths.iterator().next().getAD_Window_ID(); // assuming all document paths have the same window
+			referencingTableName = documentDescriptorFactory.getDocumentEntityDescriptor(referencingWindowId)
 					.getTableNameOrNull();
 		}
 		else
@@ -143,7 +146,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setViewId(viewId)
 				.setAD_Window_ID(adWindowId)
 				.setRecords(documentViewsLoader)
-				.setReferencingDocumentPath(referencingDocumentPath, referencingTableName)
+				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.setServices(processDescriptorsFactory)
 				.build();
 	}

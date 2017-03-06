@@ -227,7 +227,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		@Override
 		public Object convertValueToFieldType(final Object valueObj)
 		{
-			return DocumentFieldDescriptor.convertToValueClass(fieldName, valueObj, valueClass, NullLookupDataSource.instance);
+			return DocumentFieldDescriptor.convertToValueClass(fieldName, valueObj, widgetType, valueClass, NullLookupDataSource.instance);
 		}
 
 		public LookupDescriptor getLookupDescriptor()

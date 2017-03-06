@@ -25,11 +25,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
@@ -311,10 +313,12 @@ public class SqlDocumentQueryBuilder
 			final String linkColumnName = entityBinding.getLinkColumnName();
 			if (parentLinkColumnName != null && linkColumnName != null)
 			{
-				final Object parentLinkValue = parentDocument.getFieldView(parentLinkColumnName).getValue();
+				final IDocumentFieldView parentLinkField = parentDocument.getFieldView(parentLinkColumnName);
+				final Object parentLinkValue = parentLinkField.getValue();
+				final DocumentFieldWidgetType parentLinkWidgetType = parentLinkField.getWidgetType();
 
 				final Class<?> targetClass = entityBinding.getFieldByFieldName(linkColumnName).getValueClass();
-				final Object sqlParentLinkValue = SqlDocumentsRepository.convertValueToPO(parentLinkValue, parentLinkColumnName, targetClass);
+				final Object sqlParentLinkValue = SqlDocumentsRepository.convertValueToPO(parentLinkValue, parentLinkColumnName, parentLinkWidgetType, targetClass);
 
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 				sqlWhereClauseBuilder.append(" /* parent link */ ").append(linkColumnName).append("=?");
@@ -404,10 +408,11 @@ public class SqlDocumentQueryBuilder
 		final POInfo poInfo = entityBinding.getPOInfo();
 		final IStringExpression sqlColumnExpr = fieldBinding.getColumnSql();
 		final String columnName = fieldBinding.getColumnName();
+		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
 		final Class<?> targetClass = poInfo.getColumnClass(columnName);
+		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(filterParam.getValue(), columnName, widgetType, targetClass);
+		
 		final Operator operator = filterParam.getOperator();
-		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(filterParam.getValue(), columnName, targetClass);
-
 		switch (operator)
 		{
 			case EQUAL:
@@ -462,7 +467,7 @@ public class SqlDocumentQueryBuilder
 			}
 			case BETWEEN:
 			{
-				final Object sqlValueTo = SqlDocumentsRepository.convertValueToPO(filterParam.getValueTo(), columnName, targetClass);
+				final Object sqlValueTo = SqlDocumentsRepository.convertValueToPO(filterParam.getValueTo(), columnName, widgetType, targetClass);
 				return buildSqlWhereClause_Between(sqlColumnExpr, sqlValue, sqlValueTo, sqlParams);
 			}
 			default:

@@ -370,7 +370,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
-				.setMandatoryLogic(gridFieldVO.getMandatoryLogic())
+				.setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
 				.setDataBinding(fieldBinding);

@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -13,8 +14,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -67,7 +66,7 @@ public class HUDocumentViewLoader
 
 	private final int adWindowId;
 	private final String referencingTableName;
-	private final Set<Integer> filterOnlyIds;
+	private final CopyOnWriteArraySet<Integer> huIds = new CopyOnWriteArraySet<>();
 
 	private final IDocumentViewAttributesProvider _attributesProvider;
 
@@ -78,20 +77,13 @@ public class HUDocumentViewLoader
 		adWindowId = request.getAD_Window_ID();
 		this.referencingTableName = referencingTableName;
 
-		boolean haveFilters = false;
-
 		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
 		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
 		{
-			this.filterOnlyIds = ImmutableSet.copyOf(filterOnlyIds);
-			haveFilters = true;
-		}
-		else
-		{
-			this.filterOnlyIds = ImmutableSet.of();
+			huIds.addAll(filterOnlyIds);
 		}
 
-		if (!haveFilters)
+		if (huIds.isEmpty())
 		{
 			throw new IllegalArgumentException("No filters specified for " + request);
 		}
@@ -104,9 +96,18 @@ public class HUDocumentViewLoader
 		return _attributesProvider;
 	}
 
+	public void addHUs(final Collection<I_M_HU> husToAdd)
+	{
+		final Set<Integer> huIdsToAdd = husToAdd.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.collect(GuavaCollectors.toImmutableSet());
+
+		this.huIds.addAll(huIdsToAdd);
+	}
+
 	public List<HUDocumentView> retrieveDocumentViews()
 	{
-		return retrieveTopLevelHUs(filterOnlyIds)
+		return retrieveTopLevelHUs(huIds)
 				.stream()
 				.map(hu -> createDocumentView(hu))
 				.collect(GuavaCollectors.toImmutableList());
@@ -132,20 +133,19 @@ public class HUDocumentViewLoader
 
 	private HUDocumentView createDocumentView(final I_M_HU hu)
 	{
-		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
-		final String huUnitTypeDisplayName;
-		final HUDocumentViewType huRecordType;
 		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
+
+		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
+		final HUDocumentViewType huRecordType;
 		if (aggregateHU)
 		{
-			huUnitTypeDisplayName = "TU";
 			huRecordType = HUDocumentViewType.TU;
 		}
 		else
 		{
-			huUnitTypeDisplayName = huUnitTypeCode;
 			huRecordType = HUDocumentViewType.ofHU_UnitType(huUnitTypeCode);
 		}
+		final String huUnitTypeDisplayName = huRecordType.getName();
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
@@ -161,7 +161,7 @@ public class HUDocumentViewLoader
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_PackingInfo, extractPackingInfo(hu));
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_PackingInfo, extractPackingInfo(hu, huRecordType));
 
 		//
 		// Product/UOM/Qty if there is only one product stored
@@ -188,11 +188,14 @@ public class HUDocumentViewLoader
 					.map(includedHU -> createDocumentView(includedHU))
 					.forEach(huViewRecord::addIncludedDocument);
 		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode)
-				|| X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
 		{
 			streamProductStorageDocumentViews(hu, processed)
 					.forEach(huViewRecord::addIncludedDocument);
+		}
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
+		{
+			// do nothing
 		}
 		else
 		{
@@ -202,8 +205,17 @@ public class HUDocumentViewLoader
 		return HUDocumentView.of(huViewRecord.build());
 	}
 
-	private static final String extractPackingInfo(final I_M_HU hu)
+	private static final String extractPackingInfo(final I_M_HU hu, final HUDocumentViewType huUnitType)
 	{
+		if (!huUnitType.isPureHU())
+		{
+			return "";
+		}
+		if (huUnitType == HUDocumentViewType.VHU)
+		{
+			return "";
+		}
+
 		final IHUDisplayNameBuilder helper = Services.get(IHandlingUnitsBL.class).buildDisplayName(hu)
 				.setShowIncludedHUCount(true);
 
@@ -234,7 +246,7 @@ public class HUDocumentViewLoader
 			return false;
 		}
 	}
-	
+
 	private Stream<HUDocumentView> streamProductStorageDocumentViews(final I_M_HU hu, final boolean processed)
 	{
 		return Services.get(IHandlingUnitsBL.class).getStorageFactory()

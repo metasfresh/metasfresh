@@ -114,6 +114,12 @@ public final class WebuiRelatedProcessDescriptor
 		return getPreconditionsResolution().isRejected();
 	}
 	
+	public boolean isEnabled()
+	{
+		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
+		return preconditionsResolution.isAccepted();
+	}
+	
 	public boolean isEnabledOrNotSilent()
 	{
 		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();

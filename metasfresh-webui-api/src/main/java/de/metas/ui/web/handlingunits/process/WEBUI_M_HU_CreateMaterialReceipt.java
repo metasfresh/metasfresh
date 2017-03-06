@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -11,7 +12,6 @@ import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -29,7 +29,6 @@ import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.process.ProcessInstance;
 import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -45,11 +44,11 @@ import de.metas.ui.web.window.model.DocumentCollection;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -125,18 +124,17 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 
 		//
 		// Generate material receipts
-		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
-		final List<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.of(receiptSchedule);
+		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
 		final Set<I_M_HU> selectedHUs = retrieveHUsToReceive();
 		final boolean collectGeneratedInOuts = true;
 		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(getCtx(), receiptSchedules, selectedHUs, collectGeneratedInOuts);
-		// NOTE: we assume user was already notified about generated meterial receipts
+		// NOTE: we assume user was already notified about generated material receipts
 
 		//
 		// Reset the view's affected HUs
 		getView().invalidateAll();
-		
-		documentViewsRepo.notifyRecordChanged(TableRecordReference.of(receiptSchedule));
+
+		documentViewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
 
 		return MSG_OK;
 	}
@@ -146,13 +144,12 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		return documentViewsRepo.getView(p_WebuiViewId, HUDocumentViewSelection.class);
 	}
 
-	private I_M_ReceiptSchedule getM_ReceiptSchedule()
+	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
 	{
-		final HUDocumentViewSelection view = getView();
-		final DocumentPath referencingDocumentPath = view.getReferencingDocumentPath();
-
-		return documentsCollection.getTableRecordReference(referencingDocumentPath)
-				.getModel(this, I_M_ReceiptSchedule.class);
+		return getView()
+				.getReferencingDocumentPaths().stream()
+				.map(referencingDocumentPath -> documentsCollection.getTableRecordReference(referencingDocumentPath).getModel(this, I_M_ReceiptSchedule.class))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	private Set<I_M_HU> retrieveHUsToReceive()

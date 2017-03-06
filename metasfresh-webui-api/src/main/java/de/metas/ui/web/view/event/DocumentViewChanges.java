@@ -1,9 +1,8 @@
 package de.metas.ui.web.view.event;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -96,15 +95,18 @@ public class DocumentViewChanges
 		return fullyChanged;
 	}
 
-	public void addChangedDocumentId(final DocumentId documentId)
+	public void addChangedDocumentId(final Collection<DocumentId> documentIds)
 	{
-		Check.assumeNotNull(documentId, "Parameter documentId is not null");
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return;
+		}
 
 		if (changedDocumentIds == null)
 		{
 			changedDocumentIds = new HashSet<>();
 		}
-		changedDocumentIds.add(documentId);
+		changedDocumentIds.addAll(documentIds);
 	}
 
 	public boolean hasChangedDocumentIds()

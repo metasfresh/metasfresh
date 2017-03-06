@@ -70,11 +70,11 @@ import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -557,7 +557,7 @@ public final class Document
 		{
 			return parentSupplier.getVersion();
 		}
-		
+
 		private final IDocumentEvaluatee getEvaluatee(final DocumentFieldDescriptor fieldInScope)
 		{
 			if (fieldInScope == null)
@@ -936,11 +936,13 @@ public final class Document
 	private final DocumentSaveStatus setSaveStatusAndReturn(final DocumentSaveStatus saveStatus)
 	{
 		Preconditions.checkNotNull(saveStatus, "saveStatus");
-		final DocumentSaveStatus saveStatusOld = _saveStatus;
-		if (Objects.equals(saveStatusOld, saveStatus))
-		{
-			return saveStatusOld; // no change
-		}
+
+		// Don't check if changed because we want ALWAYS to collect the save status
+		// final DocumentSaveStatus saveStatusOld = _saveStatus;
+		// if (Objects.equals(saveStatusOld, saveStatus))
+		// {
+		// return saveStatusOld; // no change
+		// }
 
 		_saveStatus = saveStatus;
 		Execution.getCurrentDocumentChangesCollector().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
@@ -955,7 +957,7 @@ public final class Document
 		}
 		return _evaluatee;
 	}
-	
+
 	/**
 	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
 	 *
@@ -1591,7 +1593,7 @@ public final class Document
 	{
 		return _staleStatus;
 	}
-	
+
 	/* package */boolean isStaled()
 	{
 		return _staleStatus.isStaled();
@@ -1623,7 +1625,7 @@ public final class Document
 					.add("document", Document.this)
 					.toString();
 		}
-		
+
 		public boolean isStaled()
 		{
 			return staled;
@@ -1745,13 +1747,12 @@ public final class Document
 			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentIdSupplier, version));
 			return this;
 		}
-		
+
 		public Builder initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
 		{
 			initializeAsNewDocument(new SimpleDocumentValuesSupplier(DocumentId.supplier(newDocumentIdSupplier), version));
 			return this;
 		}
-
 
 		private boolean isNewDocument()
 		{
@@ -1763,7 +1764,7 @@ public final class Document
 			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
 			fieldInitializerMode = FieldInitializationMode.Load;
 			this.documentValuesSupplier = documentValuesSupplier;
-			
+
 			return build();
 		}
 
