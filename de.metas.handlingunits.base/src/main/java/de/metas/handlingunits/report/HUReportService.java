@@ -102,6 +102,7 @@ public class HUReportService
 
 		logger.info("Looking for processable HUs belong hu={}", hu);
 		new HUIterator()
+				.setEnableStorageIteration(false) // gh metasfresh-webui#222: we only care for HUs. Also note that to iterate storages, we would have to provide a date.
 				.setListener(new HUIteratorListenerAdapter()
 				{
 					@Override
