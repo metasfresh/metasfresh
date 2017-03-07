@@ -197,10 +197,17 @@ class Lookup extends Component {
     }
 
     handleAddNew = () => {
-        const {dispatch, newRecordWindowId, newRecordCaption} = this.props;
+        const {
+            dispatch, newRecordWindowId, newRecordCaption, filterWidget, 
+            parameterName
+        } = this.props;
+        
+        const {mainProperty} = this.state;
+        
         dispatch(openModal(
             newRecordCaption, newRecordWindowId, 'window', null, null, null, 
-            null, null, 'NEW'
+            null, null, 'NEW', 
+            filterWidget ? parameterName : mainProperty[0].field
         ));
     }
 

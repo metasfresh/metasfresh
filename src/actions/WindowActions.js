@@ -141,7 +141,7 @@ export function noConnection(status) {
 
 export function openModal(
     title, windowType, type, tabId, rowId, isAdvanced, viewId, viewDocumentIds,
-    dataId
+    dataId, triggerField
 ) {
     return {
         type: types.OPEN_MODAL,
@@ -153,7 +153,8 @@ export function openModal(
         dataId: dataId,
         title: title,
         isAdvanced: isAdvanced,
-        viewDocumentIds: viewDocumentIds
+        viewDocumentIds: viewDocumentIds,
+        triggerField: triggerField
     }
 }
 
@@ -374,9 +375,9 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             if (rowId === 'NEW') {
                 dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
             } else {
-                dispatch(updateRowStatus(getScope(isModal), item.tabid, item.rowId, item.saveStatus));
                 item.fields.map(field => {
                     if (rowId && !isModal) {
+                        dispatch(updateRowStatus(getScope(isModal), item.tabid, item.rowId, item.saveStatus));
                         dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
                     } else {
                         if (rowId) {
