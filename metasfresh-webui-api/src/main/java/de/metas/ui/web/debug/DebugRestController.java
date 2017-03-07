@@ -1,8 +1,13 @@
 package de.metas.ui.web.debug;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.Check;
@@ -11,6 +16,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.Message;
@@ -18,6 +24,8 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +33,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 
+import ch.qos.logback.classic.Level;
 import de.metas.event.Event;
 import de.metas.event.Event.Builder;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.notification.UserNotification.TargetType;
@@ -107,7 +119,7 @@ public class DebugRestController
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
 		pinstancesRepo.cacheReset();
-		
+
 		System.gc();
 	}
 
@@ -249,6 +261,108 @@ public class DebugRestController
 	public void setSqlLoadLimitMax(@RequestBody final int limit)
 	{
 		SqlDocumentsRepository.instance.setLoadLimitMax(limit);
+	}
+
+	@GetMapping("/logger/{loggerName}/_getUpToRoot")
+	public List<Map<String, Object>> getLoggersUpToRoot(@PathVariable("loggerName") final String loggerName)
+	{
+		final Logger logger = LogManager.getLogger(loggerName);
+		if (logger == null)
+		{
+			throw new EntityNotFoundException("No logger found for " + loggerName);
+		}
+
+		final List<Map<String, Object>> loggerInfos = new ArrayList<>();
+		//
+		LogManager.forAllLevelsUpToRoot(logger, currentLogger -> {
+			final Map<String, Object> info = new HashMap<>();
+			info.put("name", currentLogger.getName());
+			info.put("id", System.identityHashCode(currentLogger));
+			if (currentLogger instanceof ch.qos.logback.classic.Logger)
+			{
+				final ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)currentLogger;
+				final Level level = logbackLogger.getLevel();
+				final Level effectiveLevel = logbackLogger.getEffectiveLevel();
+				info.put("level", level == null ? null : level.toString());
+				info.put("level-effective", effectiveLevel == null ? null : effectiveLevel.toString());
+			}
+			else
+			{
+				info.put("warning", "unknown level for logger object " + currentLogger + " (" + currentLogger.getClass() + ")");
+			}
+
+			loggerInfos.add(info);
+		});
+		//
+		return loggerInfos;
+	}
+
+	public static enum LoggingModule
+	{
+		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName())
+
+		;
+
+		private String loggerName;
+
+		private LoggingModule(final String loggerName)
+		{
+			this.loggerName = loggerName;
+		}
+
+		@JsonValue
+		public String getLoggerName()
+		{
+			return loggerName;
+		}
+
+		public static final LoggingModule forLoggerName(final String loggerName)
+		{
+			return Stream.of(values())
+					.filter(value -> Objects.equals(value.loggerName, loggerName))
+					.findFirst()
+					.orElseThrow(() -> new NoSuchElementException(loggerName));
+		}
+	}
+
+	@GetMapping("/logger/_setLevel/{level}")
+	public void setLoggerLevel(
+			@RequestParam("module") final LoggingModule module
+			, @RequestParam(name = "loggerName", required = false) String loggerName
+			, @PathVariable("level") final String levelStr
+	)
+	{
+		final Level level;
+		if (Check.isEmpty(levelStr, true))
+		{
+			level = null;
+		}
+		else
+		{
+			level = LogManager.asLogbackLevel(levelStr);
+			if (level == null)
+			{
+				throw new IllegalArgumentException("level is not valid");
+			}
+		}
+
+		String loggerNameEffective = module == null ? null : module.getLoggerName();
+		if (!Check.isEmpty(loggerName, true))
+		{
+			loggerNameEffective = loggerName;
+		}
+
+		final Logger logger = LogManager.getLogger(loggerNameEffective);
+		if (logger == null)
+		{
+			throw new EntityNotFoundException("No logger found for " + loggerNameEffective);
+		}
+
+		final boolean set = LogManager.setLoggerLevel(logger, level);
+		if (!set)
+		{
+			throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
+		}
 	}
 
 }
