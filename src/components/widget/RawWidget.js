@@ -672,7 +672,7 @@ class RawWidget extends Component {
                             transitionLeaveTimeout={200}
                         >
                             {(
-                                errorPopup && validStatus && 
+                                errorPopup && validStatus &&
                                 !validStatus.valid &&
                                 !validStatus.initialValue
                             ) &&
