@@ -126,8 +126,10 @@ class MasterWindow extends Component {
                 {modal.visible &&
                     <Modal
                         relativeType={type}
+                        relativeDataId={dataId}
+                        triggerField={modal.triggerField}
                         windowType={modal.type}
-                        dataId={dataId}
+                        dataId={modal.dataId ? modal.dataId : dataId}
                         data={modal.data}
                         layout={modal.layout}
                         rowData={modal.rowData}

@@ -106,18 +106,19 @@ class RawWidget extends Component {
         } = this.props;
 
         const {isEdited} = this.state;
+
         return 'input-block ' +
             (icon ? 'input-icon-container ' : '') +
             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+            ((widgetData[0].mandatory &&
+                ((widgetData[0].value &&
+                widgetData[0].value.length === 0) || !widgetData[0].value)) ? 'input-mandatory ' : '') +
             ((widgetData[0].validStatus &&
                 (
                     !widgetData[0].validStatus.valid &&
                     !widgetData[0].validStatus.initialValue
                 ) &&
                 !isEdited) ? 'input-error ' : '') +
-            (widgetData[0].mandatory &&
-                widgetData[0].value &&
-                widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
             (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
             (updated ? 'pulse-on ' : 'pulse-off ') +
@@ -279,6 +280,8 @@ class RawWidget extends Component {
                         viewId={viewId}
                         autoFocus={autoFocus}
                         validStatus={widgetData[0].validStatus}
+                        newRecordCaption={fields[0].newRecordCaption}
+                        newRecordWindowId={fields[0].newRecordWindowId}
                     />
                 )
             case 'List':

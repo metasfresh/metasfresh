@@ -10,20 +10,26 @@ import {
     createWindow,
     createProcess,
     startProcess,
-    handleProcessResponse
+    handleProcessResponse,
+    patch
 } from '../../actions/WindowActions';
+
+import {
+    processNewRecord
+} from '../../actions/GenericActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
 
         const {
-            rowId
+            rowId, dataId
         } = this.props;
 
         this.state = {
             scrolled: false,
             isNew: rowId === 'NEW',
+            isNewDoc: dataId === 'NEW',
             init: false,
             pending: false,
             waitingFetch: false
@@ -110,8 +116,23 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        const {closeCallback} = this.props;
-        const {isNew} = this.state;
+        const {
+            dispatch, closeCallback, dataId, windowType, relativeType,
+            relativeDataId, triggerField
+        } = this.props;
+        const {isNew, isNewDoc} = this.state;
+
+        if(isNewDoc) {
+            dispatch(
+                processNewRecord('window', windowType, dataId)
+            ).then(response => {
+                dispatch(patch(
+                    'window', relativeType, relativeDataId, null, null,
+                    triggerField, {[response.data]: ''}
+                ))
+            })
+        }
+
         closeCallback && closeCallback(isNew);
         this.removeModal();
     }
