@@ -566,7 +566,7 @@ class Table extends Component {
                             includedDocuments={item[key].includedDocuments}
                             lastSibling={item[key].lastChild}
                             contextType={item[key].type}
-                            notSaved={!item[key].saveStatus.saved}
+                            notSaved={item[key].saveStatus && !item[key].saveStatus.saved}
                         />
                     </tbody>
                 );
