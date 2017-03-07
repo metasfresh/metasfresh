@@ -671,7 +671,11 @@ class RawWidget extends Component {
                             transitionEnterTimeout={200}
                             transitionLeaveTimeout={200}
                         >
-                            {(errorPopup && validStatus && !validStatus.valid) &&
+                            {(
+                                errorPopup && validStatus && 
+                                !validStatus.valid &&
+                                !validStatus.initialValue
+                            ) &&
                                 this.renderErrorPopup(validStatus.reason)
                             }
                         </ReactCSSTransitionGroup>
