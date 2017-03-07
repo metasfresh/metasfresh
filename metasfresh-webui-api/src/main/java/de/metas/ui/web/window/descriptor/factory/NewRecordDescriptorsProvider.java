@@ -79,15 +79,19 @@ public class NewRecordDescriptorsProvider
 		return newRecordDescriptorsByTableName.get(tableName);
 	}
 
+	/**
+	 * @param entityDescriptor the entity descriptor of the quick input window (e.g. for BPartner that is C_BPartner_QuickInput)
+	 * @return new record descriptor
+	 */
 	public NewRecordDescriptor getNewRecordDescriptor(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final String tableName = entityDescriptor.getTableName();
-		final NewRecordDescriptor newRecordDescriptor = getNewRecordDescriptorOrNull(tableName);
-		if (newRecordDescriptor == null)
-		{
-			throw new AdempiereException("No new record quick input defined for " + tableName);
-		}
-		return newRecordDescriptor;
+		final int newRecordWindowId = entityDescriptor.getAD_Window_ID();
+
+		return newRecordDescriptorsByTableName.values()
+				.stream()
+				.filter(descriptor -> newRecordWindowId == descriptor.getNewRecordWindowId())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No new record quick input defined windowId=" + newRecordWindowId));
 	}
 
 	public DocumentEntityDescriptor getNewRecordEntityDescriptorIfAvailable(final String tableName)
