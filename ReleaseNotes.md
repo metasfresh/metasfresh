@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.1 (2017-11)
+
+**upcoming release**
+
 # metasfresh 5.0 (2017-10)
 
-upcoming
+**this week's release candidate**
 
 ## Features
 * metasfresh-backend
