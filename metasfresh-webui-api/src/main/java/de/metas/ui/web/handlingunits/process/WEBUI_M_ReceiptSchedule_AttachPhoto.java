@@ -11,10 +11,10 @@ import org.compiere.model.MImage;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 
 /*
@@ -71,7 +71,7 @@ public class WEBUI_M_ReceiptSchedule_AttachPhoto extends JavaProcess implements 
 			throw new EntityNotFoundException("@NotFound@ @AD_Image_ID@: " + p_AD_Image_ID);
 		}
 
-		final String name = getName();
+		final String name = adImage.getName();
 		final byte[] data = adImage.getData();
 		final BufferedImage image = ImageIO.read(new ByteArrayInputStream(data));
 		Services.get(IHUReceiptScheduleBL.class).attachPhoto(receiptSchedule, name, image);
