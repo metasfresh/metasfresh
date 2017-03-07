@@ -40,6 +40,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Form;
@@ -246,7 +247,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				
 				// org *
 				{
-					final OrgResource resource = OrgResource.of(AD_Client_ID, Env.CTXVALUE_AD_Org_ID_Any);
+					final OrgResource resource = OrgResource.anyOrg(AD_Client_ID);
 					final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
 					builder.addPermission(permission);
 				}
@@ -256,6 +257,12 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				final List<I_AD_Org> clientOrgs = Services.get(IOrgDAO.class).retrieveClientOrgs(ctx, AD_Client_ID);
 				for (final I_AD_Org org :  clientOrgs)
 				{
+					// skip inative orgs
+					if(!org.isActive())
+					{
+						continue;
+					}
+					
 					final OrgResource orgResource = OrgResource.of(AD_Client_ID, org.getAD_Org_ID());
 					final OrgPermission orgPermission = OrgPermission.ofResourceAndReadOnly(orgResource, false);
 					builder.addPermission(orgPermission);
@@ -275,10 +282,17 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public OrgPermissions retrieveUserOrgPermissions(final int adUserId, final int adTreeOrgId)
 	{
 		final Properties ctx = Env.getCtx();
+		
+		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
 		final List<I_AD_User_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_OrgAccess.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_AD_User_OrgAccess.COLUMN_AD_Org_ID, I_AD_Org.COLUMN_AD_Org_ID, activeOrgsQuery)
 				.create()
 				.list();
 
@@ -300,10 +314,17 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public OrgPermissions retrieveRoleOrgPermissions(final int adRoleId, final int adTreeOrgId)
 	{
 		final Properties ctx = Env.getCtx();
+		
+		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.create();
+		
 		final List<I_AD_Role_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Role_OrgAccess.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_AD_Role_OrgAccess.COLUMN_AD_Org_ID, I_AD_Org.COLUMN_AD_Org_ID, activeOrgsQuery)
 				.create()
 				.list();
 
