@@ -12,6 +12,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 
@@ -55,6 +56,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 		}
 
 		final I_M_HU_LUTU_Configuration lutuConfig = getCurrentLUTUConfiguration(receiptSchedule);
+		adjustLUTUConfiguration(lutuConfig, receiptSchedule);
 
 		final StringBuilder packingInfo = new StringBuilder();
 
@@ -128,9 +130,32 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 				.setFrom(template)
 				.copyToNew(I_M_HU_LUTU_Configuration.class);
 
+		adjustLUTUConfiguration(lutuConfigurationNew, getM_ReceiptSchedule());
 		lutuConfigurationNew.setQtyLU(BigDecimal.ONE);
 
+		// NOTE: don't save it
 		return lutuConfigurationNew;
+	}
+
+	private static final void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule receiptSchedule)
+	{
+		//
+		// Adjust LU
+		lutuConfig.setQtyLU(BigDecimal.ONE);
+
+		//
+		// Adjust TU
+		// * if the standard QtyTU is less than how much is available to be received => enforce the available Qty
+		// * else always take the standard QtyTU
+		// see https://github.com/metasfresh/metasfresh-webui/issues/228
+		{
+			final BigDecimal qtyToMoveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(receiptSchedule);
+			
+			if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
+			{
+				lutuConfig.setQtyTU(qtyToMoveTU);
+			}
+		}
 	}
 
 }
