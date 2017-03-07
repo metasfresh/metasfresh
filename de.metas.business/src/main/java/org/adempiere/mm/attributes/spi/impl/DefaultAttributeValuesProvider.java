@@ -119,13 +119,20 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		return getAttributeValuesMap().getValues();
 	}
+	
+	private static final String normalizeValueKey(final Object valueKey)
+	{
+		return valueKey == null ? null : valueKey.toString();
+	}
 
 	@Override
-	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx_NOTUSED, final String valueKey)
+	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx_NOTUSED, final Object valueKey)
 	{
+		final String valueKeyNormalized = normalizeValueKey(valueKey);
+		
 		//
 		{
-			final NamePair vnp = getAttributeValuesMap().getValueByKeyOrNull(valueKey);
+			final NamePair vnp = getAttributeValuesMap().getValueByKeyOrNull(valueKeyNormalized);
 			if (vnp != null)
 			{
 				return vnp;
@@ -135,7 +142,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		//
 		if (isHighVolume())
 		{
-			final NamePair vnp = findValueDirectly(valueKey);
+			final NamePair vnp = findValueDirectly(valueKeyNormalized);
 			if (vnp != null)
 			{
 				return vnp;
@@ -146,9 +153,10 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final String valueKey)
+	public int getM_AttributeValue_ID(final Object valueKey)
 	{
-		final Integer attributeValueId = getAttributeValuesMap().getM_AttributeValue_ID(valueKey);
+		final String valueKeyNormalized = normalizeValueKey(valueKey);
+		final Integer attributeValueId = getAttributeValuesMap().getM_AttributeValue_ID(valueKeyNormalized);
 		return attributeValueId != null ? attributeValueId : -1;
 	}
 

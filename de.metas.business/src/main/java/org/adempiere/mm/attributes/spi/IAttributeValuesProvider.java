@@ -74,9 +74,9 @@ public interface IAttributeValuesProvider
 	 * @param valueKey
 	 * @return attribute value or null
 	 */
-	NamePair getAttributeValueOrNull(final Evaluatee evalCtx, String valueKey);
+	NamePair getAttributeValueOrNull(final Evaluatee evalCtx, Object valueKey);
 	
-	int getM_AttributeValue_ID(final String valueKey);
+	int getM_AttributeValue_ID(final Object valueKey);
 
 	/**
 	 * Value to be used for "nulls".
