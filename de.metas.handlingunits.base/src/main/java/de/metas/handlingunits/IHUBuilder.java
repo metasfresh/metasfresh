@@ -43,7 +43,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  * @author tsa
  *
  */
-public interface IHUBuilder
+public interface IHUBuilder extends IHUIterator
 {
 	/**
 	 * This instance stores the {@code huPIVersion} parameter with which the {@link #createInstanceRecursively(I_M_HU_PI_Version, I_M_HU_Item)} method was called with.<br>
@@ -76,8 +76,6 @@ public interface IHUBuilder
 	void setDate(Date date);
 
 	void setStorageFactory(IHUStorageFactory storageFactory);
-
-	void setListener(IHUIteratorListener listener);
 
 	I_M_HU_Item getM_HU_Item_Parent();
 
