@@ -46,7 +46,6 @@ public abstract class HUIteratorListenerAdapter implements IHUIteratorListener
 	// we don't allow direct instantiation
 	protected HUIteratorListenerAdapter()
 	{
-		super();
 		init();
 	}
 

@@ -1,8 +1,3 @@
--- workaround until we implement https://github.com/metasfresh/metasfresh-webui/issues/19 
-alter table AD_Column add column CacheInvalidateParent char(1) not null default 'N' check (CacheInvalidateParent in ('Y','N'));
-
-
-
 -- Mar 6, 2017 4:31 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,Help,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,ReplicationType,TableName,Updated,UpdatedBy) VALUES ('3',0,0,0,540804,'N',TO_TIMESTAMP('2017-03-06 16:31:51','YYYY-MM-DD HH24:MI:SS'),100,'D','Used to capture main BPartner, Location and Contact fields and quickly create a new BPartner','N','Y','N','N','Y','N','Y','N','N',0,'New BPartner quick input','L','C_BPartner_QuickInput',TO_TIMESTAMP('2017-03-06 16:31:51','YYYY-MM-DD HH24:MI:SS'),100)

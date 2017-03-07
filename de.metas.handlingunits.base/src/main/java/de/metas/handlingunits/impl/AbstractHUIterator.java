@@ -108,10 +108,11 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final void setListener(final IHUIteratorListener listener)
+	public final IHUIterator setListener(final IHUIteratorListener listener)
 	{
 		Check.assumeNotNull(listener, "listener not null");
 		this.listener = listener;
+		return this;
 	}
 
 	protected IHUIteratorListener getActiveListener()

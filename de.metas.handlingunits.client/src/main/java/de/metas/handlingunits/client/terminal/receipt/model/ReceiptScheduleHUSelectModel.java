@@ -8,17 +8,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Language;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -47,7 +43,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
-import de.metas.process.ProcessInfo;
+import de.metas.handlingunits.report.HUReceiptScheduleReportExecutor;
 
 /**
  * Wareneingang (POS).
@@ -60,11 +56,9 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	// Services
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private static final String PARA_C_Orderline_ID = " C_Orderline_ID";
-	private static final String PARA_AD_Table_ID = "AD_Table_ID";
 	private static final String PROPERTY_JasperButtonEnabled = "JasperButtonEnabled";
 
-	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasperProcess = "ReceiptScheduleHUPOSJasperProcess";
+
 	private static final String SYSCONFIG_QtyCUReadonlyAlwaysIfNotVirtualPI = "de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleHUSelectModel.QtyCUReadonlyAlwaysIfNotVirtualPI";
 	private static final boolean DEFAULT_QtyCUReadonlyAlwaysIfNotVirtualPI = false; // false, according to 08310
 
@@ -236,30 +230,30 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
 
 		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.createAndEdit(lutuConfiguration -> {
-						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
+			final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
-						//
-						// Ask user to edit the configuration in another dialog
-						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
-						{
-							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
+			//
+			// Ask user to edit the configuration in another dialog
+			try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+			{
+				final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
 
-							if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
-							{
-								return null;// User cancelled => do nothing
-							}
+				if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
+				{
+					return null;// User cancelled => do nothing
+				}
 
-							//
-							// Update the LU/TU configuration on which we are working using what user picked
-							lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
-						}
-						catch (Exception e)
-						{
-							throw AdempiereException.wrapIfNeeded(e);
-						}
+				//
+				// Update the LU/TU configuration on which we are working using what user picked
+				lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
+			}
+			catch (Exception e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 
-						return lutuConfiguration;
-				});
+			return lutuConfiguration;
+		});
 
 		//
 		// No configuration => user cancelled => don't open editor
@@ -408,26 +402,11 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	public final void doJasperPrint()
 	{
 		final I_M_ReceiptSchedule selectedReceiptSchedule = getSelectedReceiptSchedule();
-		final I_C_OrderLine orderLine = selectedReceiptSchedule.getC_OrderLine();
 
-		//
-		// service
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-		//
-		// Get Process from SysConfig
-		final String defaultValue = null;
-		final String reportConfigValue = sysConfigBL.getValue(SYSCONFIG_ReceiptScheduleHUPOSJasperProcess,
-				defaultValue,
-				selectedReceiptSchedule.getAD_Client_ID(),
-				selectedReceiptSchedule.getAD_Org_ID());
-		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
-
-		final int reportProcessId = Integer.parseInt(reportConfigValue);
-
-		//
-		// Print report
-		doJasperPrint0(reportProcessId, orderLine);
+		HUReceiptScheduleReportExecutor
+				.get(selectedReceiptSchedule)
+				.withWindowNo(getTerminalContext().getWindowNo())
+				.executeHUReport();
 	}
 
 	/**
@@ -439,30 +418,6 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	{
 		// We only allow the button to be active if we have only one row selected.
 		return getRowsSelected().size() == 1;
-	}
-
-	private void doJasperPrint0(final int reportProcessId, final I_C_OrderLine orderLine)
-	{
-		Check.assumeNotNull(orderLine, "orderLine not null");
-		final int orderLineId = orderLine.getC_OrderLine_ID();
-		final I_C_Order order = orderLine.getC_Order();
-		final Language bpartnerLaguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), order.getC_BPartner_ID());
-
-		//
-		// Create ProcessInfo
-		ProcessInfo.builder()
-				.setCtx(getCtx())
-				.setAD_Process_ID(reportProcessId)
-				// .setAD_PInstance_ID() // NO AD_PInstance => we want a new instance
-				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
-				.setWindowNo(getTerminalContext().getWindowNo())
-				.setReportLanguage(bpartnerLaguage)
-				.addParameter(PARA_C_Orderline_ID, orderLineId)
-				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
-				//
-				// Execute report in a new AD_PInstance
-				.buildAndPrepareExecution()
-				.executeSync();
 	}
 
 	@Override

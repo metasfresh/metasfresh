@@ -57,7 +57,7 @@ import de.metas.logging.LogManager;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 
