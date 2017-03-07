@@ -423,7 +423,9 @@ public final class CacheMgt
 					}
 					else
 					{
-						log.warn("Unknown cache instance to reset: {}", cacheInstance);
+						// NOTE: for other cache implementations we shall skip reseting by tableName/key because they don't support it.
+						// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService() 
+						log.debug("Unknown cache instance to reset: {}", cacheInstance);
 					}
 				}
 			}

@@ -503,6 +503,22 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			final int key = ((KeyNamePair)value).getKey();
 			return BigDecimal.valueOf(key);
 		}
+		else if (value instanceof Map)
+		{
+			// Usually this happens when a JSON deserialized value is passed.
+			// In this case we consider the Map has one entry: key=value.
+			@SuppressWarnings("unchecked")
+			final Map<String, String> keyNamePairAsMap = (Map<String, String>)value;
+			final String key = extractKey(keyNamePairAsMap, attribute);
+			try
+			{
+				valueBD = new BigDecimal(key);
+			}
+			catch (final Exception e)
+			{
+				throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + BigDecimal.class, e);
+			}
+		}
 		else
 		{
 			throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + BigDecimal.class);
@@ -548,10 +564,10 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	{
 		Check.assumeNotNull(value, "value not null");
 
-		final String valueStr;
+		final Object valueNormalized;
 		if (value instanceof NamePair)
 		{
-			valueStr = ((NamePair)value).getID();
+			valueNormalized = ((NamePair)value).getID();
 		}
 		else if (value instanceof Number)
 		{
@@ -563,30 +579,24 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			{
 				return null;
 			}
-			valueStr = String.valueOf(valueInt);
+			valueNormalized = String.valueOf(valueInt);
 		}
 		else if (value instanceof Map)
 		{
 			// Usually this happens when a JSON deserialized value is passed.
 			// In this case we consider the Map has one entry: key=value.
 			@SuppressWarnings("unchecked")
-			final Map<String, String> map = (Map<String, String>)value;
-			final Set<Map.Entry<String, String>> entrySet = map.entrySet();
-			if (entrySet.size() != 1)
-			{
-				throw new InvalidAttributeValueException("Invalid list value '" + value + "' (" + value.getClass() + ") for " + attribute + ".");
-			}
-			final Map.Entry<String, String> e = entrySet.iterator().next();
-			valueStr = e.getKey();
+			final Map<String, String> keyNamePairAsMap = (Map<String, String>)value;
+			valueNormalized = extractKey(keyNamePairAsMap, attribute);
 		}
 		else
 		{
-			valueStr = value.toString();
+			valueNormalized = value;
 		}
 
 		final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
 		final Evaluatee evalCtx = attributeValuesProvider.prepareContext(getAttributeStorage());
-		final NamePair attributeValue = attributeValuesProvider.getAttributeValueOrNull(evalCtx, valueStr);
+		final NamePair attributeValue = attributeValuesProvider.getAttributeValueOrNull(evalCtx, valueNormalized);
 		if (attributeValue != null)
 		{
 			return attributeValue;
@@ -594,7 +604,24 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		throw new InvalidAttributeValueException("Invalid list value '" + value + "' (" + value.getClass() + ") for " + attribute + "."
 				+ " Available values are: " + getAvailableValues()
-				+ "\n Converted value: " + valueStr);
+				+ "\n Normalized value: " + valueNormalized);
+	}
+	
+	private static final String extractKey(final Map<String, String> keyNamePairAsMap, final I_M_Attribute attribute)
+	{
+		if(keyNamePairAsMap == null)
+		{
+			return null;
+		}
+		final Set<Map.Entry<String, String>> entrySet = keyNamePairAsMap.entrySet();
+		if (entrySet.size() != 1)
+		{
+			throw new InvalidAttributeValueException("Invalid list value '" + keyNamePairAsMap + "' (" + keyNamePairAsMap.getClass() + ") for " + attribute + ".");
+		}
+		final Map.Entry<String, String> e = entrySet.iterator().next();
+		final String key = e.getKey();
+		return key;
+
 	}
 	
 	@Override
