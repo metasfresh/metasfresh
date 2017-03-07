@@ -1,13 +1,14 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.attachments.json;
 
 import java.io.Serializable;
-
-import org.compiere.model.MAttachmentEntry;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import de.metas.ui.web.attachments.IDocumentAttachmentEntry;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -35,20 +36,20 @@ import com.google.common.base.MoreObjects;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONAttachment implements Serializable
 {
-	public static JSONAttachment of(MAttachmentEntry entry)
+	public static JSONAttachment of(IDocumentAttachmentEntry entry)
 	{
 		return new JSONAttachment(entry.getId(), entry.getFilename());
 	}
 
 
 	@JsonProperty("id")
-	private final int id;
+	private final String id;
 	@JsonProperty("name")
 	private final String name;
 
-	private JSONAttachment(final int id, final String name)
+	private JSONAttachment(final DocumentId id, final String name)
 	{
-		this.id = id;
+		this.id = id.toJson();
 		this.name = name;
 	}
 

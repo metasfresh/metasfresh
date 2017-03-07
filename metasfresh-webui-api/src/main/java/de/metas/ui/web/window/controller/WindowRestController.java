@@ -1,12 +1,10 @@
 package de.metas.ui.web.window.controller;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.MAttachmentEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,12 +14,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
@@ -29,7 +25,6 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -37,7 +32,6 @@ import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.json.JSONAttachment;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
@@ -523,83 +517,4 @@ public class WindowRestController
 			return newRecordId;
 		}));
 	}
-
-	/**
-	 * Attaches a file to given root document.
-	 *
-	 * @param adWindowId
-	 * @param documentId
-	 * @param file
-	 * @throws IOException
-	 */
-	@PostMapping("/{windowId}/{documentId}/attachments")
-	public void attachFile(
-			@PathVariable("windowId") final int adWindowId //
-			, @PathVariable("documentId") final String documentId //
-			, @RequestParam("file") final MultipartFile file //
-	) throws IOException
-	{
-		userSession.assertLoggedIn();
-
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		documentCollection.getDocumentAttachments(documentPath)
-				.addEntry(file);
-	}
-
-	@GetMapping("/{windowId}/{documentId}/attachments")
-	public List<JSONAttachment> getAttachments(
-			@PathVariable("windowId") final int adWindowId //
-			, @PathVariable("documentId") final String documentId //
-	)
-	{
-		userSession.assertLoggedIn();
-
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		return documentCollection.getDocumentAttachments(documentPath)
-				.toJson();
-	}
-
-	@GetMapping("/{windowId}/{documentId}/attachments/{id}")
-	public ResponseEntity<byte[]> getAttachmentById(
-			@PathVariable("windowId") final int adWindowId //
-			, @PathVariable("documentId") final String documentId //
-			, @PathVariable("id") final int id)
-	{
-		userSession.assertLoggedIn();
-
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		final MAttachmentEntry entry = documentCollection.getDocumentAttachments(documentPath)
-				.getEntry(id);
-
-		final String entryFilename = entry.getFilename();
-		final byte[] entryData = entry.getData();
-		if (entryData == null || entryData.length == 0)
-		{
-			throw new EntityNotFoundException("No attachment found (ID=" + id + ")");
-		}
-
-		final String entryContentType = entry.getContentType();
-
-		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType(entryContentType));
-		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + entryFilename + "\"");
-		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		final ResponseEntity<byte[]> response = new ResponseEntity<>(entryData, headers, HttpStatus.OK);
-		return response;
-	}
-
-	@DeleteMapping("/{windowId}/{documentId}/attachments/{id}")
-	public void deleteAttachmentById(
-			@PathVariable("windowId") final int adWindowId //
-			, @PathVariable("documentId") final String documentId //
-			, @PathVariable("id") final int id //
-	)
-	{
-		userSession.assertLoggedIn();
-
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		documentCollection.getDocumentAttachments(documentPath)
-				.deleteEntry(id);
-	}
-
 }

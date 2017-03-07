@@ -392,12 +392,6 @@ public class DocumentCollection
 		return documentDescriptorFactory.getTableRecordReference(documentPath);
 	}
 
-	public DocumentAttachments getDocumentAttachments(final DocumentPath documentPath)
-	{
-		final TableRecordReference recordRef = getTableRecordReference(documentPath);
-		return DocumentAttachments.of(recordRef);
-	}
-
 	@Immutable
 	private static final class DocumentKey
 	{
