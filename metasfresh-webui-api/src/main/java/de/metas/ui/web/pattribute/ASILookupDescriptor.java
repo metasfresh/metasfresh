@@ -149,8 +149,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
-		final String idStr = id == null ? null : id.toString();
-		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, idStr);
+		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, id);
 		return LookupValue.fromNamePair(valueNP, LOOKUPVALUE_NULL);
 	}
 

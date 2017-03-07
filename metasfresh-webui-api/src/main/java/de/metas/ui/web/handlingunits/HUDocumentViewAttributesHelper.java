@@ -77,7 +77,7 @@ public final class HUDocumentViewAttributesHelper
 
 		final IAttributeValuesProvider valuesProvider = attributeValue.getAttributeValuesProvider();
 		final Evaluatee evalCtx = valuesProvider.prepareContext(attributesStorage);
-		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value == null ? null : value.toString());
+		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value);
 		return LookupValue.fromNamePair(valueNP);
 	}
 
