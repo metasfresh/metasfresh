@@ -315,7 +315,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			final String itemType = handlingUnitsBL.getItemType(huItem);
 			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
 			{
-				continue;
+				continue; // 'hu' has to have at least one item with type "PackingMaterial"
 			}
 
 			// if 'hu'is an aggregate VHU, then it represents not one, but as many HU as its parent item's Qty sais.
