@@ -59,8 +59,18 @@ export function initDataSuccess(data, scope, docId, saveStatus) {
 export function addRowData(data, scope) {
     return {
         type: types.ADD_ROW_DATA,
-        data: data,
-        scope: scope
+        data,
+        scope
+    }
+}
+
+export function updateRowStatus(scope, tabid, rowid, saveStatus) {
+    return {
+        type: types.UPDATE_ROW_STATUS,
+        scope,
+        tabid,
+        rowid,
+        saveStatus
     }
 }
 
@@ -364,6 +374,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             if (rowId === 'NEW') {
                 dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
             } else {
+                dispatch(updateRowStatus(getScope(isModal), item.tabid, item.rowId, item.saveStatus));
                 item.fields.map(field => {
                     if (rowId && !isModal) {
                         dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
