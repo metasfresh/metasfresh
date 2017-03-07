@@ -157,21 +157,21 @@ public class HUMovementBuilderTests
 				.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
 				.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pTomato.getM_Product_ID()
 						&& l.getMovementQty().compareTo(loadCuQty) == 0
-						&& l.isPackagingMaterial() == false),
+						&& !l.isPackagingMaterial()),
 				is(true));
 
 		assertThat(movementLines.stream()
 				.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
 				.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pIFCO.getM_Product_ID()
 						&& l.getMovementQty().compareTo(expectedTULineQty) == 0
-						&& l.isPackagingMaterial() == true),
+						&& l.isPackagingMaterial()),
 				is(true));
 
 		assertThat(movementLines.stream()
 				.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
 				.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pPalet.getM_Product_ID()
 						&& l.getMovementQty().compareTo(BigDecimal.ONE) == 0
-						&& l.isPackagingMaterial() == true),
+						&& l.isPackagingMaterial()),
 				is(true));
 	}
 }
