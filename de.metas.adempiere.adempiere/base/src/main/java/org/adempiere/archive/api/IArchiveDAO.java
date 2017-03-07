@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
 /**
@@ -45,6 +46,21 @@ public interface IArchiveDAO extends ISingletonService
 	 * @return list of {@link I_AD_Archive}s
 	 */
 	List<I_AD_Archive> retrieveArchives(Properties ctx, String whereClause);
+
+	List<I_AD_Archive> retrieveLastArchives(Properties ctx, ITableRecordReference recordRef, int limit);
+	
+	/**
+	 * Retrieves the archive with given ID and which is linked to given recordRef.
+	 * 
+	 * NOTE: might look a bit redundant that we require the ID and the recordRef but we do that to make sure that given ID is for that recordRef (validation).
+	 * 
+	 * @param ctx
+	 * @param recordRef
+	 * @param archiveId
+	 * @return archive or null
+	 */
+	I_AD_Archive retrieveArchiveOrNull(Properties ctx, ITableRecordReference recordRef, int archiveId);
+
 
 	/**
 	 * Retrieves underlying model, referenced by AD_Table_ID and Record_ID

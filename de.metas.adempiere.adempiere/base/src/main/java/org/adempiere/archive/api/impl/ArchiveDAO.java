@@ -27,12 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
@@ -59,6 +64,39 @@ public class ArchiveDAO implements IArchiveDAO
 				.setParameters(sqlParams)
 				.setOrderBy(I_AD_Archive.COLUMNNAME_Created)
 				.list(I_AD_Archive.class);
+	}
+
+	@Override
+	public List<I_AD_Archive> retrieveLastArchives(final Properties ctx, final ITableRecordReference recordRef, final int limit)
+	{
+		return retrieveArchivesQuery(ctx, recordRef)
+				//
+				.orderBy()
+				.addColumn(I_AD_Archive.COLUMN_Created, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				//
+				.setLimit(limit)
+				//
+				.create()
+				.list(I_AD_Archive.class);
+	}
+	
+	@Override
+	public I_AD_Archive retrieveArchiveOrNull(final Properties ctx, final ITableRecordReference recordRef, final int archiveId)
+	{
+		return retrieveArchivesQuery(ctx, recordRef)
+				.addEqualsFilter(I_AD_Archive.COLUMN_AD_Archive_ID, archiveId)
+				.create()
+				.firstOnly(I_AD_Archive.class);
+	}
+
+	private IQueryBuilder<I_AD_Archive> retrieveArchivesQuery(final Properties ctx, final ITableRecordReference recordRef)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Archive.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Archive.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMN_Record_ID, recordRef.getRecord_ID());
 	}
 
 	@Override
