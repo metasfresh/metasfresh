@@ -29,28 +29,6 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 
 	public static final String NOTIFICATIONTYPE_NotifyUserInCharge = "O";
 
-	public static final String COLUMNNAME_Firstname = "Firstname";
-	@Deprecated
-	public static final String FIRST_NAME = COLUMNNAME_Firstname;
-
-	String getFirstName();
-
-	void setFirstName(String firstName);
-
-	public static final String COLUMNNAME_Lastname = "Lastname";
-	@Deprecated
-	public static final String LAST_NAME = COLUMNNAME_Lastname;
-
-	String getLastName();
-
-	void setLastName(String lastName);
-
-	public static final String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
-
-	public boolean isDefaultContact();
-
-	public void setIsDefaultContact(boolean IsDefaultContact);
-
 	// LoginFailureCount
 	public static final String COLUMNNAME_LoginFailureCount = "LoginFailureCount";
 
@@ -81,10 +59,6 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 
 	public static final String COLUMNNAME_PasswordResetCode = "PasswordResetCode";
 
-	public String getPasswordResetCode();
-
-	public void setPasswordResetCode(String PasswordResetCode);
-
 	public static final String COLUMNNAME_IsSystemUser = "IsSystemUser";
 
 	public boolean isSystemUser();
@@ -97,26 +71,4 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 	public String getLogin();
 
 	public void setLogin(String Login);
-
-	// 08578: Add sales and purchase contact fields
-	public static final String COLUMNNAME_IsSalesContact = "IsSalesContact";
-
-	public boolean isSalesContact();
-
-	public void setIsSalesContact(boolean IsSalesContact);
-
-	public static final String COLUMNNAME_IsPurchaseContact = "IsPurchaseContact";
-
-	public boolean isPurchaseContact();
-
-	public void setIsPurchaseContact(boolean IsPurchaseContact);
-
-	//@formatter:off
-	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
-	public int getAD_User_InCharge_ID();
-	public org.compiere.model.I_AD_User getAD_User_InCharge();
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge);
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
-    public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
-	//@formatter:on
 }

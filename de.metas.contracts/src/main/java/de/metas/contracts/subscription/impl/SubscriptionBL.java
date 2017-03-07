@@ -192,6 +192,9 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
+		newTerm.setPriceActual(ol.getPriceActual());
+		newTerm.setC_Currency(ol.getC_Currency());
+		
 		InterfaceWrapperHelper.save(newTerm);
 
 		if (completeIt)
