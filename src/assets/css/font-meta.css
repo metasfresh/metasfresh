@@ -200,3 +200,6 @@
 .meta-icon-upload-1:before {
   content: "\31";
 }
+.meta-icon-save:before {
+  content: "\32";
+}
