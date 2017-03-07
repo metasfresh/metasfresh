@@ -405,22 +405,18 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
 	}
 
-	private final DocumentView.Builder newDocumentViewBuilder()
-	{
-		return DocumentView.builder(adWindowId)
-				.setAttributesProvider(attributesProvider);
-	}
-
 	private IDocumentView loadDocumentView(final ResultSet rs) throws SQLException
 	{
-		final DocumentView.Builder documentViewBuilder = newDocumentViewBuilder();
+		final DocumentView.Builder documentViewBuilder = DocumentView.builder(adWindowId);
 		final boolean loaded = sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
 		if (!loaded)
 		{
 			return null;
 		}
 
-		return documentViewBuilder.build();
+		return documentViewBuilder
+				.setAttributesProvider(attributesProvider)
+				.build();
 	}
 
 	@Override

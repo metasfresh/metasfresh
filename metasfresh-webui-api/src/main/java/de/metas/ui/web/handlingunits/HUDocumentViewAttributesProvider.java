@@ -41,11 +41,11 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,7 +53,7 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 public class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvider
 {
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
-	private final ConcurrentHashMap<DocumentId, HUDocumentViewAttributes> documentId2attributes = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Integer, HUDocumentViewAttributes> documentId2attributes = new ConcurrentHashMap<>();
 
 	public HUDocumentViewAttributesProvider()
 	{
@@ -61,14 +61,14 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 	}
 
 	@Override
-	public IDocumentViewAttributes getAttributes(final DocumentId documentId)
+	public IDocumentViewAttributes getAttributes(final DocumentId attributesKey)
 	{
-		return documentId2attributes.computeIfAbsent(documentId, key -> createDocumentViewAttributes(documentId));
+		final int huId = attributesKey.toInt();
+		return documentId2attributes.computeIfAbsent(huId, key -> createDocumentViewAttributes(huId));
 	}
 
-	private HUDocumentViewAttributes createDocumentViewAttributes(final DocumentId documentId)
+	private HUDocumentViewAttributes createDocumentViewAttributes(final int huId)
 	{
-		final int huId = documentId.toInt();
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
 		if (hu == null)
 		{
@@ -92,7 +92,7 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 
 		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
 		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(huAttributesDAO);
-		
+
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
 
@@ -105,18 +105,21 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 	public void invalidateAll()
 	{
 		//
-		// Destroy AttributeStorageFactory 
+		// Destroy AttributeStorageFactory
 		IAttributeStorageFactory attributeStorageFactory = _attributeStorageFactory.forget();
 		if (attributeStorageFactory != null)
 		{
 			attributeStorageFactory.removeAttributeStorageListener(AttributeStorage2ExecutionEventsForwarder.instance);
 		}
-		
+
 		//
 		// Destroy attribute documents
 		documentId2attributes.clear();
 	}
 
+	/**
+	 * Intercepts {@link IAttributeStorage} events and forwards them to {@link Execution#getCurrentDocumentChangesCollector()}.
+	 */
 	private static final class AttributeStorage2ExecutionEventsForwarder implements IAttributeStorageListener
 	{
 		public static final transient HUDocumentViewAttributesProvider.AttributeStorage2ExecutionEventsForwarder instance = new HUDocumentViewAttributesProvider.AttributeStorage2ExecutionEventsForwarder();

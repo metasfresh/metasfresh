@@ -150,14 +150,15 @@ public class HUDocumentViewLoader
 
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 		final boolean processed = extractProcessed(hu);
-
+		final int huId = hu.getM_HU_ID();
+		
 		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider())
+				.setAttributesProvider(getAttributesProvider(), DocumentId.of(huId))
 				.setProcessed(processed)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
@@ -279,13 +280,15 @@ public class HUDocumentViewLoader
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 
+		final int huId = hu.getM_HU_ID();
 		final DocumentView storageDocument = DocumentView.builder(adWindowId)
-				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + hu.getM_HU_ID() + "_" + product.getM_Product_ID()))
+				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + huId + "_" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
 				.setType(HUDocumentViewType.HUStorage)
+				.setAttributesProvider(getAttributesProvider(), DocumentId.of(huId))
 				.setProcessed(processed)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
 				// .putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue()) // NOTE: don't show value on storage level
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
