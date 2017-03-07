@@ -147,7 +147,7 @@ export default function windowHandler(state = initialState, action) {
                     }
                 }
             })
-            
+
         case types.UPDATE_ROW_STATUS:
             return update(state, {
                 [action.scope]: {
