@@ -79,7 +79,7 @@ class LookupList extends Component {
     }
 
     renderNew = () => {
-        const {query, selected, handleAddNew, newRecordCaption} = this.props;
+        const {selected, handleAddNew, newRecordCaption} = this.props;
         return (
             <div
                 className={
@@ -133,7 +133,7 @@ class LookupList extends Component {
                 <div ref={(c) => this.items = c}>
                     {list.map((item, index) => this.getDropdownComponent(index, item))}
                     {
-                        list.length === 0 && newRecordCaption && 
+                        list.length === 0 && newRecordCaption &&
                         !creatingNewDisabled && this.renderNew()
                     }
                 </div>

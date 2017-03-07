@@ -18,7 +18,7 @@ import LookupList from './LookupList';
 class Lookup extends Component {
     constructor(props) {
         super(props);
-        
+
         const {properties} = this.props;
 
         this.state = {
@@ -198,15 +198,15 @@ class Lookup extends Component {
 
     handleAddNew = () => {
         const {
-            dispatch, newRecordWindowId, newRecordCaption, filterWidget, 
+            dispatch, newRecordWindowId, newRecordCaption, filterWidget,
             parameterName
         } = this.props;
-        
+
         const {mainProperty} = this.state;
-        
+
         dispatch(openModal(
-            newRecordCaption, newRecordWindowId, 'window', null, null, null, 
-            null, null, 'NEW', 
+            newRecordCaption, newRecordWindowId, 'window', null, null, null,
+            null, null, 'NEW',
             filterWidget ? parameterName : mainProperty[0].field
         ));
     }

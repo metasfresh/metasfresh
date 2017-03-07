@@ -164,7 +164,7 @@ export function closeModal() {
     }
 }
 
-export function updateModal(rowId,dataId) {
+export function updateModal(rowId, dataId) {
     return {
         type: types.UPDATE_MODAL,
         rowId,

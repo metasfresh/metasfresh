@@ -106,7 +106,7 @@ class RawWidget extends Component {
         } = this.props;
 
         const {isEdited} = this.state;
-        
+
         return 'input-block ' +
             (icon ? 'input-icon-container ' : '') +
             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +

@@ -117,22 +117,22 @@ class Modal extends Component {
 
     handleClose = () => {
         const {
-            dispatch, closeCallback, dataId, windowType, relativeType, 
+            dispatch, closeCallback, dataId, windowType, relativeType,
             relativeDataId, triggerField
         } = this.props;
         const {isNew, isNewDoc} = this.state;
-        
+
         if(isNewDoc) {
             dispatch(
                 processNewRecord('window', windowType, dataId)
             ).then(response => {
                 dispatch(patch(
-                    'window', relativeType, relativeDataId, null, null, 
-                    triggerField, {[response.data]: ""}
+                    'window', relativeType, relativeDataId, null, null,
+                    triggerField, {[response.data]: ''}
                 ))
             })
         }
-        
+
         closeCallback && closeCallback(isNew);
         this.removeModal();
     }
