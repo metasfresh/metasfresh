@@ -451,9 +451,22 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONLookupValue.integerLookupValueFromJsonMap(map);
-					return valueConv;
+					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
+					
+					if(Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+					{
+						// corner case: the frontend sent a lookup value like '{ 1234567 : "" }'
+						// => we need to resolve the name against the lookup
+						// see https://github.com/metasfresh/metasfresh-webui/issues/230
+						final LookupValue lookupValueResolved = lookupDataSource.findById(lookupValue.getId());
+						return convertToValueClass(fieldName, lookupValueResolved, widgetType, targetType, /* lookupDataSource */null);
+					}
+					else
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupValue;
+						return valueConv;
+					}
 				}
 				else if (Number.class.isAssignableFrom(fromType))
 				{
@@ -496,9 +509,22 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONLookupValue.stringLookupValueFromJsonMap(map);
-					return valueConv;
+					StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+					
+					if(Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+					{
+						// corner case: the frontend sent a lookup value like '{ "someKey" : "" }'
+						// => we need to resolve the name against the lookup
+						// see https://github.com/metasfresh/metasfresh-webui/issues/230
+						final LookupValue lookupValueResolved = lookupDataSource.findById(lookupValue.getId());
+						return convertToValueClass(fieldName, lookupValueResolved, widgetType, targetType, /* lookupDataSource */null);
+					}
+					else
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupValue;
+						return valueConv;
+					}
 				}
 				else if (String.class == fromType)
 				{
