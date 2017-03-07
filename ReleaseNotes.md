@@ -16,6 +16,7 @@ upcoming
 
 ## Features
 * metasfresh-backend
+  * [#987](https://github.com/metasfresh/metasfresh/issues/987) Create a vertical solution for organisations
   * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
   * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
   * [#1046](https://github.com/metasfresh/metasfresh/issues/1046) Automatic Naming of Pricelist Version Name
