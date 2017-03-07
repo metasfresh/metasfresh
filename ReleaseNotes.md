@@ -63,6 +63,7 @@ upcoming
   * [#213](https://github.com/metasfresh/metasfresh-webui/issues/213) Use document's BPartner language when printing
   * [#187](https://github.com/metasfresh/metasfresh-webui/issues/187) Documents shall automatically have a default value for standard fields
   * [#188](https://github.com/metasfresh/metasfresh-webui/issues/188) Field's mandatory flag is not considered
+  * [#159](https://github.com/metasfresh/metasfresh-webui/issues/159) Error opening the "Report & Process" window
   
 * metasfresh-webui-frontend
   * [#485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/485) Subtab 100% height broken again
