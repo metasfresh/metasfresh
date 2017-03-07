@@ -129,12 +129,14 @@ class Modal extends Component {
                 dispatch(patch(
                     'window', relativeType, relativeDataId, null, null,
                     triggerField, {[response.data]: ''}
-                ))
-            })
+                )).then(() => {
+                    this.removeModal();
+                })
+            });
+        }else{
+            closeCallback && closeCallback(isNew);
+            this.removeModal();
         }
-
-        closeCallback && closeCallback(isNew);
-        this.removeModal();
     }
 
     handleScroll = (event) => {
