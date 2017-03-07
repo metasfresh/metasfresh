@@ -83,17 +83,13 @@ class BarChartComponent extends Component {
     }
 
     addResponsive = (data) => {
-        console.log('responsive');
         const {chartClass} = this.props;
         const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
-        console.log(chartWrapp.offsetWidth);
+
         d3.select(window)
           .on("resize."+chartClass, () => {
-            console.log('resizing');
-            console.log(chartClass);
             chartWrapp.setAttribute("width", chartWrapp.offsetWidth);
             this.clearChart();
-
             var dimensions = this.setDimensions();
             var ranges = this.setRanges(dimensions.width, dimensions.height, data);
             var svg = this.drawChart(dimensions, ranges, data);
