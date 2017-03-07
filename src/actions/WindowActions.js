@@ -153,10 +153,11 @@ export function closeModal() {
     }
 }
 
-export function updateModal(rowId) {
+export function updateModal(rowId,dataId) {
     return {
         type: types.UPDATE_MODAL,
-        rowId: rowId
+        rowId,
+        dataId
     }
 }
 
@@ -183,7 +184,9 @@ export function selectTableItems(ids) {
 /*
  * Main method to generate window
  */
-export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = false, isAdvanced) {
+export function createWindow(
+    windowType, docId = 'NEW', tabId, rowId, isModal = false, isAdvanced
+) {
     return (dispatch) => {
         if (docId == 'new') {
             docId = 'NEW';
@@ -196,7 +199,9 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
                 if (docId == 'NEW' && !isModal) {
                     dispatch(setLatestNewDocument(response.data[0].id));
                     // redirect immedietely
-                    return dispatch(replace('/window/' + windowType + '/' + response.data[0].id));
+                    return dispatch(replace(
+                        '/window/' + windowType + '/' + response.data[0].id)
+                    );
                 }
 
                 let elem = 0;
@@ -207,6 +212,10 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
                     }
                 });
 
+                if(docId === 'NEW'){
+                    dispatch(updateModal(null, response.data[0].id));
+                }
+
                 docId = response.data[elem].id;
                 const preparedData = parseToDisplay(response.data[elem].fields);
 
@@ -215,35 +224,46 @@ export function createWindow(windowType, docId = 'NEW', tabId, rowId, isModal = 
                     response.data[0].saveStatus
                 ));
 
-                if (isModal && rowId === 'NEW') {
-                    dispatch(mapDataToState([response.data[0]], false, 'NEW', docId, windowType))
-                    dispatch(updateModal(response.data[0].rowId));
-                }
-
-                if (!isModal) {
+                if (isModal) {
+                    if(rowId === 'NEW'){
+                        dispatch(mapDataToState(
+                            [response.data[0]], false, 'NEW', docId, windowType
+                        ));
+                        dispatch(updateModal(response.data[0].rowId));
+                    }
+                }else{
                     dispatch(getWindowBreadcrumb(windowType));
                 }
 
-                dispatch(initLayout('window', windowType, tabId, null, null, isAdvanced)
-                    ).then(response =>
-                        dispatch(initLayoutSuccess(response.data, getScope(isModal)))
+                dispatch(initLayout(
+                    'window', windowType, tabId, null, null, isAdvanced
+                )).then(response =>
+                        dispatch(initLayoutSuccess(
+                            response.data, getScope(isModal)
+                        ))
                     ).then(response => {
                         let tabTmp = {};
 
-                        response.layout.tabs && response.layout.tabs.map((tab, index) => {
+                        response.layout.tabs &&
+                        response.layout.tabs.map((tab, index) => {
                             tabTmp[tab.tabid] = {};
 
                             if(index === 0 || !tab.queryOnActivate){
-                                dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
+                                dispatch(
+                                    getTab(tab.tabid, windowType, docId)
+                                ).then(res => {
                                     tabTmp[tab.tabid] = res;
-                                    dispatch(addRowData(tabTmp, getScope(isModal)));
+                                    dispatch(
+                                        addRowData(tabTmp, getScope(isModal))
+                                    );
                                 })
                             }
-
                         }
                     )
             }).catch((err) => {
-                dispatch(addNotification('Error', err.response.data.error, 5000, 'error'));
+                dispatch(addNotification(
+                    'Error', err.response.data.error, 5000, 'error'
+                ));
             });
         });
     }

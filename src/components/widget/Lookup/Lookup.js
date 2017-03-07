@@ -18,6 +18,8 @@ import LookupList from './LookupList';
 class Lookup extends Component {
     constructor(props) {
         super(props);
+        
+        const {properties} = this.props;
 
         this.state = {
             query: '',
@@ -28,8 +30,8 @@ class Lookup extends Component {
             property: '',
             properts: {},
             loading: false,
-            propertiesCopy: getItemsByProperty(this.props.properties, 'source', 'list'),
-            mainProperty: getItemsByProperty(this.props.properties, 'source', 'lookup'),
+            propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
+            mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
             shouldBeFocused: true
@@ -198,7 +200,7 @@ class Lookup extends Component {
         const {dispatch, newRecordWindowId, newRecordCaption} = this.props;
         dispatch(openModal(
             newRecordCaption, newRecordWindowId, 'window', null, null, null, 
-            null, null, 'new'
+            null, null, 'NEW'
         ));
     }
 

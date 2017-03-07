@@ -48,6 +48,7 @@ export default function windowHandler(state = initialState, action) {
                 modal: Object.assign({}, state.modal, {
                     visible: true,
                     type: action.windowType,
+                    dataId: action.dataId,
                     tabId: action.tabId,
                     rowId: action.rowId,
                     viewId: action.viewId,
@@ -61,7 +62,8 @@ export default function windowHandler(state = initialState, action) {
         case types.UPDATE_MODAL:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
-                    rowId: action.rowId
+                    rowId: action.rowId,
+                    dataId: action.dataId
                 })
         })
 

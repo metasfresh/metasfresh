@@ -190,6 +190,16 @@ export function attachmentsRequest(entity, docType, docId) {
     );
 }
 
+export function processNewRecord(entity, docType, docId) {
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        docType + '/' +
+        docId +
+        '/processNewRecord'
+    );
+}
+
 export function openFile(entity, docType, docId, fileType, fileId) {
     return () => {
         const url =
