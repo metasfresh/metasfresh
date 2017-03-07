@@ -1,28 +1,5 @@
 package de.metas.handlingunits.client.terminal.inventory.model;
 
-/*
- * #%L
- * de.metas.handlingunits.client
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +14,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
@@ -75,6 +53,45 @@ public class InventoryHUEditorModel extends HUEditorModel
 	 */
 	public I_M_Movement doDirectMoveToWarehouse()
 	{
+		//
+		// Warehouse from: we are moving from this warehouse
+		final I_M_Warehouse warehouseFrom = getM_Warehouse(); // shall not be null
+
+		//
+		// Warehouse to: we are moving the warehouses for direct movements
+		final boolean exceptionIfNull = false;
+		final I_M_Warehouse warehouseTo = huMovementBL.getDirectMove_Warehouse(getTerminalContext().getCtx(), exceptionIfNull);
+		Check.assumeNotNull(warehouseTo, "warehouseTo not null"); // shall not happen, because if it's null the action button shall be hidden
+
+		final I_M_Movement movement = doDirectMoveToWarehouse(warehouseFrom, warehouseTo);
+
+		return movement;
+	}
+
+	public I_M_Movement moveToQualityWarehouse()
+	{
+
+		final List<de.metas.handlingunits.model.I_M_Warehouse> qualityWarehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
+
+		if (Check.isEmpty(qualityWarehouses))
+		{
+			// TODO: Define message
+			throw new TerminalException("@NoQualityReturnsWarehouse@");
+		}
+
+		// Move from the selected warehouse
+		final I_M_Warehouse warehouseFrom = getM_Warehouse(); // shall not be null
+
+		// TODO: Decide how to select the right quality warehouse
+		final I_M_Warehouse warehouseTo = qualityWarehouses.get(0);
+
+		return doDirectMoveToWarehouse(warehouseFrom, warehouseTo);
+	}
+
+	public I_M_Movement doDirectMoveToWarehouse(final I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo)
+	{
+		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+
 		// services
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -99,16 +116,6 @@ public class InventoryHUEditorModel extends HUEditorModel
 		}
 
 		//
-		// Warehouse from: we are moving from this warehouse
-		final I_M_Warehouse warehouseFrom = getM_Warehouse(); // shall not be null
-
-		//
-		// Warehouse to: we are moving the warehouses for direct movements
-		final boolean exceptionIfNull = false;
-		final I_M_Warehouse warehouseTo = huMovementBL.getDirectMove_Warehouse(getTerminalContext().getCtx(), exceptionIfNull);
-		Check.assumeNotNull(warehouseTo, "warehouseTo not null"); // shall not happen, because if it's null the action button shall be hidden
-
-		//
 		// create our list of HUs to pass to the API service
 		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
 		for (final HUKey huKey : huKeys)
@@ -116,11 +123,16 @@ public class InventoryHUEditorModel extends HUEditorModel
 			final I_M_HU hu = huKey.getM_HU();
 			hus.add(hu);
 
+			 
+
 			// guard: verify the the HU's current warehouse matches the selected warehouseFrom
-			final int huWarehouseID = hu.getM_Locator().getM_Warehouse_ID();
-			Check.errorUnless(huWarehouseID == warehouseFrom.getM_Warehouse_ID(),
-					"The selected HU {} has a M_Locator {} with M_Warehouse_ID {} which is != the M_Warehouse_ID {} of warehouse {}",
-					hu, hu.getM_Locator(), huWarehouseID, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
+			if (warehouseFrom != null)
+			{
+				final int huWarehouseID = hu.getM_Locator().getM_Warehouse_ID();
+				Check.errorUnless(huWarehouseID == warehouseFrom.getM_Warehouse_ID(),
+						"The selected HU {} has a M_Locator {} with M_Warehouse_ID {} which is != the M_Warehouse_ID {} of warehouse {}",
+						hu, hu.getM_Locator(), huWarehouseID, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
+			}
 		}
 
 		// make the movement-creating API call

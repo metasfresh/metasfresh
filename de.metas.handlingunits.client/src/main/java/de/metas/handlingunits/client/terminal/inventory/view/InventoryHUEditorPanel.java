@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.inventory.view;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.util.Properties;
@@ -47,10 +46,15 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	 */
 	public static final String ACTION_DirectMoveToWarehouse = "de.metas.handlingunits.client.terminal.inventory.view.InventoryHUEditorPanel#DirectMoveToWarehouse";
 
+	// task #1065
+	// button for moving HUs to quality Warehouse
+	private ITerminalButton bMoveToQualityWarehouse;
+	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse";
+
 	public InventoryHUEditorPanel(final HUEditorModel model)
 	{
 		super(model);
-		
+
 		enableMarkAsQualityInspectionButton(); // task 08639
 	}
 
@@ -83,6 +87,26 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 				}
 			});
 			buttonsPanel.add(bDirectMoveToWarehouse, "");
+
+		}
+
+		// task #1056
+		{
+			this.bMoveToQualityWarehouse = factory.createButton(ACTION_MoveToQualityWarehouse);
+
+			this.bMoveToQualityWarehouse.setTextAndTranslate(ACTION_MoveToQualityWarehouse);
+			bMoveToQualityWarehouse.setEnabled(true);
+			bMoveToQualityWarehouse.setVisible(true);
+			bMoveToQualityWarehouse.addListener(new UIPropertyChangeListener(factory, bMoveToQualityWarehouse)
+			{
+				@Override
+				public void propertyChangeEx(final PropertyChangeEvent evt)
+				{
+					doMoveToQualityWarehouse();
+				}
+			});
+
+			buttonsPanel.add(bMoveToQualityWarehouse, "");
 		}
 	}
 
@@ -120,4 +144,18 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		final String message = msgBL.parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
 		terminalFactory.showInfo(this, "Created", message);
 	}
+
+	private void doMoveToQualityWarehouse()
+	{
+		final I_M_Movement movement = getHUEditorModel().moveToQualityWarehouse();
+
+		//
+		// Inform the user about which movement was created
+		final ITerminalFactory terminalFactory = getTerminalFactory();
+		final Properties ctx = getTerminalContext().getCtx();
+		final String message = msgBL.parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
+		terminalFactory.showInfo(this, "Created", message);
+
+	}
+
 }
