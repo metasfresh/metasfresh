@@ -154,9 +154,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public void setCtx(final Properties ctx)
+	public IHUIterator setCtx(final Properties ctx)
 	{
 		this.ctx = ctx;
+		return this;
 	}
 
 	@Override
@@ -599,12 +600,13 @@ public abstract class AbstractHUIterator implements IHUIterator
 		public List<Object> retrieveDownstreamNodes(final I_M_HU_Item node)
 		{
 			final String itemType = handlingUnitsBL.getItemType(node);
-			if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+			if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
 				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(node);
 				return new ArrayList<Object>(includedHUs);
 			}
-			else if (X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType))
+			else if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType) 
+					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType)) // gh #1099: this is the actual fix. Also load VHUs that are below HA items.
 			{
 				if (handlingUnitsBL.isVirtual(node))
 				{

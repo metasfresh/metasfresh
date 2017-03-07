@@ -38,6 +38,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 
 /**
  * Contains masterdata and common stuff to be used by different tests.
+ * This class is convenient whenever you want to test with (aggregate) HUs that were created by the {@link LUTUProducerDestination}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -59,7 +60,7 @@ public class LUTUProducerDestinationTestSupport
 	public final I_M_HU_PI_Item_Product piTU_Item_Product_IFCO_40KgTomatoes;
 
 	/**
-	 * The PI for the "Bag" TU. By default one bag TU can hold 8kg of {@link HUTestHelper#pTomato} or 5pce of {@link HUTestHelper#pSalad}. 
+	 * The PI for the "Bag" TU. By default one bag TU can hold 8kg of {@link HUTestHelper#pTomato} or 5pce of {@link HUTestHelper#pSalad}.
 	 * Also see {@link #piTU_Item_Product_Bag_8KgTomatoes}.
 	 */
 	public I_M_HU_PI piTU_Bag;
