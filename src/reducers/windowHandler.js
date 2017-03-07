@@ -26,7 +26,8 @@ const initialState = {
     master: {
         layout: {},
         data: [],
-        rowData: {}
+        rowData: {},
+        saveStatus: {}
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -92,7 +93,8 @@ export default function windowHandler(state = initialState, action) {
                     data: action.data,
                     docId: action.docId,
                     layout: {},
-                    rowData: {}
+                    rowData: {},
+                    saveStatus: action.saveStatus
                 })
         })
 
@@ -154,7 +156,8 @@ export default function windowHandler(state = initialState, action) {
                         item.field === action.item.field ?
                             Object.assign({}, item, action.item) :
                             item
-                    )
+                    ),
+                    saveStatus: action.saveStatus
                 })
         })
 
