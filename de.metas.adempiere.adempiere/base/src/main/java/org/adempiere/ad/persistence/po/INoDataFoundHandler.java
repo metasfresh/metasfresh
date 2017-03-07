@@ -25,7 +25,8 @@ import org.adempiere.model.IContextAware;
  */
 
 /**
- * Implementors are called by {@link org.compiere.model.PO} if the PO can't load a record for a certain table name using certain keys.
+ * Implementors are called via {@link NoDataFoundHandlers#invokeHandlers(String, Object[], IContextAware)} from PO or GridTab if they can't
+ * load a record for a certain table name using certain keys.
  * To make it happen, register your implementor using {@link NoDataFoundHandlers#addHandler(INoDataFoundHandler)}.
  * 
  * @author metas-dev <dev@metasfresh.com>
@@ -41,7 +42,7 @@ public interface INoDataFoundHandler
 	 * @param ctx
 	 * 
 	 * @return {@code true} if something was done to fix the situation. The PO will retry if at least one of the registered handlers returned {@code true}.<br>
-	 * 		Note: it might be OK to have a handler that never returns {@code true}, but e.g. does logging etc
+	 *         Note: it might be OK to have a handler that never returns {@code true}, but e.g. does logging etc
 	 * 
 	 */
 	boolean invoke(String tableName, Object[] ids, IContextAware ctx);

@@ -13,15 +13,14 @@ package de.metas.printing.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.List;
@@ -180,6 +179,11 @@ public interface IPrintingDAO extends ISingletonService
 	/** @return true if the {@link I_C_Printing_Queue}'s AggregationKey shall not be updated automatically for given recipient; it is assumed that a BL will take care of it */
 	boolean isUpdatePrintingQueueAggregationKey(I_C_Printing_Queue_Recipient recipient);
 
+	/**
+	 * Ensure that the aggregation key of the given {@code recipients} printing queue item won't be updated via model interceptor when the given recipient is saved.
+	 * 
+	 * @param recipient
+	 */
 	void setDisableAggregationKeyUpdate(I_C_Printing_Queue_Recipient recipient);
 
 	/**

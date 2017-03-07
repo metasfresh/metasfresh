@@ -25,6 +25,7 @@ package org.adempiere.bpartner.service;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Language;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -131,4 +132,12 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	Language getLanguageForModel(Object model);
 
+	/**
+	 * Creates BPartner, Location and contact from given template.
+	 * 
+	 * @param template
+	 * @return created bpartner
+	 * @task https://github.com/metasfresh/metasfresh/issues/1090
+	 */
+	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
 }

@@ -54,6 +54,11 @@ public final class OrgResource implements Resource
 	{
 		return new OrgResource(adClientId, adOrgId);
 	}
+	
+	public static final OrgResource anyOrg(final int adClientId)
+	{
+		return new OrgResource(adClientId, Env.CTXVALUE_AD_Org_ID_Any);
+	}
 
 	public static final Function<OrgResource, KeyNamePair> TO_ClientKeyNamePair_Function = new Function<OrgResource, KeyNamePair>()
 	{

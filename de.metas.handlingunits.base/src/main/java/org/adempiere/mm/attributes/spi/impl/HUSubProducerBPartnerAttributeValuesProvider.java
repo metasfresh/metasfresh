@@ -208,13 +208,38 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		return hu2subProducers.getOrLoad(cacheKey, () -> retrieveSubProducerKeyNamePairs(attribute, bpartnerId, currentSubProducerBPartnerId));
 	}
 
+	private static final String normalizeValueKey(final Object valueKey)
+	{
+		if(valueKey == null)
+		{
+			return null;
+		}
+		else if (valueKey instanceof Number)
+		{
+			final int valueKeyAsInt = ((Number)valueKey).intValue();
+			return String.valueOf(valueKeyAsInt);
+		}
+		else
+		{
+			return valueKey.toString();
+		}
+	}
+
 	@Override
-	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final String value)
+	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
 		final List<? extends NamePair> availableValues = getAvailableValues(evalCtx);
+		if(availableValues.isEmpty())
+		{
+			return null;
+		}
+		
+		// Normalize the valueKey
+		final String valueKeyNormalized = normalizeValueKey(valueKey);
+		
 		for (final NamePair vnp : availableValues)
 		{
-			if (Objects.equals(vnp.getID(), value))
+			if (Objects.equals(vnp.getID(), valueKeyNormalized))
 			{
 				return vnp;
 			}
@@ -224,7 +249,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final String valueKey)
+	public int getM_AttributeValue_ID(final Object valueKey)
 	{
 		return -1;
 	}

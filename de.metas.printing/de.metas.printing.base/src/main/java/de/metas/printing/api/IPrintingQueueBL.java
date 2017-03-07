@@ -112,6 +112,8 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * <p>
 	 * Also see
 	 * {@link IPrintJobBL#createPrintJobInstructions(de.metas.printing.model.I_C_Print_Job, int, boolean, de.metas.printing.model.I_C_Print_Job_Line, de.metas.printing.model.I_C_Print_Job_Line, int)}.
+	 * <p>
+	 * Note 2: this method does <b>not</b> save the given {@code item}.
 	 * 
 	 * @param item
 	 * @param userToPrintIds

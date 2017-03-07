@@ -7,7 +7,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MPriceList;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -96,7 +95,12 @@ public class OrderHeaderAggregation
 		final int pricingSystemId = candidate.getM_PricingSystem_ID();
 
 		// the price is taken from the candidates and C_OrderLine.IsManualPrice is set to 'Y'
-		final int priceListId =  MPriceList.M_PriceList_ID_None;
+		// gh #1088 I have no clue wtf the comment above "the price is taken from..." is supposed to mean.
+		// So instead of using M_PriceList_ID_None here, we use the candidate's PL. 
+		// Because otherwise, de.metas.order.model.interceptor.C_Order#onPriceListChangeInterceptor(...) will update the order pricing system to M_PricingSystem_ID_None
+		// and then the system won't be able to get the new order lines' C_TaxCategories and MOrderLine.beforeSave() will fail
+		// final int priceListId =  MPriceList.M_PriceList_ID_None;
+		final int priceListId = candidate.getM_PriceList_ID();
 
 		final int currencyId = candidate.getC_Currency_ID();
 

@@ -146,8 +146,8 @@ public class PricingBL implements IPricingBL
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("" + pricingCtxToUse);
-			logger.debug("" + result);
+			logger.debug("calculatePrice (final context): {}", pricingCtxToUse);
+			logger.debug("calculatePrice (result): {}", result);
 		}
 
 		return result;
