@@ -3,8 +3,6 @@
  */
 package de.metas.handlingunits.receiptschedule.impl;
 
-import java.awt.image.BufferedImage;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -18,15 +16,14 @@ import java.awt.image.BufferedImage;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -45,14 +42,12 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TrxRunnable;
@@ -94,10 +89,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
 
 	@Override
-	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx, 
-			final InOutGenerateResult resultInitial, 
+	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx,
+			final InOutGenerateResult resultInitial,
 			final Set<Integer> selectedHUIds,
-			 final boolean createReceiptWithDatePromised)
+			final boolean createReceiptWithDatePromised)
 	{
 		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(ctx, resultInitial, selectedHUIds, createReceiptWithDatePromised);
 		return producer;
@@ -166,7 +161,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 			if (tuHU != null && tuHU.isActive()
-					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+			// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
 					&& X_M_HU.HUSTATUS_Planning.equals(tuHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, tuHU);
@@ -175,7 +170,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 			final I_M_HU luHU = rsa.getM_LU_HU();
 			if (luHU != null && luHU.isActive()
-					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+			// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
 					&& X_M_HU.HUSTATUS_Planning.equals(luHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, luHU);
@@ -256,9 +251,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * 
 	 * @return inout generated result
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, 
-			final List<I_M_ReceiptSchedule> receiptSchedules, 
-			final Set<I_M_HU> selectedHUs, 
+	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx,
+			final List<I_M_ReceiptSchedule> receiptSchedules,
+			final Set<I_M_HU> selectedHUs,
 			final boolean storeReceipts)
 	{
 		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
@@ -271,16 +266,16 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
 		for (final I_M_HU hu : selectedHUs)
 		{
-			if(!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
 			{
 				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
 			}
-			
+
 			final int huId = hu.getM_HU_ID();
 			selectedHUIds.add(huId);
 		}
 		//
-		if(selectedHUIds.isEmpty())
+		if (selectedHUIds.isEmpty())
 		{
 			throw new HUException("@NoSelection@ @M_HU_ID@");
 		}
@@ -333,7 +328,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedule not empty");
 
 		//
-		// Iterate all receipt schedules and get: 
+		// Iterate all receipt schedules and get:
 		// * PriceActual; Make sure it's unique for all receipt schedule lines.
 		// * C_OrderLine_IDs
 		BigDecimal priceActual = null;
@@ -356,7 +351,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
 						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
 			}
-			
+
 			final int orderLineId = receiptSchedule.getC_OrderLine_ID();
 			if (orderLineId > 0)
 			{
@@ -377,7 +372,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
 		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
-		
+
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
@@ -385,7 +380,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_PurchaseOrderLine_ID, I_M_Attribute.class);
 			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
-		
+
 		return request;
 	}
 
@@ -398,26 +393,31 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
-	public void attachPhoto(final I_M_ReceiptSchedule receiptSchedule, final String filename, final BufferedImage image)
+	public void attachPhoto(final I_M_ReceiptSchedule receiptSchedule, final String filename, final byte[] data)
 	{
-		final byte[] imagePDFBytes = org.adempiere.pdf.Document.toPDFBytes(image);
+		Services.get(IAttachmentBL.class).createAttachment(receiptSchedule, filename, data);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
-		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
-
-		final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
-		final I_AD_Archive archive = archiveStorage.newArchive(ctx, trxName);
-
-		final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
-		final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
-		archive.setAD_Table_ID(tableID);
-		archive.setRecord_ID(recordID);
-		archive.setC_BPartner_ID(receiptSchedule.getC_BPartner_ID());
-		archive.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
-		archive.setName(filename);
-		archive.setIsReport(false);
-		archiveStorage.setBinaryData(archive, imagePDFBytes);
-		InterfaceWrapperHelper.save(archive);
+		// Old code: was converting the BufferedImage to PDF and it was creating an archive instead of attaching the photo:
+		//
+		// final String imagePDFFilename = FileUtils.changeFileExtension(filename, "pdf");
+		// final byte[] imagePDFBytes = org.adempiere.pdf.Document.toPDFBytes(image);
+		//
+		// final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
+		// final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
+		//
+		// final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
+		// final I_AD_Archive archive = archiveStorage.newArchive(ctx, trxName);
+		//
+		// final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
+		// final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
+		// archive.setAD_Table_ID(tableID);
+		// archive.setRecord_ID(recordID);
+		// archive.setC_BPartner_ID(receiptSchedule.getC_BPartner_ID());
+		// archive.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
+		// archive.setName(filename);
+		// archive.setIsReport(false);
+		// archiveStorage.setBinaryData(archive, data);
+		// InterfaceWrapperHelper.save(archive);
 	}
-	
+
 }

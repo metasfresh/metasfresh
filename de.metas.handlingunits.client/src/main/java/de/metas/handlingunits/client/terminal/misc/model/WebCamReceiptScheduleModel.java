@@ -16,20 +16,23 @@ package de.metas.handlingunits.client.terminal.misc.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.UUID;
+
+import javax.imageio.ImageIO;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -123,9 +126,22 @@ public class WebCamReceiptScheduleModel implements IDisposable
 	{
 		webcam.open();
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.create(getReferencedModel(), I_M_ReceiptSchedule.class);
-		final String filename = "Photo_" + UUID.randomUUID() + ".pdf";
-		final BufferedImage image = webcam.getImage();
-		Services.get(IHUReceiptScheduleBL.class).attachPhoto(receiptSchedule, filename, image);
+		final String filename = "Photo_" + UUID.randomUUID() + ".png";
+
+		final byte[] data;
+		try
+		{
+			final BufferedImage image = webcam.getImage();
+			final ByteArrayOutputStream dataBuf = new ByteArrayOutputStream();
+			ImageIO.write(image, "PNG", dataBuf);
+			data = dataBuf.toByteArray();
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Failed saving image to byte[]", e);
+		}
+		
+		Services.get(IHUReceiptScheduleBL.class).attachPhoto(receiptSchedule, filename, data);
 	}
 
 	@Override
@@ -138,7 +154,7 @@ public class WebCamReceiptScheduleModel implements IDisposable
 		}
 
 		referencedModel = null;
-		disposed  = true;
+		disposed = true;
 	}
 
 	@Override

@@ -3,8 +3,6 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
-import java.awt.image.BufferedImage;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -122,5 +120,5 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 */
 	IAllocationRequest setInitialAttributeValueDefaults(IAllocationRequest request, de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule);
 
-	void attachPhoto(I_M_ReceiptSchedule receiptSchedule, String filename, BufferedImage image);
+	void attachPhoto(I_M_ReceiptSchedule receiptSchedule, String filename, byte[] data);
 }
