@@ -466,7 +466,7 @@ class RawWidget extends Component {
                         onKeyDown={e => {
                             if(e.key === ' '){
                                 e.preventDefault();
-                                this.checkbox.click();
+                                this.rawWidget && this.rawWidget.click();
                             }
                         }}
                     >
