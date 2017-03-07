@@ -147,6 +147,19 @@ export default function windowHandler(state = initialState, action) {
                     }
                 }
             })
+            
+        case types.UPDATE_ROW_STATUS:
+            return update(state, {
+                [action.scope]: {
+                    rowData: {
+                        [action.tabid]: {
+                            [action.rowid]: {
+                                saveStatus: {$set: action.saveStatus}
+                            }
+                        }
+                    }
+                }
+            })
 
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {

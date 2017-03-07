@@ -209,7 +209,6 @@ class TableItem extends Component {
                     ((item.processed && lastSibling && !includedDocuments) ?
                         'row-boundary ': ''
                     ) +
-                    // TODO: waiting for API
                     (notSaved ? 'row-not-saved ': '')
                 }
             >
