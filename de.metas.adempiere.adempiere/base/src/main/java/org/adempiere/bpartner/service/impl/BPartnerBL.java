@@ -39,6 +39,9 @@ import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.ILocationBL;
@@ -263,7 +266,7 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
 		bpartner.setAD_Org_ID(template.getAD_Org_ID());
 		//bpartner.setValue(Value);
-		bpartner.setName(template.getName());
+		bpartner.setName(extractName(template));
 		bpartner.setName2(template.getName2());
 		bpartner.setIsCompany(template.isCompany());
 		bpartner.setCompanyName(template.getCompanyname());
@@ -311,5 +314,21 @@ public class BPartnerBL implements IBPartnerBL
 		InterfaceWrapperHelper.save(template);
 		
 		return bpartner;
+	}
+	
+	private final String extractName(final I_C_BPartner_QuickInput template)
+	{
+		if(template.isCompany())
+		{
+			return template.getCompanyname();
+		}
+		else
+		{
+			final String firstname = Strings.emptyToNull(template.getFirstname());
+			final String lastname = Strings.emptyToNull(template.getLastname());
+			return Joiner.on(" ")
+					.skipNulls()
+					.join(firstname, lastname);
+		}
 	}
 }
