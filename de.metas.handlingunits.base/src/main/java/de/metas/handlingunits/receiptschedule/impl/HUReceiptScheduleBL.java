@@ -53,7 +53,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TrxRunnable;
 
@@ -73,6 +72,7 @@ import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -92,6 +92,40 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
+	
+	@Override
+	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(receiptSchedule.getC_OrderLine(), I_C_OrderLine.class);
+		if (ol == null)
+		{
+			return null;
+		}
+		
+		final BigDecimal qtyTU = ol.getQtyEnteredTU();
+		return qtyTU;
+	}
+	
+	@Override
+	public BigDecimal getQtyOrderedTUOrZero(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrNull(receiptSchedule);
+		if(qtyOrderedTU == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return qtyOrderedTU;
+	}
+
+	@Override
+	public BigDecimal getQtyToMoveTU(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);
+		final BigDecimal qtyMovedTU = receiptSchedule.getQtyMovedTU();
+		final BigDecimal qtyToMoveTU = qtyOrderedTU.subtract(qtyMovedTU);
+		return qtyToMoveTU;
+	}
+
 
 	@Override
 	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx, 
@@ -341,7 +375,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		for (final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
 		{
 			Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
-			final I_C_OrderLine orderLine = receiptSchedule.getC_OrderLine();
+			final org.compiere.model.I_C_OrderLine orderLine = receiptSchedule.getC_OrderLine();
 			Check.assumeNotNull(orderLine, "orderLine not null");
 
 			final BigDecimal receiptSchedule_priceActual = orderLine.getPriceActual();
