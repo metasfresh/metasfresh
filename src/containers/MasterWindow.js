@@ -121,7 +121,10 @@ class MasterWindow extends Component {
                 attachments={attachments}
                 showSidelist={true}
                 showIndicator={!modal.visible}
-                isDocumentNotSaved={!master.saveStatus.saved}
+                isDocumentNotSaved={
+                    !master.saveStatus.saved &&
+                    !master.validStatus.initialValue
+                }
             >
                 {modal.visible &&
                     <Modal

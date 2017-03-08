@@ -13,6 +13,8 @@
     height: 100%;
 }
 
+
+
 @media screen and (max-width: 991px) {
     .indicator {
         width: 50%;
@@ -67,6 +69,8 @@
 .indicator-error {
     animation-name: indicator-error;
     animation-duration: 1s;
+    width: 100%;
+    background-color: $brand-font-color-danger;
 }
 
 @keyframes indicator-pending {
@@ -111,7 +115,7 @@
         background-color: $brand-font-color-danger;
     }
     100% {
-        width: 0%;
-        background-color: transparent;
+        width: 100%;
+        background-color: $brand-font-color-danger;
     }
 }
