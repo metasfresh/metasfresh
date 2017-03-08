@@ -104,6 +104,8 @@ class MasterWindow extends Component {
             master.data,
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
+        
+        console.log(master.validStatus.initialValue)
 
         return (
             <Container

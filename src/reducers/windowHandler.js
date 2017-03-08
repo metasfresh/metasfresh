@@ -177,7 +177,8 @@ export default function windowHandler(state = initialState, action) {
                             Object.assign({}, item, action.item) :
                             item
                     ),
-                    saveStatus: action.saveStatus
+                    saveStatus: action.saveStatus,
+                    validStatus: action.validStatus
                 })
         })
 
