@@ -16,6 +16,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
+  * [#1118](https://github.com/metasfresh/metasfresh/issues/1118) Change migration scripts folder from TEMP to METASFRESH_HOME/migration_scripts/
 
 ## Fixes
 * metasfresh-backend
