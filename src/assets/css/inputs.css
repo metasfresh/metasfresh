@@ -737,13 +737,23 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 .quick-input-container {
     display: flex;
     align-items: center;
+    flex-direction: row;
     flex:1;
 }
 
 .quick-input-container > * {
     margin:0;
-    width:100%;
+    flex:2;
 }
+
+.quick-input-container .hint {
+    flex:1;
+}
+
+.quick-input-container > *:first-of-type {
+    flex:3;
+}
+
 .btn-select {
     background: $brand-color-primary;
     color: white;
