@@ -591,8 +591,9 @@ export class Dashboard extends Component {
 
                 <BarChart chartClass="chartone" responsive={true} layout={layout4.kpi} data={data4.datasets[0].values}/>
                 <PieChart chartClass="pieone" responsive={true} data={data4.datasets[0].values}/>
-                
-                {kpiLayout && kpiLayout.length>0 &&
+
+                {kpiLayout && kpiLayout.length > 0 &&
+
                 <RawChart
                         id={kpiLayout[1].id}
                         chartType={kpiLayout[1].kpi.chartType}

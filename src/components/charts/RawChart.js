@@ -58,6 +58,7 @@ class RawChart extends Component {
                             chartClass={'chart-' + id}
                             layout={layout}
                         />
+
                 )
             case 'PieChart':
                 return(

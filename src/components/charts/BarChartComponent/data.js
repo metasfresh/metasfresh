@@ -19,9 +19,9 @@ export const drawData = (svg, dimensions, ranges, data, labelField) => {
         )
         // draw bars in groups
         .enter().append('rect')
-            .attr('class', 'bar')
             .attr('x', d => ranges.x1(d.key))
             .attr('width', ranges.x1.bandwidth())
             .attr('y', d => ranges.y(d.value))
-            .attr('height', d => dimensions.height - ranges.y(d.value));
+            .attr('height', d => dimensions.height - ranges.y(d.value))
+            .attr('fill', d => ranges.z(d.key))
 };

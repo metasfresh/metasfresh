@@ -1,22 +1,22 @@
 import * as d3 from 'd3';
 import Moment from 'moment';
 
-export const getX0Range = (width, data, layout) => {
+export const getX0Range = (width, data, groupBy) => {
     return d3.scaleBand()
         .range([0, width])
         .padding(0.2)
-        .domain(data.map(value => Moment(value[layout.groupByField.fieldName]).format('YYYY.MM.DD')));
+        .domain(data.map(value => Moment(value[groupBy.fieldName]).format('YYYY.MM.DD')));
 };
 
-export const getX1Range = (width, layout) => {
+export const getX1Range = (width, fields) => {
     return d3.scaleBand()
         .range([0, width])
         .padding(0.1)
-        .domain(layout.fields.map(field => field.fieldName))
+        .domain(fields.map(field => field.fieldName))
 };
 
-export const getYRange = (height, data, layout) => {
-    const keys = layout.fields.map(field => field.fieldName);
+export const getYRange = (height, data, fields) => {
+    const keys = fields.map(field => field.fieldName);
 
     return d3.scaleLinear()
         .range([height, 0])
@@ -25,4 +25,9 @@ export const getYRange = (height, data, layout) => {
                 return d[key];
             });
         })]).nice()
+};
+
+export const getZRange = (colors) => {
+    return d3.scaleOrdinal()
+        .range(colors);
 };
