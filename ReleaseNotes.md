@@ -13,6 +13,9 @@ Here come the actual release notes:
 # metasfresh 5.1 (2017-11)
 
 **upcoming release**
+## Features
+* metasfresh-backend
+  * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
 
 ## Fixes
 * metasfresh-backend
