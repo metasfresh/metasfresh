@@ -2,12 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
-import BarChart4 from '../charts/BarChart4';
-import BarChart5 from '../charts/BarChart5';
-import PieChart from '../charts/PieChart';
-import PieChart2 from '../charts/PieChart2';
-import StackedGroupedBars from '../charts/StackedGroupedBars';
-import StackedGroupedBars2 from '../charts/StackedGroupedBars2';
 
 const cardSource = {
     beginDrag(props) {
@@ -131,24 +125,7 @@ export class DraggableWidget extends Component {
                 </div>
                 {this.props.dashboard == '/dashboard2' &&
                     <div className="draggable-widget-body">
-                        {id===1000001 &&
-                            <BarChart5/>
-                        }
-                        {id===1000000 &&
-                            <PieChart/>
-                        }
-                        {id===1000003 &&
-                            <StackedGroupedBars/>
-                        }
-                        {id===1000002 &&
-                            <PieChart2/>
-                        }
-                        {id===1000006 &&
-                            <StackedGroupedBars2/>
-                        }
-                        {id===1000007 &&
-                            <BarChart4/>
-                        }
+                        
                     </div>
                 }
                 {this.props.dashboard == '/dashboard1' &&
