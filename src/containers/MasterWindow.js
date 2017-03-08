@@ -104,8 +104,6 @@ class MasterWindow extends Component {
             master.data,
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
-        
-        console.log(master.validStatus.initialValue)
 
         return (
             <Container
@@ -124,7 +122,7 @@ class MasterWindow extends Component {
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 isDocumentNotSaved={
-                    !master.saveStatus.saved && 
+                    !master.saveStatus.saved &&
                     !master.validStatus.initialValue
                 }
             >
