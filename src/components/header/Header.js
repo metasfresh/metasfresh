@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 

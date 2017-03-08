@@ -52,13 +52,13 @@ class Subheader extends Component {
         if(windowType){
             if(selected.length === 1 || dataId){
                 const id = dataId ? dataId : (selectedWindowType == windowType ? selected[0]: null);
-                console.log(selectedWindowType)
+
                 if(!id){
                     dispatch(setAttachments([]));
                     dispatch(setReferences([]));
                     return;
                 }
-                
+
                 /*
                  * These actions always are called in window context
                  * because it is or window, or anywhere else but

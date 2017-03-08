@@ -142,7 +142,7 @@ class Table extends Component {
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
-        const {dispatch} = this.props;
+        const {dispatch, type} = this.props;
 
         this.setState(prevState => ({
             selected: prevState.selected.concat([id])
