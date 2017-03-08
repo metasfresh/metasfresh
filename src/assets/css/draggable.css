@@ -35,6 +35,9 @@
     height: calc(100% - 34px);
     z-index: 1;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .draggable-widget-icon {

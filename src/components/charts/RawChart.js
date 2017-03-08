@@ -53,6 +53,7 @@ class RawChart extends Component {
                             data={chartData}
                             colors={colors}
                             chartClass={'chart-' + id}
+                            responsive={true} 
                         />
 
                 )

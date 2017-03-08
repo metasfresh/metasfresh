@@ -7,7 +7,7 @@ export const getHorizontalDimensions = (responsive, chartClass, margin = {left: 
     }
 };
 
-export const getVerticalDimensions = (margin = {top: 5, bottom: 0}, height = 400) => ({
+export const getVerticalDimensions = (margin = {top: 5, bottom: 0}, height = 200) => ({
     ...margin,
     height: height - (margin.top + margin.bottom)
 });

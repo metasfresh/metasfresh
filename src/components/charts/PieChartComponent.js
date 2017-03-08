@@ -21,7 +21,7 @@ class PieChartComponent extends Component {
 
     }
 
-    setDimensions = (width=400, height=400) => {
+    setDimensions = (width=400, height=200) => {
         const {chartClass, responsive, fields} = this.props;
         let chartWidth = width;
         let chartHeight = height;
@@ -31,7 +31,7 @@ class PieChartComponent extends Component {
         if(responsive) {
             const wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
             chartWidth = wrapperWidth;
-            chartHeight = wrapperWidth;
+            chartHeight = height;
         }
         const radius = Math.min(chartWidth, chartHeight) / 2;
         const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
@@ -135,7 +135,7 @@ class PieChartComponent extends Component {
             // console.log(chartClass);
             this.clearChart();
 
-            const dimensions = this.setDimensions(chartWrapp.offsetWidth, chartWrapp.offsetWidth);
+            const dimensions = this.setDimensions(chartWrapp.offsetWidth);
             this.drawChart(dimensions.width, dimensions.height, dimensions.pie, 
                             dimensions.arc, data, color);
           });
