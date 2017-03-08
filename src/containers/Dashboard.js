@@ -52,9 +52,7 @@ export class Dashboard extends Component {
     render() {
 
         const {apiData, kpiLayout} = this.state;
-        
-        // console.log('kpiLayout');
-        // console.log(kpiLayout);
+
 
         // const dataApi = apiData.map(item => {
         //     // console.log(item);
@@ -65,16 +63,16 @@ export class Dashboard extends Component {
 
         const {breadcrumb} = this.props;
         const data = [
-            {name: "Alice", value: 2},
-            {name: "Bob", value: 3},
-            {name: "Carol", value: 1},
-            {name: "Dwayne", value: 5},
-            {name: "Anne", value: 8},
-            {name: "Robin", value: 28},
-            {name: "Eve", value: 12},
-            {name: "Karen", value: 6},
-            {name: "Lisa", value: 22},
-            {name: "Tom", value: 18}
+            {name: 'Alice', value: 2},
+            {name: 'Bob', value: 3},
+            {name: 'Carol', value: 1},
+            {name: 'Dwayne', value: 5},
+            {name: 'Anne', value: 8},
+            {name: 'Robin', value: 28},
+            {name: 'Eve', value: 12},
+            {name: 'Karen', value: 6},
+            {name: 'Lisa', value: 22},
+            {name: 'Tom', value: 18}
         ];
         const data2 = [
             {name: "Alice", value: 2},
@@ -349,7 +347,8 @@ export class Dashboard extends Component {
                         {
                             "_key": "2016-12-14T00:00:00.000+01:00",
                             "Counter": 11,
-                            "Counter_offset": 36,
+                            "Counter_offset": 14,
+
                             "_DateOrdered_offset": "2016-12-07T00:00:00.000+01:00",
                             "DateOrdered": "2016-12-14T00:00:00.000+01:00"
                         },
@@ -580,6 +579,7 @@ export class Dashboard extends Component {
 
         console.log(kpiLayout);
 
+
         return (
             <Container
                 siteName = "Dashboard"
@@ -592,6 +592,7 @@ export class Dashboard extends Component {
                 <BarChart chartClass="chartone" responsive={false} data={data}/>
                 <BarChart chartClass="charttwo" responsive={true} data={data2}/>
                 <BarChart chartClass="charthree" responsive={true} data={data3}/>
+                <BarChart chartClass="chartone" responsive={true} layout={layout4.kpi} data={data4.datasets[0].values}/>
                 <PieChart chartClass="pieone" responsive={true} data={data4.datasets[0].values}/>
                 
                 {kpiLayout && kpiLayout.length>0 &&
@@ -605,6 +606,7 @@ export class Dashboard extends Component {
                         kpi={true}
                     />
                 }
+                
                 
 
             </Container>
