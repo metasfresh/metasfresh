@@ -76,7 +76,7 @@ class GlobalContextShortcuts extends Component {
                 preventDefault = { true }
                 stopPropagation = { true }
                 global = {true}
-                dataShortcuts = { true }
+                alwaysFireHandler = { true }
             />
         )
     }
