@@ -53,6 +53,7 @@ class RawChart extends Component {
                         fields={fields}
                         groupBy={groupBy}
                         data={chartData}
+                        colors={colors}
                     />
                 )
             case 'PieChart':
