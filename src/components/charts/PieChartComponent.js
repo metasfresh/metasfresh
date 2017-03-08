@@ -7,7 +7,7 @@ class PieChartComponent extends Component {
     }
 
     componentDidMount() {
-        const {data, responsive} = this.props;
+        const {data, responsive, fields, groupBy} = this.props;
 
         const color = d3.scaleOrdinal()
             .range(['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00']);
@@ -22,9 +22,12 @@ class PieChartComponent extends Component {
     }
 
     setDimensions = (width=400, height=400) => {
-        const {chartClass, responsive} = this.props;
+        const {chartClass, responsive, fields} = this.props;
         let chartWidth = width;
         let chartHeight = height;
+
+        const keys = fields.map(field => field.fieldName);
+
         if(responsive) {
             const wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
             chartWidth = wrapperWidth;
@@ -34,7 +37,7 @@ class PieChartComponent extends Component {
         const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
         const pie = d3.pie()
             .sort(null)
-            .value(function(d) { return d.Counter; });
+            .value( d => d[fields[0].fieldName]);
 
         return {
                 width: chartWidth,
@@ -46,7 +49,7 @@ class PieChartComponent extends Component {
     }
 
     drawChart = (width, height, pie, arc, data, color) => {
-        const {chartClass} = this.props;
+        const {chartClass, fields, groupBy} = this.props;
         var svg = d3.select('.' + chartClass)
             .attr('width', width)
             .attr('height', height)
@@ -67,12 +70,12 @@ class PieChartComponent extends Component {
 
         g.append('path')
             .attr('d', arc)
-            .style('fill', function(d) { return color(d.data.Counter); });
+            .style('fill', d => color(d.data[fields[0].fieldName]));
 
         g.append('text')
-            .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
+            .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
             .attr('dy', '.35em')
-            .text(function(d) { return d.data.DateOrdered; });
+            .text(d => d.data[groupBy.fieldName]);
 
         // var key = function(d){ return d.data.name; };
 

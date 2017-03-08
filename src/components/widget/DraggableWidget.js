@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
+import RawChart from '../charts/RawChart';
 
 const cardSource = {
     beginDrag(props) {
@@ -97,7 +98,8 @@ export class DraggableWidget extends Component {
     render() {
         const {
             text, url, isDragging, connectDragSource, connectDropTarget,
-            hideWidgets, showWidgets, index, idMaximized, id
+            hideWidgets, showWidgets, index, idMaximized, id, chartType,
+            caption, fields, groupBy, pollInterval, kpi
         } = this.props;
         const { toggleWidgetMenu, isMaximize, refresh } = this.state;
 
@@ -123,21 +125,19 @@ export class DraggableWidget extends Component {
                         </div>
                     }
                 </div>
-                {this.props.dashboard == '/dashboard2' &&
-                    <div className="draggable-widget-body">
-                        
-                    </div>
-                }
-                {this.props.dashboard == '/dashboard1' &&
-                    <div className="draggable-widget-body">
-                        <iframe
-                            src={!refresh && url}
-                            scrolling="no"
-                            frameBorder="no"
-                        ></iframe>
-                    </div>
-                }
 
+                <div className="draggable-widget-body">
+                    <RawChart
+                        id={id}
+                        chartType={chartType}
+                        caption={caption}
+                        fields={fields}
+                        groupBy={groupBy}
+                        pollInterval={pollInterval}
+                        kpi={true}
+                    />
+                </div>
+                
             </div>
 
             ));

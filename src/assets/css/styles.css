@@ -790,6 +790,10 @@ td.pulse-off input {
     padding-top: 10px;
 }
 
+.dashboard-cards-wrapper {
+    width: 100%;
+}
+
 .cell-text-wrapper {
     overflow: hidden;
     text-overflow: ellipsis;

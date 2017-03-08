@@ -23,7 +23,6 @@ export const addXAxis = (svg, rangeX0) => {
         .selectAll('text')
         // .classed('x-axis-label', true)
         .each(function(){
-            console.log(this.getBBox());
             sizes.push(this.getBBox());
         });
 

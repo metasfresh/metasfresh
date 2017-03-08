@@ -24,10 +24,14 @@
     position: relative;
     cursor: move;
     height: 34px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .draggable-widget-body {
     min-height: 250px;
+    min-height: 540px;
     height: calc(100% - 34px);
     z-index: 1;
     overflow: hidden;
