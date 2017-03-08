@@ -167,6 +167,7 @@
     width: 100%;
     position: fixed;
     z-index: 201;
+    margin-top:-1px;
     background-color: $brand-bright-color;
 }
 
@@ -181,7 +182,7 @@
     overflow: hidden;
 }
 .subheader-column:focus {
-    border-color: #e1e7ec;;
+    border-color: #e1e7ec;
 }
 
 @media (max-width: $breakpoint) {
@@ -268,6 +269,7 @@
 
 .btn-square {
     min-width: 55px;
+    
 }
 
 
@@ -296,6 +298,8 @@
 }
 
 .btn-header {
+    position: relative;
+    top:-1px;
     border-color: $brand-border-color;
 }
 

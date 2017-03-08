@@ -46,13 +46,14 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope, docId, saveStatus) {
+export function initDataSuccess(data, scope, docId, saveStatus, validStatus) {
     return {
         type: types.INIT_DATA_SUCCESS,
         data,
         scope,
         docId,
-        saveStatus
+        saveStatus,
+        validStatus
     }
 }
 
@@ -74,11 +75,12 @@ export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     }
 }
 
-export function updateDataSuccess(item, scope, saveStatus) {
+export function updateDataSuccess(item, scope, saveStatus, validStatus) {
     return {
         type: types.UPDATE_DATA_SUCCESS,
         item,
         saveStatus,
+        validStatus,
         scope
     }
 }
@@ -233,7 +235,7 @@ export function createWindow(
 
                 dispatch(initDataSuccess(
                     preparedData, getScope(isModal), docId,
-                    response.data[0].saveStatus
+                    response.data[0].saveStatus, response.data[0].validStatus
                 ));
 
                 if (isModal) {
@@ -385,7 +387,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
 
-                        dispatch(updateDataSuccess(field, getScope(isModal), data[0].saveStatus));
+                        dispatch(updateDataSuccess(field, getScope(isModal), data[0].saveStatus, data[0].validStatus));
                     }
                 });
             }

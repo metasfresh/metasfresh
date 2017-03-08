@@ -28,7 +28,8 @@ const initialState = {
         layout: {},
         data: [],
         rowData: {},
-        saveStatus: {}
+        saveStatus: {},
+        validStatus: {}
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -99,7 +100,8 @@ export default function windowHandler(state = initialState, action) {
                     docId: action.docId,
                     layout: {},
                     rowData: {},
-                    saveStatus: action.saveStatus
+                    saveStatus: action.saveStatus,
+                    validStatus: action.validStatus
                 })
         })
 

@@ -23,8 +23,8 @@ class Indicator extends Component {
         return (
             <div>
                 <div className={
-                        'indicator-bar indicator-' + indicator +
-                        (isDocumentNotSaved ? ' indicator-error ' : ' ')
+                    'indicator-bar ' +
+                    (isDocumentNotSaved ? 'indicator-error ' : 'indicator-' + indicator)
                 } />
             </div>
         )
