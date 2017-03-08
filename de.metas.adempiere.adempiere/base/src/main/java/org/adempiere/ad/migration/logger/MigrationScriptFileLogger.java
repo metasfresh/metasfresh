@@ -18,6 +18,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MigrationScript;
 import org.compiere.model.MSequence;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Ini;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -183,8 +184,23 @@ public class MigrationScriptFileLogger
 		final String sufix = "_"
 				+ dbType
 				+ ".sql";
-		final File file = File.createTempFile(prefix, sufix);
+		
+		final File directory = new File(getMigrationScriptDirectory());
+		if(!directory.exists())
+		{
+			if (directory.mkdirs())
+			{
+				System.out.println("Created migration scripts directory: " + directory);
+			}
+		}
+		
+		final File file = File.createTempFile(prefix, sufix, directory);
 		return file;
+	}
+	
+	public static final String getMigrationScriptDirectory()
+	{
+		return Ini.getMetasfreshHome() + File.separator + "migration_scripts";
 	}
 
 	/**
