@@ -82,7 +82,7 @@ class Subheader extends Component {
 
             dispatch(
                 actionsRequest(
-                    entity, windowType, dataId ? dataId : query && query.viewId, (selectedWindowType === windowType ? selected[0]: []))
+                    entity, windowType, dataId ? dataId : query && query.viewId, (selectedWindowType === windowType ? selected: []))
             ).then((response) => {
                 dispatch(setActions(response.data.actions));
             });
