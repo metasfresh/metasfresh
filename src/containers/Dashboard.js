@@ -53,7 +53,8 @@ export class Dashboard extends Component {
 
         const {apiData, kpiLayout} = this.state;
         
-        console.log(kpiLayout);
+        // console.log('kpiLayout');
+        // console.log(kpiLayout);
 
         // const dataApi = apiData.map(item => {
         //     // console.log(item);
@@ -562,7 +563,22 @@ export class Dashboard extends Component {
             }
         };
 
-        console.log(data4.datasets[0].values);
+        // console.log(data4.datasets[0].values);
+
+        // {kpiLayout && kpiLayout.map((item, id) => 
+        //              <RawChart
+        //                 key={id} 
+        //                 id={item.id}
+        //                 chartType={item.kpi.chartType}
+        //                 caption={item.kpi.caption}
+        //                 fields={item.kpi.fields}
+        //                 groupBy={item.kpi.groupByField}
+        //                 pollInterval={item.kpi.pollIntervalSec}
+        //                 kpi={true}
+        //              />
+        //         )}
+
+        console.log(kpiLayout);
 
         return (
             <Container
@@ -577,7 +593,20 @@ export class Dashboard extends Component {
                 <BarChart chartClass="charttwo" responsive={true} data={data2}/>
                 <BarChart chartClass="charthree" responsive={true} data={data3}/>
                 <PieChart chartClass="pieone" responsive={true} data={data4.datasets[0].values}/>
-                <RawChart/>
+                
+                {kpiLayout && kpiLayout.length>0 &&
+                <RawChart
+                        id={kpiLayout[1].id}
+                        chartType={kpiLayout[1].kpi.chartType}
+                        caption={kpiLayout[1].kpi.caption}
+                        fields={kpiLayout[1].kpi.fields}
+                        groupBy={kpiLayout[1].kpi.groupByField}
+                        pollInterval={kpiLayout[1].kpi.pollIntervalSec}
+                        kpi={true}
+                    />
+                }
+                
+
             </Container>
         );
     }

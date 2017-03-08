@@ -122,14 +122,14 @@ class PieChartComponent extends Component {
     }
 
     addResponsive = (data, color) => {
-        console.log('responsive');
+        // console.log('responsive');
         const {chartClass} = this.props;
         const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
-        console.log(chartWrapp.offsetWidth);
+        // console.log(chartWrapp.offsetWidth);
         d3.select(window)
           .on("resize."+chartClass, () => {
-            console.log('resizing');
-            console.log(chartClass);
+            // console.log('resizing');
+            // console.log(chartClass);
             this.clearChart();
 
             const dimensions = this.setDimensions(chartWrapp.offsetWidth, chartWrapp.offsetWidth);
