@@ -88,7 +88,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		HUReportExecutor.get(getCtx())
 				.withWindowNo(getProcessInfo().getWindowNo())
 				.withNumberOfCopies(p_copies)
-				.executeHUReport(process.get(), husToProcess);
+				.executeHUReportAfterCommit(process.get(), husToProcess);
 
 		return MSG_OK;
 	}
