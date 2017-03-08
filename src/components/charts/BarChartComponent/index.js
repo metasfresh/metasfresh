@@ -1,4 +1,4 @@
-import React, { PureComponent }from 'react';
+import React, { Component }from 'react';
 import * as d3 from 'd3';
 
 import { getX0Range, getX1Range, getYRange, getZRange } from './ranges';
@@ -7,7 +7,7 @@ import { getSvg, sizeSvg } from './svg';
 import { getHorizontalDimensions, getVerticalDimensions } from './dimensions';
 import { drawData } from './data';
 
-class BarChartComponent extends PureComponent {
+class BarChartComponent extends Component {
     draw(){
         const { data, groupBy, fields, colors, chartClass, responsive } = this.props;
 
@@ -52,7 +52,11 @@ class BarChartComponent extends PureComponent {
 
     clear = () => {
         const { chartClass } = this.props;
-        document.getElementsByClassName(chartClass)[0].childNodes[0].remove();
+        const svgChildren = document.getElementsByClassName(chartClass)[0].childNodes;
+
+        if (svgChildren.length){
+            svgChildren[0].remove();
+        }
     };
 
     redraw = () => {
@@ -68,9 +72,9 @@ class BarChartComponent extends PureComponent {
     };
 
     componentDidMount() {
-        const { responsive } = this.props;
+        const { responsive, data } = this.props;
 
-        this.draw();
+        data.length && this.draw();
 
         if(responsive){
             this.addResponsive();
