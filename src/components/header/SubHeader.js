@@ -41,7 +41,8 @@ class Subheader extends Component {
 
     componentDidMount() {
         const {
-            dispatch, windowType, dataId, selected, entity, query
+            dispatch, windowType, dataId, selected, selectedWindowType, entity,
+            query
         } = this.props;
 
         dispatch(setActions([]));
@@ -50,7 +51,13 @@ class Subheader extends Component {
 
         if(windowType){
             if(selected.length === 1 || dataId){
-                const id = dataId ? dataId : selected[0];
+                const id = dataId ? dataId : (selectedWindowType == windowType ? selected[0]: null);
+
+                if(!id){
+                    dispatch(setAttachments([]));
+                    dispatch(setReferences([]));
+                    return;
+                }
 
                 /*
                  * These actions always are called in window context
@@ -75,7 +82,7 @@ class Subheader extends Component {
 
             dispatch(
                 actionsRequest(
-                    entity, windowType, dataId ? dataId : query && query.viewId, selected)
+                    entity, windowType, dataId ? dataId : query && query.viewId, (selectedWindowType === windowType ? selected[0]: []))
             ).then((response) => {
                 dispatch(setActions(response.data.actions));
             });

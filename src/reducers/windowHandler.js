@@ -33,7 +33,8 @@ const initialState = {
     indicator: 'saved',
     latestNewDocument: null,
     viewId: null,
-    selected: []
+    selected: [],
+    selectedWindowType: null
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -218,7 +219,8 @@ export default function windowHandler(state = initialState, action) {
 
         case types.SELECT_TABLE_ITEMS:
             return Object.assign({}, state, {
-                selected: action.ids
+                selected: action.ids,
+                selectedWindowType: action.windowType
             })
 
         // LATEST NEW DOCUMENT CACHE

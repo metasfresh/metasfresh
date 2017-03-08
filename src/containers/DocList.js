@@ -34,7 +34,7 @@ class DocList extends Component {
         dispatch(getWindowBreadcrumb(windowType));
 
         if(latestNewDocument){
-            dispatch(selectTableItems([latestNewDocument]));
+            dispatch(selectTableItems([latestNewDocument], windowType));
             dispatch(setLatestNewDocument(null));
         }
     }

@@ -53,13 +53,13 @@ class Table extends Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {dispatch} = this.props;
+        const {dispatch, type} = this.props;
 
         if(
             JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
         ){
-            dispatch(selectTableItems(nextState.selected));
+            dispatch(selectTableItems(nextState.selected, type));
         }
     }
 
@@ -142,13 +142,13 @@ class Table extends Component {
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
-        const {dispatch} = this.props;
+        const {dispatch, type} = this.props;
 
         this.setState(prevState => ({
             selected: prevState.selected.concat([id])
         }), () => {
             const {selected} = this.state;
-            dispatch(selectTableItems(selected))
+            dispatch(selectTableItems(selected, type))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
