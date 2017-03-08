@@ -5,12 +5,56 @@ import DraggableWrapper from '../components/widget/DraggableWrapper';
 
 import BarChart from '../components/charts/BarChartComponent';
 
+import {
+    getKPIsDashboard,
+    getTargetIndicatorsDashboard,
+    getKPIData,
+    getTargetIndicatorsData
+} from '../actions/AppActions';
+
 export class Dashboard extends Component {
     constructor(props){
         super(props);
+        this.state ={
+            apiData: []
+        }
+    }
+
+    componentDidMount(){
+        const {dispatch} = this.props;
+
+        const {apiData} = this.state;
+
+        dispatch(getKPIsDashboard()).then(response => {
+            // console.log(response.data.items);
+        });
+        dispatch(getTargetIndicatorsDashboard()).then(response => {
+            // console.log(response.data.items);
+        });
+        dispatch(getKPIData(1000013)).then(response => {
+            this.setState({
+                apiData: response.data.data
+            });
+        });
+        dispatch(getTargetIndicatorsData(1000014)).then(response => {
+            // console.log(response.data);
+        });
+
     }
 
     render() {
+
+        const {apiData} = this.state;
+
+        console.log(apiData);
+
+        const dataApi = apiData.map(item => {
+            // console.log(item);
+            return {name: item.key, value: item.values[1]};
+        });
+
+        console.log(dataApi);
+
         const {breadcrumb} = this.props;
         const data = [
             {name: 'Alice', value: 2},
