@@ -1,7 +1,7 @@
 import React, { PureComponent }from 'react';
 import * as d3 from 'd3';
 
-import { getX0Range, getX1Range, getYRange } from './ranges';
+import { getX0Range, getX1Range, getYRange, getZRange } from './ranges';
 import { addXAxis, addYAxis, moveXAxis, getXAxisLabelsHeight } from './axes';
 import { getSvg, sizeSvg } from './svg';
 import { getHorizontalDimensions, getVerticalDimensions } from './dimensions';
@@ -9,21 +9,24 @@ import { drawData } from './data';
 
 class BarChartComponent extends PureComponent {
     draw(){
-        const { data, layout, chartClass, responsive } = this.props;
+        const { data, groupBy, fields, colors, chartClass, responsive } = this.props;
 
         // main container
         const svg = getSvg(chartClass);
 
+        // colors
+        const rangeZ = getZRange(colors);
+
         // horizontal sizing
         const horizontal = getHorizontalDimensions(responsive, chartClass);
-        const rangeX0 = getX0Range(horizontal.width, data, layout);
-        const rangeX1 = getX1Range(rangeX0.bandwidth(), layout);
+        const rangeX0 = getX0Range(horizontal.width, data, groupBy);
+        const rangeX1 = getX1Range(rangeX0.bandwidth(), fields);
         addXAxis(svg, rangeX0);
 
         // vertical sizing
         const labelsHeight = getXAxisLabelsHeight(svg);
         const vertical = getVerticalDimensions({bottom: labelsHeight, top: 5});
-        const rangeY = getYRange(vertical.height, data, layout);
+        const rangeY = getYRange(vertical.height, data, fields);
         addYAxis(svg, rangeY);
 
         // adjust x axis
@@ -42,8 +45,9 @@ class BarChartComponent extends PureComponent {
         }, {
             x0: rangeX0,
             x1: rangeX1,
-            y: rangeY
-        }, data, layout.groupByField.fieldName);
+            y: rangeY,
+            z: rangeZ
+        }, data, groupBy.fieldName);
     }
 
     clear = () => {

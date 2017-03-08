@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-export const setXAxisTickAngle = (elem, width) => {
+const getXAxisTickAngle = (elem, width) => {
     const size = elem.getBBox();
 
     if (width < size.width){
@@ -26,12 +26,22 @@ export const setXAxisTickAngle = (elem, width) => {
 };
 
 export const addXAxis = (svg, rangeX0) => {
+    const widths = [];
+
     svg.append('g')
         .classed('x-axis', true)
         .call(d3.axisBottom(rangeX0))
         .selectAll('text')
+        .classed('x-axis-label')
         .each(function(){
-            setXAxisTickAngle(this, rangeX0.bandwidth());
+            widths.push(this.getBBox().width);
+        });
+
+
+
+    d3.select('.x-axis-label')
+        .each(function(){
+            setXAxisTickAngle(Math.max(...widths), rangeX0.bandwidth());
         });
 };
 
