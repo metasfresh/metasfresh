@@ -1,11 +1,10 @@
 import * as d3 from 'd3';
-import Moment from 'moment';
 
 export const getX0Range = (width, data, groupBy) => {
     return d3.scaleBand()
         .range([0, width])
         .padding(0.2)
-        .domain(data.map(value => Moment(value[groupBy.fieldName]).format('YYYY.MM.DD')));
+        .domain(data.map(value => value[groupBy.fieldName]));
 };
 
 export const getX1Range = (width, fields) => {

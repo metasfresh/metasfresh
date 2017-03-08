@@ -1,5 +1,3 @@
-import Moment from 'moment';
-
 export const drawData = (svg, dimensions, ranges, data, labelField) => {
     svg.append('g')
         .classed('datasets', true)
@@ -7,7 +5,7 @@ export const drawData = (svg, dimensions, ranges, data, labelField) => {
         .data(data)
         // draw bar groups
         .enter().append('g')
-            .attr('transform', d => 'translate(' + ranges.x0(Moment(d[labelField]).format('YYYY.MM.DD')) + ',0)')
+            .attr('transform', d => 'translate(' + ranges.x0(d[labelField]) + ',0)')
         .selectAll('rect')
         // data format for bars
         .data(d => Object.keys(d)
