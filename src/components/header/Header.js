@@ -228,7 +228,7 @@ class Header extends Component {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions,
             viewId, inbox, homemenu, selected, entity, query, attachments,
-            showIndicator, isDocumentNotSaved
+            showIndicator, isDocumentNotSaved, selectedWindowType
         } = this.props;
 
         const {
@@ -390,6 +390,7 @@ class Header extends Component {
                     handleClone={this.handleClone}
                     redirect={this.redirect}
                     selected={selected}
+                    selectedWindowType={selectedWindowType}
                     entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
                     query={query}
@@ -448,16 +449,19 @@ function mapStateToProps(state) {
     }
 
     const {
-        selected
+        selected,
+        selectedWindowType
     } = windowHandler || {
-        selected: []
+        selected: [],
+        selectedWindowType: null
     }
 
     return {
         selected,
         viewId,
         inbox,
-        homemenu
+        homemenu,
+        selectedWindowType
     }
 }
 

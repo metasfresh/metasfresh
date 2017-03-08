@@ -70,7 +70,7 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-                dispatch(selectTableItems([]))
+                dispatch(selectTableItems([], null))
                 this.fetchLayoutAndData();
             });
         }
@@ -113,7 +113,7 @@ class DocumentList extends Component {
             inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                dispatch(selectTableItems(cachedSelection))
+                dispatch(selectTableItems(cachedSelection, windowType))
             }else{
                 this.setState({
                     cachedSelection: selected

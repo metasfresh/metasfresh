@@ -183,10 +183,11 @@ export function indicatorState(state) {
 
 //SELECT ON TABLE
 
-export function selectTableItems(ids) {
+export function selectTableItems(ids, windowType) {
     return {
         type: types.SELECT_TABLE_ITEMS,
-        ids: ids
+        ids,
+        windowType
     }
 }
 
