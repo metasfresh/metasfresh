@@ -18,11 +18,14 @@ class Indicator extends Component {
     }
 
     render() {
-        const {indicator} = this.props;
+        const {indicator, isDocumentNotSaved} = this.props;
 
         return (
             <div>
-                <div className={'indicator-bar indicator-' + indicator} />
+                <div className={
+                        'indicator-bar indicator-' + indicator +
+                        (isDocumentNotSaved ? ' indicator-error ' : ' ')
+                } />
             </div>
         )
     }

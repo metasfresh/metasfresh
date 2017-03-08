@@ -1,11 +1,3 @@
-.document-save-indicator {
-    color: $brand-danger-color;
-}
-
-.document-save-indicator:hover{
-    background: none;
-}
-
 .indicators-wrapper {
     border: 1px solid $brand-border-color;
     border-radius: 3px;
