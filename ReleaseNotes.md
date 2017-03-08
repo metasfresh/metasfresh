@@ -35,6 +35,7 @@ Here come the actual release notes:
   * [#1080](https://github.com/metasfresh/metasfresh/issues/1080) Virtual Column for qtyenteredTU from Purchase Orderline in Receipt Candidate
   * [#1099](https://github.com/metasfresh/metasfresh/issues/1099) Fix Materialentnahme movement creation
   * [#1105](https://github.com/metasfresh/metasfresh/issues/1105) Translate Action in Material Receipt Schedule for de_DE
+  * [#1113](https://github.com/metasfresh/metasfresh/issues/1113) BPartner quick input modal overlay Layout for WebUI
   
 * metasfresh-webui-api
   * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
