@@ -4,13 +4,63 @@ import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
 
 import BarChart from '../components/charts/BarChartComponent';
+import PieChart from '../components/charts/PieChartComponent';
+import RawChart from '../components/charts/RawChart';
+
+import {
+    getKPIsDashboard,
+    getTargetIndicatorsDashboard,
+    getKPIData,
+    getTargetIndicatorsData
+} from '../actions/AppActions';
 
 export class Dashboard extends Component {
     constructor(props){
         super(props);
+        this.state ={
+            apiData: [],
+            kpiLayout: [],
+            targetLayout: []
+        }
+    }
+
+    componentDidMount(){
+        const {dispatch} = this.props;
+
+        const {apiData} = this.state;
+
+        dispatch(getKPIsDashboard()).then(response => {
+            // console.log(response.data.items);
+            this.setState({
+                kpiLayout: response.data.items
+            });
+        });
+        dispatch(getTargetIndicatorsDashboard()).then(response => {
+            // console.log(response.data.items);
+        });
+        dispatch(getKPIData(1000013)).then(response => {
+            this.setState({
+                apiData: response.data.data
+            });
+        });
+        dispatch(getTargetIndicatorsData(1000014)).then(response => {
+            // console.log(response.data);
+        });
+
     }
 
     render() {
+
+        const {apiData, kpiLayout} = this.state;
+
+
+        // const dataApi = apiData.map(item => {
+        //     // console.log(item);
+        //     return {name: item.key, value: item.values[1]};
+        // });
+
+        // console.log(dataApi);
+
         const {breadcrumb} = this.props;
         const data = [
             {name: 'Alice', value: 2},
@@ -298,6 +348,7 @@ export class Dashboard extends Component {
                             "_key": "2016-12-14T00:00:00.000+01:00",
                             "Counter": 11,
                             "Counter_offset": 14,
+
                             "_DateOrdered_offset": "2016-12-07T00:00:00.000+01:00",
                             "DateOrdered": "2016-12-14T00:00:00.000+01:00"
                         },
@@ -511,6 +562,24 @@ export class Dashboard extends Component {
             }
         };
 
+        // console.log(data4.datasets[0].values);
+
+        // {kpiLayout && kpiLayout.map((item, id) => 
+        //              <RawChart
+        //                 key={id} 
+        //                 id={item.id}
+        //                 chartType={item.kpi.chartType}
+        //                 caption={item.kpi.caption}
+        //                 fields={item.kpi.fields}
+        //                 groupBy={item.kpi.groupByField}
+        //                 pollInterval={item.kpi.pollIntervalSec}
+        //                 kpi={true}
+        //              />
+        //         )}
+
+        console.log(kpiLayout);
+
+
         return (
             <Container
                 siteName = "Dashboard"
@@ -520,7 +589,26 @@ export class Dashboard extends Component {
                     <DraggableWrapper dashboard={this.props.location.pathname} />
                 </div>
 
+                <BarChart chartClass="chartone" responsive={false} data={data}/>
+                <BarChart chartClass="charttwo" responsive={true} data={data2}/>
+                <BarChart chartClass="charthree" responsive={true} data={data3}/>
                 <BarChart chartClass="chartone" responsive={true} layout={layout4.kpi} data={data4.datasets[0].values}/>
+                <PieChart chartClass="pieone" responsive={true} data={data4.datasets[0].values}/>
+                
+                {kpiLayout && kpiLayout.length>0 &&
+                <RawChart
+                        id={kpiLayout[1].id}
+                        chartType={kpiLayout[1].kpi.chartType}
+                        caption={kpiLayout[1].kpi.caption}
+                        fields={kpiLayout[1].kpi.fields}
+                        groupBy={kpiLayout[1].kpi.groupByField}
+                        pollInterval={kpiLayout[1].kpi.pollIntervalSec}
+                        kpi={true}
+                    />
+                }
+                
+                
+
             </Container>
         );
     }
