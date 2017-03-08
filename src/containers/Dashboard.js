@@ -589,9 +589,6 @@ export class Dashboard extends Component {
                     <DraggableWrapper dashboard={this.props.location.pathname} />
                 </div>
 
-                <BarChart chartClass="chartone" responsive={false} data={data}/>
-                <BarChart chartClass="charttwo" responsive={true} data={data2}/>
-                <BarChart chartClass="charthree" responsive={true} data={data3}/>
                 <BarChart chartClass="chartone" responsive={true} layout={layout4.kpi} data={data4.datasets[0].values}/>
                 <PieChart chartClass="pieone" responsive={true} data={data4.datasets[0].values}/>
                 
@@ -604,6 +601,7 @@ export class Dashboard extends Component {
                         groupBy={kpiLayout[1].kpi.groupByField}
                         pollInterval={kpiLayout[1].kpi.pollIntervalSec}
                         kpi={true}
+                        layout={layout4.kpi}
                     />
                 }
                 

@@ -37,25 +37,27 @@ class RawChart extends Component {
     
     render() {
         const {
-            id, chartType, caption, fields, groupBy, pollInterval, kpi
+            id, chartType, caption, fields, groupBy, pollInterval, kpi,layout
         } = this.props;
         const {
             chartData
         } = this.state;
         const colors = ['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00'];
-        console.log(chartType);
+        console.log(chartData);
         switch(chartType){
             case 'BarChart':
                 return(
-                    <BarChart
-                        chartType={chartType}
-                        caption={caption}
-                        fields={fields}
-                        groupBy={groupBy}
-                        data={chartData}
-                        colors={colors}
-                        class={'chart-' + id}
-                    />
+                        chartData &&
+                        <BarChart
+                            chartType={chartType}
+                            caption={caption}
+                            fields={fields}
+                            groupBy={groupBy}
+                            data={chartData}
+                            colors={colors}
+                            chartClass={'chart-' + id}
+                            layout={layout}
+                        />
                 )
             case 'PieChart':
                 return(
