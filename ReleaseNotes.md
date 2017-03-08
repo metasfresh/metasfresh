@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 **upcoming release**
 
+## Fixes
+* metasfresh-backend
+  * [#1121](https://github.com/metasfresh/metasfresh/issues/1121) TU receipt label is just a white sheet of paper
+
 # metasfresh 5.0 (2017-10)
 
 **this week's release candidate**
