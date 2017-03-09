@@ -14,21 +14,20 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
-import org.compiere.model.I_C_BPartner;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransferService;
+import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -70,19 +69,100 @@ public class WEBUI_M_HU_Transform
 		extends HUViewProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	/**
+	 * 
+	 * Enumerates the actions supported by this process. There is an analog {@code AD_Ref_List} in the application dictionary. <b>Please keep it in sync</b>.
+	 * <p>
+	 * <h1>Important notes</h1>
+	 * <b>About the quantity parameter:</b>
+	 * <ul>
+	 * <li>There is always a source HU (CU or TU) parameter and always a quantity parameter (CU storage-qty or int number of TUs)</li>
+	 * <li>The parameter's default value is the maximum that's in the source</li>
+	 * <li>the process only ever performs a split (see {@link IHUSplitBuilder}) if the parameter value is decreased. If the user instead goes with the suggested maximum value, then the source HU is "moved" as it is.</li>
+	 * <li>For the {@link #CU_To_NewCU} and {@link #TU_To_NewTUs} actions, if the user goes with the suggested maximum value, then nothing is done. But there is a (return) message which gives a brief explanation to the user.
+	 * </ul>
+	 * <b>About the {@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM} parameter</b>
+	 * It's not mentioned below, but always shown when a new TU or LU is added. Also when the number of aggregate TUs is increased.
+	 * 
+	 */
 	public static enum ActionType
 	{
-		CU_To_NewCU //
-		, CU_To_ExistingTU //
-		, CU_To_NewTUs //
-		, TU_To_NewTUs //
-		, TU_To_NewLU //
-		, TU_To_ExistingLU //
-	}
+		/**
+		 * Takes a quantity out of a TU <b>or</b> to splits one CU into two.
+		 * <p>
+		 * Parameters:
+		 * <ul>
+		 * <li>the currently selected source CU line</li>
+		 * <li>the CU-quantity to take out or split</li>
+		 * </ul>
+		 */
+		CU_To_NewCU,
 
-	//
-	// Services
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		/**
+		 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
+		 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
+		 * <p>
+		 * Parameters:
+		 * <ul>
+		 * <li>the currently selected source CU line</li>
+		 * <li>the PI item product to specify both the PI and capacity of the target TU</li>
+		 * <li>the CU-quantity to join or split</li>
+		 * </ul>
+		 */
+		CU_To_NewTUs,
+
+		/**
+		 * Similar to {@link #CU_To_NewTUs}, but the destination TU already exists (selectable as process parameter).<br>
+		 * <b>Important:</b> the user is allowed to exceed the TU capacity which was configured in metasfresh! No new TUs will be created.<br>
+		 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
+		 * <p>
+		 * Parameters
+		 * <ul>
+		 * <li>the currently selected source CU line</li>
+		 * <li>the target TU</li>
+		 * <li>the CU-quantity to join or split</li>
+		 * </ul>
+		 */
+		CU_To_ExistingTU,
+
+		/**
+		 * Takes a TU off a LU or splits one TU into two. The resulting TUs will always have the same PI as the source TU
+		 * <p>
+		 * Parameters
+		 * <ul>
+		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
+		 * <li>the number of TUs to take off or split</li>
+		 * </ul>
+		 */
+		TU_To_NewTUs,
+
+		/**
+		 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
+		 * Otherwise, the source is split and distributed over many LUs.
+		 * <p>
+		 * Parameters
+		 * <ul>
+		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
+		 * <li>the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU</li>
+		 * <li>the number of TUs to join or split onto the destination LU(s)</li>
+		 * </ul>
+		 */
+		TU_To_NewLUs,
+
+		/**
+		 * Similar to {@link #TU_To_NewLUs}, but the destination LU already exists (selectable as process parameter).<br>
+		 * <b>Important:</b> the user is allowed to exceed the LU TU-capacity which was configured in metasfresh! No new LUs will be created.<br>
+		 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
+		 * <p>
+		 * Parameters
+		 * <ul>
+		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
+		 * <li>the target LU</li>
+		 * <li>the number of TUs to join or split one the target LU</li>
+		 * </ul>
+		 */
+		TU_To_ExistingLU
+	}
 
 	//
 	// Parameters
@@ -96,10 +176,9 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
 	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
 
-	//
-	private static final String PARAM_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
-	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
-	private int p_M_LU_HU_PI_ID;
+	private static final String PARAM_M_HU_PI_ITEM_ID = "M_HU_PI_ITEM_ID";
+	@Param(parameterName = PARAM_M_HU_PI_ITEM_ID)
+	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
 	//
 	private static final String PARAM_M_TU_HU_ID = "M_TU_HU_ID";
@@ -130,9 +209,25 @@ public class WEBUI_M_HU_Transform
 		Adempiere.autowire(this);
 	}
 
+	/**
+	 * @return For the two parameters {@link #PARAM_QtyTU} and {@value #PARAM_QtyCU}, this method returns the "maximum" (i.e. what's inside the currently selected source TU resp. CU).<br>
+	 *         For any other parameter, it returns {@link IProcessDefaultParametersProvider#DEFAULT_VALUE_NOTAVAILABLE}.
+	 */
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
+		if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		{
+			final I_M_HU cu = getSingleSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
+			return HUTransferService.get(getCtx()).getMaximumQtyCU(cu);
+		}
+
+		if (PARAM_QtyTU.equals(parameter.getColumnName()))
+		{
+			final I_M_HU tu = getSingleSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
+			return HUTransferService.get(getCtx()).getMaximumQtyCU(tu);
+		}
+
 		return DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
@@ -145,7 +240,6 @@ public class WEBUI_M_HU_Transform
 		if (getSelectedDocumentIds().size() != 1)
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-
 		}
 		if (getSingleSelectedRow().isLU())
 		{
@@ -170,34 +264,36 @@ public class WEBUI_M_HU_Transform
 			}
 			case CU_To_ExistingTU:
 			{
-				action_SplitCU_To_ExistingTU(row, p_QtyCU, p_M_TU_HU);
+				action_SplitCU_To_ExistingTU(row, p_M_TU_HU, p_QtyCU);
 				break;
 			}
 			case CU_To_NewTUs:
-			{
-				action_SplitCU_To_NewTUs(row, p_QtyCU, p_M_HU_PI_Item_Product, p_HUPlanningReceiptOwnerPM);
-				break;
-			}
-			//
-			case TU_To_NewTUs:
-			{
-				action_SplitTU_To_NewTUs(row, p_QtyTU, p_M_HU_PI_Item_Product, p_HUPlanningReceiptOwnerPM);
-				break;
-			}
-			case TU_To_NewLU:
 			{
 				if (p_M_HU_PI_Item_Product == null)
 				{
 					throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
 				}
-				final I_C_BPartner bpartner = getSingleSelectedRow().getM_HU().getC_BPartner();
-				final I_M_HU_PI_Item luPIItem = findLU_HU_PI_Item(p_M_HU_PI_Item_Product, p_M_LU_HU_PI_ID, bpartner);
-				action_SplitTU_To_NewLU(row, p_QtyTU, p_M_HU_PI_Item_Product, luPIItem, p_HUPlanningReceiptOwnerPM);
+				action_SplitCU_To_NewTUs(row, p_M_HU_PI_Item_Product, p_QtyCU, p_HUPlanningReceiptOwnerPM);
+				break;
+			}
+			//
+			case TU_To_NewTUs:
+			{
+				action_SplitTU_To_NewTUs(row, p_QtyTU, p_HUPlanningReceiptOwnerPM);
+				break;
+			}
+			case TU_To_NewLUs:
+			{
+				if (p_M_HU_PI_Item == null)
+				{
+					throw new FillMandatoryException(PARAM_M_HU_PI_ITEM_ID);
+				}
+				action_SplitTU_To_NewLU(row, p_M_HU_PI_Item, p_QtyTU, p_HUPlanningReceiptOwnerPM);
 				break;
 			}
 			case TU_To_ExistingLU:
 			{
-				action_SplitTU_To_ExistingLU(row, p_QtyTU, p_M_LU_HU);
+				action_SplitTU_To_ExistingLU(row, p_M_LU_HU, p_QtyTU);
 				break;
 			}
 			//
@@ -214,10 +310,10 @@ public class WEBUI_M_HU_Transform
 	 * Split selected CU to an existing TU.
 	 *
 	 * @param cuRow
-	 * @param qtyCU quantity to split
 	 * @param tuHU
+	 * @param qtyCU quantity to split
 	 */
-	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final BigDecimal qtyCU, final I_M_HU tuHU)
+	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
 		HUTransferService.get(getCtx())
 				.splitCU_To_ExistingTU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuHU);
@@ -234,6 +330,7 @@ public class WEBUI_M_HU_Transform
 	 */
 	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
 	{
+		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.splitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
 
@@ -246,10 +343,14 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @param cuRow cu row to split
 	 * @param qtyCU quantity CU to split
-	 * @param tuPIItemProductId to TU
 	 * @param isOwnPackingMaterials
+	 * @param tuPIItemProductId to TU
 	 */
-	private void action_SplitCU_To_NewTUs(final HUDocumentView cuRow, final BigDecimal qtyCU, final I_M_HU_PI_Item_Product tuPIItemProduct, final boolean isOwnPackingMaterials)
+	private void action_SplitCU_To_NewTUs(
+			final HUDocumentView cuRow,
+			final I_M_HU_PI_Item_Product tuPIItemProduct,
+			final BigDecimal qtyCU,
+			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.splitCU_To_NewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
@@ -262,9 +363,9 @@ public class WEBUI_M_HU_Transform
 	// * existing LU (M_HU_ID)
 	// * QtyTUs
 	private void action_SplitTU_To_ExistingLU(
-			final HUDocumentView tuRow //
-			, final BigDecimal qtyTU //
-			, final I_M_HU luHU)
+			final HUDocumentView tuRow,
+			final I_M_HU luHU,
+			final BigDecimal qtyTU)
 	{
 		HUTransferService.get(getCtx())
 				.splitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
@@ -278,20 +379,19 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @param tuRow represents the TU (or TUs in the aggregate-HU-case) that is our split source
 	 * @param qtyTU the number of TUs we want to split from the given {@code tuRow}
-	 * @param tuPIItemProductId
-	 * @param luPIItemId
 	 * @param isOwnPackingMaterials
+	 * @param tuPIItemProductId
+	 * @param luPI
 	 */
-	private void action_SplitTU_To_NewLU( //
-			final HUDocumentView tuRow //
-			, final BigDecimal qtyTU //
-			, final I_M_HU_PI_Item_Product tuPIItemProduct //
-			, final I_M_HU_PI_Item luPIItem //
-			, final boolean isOwnPackingMaterials //
+	private void action_SplitTU_To_NewLU(
+			final HUDocumentView tuRow, 
+			final I_M_HU_PI_Item huPIItem, 
+			final BigDecimal qtyTU, 
+			final boolean isOwnPackingMaterials
 	)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitTU_To_NewLU(tuRow.getM_HU(), qtyTU, tuPIItemProduct, luPIItem, isOwnPackingMaterials);
+				.splitTU_To_NewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -302,38 +402,25 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @param tuRow
 	 * @param qtyTU
-	 * @param tuPIItemProductId
 	 * @param isOwnPackingMaterials
+	 * @param tuPI
 	 */
-	private void action_SplitTU_To_NewTUs(final HUDocumentView tuRow //
-			, final BigDecimal qtyTU //
-			, final I_M_HU_PI_Item_Product tuPIItemProduct //
-			, final boolean isOwnPackingMaterials //
-	)
+	private void action_SplitTU_To_NewTUs(
+			final HUDocumentView tuRow,
+			final BigDecimal qtyTU,
+			final boolean isOwnPackingMaterials)
 	{
+		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, tuPIItemProduct, isOwnPackingMaterials);
+				.splitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
 	}
 
-	private final I_M_HU_PI_Item findLU_HU_PI_Item(final I_M_HU_PI_Item_Product tuPIItemProduct, final int luPI_ID, final I_C_BPartner bpartner)
-	{
-		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-
-		final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner)
-				.stream()
-				.filter(piItem -> piItem.getM_HU_PI_Version().getM_HU_PI_ID() == luPI_ID)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException(tuPI.getName() + " cannot be loaded to " + p_M_LU_HU_PI_ID));
-
-		return luPI_Item;
-	}
-
 	/**
 	 * 
-	 * @return the action that are available according to which row is currently selected and to also according to whether there are already existing TUs or LUs in the context.
+	 * @return the actions that are available according to which row is currently selected and to also according to whether there are already existing TUs or LUs in the context.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
 	private LookupValuesList getActions()
@@ -348,12 +435,12 @@ public class WEBUI_M_HU_Transform
 
 		if (getSingleSelectedRow().isCU())
 		{
+			selectableTypes.add(ActionType.CU_To_NewCU.toString());
+			selectableTypes.add(ActionType.CU_To_NewTUs.toString());
+
 			final boolean existsTU = getView()
 					.streamAllRecursive()
 					.anyMatch(row -> row.isTU());
-
-			selectableTypes.add(ActionType.CU_To_NewCU.toString());
-			selectableTypes.add(ActionType.CU_To_NewTUs.toString());
 			if (existsTU)
 			{
 				selectableTypes.add(ActionType.CU_To_ExistingTU.toString());
@@ -362,12 +449,12 @@ public class WEBUI_M_HU_Transform
 
 		if (getSingleSelectedRow().isTU())
 		{
+			selectableTypes.add(ActionType.TU_To_NewTUs.toString());
+			selectableTypes.add(ActionType.TU_To_NewLUs.toString());
+
 			final boolean existsLU = getView()
 					.streamAllRecursive()
 					.anyMatch(row -> row.isLU());
-
-			selectableTypes.add(ActionType.TU_To_NewTUs.toString());
-			selectableTypes.add(ActionType.TU_To_NewLU.toString());
 			if (existsLU)
 			{
 				selectableTypes.add(ActionType.TU_To_ExistingLU.toString());
@@ -383,8 +470,9 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
+	 * Needed when the selected action is {@link ActionType#CU_To_ExistingTU}.
 	 * 
-	 * @return existing TUs that are available in the current HU editor context.
+	 * @return existing TUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
 	private LookupValuesList getTULookupValues()
@@ -399,15 +487,14 @@ public class WEBUI_M_HU_Transform
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
-		else
-		{
-			return LookupValuesList.EMPTY;
-		}
+
+		return LookupValuesList.EMPTY;
 	}
 
 	/**
+	 * Needed when the selected action is {@link ActionType#TU_To_ExistingLU}.
 	 * 
-	 * @return existing LUs that are available in the current HU editor context.
+	 * @return existing LUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
 	private LookupValuesList getLULookupValues()
@@ -422,40 +509,35 @@ public class WEBUI_M_HU_Transform
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
-		else
-		{
-			return LookupValuesList.EMPTY;
-		}
+
+		return LookupValuesList.EMPTY;
 	}
 
+	/**
+	 * Needed when the selected action is {@link ActionType#CU_To_NewTUs}.
+	 * 
+	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
+	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = PARAM_Action, numericKey = true)
 	private LookupValuesList getM_HU_PI_Item_Products()
 	{
 		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
-		switch (actionType)
+		if (actionType == ActionType.CU_To_NewTUs)
 		{
-			case CU_To_NewTUs:
-				return retrieveHUPItemProductsForNewTU();
-
-			case TU_To_NewTUs:
-				return retrieveHUPItemProductsForNewTU();
-
-			case TU_To_NewLU:
-				return retrieveHUPItemProductsForNewTU(); // here we also create new TUs, in addition to the new LU
-
-			default:
-				return LookupValuesList.EMPTY;
+			return retrieveHUPItemProductsForNewTU();
 		}
+
+		return LookupValuesList.EMPTY;
 	}
 
 	private LookupValuesList retrieveHUPItemProductsForNewTU()
 	{
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
-		final HUDocumentView huRow = getSingleSelectedRow();
+		final HUDocumentView cuRow = getSingleSelectedRow();
 
 		final Stream<I_M_HU_PI_Item_Product> stream = hupiItemProductDAO
-				.retrieveTUs(getCtx(), huRow.getM_Product(), huRow.getM_HU().getC_BPartner())
+				.retrieveTUs(getCtx(), cuRow.getM_Product(), cuRow.getM_HU().getC_BPartner())
 				.stream();
 
 		return stream
@@ -465,33 +547,37 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
-	 * Retrieves all LU packing instructions that can be used with the currently selected {@link #PARAM_M_HU_PI_Item_Product_ID}.
+	 * Needed when the selected action is {@link ActionType#TU_To_NewLUs}.
 	 * 
-	 * @return
+	 * @return a list of HU PI items that link the currently selected TU with a TUperLU-qty and a LU packing instruction.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_PI_ID, dependsOn = { PARAM_Action, PARAM_M_HU_PI_Item_Product_ID }, numericKey = true)
-	private LookupValuesList getM_LU_HU_PI_ID()
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_ITEM_ID, dependsOn = { PARAM_Action }, numericKey = true)
+	private LookupValuesList getM_HU_PI_Item_ID()
 	{
-		if (p_M_HU_PI_Item_Product == null)
+		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
+		if (actionType != ActionType.TU_To_NewLUs)
 		{
 			return LookupValuesList.EMPTY;
 		}
 
-		final I_M_HU_PI tuPI = p_M_HU_PI_Item_Product.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		final List<I_M_HU_PI> luPIs = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class, this)
+		final HUDocumentView tuRow = getSingleSelectedRow();
+		final I_M_HU_PI tuPI = Services.get(IHandlingUnitsBL.class).getEffectivePIVersion(tuRow.getM_HU()).getM_HU_PI();
+
+		final List<I_M_HU_PI_Item> luPIItems = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, tuPI.getM_HU_PI_ID())
-				.andCollect(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID)
 				.addOnlyActiveRecordsFilter()
-				.andCollect(I_M_HU_PI_Version.COLUMN_M_HU_PI_ID)
-				.addOnlyActiveRecordsFilter()
-				.orderBy().addColumn(I_M_HU_PI.COLUMN_M_HU_PI_ID).endOrderBy()
 				.create()
 				.list();
 
-		return luPIs.stream()
-				.sorted(Comparator.comparing(I_M_HU_PI::getName))
-				.map(luPI -> IntegerLookupValue.of(luPI.getM_HU_PI_ID(), luPI.getName()))
+		return luPIItems.stream()
+				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), buildHUPIItemString(luPIItem)))
+				.sorted(Comparator.comparing(IntegerLookupValue::getDisplayName))
 				.collect(LookupValuesList.collect());
+	}
+
+	private String buildHUPIItemString(I_M_HU_PI_Item huPIItem)
+	{
+		return StringUtils.formatMessage("{} ({} x {})", huPIItem.getM_HU_PI_Version().getName(), huPIItem.getQty(), huPIItem.getIncluded_HU_PI().getName());
 	}
 }
