@@ -59,6 +59,8 @@ UPDATE AD_Ref_List SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2017-0
 UPDATE AD_Ref_List SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2017-03-09 17:59:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541252
 ;
 
+UPDATE AD_Ref_List SET ValueName='TU_Set_Ownership' WHERE AD_Ref_List_ID=541252;
+
 -- 09.03.2017 18:00
 -- URL zum Konzept
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540763,541167,20,'HUPlanningReceiptOwnerPM_TU',TO_TIMESTAMP('2017-03-09 18:00:25','YYYY-MM-DD HH24:MI:SS'),100,'N','If true, then the packing material''s owner is "us" (the guys who ordered it). If false, then the packing material''s owner is the PO''s partner.','','de.metas.ui.web',0,'Y','N','N','N','Y','N','Eigene TU',90,TO_TIMESTAMP('2017-03-09 18:00:25','YYYY-MM-DD HH24:MI:SS'),100)
