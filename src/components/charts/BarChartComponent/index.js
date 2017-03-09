@@ -6,6 +6,7 @@ import { populateXAxis, populateYAxis, moveXAxis, getXAxisLabelsHeight } from '.
 import { getSvg, sizeSvg } from './svg';
 import { getHorizontalDimensions, getVerticalDimensions } from './dimensions';
 import { drawData } from './data';
+import { drawLegend } from './legend';
 
 class BarChartComponent extends Component {
     svg;
@@ -30,7 +31,7 @@ class BarChartComponent extends Component {
 
         // vertical sizing
         const labelsHeight = getXAxisLabelsHeight(this.svg);
-        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 5});
+        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 35});
         const rangeY = getYRange(vertical.height, data, fields);
         populateYAxis(this.svg, rangeY);
 
@@ -42,6 +43,8 @@ class BarChartComponent extends Component {
             ...horizontal,
             ...vertical
         });
+
+        drawLegend(this.svg, fields, horizontal, rangeZ);
 
         return {
             dimensions: {
@@ -57,20 +60,6 @@ class BarChartComponent extends Component {
         }
     }
 
-    clear = () => {
-        const { chartClass } = this.props;
-        const svgChildren = document.getElementsByClassName(chartClass)[0].childNodes;
-
-        if (svgChildren.length){
-            svgChildren[0].remove();
-        }
-    };
-
-    redraw = () => {
-        this.clear();
-        this.draw();
-    };
-
     draw(){
         const { data, groupBy } = this.props;
         const { dimensions, ranges } = this.prepare();
@@ -82,7 +71,7 @@ class BarChartComponent extends Component {
         const { chartClass } = this.props;
 
         d3.select(window)
-            .on('resize.' + chartClass, () => this.redraw())
+            .on('resize.' + chartClass, () => this.draw())
     };
 
     componentDidMount() {
