@@ -1,20 +1,17 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.DisplayType;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
+import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 
 /*
  * #%L
@@ -58,63 +55,9 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 		final I_M_HU_LUTU_Configuration lutuConfig = getCurrentLUTUConfiguration(receiptSchedule);
 		adjustLUTUConfiguration(lutuConfig, receiptSchedule);
 
-		final StringBuilder packingInfo = new StringBuilder();
-
-		//
-		// LU
-		// NOTE: don't show LU info because makes the whole label to long.
-		// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/315#issuecomment-280624562
-		// final I_M_HU_PI luPI = lutuConfig.getM_LU_HU_PI();
-		// if (luPI != null)
-		// {
-		// packingInfo.append(luPI.getName());
-		// }
-
-		//
-		// TU
-		final I_M_HU_PI tuPI = lutuConfig.getM_TU_HU_PI();
-		if (tuPI != null && !Services.get(IHandlingUnitsBL.class).isVirtual(tuPI))
-		{
-			if (packingInfo.length() > 0)
-			{
-				packingInfo.append(" x ");
-			}
-
-			final BigDecimal qtyTU = lutuConfig.getQtyTU();
-			if (!lutuConfig.isInfiniteQtyTU() && qtyTU != null && qtyTU.signum() > 0)
-			{
-				packingInfo.append(qtyTU.intValue()).append(" ");
-			}
-
-			packingInfo.append(tuPI.getName());
-		}
-
-		//
-		// CU
-		final BigDecimal qtyCU = lutuConfig.getQtyCU();
-		if (!lutuConfig.isInfiniteQtyCU() && qtyCU != null && qtyCU.signum() > 0)
-		{
-			if (packingInfo.length() > 0)
-			{
-				packingInfo.append(" x ");
-			}
-
-			final DecimalFormat qtyFormat = DisplayType.getNumberFormat(DisplayType.Quantity);
-			packingInfo.append(qtyFormat.format(qtyCU));
-
-			final I_C_UOM uom = lutuConfig.getC_UOM();
-			final String uomSymbol = uom == null ? null : uom.getUOMSymbol();
-			if (uomSymbol != null)
-			{
-				packingInfo.append(" ").append(uomSymbol);
-			}
-		}
-
-		if (packingInfo.length() == 0)
-		{
-			return null; // no override
-		}
-		return packingInfo.toString();
+		return HUPackingInfoFormatter.newInstance()
+				.setShowLU(false) // NOTE: don't show LU info because makes the whole label to long. see https://github.com/metasfresh/metasfresh-webui-frontend/issues/315#issuecomment-280624562
+				.format(HUPackingInfos.of(lutuConfig));
 	}
 
 	@Override
@@ -150,7 +93,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 		// see https://github.com/metasfresh/metasfresh-webui/issues/228
 		{
 			final BigDecimal qtyToMoveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(receiptSchedule);
-			
+
 			if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
 			{
 				lutuConfig.setQtyTU(qtyToMoveTU);

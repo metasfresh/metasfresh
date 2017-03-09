@@ -15,7 +15,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
-import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -26,7 +25,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
+import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
@@ -133,11 +133,11 @@ public class HUDocumentViewLoader
 
 	private HUDocumentView createDocumentView(final I_M_HU hu)
 	{
-		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
+		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
 		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
 		final HUDocumentViewType huRecordType;
-		if (aggregateHU)
+		if (aggregatedTU)
 		{
 			huRecordType = HUDocumentViewType.TU;
 		}
@@ -151,7 +151,7 @@ public class HUDocumentViewLoader
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 		final boolean processed = extractProcessed(hu);
 		final int huId = hu.getM_HU_ID();
-		
+
 		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				.setType(huRecordType)
@@ -177,7 +177,7 @@ public class HUDocumentViewLoader
 
 		//
 		// Included HUs
-		if (aggregateHU)
+		if (aggregatedTU)
 		{
 			streamProductStorageDocumentViews(hu, processed)
 					.forEach(huViewRecord::addIncludedDocument);
@@ -217,21 +217,9 @@ public class HUDocumentViewLoader
 			return "";
 		}
 
-		final IHUDisplayNameBuilder helper = Services.get(IHandlingUnitsBL.class).buildDisplayName(hu)
-				.setShowIncludedHUCount(true);
-
-		final StringBuilder packingInfo = new StringBuilder();
-
-		final String piName = helper.getPIName();
-		packingInfo.append(Check.isEmpty(piName, true) ? "?" : piName);
-
-		final int includedHUsCount = helper.getIncludedHUsCount();
-		if (includedHUsCount > 0)
-		{
-			packingInfo.append(" x ").append(includedHUsCount);
-		}
-
-		return packingInfo.toString();
+		return HUPackingInfoFormatter.newInstance()
+				.setShowLU(true)
+				.format(HUPackingInfos.of(hu));
 	}
 
 	private final boolean extractProcessed(final I_M_HU hu)

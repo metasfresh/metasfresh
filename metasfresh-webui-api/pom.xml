@@ -68,6 +68,16 @@
 			<version>21.0</version>
 		</dependency>
 
+		<!--
+			Lombok
+			NOTE: if you don't need fancy things like @SneakyThrows then scope provided it's totally fine
+		 -->		
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Adempiere dependencies -->
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
