@@ -1,6 +1,6 @@
 import boxSize from './boxSize';
 
-export const getHorizontalDimensions = (svg, responsive, chartClass, margin = {left: 35, right: 5}) => {
+export const getHorizontalDimensions = (svg, chartClass, margin = {left: 35, right: 5}) => {
     const parentWidth = svg.node().parentNode.offsetWidth;
     const applyingMargin = {
         left: margin.left + boxSize.padding,
