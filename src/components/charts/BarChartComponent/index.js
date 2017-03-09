@@ -104,7 +104,7 @@ class BarChartComponent extends Component {
         const {chartClass} = this.props;
 
         return (
-            <div className={chartClass + '-wrapper'}>
+            <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
                 <svg className={chartClass} />
             </div>
         );
