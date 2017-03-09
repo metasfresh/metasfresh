@@ -1,17 +1,18 @@
 import boxSize from './boxSize';
 import * as d3 from 'd3';
 
+const size = {
+    width: 20,
+    height: 20,
+    offset: boxSize.padding
+};
+
 export const drawLegend = (svg, fields, horizontal, rangeZ) => {
-    const size = {
-        width: 20,
-        height: 20,
-        offset: boxSize.padding
-    };
     const width = horizontal.width + horizontal.left + horizontal.right - 2 * size.offset;
 
     const legend = drawContainer(svg, fields, width);
-    drawRects(legend, size, rangeZ);
-    drawTexts(legend, width, size);
+    drawRects(legend, rangeZ);
+    drawTexts(legend, width);
 
     return legend;
 };
@@ -30,11 +31,11 @@ const drawContainer = (svg, fields, width) => {
 
     return legend.attr(
         'transform',
-        (d, i) => 'translate(' + i * (width / legend.size()) + ', 0)'
+        (d, i) => 'translate(' + i * (width / legend.size()) + ', ' + size.offset + ')'
     );
 };
 
-const drawRects = (legend, size, rangeZ) => {
+const drawRects = (legend, rangeZ) => {
     const existingColors = legend
         .selectAll('rect')
         .data(d => [d]);
@@ -48,7 +49,7 @@ const drawRects = (legend, size, rangeZ) => {
         .attr('fill', d => rangeZ(d.fieldName));
 };
 
-const drawTexts = (legend, width, size) => {
+const drawTexts = (legend, width) => {
     const existingTexts = legend
         .selectAll('text')
         .data(d => [d]);

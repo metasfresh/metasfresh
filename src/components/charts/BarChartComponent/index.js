@@ -31,7 +31,7 @@ class BarChartComponent extends Component {
 
         // vertical sizing
         const labelsHeight = getXAxisLabelsHeight(this.svg);
-        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 25});
+        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 35});
         console.log(vertical)
         const rangeY = getYRange(vertical.height, data, fields);
         populateYAxis(this.svg, rangeY);

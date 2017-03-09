@@ -17,7 +17,7 @@ export const getHorizontalDimensions = (svg, responsive, chartClass, margin = {l
     }
 };
 
-export const getVerticalDimensions = (margin = {top: 5, bottom: 5}) => {
+export const getVerticalDimensions = (margin = {top: 35, bottom: 35}) => {
     const applyingMargin = {
         top: margin.top + boxSize.padding,
         bottom: margin.bottom + boxSize.padding
