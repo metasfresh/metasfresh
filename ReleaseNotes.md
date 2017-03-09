@@ -35,12 +35,19 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#987](https://github.com/metasfresh/metasfresh/issues/987) Create a vertical solution for organisations
-  * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window)
+    * Adding customizations for associations/ organisations as a vertical solution based on metasfresh.
+  * [#1000](https://github.com/metasfresh/metasfresh/issues/1000) Support long address in letter window
+    * Now long addresses are supported in documents for a proper display in a letter window.
   * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
+    * Performance and Database autovacuum improvement. Segmenting the mass archiving to allow better database maintenance.
   * [#1046](https://github.com/metasfresh/metasfresh/issues/1046) Automatic Naming of Pricelist Version Name
+    * Introducing the automatic naming of pricelist Version, adding the neede Informations into the Version identifier.
   * [#1070](https://github.com/metasfresh/metasfresh/issues/1070) Price not transferred to flatrate term
+    * Enhancing the processing of flatrate Terms after recording in orderline. Now also transferring the price into the flatrate term data after order completion.
   * [#1071](https://github.com/metasfresh/metasfresh/issues/1071) Empties document Jasper takes very long to generate
+    * Improving the performance of empties document generation.
   * [#1075](https://github.com/metasfresh/metasfresh/issues/1075) Create Window for Material Tracking in WebUI 
+    * New Window "Material Tracking" in WebUI, allowing the creation and maintenance of material Tracking datasets in preparation for usage in procurement, receipt and manufacuring. Material Tracking is important for the retraceability of products in metasfresh.
   * [#1076](https://github.com/metasfresh/metasfresh/issues/1076) NoDataFoundHandlers can cause StackOverflowError
   * [#1079](https://github.com/metasfresh/metasfresh/issues/1079) Refine the Material Receipt Candidates Grid View
   * [#1080](https://github.com/metasfresh/metasfresh/issues/1080) Virtual Column for qtyenteredTU from Purchase Orderline in Receipt Candidate
