@@ -1,13 +1,30 @@
-export const getHorizontalDimensions = (responsive, chartClass, margin = {left: 35, right: 5}, width = 600) => {
-    const wrapperWidth = document.getElementsByClassName(chartClass + '-wrapper')[0].offsetWidth;
+import boxSize from './boxSize';
+
+export const getHorizontalDimensions = (svg, responsive, chartClass, margin = {left: 35, right: 5}) => {
+    const parentWidth = svg.node().parentNode.offsetWidth;
+    const applyingMargin = {
+        left: margin.left + boxSize.padding,
+        right: margin.right + boxSize.padding,
+    };
 
     return {
-        ...margin,
-        width: (responsive ? wrapperWidth : width) - (margin.left + margin.right)
+        ...applyingMargin,
+        width: (
+            parentWidth < boxSize.minWidth ?
+                boxSize.minWidth :
+                parentWidth
+        ) - (applyingMargin.left + applyingMargin.right)
     }
 };
 
-export const getVerticalDimensions = (margin = {top: 5, bottom: 5}, height = 400) => ({
-    ...margin,
-    height: height - (margin.top + margin.bottom)
-});
+export const getVerticalDimensions = (margin = {top: 5, bottom: 5}) => {
+    const applyingMargin = {
+        top: margin.top + boxSize.padding,
+        bottom: margin.bottom + boxSize.padding
+    };
+
+    return ({
+        ...applyingMargin,
+        height: boxSize.height - (applyingMargin.top + applyingMargin.bottom)
+    });
+};
