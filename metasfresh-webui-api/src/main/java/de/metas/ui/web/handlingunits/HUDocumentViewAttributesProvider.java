@@ -66,7 +66,6 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 	{
 		final int huId = attributesKey.toInt();
 		final DocumentViewAttributesKey key = new DocumentViewAttributesKey(documentId, huId);
-		documentViewAttributesByKey.clear(); // FIXME: debug
 		return documentViewAttributesByKey.computeIfAbsent(key, this::createDocumentViewAttributes);
 	}
 
