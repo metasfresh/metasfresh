@@ -14,14 +14,14 @@ class PieChartComponent extends Component {
 
         const dimensions = this.setDimensions();
         this.drawChart(dimensions.width, dimensions.height, dimensions.pie, 
-                        dimensions.arc, data, color);
+                        dimensions.arc, data, color, dimensions.radius);
         if(responsive){
             this.addResponsive(data, color);
         }
 
     }
 
-    setDimensions = (width=400, height=200) => {
+    setDimensions = (width=600, height=500) => {
         const {chartClass, responsive, fields} = this.props;
         let chartWidth = width;
         let chartHeight = height;
@@ -48,19 +48,26 @@ class PieChartComponent extends Component {
             };
     }
 
-    drawChart = (width, height, pie, arc, data, color) => {
+    drawChart = (width, height, pie, arc, data, color, radius) => {
         const {chartClass, fields, groupBy} = this.props;
+
         var svg = d3.select('.' + chartClass)
             .attr('width', width)
             .attr('height', height)
+            .append('g');
+            
+        var chart = svg
+            .attr('width', width)
+            .attr('height', height)
             .append('g')
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+            .attr("class", "chart")
+            .attr('transform', 'translate(' + width / 2 + ',' + (height - 0.6*height / 2) + ')');
 
-        svg.append("g")
+        chart.append("g")
             .attr("class", "slices");
-        svg.append("g")
+        chart.append("g")
             .attr("class", "labels");
-        svg.append("g")
+        chart.append("g")
             .attr("class", "lines");
 
         var g = d3.select('.slices').selectAll('.arc')
@@ -78,86 +85,58 @@ class PieChartComponent extends Component {
         //     .text(d => d.data[groupBy.fieldName]);
 
 
+        this.drawLegend(svg, width, height, color);
+    }
 
+    drawLegend = (svg, width, height, color) => {
 
+        const {groupBy, data} = this.props;
 
-//----------------------------------//
+        var legend = svg
+            .attr('width', width)
+            .attr('height', 0.35*height)
+            .append('g')
+            .attr("class", "legends")
+            .attr('transform', 'translate(' + 0 + ',' + 0.35*height / 2 + ')');
 
+        var legendRectSize = 18;
+        var legendSpacing = 4;
 
-
-
-        var key = d => d.data[groupBy.fieldName];
-
-        var text = svg.select(".labels").selectAll("text")
-		.data(pie(data), key);
-
-        text.enter()
-		.append("text")
-		.attr("dy", ".35em")
-		.text(d => d.data[groupBy.fieldName])
-        .attr("transform", d => {
-            // console.log(d);
-                this._current = this._current || d;
-                const interpolate = d3.interpolate(this._current, d);
-                this._current = interpolate(0);
-                return function(t) {
-                    console.log(t);
-                    // var d2 = interpolate(t);
-                    // var pos = outerArc.centroid(d2);
-                    // pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
-                    return "translate(" + 0 + "," + 60 + ")"
-                }
-
-                   
-                
-                // "translate(" + 0 + "," + 60 + ")"}
+        var legendItem = legend.selectAll('.legend')
+        .data(color.domain())
+        .enter()
+        .append('g')
+        .attr('class', 'legend')
+        .attr('transform', function(d, i) {
+            
+            var height = legendRectSize + legendSpacing;
+            var offset =  height * color.domain().length / 2;
+            var horz = -2 * legendRectSize;
+            var vert = i * height - offset;
+            return 'translate(' + 0 + ',' + vert + ')';
         });
-        
 
-        function midAngle(d){
-            console.log(d.startAngle);
-            return d.startAngle + (d.endAngle - d.startAngle)/2;
-        }
+        legendItem.append('rect')
+        .attr('width', legendRectSize)
+        .attr('height', legendRectSize)
+        .style('fill', color)
+        .style('stroke', color);
 
-        text.transition().duration(1000)
-            .attrTween("transform", function(d) {
-                this._current = this._current || d;
-                var interpolate = d3.interpolate(this._current, d);
-                this._current = interpolate(0);
-                return function(t) {
-                    var d2 = interpolate(t);
-                    var pos = outerArc.centroid(d2);
-                    pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
-                    return "translate("+ pos +")";
-                };
-            })
-            .styleTween("text-anchor", function(d){
-                this._current = this._current || d;
-                var interpolate = d3.interpolate(this._current, d);
-                this._current = interpolate(0);
-                return function(t) {
-                    var d2 = interpolate(t);
-                    return midAngle(d2) < Math.PI ? "start":"end";
-                };
-            });
-
-        text.exit()
-            .remove();
-
-
+        legendItem.append('text')
+        .attr('x', legendRectSize + legendSpacing)
+        .attr('y', legendRectSize - legendSpacing)
+        .text(function(d, i) { 
+            return data[i][groupBy.fieldName]; 
+        });
     }
 
     addResponsive = (data, color) => {
-        // console.log('responsive');
         const {chartClass} = this.props;
         const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
-        // console.log(chartWrapp.offsetWidth);
+
         d3.select(window)
           .on("resize."+chartClass, () => {
-            // console.log('resizing');
-            // console.log(chartClass);
             this.clearChart();
-
             const dimensions = this.setDimensions(chartWrapp.offsetWidth);
             this.drawChart(dimensions.width, dimensions.height, dimensions.pie, 
                             dimensions.arc, data, color);
@@ -172,7 +151,7 @@ class PieChartComponent extends Component {
     render() {
         const {chartClass} = this.props;
         return (
-            <div className={chartClass+"-wrapper"}>
+            <div className={chartClass+"-wrapper" + ' chart-wrapper'}>
                 <svg className={chartClass}></svg>
             </div>
         );

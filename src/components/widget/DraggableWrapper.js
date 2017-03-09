@@ -169,7 +169,7 @@ export class DraggableWrapper extends Component {
                     return (
                         <DraggableWidget
                             
-                            key={id} 
+                            key={item.id} 
                             id={item.id}
                             index={id}
                             chartType={item.kpi.chartType}
