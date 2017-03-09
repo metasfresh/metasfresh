@@ -3,7 +3,8 @@ package de.metas.handlingunits.allocation.transfer;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -300,7 +301,7 @@ public class HUTransferServiceTests
 		}
 	}
 
-	@Theory
+	@Test
 	public void testSplitRealCU_To_ExistingRealTU()
 	{
 		// prepare the existing TU
@@ -333,6 +334,49 @@ public class HUTransferServiceTests
 		assertThat(existingTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
 		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
 		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
+	}
+
+	/**
+	 * Like {@link #testSplitRealCU_To_ExistingRealTU()}, but the existing already contains 30kg (with a capacity of 40kg). Then add another 20kg. shall work.
+	 */
+	@Test
+	public void testSplitRealCU_To_ExistingRealTU_overfill()
+	{
+		// prepare the existing TU
+		// just use the testee as a tool here, to create our "real" TU.
+		final I_M_HU existingTU;
+		{
+			final I_M_HU cuHU = mkRealStandAloneCUToSplit("30");
+			final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
+					.splitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("30"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+			assertThat(existingTUs.size(), is(1));
+			existingTU = existingTUs.get(0);
+			assertThat(handlingUnitsBL.isAggregateHU(existingTU), is(false));
+
+			final Node existingTUBeforeXML = HUXmlConverter.toXml(existingTU);
+			assertThat(existingTUBeforeXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
+			assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+			assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='30.000' and @C_UOM_Name='Kg'])", is("1")));
+		}
+		// prepare the CU to split
+		final I_M_HU cuToSplit = mkRealStandAloneCUToSplit("20");
+
+		// invoke the method under test
+		HUTransferService.get(data.helper.getHUContext())
+				.splitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
+
+		//data.helper.commitAndDumpHU(existingTU);
+
+		// existingTU now contains 30 + 20 = 50kg, despite its capacity is just 40kg according to the master data. 
+		final Node existingTUXML = HUXmlConverter.toXml(existingTU);
+		assertThat(existingTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
+		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+		assertThat(existingTUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("50.000")));
+
+		// the cu we split from is destroyed
+		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
+		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='D'])", is("1")));
+		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='0.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 
 	@Test
@@ -373,7 +417,7 @@ public class HUTransferServiceTests
 	 * 
 	 * @param isOwnPackingMaterials
 	 */
-		@Test
+	@Test
 	public void testSplitAggregateTU_To_NewTUs_MaxValueParent()
 	{
 		final I_M_HU tuToSplit = mkAggregateCUToSplit("80");
@@ -669,6 +713,38 @@ public class HUTransferServiceTests
 	}
 
 	// TODO: test with TUs that have multiple different CUs in them
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh-webui/issues/237 Transform CU on existing TU not working
+	 */
+	@Test
+	public void test_add_CU_to_existing_TU_that_already_has_a_CU()
+	{
+		final I_M_HU cuHU = mkRealStandAloneCUToSplit("1"); // CU with 1kg tomatoes
+
+		assertThat(data.piTU_Item_Product_IFCO_40KgTomatoes.isInfiniteCapacity(), is(false)); // guard, because mark considered that isInfiniteCapacity=false might cause the problem
+		final List<I_M_HU> tus = HUTransferService.get(data.helper.getHUContext())
+				.splitCU_To_NewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+
+		assertThat(tus.size(), is(1));
+		final I_M_HU existingTU = tus.get(0);
+
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		data.helper.load(producer, data.helper.pSalad, new BigDecimal("1"), data.helper.uomKg);
+		final I_M_HU secondCU = producer.getCreatedHUs().get(0);
+
+		HUTransferService.get(data.helper.getHUContext())
+				.splitCU_To_ExistingTU(secondCU, data.helper.pSalad, data.helper.uomKg, BigDecimal.ONE, existingTU);
+
+		// data.helper.commitAndDumpHU(existingTU);
+		final Node existingLUXML = HUXmlConverter.toXml(existingTU);
+		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+	}
 
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
 	{

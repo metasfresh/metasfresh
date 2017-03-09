@@ -78,6 +78,12 @@ public class HUTransferService
 		this.huContext = ctx;
 	}
 
+	/**
+	 * When running unit tests, then use this method to get your instance. Pass the HUTestHelper's getHUContext() result to it, to avoid transactional trouble.
+	 * 
+	 * @param ctx
+	 * @return
+	 */
 	public static HUTransferService get(final IHUContext ctx)
 	{
 		return new HUTransferService(ctx);
@@ -99,12 +105,19 @@ public class HUTransferService
 			final IHUContext huContext,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
-			final BigDecimal cuQty)
+			final BigDecimal cuQty,
+			final boolean forceAllocation)
 	{
 
 		//
 		// Create allocation request for the quantity user entered
-		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext, cuProduct, cuQty, cuUOM, SystemTime.asTimestamp());
+		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext, 
+				cuProduct, 
+				cuQty, 
+				cuUOM, 
+				SystemTime.asTimestamp(), 
+				null, // referenced model 
+				forceAllocation);
 
 		if (allocationRequest.isZeroQty())
 		{
@@ -115,7 +128,7 @@ public class HUTransferService
 		// make sure the attributes are initialized in case of multiple row selection, also
 		// TODO: do we need this?
 		// huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, ImmutableList.of(receiptSchedule));
-
+		
 		return allocationRequest;
 	}
 
@@ -187,7 +200,8 @@ public class HUTransferService
 				.of(
 						huContext,
 						cuHU,
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU),
+						// forceAllocation = false; no need, because destination has no capacity constraints
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false),
 						destination)
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -216,11 +230,12 @@ public class HUTransferService
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(tuHU);
-
+		
 		HUSplitBuilderCoreEngine
 				.of(huContext,
 						cuHU,
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU),
+						// forceAllocation = true; 'tuHU' will probably have capacity constraints, but we want to ignore them; if the user squeezed in the stuff in reality, we need to do the same in metasfresh
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, true), 
 						destination)
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -258,7 +273,8 @@ public class HUTransferService
 		HUSplitBuilderCoreEngine
 				.of(huContext,
 						cuHU,
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU),
+						// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false), 
 						destination)
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
@@ -441,7 +457,8 @@ public class HUTransferService
 			HUSplitBuilderCoreEngine
 					.of(huContext,
 							sourceTuHU,
-							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU)),
+							// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
+							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false),
 							destination)
 					.withPropagateHUValues()
 					.withTuPIItem(piip.getM_HU_PI_Item()) // TODO if we already have the piip here, then add it directly, and not the M_HU_PI_Item
@@ -508,7 +525,8 @@ public class HUTransferService
 			HUSplitBuilderCoreEngine
 					.of(huContext,
 							tuHU,
-							huContext -> createCUAllocationRequest(huContext, productStorage.getM_Product(), productStorage.getC_UOM(), productStorage.getQty()),
+							// forceAllocation = true; if the user managed to balance another LU onto a fully loaded LU, then we need to be able to also do this in metasfresh
+							huContext -> createCUAllocationRequest(huContext, productStorage.getM_Product(), productStorage.getC_UOM(), productStorage.getQty(), true),
 							destination)
 					.withPropagateHUValues()
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
