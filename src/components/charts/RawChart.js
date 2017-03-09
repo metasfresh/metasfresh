@@ -47,19 +47,25 @@ class RawChart extends Component {
 
         this.fetchData();
 
-        this.setState({
-            intervalId: setInterval(() => {
-                this.fetchData();
-            }, pollInterval * 1000)
-        })
+        if (pollInterval){
+            this.setState({
+                intervalId: setInterval(() => {
+                    this.fetchData();
+                }, pollInterval * 1000)
+            })
+        }
     }
 
     componentWillUnmount(){
-        clearInterval(this.state.intervalId);
+        const {intervalId} = this.state;
 
-        this.setState({
-            intervalId: null
-        })
+        if (intervalId){
+            clearInterval(intervalId);
+
+            this.setState({
+                intervalId: null
+            })
+        }
     }
 
     renderChart() {
