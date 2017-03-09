@@ -61,7 +61,7 @@ class DocList extends Component {
     render() {
         const {
             windowType, breadcrumb, query, actions, modal, selected, references,
-            rawModal, attachments, indicator
+            rawModal, attachments, indicator, processStatus
         } = this.props;
 
         const {
@@ -108,6 +108,7 @@ class DocList extends Component {
                              selected={selected}
                              setModalTitle={this.setModalTitle}
                              isModal={true}
+                             processStatus={processStatus}
                          />
                      </RawModal>
                  }
@@ -123,6 +124,7 @@ class DocList extends Component {
                      selected={selected}
                      inBackground={rawModal.visible}
                      fetchQuickActionsOnInit={true}
+                     processStatus={processStatus}
                  />
             </Container>
         );
@@ -141,11 +143,12 @@ DocList.propTypes = {
     actions: PropTypes.array.isRequired,
     attachments: PropTypes.array.isRequired,
     indicator: PropTypes.string.isRequired,
+    processStatus: PropTypes.string.isRequired,
     references: PropTypes.array.isRequired
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler, routing } = state;
+    const { windowHandler, menuHandler, appHandler, routing } = state;
 
     const {
         modal,
@@ -159,6 +162,12 @@ function mapStateToProps(state) {
         selected: [],
         latestNewDocument: null,
         indicator: ''
+    }
+
+    const {
+        processStatus
+    } = appHandler || {
+        processStatus: ''
     }
 
     const {
@@ -183,7 +192,7 @@ function mapStateToProps(state) {
 
     return {
         modal, breadcrumb, search, pathname, actions, selected, indicator,
-        latestNewDocument, references, rawModal, attachments
+        latestNewDocument, references, rawModal, attachments, processStatus
     }
 }
 

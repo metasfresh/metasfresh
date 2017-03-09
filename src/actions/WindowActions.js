@@ -14,7 +14,9 @@ import {
 } from './GenericActions';
 
 import {
-    addNotification
+    addNotification,
+    setProcessSaved,
+    setProcessPending
 } from './AppActions'
 
 export function setLatestNewDocument(id) {
@@ -460,14 +462,18 @@ export function attachFileAction(windowType, docId, data){
 
 export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
-    return (dispatch) =>
-        dispatch(
+    return (dispatch) => {
+        dispatch(setProcessPending());
+
+        return dispatch(
             getProcessData(processType, viewId, type, ids, tabId, rowId)
         ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
             pid = response.data.pinstanceId;
+
             if (preparedData.length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
+                    dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
                 });
                 throw new Error('close_modal');
@@ -478,11 +484,13 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })
+                    dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 });
 
             }
         })
+    }
 }
 
 export function handleProcessResponse(response, type, id, successCallback) {

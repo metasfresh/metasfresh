@@ -4,6 +4,7 @@ import update from 'react-addons-update';
 const initialState = {
 	notifications: {},
     isLogged: false,
+    processStatus: 'saved',
     inbox: {
         notifications: [],
         unreadCount: 0
@@ -69,6 +70,14 @@ export default function appHandler(state = initialState, action) {
                     notifications: {$merge: [action.notification]},
                     unreadCount: {$set: action.unreadCount}
                 }
+            })
+        case types.SET_PROCESS_STATE_PENDING:
+            return Object.assign({}, state, {
+                processStatus: 'pending'
+            })
+        case types.SET_PROCESS_STATE_SAVED:
+            return Object.assign({}, state, {
+                processStatus: 'saved'
             })
 
         default:
