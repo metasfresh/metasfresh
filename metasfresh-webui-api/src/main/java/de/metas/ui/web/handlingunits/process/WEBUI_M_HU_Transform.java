@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -622,16 +623,18 @@ public class WEBUI_M_HU_Transform
 		}
 
 		final HUDocumentView tuRow = getSingleSelectedRow();
-		final I_M_HU_PI tuPI = Services.get(IHandlingUnitsBL.class).getEffectivePIVersion(tuRow.getM_HU()).getM_HU_PI();
+		final I_M_HU tuHU = tuRow.getM_HU();
+		final I_M_HU_PI tuPI = Services.get(IHandlingUnitsBL.class).getEffectivePIVersion(tuHU).getM_HU_PI();
 
 		final List<I_M_HU_PI_Item> luPIItems = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, tuPI.getM_HU_PI_ID())
-				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, tuHU.getC_BPartner_ID())
 				.create()
 				.list();
 
 		return luPIItems.stream()
+				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
 				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), buildHUPIItemString(luPIItem)))
 				.sorted(Comparator.comparing(IntegerLookupValue::getDisplayName))
 				.collect(LookupValuesList.collect());
@@ -639,6 +642,9 @@ public class WEBUI_M_HU_Transform
 
 	private String buildHUPIItemString(final I_M_HU_PI_Item huPIItem)
 	{
-		return StringUtils.formatMessage("{} ({} x {})", huPIItem.getM_HU_PI_Version().getName(), huPIItem.getQty(), huPIItem.getIncluded_HU_PI().getName());
+		return StringUtils.formatMessage("{} ({} x {})", 
+				huPIItem.getM_HU_PI_Version().getName(), 
+				huPIItem.getQty().setScale(0, RoundingMode.HALF_UP), // it's always integer quantities
+				huPIItem.getIncluded_HU_PI().getName());
 	}
 }
