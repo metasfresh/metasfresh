@@ -24,9 +24,11 @@ import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
@@ -111,12 +113,12 @@ public class HUTransferService
 
 		//
 		// Create allocation request for the quantity user entered
-		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext, 
-				cuProduct, 
-				cuQty, 
-				cuUOM, 
-				SystemTime.asTimestamp(), 
-				null, // referenced model 
+		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
+				cuProduct,
+				cuQty,
+				cuUOM,
+				SystemTime.asTimestamp(),
+				null, // referenced model
 				forceAllocation);
 
 		if (allocationRequest.isZeroQty())
@@ -128,7 +130,7 @@ public class HUTransferService
 		// make sure the attributes are initialized in case of multiple row selection, also
 		// TODO: do we need this?
 		// huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, ImmutableList.of(receiptSchedule));
-		
+
 		return allocationRequest;
 	}
 
@@ -185,11 +187,20 @@ public class HUTransferService
 			{
 				// Take it out from its parent
 				final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-				huTrxBL.setParentHU(huContext,
-						null, // parentHUItem
-						cuHU,
-						true // destroyOldParentIfEmptyStorage
-				);
+				huTrxBL.createHUContextProcessorExecutor(huContext)
+						.run(new IHUContextProcessor()
+						{
+							@Override
+							public IMutableAllocationResult process(final IHUContext localHuContext)
+							{
+								huTrxBL.setParentHU(huContext,
+										null, // parentHUItem
+										cuHU,
+										true // destroyOldParentIfEmptyStorage
+								);
+								return NULL_RESULT; // we don't care about the result
+							}
+						});
 				return ImmutableList.of(cuHU);
 			}
 		}
@@ -230,12 +241,12 @@ public class HUTransferService
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(tuHU);
-		
+
 		HUSplitBuilderCoreEngine
 				.of(huContext,
 						cuHU,
 						// forceAllocation = true; 'tuHU' will probably have capacity constraints, but we want to ignore them; if the user squeezed in the stuff in reality, we need to do the same in metasfresh
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, true), 
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, true),
 						destination)
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -274,7 +285,7 @@ public class HUTransferService
 				.of(huContext,
 						cuHU,
 						// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false), 
+						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false),
 						destination)
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
@@ -311,13 +322,22 @@ public class HUTransferService
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 			if (!handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				// Take it out from its parent
 				final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-				huTrxBL.setParentHU(huContext,
-						null, // parentHUItem
-						sourceTuHU,
-						true // destroyOldParentIfEmptyStorage
-				);
+				huTrxBL.createHUContextProcessorExecutor(huContext)
+						.run(new IHUContextProcessor()
+						{
+							@Override
+							public IMutableAllocationResult process(final IHUContext localHuContext)
+							{
+								// Take it out from its parent
+								huTrxBL.setParentHU(localHuContext,
+										null, // parentHUItem
+										sourceTuHU,
+										true // destroyOldParentIfEmptyStorage
+								);
+								return NULL_RESULT; // we don't care about the result
+							}
+						});
 				return ImmutableList.of(sourceTuHU);
 			}
 		}
