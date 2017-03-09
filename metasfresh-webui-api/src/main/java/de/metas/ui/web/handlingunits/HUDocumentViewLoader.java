@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -24,6 +23,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
@@ -155,7 +155,7 @@ public class HUDocumentViewLoader
 		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider(), DocumentId.of(huId))
+				.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId))
 				.setProcessed(processed)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
@@ -179,19 +179,32 @@ public class HUDocumentViewLoader
 		// Included HUs
 		if (aggregatedTU)
 		{
-			streamProductStorageDocumentViews(hu, processed)
+			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+			storageFactory
+					.getStorage(hu)
+					.getProductStorages()
+					.stream()
+					.map(huStorage -> createDocumentView(huId, huStorage, processed))
 					.forEach(huViewRecord::addIncludedDocument);
+
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitTypeCode))
 		{
-			Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(hu)
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
 					.map(includedHU -> createDocumentView(includedHU))
 					.forEach(huViewRecord::addIncludedDocument);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
 		{
-			streamProductStorageDocumentViews(hu, processed)
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+			handlingUnitsDAO.retrieveIncludedHUs(hu)
+					.stream()
+					.map(includedVHU -> storageFactory.getStorage(includedVHU))
+					.flatMap(vhuStorage -> vhuStorage.getProductStorages().stream())
+					.map(vhuProductStorage -> createDocumentView(huId, vhuProductStorage, processed))
 					.forEach(huViewRecord::addIncludedDocument);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
@@ -236,15 +249,6 @@ public class HUDocumentViewLoader
 		}
 	}
 
-	private Stream<HUDocumentView> streamProductStorageDocumentViews(final I_M_HU hu, final boolean processed)
-	{
-		return Services.get(IHandlingUnitsBL.class).getStorageFactory()
-				.getStorage(hu)
-				.getProductStorages()
-				.stream()
-				.map(huStorage -> createDocumentView(huStorage, processed));
-	}
-
 	private IHUProductStorage getSingleProductStorage(final I_M_HU hu)
 	{
 		final IHUStorage huStorage = Services.get(IHandlingUnitsBL.class).getStorageFactory()
@@ -260,20 +264,21 @@ public class HUDocumentViewLoader
 		return productStorage;
 	}
 
-	private HUDocumentView createDocumentView(final IHUProductStorage huStorage, final boolean processed)
+	private HUDocumentView createDocumentView(final int parent_HU_ID, final IHUProductStorage huStorage, final boolean processed)
 	{
 		final I_M_HU hu = huStorage.getM_HU();
+		final int huId = hu.getM_HU_ID();
+		
 		final I_M_Product product = huStorage.getM_Product();
 
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 
-		final int huId = hu.getM_HU_ID();
-		final DocumentView storageDocument = DocumentView.builder(adWindowId)
-				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + huId + "_" + product.getM_Product_ID()))
+		
+		final DocumentView.Builder storageDocumentBuilder = DocumentView.builder(adWindowId)
+				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
 				.setType(HUDocumentViewType.HUStorage)
-				.setAttributesProvider(getAttributesProvider(), DocumentId.of(huId))
 				.setProcessed(processed)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
@@ -283,10 +288,14 @@ public class HUDocumentViewLoader
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(product))
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(huStorage.getC_UOM()))
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty())
-				//
-				.build();
-		return HUDocumentView.of(storageDocument);
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty());
+		
+		if(huId != parent_HU_ID)
+		{
+			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId));
+		}
+		
+		return HUDocumentView.of(storageDocumentBuilder.build());
 	}
 
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)

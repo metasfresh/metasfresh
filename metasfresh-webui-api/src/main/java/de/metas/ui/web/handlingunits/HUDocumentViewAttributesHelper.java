@@ -1,15 +1,12 @@
 package de.metas.ui.web.handlingunits;
 
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.util.Services;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -40,13 +37,11 @@ public final class HUDocumentViewAttributesHelper
 {
 	private HUDocumentViewAttributesHelper()
 	{
-		super();
 	}
 
-	public static DocumentPath extractDocumentPath(final IAttributeStorage attributesStorage)
+	public static DocumentId createAttributesKey(final int huId)
 	{
-		final int huId = Services.get(IHUAttributesBL.class).getM_HU(attributesStorage).getM_HU_ID();
-		return DocumentPath.rootDocumentPath(DocumentType.HUAttributes, huId, huId);
+		return DocumentId.of(huId);
 	}
 
 	public static String extractAttributeName(final IAttributeValue attributeValue)

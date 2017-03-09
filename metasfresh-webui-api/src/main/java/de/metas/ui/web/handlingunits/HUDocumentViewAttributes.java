@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
@@ -18,10 +17,12 @@ import com.google.common.base.MoreObjects;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -31,7 +32,11 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,29 +62,33 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 
 /* package */ class HUDocumentViewAttributes implements IDocumentViewAttributes
 {
-	private final IAttributeStorage attributesStorage;
 	private final DocumentPath documentPath;
+	private final IAttributeStorage attributesStorage;
 
 	private final Supplier<DocumentViewAttributesLayout> layoutSupplier = ExtendedMemorizingSupplier.of(() -> createLayout());
 
 	private final Set<String> readonlyAttributeNames;
 
-	/* package */ HUDocumentViewAttributes(final IAttributeStorage attributesStorage)
+	/* package */ HUDocumentViewAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage)
 	{
-		super();
-
-		Check.assumeNotNull(attributesStorage, "Parameter attributesStorage is not null");
+		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
-		documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(attributesStorage);
 
-		final boolean readonly = extractIsReadonly(attributesStorage);
 
+		//
+		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
+		final boolean readonly = extractIsReadonly(attributesStorage);
 		readonlyAttributeNames = attributesStorage.getAttributes()
 				.stream()
 				.filter(attribute -> readonly || attributesStorage.isReadonlyUI(calloutCtx, attribute))
 				.map(HUDocumentViewAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
+
+		//
+		// Bind attribute storage:
+		// each change on attribute storage shall be forwarded to current execution
+		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
 	}
 
 	private static final boolean extractIsReadonly(final IAttributeStorage attributesStorage)
@@ -154,7 +163,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 				.setMandatory(false)
 				.setReadonly(isReadonly(fieldName));
 	}
-	
+
 	private boolean isReadonly(final String attributeName)
 	{
 		return readonlyAttributeNames.contains(attributeName);
@@ -176,11 +185,11 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 		if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 		{
 			final String attributeName = event.getPath();
-			if(isReadonly(attributeName))
+			if (isReadonly(attributeName))
 			{
 				throw new DocumentFieldReadonlyException(attributeName, event.getValue());
 			}
-			
+
 			final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
 
 			final Object value = convertFromJson(attribute, event.getValue());
@@ -191,20 +200,20 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 			throw new IllegalArgumentException("Unknown operation: " + event);
 		}
 	}
-	
+
 	private final Object convertFromJson(final I_M_Attribute attribute, final Object jsonValue)
 	{
-		if(jsonValue == null)
+		if (jsonValue == null)
 		{
 			return null;
 		}
-		
+
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			return JSONDate.fromJson(jsonValue.toString(), DocumentFieldWidgetType.Date);
 		}
-		
+
 		return jsonValue;
 	}
 
@@ -233,5 +242,62 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 				.stream()
 				.map(itemNP -> LookupValue.fromNamePair(itemNP))
 				.collect(LookupValuesList.collect());
+	}
+
+	/**
+	 * Intercepts {@link IAttributeStorage} events and forwards them to {@link Execution#getCurrentDocumentChangesCollector()}.
+	 */
+	@EqualsAndHashCode
+	private static final class AttributeStorage2ExecutionEventsForwarder implements IAttributeStorageListener
+	{
+		public static final void bind(final IAttributeStorage storage, final DocumentPath documentPath)
+		{
+			final AttributeStorage2ExecutionEventsForwarder forwarder = new AttributeStorage2ExecutionEventsForwarder(documentPath);
+			storage.addListener(forwarder);
+		}
+
+		private final DocumentPath documentPath;
+
+		private AttributeStorage2ExecutionEventsForwarder(@NonNull final DocumentPath documentPath)
+		{
+			this.documentPath = documentPath;
+		}
+
+		private final void forwardEvent(final IAttributeStorage storage, final IAttributeValue attributeValue)
+		{
+			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
+
+			// final DocumentPath documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(storage);
+			final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
+			final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(storage, attributeValue);
+			final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
+
+			documentChangesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
+					.setValue(jsonValue));
+		}
+
+		@Override
+		public void onAttributeValueCreated(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
+		{
+			forwardEvent(storage, attributeValue);
+		}
+
+		@Override
+		public void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue, final Object valueOld)
+		{
+			forwardEvent(storage, attributeValue);
+		}
+
+		@Override
+		public void onAttributeValueDeleted(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void onAttributeStorageDisposed(final IAttributeStorage storage)
+		{
+			// nothing
+		}
 	}
 }
