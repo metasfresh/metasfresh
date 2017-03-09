@@ -201,7 +201,10 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public void setParentHU(final IHUContext huContext, final I_M_HU_Item parentHUItem, final I_M_HU hu, final boolean destroyOldParentIfEmptyStorage)
+	public void setParentHU(final IHUContext huContext, 
+			final I_M_HU_Item parentHUItem, 
+			final I_M_HU hu, 
+			final boolean destroyOldParentIfEmptyStorage)
 	{
 		// TODO: handle in HUTrx / allocation
 
@@ -233,7 +236,10 @@ public class HUTrxBL implements IHUTrxBL
 	 * @param hu
 	 * @param destroyOldParentIfEmptyStorage
 	 */
-	private final void setParentHU0(final IHUContext huContext, final I_M_HU_Item parentHUItem, final I_M_HU hu, final boolean destroyOldParentIfEmptyStorage)
+	private final void setParentHU0(final IHUContext huContext, 
+			final I_M_HU_Item parentHUItem, 
+			final I_M_HU hu, 
+			final boolean destroyOldParentIfEmptyStorage)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

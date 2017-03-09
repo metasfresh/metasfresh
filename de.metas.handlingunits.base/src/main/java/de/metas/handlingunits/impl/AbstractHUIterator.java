@@ -173,9 +173,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final void setDate(final Date date)
+	public IHUIterator setDate(final Date date)
 	{
 		_date = (Date)date.clone();
+		return this;
 	}
 
 	@Override

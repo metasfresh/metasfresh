@@ -2,19 +2,25 @@ package de.metas.handlingunits.allocation.transfer;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -25,9 +31,12 @@ import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /*
@@ -110,6 +119,30 @@ public class HUTransferService
 		return allocationRequest;
 	}
 
+	public BigDecimal getMaximumQtyTU(final I_M_HU tu)
+	{
+		Preconditions.checkNotNull(tu, "Param 'tu' may not be null");
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		if (handlingUnitsBL.isAggregateHU(tu))
+		{
+			return handlingUnitsDAO.retrieveParentItem(tu).getQty();
+		}
+		return BigDecimal.ONE;
+	}
+
+	public BigDecimal getMaximumQtyCU(final I_M_HU cu)
+	{
+		Preconditions.checkNotNull(cu, "Param 'cu' may not be null");
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IHUStorage storage = storageFactory.getStorage(cu);
+
+		return storage.getQtyForProductStorages();
+	}
+
 	/**
 	 * Split selected CU to a new CU.
 	 *
@@ -126,6 +159,27 @@ public class HUTransferService
 		Preconditions.checkNotNull(cuProduct, "Param 'cuProduct' may not be null");
 		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
+
+		if (qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0)
+		{
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			if (handlingUnitsDAO.retrieveParentItem(cuHU) == null)
+			{
+				// the caller wants to process the complete cuHU, but there is nothing to do because the cuHU is not attached to a parent.
+				return Collections.emptyList();
+			}
+			else
+			{
+				// Take it out from its parent
+				final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+				huTrxBL.setParentHU(huContext,
+						null, // parentHUItem
+						cuHU,
+						true // destroyOldParentIfEmptyStorage
+				);
+				return ImmutableList.of(cuHU);
+			}
+		}
 
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 
@@ -215,43 +269,118 @@ public class HUTransferService
 	}
 
 	/**
-	 * Split a given number of TUs from current selected TU line to new TUs.
+	 * Split a given number of TUs from current TU line to new TUs.
 	 *
-	 * @param tuRow
+	 * @param tuHU the source TU to split from.
 	 * @param qtyTU
-	 * @param tuPIItemProductId
+	 * @param tuPIItemProduct
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> splitTU_To_NewTUs(
-			final I_M_HU tuHU, final BigDecimal qtyTU //
-			, final I_M_HU_PI_Item_Product tuPIItemProduct //
-			, final boolean isOwnPackingMaterials //
-	)
+			final I_M_HU sourceTuHU,
+			final BigDecimal qtyTU,
+			final boolean isOwnPackingMaterials)
 	{
-		return splitTU_To_NewLU(tuHU, qtyTU, tuPIItemProduct, null, isOwnPackingMaterials);
+		Preconditions.checkNotNull(sourceTuHU, "Param 'sourceTuHU' may not be null");
+		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU
+		{
+			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but there sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
+			{
+				return Collections.emptyList();
+			}
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			if (!handlingUnitsBL.isAggregateHU(sourceTuHU))
+			{
+				// Take it out from its parent
+				final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+				huTrxBL.setParentHU(huContext,
+						null, // parentHUItem
+						sourceTuHU,
+						true // destroyOldParentIfEmptyStorage
+				);
+				return ImmutableList.of(sourceTuHU);
+			}
+		}
+
+		// note: as of now an aggregated TU needs a parent, so also if the user just wants fully to remove an aggregate TU from it's parent, we still need to split it.
+		return split_To_TopLevelHUs(sourceTuHU, qtyTU, null, isOwnPackingMaterials);
 	}
 
 	/**
-	 * Split TU to new LU (only one LU!).
+	 * Create a new LU-hierarchy and transfer stuff from the given {@code sourceTuHU}. The PI of the new TUs that are created below the new LU is determined from the given {@code sourceTuHU}.
+	 * 
+	 * @param sourceTuHU
+	 * @param qtyTU
+	 * @param luPI
+	 * @param isOwnPackingMaterials
+	 * @return
+	 */
+	public List<I_M_HU> splitTU_To_NewLUs(
+			final I_M_HU sourceTuHU,
+			final BigDecimal qtyTU,
+			final I_M_HU_PI_Item luPIItem,
+			final boolean isOwnPackingMaterials)
+	{
+		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
+		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
+		Preconditions.checkNotNull(luPIItem, "Param 'luPI' may not be null");
+
+		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
+				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
+		)
+		{
+			// don't split; just create a new LU and "move" the TU
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final I_M_HU lu = handlingUnitsDAO
+					.createHUBuilder(huContext)
+					.setC_BPartner(sourceTuHU.getC_BPartner())
+					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
+					.setM_Locator(sourceTuHU.getM_Locator())
+					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
+					.create(luPIItem.getM_HU_PI_Version());
+
+			final I_M_HU_Item haOldItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU);
+
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			Services.get(IHUJoinBL.class).assignTradingUnitToLoadingUnit(huContext, lu, sourceTuHU);
+			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
+			{
+				final I_M_HU_Item haItemOfLU = handlingUnitsDAO.retrieveItems(lu).get(0);
+				haItemOfLU.setQty(haOldItem.getQty());
+				haItemOfLU.setM_HU_PI_Item(haOldItem.getM_HU_PI_Item());
+				InterfaceWrapperHelper.save(haItemOfLU);
+			}
+			handlingUnitsDAO.saveHU(lu);
+
+			return ImmutableList.of(lu);
+		}
+
+		return split_To_TopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+	}
+
+	/**
+	 * Split TU to top-level (either LU or new TU)
 	 *
-	 * @param tuRow
-	 * @param QtyTU
-	 * @param tuPIItemProductId
-	 * @param luPIItemId
+	 * @param sourceTuHU the source TU from which we split
+	 * @param qtyTU the TU qty which we split. This is one factor to the actual cuQty
+	 * @param tuPI the packing instruction for the TU level of the new hierarchy which we create.
+	 * @param luPIItem may be {@code null}. If null, then the resulting top level HU will be a TU
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> splitTU_To_NewLU( //
-			final I_M_HU tuHU //
-			, final BigDecimal qtyTU //
-			, final I_M_HU_PI_Item_Product tuPIItemProduct //
-			, final I_M_HU_PI_Item luPIItem //
-			, final boolean isOwnPackingMaterials //
-	)
+	public List<I_M_HU> split_To_TopLevelHUs(
+			final I_M_HU sourceTuHU,
+			final BigDecimal qtyTU,
+			final I_M_HU_PI_Item luPIItem,
+			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(tuHU, "Param 'tuHU' may not be null");
+		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
 
-		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(tuHU);
+		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(sourceTuHU);
 
 		// TODO cases to cover:
 		// 1. cuRows.isEmpty() for whatever reason: in this case, the TU shall be destroyed already, so this method can't be called with such a TU; throw an exception
@@ -265,24 +394,29 @@ public class HUTransferService
 			final IHUProductStorage firstProductStorage = productStorages.get(0);
 
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 			final BigDecimal qtyOfStorage = Preconditions.checkNotNull(firstProductStorage.getQty(), "Qty of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
-			final BigDecimal qtyCUperTU;
-			if (handlingUnitsBL.isAggregateHU(tuHU))
+
+			final BigDecimal sourceQtyCUperTU; // will be used to get the overall cuQty to transfer, by multiplying with the given qtyTU
+			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				final I_M_HU_Item tuHUsParentItem = tuHU.getM_HU_Item_Parent(); // can't be null because if is was isAggregateHU() would return false.
+				final I_M_HU_Item tuHUsParentItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // can't be null because if is was isAggregateHU() would return false.
 				final BigDecimal representedTUsCount = tuHUsParentItem.getQty();
-				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, tuHU, tuHUsParentItem);
-				qtyCUperTU = qtyOfStorage.divide(representedTUsCount);
+				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
+				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount);
 			}
 			else
 			{
-				qtyCUperTU = qtyOfStorage;
+				sourceQtyCUperTU = qtyOfStorage;
 			}
 			final I_M_Product cuProduct = Preconditions.checkNotNull(firstProductStorage.getM_Product(), "M_Product of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
 			final I_C_UOM cuUOM = Preconditions.checkNotNull(firstProductStorage.getC_UOM(), "C_UOM of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
 
 			final LUTUProducerDestination destination = new LUTUProducerDestination();
-			destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
+
+			final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePIVersion(sourceTuHU).getM_HU_PI();
+			destination.setTUPI(tuPI);
 			if (luPIItem == null)
 			{
 				destination.setNoLU();
@@ -294,15 +428,23 @@ public class HUTransferService
 			}
 			destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
-			destination.addTUCapacity(cuProduct, tuPIItemProduct.getQty(), cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
+			final IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
+
+			final List<I_M_HU_PI_Item> materialItems = handlingUnitsDAO
+					.retrievePIItems(tuPI, sourceTuHU.getC_BPartner()).stream()
+					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
+					.collect(Collectors.toList());
+
+			final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(materialItems.get(0), sourceTuHU.getC_BPartner(), cuProduct, SystemTime.asDate());
+			destination.addTUCapacity(cuProduct, piip.getQty(), cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
 			HUSplitBuilderCoreEngine
 					.of(huContext,
-							tuHU,
-							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(qtyCUperTU)),
+							sourceTuHU,
+							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU)),
 							destination)
 					.withPropagateHUValues()
-					.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
+					.withTuPIItem(piip.getM_HU_PI_Item()) // TODO if we already have the piip here, then add it directly, and not the M_HU_PI_Item
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
 

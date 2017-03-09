@@ -133,6 +133,12 @@ public class HUSplitBuilderCoreEngine
 		return this;
 	}
 
+	/**
+	 * Optional; if set, then it will be used to find a {@link I_M_HU_PI_Item_Product} (using the request's partner and product) and recursively set it in the resulting HU hierarchy.
+	 * 
+	 * @param tuPIItem
+	 * @return
+	 */
 	public HUSplitBuilderCoreEngine withTuPIItem(final I_M_HU_PI_Item tuPIItem)
 	{
 		this.tuPIItem = tuPIItem;

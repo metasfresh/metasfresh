@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -59,6 +60,8 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	/**
 	 * Retrieves a I_M_HU_PI_Item_Product for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there are multiple records for the given parameters, they are ordered using
 	 * this DAO's standard ordering (see class-javadoc) and the first one is returned.
+	 * <p>
+	 * Note that the {@code C_BPArtner_ID} is taken from the given {@code huItem}'s {@link I_M_HU}.
 	 *
 	 * @param huItem
 	 * @param product
