@@ -1,3 +1,4 @@
+import boxSize from './boxSize';
 import * as d3 from 'd3';
 
 export const getSvg = (className) => {
@@ -9,7 +10,7 @@ export const getSvg = (className) => {
 
     const container = svg
         .append('g')
-        .classed('container', true);
+        .classed('chart-container', true);
 
     container.append('g')
         .classed('x-axis', true);
@@ -24,11 +25,16 @@ export const getSvg = (className) => {
 };
 
 export const sizeSvg = (svg, className, {width, height, top, left, right, bottom}) => {
-    svg
-        .attr('width', width + left + right)
-        .attr('height', height + top + bottom);
+    const applyingWidth = width + left + right;
+    const applyingHeight = height + top + bottom;
+    console.log(applyingHeight, applyingWidth)
+    const finalWidth = applyingWidth < boxSize.minWidth ? boxSize.minWidth : applyingWidth;
 
-    svg.select('.container')
+    svg
+        .attr('width', finalWidth)
+        .attr('height', applyingHeight);
+
+    svg.select('.chart-container')
         .attr(
         'transform',
         'translate(' + left + ',' + top + ')'

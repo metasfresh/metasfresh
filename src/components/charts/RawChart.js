@@ -14,30 +14,57 @@ class RawChart extends Component {
         super(props);
 
         this.state = {
-            chartData: []
+            chartData: [],
+            intervalId: null
         }
     }
 
-    componentDidMount() {
-        const { id, chartType, dispatch } = this.props;
-        if(chartType === 'Indicator') {
-            dispatch(getTargetIndicatorsData(id)).then(response => {
-                this.setState({
-                    chartData: response.data.datasets[0].values
-                });
-            });
-        } else {
-            dispatch(getKPIData(id)).then(response => {
-                this.setState({
-                    chartData: response.data.datasets[0].values
-                });
-            });
+    getData(){
+        const { id, chartType } = this.props;
+
+        if (chartType === 'Indicator') {
+            return getKPIData(id)()
+                .then(response => {
+                    return response.data.datasets[0].values
+                })
         }
+
+        return getTargetIndicatorsData(id)()
+            .then(response => {
+                return response.data.data
+            });
     }
 
-    renderChart = () => {
+    fetchData(){
+        this.getData()
+            .then(chartData => {
+                this.setState({ chartData });
+            });
+    }
+
+    componentDidMount(){
+        const { pollInterval } = this.props;
+
+        this.fetchData();
+
+        this.setState({
+            intervalId: setInterval(() => {
+                this.fetchData();
+            }, pollInterval * 1000)
+        })
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.state.intervalId);
+
+        this.setState({
+            intervalId: null
+        })
+    }
+
+    renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, pollInterval, kpiCaption
+            id, chartType, caption, fields, groupBy, kpiCaption
         } = this.props;
         const {chartData} = this.state;
         const colors = ['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00'];
@@ -53,9 +80,8 @@ class RawChart extends Component {
                         data={chartData}
                         colors={colors}
                         chartClass={'chart-' + id}
-                        responsive={false}
                     />
-                )
+                );
             case 'PieChart':
                 return(
                     <PieChart
@@ -77,7 +103,7 @@ class RawChart extends Component {
         }
     }
 
-    render() {
+    render(){
         const {chartData} = this.state;
         return chartData.length > 0 && this.renderChart();
     }

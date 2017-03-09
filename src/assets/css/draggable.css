@@ -26,7 +26,6 @@
     cursor: move;
     height: 34px;
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -63,7 +62,7 @@
 .draggable-widget-menu span {
     width: 100%;
     padding: 5px;
-    display: inline-block;
+    display: block;
 }
 
 .draggable-widget-menu span:hover {

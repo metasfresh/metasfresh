@@ -18,13 +18,13 @@ class BarChartComponent extends Component {
     }
 
     prepare(){
-        const { data, groupBy, fields, colors, chartClass, responsive } = this.props;
+        const { data, groupBy, fields, colors, chartClass } = this.props;
 
         // colors
         const rangeZ = getZRange(colors);
 
         // horizontal sizing
-        const horizontal = getHorizontalDimensions(responsive, chartClass);
+        const horizontal = getHorizontalDimensions(this.svg, chartClass);
         const rangeX0 = getX0Range(horizontal.width, data, groupBy);
         const rangeX1 = getX1Range(rangeX0.bandwidth(), fields);
         populateXAxis(this.svg, rangeX0);
@@ -71,18 +71,15 @@ class BarChartComponent extends Component {
         const { chartClass } = this.props;
 
         d3.select(window)
-            .on('resize.' + chartClass, () => this.draw())
+            .on('resize.' + chartClass + '-wrapper', () => {
+                this.draw()
+            })
     };
 
     componentDidMount() {
-        const { responsive } = this.props;
-
         this.setSvg();
         this.draw();
-
-        if(responsive){
-            this.addResponsive();
-        }
+        this.addResponsive();
     }
 
     componentDidUpdate(){
