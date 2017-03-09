@@ -85,6 +85,22 @@ export function updateDataSuccess(item, scope, saveStatus, validStatus) {
     }
 }
 
+export function updateDataSaveStatus(scope, saveStatus) {
+    return {
+        type: types.UPDATE_DATA_SAVE_STATUS,
+        scope,
+        saveStatus
+    }
+}
+
+export function updateDataValidStatus(scope, validStatus) {
+    return {
+        type: types.UPDATE_DATA_VALID_STATUS,
+        scope,
+        validStatus
+    }
+}
+
 export function updateRowSuccess(item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_SUCCESS,
@@ -378,9 +394,16 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             if (rowId === 'NEW') {
                 dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
             } else {
+
+                if(item.rowId){
+                    dispatch(updateRowStatus(getScope(isModal), item.tabid, item.rowId, item.saveStatus));
+                }else{
+                    item.validStatus && dispatch(updateDataValidStatus(getScope(isModal), item.validStatus));
+                    item.saveStatus && dispatch(updateDataSaveStatus(getScope(isModal), item.saveStatus));
+                }
+
                 item.fields.map(field => {
                     if (rowId && !isModal) {
-                        dispatch(updateRowStatus(getScope(isModal), item.tabid, item.rowId, item.saveStatus));
                         dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
                     } else {
                         if (rowId) {
