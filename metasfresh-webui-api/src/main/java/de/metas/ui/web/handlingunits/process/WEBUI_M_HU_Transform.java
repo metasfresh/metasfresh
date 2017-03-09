@@ -81,8 +81,6 @@ public class WEBUI_M_HU_Transform
 	 * <li>the process only ever performs a split (see {@link IHUSplitBuilder}) if the parameter value is decreased. If the user instead goes with the suggested maximum value, then the source HU is "moved" as it is.</li>
 	 * <li>For the {@link #CU_To_NewCU} and {@link #TU_To_NewTUs} actions, if the user goes with the suggested maximum value, then nothing is done. But there is a (return) message which gives a brief explanation to the user.
 	 * </ul>
-	 * <b>About the {@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM} parameter</b>
-	 * It's not mentioned below, but always shown when a new TU or LU is added. Also when the number of aggregate TUs is increased.
 	 * 
 	 */
 	public static enum ActionType
@@ -107,9 +105,21 @@ public class WEBUI_M_HU_Transform
 		 * <li>the currently selected source CU line</li>
 		 * <li>the PI item product to specify both the PI and capacity of the target TU</li>
 		 * <li>the CU-quantity to join or split</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
 		 * </ul>
 		 */
 		CU_To_NewTUs,
+
+		/**
+		 * Sets {@link I_M_HU#setHUPlanningReceiptOwnerPM(boolean)} for the currently selected TU. The value is neither propagated to a possible parent nor to any children.
+		 * <p>
+		 * Parameters:
+		 * <ul>
+		 * <li>the currently selected TU line</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
+		 * </ul>
+		 */
+		TU_Set_Ownership,
 
 		/**
 		 * Similar to {@link #CU_To_NewTUs}, but the destination TU already exists (selectable as process parameter).<br>
@@ -145,6 +155,7 @@ public class WEBUI_M_HU_Transform
 		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
 		 * <li>the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU</li>
 		 * <li>the number of TUs to join or split onto the destination LU(s)</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
 		 * </ul>
 		 */
 		TU_To_NewLUs,
@@ -161,7 +172,18 @@ public class WEBUI_M_HU_Transform
 		 * <li>the number of TUs to join or split one the target LU</li>
 		 * </ul>
 		 */
-		TU_To_ExistingLU
+		TU_To_ExistingLU,
+
+		/**
+		 * Sets {@link I_M_HU#setHUPlanningReceiptOwnerPM(boolean)} for the currently selected LU. The value is not propagated to any children.
+		 * <p>
+		 * Parameters:
+		 * <ul>
+		 * <li>the currently selected LU line</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_LU}</li>
+		 * </ul>
+		 */
+		LU_Set_Ownership
 	}
 
 	//
@@ -200,9 +222,13 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_QtyTU)
 	private BigDecimal p_QtyTU;
 
-	private static final String PARAM_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
-	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM)
-	private boolean p_HUPlanningReceiptOwnerPM;
+	private static final String PARAM_HUPlanningReceiptOwnerPM_LU = "HUPlanningReceiptOwnerPM_LU";
+	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM_LU)
+	private boolean p_HUPlanningReceiptOwnerPM_LU;
+
+	private static final String PARAM_HUPlanningReceiptOwnerPM_TU = "HUPlanningReceiptOwnerPM_TU";
+	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM_TU)
+	private boolean p_HUPlanningReceiptOwnerPM_TU;
 
 	public WEBUI_M_HU_Transform()
 	{
@@ -228,6 +254,18 @@ public class WEBUI_M_HU_Transform
 			return HUTransferService.get(getCtx()).getMaximumQtyCU(tu);
 		}
 
+		if (PARAM_HUPlanningReceiptOwnerPM_TU.equals(parameter.getColumnName()))
+		{
+			final I_M_HU tu = getSingleSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
+			return tu.isHUPlanningReceiptOwnerPM();
+		}
+
+		if (PARAM_HUPlanningReceiptOwnerPM_LU.equals(parameter.getColumnName()))
+		{
+			final I_M_HU lu = getSingleSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
+			return lu.isHUPlanningReceiptOwnerPM();
+		}
+
 		return DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
@@ -240,10 +278,6 @@ public class WEBUI_M_HU_Transform
 		if (getSelectedDocumentIds().size() != 1)
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-		if (getSingleSelectedRow().isLU())
-		{
-			return ProcessPreconditionsResolution.reject("Only applicable for CUs and TUs");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -273,13 +307,17 @@ public class WEBUI_M_HU_Transform
 				{
 					throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
 				}
-				action_SplitCU_To_NewTUs(row, p_M_HU_PI_Item_Product, p_QtyCU, p_HUPlanningReceiptOwnerPM);
+				action_SplitCU_To_NewTUs(row, p_M_HU_PI_Item_Product, p_QtyCU, p_HUPlanningReceiptOwnerPM_TU);
 				break;
 			}
-			//
+			case TU_Set_Ownership:
+			{
+				updatePlanningReceiptOwnerPM(row, p_HUPlanningReceiptOwnerPM_TU);
+				break;
+			}
 			case TU_To_NewTUs:
 			{
-				action_SplitTU_To_NewTUs(row, p_QtyTU, p_HUPlanningReceiptOwnerPM);
+				action_SplitTU_To_NewTUs(row, p_QtyTU);
 				break;
 			}
 			case TU_To_NewLUs:
@@ -288,7 +326,12 @@ public class WEBUI_M_HU_Transform
 				{
 					throw new FillMandatoryException(PARAM_M_HU_PI_ITEM_ID);
 				}
-				action_SplitTU_To_NewLU(row, p_M_HU_PI_Item, p_QtyTU, p_HUPlanningReceiptOwnerPM);
+				action_SplitTU_To_NewLU(row, p_M_HU_PI_Item, p_QtyTU, p_HUPlanningReceiptOwnerPM_LU);
+				break;
+			}
+			case LU_Set_Ownership:
+			{
+				updatePlanningReceiptOwnerPM(row, p_HUPlanningReceiptOwnerPM_LU);
 				break;
 			}
 			case TU_To_ExistingLU:
@@ -304,6 +347,19 @@ public class WEBUI_M_HU_Transform
 		}
 
 		return MSG_OK;
+	}
+
+	/**
+	 * 
+	 * @param row
+	 * @param huPlanningReceiptOwnerPM
+	 * @task https://github.com/metasfresh/metasfresh/issues/1130
+	 */
+	private void updatePlanningReceiptOwnerPM(final HUDocumentView row, final boolean huPlanningReceiptOwnerPM)
+	{
+		final I_M_HU hu = row.getM_HU();
+		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
+		InterfaceWrapperHelper.save(hu);
 	}
 
 	/**
@@ -384,11 +440,10 @@ public class WEBUI_M_HU_Transform
 	 * @param luPI
 	 */
 	private void action_SplitTU_To_NewLU(
-			final HUDocumentView tuRow, 
-			final I_M_HU_PI_Item huPIItem, 
-			final BigDecimal qtyTU, 
-			final boolean isOwnPackingMaterials
-	)
+			final HUDocumentView tuRow,
+			final I_M_HU_PI_Item huPIItem,
+			final BigDecimal qtyTU,
+			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.splitTU_To_NewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
@@ -402,17 +457,17 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @param tuRow
 	 * @param qtyTU
-	 * @param isOwnPackingMaterials
 	 * @param tuPI
 	 */
 	private void action_SplitTU_To_NewTUs(
 			final HUDocumentView tuRow,
-			final BigDecimal qtyTU,
-			final boolean isOwnPackingMaterials)
+			final BigDecimal qtyTU)
 	{
 		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
+		final I_M_HU sourceTuHU = tuRow.getM_HU();
+
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitTU_To_NewTUs(tuRow.getM_HU(), qtyTU, isOwnPackingMaterials);
+				.splitTU_To_NewTUs(sourceTuHU, qtyTU, sourceTuHU.isHUPlanningReceiptOwnerPM());
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -429,7 +484,7 @@ public class WEBUI_M_HU_Transform
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(getCtx(), getProcessInfo().getAD_Process_ID(), PARAM_Action);
-		final Collection<I_AD_Ref_List> allActionItems = adReferenceDAO.retrieveListItems(getCtx(), processParameter.getAD_Reference_Value_ID());
+		final Collection<I_AD_Ref_List> allActiveActionItems = adReferenceDAO.retrieveListItems(getCtx(), processParameter.getAD_Reference_Value_ID());
 
 		final Set<String> selectableTypes = new HashSet<>();
 
@@ -447,10 +502,11 @@ public class WEBUI_M_HU_Transform
 			}
 		}
 
-		if (getSingleSelectedRow().isTU())
+		else if (getSingleSelectedRow().isTU())
 		{
 			selectableTypes.add(ActionType.TU_To_NewTUs.toString());
 			selectableTypes.add(ActionType.TU_To_NewLUs.toString());
+			selectableTypes.add(ActionType.TU_Set_Ownership.toString());
 
 			final boolean existsLU = getView()
 					.streamAllRecursive()
@@ -461,7 +517,12 @@ public class WEBUI_M_HU_Transform
 			}
 		}
 
-		return allActionItems.stream()
+		else if (getSingleSelectedRow().isLU())
+		{
+			selectableTypes.add(ActionType.LU_Set_Ownership.toString());
+		}
+
+		return allActiveActionItems.stream()
 				.filter(item -> selectableTypes.contains(item.getValueName()))
 				.map(item -> InterfaceWrapperHelper.translate(item, I_AD_Ref_List.class)) // replace 'item' with its translated version
 				.sorted(Comparator.comparing(I_AD_Ref_List::getName))
