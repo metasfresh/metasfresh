@@ -326,7 +326,7 @@ class DocumentList extends Component {
 
         const {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal
+            fetchQuickActionsOnInit, isModal, processStatus
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);
@@ -360,6 +360,7 @@ class DocumentList extends Component {
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
                             fetchOnInit={fetchQuickActionsOnInit}
+                            processStatus={processStatus}
                         />
                     </div>
                     <div className="document-list-body">
