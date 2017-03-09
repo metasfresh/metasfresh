@@ -751,7 +751,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 }
 
 .quick-input-container > *:first-of-type {
-    flex:3;
+    flex:4;
 }
 
 .btn-select {
