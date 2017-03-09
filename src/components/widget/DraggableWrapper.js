@@ -5,6 +5,7 @@ import DraggableWidget from './DraggableWidget';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import RawChart from '../charts/RawChart';
 
 import {
     getKPIsDashboard,
@@ -65,7 +66,8 @@ export class DraggableWrapper extends Component {
                     'dashboardItemIdsOrder': cards.map(item => item.id)
                 }
             };
-            dispatch(setUserDashboardWidgets(changes));
+            // dispatch(setUserDashboardWidgets(changes));  
+            //TO DO: future implementation
         });
     }
 
@@ -83,68 +85,8 @@ export class DraggableWrapper extends Component {
         })
     }
 
-
-
-
-
-
-
-
-
-            //     <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}>
-
-            //     {this.props.dashboard == '/' &&
-            //         <div className="logo-wrapper">
-            //             <img src={logo} />
-            //         </div>
-            //     }
-
-            //     {false && indicators.length > 0 && <div className={
-            //         'indicators-wrapper ' +
-            //         (idMaximized !== false ? 'indicator-hidden' : '')
-            //     }>
-            //         {false && indicators.map((indicator, id) =>
-            //             <div
-            //                 className="indicator"
-            //                 key={id}
-            //             >
-            //                 <iframe
-            //                     src={indicator.url}
-            //                     scrolling="no"
-            //                     frameBorder="no"
-            //                 ></iframe>
-            //             </div>
-            //         )}
-            //     </div>}
-
-
-
-
-            //     {this.props.dashboard != '/' && cards.map((card, i) => {
-            //         return (
-            //             <DraggableWidget
-            //                 key={card.id}
-            //                 index={i}
-            //                 id={card.id}
-            //                 text={card.caption}
-            //                 url={card.url}
-            //                 moveCard={this.moveCard}
-            //                 hideWidgets={this.hideWidgets}
-            //                 showWidgets={this.showWidgets}
-            //                 idMaximized={idMaximized}
-            //                 dashboard={this.props.dashboard}
-            //             />
-            //         );
-            //     })}
-            // </div>
-
-
-
-
     render() {
         const { cards, idMaximized, indicators } = this.state;
-
-        console.log(cards);
 
         return (
             <div className="dashboard-cards-wrapper">
@@ -154,12 +96,17 @@ export class DraggableWrapper extends Component {
                         (idMaximized !== false ? 'indicator-hidden' : '')
                     }>
                     {indicators.map((indicator, id) =>
-                        <div
-                            className="indicator"
+                        <RawChart
                             key={id}
-                        >
-                            indicators
-                        </div>
+                            id={indicator.id}
+                            caption={indicator.caption}
+                            kpiCaption={indicator.kpi.caption}
+                            fields={indicator.kpi.fields}
+                            pollInterval={indicator.kpi.pollInterval}
+                            chartType={'Indicator'}
+                            kpi={false}
+                            
+                        />
                     )}
                 </div>}
 
@@ -192,13 +139,6 @@ export class DraggableWrapper extends Component {
                 </div>
                 }
             </div>
-            
-
-
-
-
-
-
         );
     }
 }

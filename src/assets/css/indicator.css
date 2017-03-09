@@ -5,13 +5,35 @@
     overflow: hidden;
     height: 130px;
     margin: .5rem;
-    font-size: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .indicator {
-    display: inline-block;
     width: 25%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.indicator-value {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.indicator-caption {
+    float: right;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background: $brand-super-light-color;
+    padding: 5px;
+}
+
+.indicator-kpi-caption {
+    font-size: 0.8rem;
+    text-align: center;
 }
 
 @media screen and (max-width: 991px) {

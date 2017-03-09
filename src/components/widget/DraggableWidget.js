@@ -134,7 +134,6 @@ export class DraggableWidget extends Component {
                         fields={fields}
                         groupBy={groupBy}
                         pollInterval={pollInterval}
-                        kpi={true}
                         responsive={true}
                     />
                 </div>

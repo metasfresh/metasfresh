@@ -53,18 +53,6 @@ export function getAvailableLang() {
     return () => axios.get(config.API_URL + '/login/availableLanguages');
 }
 
-// export function getUserDashboardWidgets() {
-//     return () => axios.get(config.API_URL + '/dashboard/kpis');
-// }
-
-export function setUserDashboardWidgets(payload) {
-    return () => axios.patch(config.API_URL + '/dashboard/kpis', payload);
-}
-
-// export function getUserDashboardIndicators() {
-//     return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
-// }
-
 export function browseViewRequest(
     viewId, page, pageLength, orderBy, windowType
 ){
@@ -228,4 +216,8 @@ export function getKPIData(id) {
 
 export function getTargetIndicatorsData(id) {
     return () => axios.get(config.API_URL + '/dashboard/targetIndicators/'+id+'/data');
+}
+
+export function setUserDashboardWidgets(payload) {
+    return () => axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }
