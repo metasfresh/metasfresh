@@ -21,7 +21,7 @@ class PieChartComponent extends Component {
 
     }
 
-    setDimensions = (width=600, height=500) => {
+    setDimensions = (width=600, height=600) => {
         const {chartClass, responsive, fields} = this.props;
         let chartWidth = width;
         let chartHeight = height;
@@ -61,7 +61,7 @@ class PieChartComponent extends Component {
             .attr('height', height)
             .append('g')
             .attr("class", "chart")
-            .attr('transform', 'translate(' + width / 2 + ',' + (height - 0.6*height / 2) + ')');
+            .attr('transform', 'translate(' + width / 2 + ',' + (height - 0.65*height / 2) + ')');
 
         chart.append("g")
             .attr("class", "slices");
@@ -94,10 +94,10 @@ class PieChartComponent extends Component {
 
         var legend = svg
             .attr('width', width)
-            .attr('height', 0.35*height)
+            .attr('height', 0.30*height)
             .append('g')
             .attr("class", "legends")
-            .attr('transform', 'translate(' + 0 + ',' + 0.35*height / 2 + ')');
+            .attr('transform', 'translate(' + 0 + ',' + 0.30*height / 2 + ')');
 
         var legendRectSize = 18;
         var legendSpacing = 4;

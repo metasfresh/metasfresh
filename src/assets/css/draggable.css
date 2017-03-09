@@ -31,7 +31,7 @@
 
 .draggable-widget-body {
     min-height: 250px;
-    min-height: 540px;
+    min-height: 650px;
     height: calc(100% - 34px);
     z-index: 1;
     overflow: hidden;
