@@ -1,10 +1,11 @@
+import boxSize from './boxSize';
 import * as d3 from 'd3';
 
 export const drawLegend = (svg, fields, horizontal, rangeZ) => {
     const size = {
         width: 20,
         height: 20,
-        offset: 5
+        offset: boxSize.padding
     };
     const width = horizontal.width + horizontal.left + horizontal.right - 2 * size.offset;
 

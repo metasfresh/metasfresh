@@ -24,14 +24,15 @@ class BarChartComponent extends Component {
         const rangeZ = getZRange(colors);
 
         // horizontal sizing
-        const horizontal = getHorizontalDimensions(responsive, chartClass);
+        const horizontal = getHorizontalDimensions(this.svg, responsive, chartClass);
         const rangeX0 = getX0Range(horizontal.width, data, groupBy);
         const rangeX1 = getX1Range(rangeX0.bandwidth(), fields);
         populateXAxis(this.svg, rangeX0);
 
         // vertical sizing
         const labelsHeight = getXAxisLabelsHeight(this.svg);
-        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 35});
+        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 25});
+        console.log(vertical)
         const rangeY = getYRange(vertical.height, data, fields);
         populateYAxis(this.svg, rangeY);
 
@@ -70,8 +71,17 @@ class BarChartComponent extends Component {
     addResponsive = () => {
         const { chartClass } = this.props;
 
+        d3.select('.' + chartClass + '-wrapper').node()
+            .addEventListener('resize', () => {
+                console.log('resizing addEventListener');
+                this.draw();
+            });
+
         d3.select(window)
-            .on('resize.' + chartClass, () => this.draw())
+            .on('resize.' + chartClass + '-wrapper', () => {
+                console.log('resizing d3 on')
+                this.draw()
+            })
     };
 
     componentDidMount() {
