@@ -7,9 +7,9 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import {
-    getUserDashboardWidgets,
+    getKPIsDashboard,
     setUserDashboardWidgets,
-    getUserDashboardIndicators
+    getTargetIndicatorsDashboard
 } from '../../actions/AppActions';
 
 export class DraggableWrapper extends Component {
@@ -31,7 +31,7 @@ export class DraggableWrapper extends Component {
 
     getIndicators = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboardIndicators()).then(response => {
+        dispatch(getTargetIndicatorsDashboard()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 indicators: response.data.items
             }));
@@ -40,7 +40,7 @@ export class DraggableWrapper extends Component {
 
     getDashboard = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboardWidgets()).then(response => {
+        dispatch(getKPIsDashboard()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 cards: response.data.items
             }));

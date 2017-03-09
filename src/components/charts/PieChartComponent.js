@@ -72,54 +72,77 @@ class PieChartComponent extends Component {
             .attr('d', arc)
             .style('fill', d => color(d.data[fields[0].fieldName]));
 
-        g.append('text')
-            .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
-            .attr('dy', '.35em')
-            .text(d => d.data[groupBy.fieldName]);
+        // g.append('text')
+        //     .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
+        //     .attr('dy', '.35em')
+        //     .text(d => d.data[groupBy.fieldName]);
 
-        // var key = function(d){ return d.data.name; };
 
-        // var text = svg.select(".labels").selectAll("text")
-		// .data(pie(data), key);
 
-        // text.enter()
-		// .append("text")
-		// .attr("dy", ".35em")
-		// .text(function(d) {
-		// 	return d.data.name;
-		// })
-        // .attr("transform", 
-        //         "translate(" + 0 + "," + 0 + ")");
 
-        // function midAngle(d){
-        //     console.log(d.startAngle);
-        //     return d.startAngle + (d.endAngle - d.startAngle)/2;
-        // }
 
-        // text.transition().duration(1000)
-        //     .attrTween("transform", function(d) {
-        //         this._current = this._current || d;
-        //         var interpolate = d3.interpolate(this._current, d);
-        //         this._current = interpolate(0);
-        //         return function(t) {
-        //             var d2 = interpolate(t);
-        //             var pos = outerArc.centroid(d2);
-        //             pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
-        //             return "translate("+ pos +")";
-        //         };
-        //     })
-        //     .styleTween("text-anchor", function(d){
-        //         this._current = this._current || d;
-        //         var interpolate = d3.interpolate(this._current, d);
-        //         this._current = interpolate(0);
-        //         return function(t) {
-        //             var d2 = interpolate(t);
-        //             return midAngle(d2) < Math.PI ? "start":"end";
-        //         };
-        //     });
+//----------------------------------//
 
-        // text.exit()
-        //     .remove();
+
+
+
+        var key = d => d.data[groupBy.fieldName];
+
+        var text = svg.select(".labels").selectAll("text")
+		.data(pie(data), key);
+
+        text.enter()
+		.append("text")
+		.attr("dy", ".35em")
+		.text(d => d.data[groupBy.fieldName])
+        .attr("transform", d => {
+            // console.log(d);
+                this._current = this._current || d;
+                const interpolate = d3.interpolate(this._current, d);
+                this._current = interpolate(0);
+                return function(t) {
+                    console.log(t);
+                    // var d2 = interpolate(t);
+                    // var pos = outerArc.centroid(d2);
+                    // pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
+                    return "translate(" + 0 + "," + 60 + ")"
+                }
+
+                   
+                
+                // "translate(" + 0 + "," + 60 + ")"}
+        });
+        
+
+        function midAngle(d){
+            console.log(d.startAngle);
+            return d.startAngle + (d.endAngle - d.startAngle)/2;
+        }
+
+        text.transition().duration(1000)
+            .attrTween("transform", function(d) {
+                this._current = this._current || d;
+                var interpolate = d3.interpolate(this._current, d);
+                this._current = interpolate(0);
+                return function(t) {
+                    var d2 = interpolate(t);
+                    var pos = outerArc.centroid(d2);
+                    pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
+                    return "translate("+ pos +")";
+                };
+            })
+            .styleTween("text-anchor", function(d){
+                this._current = this._current || d;
+                var interpolate = d3.interpolate(this._current, d);
+                this._current = interpolate(0);
+                return function(t) {
+                    var d2 = interpolate(t);
+                    return midAngle(d2) < Math.PI ? "start":"end";
+                };
+            });
+
+        text.exit()
+            .remove();
 
 
     }
