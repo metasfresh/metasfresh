@@ -12,7 +12,7 @@ import {
 class RawChart extends Component {
     constructor(props){
         super(props);
-        
+
         this.state = {
             chartData: []
         }
@@ -34,16 +34,14 @@ class RawChart extends Component {
             });
         }
     }
-    
-    render() {
+
+    renderChart = () => {
         const {
             id, chartType, caption, fields, groupBy, pollInterval, kpi
         } = this.props;
-        const {
-            chartData
-        } = this.state;
+        const {chartData} = this.state;
         const colors = ['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00'];
-        console.log(chartType);
+
         switch(chartType){
             case 'BarChart':
                 return(
@@ -55,13 +53,25 @@ class RawChart extends Component {
                         data={chartData}
                         colors={colors}
                         chartClass={'chart-' + id}
+                        responsive={true}
                     />
                 )
             case 'PieChart':
                 return(
-                    <div>Pie Chart</div>
+                    <PieChart
+                        chartClass={'chart-' + id}
+                        responsive={true}
+                        data={chartData}
+                        fields={fields}
+                        groupBy={groupBy}
+                    />
                 )
         }
+    }
+
+    render() {
+        const {chartData} = this.state;
+        return chartData.length > 0 && this.renderChart();
     }
 }
 

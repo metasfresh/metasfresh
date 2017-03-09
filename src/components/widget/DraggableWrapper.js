@@ -7,9 +7,9 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import {
-    getUserDashboardWidgets,
+    getKPIsDashboard,
     setUserDashboardWidgets,
-    getUserDashboardIndicators
+    getTargetIndicatorsDashboard
 } from '../../actions/AppActions';
 
 export class DraggableWrapper extends Component {
@@ -31,7 +31,7 @@ export class DraggableWrapper extends Component {
 
     getIndicators = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboardIndicators()).then(response => {
+        dispatch(getTargetIndicatorsDashboard()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 indicators: response.data.items
             }));
@@ -40,7 +40,7 @@ export class DraggableWrapper extends Component {
 
     getDashboard = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboardWidgets()).then(response => {
+        dispatch(getKPIsDashboard()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 cards: response.data.items
             }));
@@ -83,51 +83,122 @@ export class DraggableWrapper extends Component {
         })
     }
 
+
+
+
+
+
+
+
+
+            //     <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}>
+
+            //     {this.props.dashboard == '/' &&
+            //         <div className="logo-wrapper">
+            //             <img src={logo} />
+            //         </div>
+            //     }
+
+            //     {false && indicators.length > 0 && <div className={
+            //         'indicators-wrapper ' +
+            //         (idMaximized !== false ? 'indicator-hidden' : '')
+            //     }>
+            //         {false && indicators.map((indicator, id) =>
+            //             <div
+            //                 className="indicator"
+            //                 key={id}
+            //             >
+            //                 <iframe
+            //                     src={indicator.url}
+            //                     scrolling="no"
+            //                     frameBorder="no"
+            //                 ></iframe>
+            //             </div>
+            //         )}
+            //     </div>}
+
+
+
+
+            //     {this.props.dashboard != '/' && cards.map((card, i) => {
+            //         return (
+            //             <DraggableWidget
+            //                 key={card.id}
+            //                 index={i}
+            //                 id={card.id}
+            //                 text={card.caption}
+            //                 url={card.url}
+            //                 moveCard={this.moveCard}
+            //                 hideWidgets={this.hideWidgets}
+            //                 showWidgets={this.showWidgets}
+            //                 idMaximized={idMaximized}
+            //                 dashboard={this.props.dashboard}
+            //             />
+            //         );
+            //     })}
+            // </div>
+
+
+
+
     render() {
         const { cards, idMaximized, indicators } = this.state;
-        return (
-            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}>
-                {this.props.dashboard == '/' &&
-                    <div className="logo-wrapper">
-                        <img src={logo} />
-                    </div>
-                }
 
-                {false && indicators.length > 0 && <div className={
-                    'indicators-wrapper ' +
-                    (idMaximized !== false ? 'indicator-hidden' : '')
-                }>
-                    {false && indicators.map((indicator, id) =>
+        console.log(cards);
+
+        return (
+            <div className="dashboard-cards-wrapper">
+
+                {indicators.length > 0 && <div className={
+                        'indicators-wrapper ' +
+                        (idMaximized !== false ? 'indicator-hidden' : '')
+                    }>
+                    {indicators.map((indicator, id) =>
                         <div
                             className="indicator"
                             key={id}
                         >
-                            <iframe
-                                src={indicator.url}
-                                scrolling="no"
-                                frameBorder="no"
-                            ></iframe>
+                            indicators
                         </div>
                     )}
                 </div>}
 
-                {this.props.dashboard != '/' && cards.map((card, i) => {
+                { cards.length > 0 ?
+
+                    cards.map((item, id) => {
                     return (
                         <DraggableWidget
-                            key={card.id}
-                            index={i}
-                            id={card.id}
-                            text={card.caption}
-                            url={card.url}
+                            
+                            key={id} 
+                            id={item.id}
+                            index={id}
+                            chartType={item.kpi.chartType}
+                            caption={item.kpi.caption}
+                            fields={item.kpi.fields}
+                            groupBy={item.kpi.groupByField}
+                            pollInterval={item.kpi.pollIntervalSec}
+                            kpi={true}
                             moveCard={this.moveCard}
                             hideWidgets={this.hideWidgets}
                             showWidgets={this.showWidgets}
                             idMaximized={idMaximized}
-                            dashboard={this.props.dashboard}
+                            text={item.caption}
                         />
                     );
-                })}
+                }):
+
+                <div className="logo-wrapper">
+                    <img src={logo} />
+                </div>
+                }
             </div>
+            
+
+
+
+
+
+
         );
     }
 }
