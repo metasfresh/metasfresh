@@ -1,7 +1,13 @@
 import * as d3 from 'd3';
 
 export const getSvg = (className) => {
-    const container = d3.select('.' + className)
+    const svg = d3.select('.' + className);
+
+    // put legend outside of container
+    svg.append('g')
+        .classed('legend', true);
+
+    const container = svg
         .append('g')
         .classed('container', true);
 
@@ -14,15 +20,16 @@ export const getSvg = (className) => {
     container.append('g')
         .classed('datasets', true);
 
-    return container;
+    return svg;
 };
 
 export const sizeSvg = (svg, className, {width, height, top, left, right, bottom}) => {
-    d3.select('.' + className)
+    svg
         .attr('width', width + left + right)
         .attr('height', height + top + bottom);
 
-    svg.attr(
+    svg.select('.container')
+        .attr(
         'transform',
         'translate(' + left + ',' + top + ')'
     );

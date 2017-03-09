@@ -21,7 +21,7 @@ export const populateXAxis = (svg, rangeX0) => {
         .classed('x-axis-label', true)
         .each(function(){
             sizes.push(this.getBBox());
-        })
+        });
 
         const maxW = Math.max(...(sizes.map(size => size.width)));
 
