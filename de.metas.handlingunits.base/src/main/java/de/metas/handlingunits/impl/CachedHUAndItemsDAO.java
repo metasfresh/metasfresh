@@ -43,6 +43,7 @@ import org.compiere.model.I_AD_Client;
 
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -281,7 +282,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 			huItems.add(huItem);
 			
 			// sort to make sure that the order we expect is still preserved
-			Collections.sort(huItems, HUItemsLocalCache.HU_ITEMS_COMPARATOR);
+			Collections.sort(huItems, IHandlingUnitsDAO.HU_ITEMS_COMPARATOR);
 
 			debugValidateHUItems(hu);
 		}

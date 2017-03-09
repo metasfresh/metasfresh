@@ -24,26 +24,19 @@ package de.metas.handlingunits.impl;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.X_M_HU_Item;
 
 /**
  * Links to the {@link I_M_HU} (which is also containing and instance to this class, it's {@link #DYNATTR_Instance} dynamic attribute), and holds the items of that HU.
@@ -54,27 +47,6 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 /* package */final class HUItemsLocalCache extends AbstractModelListCacheLocal<I_M_HU, I_M_HU_Item>
 {
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private static final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
-			.createQueryOrderByBuilder(I_M_HU_Item.class)
-			.addColumn(I_M_HU_Item.COLUMN_M_HU_Item_ID, Direction.Ascending, Nulls.Last)
-			.createQueryOrderBy();;
-
-	private static final Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
-			X_M_HU_Item.ITEMTYPE_Material, 1,
-			X_M_HU_Item.ITEMTYPE_HandlingUnit, 2,
-			X_M_HU_Item.ITEMTYPE_HUAggregate, 3,
-			X_M_HU_Item.ITEMTYPE_PackingMaterial, 4);
-
-	/**
-	 * Specifies that material items shall be first, followed by HU-items, HU--aggregate-items and finally packing material items.
-	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
-	 */
-	public static final Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
-			.<I_M_HU_Item, Integer> comparing(
-					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
-			.thenComparing(
-					queryOrderBy.getComparator(I_M_HU_Item.class));
 
 	private static final String DYNATTR_Instance = HUItemsLocalCache.class.getName();
 
@@ -98,7 +70,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 	@Override
 	protected final Comparator<I_M_HU_Item> createItemsComparator()
 	{
-		return HU_ITEMS_COMPARATOR;
+		return IHandlingUnitsDAO.HU_ITEMS_COMPARATOR;
 	}
 
 	/**

@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.wrapper.POJOLookupMapInstancesTracker;
 import org.adempiere.exceptions.AdempiereException;
@@ -177,7 +178,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 		// Check if parent context changed
 		final PT parentModel = getParentModel();
 		final PlainContextAware parentModelCtx = createPlainContextAware(parentModel);
-		if (!Check.equals(this.ctx, parentModelCtx))
+		if (!Objects.equals(this.ctx, parentModelCtx))
 		{
 			markStaled(); // mark as staled
 			return true;
@@ -444,7 +445,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 				Collections.sort(itemsRetrievedNow, itemsComparator);
 			}
 
-			if (!Check.equals(this.items, itemsRetrievedNow))
+			if (!Objects.equals(this.items, itemsRetrievedNow))
 			{
 				final int itemsCount = this.items == null ? 0 : this.items.size();
 				final int itemsRetrievedNowCount = itemsRetrievedNow.size();

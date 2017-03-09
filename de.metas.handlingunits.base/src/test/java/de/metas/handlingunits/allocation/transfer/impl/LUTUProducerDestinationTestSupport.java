@@ -70,7 +70,8 @@ public class LUTUProducerDestinationTestSupport
 	public I_M_HU_PI piLU;
 
 	/**
-	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_IFCO} sub-PI.
+	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_IFCO} sub-PI.<br>
+	 * One LU can hold 5 IFCOs
 	 */
 	public I_M_HU_PI_Item piLU_Item_IFCO;
 

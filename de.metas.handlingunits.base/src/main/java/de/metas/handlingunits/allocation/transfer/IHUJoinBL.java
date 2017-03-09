@@ -25,8 +25,10 @@ package de.metas.handlingunits.allocation.transfer;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.exceptions.NoCompatibleHUItemParentFoundException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 
 /**
  * Implementors assign a pre-existing TU to a pre-existing LU.
@@ -37,11 +39,12 @@ import de.metas.handlingunits.model.I_M_HU;
 public interface IHUJoinBL extends ISingletonService
 {
 	/**
-	 * Assigns a trading unit to the selected loading unit
+	 * Assign a "real" trading unit to the selected loading unit. Use {@link IHUTrxBL} to do the actual work, but first find the best {@link I_M_HU_Item} of the given {@code loadingUnit}.
+	 * 
 	 *
 	 * @param huContext
 	 * @param loadingUnit
-	 * @param tradingUnit may <b>not</b> be an aggregate HU
+	 * @param tradingUnit should <b>not</b> be an aggregate HU (unless you know what you do).
 	 *
 	 * @throws NoCompatibleHUItemParentFoundException if the trading unit is incompatible with the all of the loading unit's item definitions
 	 */

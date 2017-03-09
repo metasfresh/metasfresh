@@ -82,7 +82,7 @@ public interface IHUIterator
 
 	Date getDate();
 
-	void setDate(final Date date);
+	IHUIterator setDate(final Date date);
 
 	void setStorageFactory(final IHUStorageFactory storageFactory);
 

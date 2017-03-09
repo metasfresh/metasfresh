@@ -100,7 +100,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	public HandlingUnitsDAO()
 	{
-		super();
 		defaultHUAndItemsDAO = new CachedIfInTransactionHUAndItemsDAO();
 	}
 
