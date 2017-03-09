@@ -169,6 +169,20 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
+        case types.UPDATE_DATA_VALID_STATUS:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    validStatus: action.validStatus
+                })
+            })
+
+        case types.UPDATE_DATA_SAVE_STATUS:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    saveStatus: action.saveStatus
+                })
+            })
+
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
