@@ -70,7 +70,7 @@ public class WEBUI_M_HU_Transform
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	/**
-	 * 
+	 *
 	 * Enumerates the actions supported by this process. There is an analog {@code AD_Ref_List} in the application dictionary. <b>Please keep it in sync</b>.
 	 * <p>
 	 * <h1>Important notes</h1>
@@ -81,7 +81,7 @@ public class WEBUI_M_HU_Transform
 	 * <li>the process only ever performs a split (see {@link IHUSplitBuilder}) if the parameter value is decreased. If the user instead goes with the suggested maximum value, then the source HU is "moved" as it is.</li>
 	 * <li>For the {@link #CU_To_NewCU} and {@link #TU_To_NewTUs} actions, if the user goes with the suggested maximum value, then nothing is done. But there is a (return) message which gives a brief explanation to the user.
 	 * </ul>
-	 * 
+	 *
 	 */
 	public static enum ActionType
 	{
@@ -153,8 +153,8 @@ public class WEBUI_M_HU_Transform
 		 * Parameters
 		 * <ul>
 		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
-		 * <li>the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU</li>
-		 * <li>the number of TUs to join or split onto the destination LU(s)</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_M_HU_PI_ITEM_ID} the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_QtyTU} the number of TUs to join or split onto the destination LU(s)</li>
 		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
 		 * </ul>
 		 */
@@ -198,8 +198,8 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
 	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
 
-	private static final String PARAM_M_HU_PI_ITEM_ID = "M_HU_PI_ITEM_ID";
-	@Param(parameterName = PARAM_M_HU_PI_ITEM_ID)
+	private static final String PARAM_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
+	@Param(parameterName = PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
 	//
@@ -251,7 +251,7 @@ public class WEBUI_M_HU_Transform
 		if (PARAM_QtyTU.equals(parameter.getColumnName()))
 		{
 			final I_M_HU tu = getSingleSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
-			return HUTransferService.get(getCtx()).getMaximumQtyCU(tu);
+			return HUTransferService.get(getCtx()).getMaximumQtyTU(tu);
 		}
 
 		if (PARAM_HUPlanningReceiptOwnerPM_TU.equals(parameter.getColumnName()))
@@ -324,7 +324,7 @@ public class WEBUI_M_HU_Transform
 			{
 				if (p_M_HU_PI_Item == null)
 				{
-					throw new FillMandatoryException(PARAM_M_HU_PI_ITEM_ID);
+					throw new FillMandatoryException(PARAM_M_HU_PI_Item_ID);
 				}
 				action_SplitTU_To_NewLU(row, p_M_HU_PI_Item, p_QtyTU, p_HUPlanningReceiptOwnerPM_LU);
 				break;
@@ -350,7 +350,7 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
-	 * 
+	 *
 	 * @param row
 	 * @param huPlanningReceiptOwnerPM
 	 * @task https://github.com/metasfresh/metasfresh/issues/1130
@@ -474,7 +474,7 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the actions that are available according to which row is currently selected and to also according to whether there are already existing TUs or LUs in the context.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
@@ -532,7 +532,7 @@ public class WEBUI_M_HU_Transform
 
 	/**
 	 * Needed when the selected action is {@link ActionType#CU_To_ExistingTU}.
-	 * 
+	 *
 	 * @return existing TUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
@@ -554,7 +554,7 @@ public class WEBUI_M_HU_Transform
 
 	/**
 	 * Needed when the selected action is {@link ActionType#TU_To_ExistingLU}.
-	 * 
+	 *
 	 * @return existing LUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
@@ -576,7 +576,7 @@ public class WEBUI_M_HU_Transform
 
 	/**
 	 * Needed when the selected action is {@link ActionType#CU_To_NewTUs}.
-	 * 
+	 *
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = PARAM_Action, numericKey = true)
@@ -609,10 +609,10 @@ public class WEBUI_M_HU_Transform
 
 	/**
 	 * Needed when the selected action is {@link ActionType#TU_To_NewLUs}.
-	 * 
+	 *
 	 * @return a list of HU PI items that link the currently selected TU with a TUperLU-qty and a LU packing instruction.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_ITEM_ID, dependsOn = { PARAM_Action }, numericKey = true)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = { PARAM_Action }, numericKey = true)
 	private LookupValuesList getM_HU_PI_Item_ID()
 	{
 		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
@@ -637,7 +637,7 @@ public class WEBUI_M_HU_Transform
 				.collect(LookupValuesList.collect());
 	}
 
-	private String buildHUPIItemString(I_M_HU_PI_Item huPIItem)
+	private String buildHUPIItemString(final I_M_HU_PI_Item huPIItem)
 	{
 		return StringUtils.formatMessage("{} ({} x {})", huPIItem.getM_HU_PI_Version().getName(), huPIItem.getQty(), huPIItem.getIncluded_HU_PI().getName());
 	}
