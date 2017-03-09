@@ -13,14 +13,19 @@ Here come the actual release notes:
 # metasfresh 5.1 (2017-11)
 
 **upcoming release**
+
 ## Features
 * metasfresh-backend
   * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
   * [#1118](https://github.com/metasfresh/metasfresh/issues/1118) Change migration scripts folder from TEMP to METASFRESH_HOME/migration_scripts/
+  * [#1130](https://github.com/metasfresh/metasfresh/issues/1130) LU Transform "own Palette" Packing material
 
 ## Fixes
 * metasfresh-backend
   * [#1121](https://github.com/metasfresh/metasfresh/issues/1121) TU receipt label is just a white sheet of paper
+
+* metasfresh-webui-api
+  * [#237](https://github.com/metasfresh/metasfresh-webui/issues/237) Transform CU on existing TU not working
 
 # metasfresh 5.0 (2017-10)
 
