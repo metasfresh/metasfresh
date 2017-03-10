@@ -222,7 +222,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * @param huPI
-	 * @param huUnitType
+	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
 	 * @param bpartner
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
@@ -339,7 +339,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
 
 	/**
-	 * 
+	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
 	 * @param hu
 	 * @param piItem
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.

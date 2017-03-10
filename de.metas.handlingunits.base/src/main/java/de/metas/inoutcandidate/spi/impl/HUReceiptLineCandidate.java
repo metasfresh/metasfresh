@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.spi.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -150,7 +151,7 @@ import de.metas.inout.model.I_M_QualityNote;
 
 		// It shall have the same ASI Aggregation Key
 		final Object receiptLinePartToAdd_ASIAggregationKey = receiptLinePartToAdd.getAttributeStorageAggregationKey();
-		if (!Check.equals(_asiAggregationKey, receiptLinePartToAdd_ASIAggregationKey))
+		if (!Objects.equals(_asiAggregationKey, receiptLinePartToAdd_ASIAggregationKey))
 		{
 			return false;
 		}

@@ -278,6 +278,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
+			// item existed
 			return ImmutablePair.of(existingItem, false);
 		}
 

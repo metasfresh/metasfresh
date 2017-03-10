@@ -25,7 +25,7 @@ package de.metas.handlingunits.attribute.strategy;
 
 import java.util.List;
 
-import org.adempiere.mm.attributes.model.I_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 

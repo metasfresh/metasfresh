@@ -22,7 +22,7 @@ package de.metas.handlingunits.model;
  * #L%
  */
 
-public interface I_M_Attribute extends org.adempiere.mm.attributes.model.I_M_Attribute
+public interface I_M_Attribute extends org.compiere.model.I_M_Attribute
 {
     public static final String COLUMNNAME_IsMatchHUStorage = "IsMatchHUStorage";
 	public void setIsMatchHUStorage(boolean IsMatchHUStorage);

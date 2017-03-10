@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.storage.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;

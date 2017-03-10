@@ -147,6 +147,12 @@ public class HUTransferServiceTests
 			assertThat(createdTUs.size(), is(1));
 			sourceTU = createdTUs.get(0);
 
+			// guard: verify that we have on IFCO with a two-tomato-CU in it
+			final Node sourceTUBeforeSplitXML = HUXmlConverter.toXml(sourceTU);
+			assertThat(sourceTUBeforeSplitXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+			assertThat(sourceTUBeforeSplitXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
+			assertThat(sourceTUBeforeSplitXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
+
 			final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.get(0));
 			assertThat(createdCUs.size(), is(1));
 
@@ -325,10 +331,11 @@ public class HUTransferServiceTests
 		HUTransferService.get(data.helper.getHUContext())
 				.splitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
 
-		// the cu we split from is destroyed
+		// the cu we split from is *not* destroyed but was attached to the parent TU
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(existingTU.getM_HU_ID()));
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='D'])", is("1")));
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='0.000' and @C_UOM_Name='Kg'])", is("1")));
+		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("P")));
+		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		final Node existingTUXML = HUXmlConverter.toXml(existingTU);
 		assertThat(existingTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
@@ -373,10 +380,11 @@ public class HUTransferServiceTests
 		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
 		assertThat(existingTUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("50.000")));
 
-		// the cu we split from is destroyed
+		// the cu we split from is *not* destroyed, but it was attached as-is to the existingTU
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(existingTU.getM_HU_ID()));
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='D'])", is("1")));
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='0.000' and @C_UOM_Name='Kg'])", is("1")));
+		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("P")));
+		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 
 	@Test
@@ -393,7 +401,7 @@ public class HUTransferServiceTests
 		// invoke the method under test
 		HUTransferService.get(data.helper.getHUContext())
 				.splitCU_To_ExistingTU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), existingTU);
-
+		
 		// the cu we split from is destroyed
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
 		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("D")));

@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.spi.impl;
 
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -87,6 +88,6 @@ public class WeightTareAdjustAttributeValueCallout extends AbstractWeightAttribu
 			final Object valueOld,
 			final Object valueNew)
 	{
-		return !Check.equals(valueOld, valueNew);
+		return !Objects.equals(valueOld, valueNew);
 	}
 }

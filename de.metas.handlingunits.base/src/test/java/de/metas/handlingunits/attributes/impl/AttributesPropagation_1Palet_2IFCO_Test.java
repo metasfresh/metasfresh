@@ -50,8 +50,6 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.CopyAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.impl.HUTrxBLTests;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;

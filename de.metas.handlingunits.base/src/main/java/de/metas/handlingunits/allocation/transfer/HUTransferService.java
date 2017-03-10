@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -24,6 +25,7 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -186,25 +188,7 @@ public class HUTransferService
 			}
 			else
 			{
-				// Take it out from its parent
-				final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-				huTrxBL.createHUContextProcessorExecutor(huContext)
-						.run(new IHUContextProcessor()
-						{
-							@Override
-							public IMutableAllocationResult process(final IHUContext localHuContext)
-							{
-								Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
-								Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
-
-								huTrxBL.setParentHU(localHuContext,
-										null, // parentHUItem
-										cuHU,
-										true // destroyOldParentIfEmptyStorage
-								);
-								return NULL_RESULT; // we don't care about the result
-							}
-						});
+				setParent(cuHU, null);
 				return ImmutableList.of(cuHU);
 			}
 		}
@@ -244,17 +228,74 @@ public class HUTransferService
 		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
-		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(tuHU);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		HUSplitBuilderCoreEngine
-				.of(huContext,
-						cuHU,
-						// forceAllocation = true; 'tuHU' will probably have capacity constraints, but we want to ignore them; if the user squeezed in the stuff in reality, we need to do the same in metasfresh
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, true),
-						destination)
-				.withPropagateHUValues()
-				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
-				.performSplit();
+		final IAllocationDestination destination;
+		if (handlingUnitsBL.isAggregateHU(tuHU))
+		{
+			// we will load directly to the given tuHU which is actually a VHU
+			destination = HUListAllocationSourceDestination.of(tuHU);
+		}
+		else
+		{
+			// we are later going to attach something as a child to the given 'tuHU'
+			if (qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0)
+			{
+				// we will attach the whole cuHU to tuHU and thus not load/split anything
+				destination = null;
+			}
+			else
+			{
+				// we will load qtCU do a new VHU (a new CU) and then attach that new CU to 'tuHU'
+				destination = HUProducerDestination.ofVirtualPI();
+			}
+		}
+
+		if (destination != null)
+		{
+			HUSplitBuilderCoreEngine
+					.of(
+							huContext,
+							cuHU,
+							// forceAllocation = false; no need, because destination has no capacity constraints
+							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false),
+							destination)
+					.withPropagateHUValues()
+					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
+					.performSplit();
+		}
+
+		if (handlingUnitsBL.isAggregateHU(tuHU))
+		{
+			return; // we are done; no attaching
+		}
+
+		// we attach the
+		final List<I_M_HU> childCUs;
+		if (destination == null)
+		{
+			childCUs = ImmutableList.of(cuHU);
+		}
+		else
+		{
+			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
+
+		}
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
+		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(tuHU)
+				.stream()
+				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
+				.collect(Collectors.toList());
+		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", tuHU);
+
+		// finally do the attaching
+		childCUs.forEach(cu -> {
+			setParent(cu, tuMaterialItem.get(0));
+		});
+
 	}
 
 	/**
@@ -326,31 +367,36 @@ public class HUTransferService
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 			if (!handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-				huTrxBL.createHUContextProcessorExecutor(huContext)
-						.run(new IHUContextProcessor()
-						{
-							@Override
-							public IMutableAllocationResult process(final IHUContext localHuContext)
-							{
-								Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
-								Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
-
-								// Take it out from its parent
-								huTrxBL.setParentHU(localHuContext,
-										null, // parentHUItem
-										sourceTuHU,
-										true // destroyOldParentIfEmptyStorage
-								);
-								return NULL_RESULT; // we don't care about the result
-							}
-						});
+				setParent(sourceTuHU, null);
 				return ImmutableList.of(sourceTuHU);
 			}
 		}
 
 		// note: as of now an aggregated TU needs a parent, so also if the user just wants fully to remove an aggregate TU from it's parent, we still need to split it.
 		return split_To_TopLevelHUs(sourceTuHU, qtyTU, null, isOwnPackingMaterials);
+	}
+
+	private void setParent(final I_M_HU childHU, final I_M_HU_Item parentItem)
+	{
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		huTrxBL.createHUContextProcessorExecutor(huContext)
+				.run(new IHUContextProcessor()
+				{
+					@Override
+					public IMutableAllocationResult process(final IHUContext localHuContext)
+					{
+						Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
+						Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
+
+						// Take it out from its parent
+						huTrxBL.setParentHU(localHuContext,
+								parentItem, // might be null
+								childHU,
+								true // destroyOldParentIfEmptyStorage
+						);
+						return NULL_RESULT; // we don't care about the result
+					}
+				});
 	}
 
 	/**

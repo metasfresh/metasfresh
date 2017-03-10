@@ -52,7 +52,7 @@ public class OLCandPIIPValidatorTest
 	@Test
 	public void testNoPIIPQtyOnChanged()
 	{
-		final I_C_OLCand olCand = InterfaceWrapperHelper.newInstance(I_C_OLCand.class, new PlainContextAware(Env.getCtx()));
+		final I_C_OLCand olCand = InterfaceWrapperHelper.newInstance(I_C_OLCand.class, PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx()));
 		olCand.setQty(BigDecimal.TEN);
 		InterfaceWrapperHelper.save(olCand);
 		final boolean validateOK = new OLCandPIIPValidator().validate(olCand);
