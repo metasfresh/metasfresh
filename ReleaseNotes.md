@@ -46,6 +46,8 @@ Here come the actual release notes:
     * Adding detailes Layout to material Receipts Candidates Grid view to allow the receipt user to have a better overview.
   * [#1080](https://github.com/metasfresh/metasfresh/issues/1080) Virtual Column for qtyenteredTU from Purchase Orderline in Receipt Candidate
     * Introduced a virtual column qtyEnteredTU in Material Receipt candidate, to be able to compare ordered TU qty with the already received TU Quantity.
+  * [#1081](https://github.com/metasfresh/metasfresh/issues/1081) Allow the generic configuration of C_Printing_Queue_Recipient_IDs for system users
+    * New Printing Client Functionality to allow the generic configuration of Printing Queue recepients for system users.
   * [#1090](https://github.com/metasfresh/metasfresh/issues/1090) Introduce C_BPartner_QuickInput table/window to capture new BPartners
     * New Table created for Business Partner creation on the fly during Order editing.
   * [#1105](https://github.com/metasfresh/metasfresh/issues/1105) Translate Action in Material Receipt Schedule for de_DE
@@ -64,6 +66,7 @@ Here come the actual release notes:
     * Reordering columns in Material Receipt Grid View in WebUI.
   * [#1135](https://github.com/metasfresh/metasfresh/issues/1135) Translation de_DE for Process Empties receive
     * Adding a new Translation for "Empties receive" action in Material Receipt Candidates Window in WebUI.
+
   
 * metasfresh-webui-api
   * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
@@ -91,53 +94,85 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#126](https://github.com/metasfresh/metasfresh-webui-frontend/issues/126) Add new Business Partner functionality in search Field
-  * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
+    * New Feature that allows to create a new customer Business Partner on the fly when editing a sales Order. This new functionality automatically is suggested to the user when the businesspartner search does not find a result.
   * [#446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/446) Error indicator for fields
+    * Introducing new Error indicators for fiels, allowing to provide detailed information to the user in case of error situations for a field. The available information is shown with a red color on the field and available when hovering then field with the mouse.
   * [#447](https://github.com/metasfresh/metasfresh-webui-frontend/issues/447) Not saved indicator for Grid view lines
+    * Introducting a "not saved indicator" for grid view lines, now giving the user the transparency to recognize why a line cannot be saved.
   * [#448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/448) Query on activate document included tab
+    * New functionality to reduce the traffic and ressource load whan opening a window with included subtabs. This new feature allows to flag subtabs as high volume or frequent change and then reloads the data only when the user selects that subtab.
   * [#452](https://github.com/metasfresh/metasfresh-webui-frontend/issues/452) Saving Indicator Bar in modal window
-  * [#465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/465) DateTime widget not respected in included tab
-  * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
+    * Adding the global save indicator bar also to modal overlays.
   * [#482](https://github.com/metasfresh/metasfresh-webui-frontend/issues/482) Quick actions not queried in HU editor for included rows
-  * [#487](https://github.com/metasfresh/metasfresh-webui-frontend/issues/487) Expand batch entry when completed docuement
+    * Added a missing functionality, so that now quick actions can be used also for newly added rows in Handling Unit Editor.
   * [#488](https://github.com/metasfresh/metasfresh-webui-frontend/issues/488) Restrict the minimum size of action menu
-  * [#489](https://github.com/metasfresh/metasfresh-webui-frontend/issues/489) Grid view not refreshed on websocket event
+    * Layout change to prohibit the action menu getting to narrow, disallowing the user to read the actions.
   * [#490](https://github.com/metasfresh/metasfresh-webui-frontend/issues/490) Filter drop-down list too narrow
+    * Layout change to prohibit the filter drop-down list getting to narrow, disallowing the user to read the filter criteria.
   * [#510](https://github.com/metasfresh/metasfresh-webui-frontend/issues/510) Improved Not Saved Indicator design
+    * Nice improvement for the design of the not saved indicator. It is now a thin red line instead of the saved indicator.
   * [#1073](https://github.com/metasfresh/metasfresh/issues/1073) Material Receipt Candidates order by Purchase Order ID desc
+    * New Order by criteria for the Grid view in the Material Receipt Candidates Window.
   
 ## Fixes
 * metasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
+    * Fixes an issue that leads to hig volument logging on metasfresh application server.
   * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
+    * Minor Fix making the Orderline ID mandatory.
   * [#1056](https://github.com/metasfresh/metasfresh/issues/1056) Purchase Order from Sales Order process, wrong InvoiceBPartner
+    * Fixes a Bug that did not select the correct Invoice Business Partrner Vendor from the Partner Releationship having the delivery vendor Partner different than the Invoice Business Partner vendor.
   * [#1059](https://github.com/metasfresh/metasfresh/issues/1059) ShipmentScheduleBL.updateSchedules fails after C_Order was voided
+    * Minor fix in the ShipmentScheduler update that failed for a cornercase when the sales Order was voided.
   * [#1068](https://github.com/metasfresh/metasfresh/issues/1068) Settings on Swing Client are saved but window does not close
+    * Minor fix in Swing Client Settings window. Changes to the settings were save but it was not possible to close the window via done after any change.
   * [#1076](https://github.com/metasfresh/metasfresh/issues/1076) NoDataFoundHandlers can cause StackOverflowError
-  * [#1081](https://github.com/metasfresh/metasfresh/issues/1081) Allow the generic configuration of C_Printing_Queue_Recipient_IDs for system users
+    * Fix for a Bug cause through new Data Lifecycle Management Feature.
   * [#1088](https://github.com/metasfresh/metasfresh/issues/1088) pricing problem wrt proccurement candidates
   * [#1094](https://github.com/metasfresh/metasfresh/issues/1094) Drop deprecated and confusing I_AD_User get/setFirstName methods
+    * Dropping lagacy getter/ setter for FirstName LastName of User data.
   * [#1097](https://github.com/metasfresh/metasfresh/issues/1097) field too small in jasper document for invoice
+    * Enhancing a field size in JasperReports Invoice Document.
   * [#1099](https://github.com/metasfresh/metasfresh/issues/1099) Fix Materialentnahme movement creation
+    * Includes a fix for the Material Movement creation for used products in Swing Handling Unit editor.
   * [#1103](https://github.com/metasfresh/metasfresh/issues/1103) TU Ordered Qty in Material Receipt Schedule shows movedQty
+    * Fix in the virtual column Ordered Quantitity TU that showed the moved Quantity instead.
   * [#1106](https://github.com/metasfresh/metasfresh/issues/1106) inactive org still selectable on login
+    * Fixes the login procedure, now disallowing the loging for inactive Organisations.
   * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
   * [#1110](https://github.com/metasfresh/metasfresh/issues/1110) webui HU Editor: conversion error when selecting SubProducer
     * Fixing an error that prohibited the editing of Subproducers in the Material Receipt Handling Unit Editor.
   * [#1121](https://github.com/metasfresh/metasfresh/issues/1121) TU receipt label is just a white sheet of paper
+    * Fixes an error in the printing process of Material Receipts and Labels via the standalone printing client and WebUI Interface.
   
 * metasfresh-webui-api
   * [#159](https://github.com/metasfresh/metasfresh-webui/issues/159) Error opening the "Report & Process" window
+  
   * [#187](https://github.com/metasfresh/metasfresh-webui/issues/187) Documents shall automatically have a default value for standard fields
   * [#188](https://github.com/metasfresh/metasfresh-webui/issues/188) Field's mandatory flag is not considered
+    * Fixes cases in WebUI that shall trigger a mandatory behavior for input fields.
   * [#213](https://github.com/metasfresh/metasfresh-webui/issues/213) Use document's BPartner language when printing
+    * Fixes the output of Documents. Now also in WebUI the documents are created in the Business Partner Language.
   * [#222](https://github.com/metasfresh/metasfresh-webui/issues/222) Carrot Paloxe Error in Material Receipt
     * Fixing an error that appeared when receiving HU which were not LU Level.
   * [#225](https://github.com/metasfresh/metasfresh-webui/issues/225) Receipt Candidates - Foto process is not attaching the picture
+    * Fixes the save process when taking a photo via webcam in material Receipt Candidates. The Photo is automatically uploaded and saved as attachment to the candidate record.
   * [#237](https://github.com/metasfresh/metasfresh-webui/issues/237) Transform CU on existing TU not working
+    * Fixes an error when trying to transform a CU Handling Unit to an already existing TU.
   
 * metasfresh-webui-frontend
+  * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
+    * Fixing some of the global shortcuts when the focus is on an input field.
+  * [#465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/465) DateTime widget not respected in included tab
+    
+  * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
+    * Fixing a bug that broke the sidelist.
   * [#485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/485) Subtab 100% height broken again
+    * Fixing the Layout of included subtabs when subtab lines are able to fit completely on one screen.
+  * [#487](https://github.com/metasfresh/metasfresh-webui-frontend/issues/487) Expand batch entry when completed docuement
+    * Fixed an error that appeared when the user tried to use the batch entry mode expansion with a completed document.
+  * [#489](https://github.com/metasfresh/metasfresh-webui-frontend/issues/489) Grid view not refreshed on websocket event
+    * Fix for websocket eventy that triggers the refresh of the Grid View after external data changes.
 
 # metasfresh 4.58.57 (2017-09)
 
