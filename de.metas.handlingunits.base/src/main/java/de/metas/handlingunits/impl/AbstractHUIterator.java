@@ -604,7 +604,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(node);
 				return new ArrayList<Object>(includedHUs);
 			}
-			else if (X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType))
+			else if (X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType)
+					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType)) // Taken from gh #1099
 			{
 				if (handlingUnitsBL.isVirtual(node))
 				{
