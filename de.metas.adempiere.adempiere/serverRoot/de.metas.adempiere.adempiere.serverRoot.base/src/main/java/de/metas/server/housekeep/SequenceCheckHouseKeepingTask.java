@@ -1,10 +1,9 @@
 package de.metas.server.housekeep;
 
-import java.util.Properties;
-
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.compiere.process.SequenceCheck;
-import org.compiere.util.Env;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Loggables;
+import org.compiere.util.DB;
 
 /*
  * #%L
@@ -34,8 +33,9 @@ public class SequenceCheckHouseKeepingTask implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		final Properties ctx = Env.getCtx();
-		SequenceCheck.checkSequences(ctx);
+		// #1124: checking native sequences is sufficient and takes less time than also checking AD_Sequence records.
+		DB.executeFunctionCallEx(ITrx.TRXNAME_None, "select dba_seq_check_native()", new Object[0]);
+		Loggables.get().addLog("Called the DB function dba_seq_check_native() to ensure that the native sequences are OK");
 	}
 
 }

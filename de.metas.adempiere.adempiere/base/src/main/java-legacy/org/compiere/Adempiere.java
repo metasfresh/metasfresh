@@ -35,7 +35,6 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
@@ -71,8 +70,6 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
-	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
-
 	public static final transient Adempiere instance = new Adempiere();
 
 	/**
@@ -764,13 +761,8 @@ public class Adempiere
 		// task 06295
 		if (runMode == RunMode.BACKEND)
 		{
-			final boolean skipHouseKeeping = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
-			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
-			if (!skipHouseKeeping)
-			{
-				// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
-				Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
-			}
+			// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
+			Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
 		}
 
 		return true;
