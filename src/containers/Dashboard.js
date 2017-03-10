@@ -3,18 +3,12 @@ import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
 
-import BarChart from '../components/charts/BarChartComponent';
-import PieChart from '../components/charts/PieChartComponent';
-import RawChart from '../components/charts/RawChart';
-
 export class Dashboard extends Component {
     constructor(props){
         super(props);
     }
 
     render() {
-        const {breadcrumb} = this.props;
-
         return (
             <Container
                 siteName = "Dashboard"
