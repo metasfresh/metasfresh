@@ -41,7 +41,7 @@ class TableQuickInput extends Component {
 
     componentDidUpdate() {
         const {data, layout, editedField} = this.state;
-        if(data){
+        if(data && layout){
             for(let i = 0; i < layout.length; i++){
                 const item = layout[i].fields.map(elem => findRowByPropName(data, elem.field));
                 if(!item[0].value){
@@ -58,7 +58,7 @@ class TableQuickInput extends Component {
     }
 
     initQuickInput = () => {
-        const {dispatch, docType, docId, tabId} = this.props;
+        const {dispatch, docType, docId, tabId, closeBatchEntry} = this.props;
         const {layout} = this.state;
 
         this.setState({
@@ -70,8 +70,11 @@ class TableQuickInput extends Component {
                     id: instance.data.id,
                     editedField: 0
                 });
-            }).catch(() => {
-
+            }).catch(err => {
+                if(err.response.status === 404){
+                    dispatch(addNotification('Batch entry error', 'Batch entry is not available.', 5000, 'error'));
+                    closeBatchEntry();
+                }
             });
 
             !layout && dispatch(initLayout('window', docType, tabId, 'quickInput', docId)).then(layout => {
