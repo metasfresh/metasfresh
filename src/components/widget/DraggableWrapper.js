@@ -117,7 +117,7 @@ export class DraggableWrapper extends Component {
                             id={item.id}
                             index={id}
                             chartType={item.kpi.chartType}
-                            caption={item.kpi.caption}
+                            caption={item.caption}
                             fields={item.kpi.fields}
                             groupBy={item.kpi.groupByField}
                             pollInterval={item.kpi.pollIntervalSec}
