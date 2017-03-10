@@ -137,10 +137,10 @@ Here come the actual release notes:
   * [#1094](https://github.com/metasfresh/metasfresh/issues/1094) Drop deprecated and confusing I_AD_User get/setFirstName methods
     * Dropping lagacy getter/ setter for FirstName LastName of User data.
   * [#1097](https://github.com/metasfresh/metasfresh/issues/1097) field too small in jasper document for invoice
-    * Enhancing a field size in JasperReports Invoice Document.
+    * Enhancing a field size in JasperReports Invoice Document. 
   * [#1099](https://github.com/metasfresh/metasfresh/issues/1099) Fix Materialentnahme movement creation
     * Includes a fix for the Material Movement creation for used products in Swing Handling Unit editor. 
-  * [#1103](https://github.com/metasfresh/metasfresh/issues/1103) TU Ordered Qty in Material Receipt Schedule shows movedQty
+  * [#1103](https://github.com/metasfresh/metasfresh/issues/1103) TU Ordered Qty in Material Receipt Schedule shows movedQty
     * Fix in the virtual column Ordered Quantitity TU that showed the moved Quantity instead.
   * [#1106](https://github.com/metasfresh/metasfresh/issues/1106) inactive org still selectable on login
     * Fixes the login procedure, now disallowing the loging for inactive Organisations.
