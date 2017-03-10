@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#1124](https://github.com/metasfresh/metasfresh/issues/1124) metasfresh App Server start takes considerably longer
   
 ## Fixes
 * metasfresh-backend
