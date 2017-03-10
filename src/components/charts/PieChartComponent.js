@@ -13,7 +13,7 @@ class PieChartComponent extends Component {
             .range(colors);
 
         const dimensions = this.setDimensions();
-        this.drawChart(dimensions.width, dimensions.height, dimensions.pie, 
+        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie, 
                         dimensions.arc, data, color, dimensions.radius);
         if(responsive){
             this.addResponsive(data, color);
@@ -21,25 +21,30 @@ class PieChartComponent extends Component {
 
     }
 
-    setDimensions = (width=400, height=400) => {
-        const {chartClass, responsive, fields} = this.props;
+    setDimensions = (width=400) => {
+        const {chartClass, responsive, fields, height} = this.props;
+        console.log(height);
+        let wrapperWidth = 0;
         let chartWidth = width;
         let chartHeight = height;
 
         const keys = fields.map(field => field.fieldName);
 
         if(responsive) {
-            const wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
-            chartWidth = wrapperWidth;
-            chartHeight = height;
+            wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
+            if(wrapperWidth<height){
+                chartWidth = wrapperWidth;
+            }
+            
         }
-        const radius = Math.min(chartWidth, chartHeight) / 2;
+        const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
         const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(0);
         const pie = d3.pie()
             .sort(null)
             .value( d => d[fields[0].fieldName]);
 
         return {
+                wrapperWidth: wrapperWidth,
                 width: chartWidth,
                 height: chartHeight,
                 radius: radius,
@@ -48,8 +53,10 @@ class PieChartComponent extends Component {
             };
     }
 
-    drawChart = (width, height, pie, arc, data, color, radius) => {
+    drawChart = (wrapperWidth, width, height, pie, arc, data, color, radius) => {
         const {chartClass, fields, groupBy} = this.props;
+
+        
 
         var svg = d3.select('.' + chartClass)
             .attr('width', width)
@@ -61,7 +68,7 @@ class PieChartComponent extends Component {
             .attr('height', height)
             .append('g')
             .attr("class", "chart")
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+            .attr('transform', 'translate(' + wrapperWidth / 2 + ',' + 0.66*height + ')');
 
         chart.append("g")
             .attr("class", "slices");
@@ -77,15 +84,16 @@ class PieChartComponent extends Component {
 
         g.append('path')
             .attr('d', arc)
+            .attr("class", "pie-path")
             .style('fill', d => color(d.data[fields[0].fieldName]));
 
-        g.append('text')
-            .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
-            .attr('dy', '.35em')
-            .text(d => d.data[groupBy.fieldName]);
+        // g.append('text')
+        //     .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
+        //     .attr('dy', '.35em')
+        //     .text(d => d.data[groupBy.fieldName]);
 
-
-        // this.drawLegend(svg, width, height, color);
+        this.drawLegend(svg, width, height, color);
+        
     }
 
     drawLegend = (svg, width, height, color) => {
@@ -113,7 +121,7 @@ class PieChartComponent extends Component {
             var offset =  height * color.domain().length / 2;
             var horz = -2 * legendRectSize;
             var vert = i * height - offset;
-            return 'translate(' + 0 + ',' + vert + ')';
+            return 'translate(' + 20 + ',' + vert + ')';
         });
 
         legendItem.append('rect')
@@ -125,6 +133,7 @@ class PieChartComponent extends Component {
         legendItem.append('text')
         .attr('x', legendRectSize + legendSpacing)
         .attr('y', legendRectSize - legendSpacing)
+        .attr('font-size', 12)
         .text(function(d, i) { 
             return data[i][groupBy.fieldName]; 
         });
@@ -138,7 +147,7 @@ class PieChartComponent extends Component {
           .on("resize."+chartClass, () => {
             this.clearChart();
             const dimensions = this.setDimensions(chartWrapp.offsetWidth);
-            this.drawChart(dimensions.width, dimensions.height, dimensions.pie, 
+            this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie, 
                             dimensions.arc, data, color);
           });
     }

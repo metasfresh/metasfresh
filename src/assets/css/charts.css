@@ -2,3 +2,7 @@
     width: 100%;
     overflow: auto;
 }
+
+.pie-path {
+    stroke: #fff;
+}

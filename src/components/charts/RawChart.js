@@ -73,8 +73,7 @@ class RawChart extends Component {
             id, chartType, caption, fields, groupBy, kpiCaption
         } = this.props;
         const {chartData} = this.state;
-        const colors = ['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f'];
-        const heigt = 400;
+        const height = 400;
 
         switch(chartType){
             case 'BarChart':
@@ -85,9 +84,9 @@ class RawChart extends Component {
                         fields={fields}
                         groupBy={groupBy}
                         data={chartData}
-                        colors={colors}
                         chartClass={'chart-' + id}
-                        heigt={heigt}
+                        height={height}
+                        colors = {['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f']}
                     />
                 );
             case 'PieChart':
@@ -98,8 +97,8 @@ class RawChart extends Component {
                         data={chartData}
                         fields={fields}
                         groupBy={groupBy}
-                        colors={colors}
-                        heigt={heigt}
+                        height={height}
+                        colors = {['#c1eb8e', '#89d729', '#6aae17', '#288215', '#32510c', '#9aafbd', '#cad5dd', '#60597f', '#7688ca', '#aab6e0']}
                     />
                 )
             case 'Indicator':

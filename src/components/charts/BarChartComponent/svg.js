@@ -27,7 +27,6 @@ export const getSvg = (className) => {
 export const sizeSvg = (svg, className, {width, height, top, left, right, bottom}) => {
     const applyingWidth = width + left + right;
     const applyingHeight = height + top + bottom;
-    console.log(applyingHeight, applyingWidth)
     const finalWidth = applyingWidth < boxSize.minWidth ? boxSize.minWidth : applyingWidth;
 
     svg
