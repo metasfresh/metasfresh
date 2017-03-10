@@ -1,4 +1,3 @@
-import boxSize from './boxSize';
 import * as d3 from 'd3';
 
 export const getSvg = (className) => {

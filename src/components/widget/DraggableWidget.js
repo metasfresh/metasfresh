@@ -112,10 +112,11 @@ export class DraggableWidget extends Component {
 
     render() {
         const {
-            text, url, isDragging, connectDragSource, connectDropTarget,
+            text, isDragging, connectDragSource, connectDropTarget,
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
-            caption, fields, groupBy, pollInterval, kpi
+            caption, fields, groupBy, pollInterval
         } = this.props;
+        
         const { toggleWidgetMenu, isMaximize, refresh, forceChartReRender, height } = this.state;
 
         return connectDragSource(connectDropTarget(

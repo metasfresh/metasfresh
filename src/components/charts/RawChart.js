@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {connect} from 'react-redux';
 
 import BarChart from './BarChartComponent';
@@ -100,7 +100,7 @@ class RawChart extends Component {
                         height={height}
                         colors = {['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f']}
                     />
-                )
+                );
             case 'Indicator':
                 return(
                     <div className="indicator">
@@ -109,7 +109,9 @@ class RawChart extends Component {
                             (fields[0].unit ? ' ' + fields[0].unit : '')}</div>
                         <div className="indicator-kpi-caption">{kpiCaption}</div>
                     </div>
-                )
+                );
+            default:
+                return <div>{ chartType }</div>;
         }
     }
 

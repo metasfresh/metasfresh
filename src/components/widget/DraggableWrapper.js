@@ -9,7 +9,6 @@ import RawChart from '../charts/RawChart';
 
 import {
     getKPIsDashboard,
-    setUserDashboardWidgets,
     getTargetIndicatorsDashboard
 } from '../../actions/AppActions';
 
@@ -50,7 +49,6 @@ export class DraggableWrapper extends Component {
 
     moveCard = (dragIndex, hoverIndex) => {
         const { cards } = this.state;
-        const {dispatch} = this.props;
         const dragCard = cards[dragIndex];
 
         this.setState(update(this.state, {
@@ -61,12 +59,12 @@ export class DraggableWrapper extends Component {
                 ]
             }
         }), () => {
-            const changes = {
-                'jsonDashboardChanges': {
-                    'dashboardItemIdsOrder': cards.map(item => item.id)
-                }
-            };
-            // dispatch(setUserDashboardWidgets(changes));  
+            // const changes = {
+            //     'jsonDashboardChanges': {
+            //         'dashboardItemIdsOrder': cards.map(item => item.id)
+            //     }
+            // };
+            // dispatch(setUserDashboardWidgets(changes));
             //TO DO: future implementation
         });
     }
@@ -90,7 +88,6 @@ export class DraggableWrapper extends Component {
 
         return (
             <div className="dashboard-cards-wrapper">
-            
 
                 {indicators.length > 0 && <div className={
                         'indicators-wrapper ' +
@@ -106,7 +103,7 @@ export class DraggableWrapper extends Component {
                             pollInterval={indicator.kpi.pollInterval}
                             chartType={'Indicator'}
                             kpi={false}
-                            
+
                         />
                     )}
                 </div>}
@@ -116,8 +113,7 @@ export class DraggableWrapper extends Component {
                     cards.map((item, id) => {
                     return (
                         <DraggableWidget
-                            
-                            key={item.id} 
+                            key={item.id}
                             id={item.id}
                             index={id}
                             chartType={item.kpi.chartType}
