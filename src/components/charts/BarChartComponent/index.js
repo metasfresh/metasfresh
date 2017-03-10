@@ -18,7 +18,7 @@ class BarChartComponent extends Component {
     }
 
     prepare(){
-        const { data, groupBy, fields, colors, chartClass } = this.props;
+        const { data, groupBy, fields, colors, chartClass, height } = this.props;
 
         // colors
         const rangeZ = getZRange(colors);
@@ -31,7 +31,7 @@ class BarChartComponent extends Component {
 
         // vertical sizing
         const labelsHeight = getXAxisLabelsHeight(this.svg);
-        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 35});
+        const vertical = getVerticalDimensions({bottom: labelsHeight, top: 35}, height);
         const rangeY = getYRange(vertical.height, data, fields);
         populateYAxis(this.svg, rangeY);
 
