@@ -52,7 +52,9 @@ Here come the actual release notes:
   * [#1090](https://github.com/metasfresh/metasfresh/issues/1090) Introduce C_BPartner_QuickInput table/window to capture new BPartners
     * New Table created for Business Partner creation on the fly during Order editing.
   * [#1105](https://github.com/metasfresh/metasfresh/issues/1105) Translate Action in Material Receipt Schedule for de_DE
-    * Trabnslating some of the Quickactions in Material Receipt Candidate window.
+    * Translating some of the Quickactions in Material Receipt Candidate window.
+  * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
+    * Adding a interactive mode for sql_remote.
   * [#1113](https://github.com/metasfresh/metasfresh/issues/1113) BPartner quick input modal overlay Layout for WebUI
     * Created a new Layout based on C_BPartner_QuickInput table and open it in Sales Order editing of Order Partner as "new Partner"  action.
   * [#1118](https://github.com/metasfresh/metasfresh/issues/1118) Change migration scripts folder from TEMP to METASFRESH_HOME/migration_scripts/
@@ -130,6 +132,7 @@ Here come the actual release notes:
   * [#1076](https://github.com/metasfresh/metasfresh/issues/1076) NoDataFoundHandlers can cause StackOverflowError
     * Fix for a Bug cause through new Data Lifecycle Management Feature.
   * [#1088](https://github.com/metasfresh/metasfresh/issues/1088) pricing problem wrt proccurement candidates
+    * Fix a minor Bug that was introduced with the new pricing changes.
   * [#1094](https://github.com/metasfresh/metasfresh/issues/1094) Drop deprecated and confusing I_AD_User get/setFirstName methods
     * Dropping lagacy getter/ setter for FirstName LastName of User data.
   * [#1097](https://github.com/metasfresh/metasfresh/issues/1097) field too small in jasper document for invoice
@@ -140,7 +143,6 @@ Here come the actual release notes:
     * Fix in the virtual column Ordered Quantitity TU that showed the moved Quantity instead.
   * [#1106](https://github.com/metasfresh/metasfresh/issues/1106) inactive org still selectable on login
     * Fixes the login procedure, now disallowing the loging for inactive Organisations.
-  * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
   * [#1110](https://github.com/metasfresh/metasfresh/issues/1110) webui HU Editor: conversion error when selecting SubProducer
     * Fixing an error that prohibited the editing of Subproducers in the Material Receipt Handling Unit Editor.
   * [#1121](https://github.com/metasfresh/metasfresh/issues/1121) TU receipt label is just a white sheet of paper
@@ -148,8 +150,9 @@ Here come the actual release notes:
   
 * metasfresh-webui-api
   * [#159](https://github.com/metasfresh/metasfresh-webui/issues/159) Error opening the "Report & Process" window
-  
+    * Fixes a Bug that prevented the preview of reports via Chrome new Tab.
   * [#187](https://github.com/metasfresh/metasfresh-webui/issues/187) Documents shall automatically have a default value for standard fields
+    * Enhancement to automaticall have default values for document standard fields.
   * [#188](https://github.com/metasfresh/metasfresh-webui/issues/188) Field's mandatory flag is not considered
     * Fixes cases in WebUI that shall trigger a mandatory behavior for input fields.
   * [#213](https://github.com/metasfresh/metasfresh-webui/issues/213) Use document's BPartner language when printing
@@ -165,7 +168,7 @@ Here come the actual release notes:
   * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
     * Fixing some of the global shortcuts when the focus is on an input field.
   * [#465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/465) DateTime widget not respected in included tab
-    
+    * Fix that now also uses the correct widget for DateTime fields.
   * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
     * Fixing a bug that broke the sidelist.
   * [#485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/485) Subtab 100% height broken again
