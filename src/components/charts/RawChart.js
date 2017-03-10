@@ -73,7 +73,7 @@ class RawChart extends Component {
             id, chartType, caption, fields, groupBy, kpiCaption
         } = this.props;
         const {chartData} = this.state;
-        const colors = ['#C9D5DC', '#89d729', '#76b727', '#9BAFBC'];
+        const colors = ['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f'];
 
         switch(chartType){
             case 'BarChart':
@@ -102,7 +102,6 @@ class RawChart extends Component {
             case 'Indicator':
                 return(
                     <div className="indicator">
-                        <div><span className="indicator-caption">{caption}</span></div>
                         <div className="indicator-value">{chartData[0][fields[0].fieldName]}</div>
                         <div className="indicator-kpi-caption">{kpiCaption}</div>
                     </div>
