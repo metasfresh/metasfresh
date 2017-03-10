@@ -128,6 +128,10 @@ public interface IHUTrxBL extends ISingletonService
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
 
 	/**
+	 * Link a given {@code hu} to its parent.
+	 * <p>
+	 * <b>IMPORTANT:</b> Don't do transaction management (TODO: check if this can be added).
+	 * 
 	 * @param huContext
 	 * @param parentHUItem can be <code>null</code> to indicate that the HU shall be removed from its parent. If the given item has the same <code>M_HU_Item_ID</code> as the given <code>hu</code>'s
 	 *            <code>M_HU_Item_Parent_ID</code>, or if both this parameter and the hu's parent item are <code>null</code>, then the method does nothing.

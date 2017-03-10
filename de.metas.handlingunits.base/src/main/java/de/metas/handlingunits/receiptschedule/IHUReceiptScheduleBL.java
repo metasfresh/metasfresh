@@ -4,6 +4,7 @@
 package de.metas.handlingunits.receiptschedule;
 
 import java.awt.image.BufferedImage;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -52,6 +53,24 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  */
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
+	/**
+	 * @param receiptSchedule
+	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
+	 */
+	BigDecimal getQtyOrderedTUOrNull(I_M_ReceiptSchedule receiptSchedule);
+
+	/**
+	 * Same as {@link #getQtyOrderedTUOrNull(I_M_ReceiptSchedule)} but it will return zero instead of <code>null</code>.
+	 */
+	BigDecimal getQtyOrderedTUOrZero(I_M_ReceiptSchedule receiptSchedule);
+
+	/**
+	 * 
+	 * @param receiptSchedule
+	 * @return qty ordered minus qty moved (TU)
+	 */
+	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
+	
 	/**
 	 * Create Receipts Producer.
 	 *

@@ -14,7 +14,7 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1390478179L;
+	private static final long serialVersionUID = -1745282175L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (Properties ctx, int WEBUI_KPI_ID, String trxName)
@@ -163,6 +163,25 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public java.lang.String getES_TimeRange () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange);
+	}
+
+	/** Set Time range end.
+		@param ES_TimeRange_End 
+		Time range's ending offset (relative to now)
+	  */
+	@Override
+	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End)
+	{
+		set_Value (COLUMNNAME_ES_TimeRange_End, ES_TimeRange_End);
+	}
+
+	/** Get Time range end.
+		@return Time range's ending offset (relative to now)
+	  */
+	@Override
+	public java.lang.String getES_TimeRange_End () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange_End);
 	}
 
 	/** Set Elasticsearch Type.

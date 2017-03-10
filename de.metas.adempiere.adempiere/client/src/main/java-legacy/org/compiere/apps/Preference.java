@@ -47,6 +47,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
 import org.adempiere.acct.api.IPostingService;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PLAFEditorPanel;
@@ -238,7 +239,7 @@ public final class Preference extends CDialog
 		adempiereSys.setText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", true));
 		adempiereSys.setToolTipText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", false));
 		logMigrationScript.setText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", true));
-		logMigrationScript.setToolTipText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", false));
+		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory());
 		printPreview.setText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", true));
 		printPreview.setToolTipText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", false));
 		validateConnectionOnStartup.setText(msgBL.getMsg(Env.getCtx(), "ValidateConnectionOnStartup", true));

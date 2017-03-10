@@ -85,6 +85,7 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AbstractAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -1618,26 +1619,26 @@ public class HUTestHelper
 	}
 
 	/**
-	 * Take the given {@code lutuProducer} and load the given {@code loadCuQty} and {@code loadCuUOM} of the given {@code cuProduct} into new HUs.
+	 * Take the given {@code producer} and load the given {@code loadCuQty} and {@code loadCuUOM} of the given {@code cuProduct} into new HUs.
 	 * <p>
-	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * You can use {@link AbstractProducerDestination#getCreatedHUs()} to collect the results after the loading.
 	 * <p>
 	 * Note: this method performs the load using an {@link IHUContext} that was created with {@link #createMutableHUContextOutOfTransaction()}.
 	 * 
-	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
+	 * @param producer used as the loader's {@link IAllocationDestination}
 	 * @param cuProduct
 	 * @param loadCuQty
 	 * @param loadCuUOM
 	 */
 	public final void load(
-			final LUTUProducerDestination lutuProducer,
+			final AbstractProducerDestination producer,
 			final I_M_Product cuProduct,
 			final BigDecimal loadCuQty,
 			final I_C_UOM loadCuUOM)
 	{
 		final IAllocationSource source = createDummySourceDestination(cuProduct, IHUCapacityDefinition.INFINITY, loadCuUOM, true);
 
-		final HULoader huLoader = HULoader.of(source, lutuProducer)
+		final HULoader huLoader = HULoader.of(source, producer)
 				.setAllowPartialUnloads(false)
 				.setAllowPartialLoads(false);
 

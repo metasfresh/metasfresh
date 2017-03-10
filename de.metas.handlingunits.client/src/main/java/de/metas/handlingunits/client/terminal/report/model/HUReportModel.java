@@ -366,6 +366,6 @@ public class HUReportModel implements IDisposable
 		HUReportExecutor.get(getCtx())
 				.withWindowNo(getTerminalContext().getWindowNo())
 				.withNumberOfCopies(printCopies.intValueExact())
-				.executeHUReport(process, getHUsToProcess());
+				.executeHUReportAfterCommit(process, getHUsToProcess());
 	}
 }

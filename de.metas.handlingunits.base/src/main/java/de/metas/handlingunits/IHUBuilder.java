@@ -73,8 +73,6 @@ public interface IHUBuilder extends IHUIterator
 
 	Date getDate();
 
-	void setDate(Date date);
-
 	void setStorageFactory(IHUStorageFactory storageFactory);
 
 	I_M_HU_Item getM_HU_Item_Parent();
@@ -96,9 +94,9 @@ public interface IHUBuilder extends IHUIterator
 
 	I_C_BPartner getC_BPartner();
 
-	void setC_BPartner(I_C_BPartner bpartner);
+	IHUBuilder setC_BPartner(I_C_BPartner bpartner);
 
-	void setC_BPartner_Location_ID(int bpartnerLocationId);
+	IHUBuilder setC_BPartner_Location_ID(int bpartnerLocationId);
 
 	/**
 	 * Sets M_Locator to be set on newly create HU.
@@ -107,7 +105,7 @@ public interface IHUBuilder extends IHUIterator
 	 *
 	 * @param locator
 	 */
-	void setM_Locator(I_M_Locator locator);
+	IHUBuilder setM_Locator(I_M_Locator locator);
 
 	I_M_Locator getM_Locator();
 
@@ -131,7 +129,7 @@ public interface IHUBuilder extends IHUIterator
 	 *
 	 * @param huPlanningReceiptOwnerPM
 	 */
-	void setHUPlanningReceiptOwnerPM(boolean huPlanningReceiptOwnerPM);
+	IHUBuilder setHUPlanningReceiptOwnerPM(boolean huPlanningReceiptOwnerPM);
 
 	/**
 	 * @return true if the HU's owner is "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}

@@ -78,11 +78,11 @@ public interface IHUIterator
 
 	Properties getCtx();
 
-	void setCtx(Properties ctx);
+	IHUIterator setCtx(Properties ctx);
 
 	Date getDate();
 
-	void setDate(final Date date);
+	IHUIterator setDate(final Date date);
 
 	void setStorageFactory(final IHUStorageFactory storageFactory);
 

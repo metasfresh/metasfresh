@@ -17,9 +17,18 @@ create table backup.C_OLCand_BKP as select * from C_OLCand;
 -- Restore (if needed)
 /*
 delete from M_ProductPrice_Attribute_Line;
+--
+create index TMP_C_OLCand_M_ProductPrice_Attribute on C_OLCand(M_ProductPrice_Attribute_ID);
 delete from M_ProductPrice_Attribute;
+drop index TMP_C_OLCand_M_ProductPrice_Attribute;
+--
 delete from M_ProductScalePrice;
+--
+create index TMP_C_OLCand_M_ProductPrice on C_OLCand(M_ProductPrice_ID);
+update C_OLCand set M_ProductPrice_ID=null where M_ProductPrice_ID is not null;
 delete from M_ProductPrice;
+drop index TMP_C_OLCand_M_ProductPrice;
+--
 --
 INSERT INTO M_ProductPrice(m_pricelist_version_id, m_product_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, pricelist, pricestd, pricelimit, usescaleprice, m_productprice_id, c_taxcategory_id, isattributedependant, isseasonfixedprice, c_uom_id, seqno, c_uom_id_pre_08147)
 	select m_pricelist_version_id, m_product_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, pricelist, pricestd, pricelimit, usescaleprice, m_productprice_id, c_taxcategory_id, isattributedependant, isseasonfixedprice, c_uom_id, seqno, c_uom_id_pre_08147
@@ -33,14 +42,22 @@ INSERT INTO M_ProductPrice_Attribute_Line(ad_client_id, ad_org_id, created, crea
 INSERT INTO M_ProductScalePrice(ad_client_id, ad_org_id, created, createdby, isactive, m_productprice_id, m_productscaleprice_id, pricelimit, pricelist, pricestd, qty, updated, updatedby)
 	select ad_client_id, ad_org_id, created, createdby, isactive, m_productprice_id, m_productscaleprice_id, pricelimit, pricelist, pricestd, qty, updated, updatedby
 	from backup.M_ProductScalePrice_BKP;
--- TODO: restore C_OLCand
+	
+-- Restore C_OLCand
+create index if not exists C_OLCand_BKP_Key on backup.C_OLCand_BKP(C_OLCand_ID);
+update C_OLCand olc set 
+	M_ProductPrice_ID=bkp.M_ProductPrice_ID
+	, M_ProductPrice_Attribute_ID=bkp.M_ProductPrice_Attribute_ID
+from backup.C_OLCand_BKP bkp
+where bkp.C_OLCand_ID=olc.C_OLCand_ID
+;
 */
 
 
 --
---
-drop table if exists TMP_M_ProductPrice;
-create temporary table TMP_M_ProductPrice as
+-- 2.7secs
+drop table if exists backup.TMP_M_ProductPrice_New;
+create table backup.TMP_M_ProductPrice_New as
 select 
 	pp.M_PriceList_Version_ID
 	, nextval('m_productprice_seq') as M_ProductPrice_ID
@@ -50,9 +67,9 @@ select
 	, pp.C_UOM_ID
 	--
 	-- the may be null in M_ProductPrice_Attribute, but not in M_ProductPrice
-	, COALESCE(pp.PriceList, pa.PriceList) AS PriceList 
-	, COALESCE(pp.PriceStd, pa.PriceStd) AS PriceStd
-	, COALESCE(pp.PriceLimit, pa.PriceLimit) AS PriceLimit
+	, COALESCE(pa.PriceList, pp.PriceList) AS PriceList 
+	, COALESCE(pa.PriceStd, pp.PriceStd) AS PriceStd
+	, COALESCE(pa.PriceLimit, pp.PriceLimit) AS PriceLimit
 	--
 	, pp.C_TaxCategory_ID
 	--
@@ -75,15 +92,13 @@ from M_ProductPrice_Attribute pa
 inner join M_ProductPrice pp on (pp.M_ProductPrice_ID=pa.M_ProductPrice_ID)
 where pa.IsActive='Y' AND pp.IsActive='Y'
 ;
--- select * from TMP_M_ProductPrice;
+-- select * from backup.TMP_M_ProductPrice_New;
 
 
 
-
-
-
-drop table if exists TMP_ASI;
-create temporary table TMP_ASI as
+-- 3.3secs
+drop table if exists backup.TMP_ASI_New;
+create table backup.TMP_ASI_New as
 select
 	pp.M_ProductPrice_ID
 	, pp.m_attributesetinstance_id
@@ -103,19 +118,19 @@ select
 	--
 	, pp.Old_ProductPrice_ID
 	, pa.M_ProductPrice_Attribute_ID
-from TMP_M_ProductPrice pp
+from backup.TMP_M_ProductPrice_New pp
 inner join M_ProductPrice_Attribute pa on (pa.M_ProductPrice_Attribute_ID=pp.Old_ProductPrice_Attribute_ID)
 where pa.IsActive='Y'
 ;
--- select * from TMP_ASI;
+-- select * from backup.TMP_ASI_New;
 
 
 
 
 
-
-drop table if exists TMP_AI;
-create temporary table TMP_AI as
+-- 0.762secs
+drop table if exists backup.TMP_AI_New;
+create table backup.TMP_AI_New as
 select
 	asi.M_ProductPrice_ID
 	, asi.m_attributesetinstance_id
@@ -126,12 +141,12 @@ select
 	, av.Value
 	--
 	, pal.ad_client_id, pal.ad_org_id, pal.isactive, pal.created, pal.createdby, pal.updated, pal.updatedby
-from TMP_ASI asi
+from backup.TMP_ASI_New asi
 inner join M_ProductPrice_Attribute_Line pal on (pal.M_ProductPrice_Attribute_ID=asi.M_ProductPrice_Attribute_ID)
 inner join M_AttributeValue av on (av.M_AttributeValue_ID=pal.M_AttributeValue_ID)
 where pal.IsActive='Y'
 ;
--- select * from TMP_AI;
+-- select * from backup.TMP_AI_New;
 
 
 
@@ -141,7 +156,7 @@ where pal.IsActive='Y'
 
 --
 --
---
+-- 9.2secs for 672388rows
 INSERT INTO m_attributesetinstance
 (
 	m_attributesetinstance_id
@@ -152,9 +167,9 @@ select
 	m_attributesetinstance_id
 	, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby
 	, m_attributeset_id, description
-from TMP_ASI
+from backup.TMP_ASI_New
 ;
---
+-- 6.5secs for 190087rows
 INSERT INTO m_attributeinstance
 (
 	m_attributesetinstance_id
@@ -171,9 +186,9 @@ select
 	, m_attributevalue_id
 	,  value
 	, m_attributeinstance_id
-from TMP_AI
+from backup.TMP_AI_New
 ;
---
+-- 45.1secs for 672388rows
 INSERT INTO m_productprice
 (
 	m_pricelist_version_id, m_product_id
@@ -210,15 +225,16 @@ select
 	--
 	, IsHUPrice
 	, M_HU_PI_Item_Product_ID
-from TMP_M_ProductPrice
+from backup.TMP_M_ProductPrice_New
 ;
 
 --
 -- Transform the old M_ProductPrice to main product price records
+-- 11.9secs for 555888rows
 update M_ProductPrice pp set
 	IsAttributeDependant='N' -- not anymore, we created different records for that
 	, MatchSeqNo = 0
-where exists (select 1 from TMP_M_ProductPrice t where pp.M_ProductPrice_ID=t.Old_ProductPrice_ID)
+where exists (select 1 from backup.TMP_M_ProductPrice_New t where pp.M_ProductPrice_ID=t.Old_ProductPrice_ID)
 ;
 
 
@@ -229,14 +245,15 @@ CREATE INDEX IF NOT EXISTS C_OLCand_M_ProductPrice_ID_M_ProductPrice_Attribute_I
   USING btree
   (M_ProductPrice_ID, M_ProductPrice_Attribute_ID);
 CREATE INDEX IF NOT EXISTS TMP_ASI_ProductPrice_ID_M_ProductPrice_Attribute_ID
-  ON TMP_ASI
+  ON backup.TMP_ASI_New
   USING btree
   (Old_ProductPrice_ID, M_ProductPrice_Attribute_ID);
 
+-- 332ms
 update C_OLCand c set
 	M_ProductPrice_ID=asi.M_ProductPrice_ID
 	, M_ProductPrice_Attribute_ID=null
-from TMP_ASI asi
+from backup.TMP_ASI_New asi
 where 
 	c.M_ProductPrice_ID=asi.Old_ProductPrice_ID
 	and c.M_ProductPrice_Attribute_ID=asi.M_ProductPrice_Attribute_ID
@@ -247,13 +264,25 @@ where
 
 
 -- Delete the migration M_ProductPrice_Attribute records
--- we expect that M_ProductPrice_Attribute_Line to be deleted too.
 -- NOTE: KEEP THIS LAST
 CREATE INDEX IF NOT EXISTS TMP_M_ProductPrice_Old_ProductPrice_Attribute_ID
-  ON tMP_M_ProductPrice
+  ON backup.TMP_M_ProductPrice_New
   USING btree
   (Old_ProductPrice_Attribute_ID);
-delete from M_ProductPrice_Attribute pa
-where exists (select 1 from TMP_M_ProductPrice t where t.Old_ProductPrice_Attribute_ID=pa.M_ProductPrice_Attribute_ID)
+--
+delete from M_ProductPrice_Attribute_Line pal
+where exists (select 1 from backup.TMP_M_ProductPrice_New t where t.Old_ProductPrice_Attribute_ID=pal.M_ProductPrice_Attribute_ID)
 ;
-
+--
+create index TMP_C_OLCand_M_ProductPrice_Attribute on C_OLCand(M_ProductPrice_Attribute_ID);
+-- 15secs for 672388rows
+delete from M_ProductPrice_Attribute pa
+where exists (select 1 from backup.TMP_M_ProductPrice_New t where t.Old_ProductPrice_Attribute_ID=pa.M_ProductPrice_Attribute_ID)
+;
+--
+-- Now really remove M_ProductPrice_Attribute_Line and M_ProductPrice_Attribute because no longer need them
+-- Expect ZERO records to be deleted because they are already empty
+delete from M_ProductPrice_Attribute_Line pal;
+delete from M_ProductPrice_Attribute pa;
+--
+drop index TMP_C_OLCand_M_ProductPrice_Attribute;

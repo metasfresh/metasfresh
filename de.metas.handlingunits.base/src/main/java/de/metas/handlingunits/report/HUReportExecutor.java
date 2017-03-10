@@ -8,6 +8,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -99,12 +101,13 @@ public class HUReportExecutor
 	}
 
 	/**
-	 *
+	 * Prepares everything and creates a trx-listener to run the report after the current trx is committed (or right now, if there is no currently open trx).
+	 * 
 	 * @param process the (jasper-)process to be executed
 	 * @param husToProcess the HUs to be processed/shown in the report. These HUs' IDs are added to the {@code T_Select} table and can be accessed by the jasper file.
 	 * @param printCopies number of copies. "1" means one printout
 	 */
-	public void executeHUReport(final I_AD_Process process,
+	public void executeHUReportAfterCommit(final I_AD_Process process,
 			final List<I_M_HU> husToProcess)
 	{
 		//
@@ -142,18 +145,30 @@ public class HUReportExecutor
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));
 
-		ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_Process(process)
-				.setWindowNo(windowNo)
-				.setTableName(I_M_HU.Table_Name)
-				.setReportLanguage(reportLanguage)
-				.addParameter(PARA_BarcodeURL, barcodeServlet)
-				.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
-				//
-				// Execute report in a new transaction
-				.buildAndPrepareExecution()
-				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
-				.executeSync();
+		// gh #1121: do this not now, but after the current transaction was committed. Because "right now", the Hus in question are probably not yet ready.
+		// The background is that in the handling unit framework we have some "decoupled" DAOs, that collect data in memory and then safe it all at once, right before the commit is made.
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager
+				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+				.registerListener(new TrxListenerAdapter()
+				{
+					@Override
+					public void afterCommit(final ITrx trx)
+					{
+						ProcessInfo.builder()
+								.setCtx(ctx)
+								.setAD_Process(process)
+								.setWindowNo(windowNo)
+								.setTableName(I_M_HU.Table_Name)
+								.setReportLanguage(reportLanguage)
+								.addParameter(PARA_BarcodeURL, barcodeServlet)
+								.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
+								//
+								// Execute report in a new transaction
+								.buildAndPrepareExecution()
+								.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
+								.executeSync();
+					}
+				});
 	}
 }

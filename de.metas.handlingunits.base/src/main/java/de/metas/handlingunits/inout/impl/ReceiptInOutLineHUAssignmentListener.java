@@ -267,6 +267,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 		HUReportExecutor.get(ctx)
 				.withNumberOfCopies(copies)
-				.executeHUReport(process.get(), husToProcess);
+				.executeHUReportAfterCommit(process.get(), husToProcess);
 	}
 }

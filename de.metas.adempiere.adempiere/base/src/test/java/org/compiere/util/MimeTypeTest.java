@@ -46,6 +46,7 @@ public class MimeTypeTest
 	{
 		test_getExtensionByMimeType(".pdf", MimeType.TYPE_PDF);
 		test_getExtensionByMimeType(".txt", MimeType.TYPE_TextPlain);
+		test_getExtensionByMimeType(".jpg", "image/jpeg");
 	}
 	
 	private void test_getExtensionByMimeType(final String expectedExt, final String mimeType)

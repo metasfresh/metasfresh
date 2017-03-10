@@ -31,10 +31,11 @@ public class RolloutMigrateManualTest
 	public static final void main(String[] args)
 	{
 		RolloutMigrate.main(new String[] {
-				"-s", "settings_adit.properties",
+				"-s", "settings_local.properties",
 				"-d", "c:/tmp/testScripts",
 				// "-i", // ignore errors
-				"-r", // dry run
+				// "-r", // dry run
+				"-a" // ask
 		});
 	}
 }
