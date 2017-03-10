@@ -50,6 +50,8 @@ public final class UserDashboardItem
 	private final DashboardWidgetType widgetType;
 	private final Supplier<KPI> kpiSupplier;
 
+	private final KPITimeRangeDefaults timeRangeDefaults;
+
 	private UserDashboardItem(final Builder builder)
 	{
 		super();
@@ -59,6 +61,8 @@ public final class UserDashboardItem
 		seqNo = builder.seqNo;
 		widgetType = builder.widgetType;
 		kpiSupplier = builder.kpiSupplier;
+
+		timeRangeDefaults = builder.timeRangeDefaults;
 	}
 
 	@Override
@@ -106,6 +110,12 @@ public final class UserDashboardItem
 		}
 		return kpi;
 	}
+	
+	public KPITimeRangeDefaults getTimeRangeDefaults()
+	{
+		final KPI kpi = getKPI();
+		return timeRangeDefaults.compose(kpi.getTimeRangeDefaults());
+	}
 
 	public static final class Builder
 	{
@@ -115,6 +125,8 @@ public final class UserDashboardItem
 		private int seqNo;
 		private DashboardWidgetType widgetType;
 		private Supplier<KPI> kpiSupplier;
+
+		private KPITimeRangeDefaults timeRangeDefaults = KPITimeRangeDefaults.DEFAULT;
 
 		private Builder()
 		{
@@ -167,6 +179,12 @@ public final class UserDashboardItem
 		public Builder setKPI(final Supplier<KPI> kpiSupplier)
 		{
 			this.kpiSupplier = kpiSupplier;
+			return this;
+		}
+		
+		public Builder setTimeRangeDefaults(KPITimeRangeDefaults timeRangeDefaults)
+		{
+			this.timeRangeDefaults = timeRangeDefaults != null ? timeRangeDefaults : KPITimeRangeDefaults.DEFAULT;
 			return this;
 		}
 	}
