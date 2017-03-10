@@ -70,7 +70,7 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, kpiCaption
+            id, chartType, caption, fields, groupBy, kpiCaption, reRender
         } = this.props;
         const {chartData} = this.state;
         const height = 400;
@@ -86,6 +86,7 @@ class RawChart extends Component {
                         data={chartData}
                         chartClass={'chart-' + id}
                         height={height}
+                        reRender={reRender}
                         colors = {['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f']}
                     />
                 );
@@ -116,10 +117,6 @@ class RawChart extends Component {
         return chartData.length > 0 && this.renderChart();
     }
 }
-
-RawChart.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
 
 RawChart = connect()(RawChart);
 

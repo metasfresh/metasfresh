@@ -82,6 +82,10 @@ class BarChartComponent extends Component {
         this.addResponsive();
     }
 
+    shouldComponentUpdate(nextProps){
+        return !(this.props.reRender && !nextProps.reRender)
+    }
+
     componentDidUpdate(){
         this.draw();
     }
