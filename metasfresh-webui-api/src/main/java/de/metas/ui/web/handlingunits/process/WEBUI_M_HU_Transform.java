@@ -7,9 +7,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Profile;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransferService;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -496,7 +497,9 @@ public class WEBUI_M_HU_Transform
 
 			final boolean existsTU = getView()
 					.streamAllRecursive()
-					.anyMatch(row -> row.isTU());
+					.anyMatch(((Predicate<HUDocumentView>)row -> row.isTU())
+							.and(notAlreadyOurParent()));
+
 			if (existsTU)
 			{
 				selectableTypes.add(ActionType.CU_To_ExistingTU.toString());
@@ -511,7 +514,9 @@ public class WEBUI_M_HU_Transform
 
 			final boolean existsLU = getView()
 					.streamAllRecursive()
-					.anyMatch(row -> row.isLU());
+					.anyMatch(((Predicate<HUDocumentView>)row -> row.isLU())
+							.and(notAlreadyOurParent()));
+
 			if (existsLU)
 			{
 				selectableTypes.add(ActionType.TU_To_ExistingLU.toString());
@@ -544,7 +549,8 @@ public class WEBUI_M_HU_Transform
 		{
 			return getView()
 					.streamAllRecursive()
-					.filter(row -> row.isTU())
+					.filter(row -> row.isTU()) // ..needs to be a TU
+					.filter(notAlreadyOurParent()) // ..may not be the one TU that 'cu' is already attached to
 					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
@@ -566,13 +572,26 @@ public class WEBUI_M_HU_Transform
 		{
 			return getView()
 					.streamAllRecursive()
-					.filter(row -> row.isLU())
+					.filter(row -> row.isLU()) // ..needs to be a LU
+					.filter(notAlreadyOurParent()) // ..may not be the one LU that 'tu' is already attached to
+					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
 					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
 
 		return LookupValuesList.EMPTY;
+	}
+
+	/**
+	 * Creates and returns a predicate to verify if a HUDocumentView is not the parent of the currently selected HU.
+	 */
+	private Predicate<HUDocumentView> notAlreadyOurParent()
+	{
+		final I_M_HU selectedHU = getSingleSelectedRow().getM_HU();
+		final I_M_HU parentOfSelectedHU = Services.get(IHandlingUnitsDAO.class).retrieveParent(selectedHU);
+
+		return (row -> parentOfSelectedHU == null || row.getM_HU_ID() != parentOfSelectedHU.getM_HU_ID());
 	}
 
 	/**
@@ -622,16 +641,14 @@ public class WEBUI_M_HU_Transform
 			return LookupValuesList.EMPTY;
 		}
 
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		final HUDocumentView tuRow = getSingleSelectedRow();
 		final I_M_HU tuHU = tuRow.getM_HU();
-		final I_M_HU_PI tuPI = Services.get(IHandlingUnitsBL.class).getEffectivePIVersion(tuHU).getM_HU_PI();
+		final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePIVersion(tuHU).getM_HU_PI();
 
-		final List<I_M_HU_PI_Item> luPIItems = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item.class, this)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, tuPI.getM_HU_PI_ID())
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, tuHU.getC_BPartner_ID())
-				.create()
-				.list();
+		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, null, tuHU.getC_BPartner());
 
 		return luPIItems.stream()
 				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
@@ -642,8 +659,8 @@ public class WEBUI_M_HU_Transform
 
 	private String buildHUPIItemString(final I_M_HU_PI_Item huPIItem)
 	{
-		return StringUtils.formatMessage("{} ({} x {})", 
-				huPIItem.getM_HU_PI_Version().getName(), 
+		return StringUtils.formatMessage("{} ({} x {})",
+				huPIItem.getM_HU_PI_Version().getName(),
 				huPIItem.getQty().setScale(0, RoundingMode.HALF_UP), // it's always integer quantities
 				huPIItem.getIncluded_HU_PI().getName());
 	}
