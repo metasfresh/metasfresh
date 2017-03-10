@@ -24,14 +24,10 @@ export const getSvg = (className) => {
     return svg;
 };
 
-export const sizeSvg = (svg, className, {width, height, top, left, right, bottom}) => {
-    const applyingWidth = width + left + right;
-    const applyingHeight = height + top + bottom;
-    const finalWidth = applyingWidth < boxSize.minWidth ? boxSize.minWidth : applyingWidth;
-
+export const sizeSvg = (svg, {width, height, top, left, right, bottom}) => {
     svg
-        .attr('width', finalWidth)
-        .attr('height', applyingHeight);
+        .attr('width', width + left + right)
+        .attr('height', height + top + bottom);
 
     svg.select('.chart-container')
         .attr(
