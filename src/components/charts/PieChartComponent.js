@@ -23,7 +23,6 @@ class PieChartComponent extends Component {
 
     setDimensions = (width=400) => {
         const {chartClass, responsive, fields, height} = this.props;
-        console.log(height);
         let wrapperWidth = 0;
         let chartWidth = width;
         let chartHeight = height;
@@ -105,7 +104,7 @@ class PieChartComponent extends Component {
             .attr('height', 0.30*height)
             .append('g')
             .attr("class", "legends")
-            .attr('transform', 'translate(' + 0 + ',' + 0.30*height / 2 + ')');
+            .attr('transform', 'translate(' + 20 + ',' + 20 + ')');
 
         var legendRectSize = 18;
         var legendSpacing = 4;
@@ -116,12 +115,11 @@ class PieChartComponent extends Component {
         .append('g')
         .attr('class', 'legend')
         .attr('transform', function(d, i) {
-            
             var height = legendRectSize + legendSpacing;
             var offset =  height * color.domain().length / 2;
             var horz = -2 * legendRectSize;
-            var vert = i * height - offset;
-            return 'translate(' + 20 + ',' + vert + ')';
+            var vert = i * height;
+            return 'translate(' + 0 + ',' + vert + ')';
         });
 
         legendItem.append('rect')
