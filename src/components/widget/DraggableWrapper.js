@@ -88,14 +88,6 @@ export class DraggableWrapper extends Component {
     render() {
         const { cards, idMaximized, indicators } = this.state;
 
-        //TMP solution ------------------------------
-        let mockedIndicators = [];   
-        for (let i = 0; i < 4; i++) {
-            mockedIndicators.push(indicators[0]);
-        }
-        //--------------------------------------------
-
-
         return (
             <div className="dashboard-cards-wrapper">
 
@@ -103,7 +95,7 @@ export class DraggableWrapper extends Component {
                         'indicators-wrapper ' +
                         (idMaximized !== false ? 'indicator-hidden' : '')
                     }>
-                    {mockedIndicators.map((indicator, id) =>
+                    {indicators.map((indicator, id) =>
                         <RawChart
                             key={id}
                             id={indicator.id}

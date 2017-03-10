@@ -14,12 +14,16 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .indicator-value {
     font-size: 3rem;
     font-weight: bold;
     text-align: center;
+    flex: 2;
+    display: flex;
+    align-items: flex-end;
 }
 
 .indicator-caption {
@@ -33,6 +37,9 @@
 .indicator-kpi-caption {
     font-size: 0.8rem;
     text-align: center;
+    flex: 1;
+    vertical-align: middle;
+    display: flex;
 }
 
 @media screen and (max-width: 991px) {
