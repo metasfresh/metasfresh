@@ -7,10 +7,10 @@ class PieChartComponent extends Component {
     }
 
     componentDidMount() {
-        const {data, responsive, fields, groupBy} = this.props;
+        const {data, responsive, fields, groupBy, colors} = this.props;
 
         const color = d3.scaleOrdinal()
-            .range(['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00']);
+            .range(colors);
 
         const dimensions = this.setDimensions();
         this.drawChart(dimensions.width, dimensions.height, dimensions.pie, 
@@ -34,7 +34,7 @@ class PieChartComponent extends Component {
             chartHeight = height;
         }
         const radius = Math.min(chartWidth, chartHeight) / 2;
-        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
+        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(0);
         const pie = d3.pie()
             .sort(null)
             .value( d => d[fields[0].fieldName]);
@@ -79,10 +79,10 @@ class PieChartComponent extends Component {
             .attr('d', arc)
             .style('fill', d => color(d.data[fields[0].fieldName]));
 
-        // g.append('text')
-        //     .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
-        //     .attr('dy', '.35em')
-        //     .text(d => d.data[groupBy.fieldName]);
+        g.append('text')
+            .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
+            .attr('dy', '.35em')
+            .text(d => d.data[groupBy.fieldName]);
 
 
         this.drawLegend(svg, width, height, color);

@@ -73,7 +73,7 @@ class RawChart extends Component {
             id, chartType, caption, fields, groupBy, kpiCaption
         } = this.props;
         const {chartData} = this.state;
-        const colors = ['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00'];
+        const colors = ['#C9D5DC', '#89d729', '#76b727', '#9BAFBC'];
 
         switch(chartType){
             case 'BarChart':
@@ -96,6 +96,7 @@ class RawChart extends Component {
                         data={chartData}
                         fields={fields}
                         groupBy={groupBy}
+                        colors={colors}
                     />
                 )
             case 'Indicator':
