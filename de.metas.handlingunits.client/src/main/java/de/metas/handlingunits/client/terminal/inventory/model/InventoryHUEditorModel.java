@@ -1,25 +1,42 @@
 package de.metas.handlingunits.client.terminal.inventory.model;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Transaction;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.flatrate.interfaces.I_C_BPartner;
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
+import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
 
@@ -88,11 +105,124 @@ public class InventoryHUEditorModel extends HUEditorModel
 		return doDirectMoveToWarehouse(warehouseFrom, warehouseTo);
 	}
 
-	public I_M_Movement doDirectMoveToWarehouse(final I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo)
+	public I_M_InOut createVendorReturn()
 	{
-		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+		// services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		//
+		// Get selected HUs
+		final Set<HUKey> huKeys = new HashSet<>(getSelectedHUKeys());
+		for (final Iterator<HUKey> huKeysIterator = huKeys.iterator(); huKeysIterator.hasNext();)
+		{
+			final HUKey huKey = huKeysIterator.next();
+			final I_M_HU hu = huKey.getM_HU();
+
+			// Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+			if (handlingUnitsBL.isPureVirtual(hu))
+			{
+				huKeysIterator.remove();
+				continue;
+			}
+		}
+		if (Check.isEmpty(huKeys))
+		{
+			throw new TerminalException("@NoSelection@");
+		}
+
+		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
+		for (final HUKey huKey : huKeys)
+		{
+			final I_M_HU hu = huKey.getM_HU();
+			hus.add(hu);
+		}
+
+		return createReturnInOut(hus);
+	}
+
+	/**
+	 * Create return inouts for products of precarious quality
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	private I_M_InOut createReturnInOut(final List<I_M_HU> hus)
+	{
 
 		// services
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		final Map<Integer, List<I_M_HU>> partnerstoHUs = new HashMap<>();
+
+		// inoutline table id
+		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class);
+
+		for (final I_M_HU hu : hus)
+		{
+
+			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+
+			final List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
+
+			for (final I_M_HU_Assignment assignment : inOutLineHUAssignments)
+			{
+				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(ctxAware.getCtx(), assignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
+
+				final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
+
+				final int bpartnerID = inOut.getC_BPartner_ID();
+
+				partnerstoHUs.put(bpartnerID, Arrays.asList(hu));
+			}
+		}
+
+		// there will be as many return inouts as there are partners
+
+		Set<Integer> keySet = partnerstoHUs.keySet();
+
+		for (final int partnerId : keySet)
+		{
+			createInOut(partnerId, partnerstoHUs.get(partnerId));
+		}
+
+		return null;
+	}
+
+	private final org.compiere.model.I_M_InOut createInOut(final int partnerId, List<I_M_HU> hus)
+	{
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(getCtx(), hus);
+		producer.setC_BPartner(partner);
+
+		final I_C_BPartner_Location shipToLocation = bpartnerDAO.retrieveShipToLocation(getCtx(), partnerId, ITrx.TRXNAME_None);
+		producer.setC_BPartner_Location(shipToLocation);
+
+		final String movementType = X_M_Transaction.MOVEMENTTYPE_VendorReturns;
+
+		producer.setMovementType(movementType);
+		producer.setM_Warehouse(getM_Warehouse());
+
+		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
+
+		producer.setMovementDate(movementDate);
+
+//		if (producer.isEmpty())
+//		{
+//			throw new AdempiereException("@NoSelection@");
+//		}
+
+		//
+		// Create Shipment document and return it
+		final org.compiere.model.I_M_InOut inOut = producer.create();
+		return inOut;
+	}
+
+	public I_M_Movement doDirectMoveToWarehouse(final I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo)
+	{
+		// services
+		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
@@ -122,8 +252,6 @@ public class InventoryHUEditorModel extends HUEditorModel
 		{
 			final I_M_HU hu = huKey.getM_HU();
 			hus.add(hu);
-
-			 
 
 			// guard: verify the the HU's current warehouse matches the selected warehouseFrom
 			if (warehouseFrom != null)

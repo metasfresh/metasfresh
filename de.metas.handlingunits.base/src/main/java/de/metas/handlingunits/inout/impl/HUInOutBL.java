@@ -25,8 +25,6 @@ package de.metas.handlingunits.inout.impl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,18 +33,22 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.inout.IEmptiesInOutProducer;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
@@ -114,7 +116,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public IEmptiesInOutProducer createEmptiesInOutProducer(final Properties ctx)
+	public IReturnsInOutProducer createEmptiesInOutProducer(final Properties ctx)
 	{
 		return new EmptiesInOutProducer(ctx);
 	}
@@ -218,6 +220,12 @@ public class HUInOutBL implements IHUInOutBL
 		shipmentLine.setQtyEntered(qtyCU_Effective);
 		shipmentLine.setQtyEnteredTU(qtyTU_Effective);
 		shipmentLine.setM_HU_PI_Item_Product(piItemProduct_Effective);
+	}
+
+	@Override
+	public IReturnsInOutProducer createQualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU> hus)
+	{
+		return new QualityReturnsInOutProducer(ctx, hus);
 	}
 
 }
