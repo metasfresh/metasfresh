@@ -105,7 +105,9 @@ class RawChart extends Component {
             case 'Indicator':
                 return(
                     <div className="indicator">
-                        <div className="indicator-value">{chartData[0][fields[0].fieldName]}</div>
+                        <div className="indicator-value">{
+                            chartData[0][fields[0].fieldName] +
+                            (fields[0].unit ? ' ' + fields[0].unit : '')}</div>
                         <div className="indicator-kpi-caption">{kpiCaption}</div>
                     </div>
                 )
