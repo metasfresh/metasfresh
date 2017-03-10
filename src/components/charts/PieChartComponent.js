@@ -37,7 +37,7 @@ class PieChartComponent extends Component {
             
         }
         const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
-        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(0);
+        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
         const pie = d3.pie()
             .sort(null)
             .value( d => d[fields[0].fieldName]);

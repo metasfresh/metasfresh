@@ -90,6 +90,7 @@ export class DraggableWrapper extends Component {
 
         return (
             <div className="dashboard-cards-wrapper">
+            
 
                 {indicators.length > 0 && <div className={
                         'indicators-wrapper ' +
@@ -133,10 +134,11 @@ export class DraggableWrapper extends Component {
                         />
                     );
                 }):
-
-                <div className="logo-wrapper">
-                    <img src={logo} />
-                </div>
+                    <div className="dashboard-wrapper dashboard-logo-wrapper">
+                        <div className="logo-wrapper">
+                            <img src={logo} />
+                        </div>
+                    </div>
                 }
             </div>
         );
