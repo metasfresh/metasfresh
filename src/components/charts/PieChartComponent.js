@@ -21,6 +21,21 @@ class PieChartComponent extends Component {
 
     }
 
+    shouldComponentUpdate(nextProps){
+        return !(this.props.reRender && !nextProps.reRender)
+    }
+
+    componentDidUpdate() {
+        const {data, colors, height, chartClass} = this.props;
+        const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
+        const color = d3.scaleOrdinal()
+            .range(colors);
+        this.clearChart();
+        const dimensions = this.setDimensions(chartWrapp.offsetWidth);
+        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie, 
+                            dimensions.arc, data, color);
+    }
+
     setDimensions = (width=400) => {
         const {chartClass, responsive, fields, height} = this.props;
         let wrapperWidth = 0;
@@ -55,8 +70,6 @@ class PieChartComponent extends Component {
     drawChart = (wrapperWidth, width, height, pie, arc, data, color, radius) => {
         const {chartClass, fields, groupBy} = this.props;
 
-        
-
         var svg = d3.select('.' + chartClass)
             .attr('width', width)
             .attr('height', height)
@@ -85,11 +98,6 @@ class PieChartComponent extends Component {
             .attr('d', arc)
             .attr("class", "pie-path")
             .style('fill', d => color(d.data[fields[0].fieldName]));
-
-        // g.append('text')
-        //     .attr('transform', d => 'translate(' + arc.centroid(d) + ')')
-        //     .attr('dy', '.35em')
-        //     .text(d => d.data[groupBy.fieldName]);
 
         this.drawLegend(svg, width, height, color);
         

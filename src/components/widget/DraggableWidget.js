@@ -53,7 +53,8 @@ export class DraggableWidget extends Component {
         this.state = {
             toggleWidgetMenu: false,
             isMaximize: false,
-            refresh: false
+            refresh: false,
+            height: 400
         };
     }
 
@@ -74,7 +75,8 @@ export class DraggableWidget extends Component {
         this.setState({
             isMaximize: true,
             toggleWidgetMenu: false,
-            forceChartReRender: true
+            forceChartReRender: true,
+            height: 600
         }, () => {
             this.setState({
                 forceChartReRender: false
@@ -86,7 +88,8 @@ export class DraggableWidget extends Component {
         this.setState({
             isMaximize: false,
             toggleWidgetMenu: false,
-            forceChartReRender: true
+            forceChartReRender: true,
+            height: 400
         }, () => {
             this.setState({
                 forceChartReRender: false
@@ -113,7 +116,7 @@ export class DraggableWidget extends Component {
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
             caption, fields, groupBy, pollInterval, kpi
         } = this.props;
-        const { toggleWidgetMenu, isMaximize, refresh, forceChartReRender } = this.state;
+        const { toggleWidgetMenu, isMaximize, refresh, forceChartReRender, height } = this.state;
 
         return connectDragSource(connectDropTarget(
             <div className={
@@ -148,6 +151,7 @@ export class DraggableWidget extends Component {
                         pollInterval={pollInterval}
                         reRender={forceChartReRender}
                         responsive={true}
+                        height={height}
                     />
                 </div>
             </div>

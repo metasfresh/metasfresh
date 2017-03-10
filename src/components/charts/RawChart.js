@@ -70,10 +70,9 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, kpiCaption, reRender
+            id, chartType, caption, fields, groupBy, kpiCaption, reRender, height
         } = this.props;
         const {chartData} = this.state;
-        const height = 400;
 
         switch(chartType){
             case 'BarChart':
