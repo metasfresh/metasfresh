@@ -5,6 +5,7 @@ import java.util.Set;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 
 /*
  * #%L
@@ -42,7 +43,7 @@ public interface IIncludedDocumentsCollection
 
 	void deleteDocuments(Set<DocumentId> documentIds);
 
-	DocumentValidStatus checkAndGetValidStatus();
+	DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged);
 
 	boolean hasChangesRecursivelly();
 

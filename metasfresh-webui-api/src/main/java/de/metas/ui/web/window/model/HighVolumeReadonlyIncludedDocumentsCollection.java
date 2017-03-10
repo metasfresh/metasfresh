@@ -11,6 +11,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 
 /*
  * #%L
@@ -104,7 +105,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public DocumentValidStatus checkAndGetValidStatus()
+	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
 	{
 		return DocumentValidStatus.documentValid();
 	}
