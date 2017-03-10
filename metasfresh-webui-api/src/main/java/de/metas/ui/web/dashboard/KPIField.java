@@ -1,6 +1,7 @@
 package de.metas.ui.web.dashboard;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class KPIField
 	private final ITranslatableString description;
 	private final String unit;
 	private final KPIFieldValueType valueType;
+	private final Integer numberPrecision;
 
 	private final String color;
 
@@ -85,6 +87,7 @@ public class KPIField
 		description = builder.description;
 		unit = builder.unit;
 		valueType = builder.valueType;
+		numberPrecision = builder.numberPrecision;
 
 		color = builder.color;
 
@@ -166,15 +169,22 @@ public class KPIField
 			{
 				if (value instanceof String)
 				{
-					return new BigDecimal(value.toString());
+					final BigDecimal bd = new BigDecimal(value.toString());
+					return roundToPrecision(bd);
 				}
 				else if (value instanceof Double)
 				{
-					return BigDecimal.valueOf(((Double)value).doubleValue());
+					final BigDecimal bd = BigDecimal.valueOf(((Double)value).doubleValue());
+					return roundToPrecision(bd);
 				}
 				else if (value instanceof Number)
 				{
-					return BigDecimal.valueOf(((Number)value).intValue());
+					final BigDecimal bd = BigDecimal.valueOf(((Number)value).intValue());
+					return roundToPrecision(bd);
+				}
+				else if (value instanceof Integer)
+				{
+					return value;
 				}
 				else
 				{
@@ -189,6 +199,18 @@ public class KPIField
 			{
 				throw new IllegalStateException("valueType not supported: " + valueType);
 			}
+		}
+	}
+
+	private final BigDecimal roundToPrecision(final BigDecimal bd)
+	{
+		if (numberPrecision == null)
+		{
+			return bd;
+		}
+		else
+		{
+			return bd.setScale(numberPrecision, RoundingMode.HALF_UP);
 		}
 	}
 
@@ -338,6 +360,7 @@ public class KPIField
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private String unit;
 		private KPIFieldValueType valueType;
+		private Integer numberPrecision;
 
 		private String color;
 
@@ -398,6 +421,12 @@ public class KPIField
 		public Builder setValueType(final KPIFieldValueType valueType)
 		{
 			this.valueType = valueType;
+			return this;
+		}
+
+		public Builder setNumberPrecision(final Integer numberPrecision)
+		{
+			this.numberPrecision = numberPrecision;
 			return this;
 		}
 
