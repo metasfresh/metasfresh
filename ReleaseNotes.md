@@ -46,6 +46,8 @@ Here come the actual release notes:
     * Adding detailes Layout to material Receipts Candidates Grid view to allow the receipt user to have a better overview.
   * [#1080](https://github.com/metasfresh/metasfresh/issues/1080) Virtual Column for qtyenteredTU from Purchase Orderline in Receipt Candidate
     * Introduced a virtual column qtyEnteredTU in Material Receipt candidate, to be able to compare ordered TU qty with the already received TU Quantity.
+  * [#1081](https://github.com/metasfresh/metasfresh/issues/1081) Allow the generic configuration of C_Printing_Queue_Recipient_IDs for system users
+    * New Printing Client Functionality to allow the generic configuration of Printing Queue recepients for system users.
   * [#1090](https://github.com/metasfresh/metasfresh/issues/1090) Introduce C_BPartner_QuickInput table/window to capture new BPartners
     * New Table created for Business Partner creation on the fly during Order editing.
   * [#1105](https://github.com/metasfresh/metasfresh/issues/1105) Translate Action in Material Receipt Schedule for de_DE
@@ -64,6 +66,7 @@ Here come the actual release notes:
     * Reordering columns in Material Receipt Grid View in WebUI.
   * [#1135](https://github.com/metasfresh/metasfresh/issues/1135) Translation de_DE for Process Empties receive
     * Adding a new Translation for "Empties receive" action in Material Receipt Candidates Window in WebUI.
+
   
 * metasfresh-webui-api
   * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
@@ -114,15 +117,17 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
+    * Fixes an issue that leads to hig volument logging on metasfresh application server.
   * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
+    * Minor Fix making the Orderline ID mandatory.
   * [#1056](https://github.com/metasfresh/metasfresh/issues/1056) Purchase Order from Sales Order process, wrong InvoiceBPartner
     * Fixes a Bug that did not select the correct Invoice Business Partrner Vendor from the Partner Releationship having the delivery vendor Partner different than the Invoice Business Partner vendor.
   * [#1059](https://github.com/metasfresh/metasfresh/issues/1059) ShipmentScheduleBL.updateSchedules fails after C_Order was voided
     * Minor fix in the ShipmentScheduler update that failed for a cornercase when the sales Order was voided.
   * [#1068](https://github.com/metasfresh/metasfresh/issues/1068) Settings on Swing Client are saved but window does not close
-    
+    * Minor fix in Swing Client Settings window. Changes to the settings were save but it was not possible to close the window via done after any change.
   * [#1076](https://github.com/metasfresh/metasfresh/issues/1076) NoDataFoundHandlers can cause StackOverflowError
-  * [#1081](https://github.com/metasfresh/metasfresh/issues/1081) Allow the generic configuration of C_Printing_Queue_Recipient_IDs for system users
+    * Fix for a Bug cause through new Data Lifecycle Management Feature.
   * [#1088](https://github.com/metasfresh/metasfresh/issues/1088) pricing problem wrt proccurement candidates
   * [#1094](https://github.com/metasfresh/metasfresh/issues/1094) Drop deprecated and confusing I_AD_User get/setFirstName methods
     * Dropping lagacy getter/ setter for FirstName LastName of User data.
@@ -142,6 +147,7 @@ Here come the actual release notes:
   
 * metasfresh-webui-api
   * [#159](https://github.com/metasfresh/metasfresh-webui/issues/159) Error opening the "Report & Process" window
+  
   * [#187](https://github.com/metasfresh/metasfresh-webui/issues/187) Documents shall automatically have a default value for standard fields
   * [#188](https://github.com/metasfresh/metasfresh-webui/issues/188) Field's mandatory flag is not considered
     * Fixes cases in WebUI that shall trigger a mandatory behavior for input fields.
@@ -158,6 +164,7 @@ Here come the actual release notes:
   * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
     * Fixing some of the global shortcuts when the focus is on an input field.
   * [#465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/465) DateTime widget not respected in included tab
+    
   * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
     * Fixing a bug that broke the sidelist.
   * [#485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/485) Subtab 100% height broken again
