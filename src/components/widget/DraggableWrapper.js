@@ -5,11 +5,11 @@ import DraggableWidget from './DraggableWidget';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import RawChart from '../charts/RawChart';
 
 import {
-    getUserDashboardWidgets,
-    setUserDashboardWidgets,
-    getUserDashboardIndicators
+    getKPIsDashboard,
+    getTargetIndicatorsDashboard
 } from '../../actions/AppActions';
 
 export class DraggableWrapper extends Component {
@@ -31,7 +31,7 @@ export class DraggableWrapper extends Component {
 
     getIndicators = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboardIndicators()).then(response => {
+        dispatch(getTargetIndicatorsDashboard()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 indicators: response.data.items
             }));
@@ -40,7 +40,7 @@ export class DraggableWrapper extends Component {
 
     getDashboard = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboardWidgets()).then(response => {
+        dispatch(getKPIsDashboard()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 cards: response.data.items
             }));
@@ -49,7 +49,6 @@ export class DraggableWrapper extends Component {
 
     moveCard = (dragIndex, hoverIndex) => {
         const { cards } = this.state;
-        const {dispatch} = this.props;
         const dragCard = cards[dragIndex];
 
         this.setState(update(this.state, {
@@ -60,12 +59,13 @@ export class DraggableWrapper extends Component {
                 ]
             }
         }), () => {
-            const changes = {
-                'jsonDashboardChanges': {
-                    'dashboardItemIdsOrder': cards.map(item => item.id)
-                }
-            };
-            dispatch(setUserDashboardWidgets(changes));
+            // const changes = {
+            //     'jsonDashboardChanges': {
+            //         'dashboardItemIdsOrder': cards.map(item => item.id)
+            //     }
+            // };
+            // dispatch(setUserDashboardWidgets(changes));
+            //TO DO: future implementation
         });
     }
 
@@ -85,48 +85,56 @@ export class DraggableWrapper extends Component {
 
     render() {
         const { cards, idMaximized, indicators } = this.state;
-        return (
-            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}>
-                {this.props.dashboard == '/' &&
-                    <div className="logo-wrapper">
-                        <img src={logo} />
-                    </div>
-                }
 
-                {false && indicators.length > 0 && <div className={
-                    'indicators-wrapper ' +
-                    (idMaximized !== false ? 'indicator-hidden' : '')
-                }>
-                    {false && indicators.map((indicator, id) =>
-                        <div
-                            className="indicator"
+        return (
+            <div className="dashboard-cards-wrapper">
+
+                {indicators.length > 0 && <div className={
+                        'indicators-wrapper ' +
+                        (idMaximized !== false ? 'indicator-hidden' : '')
+                    }>
+                    {indicators.map((indicator, id) =>
+                        <RawChart
                             key={id}
-                        >
-                            <iframe
-                                src={indicator.url}
-                                scrolling="no"
-                                frameBorder="no"
-                            ></iframe>
-                        </div>
+                            id={indicator.id}
+                            caption={indicator.caption}
+                            fields={indicator.kpi.fields}
+                            pollInterval={indicator.kpi.pollInterval}
+                            chartType={'Indicator'}
+                            kpi={false}
+
+                        />
                     )}
                 </div>}
 
-                {this.props.dashboard != '/' && cards.map((card, i) => {
+                { cards.length > 0 ?
+
+                    cards.map((item, id) => {
                     return (
                         <DraggableWidget
-                            key={card.id}
-                            index={i}
-                            id={card.id}
-                            text={card.caption}
-                            url={card.url}
+                            key={item.id}
+                            id={item.id}
+                            index={id}
+                            chartType={item.kpi.chartType}
+                            caption={item.caption}
+                            fields={item.kpi.fields}
+                            groupBy={item.kpi.groupByField}
+                            pollInterval={item.kpi.pollIntervalSec}
+                            kpi={true}
                             moveCard={this.moveCard}
                             hideWidgets={this.hideWidgets}
                             showWidgets={this.showWidgets}
                             idMaximized={idMaximized}
-                            dashboard={this.props.dashboard}
+                            text={item.caption}
                         />
                     );
-                })}
+                }):
+                    <div className="dashboard-wrapper dashboard-logo-wrapper">
+                        <div className="logo-wrapper">
+                            <img src={logo} />
+                        </div>
+                    </div>
+                }
             </div>
         );
     }
