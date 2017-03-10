@@ -97,16 +97,19 @@ Here come the actual release notes:
   * [#447](https://github.com/metasfresh/metasfresh-webui-frontend/issues/447) Not saved indicator for Grid view lines
     * Introducting a "not saved indicator" for grid view lines, now giving the user the transparency to recognize why a line cannot be saved.
   * [#448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/448) Query on activate document included tab
+    * New functionality to reduce the traffic and ressource load whan opening a window with included subtabs. This new feature allows to flag subtabs as high volume or frequent change and then reloads the data only when the user selects that subtab.
   * [#452](https://github.com/metasfresh/metasfresh-webui-frontend/issues/452) Saving Indicator Bar in modal window
     * Adding the global save indicator bar also to modal overlays.
-  * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
   * [#482](https://github.com/metasfresh/metasfresh-webui-frontend/issues/482) Quick actions not queried in HU editor for included rows
-  * [#487](https://github.com/metasfresh/metasfresh-webui-frontend/issues/487) Expand batch entry when completed docuement
+    * Added a missing functionality, so that now quick actions can be used also for newly added rows in Handling Unit Editor.
   * [#488](https://github.com/metasfresh/metasfresh-webui-frontend/issues/488) Restrict the minimum size of action menu
-  * [#489](https://github.com/metasfresh/metasfresh-webui-frontend/issues/489) Grid view not refreshed on websocket event
+    * Layout change to prohibit the action menu getting to narrow, disallowing the user to read the actions.
   * [#490](https://github.com/metasfresh/metasfresh-webui-frontend/issues/490) Filter drop-down list too narrow
+    * Layout change to prohibit the filter drop-down list getting to narrow, disallowing the user to read the filter criteria.
   * [#510](https://github.com/metasfresh/metasfresh-webui-frontend/issues/510) Improved Not Saved Indicator design
+    * Nice improvement for the design of the not saved indicator. It is now a thin red line instead of the saved indicator.
   * [#1073](https://github.com/metasfresh/metasfresh/issues/1073) Material Receipt Candidates order by Purchase Order ID desc
+    * New Order by criteria for the Grid view in the Material Receipt Candidates Window.
   
 ## Fixes
 * metasfresh-backend
@@ -142,8 +145,14 @@ Here come the actual release notes:
   * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
     * Fixing some of the global shortcuts when the focus is on an input field.
   * [#465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/465) DateTime widget not respected in included tab
+  * [#473](https://github.com/metasfresh/metasfresh-webui-frontend/issues/473) Sidelist broken
+    * Fixing a bug that broke the sidelist.
   * [#485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/485) Subtab 100% height broken again
     * Fixing the Layout of included subtabs when subtab lines are able to fit completely on one screen.
+  * [#487](https://github.com/metasfresh/metasfresh-webui-frontend/issues/487) Expand batch entry when completed docuement
+    * Fixed an error that appeared when the user tried to use the batch entry mode expansion with a completed document.
+  * [#489](https://github.com/metasfresh/metasfresh-webui-frontend/issues/489) Grid view not refreshed on websocket event
+    * Fix for websocket eventy that triggers the refresh of the Grid View after external data changes.
 
 # metasfresh 4.58.57 (2017-09)
 
