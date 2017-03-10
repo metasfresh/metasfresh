@@ -14,7 +14,7 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1733510311L;
+	private static final long serialVersionUID = 62157767L;
 
     /** Standard Constructor */
     public X_WEBUI_DashboardItem (Properties ctx, int WEBUI_DashboardItem_ID, String trxName)
@@ -46,6 +46,44 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Time range.
+		@param ES_TimeRange 
+		Time range using format 'PnDTnHnMn.nS'
+	  */
+	@Override
+	public void setES_TimeRange (java.lang.String ES_TimeRange)
+	{
+		set_Value (COLUMNNAME_ES_TimeRange, ES_TimeRange);
+	}
+
+	/** Get Time range.
+		@return Time range using format 'PnDTnHnMn.nS'
+	  */
+	@Override
+	public java.lang.String getES_TimeRange () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange);
+	}
+
+	/** Set Time range end.
+		@param ES_TimeRange_End 
+		Time range's ending offset (relative to now)
+	  */
+	@Override
+	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End)
+	{
+		set_Value (COLUMNNAME_ES_TimeRange_End, ES_TimeRange_End);
+	}
+
+	/** Get Time range end.
+		@return Time range's ending offset (relative to now)
+	  */
+	@Override
+	public java.lang.String getES_TimeRange_End () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange_End);
+	}
 
 	/** Set Name.
 		@param Name 
