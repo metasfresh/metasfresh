@@ -26,13 +26,13 @@ class PieChartComponent extends Component {
     }
 
     componentDidUpdate() {
-        const {data, colors, height, chartClass} = this.props;
-        const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
+        const {data, colors, chartClass} = this.props;
+        const chartWrapp = document.getElementsByClassName(chartClass+'-wrapper')[0];
         const color = d3.scaleOrdinal()
             .range(colors);
         this.clearChart();
         const dimensions = this.setDimensions(chartWrapp.offsetWidth);
-        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie, 
+        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie,
                             dimensions.arc, data, color);
     }
 
@@ -64,10 +64,8 @@ class PieChartComponent extends Component {
                 pie: pie
             };
     }
-    
     drawChart = (wrapperWidth, width, height, pie, arc, data, color) => {
         const {chartClass, fields} = this.props;
-
 
         var svg = d3.select('.' + chartClass)
             .attr('width', width)

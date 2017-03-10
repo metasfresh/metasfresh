@@ -116,8 +116,8 @@ export class DraggableWidget extends Component {
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
             caption, fields, groupBy, pollInterval
         } = this.props;
-        
-        const { toggleWidgetMenu, isMaximize, refresh, forceChartReRender, height } = this.state;
+
+        const { toggleWidgetMenu, isMaximize, forceChartReRender, height } = this.state;
 
         return connectDragSource(connectDropTarget(
             <div className={
