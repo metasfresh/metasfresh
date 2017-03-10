@@ -70,7 +70,7 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, kpiCaption, reRender, height
+            id, chartType, caption, fields, groupBy, reRender, height
         } = this.props;
         const {chartData} = this.state;
 
@@ -107,7 +107,7 @@ class RawChart extends Component {
                         <div className="indicator-value">{
                             chartData[0][fields[0].fieldName] +
                             (fields[0].unit ? ' ' + fields[0].unit : '')}</div>
-                        <div className="indicator-kpi-caption">{kpiCaption}</div>
+                        <div className="indicator-kpi-caption">{caption}</div>
                     </div>
                 );
             default:
