@@ -181,7 +181,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Additionally, this method does:
 	 * <ul>
 	 * <li>destroys any of it's HU children which have empty storage
-	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursivelly to the top).
+	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursively to the top).
 	 * </ul>
 	 *
 	 * @param huContext

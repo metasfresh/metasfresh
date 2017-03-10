@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -193,7 +194,10 @@ public class HUTransferService
 							@Override
 							public IMutableAllocationResult process(final IHUContext localHuContext)
 							{
-								huTrxBL.setParentHU(huContext,
+								Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
+								Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
+
+								huTrxBL.setParentHU(localHuContext,
 										null, // parentHUItem
 										cuHU,
 										true // destroyOldParentIfEmptyStorage
@@ -329,6 +333,9 @@ public class HUTransferService
 							@Override
 							public IMutableAllocationResult process(final IHUContext localHuContext)
 							{
+								Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
+								Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
+
 								// Take it out from its parent
 								huTrxBL.setParentHU(localHuContext,
 										null, // parentHUItem
