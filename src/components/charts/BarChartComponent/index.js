@@ -24,7 +24,7 @@ class BarChartComponent extends Component {
         const rangeZ = getZRange(colors);
 
         // horizontal sizing
-        const horizontal = getHorizontalDimensions(this.svg, chartClass);
+        const horizontal = getHorizontalDimensions(this.svg, chartClass, height);
         const rangeX0 = getX0Range(horizontal.width, data, groupBy);
         const rangeX1 = getX1Range(rangeX0.bandwidth(), fields);
         populateXAxis(this.svg, rangeX0);
@@ -39,7 +39,7 @@ class BarChartComponent extends Component {
         moveXAxis(this.svg, vertical.height);
 
         // adjust svg container
-        sizeSvg(this.svg, chartClass, {
+        sizeSvg(this.svg, {
             ...horizontal,
             ...vertical
         });

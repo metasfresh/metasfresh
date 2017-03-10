@@ -23,28 +23,32 @@ export const populateXAxis = (svg, rangeX0) => {
             sizes.push(this.getBBox());
         });
 
-        const maxW = Math.max(...(sizes.map(size => size.width)));
+    const maxW = Math.max(...(sizes.map(size => size.width)));
 
-        if (maxW > rangeX0.bandwidth()){
-            const maxH = Math.max(...(sizes
-                    .filter(size => size.width >= maxW)
-                    .map(size => size.height)
-            ));
+    if (maxW <= rangeX0.bandwidth()){
+        svg.selectAll('.x-axis-label')
+            .style('text-anchor', 'middle')
+            .attr('dx', '0')
+            .attr('dy', '.71em')
+            .attr('transform', '');
+        return;
+    }
 
-            const size = sizes.find(item => item.width === maxW && item.height === maxH);
-            const radianAngle = getXAxisTickAngle(size, rangeX0.bandwidth());
-            const angle = (radianAngle > (Math.PI / 2)) ? -90 : (radianAngle * (-180 / Math.PI));
-            const line = (radianAngle > (Math.PI / 2)) ? 0 : (6 * Math.cos(angle * (Math.PI / 180)));
+    const maxH = Math.max(...(sizes
+            .filter(size => size.width >= maxW)
+            .map(size => size.height)
+    ));
 
-            d3.selectAll('.x-axis-label')
-                .each(function(){
-                    d3.select(this)
-                        .style('text-anchor', 'end')
-                        .attr('dx', '-.8em')
-                        .attr('dy', '.15em')
-                        .attr('transform', 'rotate(' + angle + ') translate(0, ' + ((size.height / -2) + line) + ')');
-                });
-        }
+    const size = sizes.find(item => item.width === maxW && item.height === maxH);
+    const radianAngle = getXAxisTickAngle(size, rangeX0.bandwidth());
+    const angle = (radianAngle > (Math.PI / 2)) ? -90 : (radianAngle * (-180 / Math.PI));
+    const line = (radianAngle > (Math.PI / 2)) ? 0 : (6 * Math.cos(angle * (Math.PI / 180)));
+
+    svg.selectAll('.x-axis-label')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(' + angle + ') translate(0, ' + ((size.height / -2) + line) + ')');
 };
 
 export const getXAxisLabelsHeight = (svg) => {
