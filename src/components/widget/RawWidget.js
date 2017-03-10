@@ -19,7 +19,7 @@ class RawWidget extends Component {
 
         this.state = {
             isEdited: false,
-            cachedValue: null,
+            cachedValue: undefined,
             errorPopup: false
         }
     }
@@ -53,7 +53,7 @@ class RawWidget extends Component {
         if(
             JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
             JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
-            (cachedValue !== null &&
+            (cachedValue !== undefined &&
                 (JSON.stringify(cachedValue) !== JSON.stringify(value)))
         ){
 
@@ -64,7 +64,7 @@ class RawWidget extends Component {
 
         if(ret){
             this.setState({
-                cachedValue: null
+                cachedValue: undefined
             });
         }
 

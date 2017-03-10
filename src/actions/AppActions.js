@@ -203,6 +203,18 @@ export function newNotification(msg, count) {
     }
 }
 
+export function setProcessPending() {
+    return {
+        type: types.SET_PROCESS_STATE_PENDING
+    }
+}
+
+export function setProcessSaved() {
+    return {
+        type: types.SET_PROCESS_STATE_SAVED
+    }
+}
+
 export function getImageAction(id) {
     return axios({
         url: `${config.API_URL}/image/${id}`,
