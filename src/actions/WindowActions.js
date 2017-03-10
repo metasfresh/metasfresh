@@ -391,19 +391,12 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                     staleTabIds.push(item);
                 }
             })
+
             // Mapping fields property
             item.fields = parseToDisplay(item.fields);
             if (rowId === 'NEW') {
                 dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
             } else {
-
-                if(item.rowId){
-                    dispatch(updateRowStatus(getScope(isModal), item.tabid, item.rowId, item.saveStatus));
-                }else{
-                    item.validStatus && dispatch(updateDataValidStatus(getScope(isModal), item.validStatus));
-                    item.saveStatus && dispatch(updateDataSaveStatus(getScope(isModal), item.saveStatus));
-                }
-
                 item.fields.map(field => {
                     if (rowId && !isModal) {
                         dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
@@ -424,6 +417,29 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
+
+        dispatch(updateStatus(data))
+    }
+}
+
+function updateStatus(responseData) {
+    return dispatch => {
+        const updateDispatch = (item) => {
+            if(item.rowId){
+                dispatch(updateRowStatus('master', item.tabid, item.rowId, item.saveStatus));
+            }else{
+                item.validStatus && dispatch(updateDataValidStatus('master', item.validStatus));
+                item.saveStatus && dispatch(updateDataSaveStatus('master', item.saveStatus));
+            }
+        }
+
+        if(Array.isArray(responseData)){
+            responseData.map(item => {
+                updateDispatch(item)
+            });
+        }else{
+            updateDispatch(responseData)
+        }
     }
 }
 
@@ -547,8 +563,10 @@ export function startProcess(processType, pinstanceId) {
     );
 }
 
-export function deleteLocal(tabid, rowsid, scope) {
+export function deleteLocal(tabid, rowsid, scope, response) {
     return (dispatch) => {
+        dispatch(updateStatus(response.data))
+
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid, rowid, scope))
         }
