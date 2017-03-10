@@ -116,30 +116,43 @@ Here come the actual release notes:
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
   * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
   * [#1056](https://github.com/metasfresh/metasfresh/issues/1056) Purchase Order from Sales Order process, wrong InvoiceBPartner
+    * Fixes a Bug that did not select the correct Invoice Business Partrner Vendor from the Partner Releationship having the delivery vendor Partner different than the Invoice Business Partner vendor.
   * [#1059](https://github.com/metasfresh/metasfresh/issues/1059) ShipmentScheduleBL.updateSchedules fails after C_Order was voided
+    * Minor fix in the ShipmentScheduler update that failed for a cornercase when the sales Order was voided.
   * [#1068](https://github.com/metasfresh/metasfresh/issues/1068) Settings on Swing Client are saved but window does not close
+    
   * [#1076](https://github.com/metasfresh/metasfresh/issues/1076) NoDataFoundHandlers can cause StackOverflowError
   * [#1081](https://github.com/metasfresh/metasfresh/issues/1081) Allow the generic configuration of C_Printing_Queue_Recipient_IDs for system users
   * [#1088](https://github.com/metasfresh/metasfresh/issues/1088) pricing problem wrt proccurement candidates
   * [#1094](https://github.com/metasfresh/metasfresh/issues/1094) Drop deprecated and confusing I_AD_User get/setFirstName methods
+    * Dropping lagacy getter/ setter for FirstName LastName of User data.
   * [#1097](https://github.com/metasfresh/metasfresh/issues/1097) field too small in jasper document for invoice
+    * Enhancing a field size in JasperReports Invoice Document.
   * [#1099](https://github.com/metasfresh/metasfresh/issues/1099) Fix Materialentnahme movement creation
+    * Includes a fix for the Material Movement creation for used products in Swing Handling Unit editor.
   * [#1103](https://github.com/metasfresh/metasfresh/issues/1103) TU Ordered Qty in Material Receipt Schedule shows movedQty
+    * Fix in the virtual column Ordered Quantitity TU that showed the moved Quantity instead.
   * [#1106](https://github.com/metasfresh/metasfresh/issues/1106) inactive org still selectable on login
+    * Fixes the login procedure, now disallowing the loging for inactive Organisations.
   * [#1107](https://github.com/metasfresh/metasfresh/issues/1107) Implement interactive mode for RolloutMigrate
   * [#1110](https://github.com/metasfresh/metasfresh/issues/1110) webui HU Editor: conversion error when selecting SubProducer
     * Fixing an error that prohibited the editing of Subproducers in the Material Receipt Handling Unit Editor.
   * [#1121](https://github.com/metasfresh/metasfresh/issues/1121) TU receipt label is just a white sheet of paper
+    * Fixes an error in the printing process of Material Receipts and Labels via the standalone printing client and WebUI Interface.
   
 * metasfresh-webui-api
   * [#159](https://github.com/metasfresh/metasfresh-webui/issues/159) Error opening the "Report & Process" window
   * [#187](https://github.com/metasfresh/metasfresh-webui/issues/187) Documents shall automatically have a default value for standard fields
   * [#188](https://github.com/metasfresh/metasfresh-webui/issues/188) Field's mandatory flag is not considered
+    * Fixes cases in WebUI that shall trigger a mandatory behavior for input fields.
   * [#213](https://github.com/metasfresh/metasfresh-webui/issues/213) Use document's BPartner language when printing
+    * Fixes the output of Documents. Now also in WebUI the documents are created in the Business Partner Language.
   * [#222](https://github.com/metasfresh/metasfresh-webui/issues/222) Carrot Paloxe Error in Material Receipt
     * Fixing an error that appeared when receiving HU which were not LU Level.
   * [#225](https://github.com/metasfresh/metasfresh-webui/issues/225) Receipt Candidates - Foto process is not attaching the picture
+    * Fixes the save process when taking a photo via webcam in material Receipt Candidates. The Photo is automatically uploaded and saved as attachment to the candidate record.
   * [#237](https://github.com/metasfresh/metasfresh-webui/issues/237) Transform CU on existing TU not working
+    * Fixes an error when trying to transform a CU Handling Unit to an already existing TU.
   
 * metasfresh-webui-frontend
   * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
