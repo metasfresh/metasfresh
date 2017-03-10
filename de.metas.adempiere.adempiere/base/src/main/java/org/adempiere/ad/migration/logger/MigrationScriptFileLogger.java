@@ -193,6 +193,10 @@ public class MigrationScriptFileLogger
 			{
 				System.out.println("Created migration scripts directory: " + directory);
 			}
+			else
+			{
+				System.out.println("Failed creating migration scripts directory: " + directory);
+			}
 		}
 
 		try
