@@ -85,7 +85,7 @@ class PieChartComponent extends Component {
             .text(d => d.data[groupBy.fieldName]);
 
 
-        // this.drawLegend(svg, width, height, color);
+        this.drawLegend(svg, width, height, color);
     }
 
     drawLegend = (svg, width, height, color) => {
