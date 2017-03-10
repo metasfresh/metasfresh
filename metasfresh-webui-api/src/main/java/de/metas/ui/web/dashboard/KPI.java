@@ -52,10 +52,11 @@ public class KPI
 	private final ITranslatableString description;
 	private final KPIChartType chartType;
 	private final Duration compareOffset;
-	private final Duration defaultTimeRange;
 
 	private final List<KPIField> fields;
 	private final KPIField groupByField;
+
+	private final KPITimeRangeDefaults timeRangeDefaults;
 
 	private final String esSearchIndex;
 	private final String esSearchTypes;
@@ -82,7 +83,8 @@ public class KPI
 		description = builder.description;
 		chartType = builder.chartType;
 		compareOffset = builder.compareOffset;
-		defaultTimeRange = builder.defaultTimeRange;
+
+		timeRangeDefaults = builder.timeRangeDefaults;
 
 		fields = ImmutableList.copyOf(builder.fields);
 		final List<KPIField> groupByFieldsList = fields.stream()
@@ -158,9 +160,9 @@ public class KPI
 		return groupByField;
 	}
 
-	public Duration getDefaultTimeRange()
+	public KPITimeRangeDefaults getTimeRangeDefaults()
 	{
-		return defaultTimeRange;
+		return timeRangeDefaults;
 	}
 
 	public boolean hasCompareOffset()
@@ -200,8 +202,9 @@ public class KPI
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private KPIChartType chartType;
 		private Duration compareOffset;
-		private Duration defaultTimeRange = Duration.ZERO;
 		private List<KPIField> fields;
+
+		private KPITimeRangeDefaults timeRangeDefaults = KPITimeRangeDefaults.DEFAULT;
 
 		private String esSearchTypes;
 		private String esSearchIndex;
@@ -272,9 +275,9 @@ public class KPI
 			return this;
 		}
 
-		public Builder setDefaultTimeRange(final Duration defaultTimeRange)
+		public Builder setTimeRangeDefaults(final KPITimeRangeDefaults timeRangeDefaults)
 		{
-			this.defaultTimeRange = defaultTimeRange == null ? Duration.ZERO : defaultTimeRange;
+			this.timeRangeDefaults = timeRangeDefaults != null ? timeRangeDefaults : KPITimeRangeDefaults.DEFAULT;
 			return this;
 		}
 

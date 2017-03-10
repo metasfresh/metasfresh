@@ -74,6 +74,19 @@ public class DashboardRestController
 		userDashboardRepo.changeUserDashboardKPIs(jsonDashboardChanges);
 	}
 
+	private final KPIDataResult getKPIData(final UserDashboardItem dashboardItem, final long fromMillis, final long toMillis, final boolean prettyValues)
+	{
+		final KPI kpi = dashboardItem.getKPI();
+		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(fromMillis, toMillis);
+
+		return KPIDataLoader.newInstance(elasticsearchClient, kpi)
+				.setTimeRange(timeRange)
+				.setFormatValues(prettyValues)
+				.retrieveData()
+				.setItemId(dashboardItem.getId());
+
+	}
+
 	@GetMapping("/kpis/{itemId}/data")
 	public KPIDataResult getKPIData( //
 			@PathVariable final int itemId //
@@ -84,15 +97,10 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final KPI kpi = userDashboardRepo.getUserDashboard()
-				.getKPIItemById(itemId)
-				.getKPI();
-		
-		return KPIDataLoader.newInstance(elasticsearchClient, kpi)
-				.setTimeRange(fromMillis, toMillis)
-				.setFormatValues(prettyValues)
-				.retrieveData()
-				.setItemId(itemId);
+		final UserDashboardItem dashboardItem = userDashboardRepo.getUserDashboard()
+				.getKPIItemById(itemId);
+
+		return getKPIData(dashboardItem, fromMillis, toMillis, prettyValues);
 	}
 
 	@GetMapping("/targetIndicators")
@@ -109,17 +117,14 @@ public class DashboardRestController
 			@PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
+			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final KPI kpi = userDashboardRepo.getUserDashboard()
-				.getTargetIndicatorItemById(itemId)
-				.getKPI();
-		
-		return KPIDataLoader.newInstance(elasticsearchClient, kpi)
-				.setTimeRange(fromMillis, toMillis)
-				.retrieveData()
-				.setItemId(itemId);
+		final UserDashboardItem dashboardItem = userDashboardRepo.getUserDashboard()
+				.getTargetIndicatorItemById(itemId);
+
+		return getKPIData(dashboardItem, fromMillis, toMillis, prettyValues);
 	}
 }

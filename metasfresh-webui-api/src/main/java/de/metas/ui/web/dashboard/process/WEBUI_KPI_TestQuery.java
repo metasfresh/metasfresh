@@ -20,6 +20,7 @@ import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIDataLoader;
 import de.metas.ui.web.dashboard.KPIDataResult;
+import de.metas.ui.web.dashboard.TimeRange;
 import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 
@@ -85,12 +86,12 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		}
 
 		userDashboardRepo.invalidateKPI(kpiId);
-		final KPI kpi = userDashboardRepo.getKPI(kpiId);
 
-		final long fromMillis = p_DateFrom == null ? -1 : p_DateFrom.getTime();
-		final long toMillis = p_DateTo == null ? -1 : p_DateTo.getTime();
+		final KPI kpi = userDashboardRepo.getKPI(kpiId);
+		final TimeRange timeRange = kpi.getTimeRangeDefaults().createTimeRange(p_DateFrom, p_DateTo);
+
 		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi)
-				.setTimeRange(fromMillis, toMillis)
+				.setTimeRange(timeRange)
 				.setFormatValues(true)
 				.assertESTypesExists()
 				.retrieveData();

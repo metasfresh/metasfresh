@@ -159,6 +159,7 @@ public class UserDashboardRepository
 	private UserDashboardItem createUserDashboardItem(final I_WEBUI_DashboardItem webuiDashboardItem)
 	{
 		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(webuiDashboardItem);
+
 		return UserDashboardItem.builder()
 				.setId(webuiDashboardItem.getWEBUI_DashboardItem_ID())
 				.setCaption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, webuiDashboardItem.getName()))
@@ -166,6 +167,12 @@ public class UserDashboardRepository
 				.setSeqNo(webuiDashboardItem.getSeqNo())
 				.setWidgetType(DashboardWidgetType.ofCode(webuiDashboardItem.getWEBUI_DashboardWidgetType()))
 				.setKPI(() -> getKPIOrNull(webuiDashboardItem.getWEBUI_KPI_ID()))
+				//
+				.setTimeRangeDefaults(KPITimeRangeDefaults.builder()
+						.defaultTimeRangeFromString(webuiDashboardItem.getES_TimeRange())
+						.defaultTimeRangeEndOffsetFromString(webuiDashboardItem.getES_TimeRange_End())
+						.build())
+				//
 				.build();
 	}
 
@@ -199,9 +206,6 @@ public class UserDashboardRepository
 
 			final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(kpiDef);
 
-			final String timeRangeStr = kpiDef.getES_TimeRange();
-			final Duration timeRange = Check.isEmpty(timeRangeStr, true) ? Duration.ZERO : Duration.parse(timeRangeStr);
-
 			Duration compareOffset = null;
 			if (kpiDef.isGenerateComparation())
 			{
@@ -217,7 +221,11 @@ public class UserDashboardRepository
 					.setFields(retrieveKPIFields(WEBUI_KPI_ID, kpiDef.isGenerateComparation()))
 					//
 					.setCompareOffset(compareOffset)
-					.setDefaultTimeRange(timeRange)
+					//
+					.setTimeRangeDefaults(KPITimeRangeDefaults.builder()
+							.defaultTimeRangeFromString(kpiDef.getES_TimeRange())
+							.defaultTimeRangeEndOffsetFromString(kpiDef.getES_TimeRange_End())
+							.build())
 					//
 					.setPollIntervalSec(kpiDef.getPollIntervalSec())
 					//

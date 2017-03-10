@@ -9,7 +9,6 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -81,27 +80,9 @@ public class KPIDataLoader
 		this.kpi = kpi;
 	}
 
-	public KPIDataLoader setTimeRange(long fromMillis, long toMillis)
+	public KPIDataLoader setTimeRange(final TimeRange mainTimeRange)
 	{
-		if (toMillis <= 0)
-		{
-			toMillis = SystemTime.millis();
-		}
-
-		if (fromMillis <= 0)
-		{
-			final Duration defaultTimeRange = kpi.getDefaultTimeRange();
-			if (defaultTimeRange.isZero())
-			{
-				fromMillis = 0;
-			}
-			else
-			{
-				fromMillis = toMillis - defaultTimeRange.abs().toMillis();
-			}
-		}
-
-		mainTimeRange = TimeRange.main(fromMillis, toMillis);
+		this.mainTimeRange = mainTimeRange;
 
 		final ImmutableList.Builder<TimeRange> timeRanges = ImmutableList.builder();
 		timeRanges.add(mainTimeRange);
