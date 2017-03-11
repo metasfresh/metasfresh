@@ -37,7 +37,7 @@ Here come the actual release notes:
   * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
     * Performance and Database autovacuum improvement. Segmenting the mass archiving to allow better database maintenance.
   * [#1046](https://github.com/metasfresh/metasfresh/issues/1046) Automatic Naming of Pricelist Version Name
-    * Introducing the automatic naming of pricelist Version, adding the neede Informations into the Version identifier.
+    * Introducing the automatic naming of pricelist Version, adding the needed Information into the Version identifier.
   * [#1070](https://github.com/metasfresh/metasfresh/issues/1070) Price not transferred to flatrate term
     * Enhancing the processing of flatrate Terms after recording in orderline. Now also transferring the price into the flatrate term data after order completion.
   * [#1071](https://github.com/metasfresh/metasfresh/issues/1071) Empties document Jasper takes very long to generate
