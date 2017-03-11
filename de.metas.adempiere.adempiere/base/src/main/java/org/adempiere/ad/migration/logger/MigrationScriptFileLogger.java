@@ -1,26 +1,24 @@
 package org.adempiere.ad.migration.logger;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MigrationScript;
 import org.compiere.model.MSequence;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -64,10 +62,11 @@ public class MigrationScriptFileLogger
 
 	private static final Logger logger = LogManager.getLogger(MigrationScriptFileLogger.class);
 
+	private static final Charset CHARSET = Charset.forName("UTF8");
+	private static final DateTimeFormatter FORMATTER_ScriptFilenameTimestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 	private final String dbType;
-	private File _file;
-	private FileOutputStream _out;
-	private BufferedWriter _writer;
+	private Path _path;
 
 	private static final String COLLECTOR_TRXPROPERTYNAME = MigrationScriptFileLogger.class.getName() + ".collectorFactory";
 	private final TrxOnCommitCollectorFactory<StringBuilder, String> collectorFactory = new TrxOnCommitCollectorFactory<StringBuilder, String>()
@@ -100,11 +99,9 @@ public class MigrationScriptFileLogger
 			}
 
 			final String prm_COMMENT = Services.get(ISysConfigBL.class).getValue("DICTIONARY_ID_COMMENTS");
-			final SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.DateTime);
-			final String dateTimeText = format.format(new Timestamp(System.currentTimeMillis()));
 
 			// log time and date
-			collector.append("-- ").append(dateTimeText).append("\n");
+			collector.append("-- ").append(LocalDateTime.now()).append("\n");
 			// log sysconfig comment
 			collector.append("-- ").append(prm_COMMENT).append("\n");
 			// log statement
@@ -150,7 +147,7 @@ public class MigrationScriptFileLogger
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("dbType", dbType)
-				.add("file", _file)
+				.add("path", _path)
 				.toString();
 	}
 
@@ -160,56 +157,26 @@ public class MigrationScriptFileLogger
 		close();
 	}
 
-	private synchronized Writer getWriter() throws IOException
-	{
-		if (_writer == null)
-		{
-			_file = createMigrationScriptFile(dbType);
-			_out = new FileOutputStream(_file, true);
-			_writer = new BufferedWriter(new OutputStreamWriter(_out, "UTF8"));
-
-			System.out.println("Created migration script: " + _file);
-		}
-		return _writer;
-	}
-
-	private static final File createMigrationScriptFile(final String dbType)
+	private static final Path createPath(final String dbType)
 	{
 		final int adClientId = 0;
 		final int scriptId = MSequence.getNextID(adClientId, I_AD_MigrationScript.Table_Name) * 10;
-		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 
-		final String prefix = scriptId + "_migration_script_"
-				+ dateFormat.format(new Date())
-				+ "_";
-		final String sufix = "_"
-				+ dbType
-				+ ".sql";
-		
-		final File directory = new File(getMigrationScriptDirectory());
-		if(!directory.exists())
-		{
-			if (directory.mkdirs())
-			{
-				System.out.println("Created migration scripts directory: " + directory);
-			}
-			else
-			{
-				System.out.println("Failed creating migration scripts directory: " + directory);
-			}
-		}
+		final String filename = scriptId + "_migration_" + FORMATTER_ScriptFilenameTimestamp.format(LocalDate.now()) + "_" + dbType + ".sql";
 
-		try
-		{
-			final File file = File.createTempFile(prefix, sufix, directory);
-			return file;
-		}
-		catch (IOException ex)
-		{
-			throw new AdempiereException("Failed creating temporary file in " + directory, ex);
-		}
+		return Paths.get(getMigrationScriptDirectory(), filename);
 	}
-	
+
+	private final Path getCreateFilePath()
+	{
+		if (_path == null || !Files.exists(_path))
+		{
+			_path = createPath(dbType);
+			System.out.println("Using scripts path: " + _path);
+		}
+		return _path;
+	}
+
 	public static final String getMigrationScriptDirectory()
 	{
 		return Ini.getMetasfreshHome() + File.separator + "migration_scripts";
@@ -230,16 +197,16 @@ public class MigrationScriptFileLogger
 
 	private synchronized void appendNow(final String sqlStatements)
 	{
-		if(sqlStatements == null || sqlStatements.isEmpty())
+		if (sqlStatements == null || sqlStatements.isEmpty())
 		{
 			return;
 		}
-		
+
 		try
 		{
-			final Writer w = getWriter();
-			w.append(sqlStatements);
-			w.flush();
+			final Path path = getCreateFilePath();
+			final byte[] bytes = sqlStatements.getBytes(CHARSET);
+			Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		}
 		catch (final IOException ex)
 		{
@@ -255,19 +222,7 @@ public class MigrationScriptFileLogger
 	 */
 	public synchronized void close()
 	{
-		if (_file == null)
-		{
-			// already closed or never opened
-			return;
-		}
-
-		Util.close(_writer);
-		Util.close(_out);
-		_writer = null;
-		_out = null;
-
-		System.out.println("Closed migration script: " + _file);
-
-		_file = null;
+		System.out.println("Closed migration script: " + _path);
+		_path = null;
 	}
 }
