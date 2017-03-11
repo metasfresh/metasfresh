@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 
 /*
  * #%L
@@ -67,6 +70,17 @@ public final class TimeRange
 		this.fromMillis = fromMillis;
 		this.toMillis = toMillis;
 		this.offsetMillis = offsetMillis;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("from", JSONDate.toJson(fromMillis))
+				.add("to", JSONDate.toJson(toMillis))
+				.add("main", mainTimeRange)
+				.add("offset", Duration.ofMillis(offsetMillis))
+				.toString();
 	}
 
 	public boolean isMainTimeRange()
