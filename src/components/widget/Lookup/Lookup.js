@@ -126,26 +126,38 @@ class Lookup extends Component {
     getAllDropdowns = () => {
         const {
             dispatch, windowType, dataId, select, tabId, rowId, entity, subentity,
-            subentityId
+            subentityId, defaultValue
         } = this.props;
 
         const {
             propertiesCopy
         } = this.state;
 
+        let propertiesArray = []; //need to have property which has no default value;
+
         // call for more properties
         if(propertiesCopy.length > 0){
-            const batchArray = propertiesCopy.map((item) =>
-                dispatch(dropdownRequest(
+            const batchArray = propertiesCopy.filter((item, index) => {
+                const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
+                if(objectValue) {
+                    return false;
+                } else {
+                    propertiesArray.push(propertiesCopy[index]);
+                    return true;
+                }
+            }).map((item) => {
+                return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
                     subentity, subentityId
                 ))
-            );
+            });
 
             Promise.all(batchArray).then(props => {
                 const newProps = {};
                 props.map((prop, index) => {
-                    newProps[propertiesCopy[index].field] = prop.data.values;
+                    if(propertiesArray.length > 0){
+                        newProps[propertiesArray[index].field] = prop.data.values;
+                    }
                 });
 
                 this.setState({
@@ -192,8 +204,6 @@ class Lookup extends Component {
                 this.handleBlur();
             }
         }
-
-        this.handleBlur();
     }
 
     handleAddNew = () => {
