@@ -737,8 +737,8 @@ public class AddressBuilderTest
 	private I_AD_User prepareUser(final String firstName, final String lastName, final String title, final I_C_Greeting greeting)
 	{
 		final I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
-		user.setFirstName(firstName);
-		user.setLastName(lastName);
+		user.setFirstname(firstName);
+		user.setLastname(lastName);
 		user.setTitle(title);
 		user.setC_Greeting_ID(greeting.getC_Greeting_ID());
 		InterfaceWrapperHelper.save(user);

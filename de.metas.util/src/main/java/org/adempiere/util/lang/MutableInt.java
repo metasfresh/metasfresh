@@ -15,24 +15,29 @@ import java.io.Serializable;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * Mutable <code>int</code> wrapper.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @SuppressWarnings("serial")
 public final class MutableInt implements Comparable<MutableInt>, Serializable
 {
+	public static final MutableInt zero()
+	{
+		return new MutableInt(0);
+	}
+	
 	private int value;
 
 	public MutableInt(final int value)
@@ -87,6 +92,11 @@ public final class MutableInt implements Comparable<MutableInt>, Serializable
 		this.value = value;
 	}
 
+	public void add(final int valueToAdd)
+	{
+		value += valueToAdd;
+	}
+
 	public int incrementAndGet()
 	{
 		value++;
@@ -97,6 +107,25 @@ public final class MutableInt implements Comparable<MutableInt>, Serializable
 	{
 		value--;
 		return value;
+	}
+
+	public int incrementIf(final boolean condition)
+	{
+		if (condition)
+		{
+			value++;
+		}
+		return value;
+	}
+	
+	public boolean isZero()
+	{
+		return value == 0;
+	}
+	
+	public boolean isGreaterThanZero()
+	{
+		return value > 0;
 	}
 
 }

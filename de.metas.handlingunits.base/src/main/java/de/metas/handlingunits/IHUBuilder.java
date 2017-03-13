@@ -43,7 +43,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  * @author tsa
  *
  */
-public interface IHUBuilder
+public interface IHUBuilder extends IHUIterator
 {
 	/**
 	 * This instance stores the {@code huPIVersion} parameter with which the {@link #createInstanceRecursively(I_M_HU_PI_Version, I_M_HU_Item)} method was called with.<br>
@@ -73,11 +73,7 @@ public interface IHUBuilder
 
 	Date getDate();
 
-	void setDate(Date date);
-
 	void setStorageFactory(IHUStorageFactory storageFactory);
-
-	void setListener(IHUIteratorListener listener);
 
 	I_M_HU_Item getM_HU_Item_Parent();
 
@@ -98,9 +94,9 @@ public interface IHUBuilder
 
 	I_C_BPartner getC_BPartner();
 
-	void setC_BPartner(I_C_BPartner bpartner);
+	IHUBuilder setC_BPartner(I_C_BPartner bpartner);
 
-	void setC_BPartner_Location_ID(int bpartnerLocationId);
+	IHUBuilder setC_BPartner_Location_ID(int bpartnerLocationId);
 
 	/**
 	 * Sets M_Locator to be set on newly create HU.
@@ -109,7 +105,7 @@ public interface IHUBuilder
 	 *
 	 * @param locator
 	 */
-	void setM_Locator(I_M_Locator locator);
+	IHUBuilder setM_Locator(I_M_Locator locator);
 
 	I_M_Locator getM_Locator();
 
@@ -133,7 +129,7 @@ public interface IHUBuilder
 	 *
 	 * @param huPlanningReceiptOwnerPM
 	 */
-	void setHUPlanningReceiptOwnerPM(boolean huPlanningReceiptOwnerPM);
+	IHUBuilder setHUPlanningReceiptOwnerPM(boolean huPlanningReceiptOwnerPM);
 
 	/**
 	 * @return true if the HU's owner is "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}

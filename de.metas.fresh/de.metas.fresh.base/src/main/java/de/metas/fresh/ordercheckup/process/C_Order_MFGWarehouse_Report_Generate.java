@@ -17,15 +17,14 @@ import org.compiere.model.I_C_Order;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.slf4j.Logger;
 
@@ -67,6 +66,10 @@ public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+		if (order == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
+		}
 
 		// Make sure this feature is enabled (sysconfig)
 		if (!sysConfigBL.getBooleanValue(SYSCONFIG_EnableProcessGear, false, order.getAD_Client_ID(), order.getAD_Org_ID()))

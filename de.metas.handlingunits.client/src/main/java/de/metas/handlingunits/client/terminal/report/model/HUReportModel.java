@@ -16,11 +16,11 @@ package de.metas.handlingunits.client.terminal.report.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,25 +29,17 @@ import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.model.I_AD_Process;
-import org.compiere.report.IJasperService;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.IDisposable;
@@ -62,8 +54,8 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
+import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessInfo;
 
 /**
  * Model responsible for generating HU labels and reports
@@ -143,7 +135,7 @@ public class HUReportModel implements IDisposable
 		}
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		for (final I_M_HU hu : selectedHUs)
 		{
 			final String selectedHUUnitType = handlingUnitsBL.getEffectivePIVersion(hu).getHU_UnitType();
@@ -213,7 +205,7 @@ public class HUReportModel implements IDisposable
 			final HUADProcessKey processKey = new HUADProcessKey(getTerminalContext(), process);
 			availableProcessKeys.add(processKey);
 		}
-		
+
 		Collections.sort(availableProcessKeys, HUADProcessKey.COMPARATOR_ByName);
 		reportKeyLayout.setKeys(availableProcessKeys);
 	}
@@ -339,7 +331,7 @@ public class HUReportModel implements IDisposable
 		return husToProcess;
 	}
 
-	public final void setHUsToProcess(final List<I_M_HU> husToProcess)
+	private final void setHUsToProcess(final List<I_M_HU> husToProcess)
 	{
 		this.husToProcess = husToProcess;
 	}
@@ -369,62 +361,11 @@ public class HUReportModel implements IDisposable
 		executeReport0(process, printCopies);
 	}
 
-	/**
-	 * AD_SysConfig for "BarcodeServlet".
-	 */
-	private static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
-	private static final String PARA_BarcodeURL = "barcodeURL";
-
 	private final void executeReport0(final I_AD_Process process, final BigDecimal printCopies)
 	{
-		//
-		// Collect HU's C_BPartner_IDs and M_HU_IDs
-		final Set<Integer> huBPartnerIds = new HashSet<>();
-		final List<Integer> huIds = new ArrayList<>();
-		for (final I_M_HU hu : getHUsToProcess())
-		{
-			final int huId = hu.getM_HU_ID();
-			huIds.add(huId);
-
-			// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
-			final int bpartnerId = hu.getC_BPartner_ID();
-			if (bpartnerId > 0)
-			{
-				huBPartnerIds.add(bpartnerId);
-			}
-		}
-
-		//
-		// Use BPartner's Language as reporting language if our HUs have an unique BPartner
-		final Language reportLanguage;
-		if (huBPartnerIds.size() == 1)
-		{
-			final int bpartnerId = huBPartnerIds.iterator().next();
-			reportLanguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), bpartnerId);
-		}
-		else
-		{
-			reportLanguage = null; // N/A
-		}
-
-		final Properties ctx = getCtx();
-		final String barcodeServlet = Services.get(ISysConfigBL.class).getValue(HUReportModel.SYSCONFIG_BarcodeServlet,
-				null,  // defaultValue,
-				Env.getAD_Client_ID(ctx),
-				Env.getAD_Org_ID(ctx));
-
-		ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_Process(process)
-				.setWindowNo(getTerminalContext().getWindowNo())
-				.setTableName(I_M_HU.Table_Name)
-				.setReportLanguage(reportLanguage)
-				.addParameter(HUReportModel.PARA_BarcodeURL, barcodeServlet)
-				.addParameter(IJasperService.PARAM_PrintCopies, printCopies)
-				//
-				// Execute report in a new transaction
-				.buildAndPrepareExecution()
-				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
-				.executeSync();
+		HUReportExecutor.get(getCtx())
+				.withWindowNo(getTerminalContext().getWindowNo())
+				.withNumberOfCopies(printCopies.intValueExact())
+				.executeHUReportAfterCommit(process, getHUsToProcess());
 	}
 }

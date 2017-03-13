@@ -13,18 +13,24 @@ package de.metas.printing.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.dao.ISqlQueryFilter;
 
+/**
+ * Used in {@link IPrintingQueueBL#createPrintingQueueSources(java.util.Properties, IPrintingQueueQuery)} to specify which printing queue items shall be returned by the source.<br>
+ * Use {@link IPrintingQueueBL#createPrintingQueueQuery()} to create an instance.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IPrintingQueueQuery
 {
 	IPrintingQueueQuery copy();
@@ -34,7 +40,8 @@ public interface IPrintingQueueQuery
 	/**
 	 * Filter by if item was printed or not
 	 * 
-	 * @param printed<ul>
+	 * @param printed
+	 *            <ul>
 	 *            <li>if true, only queue items which were already printed are selected
 	 *            <li>if false, only queue items which were not printed are selected
 	 *            <li>if null, no filtering will be applied

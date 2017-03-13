@@ -122,15 +122,15 @@ public class ReceiptScheduleCUKey extends CUKey
 		// Allocation Destination: HU producer which will create 1 VHU
 		final ITerminalContext terminalContext = getTerminalContext();
 		final Properties ctx = terminalContext.getCtx();
-		final HUProducerDestination huProducer = new HUProducerDestination(handlingUnitsDAO.retrieveVirtualPI(ctx));
+		final HUProducerDestination huProducer = HUProducerDestination.of(handlingUnitsDAO.retrieveVirtualPI(ctx));
 		huProducer.setMaxHUsToCreate(1); // we want one VHU
 
 		//
 		// Transfer Qty
-		final HULoader loader = new HULoader(allocationSource, huProducer);
-		loader.setAllowPartialUnloads(false);
-		loader.setAllowPartialLoads(false);
-		loader.load(allocationRequest);
+		HULoader.of(allocationSource, huProducer)
+				.setAllowPartialUnloads(false)
+				.setAllowPartialLoads(false)
+				.load(allocationRequest);
 
 		//
 		// Get created VHU and return it

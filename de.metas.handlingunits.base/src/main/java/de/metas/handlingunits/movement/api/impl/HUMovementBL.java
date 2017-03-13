@@ -13,15 +13,14 @@ package de.metas.handlingunits.movement.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -81,7 +80,12 @@ public class HUMovementBL implements IHUMovementBL
 		final IContextAware contextAwareMovement = InterfaceWrapperHelper.getContextAware(movementLine);
 		final I_M_Product product = movementLine.getM_Product();
 
-		final I_C_Activity productActivity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextAwareMovement, movementLine.getAD_Org(), product);
+		final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+
+		final I_C_Activity productActivity = productAcctDAO // have multiple lines to easier locate problems in the stackstrace
+				.retrieveActivityForAcct(contextAwareMovement,
+						movementLine.getAD_Org(),
+						product);
 
 		final int productActivityID = productActivity == null ? -1 : productActivity.getC_Activity_ID();
 
@@ -147,7 +151,7 @@ public class HUMovementBL implements IHUMovementBL
 				-1, // defaultValue,
 				Env.getAD_Client_ID(ctx), // AD_Client_ID
 				Env.getAD_Org_ID(ctx) // AD_Org_ID
-				);
+		);
 		if (directMoveWarehouseId <= 0)
 		{
 			_directMoveWarehouse = null;

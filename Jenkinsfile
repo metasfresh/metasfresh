@@ -240,9 +240,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_VERSION'),
 		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
-		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
-Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
-			name: 'MF_SKIP_DEPLOYMENT'),
 		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
 			name: 'MF_SKIP_TO_DIST'),	
 		string(defaultValue: '', 
@@ -481,18 +478,22 @@ stage('Invoke downstream jobs')
 	
 	echo "Invoking downstream job 'metasfresh-dist' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
-	final String jobName = getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH);
-	
-	final buildResult = build job: jobName, 
-		parameters: [
+	final List distJobParameters = [
 			string(name: 'MF_UPSTREAM_BUILDNO', value: MF_BUILD_ID), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 			string(name: 'MF_METASFRESH_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']),
 			string(name: 'MF_METASFRESH_WEBUI_API_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui']),
 			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])
-		], wait: false
-	;
+		];
+	
+	build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
+		parameters: distJobParameters, 
+		wait: false;
+		
+	build job: getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
+		parameters: distJobParameters, 
+		wait: false;
 }
 } // timestamps
 

@@ -340,7 +340,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		if (documentLine == null)
 		{
 			// If there is no document line, just create a simple Source/Destination that wraps our HU.
-			return new HUListAllocationSourceDestination(hu);
+			return HUListAllocationSourceDestination.of(hu);
 		}
 
 		return documentLine.createAllocationSource(hu);

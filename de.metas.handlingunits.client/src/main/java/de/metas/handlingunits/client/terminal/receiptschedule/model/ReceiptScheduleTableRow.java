@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -45,7 +44,6 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
@@ -224,14 +222,7 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	 */
 	private BigDecimal getQtyOrderedTUOrNull()
 	{
-		final I_C_OrderLine ol = TableRecordCacheLocal.getReferencedValue(rs, I_C_OrderLine.class);
-		if (ol == null)
-		{
-			return null;
-		}
-		
-		final BigDecimal qtyTU = ol.getQtyEnteredTU();
-		return qtyTU;
+		return huReceiptScheduleBL.getQtyOrderedTUOrNull(rs);
 	}
 
 	@Override

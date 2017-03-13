@@ -108,7 +108,7 @@ import de.metas.logging.LogManager;
 
 		//
 		// Allocation Source: our HUs
-		final HUListAllocationSourceDestination husSource = new HUListAllocationSourceDestination(hus);
+		final HUListAllocationSourceDestination husSource = HUListAllocationSourceDestination.of(hus);
 		// Ask to create snapshots of HUs because in case we want to revert the Cost Collector, to be able to recover the HUs (08731).
 		husSource.setCreateHUSnapshots(true);
 		husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
@@ -127,7 +127,7 @@ import de.metas.logging.LogManager;
 
 		//
 		// Create and configure Loader
-		final HULoader loader = new HULoader(husSource, orderBOMLinesDestination);
+		final HULoader loader = HULoader.of(husSource, orderBOMLinesDestination);
 		loader.setAllowPartialLoads(true);
 
 		//

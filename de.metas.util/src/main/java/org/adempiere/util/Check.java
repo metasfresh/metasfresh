@@ -119,7 +119,7 @@ public final class Check
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
-		Loggables.get().addLog(msg + "; Exception: " + ex);
+		Loggables.get().addLog("{}; Exception: {}", msg, ex);
 
 		if (throwException || logger == null)
 		{

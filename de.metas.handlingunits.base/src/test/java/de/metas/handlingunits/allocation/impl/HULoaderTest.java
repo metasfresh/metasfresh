@@ -95,7 +95,7 @@ public class HULoaderTest extends AbstractHUTest
 
 		final IMutableHUContext huContext = helper.getHUContext();
 
-		final HULoader loader = new HULoader(mtrxSource, mtrxReversalDestination);
+		final HULoader loader = HULoader.of(mtrxSource, mtrxReversalDestination);
 
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
@@ -139,7 +139,7 @@ public class HULoaderTest extends AbstractHUTest
 		final Object referenceModel = helper.createDummyReferenceModel();
 		final MockedAllocationSourceDestination source = new MockedAllocationSourceDestination();
 		final MockedAllocationSourceDestination destination = new MockedAllocationSourceDestination();
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 
 		//
 		// Config
@@ -180,7 +180,7 @@ public class HULoaderTest extends AbstractHUTest
 		final Object referenceModel = helper.createDummyReferenceModel();
 		final MockedAllocationSourceDestination source = new MockedAllocationSourceDestination();
 		final MockedAllocationSourceDestination destination = new MockedAllocationSourceDestination();
-		final HULoader loader = new HULoader(source, destination);
+		final HULoader loader = HULoader.of(source, destination);
 
 		//
 		// Config

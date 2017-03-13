@@ -262,11 +262,19 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 		if (I_C_Order.Table_Name.equals(context.getTableName()))
 		{
 			final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+			if (order == null)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
+			}
 			return ProcessPreconditionsResolution.acceptIf(!order.isSOTrx());
 		}
 		else if (I_C_OrderLine.Table_Name.equals(context.getTableName()))
 		{
 			final I_C_OrderLine orderLine = context.getSelectedModel(I_C_OrderLine.class);
+			if (orderLine == null)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no orderLine");
+			}
 			return ProcessPreconditionsResolution.acceptIf(!orderLine.getC_Order().isSOTrx());
 		}
 

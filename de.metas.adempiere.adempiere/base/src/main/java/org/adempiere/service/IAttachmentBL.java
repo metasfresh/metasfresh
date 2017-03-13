@@ -23,9 +23,13 @@ package org.adempiere.service;
  */
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
+import javax.activation.DataSource;
+
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.MAttachmentEntry;
 
@@ -34,7 +38,7 @@ public interface IAttachmentBL extends ISingletonService
 	/**
 	 * Gets attachment of given model.
 	 * 
-	 * @param model
+	 * @param model model or {@link ITableRecordReference}
 	 * @return attachment; never return null
 	 */
 	I_AD_Attachment getAttachment(Object model);
@@ -56,10 +60,12 @@ public interface IAttachmentBL extends ISingletonService
 	 */
 	void addEntry(I_AD_Attachment attachment, String name, byte[] data);
 
+	void addEntries(I_AD_Attachment attachment, Collection<DataSource> dataSources);
+
 	/**
 	 * Method to attach file to object model.
 	 * 
-	 * @param model
+	 * @param model model or {@link ITableRecordReference}
 	 * @param file
 	 * @return the attachment
 	 */
@@ -68,7 +74,7 @@ public interface IAttachmentBL extends ISingletonService
 	/**
 	 * Method to attach file (described by name and data) to object model.
 	 * 
-	 * @param model
+	 * @param model model or {@link ITableRecordReference}
 	 * @param name filename
 	 * @param data file content
 	 * @return the attachment
@@ -85,9 +91,22 @@ public interface IAttachmentBL extends ISingletonService
 	 */
 	byte[] getFirstEntryAsBytesOrNull(I_AD_Attachment attachment);
 
+	/**
+	 * @param model model or {@link ITableRecordReference}
+	 * @return entries
+	 */
 	List<MAttachmentEntry> getEntiresForModel(Object model);
-	
+
+	/**
+	 * @param model model or {@link ITableRecordReference}
+	 * @param id entry ID
+	 * @return entry or null
+	 */
 	MAttachmentEntry getEntryForModelById(final Object model, final int id);
-	
+
+	/**
+	 * @param model model or {@link ITableRecordReference}
+	 * @param id entry ID
+	 */
 	void deleteEntryForModel(Object model, int id);
 }

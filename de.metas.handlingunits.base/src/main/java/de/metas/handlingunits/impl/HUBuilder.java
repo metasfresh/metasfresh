@@ -62,7 +62,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 
 /**
- * Important class to build new HUs.
+ * Important class to build new HUs. Use {@link IHandlingUnitsDAO#createHUBuilder(IHUContext)} to get an isntance.
+ * <p>
  * More or less employed and driven by the {@link IAllocationDestination}s and also {@link IAllocationStrategy}s, whenever the need to create a new {@link I_M_HU}.
  * 
  * This builder also creates {@link I_M_HU_Item} for the new {@link I_M_HU} it creates (see {@link HUNodeIncludedItemBuilder}), but out of itself it doesn't create any child HUs.
@@ -102,9 +103,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setC_BPartner(final I_C_BPartner bpartner)
+	public final IHUBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		_bpartner = bpartner;
+		return this;
 	}
 
 	@Override
@@ -114,9 +116,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public void setC_BPartner_Location_ID(final int bpartnerLocationId)
+	public IHUBuilder setC_BPartner_Location_ID(final int bpartnerLocationId)
 	{
 		_bpartnerLocationId = bpartnerLocationId;
+		return this;
 	}
 
 	public int getC_BPartner_Location_ID()
@@ -149,9 +152,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setM_Locator(final I_M_Locator locator)
+	public final IHUBuilder setM_Locator(final I_M_Locator locator)
 	{
 		_locator = locator;
+		return this;
 	}
 
 	@Override
@@ -202,9 +206,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public void setHUPlanningReceiptOwnerPM(final boolean huPlanningReceiptOwnerPM)
+	public IHUBuilder setHUPlanningReceiptOwnerPM(final boolean huPlanningReceiptOwnerPM)
 	{
 		_huPlanningReceiptOwnerPM = huPlanningReceiptOwnerPM;
+		return this;
 	}
 
 	@Override
@@ -287,15 +292,15 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		final IAttributeStorageFactory attributesStorageFactory = huContext.getHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributesStorageFactory.getAttributeStorage(hu);
 		attributeStorage.generateInitialAttributes(getInitialAttributeValueDefaults());
-		
+
 		setStatus(HUIteratorStatus.Running);
-		
+
 		//
 		// Call HU Builder to create items and other included things (if any).
 		// this is where we actually create the HU items
 		final AbstractNodeIterator<I_M_HU> huBuilder = getNodeIterator(I_M_HU.class);
 		huBuilder.iterate(hu);
-		
+
 		// Collect the HU (only if physical) in order to be taken from the gebindelager into the current lager
 		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
 		{
@@ -541,7 +546,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 				// Notify Storage DAO that a new item was just created
 				huStorageDAO.initHUItemStorages(item);
-				
+
 				if (X_M_HU_Item.ITEMTYPE_Material.equals(handlingUnitsBL.getItemType(item)))
 				{
 					hasMaterialItem = true;

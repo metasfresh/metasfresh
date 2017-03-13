@@ -35,7 +35,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -43,6 +42,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
@@ -248,13 +248,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
 		{
 			// 'hu' is a TU; count it
-			
+
 			final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
-			
+
 			final int countTUsAbs = aggregateHU
 					? hu.getM_HU_Item_Parent().getQty().intValueExact() // gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
 					: 1; // 'hu' represents one TU
-			
+
 			if (remove)
 			{
 				countTUs -= countTUsAbs;
@@ -501,30 +501,29 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			return;
 		}
-
+//handlingUnitsBL.isAggregateHU(hu);
 		final int huId = hu.getM_HU_ID();
 		if (huId <= 0)
 		{
 			return;
 		}
 
-		final HUIterator huIterator = new HUIterator();
-		huIterator.setCtx(InterfaceWrapperHelper.getCtx(hu));
-		huIterator.setEnableStorageIteration(false);
-		huIterator.setListener(new HUIteratorListenerAdapter()
-		{
-			@Override
-			public Result afterHU(final I_M_HU hu)
-			{
-				final String huUnitTypeOverride = null; // use the actual HU's UnitType
-				addOrRemoveHU(remove, hu, huUnitTypeOverride, source);
+		new HUIterator()
+				.setEnableStorageIteration(false)
+				.setCtx(InterfaceWrapperHelper.getCtx(hu))
+				.setListener(new HUIteratorListenerAdapter()
+				{
+					@Override
+					public Result afterHU(final I_M_HU hu)
+					{
+						final String huUnitTypeOverride = null; // use the actual HU's UnitType
+						addOrRemoveHU(remove, hu, huUnitTypeOverride, source);
 
-				return Result.CONTINUE;
-			}
+						return Result.CONTINUE;
+					}
 
-		});
-
-		huIterator.iterate(hu);
+				})
+				.iterate(hu);
 	}
 
 	/**

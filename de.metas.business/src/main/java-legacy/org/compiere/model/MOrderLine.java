@@ -33,7 +33,6 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
@@ -89,7 +88,7 @@ public class MOrderLine extends X_C_OrderLine
 	public static BigDecimal getNotReserved(Properties ctx, int M_Warehouse_ID,
 			int M_Product_ID, int M_AttributeSetInstance_ID, int excludeC_OrderLine_ID)
 	{
-		BigDecimal retValue = Env.ZERO;
+		BigDecimal retValue = BigDecimal.ZERO;
 		String sql = "SELECT SUM(ol.QtyOrdered-ol.QtyDelivered-ol.QtyReserved) "
 				+ "FROM C_OrderLine ol"
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
@@ -165,22 +164,22 @@ public class MOrderLine extends X_C_OrderLine
 			// setC_Tax_ID (0);
 			// setC_UOM_ID (0);
 			//
-			setFreightAmt(Env.ZERO);
-			setLineNetAmt(Env.ZERO);
+			setFreightAmt(BigDecimal.ZERO);
+			setLineNetAmt(BigDecimal.ZERO);
 			//
-			setPriceEntered(Env.ZERO);
-			setPriceActual(Env.ZERO);
-			setPriceLimit(Env.ZERO);
-			setPriceList(Env.ZERO);
+			setPriceEntered(BigDecimal.ZERO);
+			setPriceActual(BigDecimal.ZERO);
+			setPriceLimit(BigDecimal.ZERO);
+			setPriceList(BigDecimal.ZERO);
 			//
 			setM_AttributeSetInstance_ID(0);
 			//
-			setQtyEntered(Env.ZERO);
-			setQtyOrdered(Env.ZERO);	// 1
-			setQtyDelivered(Env.ZERO);
-			setQtyInvoiced(Env.ZERO);
+			setQtyEntered(BigDecimal.ZERO);
+			setQtyOrdered(BigDecimal.ZERO);	// 1
+			setQtyDelivered(BigDecimal.ZERO);
+			setQtyInvoiced(BigDecimal.ZERO);
 			// task 09358: get rid of this; instead, update qtyReserved at one central place
-			// setQtyReserved(Env.ZERO);
+			// setQtyReserved(BigDecimal.ZERO);
 			//
 			setIsDescription(false);	// N
 			setProcessed(false);
@@ -318,12 +317,14 @@ public class MOrderLine extends X_C_OrderLine
 	}	// setPriceActual
 
 	/**
-	 * Set Price for Product and PriceList. Use only if newly created. Uses standard price list of not set by order constructor
+	 * Set Price for Product and PriceList. Use only if newly created.
 	 */
 	public void setPrice()
 	{
 		if (getM_Product_ID() <= 0)
+		{
 			return;
+		}
 		if (m_M_PriceList_ID <= 0)
 		{
 			throw new AdempiereException("@NotFound@ @M_Pricelist_ID@ @C_BPartner_ID@ " + getC_BPartner().getName());
@@ -336,10 +337,12 @@ public class MOrderLine extends X_C_OrderLine
 	 *
 	 * @param M_PriceList_ID price list
 	 */
-	public void setPrice(int M_PriceList_ID)
+	public void setPrice(int INGORED)
 	{
 		if (getM_Product_ID() <= 0)
+		{
 			return;
+		}
 		//
 		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class);
 		Services.get(IOrderLineBL.class).updatePrices(ol);
@@ -433,7 +436,7 @@ public class MOrderLine extends X_C_OrderLine
 		// Line Net Amt shall be zero if the line is not active
 		if (!isActive())
 		{
-			bd = Env.ZERO;
+			bd = BigDecimal.ZERO;
 		}
 		// metas: tsa: end: 01459
 
@@ -445,7 +448,8 @@ public class MOrderLine extends X_C_OrderLine
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
 		if (isTaxIncluded && !documentLevel)
 		{
-			BigDecimal taxStdAmt = Env.ZERO, taxThisAmt = Env.ZERO;
+			BigDecimal taxStdAmt = BigDecimal.ZERO;
+			BigDecimal taxThisAmt = BigDecimal.ZERO;
 
 			MTax orderTax = getTax();
 			MTax stdTax = null;
@@ -837,7 +841,7 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		BigDecimal list = getPriceList();
 		// No List Price
-		if (Env.ZERO.compareTo(list) == 0)
+		if (BigDecimal.ZERO.compareTo(list) == 0)
 			return;
 		// final int precision = getPrecision();
 		final int precision = 1; // metas
@@ -937,8 +941,9 @@ public class MOrderLine extends X_C_OrderLine
 		}
 		// metas: end
 		if (m_M_PriceList_ID <= 0)
+		{
 			setHeaderInfo(getParent());
-
+		}
 		// R/O Check - Product/Warehouse Change
 		if (!newRecord
 				&& (is_ValueChanged("M_Product_ID") || is_ValueChanged("M_Warehouse_ID")))
@@ -981,7 +986,7 @@ public class MOrderLine extends X_C_OrderLine
 		// UOM
 		if (getC_UOM_ID() == 0
 				&& (getM_Product_ID() != 0
-						|| getPriceEntered().compareTo(Env.ZERO) != 0
+						|| getPriceEntered().compareTo(BigDecimal.ZERO) != 0
 						|| getC_Charge_ID() != 0))
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
@@ -1022,7 +1027,7 @@ public class MOrderLine extends X_C_OrderLine
 		// MStorage[] storages = MStorage.getWarehouse(getCtx(),
 		// Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this).getM_Warehouse_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(),
 		// M_AttributeSet_ID, false, null, true, get_TrxName());
-		// BigDecimal qty = Env.ZERO;
+		// BigDecimal qty = BigDecimal.ZERO;
 		// for (int i = 0; i < storages.length; i++)
 		// {
 		// if (storages[i].getM_AttributeSetInstance_ID() == getM_AttributeSetInstance_ID())
@@ -1040,8 +1045,8 @@ public class MOrderLine extends X_C_OrderLine
 		// } // SO instance
 
 		// FreightAmt Not used
-		if (Env.ZERO.compareTo(getFreightAmt()) != 0)
-			setFreightAmt(Env.ZERO);
+		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
+			setFreightAmt(BigDecimal.ZERO);
 
 		// Set Tax
 		// metas: Steuer muss immer ermittelt werden, da durch eine Anschriftenaenderung im Kopf auch Steueraenderungen in Positionen auftreten.
@@ -1086,22 +1091,22 @@ public class MOrderLine extends X_C_OrderLine
 	protected boolean beforeDelete()
 	{
 		// R/O Check - Something delivered. etc.
-		if (Env.ZERO.compareTo(getQtyDelivered()) != 0)
+		if (BigDecimal.ZERO.compareTo(getQtyDelivered()) != 0)
 		{
 			throw new AdempiereException("@DeleteError@ @QtyDelivered@=" + getQtyDelivered());
 		}
-		if (Env.ZERO.compareTo(getQtyInvoiced()) != 0)
+		if (BigDecimal.ZERO.compareTo(getQtyInvoiced()) != 0)
 		{
 			throw new AdempiereException("@DeleteError@ @QtyInvoiced@=" + getQtyInvoiced());
 		}
-		if (Env.ZERO.compareTo(getQtyReserved()) != 0)
+		if (BigDecimal.ZERO.compareTo(getQtyReserved()) != 0)
 		{
 			// metas: attempt to unreserve stock
 			BigDecimal oldVal = getQtyOrdered();
 			if (oldVal.signum() != 0)
 			{
-				setQty(Env.ZERO);
-				setLineNetAmt(Env.ZERO);
+				setQty(BigDecimal.ZERO);
+				setLineNetAmt(BigDecimal.ZERO);
 				saveEx(get_TrxName());
 			}
 

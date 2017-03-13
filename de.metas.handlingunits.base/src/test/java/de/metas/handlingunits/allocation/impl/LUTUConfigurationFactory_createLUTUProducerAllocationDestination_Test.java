@@ -148,8 +148,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 		//
 		// Execute transfer => HUs will be generated
-		final HULoader loader = new HULoader(allocationSource, allocationDestination);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(allocationSource, allocationDestination)
+				.load(request);
 		Assert.assertTrue("Result shall be completed: " + result, result.isCompleted());
 
 		return allocationDestination.getCreatedHUs();

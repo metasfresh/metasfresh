@@ -38,6 +38,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 
 /**
  * Contains masterdata and common stuff to be used by different tests.
+ * This class is convenient whenever you want to test with (aggregate) HUs that were created by the {@link LUTUProducerDestination}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -47,29 +48,43 @@ public class LUTUProducerDestinationTestSupport
 	public HUTestHelper helper;
 
 	/**
-	 * The PI for the IFCO TU
+	 * The PI for the IFCO TU. By default one IFCO TU can hold 40kg of {@link HUTestHelper#pTomato} or 7pce of {@link HUTestHelper#pSalad}.
 	 */
 	public I_M_HU_PI piTU_IFCO;
-	
+
 	/**
 	 * The PI-item with itemtype "Material" that links from the IFCO to the actual VHU which contains the material.
 	 */
 	public I_M_HU_PI_Item piTU_Item_IFCO;
 
+	public final I_M_HU_PI_Item_Product piTU_Item_Product_IFCO_40KgTomatoes;
+
+	/**
+	 * The PI for the "Bag" TU. By default one bag TU can hold 8kg of {@link HUTestHelper#pTomato} or 5pce of {@link HUTestHelper#pSalad}.
+	 * Also see {@link #piTU_Item_Product_Bag_8KgTomatoes}.
+	 */
 	public I_M_HU_PI piTU_Bag;
+
 	public I_M_HU_PI_Item piTU_Item_Bag;
 
 	public I_M_HU_PI piLU;
-	
+
 	/**
-	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the IFCO's (sub-PI)
+	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_IFCO} sub-PI.<br>
+	 * One LU can hold 5 IFCOs
 	 */
 	public I_M_HU_PI_Item piLU_Item_IFCO;
+
+	/**
+	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the {@link #piTU_Bag} sub-PI. One LU can hold two bags.
+	 */
 	public I_M_HU_PI_Item piLU_Item_Bag;
+
+	public final I_M_HU_PI_Item_Product piTU_Item_Product_Bag_8KgTomatoes;
 
 	public I_M_HU_PI piTruckUnlimitedCapacity;
 	public I_M_HU_PI_Item piTruck_UnlimitedCapacity_Item;
-	
+
 	/**
 	 * Creates a new instance with fresh masterdata. Also causes the {@link HUTestHelper} to be initialized.
 	 * This constructor should be called from tests' {@link Before} methods.
@@ -90,7 +105,7 @@ public class LUTUProducerDestinationTestSupport
 			piTU_IFCO = helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_IFCO = helper.createHU_PI_Item_Material(piTU_IFCO);
-			helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("40"), helper.uomKg);
+			piTU_Item_Product_IFCO_40KgTomatoes = helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("40"), helper.uomKg);
 			helper.assignProduct(piTU_Item_IFCO, helper.pSalad, new BigDecimal("7"), helper.uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_IFCO, helper.pmIFCO);
@@ -101,7 +116,7 @@ public class LUTUProducerDestinationTestSupport
 			piTU_Bag = helper.createHUDefinition("TU_Bag", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_Bag = helper.createHU_PI_Item_Material(piTU_Bag);
-			helper.assignProduct(piTU_Item_Bag, helper.pTomato, new BigDecimal("8"), helper.uomKg);
+			piTU_Item_Product_Bag_8KgTomatoes = helper.assignProduct(piTU_Item_Bag, helper.pTomato, new BigDecimal("8"), helper.uomKg);
 			helper.assignProduct(piTU_Item_Bag, helper.pSalad, new BigDecimal("5"), helper.uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_Bag, helper.pmBag);
@@ -114,17 +129,16 @@ public class LUTUProducerDestinationTestSupport
 
 			helper.createHU_PI_Item_PackingMaterial(piLU, helper.pmPalet);
 		}
-		
-		
+
 		{
 			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product);
-			
+
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
 			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomato, new BigDecimal("6"), helper.uomEach);
 			piItemProduct.setIsInfiniteCapacity(true);
 			InterfaceWrapperHelper.save(piItemProduct);
 
-			//helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
+			// helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
 
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(helper.attr_CountryMadeIn)
 					.setM_HU_PI(piTruckUnlimitedCapacity));

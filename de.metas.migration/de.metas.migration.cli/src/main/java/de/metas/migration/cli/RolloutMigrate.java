@@ -44,6 +44,7 @@ import de.metas.migration.IDatabase;
 import de.metas.migration.IScript;
 import de.metas.migration.IScriptsRegistry;
 import de.metas.migration.applier.IScriptsApplierListener;
+import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
 import de.metas.migration.applier.impl.NullScriptsApplierListener;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.impl.AbstractScriptsApplierTemplate;
@@ -84,6 +85,7 @@ public final class RolloutMigrate
 	private static final String OPTION_IgnoreErrors = "i";
 	private static final String OPTION_JustMarkScriptAsExecuted = "r";
 	private static final String OPTION_CreateNewDB = "n";
+	private static final String OPTION_Interactive = "a"; // "a" (from ask)
 
 	private final Options options;
 	private Properties settings;
@@ -94,6 +96,7 @@ public final class RolloutMigrate
 	private String scriptFile;
 	private String newDBName;
 	private String templateDBName;
+	private IScriptsApplierListener scriptsApplierListener = NullScriptsApplierListener.instance;
 
 	public RolloutMigrate()
 	{
@@ -158,6 +161,13 @@ public final class RolloutMigrate
 		{
 			final Option option = new Option(RolloutMigrate.OPTION_CreateNewDB, "Create a new Database from a template, and do the migration on that new DB. Arguments <templateDBName> <newDBName>");
 			option.setArgs(2);
+			option.setRequired(false);
+			options.addOption(option);
+		}
+		//
+		{
+			final Option option = new Option(OPTION_Interactive, "In case of script errors, ask what to do");
+			option.setArgs(0);
 			option.setRequired(false);
 			options.addOption(option);
 		}
@@ -227,6 +237,13 @@ public final class RolloutMigrate
 			setTemplateDBName(optionValues[0]);
 			setNewDBName(optionValues[1]);
 		}
+		
+		if (cmd.hasOption(OPTION_Interactive))
+		{
+			log("Interactive mode: true");
+			scriptsApplierListener = ConsoleScriptsApplierListener.instance;
+		}
+		
 		return true;
 	}
 
@@ -446,7 +463,7 @@ public final class RolloutMigrate
 				@Override
 				protected IScriptsApplierListener createScriptsApplierListener()
 				{
-					return NullScriptsApplierListener.instance;
+					return scriptsApplierListener;
 				}
 
 				@Override
@@ -525,7 +542,7 @@ public final class RolloutMigrate
 			@Override
 			protected IScriptsApplierListener createScriptsApplierListener()
 			{
-				return NullScriptsApplierListener.instance;
+				return scriptsApplierListener;
 			}
 
 			@Override

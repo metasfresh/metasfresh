@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,6 +36,9 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUContext;
@@ -65,6 +67,18 @@ import de.metas.handlingunits.storage.IProductStorage;
  */
 public class HUListAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {
+	/** @return single HU allocation source/destination */
+	public static HUListAllocationSourceDestination of(final I_M_HU sourceHU)
+	{
+		return new HUListAllocationSourceDestination(sourceHU);
+	}
+
+	/** @return multi-HUs allocation source/destination */
+	public static HUListAllocationSourceDestination of(final Collection<I_M_HU> sourceHUs)
+	{
+		return new HUListAllocationSourceDestination(sourceHUs);
+	}
+
 	// Services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
@@ -80,29 +94,20 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	private boolean createHUSnapshots = false; // by default, don't create
 	private String snapshotId = null;
 
+	/** see {@link #setStoreCUQtyBeforeProcessing(boolean)} */
 	private boolean storeCUQtyBeforeProcessing = true;
 
-	public HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
+	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
 	{
-		// NOTE: we don't need contextProvider because we are creating nothing
-		// when needed HUContext from Request will be used
-		// this.contextProvider = contextProvider;
-
 		this.sourceHUs = new ArrayList<I_M_HU>(sourceHUs);
 		lastIndex = sourceHUs.size() - 1;
 	}
 
-	/**
-	 * Convenient constructor for a single HU
-	 *
-	 * @param contextProvider
-	 * @param sourceHU
-	 */
-	public HUListAllocationSourceDestination(final I_M_HU sourceHU)
+	private HUListAllocationSourceDestination(final I_M_HU sourceHU)
 	{
-		this(Collections.singletonList(sourceHU));
-
-		Check.assumeNotNull(sourceHU, "sourceHU not null");
+		this(ImmutableList.of(
+				Preconditions.checkNotNull(
+						sourceHU, "Param 'sourceHU' may not be null")));
 	}
 
 	public boolean isDestroyEmptyHUs()
@@ -175,6 +180,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	{
 		if (storeCUQtyBeforeProcessing)
 		{
+			// store the CU qtys in memory, so at the end of the load we can check if they changed.
 			sourceHUs.forEach(hu -> {
 				storeAggregateItemCuQty(request, hu);
 			});

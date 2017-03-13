@@ -51,6 +51,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
@@ -122,6 +124,9 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			final I_M_Product product,
 			final Date date)
 	{
+		Preconditions.checkNotNull(itemDef, "Param 'itemDef' may not be null");
+		Preconditions.checkNotNull(product, "Param 'product' may not be null");
+		
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		if (partner != null)
 		{

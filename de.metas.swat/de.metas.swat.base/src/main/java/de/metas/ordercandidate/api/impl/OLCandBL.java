@@ -52,6 +52,7 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
@@ -70,7 +71,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReference;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_C_Order;
@@ -80,6 +80,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
@@ -252,13 +253,14 @@ public class OLCandBL implements IOLCandBL
 					logger.warn(StringUtils.formatMessage(msg, candOfGroup, e.getLocalizedMessage(), e), e);
 
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+					final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 					// storing the error-info out of trx, i hope this solves the bug that the info just wasn't there
 					final int userInChargeId = processor.getAD_User_InCharge_ID();
 					final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, ITrx.TRXNAME_None);
 					note.setRecord(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name), candOfGroup.getC_OLCand_ID());
 
-					final MUser user = MUser.get(ctx, userInChargeId);
+					final I_AD_User user = userDAO.retrieveUser(ctx, userInChargeId);
 					note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 
 					note.setTextMsg(e.getLocalizedMessage());
@@ -338,7 +340,9 @@ public class OLCandBL implements IOLCandBL
 				final int userInChargeId = processor.getAD_User_InCharge_ID();
 				final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, trxName);
 
-				final MUser user = MUser.get(ctx, userInChargeId);
+				final IUserDAO userDAO = Services.get(IUserDAO.class);
+				final I_AD_User user = userDAO.retrieveUser(ctx, userInChargeId);
+
 				note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 
 				note.setReference(e.getLocalizedMessage());
@@ -572,13 +576,14 @@ public class OLCandBL implements IOLCandBL
 	{
 		Check.assumeNotNull(olCand, "Param 'olCand' not null");
 
+		final int result;
 		if (olCand.getM_PricingSystem_ID() > 0)
 		{
-			return olCand.getM_PricingSystem_ID();
+			result = olCand.getM_PricingSystem_ID();
 		}
 		else if (processor != null && processor.getM_PricingSystem_ID() > 0)
 		{
-			return processor.getM_PricingSystem_ID();
+			result = processor.getM_PricingSystem_ID();
 		}
 		else
 		{
@@ -589,8 +594,10 @@ public class OLCandBL implements IOLCandBL
 			final boolean soTrx = true;
 
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctx, bpartnerID, soTrx, trxName);
-			return pricingSystemId;
+			result = pricingSystemId;
 		}
+
+		return result;
 	}
 
 	/**
@@ -1069,6 +1076,7 @@ public class OLCandBL implements IOLCandBL
 		}
 		else
 		{
+
 			relType = retrievedRelType;
 			refSource = relType.getAD_Reference_Source();
 			refTableSource = MReference.retrieveRefTable(ctx, refSource.getAD_Reference_ID(), trxName);
@@ -1089,7 +1097,10 @@ public class OLCandBL implements IOLCandBL
 		final String[] keyColumnsSource = tableSource.getKeyColumns();
 		Check.assume(keyColumnsSource.length == 1, "keyColumnsSource=" + keyColumnsSource + " has one element");
 
-		final int keyColumnSourceId = tableSource.getColumn(keyColumnsSource[0]).get_ID();
+		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
+		final I_AD_Column keyColumnSource = tableDAO.retrieveColumnOrNull(tableSource.get_TableName(), keyColumnsSource[0]);
+		final int keyColumnSourceId = keyColumnSource.getAD_Column_ID();
 		refTableSource.setAD_Key(keyColumnSourceId);
 		refTableSource.setAD_Display(keyColumnSourceId);
 
@@ -1104,7 +1115,8 @@ public class OLCandBL implements IOLCandBL
 		final String[] keyColumnsTarget = tableTarget.getKeyColumns();
 		assert keyColumnsTarget.length == 1;
 
-		final int keyColumnTargetId = tableTarget.getColumn(keyColumnsTarget[0]).get_ID();
+		final I_AD_Column keyColumnTarget = tableDAO.retrieveColumnOrNull(tableSource.get_TableName(), keyColumnsSource[0]);
+		final int keyColumnTargetId = keyColumnTarget.getAD_Column_ID();
 		refTableTarget.setAD_Key(keyColumnTargetId);
 		refTableTarget.setAD_Display(keyColumnTargetId);
 
