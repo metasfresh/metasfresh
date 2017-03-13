@@ -163,20 +163,16 @@ public class HUTransferService
 	}
 
 	/**
-	 * Split selected CU to a new CU.
-	 *
-	 * @param cuRow
-	 * @param qtyCU
+	 * Takes a quantity out of a TU <b>or</b> to splits one CU into two.
+	 * 
+	 * @param cuHU the currently selected source CU line
+	 * @param qtyCU the CU-quantity to take out or split
 	 */
 	public List<I_M_HU> cuToNewCU(
 			final I_M_HU cuHU,
-			final I_M_Product cuProduct,
-			final I_C_UOM cuUOM,
 			final BigDecimal qtyCU)
 	{
 		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
-		Preconditions.checkNotNull(cuProduct, "Param 'cuProduct' may not be null");
-		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		if (qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0)
@@ -196,12 +192,14 @@ public class HUTransferService
 
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 
+		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
+		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
 		HUSplitBuilderCoreEngine
 				.of(
 						huContext,
 						cuHU,
 						// forceAllocation = false; no need, because destination has no capacity constraints
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false),
+						huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false),
 						destination)
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -211,11 +209,15 @@ public class HUTransferService
 	}
 
 	/**
-	 * Split selected CU to an existing TU.
-	 *
-	 * @param cuRow
-	 * @param qtyCU quantity to split
-	 * @param tuHU
+	 * Similar to {@link #cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)} , but the destination TU already exists
+	 * <p>
+	 * <b>Important:</b> the user is allowed to exceed the TU capacity which was configured in metasfresh! No new TUs will be created.<br>
+	 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
+	 * <p>
+	 * 
+	 * @param cuHU the source CU to be split or joined
+	 * @param qtyCU the CU-quantity to join or split
+	 * @param tuHU the target TU
 	 */
 	public void cuToExistingTU(
 			final I_M_HU cuHU,
@@ -300,6 +302,17 @@ public class HUTransferService
 		});
 	}
 
+	/**
+	 * Similar to {@link #TU_To_NewLUs}, but the destination LU already exists (selectable as process parameter).<br>
+	 * <b>Important:</b> the user is allowed to exceed the LU TU-capacity which was configured in metasfresh! No new LUs will be created.<br>
+	 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
+	 * <p>
+	 * <b>Also, please note that an aggregate TU is "de-aggregated" before it is added to the LU.</b>
+	 * 
+	 * @param tuHU the source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
+	 * @param qtyTU the number of TUs to join or split one the target LU
+	 * @param luHU the target LU
+	 */
 	public void tuToExistingLU(
 			final I_M_HU tuHU //
 			, final BigDecimal qtyTU //
@@ -349,25 +362,21 @@ public class HUTransferService
 	}
 
 	/**
-	 * Split selected CU to new top level TUs
-	 *
-	 * @param cuRow cu row to split
-	 * @param qtyCU quantity CU to split
-	 * @param tuPIItemProductId to TU
+	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
+	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
+	 * 
+	 * @param cuHU the currently selected source CU line
+	 * @param qtyCU the CU-quantity to join or split
+	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> cuToNewTUs(
 			final I_M_HU cuHU,
-			final I_M_Product cuProduct,
-			final I_C_UOM cuUOM,
 			final BigDecimal qtyCU,
 			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
-
 		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
-		Preconditions.checkNotNull(cuProduct, "Param 'cuProduct' may not be null");
-		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 		Preconditions.checkNotNull(tuPIItemProduct, "Param 'tuPIItemProduct' may not be null");
 
@@ -376,11 +385,13 @@ public class HUTransferService
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 		destination.setNoLU();
 
+		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
+		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
 		HUSplitBuilderCoreEngine
 				.of(huContext,
 						cuHU,
 						// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-						huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false),
+						huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false),
 						destination)
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
@@ -391,12 +402,11 @@ public class HUTransferService
 	}
 
 	/**
-	 * Split a given number of TUs from current TU line to new TUs. This also has the effect of "de-aggregating" the given {@code sourceTuHU}.
+	 * Takes a TU off a LU or splits one TU into two. This also has the effect of "de-aggregating" the given {@code sourceTuHU}.<br>
+	 * The resulting TUs will always have the same PI as the source TU.
 	 * 
-	 *
-	 * @param tuHU the source TU to split from.
-	 * @param qtyTU
-	 * @param tuPIItemProduct
+	 * @param sourceTuHU he source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
+	 * @param qtyTU the number of TUs to take off or split
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> tuToNewTUs(
@@ -451,13 +461,13 @@ public class HUTransferService
 	}
 
 	/**
-	 * Create a new LU-hierarchy and transfer stuff from the given {@code sourceTuHU}. The PI of the new TUs that are created below the new LU is determined from the given {@code sourceTuHU}.
+	 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
+	 * Otherwise, the source is split and distributed over many LUs.
 	 * 
-	 * @param sourceTuHU
-	 * @param qtyTU
-	 * @param luPI
+	 * @param sourceTuHU the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
+	 * @param qtyTU the number of TUs to join or split onto the destination LU(s).
+	 * @param luPIItem the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
 	 * @param isOwnPackingMaterials
-	 * @return
 	 */
 	public List<I_M_HU> tuToNewLUs(
 			final I_M_HU sourceTuHU,
