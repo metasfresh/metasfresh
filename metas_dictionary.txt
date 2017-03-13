@@ -81,3 +81,6 @@ endpoint
 endpoints
 deserialize
 accessor
+instanceof
+pallet
+transactional
