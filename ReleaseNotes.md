@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 5.1 (2017-11)
 
-**upcoming release**
+**this week's release candidate**
 
 ## Features
 * metasfresh-backend
@@ -26,8 +26,6 @@ Here come the actual release notes:
   * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
 
 # metasfresh 5.0 (2017-10)
-
-**this week's release candidate**
 
 ## Features
 * metasfresh-backend
