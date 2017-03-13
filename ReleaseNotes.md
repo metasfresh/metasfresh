@@ -24,6 +24,7 @@ Here come the actual release notes:
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
 
 * metasfresh-webui-api
+  * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
   * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
 
 # metasfresh 5.0 (2017-10)
