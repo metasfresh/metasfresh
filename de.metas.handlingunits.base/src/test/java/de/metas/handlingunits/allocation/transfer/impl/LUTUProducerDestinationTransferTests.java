@@ -830,7 +830,6 @@ public class LUTUProducerDestinationTransferTests
 		// verify the source after the transfer
 		{
 			final Node huPaletXML = HUXmlConverter.toXml(luPalet);
-			System.out.println(HUXmlConverter.toString(huPaletXML));
 
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet)", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='75.000' and @C_UOM_Name='Kg'])", is("1")));
