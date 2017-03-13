@@ -60,9 +60,7 @@ public class DocumentViewAttributesRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
 	@GetMapping("/layout")
@@ -84,11 +82,12 @@ public class DocumentViewAttributesRestController
 	@GetMapping
 	public JSONDocument getData(
 			@PathVariable(PARAM_ViewId) final String viewId //
-			, @PathVariable(PARAM_DocumentId) final int documentId //
+			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
 				.getAttributes()
@@ -98,18 +97,18 @@ public class DocumentViewAttributesRestController
 	@PatchMapping
 	public List<JSONDocument> processChanges(
 			@PathVariable(PARAM_ViewId) final String viewId //
-			, @PathVariable(PARAM_DocumentId) final int documentId //
+			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return Execution.callInNewExecution("processChanges", () -> {
 			documentViewsRepo.getView(viewId)
 					.getById(documentId)
 					.getAttributes()
 					.processChanges(events);
-
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
 		});
 	}
@@ -117,13 +116,14 @@ public class DocumentViewAttributesRestController
 	@GetMapping("/attribute/{attributeName}/typeahead")
 	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable(PARAM_ViewId) final String viewId//
-			, @PathVariable(PARAM_DocumentId) final int documentId //
+			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
 				.getAttributes()
@@ -134,12 +134,13 @@ public class DocumentViewAttributesRestController
 	@GetMapping("/attribute/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable(PARAM_ViewId) final String viewId//
-			, @PathVariable(PARAM_DocumentId) final int documentId //
+			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 			, @PathVariable("attributeName") final String attributeName //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
 				.getAttributes()

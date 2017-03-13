@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,17 +33,18 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @ApiModel("tab")
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutTab implements Serializable
 {
 	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONOptions jsonOpts)
@@ -94,10 +97,13 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
-	
-	@JsonProperty("quickInput")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final JSONQuickInputLayoutDescriptor quickInput;
+
+	@JsonProperty("supportQuickInput")
+	private final boolean supportQuickInput;
+
+	@JsonProperty("queryOnActivate")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final boolean queryOnActivate;
 
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutDetailDescriptor detail //
@@ -115,7 +121,13 @@ public final class JSONDocumentLayoutTab implements Serializable
 		final String adLanguage = jsonOpts.getAD_Language();
 		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabid != null)
 		{
-			caption = "[" + tabid + "] " + detail.getCaption(adLanguage);
+			caption = new StringBuilder()
+					.append("[")
+					.append(tabid)
+					.append(detail.isQueryOnActivate() ? "Q" : "")
+					.append("] ")
+					.append(detail.getCaption(adLanguage))
+					.toString();
 		}
 		else
 		{
@@ -128,8 +140,9 @@ public final class JSONDocumentLayoutTab implements Serializable
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-		
-		this.quickInput = JSONQuickInputLayoutDescriptor.fromNullable(detail.getQuickInput().orElse(null), jsonOpts);
+
+		supportQuickInput = detail.isSupportQuickInput();
+		queryOnActivate = detail.isQueryOnActivate();
 	}
 
 	@JsonCreator
@@ -142,7 +155,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty("quickInput") final JSONQuickInputLayoutDescriptor quickInput //
+			, @JsonProperty("supportQuickInput") final boolean supportQuickInput //
+			, @JsonProperty("queryOnActivate") final boolean queryOnActivate //
 	)
 	{
 		super();
@@ -156,7 +170,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
-		this.quickInput = quickInput;
+		this.supportQuickInput = supportQuickInput;
+		this.queryOnActivate = queryOnActivate;
 	}
 
 	@Override

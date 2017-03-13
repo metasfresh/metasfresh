@@ -2,12 +2,26 @@ package de.metas.ui.web.pattribute;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.logging.LogManager;
+import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -41,8 +55,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /* package */class ASIDocument
 {
+	private static final transient Logger logger = LogManager.getLogger(ASIDocument.class);
+
 	private final ASIDescriptor descriptor;
 	private final Document data;
+
+	// State
+	private final ReentrantReadWriteLock _lock;
+	private boolean completed;
+
 
 	/* package */ ASIDocument(final ASIDescriptor descriptor, final Document data)
 	{
@@ -50,6 +71,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		Check.assumeNotNull(data, "Parameter data is not null");
 		this.descriptor = descriptor;
 		this.data = data;
+		
+		_lock = new ReentrantReadWriteLock();
+		completed = false;
 	}
 
 	/** copy constructor */
@@ -57,6 +81,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	{
 		descriptor = asiDocument.descriptor;
 		data = asiDocument.data.copy(copyMode);
+		
+		_lock = asiDocument._lock; // always share
+		completed = asiDocument.completed;
 	}
 
 	@Override
@@ -64,8 +91,46 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("data", data)
+				.add("completed", completed)
 				.toString();
 	}
+	
+	private final void assertNotCompleted()
+	{
+		if(completed)
+		{
+			throw new IllegalStateException("ASI document was completed");
+		}
+	}
+	
+	public IAutoCloseable lockForReading()
+	{
+		// assume _lock is not null
+		final ReadLock readLock = _lock.readLock();
+		logger.debug("Acquiring read lock for {}: {}", this, readLock);
+		readLock.lock();
+		logger.debug("Acquired read lock for {}: {}", this, readLock);
+
+		return () -> {
+			readLock.unlock();
+			logger.debug("Released read lock for {}: {}", this, readLock);
+		};
+	}
+
+	public IAutoCloseable lockForWriting()
+	{
+		// assume _lock is not null
+		final WriteLock writeLock = _lock.writeLock();
+		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
+		writeLock.lock();
+		logger.debug("Acquired write lock for {}: {}", this, writeLock);
+
+		return () -> {
+			writeLock.unlock();
+			logger.debug("Released write lock for {}: {}", this, writeLock);
+		};
+	}
+
 
 	public ASIDocument copy(final CopyMode copyMode)
 	{
@@ -89,10 +154,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
+		assertNotCompleted();
 		data.processValueChanges(events, reason);
 	}
 
-	public Collection<IDocumentFieldView> getFieldViews()
+	private Collection<IDocumentFieldView> getFieldViews()
 	{
 		return data.getFieldViews();
 	}
@@ -111,4 +177,48 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	{
 		return data.getFieldLookupValues(attributeName);
 	}
+	
+	public boolean isCompleted()
+	{
+		return completed;
+	}
+	
+	public IntegerLookupValue complete()
+	{
+		assertNotCompleted();
+		
+		final I_M_AttributeSetInstance asiRecord = createM_AttributeSetInstance(this);
+		final IntegerLookupValue lookupValue = IntegerLookupValue.of(asiRecord.getM_AttributeSetInstance_ID(), asiRecord.getDescription());
+		completed = true;
+		return lookupValue;
+	}
+	
+	private static final I_M_AttributeSetInstance createM_AttributeSetInstance(final ASIDocument asiDoc)
+	{
+		//
+		// Create M_AttributeSetInstance
+		final int attributeSetId = asiDoc.getM_AttributeSet_ID();
+
+		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.create(Env.getCtx(), I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
+		asiRecord.setM_AttributeSet_ID(attributeSetId);
+		// TODO: set Lot, GuaranteeDate etc
+		InterfaceWrapperHelper.save(asiRecord);
+
+		//
+		// Create M_AttributeInstances
+		asiDoc.getFieldViews()
+				.stream()
+				.forEach(asiField -> asiField
+						.getDescriptor()
+						.getDataBindingNotNull(ASIAttributeFieldBinding.class)
+						.createAndSaveM_AttributeInstance(asiRecord, asiField));
+
+		//
+		// Update the ASI description
+		Services.get(IAttributeSetInstanceBL.class).setDescription(asiRecord);
+		InterfaceWrapperHelper.save(asiRecord);
+
+		return asiRecord;
+	}
+
 }

@@ -9,9 +9,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -58,6 +58,7 @@ public final class DocumentView implements IDocumentView
 	private final Map<String, Object> values;
 
 	private final IDocumentViewAttributesProvider attributesProvider;
+	private final DocumentId attributesKey;
 
 	private final List<IDocumentView> includedDocuments;
 
@@ -70,12 +71,13 @@ public final class DocumentView implements IDocumentView
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
 		processed = builder.isProcessed();
-		
+
 		values = ImmutableMap.copyOf(builder.values);
 
-		attributesProvider = builder.getAttributesProviderOrNull();
-
 		includedDocuments = builder.buildIncludedDocuments();
+
+		attributesProvider = builder.getAttributesProviderOrNull();
+		attributesKey = Util.coalesce(builder.getAttributesKeyOrNull(), documentId);
 	}
 
 	@Override
@@ -86,6 +88,7 @@ public final class DocumentView implements IDocumentView
 				.add("id", documentId)
 				.add("type", type)
 				.add("values", values)
+				.add("attributesKey", attributesKey)
 				.add("attributesProvider", attributesProvider)
 				.add("includedDocuments.count", includedDocuments.size())
 				.add("processed", processed)
@@ -109,13 +112,13 @@ public final class DocumentView implements IDocumentView
 	{
 		return documentId;
 	}
-	
+
 	@Override
 	public IDocumentViewType getType()
 	{
 		return type;
 	}
-	
+
 	@Override
 	public boolean isProcessed()
 	{
@@ -149,7 +152,16 @@ public final class DocumentView implements IDocumentView
 	@Override
 	public IDocumentViewAttributes getAttributes()
 	{
-		final IDocumentViewAttributes attributes = attributesProvider == null ? null : attributesProvider.getAttributes(documentId);
+		if (attributesKey == null)
+		{
+			throw new EntityNotFoundException("Document does not support attributes");
+		}
+		if (attributesProvider == null)
+		{
+			throw new EntityNotFoundException("Document does not support attributes");
+		}
+
+		final IDocumentViewAttributes attributes = attributesProvider.getAttributes(documentId, attributesKey);
 		if (attributes == null)
 		{
 			throw new EntityNotFoundException("Document does not support attributes");
@@ -172,8 +184,11 @@ public final class DocumentView implements IDocumentView
 		private Boolean processed;
 
 		private final Map<String, Object> values = new LinkedHashMap<>();
-		private IDocumentViewAttributesProvider attributesProvider;
+
 		private List<IDocumentView> includedDocuments = null;
+
+		private IDocumentViewAttributesProvider attributesProvider;
+		private DocumentId attributesKey;
 
 		private Builder(final int adWindowId)
 		{
@@ -218,11 +233,18 @@ public final class DocumentView implements IDocumentView
 			}
 
 			final Object idJson = values.get(idFieldName);
-			Preconditions.checkNotNull(idJson, "id");
 
+			if (idJson == null)
+			{
+				throw new IllegalArgumentException("No ID found for " + idFieldName);
+			}
 			if (idJson instanceof Integer)
 			{
 				return DocumentId.of((Integer)idJson);
+			}
+			else if (idJson instanceof String)
+			{
+				return DocumentId.of(idJson.toString());
 			}
 			else
 			{
@@ -241,19 +263,19 @@ public final class DocumentView implements IDocumentView
 			this.type = type;
 			return this;
 		}
-		
+
 		public Builder setProcessed(final boolean processed)
 		{
 			this.processed = processed;
 			return this;
 		}
-		
+
 		private boolean isProcessed()
 		{
-			if(processed == null)
+			if (processed == null)
 			{
 				// NOTE: don't take the "Processed" field if any, because in frontend we will end up with a lot of grayed out completed sales orders, for example.
-				//return DisplayType.toBoolean(values.getOrDefault("Processed", false));
+				// return DisplayType.toBoolean(values.getOrDefault("Processed", false));
 				return false;
 			}
 			else
@@ -281,11 +303,25 @@ public final class DocumentView implements IDocumentView
 			return attributesProvider;
 		}
 
+		private DocumentId getAttributesKeyOrNull()
+		{
+			return attributesKey;
+		}
+
+		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider, @Nullable final DocumentId attributesKey)
+		{
+			this.attributesProvider = attributesProvider;
+			this.attributesKey = attributesKey;
+			return this;
+		}
+		
 		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
+			this.attributesKey = null; // will be auto-detected (i.e. the documentId will be used)
 			return this;
 		}
+
 
 		public Builder addIncludedDocument(final IDocumentView includedDocument)
 		{

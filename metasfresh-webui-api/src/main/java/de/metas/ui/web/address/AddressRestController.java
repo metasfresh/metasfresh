@@ -61,9 +61,7 @@ public class AddressRestController
 
 	private JSONOptions newJsonOpts()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
@@ -147,13 +145,5 @@ public class AddressRestController
 				.complete(docId)
 				.transform(JSONLookupValue::ofLookupValue));
 		
-	}
-	
-	@RequestMapping(value = "/{docId}/complete", method = RequestMethod.GET)
-	@Deprecated
-	public JSONLookupValue complete_DEPRECATED(@PathVariable("docId") final int docId)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return complete(docId);
 	}
 }

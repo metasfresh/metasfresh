@@ -43,6 +43,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.Doc
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import de.metas.ui.web.window.model.IncludedDocumentsCollection;
 
 /*
  * #%L
@@ -57,11 +62,11 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvid
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -91,8 +96,10 @@ public class DocumentEntityDescriptor
 	private final DocumentFieldDescriptor idField;
 
 	private final Map<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
+	private final IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
+	private final boolean highVolume;
 
 	private final DocumentFieldDependencyMap dependencies;
 
@@ -130,7 +137,9 @@ public class DocumentEntityDescriptor
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idField = builder.getIdField();
 		includedEntitiesByDetailId = builder.buildIncludedEntitiesByDetailId();
+		includedDocumentsCollectionFactory = builder.getIncludedDocumentsCollectionFactory();
 		dataBinding = builder.getOrBuildDataBinding();
+		highVolume = builder.isHighVolume();
 		dependencies = builder.buildDependencies();
 
 		//
@@ -274,8 +283,13 @@ public class DocumentEntityDescriptor
 		return getFields()
 				.stream()
 				.filter(field -> field.hasCharacteristic(characteristic))
-				.map(field->field.getFieldName())
+				.map(field -> field.getFieldName())
 				.collect(GuavaCollectors.toImmutableSet());
+	}
+
+	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument)
+	{
+		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this);
 	}
 
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()
@@ -301,6 +315,18 @@ public class DocumentEntityDescriptor
 	public DocumentEntityDataBindingDescriptor getDataBinding()
 	{
 		return dataBinding;
+	}
+
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> bindingType)
+	{
+		@SuppressWarnings("unchecked")
+		final T dataBindingCasted = (T)dataBinding;
+		return dataBindingCasted;
+	}
+
+	public boolean isHighVolume()
+	{
+		return highVolume;
 	}
 
 	public DocumentFieldDependencyMap getDependencies()
@@ -385,6 +411,7 @@ public class DocumentEntityDescriptor
 		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
+		private boolean _highVolume;
 
 		private DetailId _detailId;
 
@@ -542,7 +569,7 @@ public class DocumentEntityDescriptor
 					.stream()
 					.filter(fieldBuilder -> fieldBuilder.isKey())
 					.collect(Collectors.toList());
-			if(idFields.isEmpty())
+			if (idFields.isEmpty())
 			{
 				return null;
 			}
@@ -582,6 +609,25 @@ public class DocumentEntityDescriptor
 			return ImmutableMap.copyOf(_includedEntitiesByDetailId);
 		}
 
+		public IIncludedDocumentsCollectionFactory getIncludedDocumentsCollectionFactory()
+		{
+			if (isHighVolume())
+			{
+				if (getReadonlyLogic().isConstantTrue())
+				{
+					return HighVolumeReadonlyIncludedDocumentsCollection::new;
+				}
+				else
+				{
+					// TODO implement an IIncludedDocumentCollection which does not cache the documents but which allows New/Delete
+					// Case: e.g. Product->Price, Product->CU-TU etc
+				}
+			}
+
+			// Fallback
+			return IncludedDocumentsCollection::new;
+		}
+
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
 		{
 			_dataBinding = dataBindingBuilder;
@@ -601,6 +647,17 @@ public class DocumentEntityDescriptor
 			return _dataBinding.getOrBuild();
 		}
 
+		public Builder setHighVolume(final boolean highVolume)
+		{
+			_highVolume = highVolume;
+			return this;
+		}
+
+		public boolean isHighVolume()
+		{
+			return _highVolume;
+		}
+
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
@@ -614,7 +671,7 @@ public class DocumentEntityDescriptor
 			_documentTypeId = documentTypeId;
 			return this;
 		}
-		
+
 		public Builder setDocumentType(final DocumentType documentType, final int documentTypeIdInt)
 		{
 			setDocumentType(documentType, DocumentId.of(documentTypeIdInt));
@@ -671,7 +728,7 @@ public class DocumentEntityDescriptor
 		{
 			return _tableName.orElse(null);
 		}
-		
+
 		public boolean isTableName(final String expectedTableName)
 		{
 			return Objects.equals(expectedTableName, _tableName.orElse(null));
@@ -785,13 +842,13 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public ILogicExpression getReadonlyLogic()
+		private ILogicExpression getReadonlyLogic()
 		{
 			return _readonlyLogic;
 		}
 
 		/**
-		 * Advises the descriptor that Document instances which will be created based on this descriptor will not have callouts.
+		 * Advises the descriptor that Document instances which will be created based on this descriptor will not have ANY callouts.
 		 */
 		public Builder disableCallouts()
 		{
@@ -859,7 +916,7 @@ public class DocumentEntityDescriptor
 
 			//
 			// Standard callouts provider (which will fetch the callouts from application dictionary)
-			if(isDefaultTableCalloutsEnabled())
+			if (isDefaultTableCalloutsEnabled())
 			{
 				calloutExecutorBuilder.addDefaultCalloutProvider();
 			}

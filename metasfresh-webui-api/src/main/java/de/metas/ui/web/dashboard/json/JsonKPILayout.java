@@ -2,12 +2,15 @@ package de.metas.ui.web.dashboard.json;
 
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.dashboard.KPI;
+import de.metas.ui.web.dashboard.KPIField;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -33,7 +36,6 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@SuppressWarnings("unused")
 public class JsonKPILayout
 {
 	public static final JsonKPILayout of(final KPI kpi, final JSONOptions jsonOpts)
@@ -42,23 +44,60 @@ public class JsonKPILayout
 	}
 
 	// private final int id; // don't exported because is useless and confusing
+
+	@JsonProperty("caption")
 	private final String caption;
+
+	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String description;
+
+	@JsonProperty("chartType")
 	private final String chartType;
+
+	@JsonProperty("pollIntervalSec")
+	private final int pollIntervalSec;
+
+	@JsonProperty("groupByField")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JsonKPIFieldLayout groupByField;
+
+	@JsonProperty("fields")
 	private final List<JsonKPIFieldLayout> fields;
 
 	public JsonKPILayout(final KPI kpi, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
-		
+
 		// id = kpi.getId();
 		caption = kpi.getCaption(adLanguage);
-		description = kpi.getDescription(adLanguage);
+		description = Strings.emptyToNull(kpi.getDescription(adLanguage));
 		chartType = kpi.getChartType().toJson();
 
-		fields = kpi.getFields()
-				.stream()
-				.map(kpiField -> JsonKPIFieldLayout.of(kpiField, jsonOpts))
-				.collect(GuavaCollectors.toImmutableList());
+		pollIntervalSec = kpi.getPollIntervalSec();
+
+		//
+		// Group by field
+		final KPIField groupByField = kpi.getGroupByFieldOrNull();
+		this.groupByField = groupByField == null ? null : JsonKPIFieldLayout.field(groupByField, jsonOpts);
+
+		final ImmutableList.Builder<JsonKPIFieldLayout> jsonFields = ImmutableList.builder();
+		final boolean hasCompareOffset = kpi.hasCompareOffset();
+		for (final KPIField kpiField : kpi.getFields())
+		{
+			// Don't add the group by field to our fields list
+			if (kpiField.isGroupBy())
+			{
+				continue;
+			}
+
+			jsonFields.add(JsonKPIFieldLayout.field(kpiField, jsonOpts));
+
+			if (hasCompareOffset && !kpiField.isGroupBy())
+			{
+				jsonFields.add(JsonKPIFieldLayout.offsetField(kpiField, jsonOpts));
+			}
+		}
+		fields = jsonFields.build();
 	}
 }

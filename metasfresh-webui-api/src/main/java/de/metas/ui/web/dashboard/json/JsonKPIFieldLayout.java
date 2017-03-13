@@ -2,6 +2,8 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.KPIField;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -29,27 +31,75 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@SuppressWarnings("unused")
 public class JsonKPIFieldLayout
 {
-	public static final JsonKPIFieldLayout of(final KPIField kpiField, final JSONOptions jsonOpts)
+	public static final JsonKPIFieldLayout field(final KPIField kpiField, final JSONOptions jsonOpts)
 	{
-		return new JsonKPIFieldLayout(kpiField, jsonOpts);
+		final boolean isOffsetField = false;
+		return new JsonKPIFieldLayout(kpiField, isOffsetField, jsonOpts);
 	}
 
-	private final String caption;
-	private final String description;
-	private final String type;
-	private final boolean timeField;
+	public static final JsonKPIFieldLayout offsetField(final KPIField kpiField, final JSONOptions jsonOpts)
+	{
+		final boolean isOffsetField = true;
+		return new JsonKPIFieldLayout(kpiField, isOffsetField, jsonOpts);
+	}
 
-	public JsonKPIFieldLayout(final KPIField kpiField, final JSONOptions jsonOpts)
+	@JsonProperty("caption")
+	private final String caption;
+
+	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String description;
+
+	@JsonProperty("unit")
+	private final String unit;
+
+	@JsonProperty("fieldName")
+	private final String fieldName;
+
+	// NOTE: not needed because we are providing a separate groupByField in JsonKPILayout
+	// @JsonProperty("groupBy")
+	// private final boolean groupBy;
+
+	@JsonProperty("dataType")
+	private final String dataType;
+
+	@JsonProperty("color")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String color;
+
+	public JsonKPIFieldLayout(final KPIField kpiField, final boolean isOffsetField, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
-		caption = kpiField.getCaption(adLanguage);
+		// Caption
+		if (isOffsetField)
+		{
+			caption = kpiField.getOffsetCaption(adLanguage);
+		}
+		else
+		{
+			caption = kpiField.getCaption(adLanguage);
+		}
+
+		// FieldName
+		if (isOffsetField)
+		{
+			fieldName = kpiField.getOffsetFieldName();
+		}
+		else
+		{
+			fieldName = kpiField.getFieldName();
+		}
+
 		description = kpiField.getDescription(adLanguage);
-		type = kpiField.getValueType().toJson();
-		timeField = kpiField.isESTimeField();
+		unit = kpiField.getUnit();
+
+		// groupBy = kpiField.isGroupBy();
+		dataType = kpiField.getValueType().toJson();
+
+		color = kpiField.getColor();
 	}
 
 }

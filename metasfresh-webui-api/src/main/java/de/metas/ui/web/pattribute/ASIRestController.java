@@ -3,11 +3,12 @@ package de.metas.ui.web.pattribute;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +17,7 @@ import de.metas.ui.web.pattribute.json.JSONASILayout;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -60,47 +62,45 @@ public class ASIRestController
 
 	private JSONOptions newJsonOpts()
 	{
-		return JSONOptions.builder()
-				.setUserSession(userSession)
-				.build();
+		return JSONOptions.of(userSession);
 	}
 
-	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
+	@PostMapping({ "", "/" })
 	public JSONDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
 	{
 		userSession.assertLoggedIn();
 
-		return Execution.callInNewExecution("createASI", () -> {
-			return asiRepo.createNewFrom(request)
-					.toJSONDocument(newJsonOpts());
-		});
+		return Execution.callInNewExecution("createASI", () -> asiRepo.createNewFrom(request).toJSONDocument(newJsonOpts()));
 	}
 
-	@RequestMapping(value = "/{asiDocId}/layout", method = RequestMethod.GET)
-	public JSONASILayout getLayout(@PathVariable("asiDocId") final int asiDocId)
+	@GetMapping("/{asiDocId}/layout")
+	public JSONASILayout getLayout(@PathVariable("asiDocId") final int asiDocIdInt)
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
 		final ASILayout asiLayout = asiRepo.getLayout(asiDocId);
 		return JSONASILayout.of(asiLayout, newJsonOpts());
 	}
 
-	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.GET)
-	public JSONDocument getASIDocument(@PathVariable("asiDocId") final int asiDocId)
+	@GetMapping("/{asiDocId}")
+	public JSONDocument getASIDocument(@PathVariable("asiDocId") final int asiDocIdInt)
 	{
 		userSession.assertLoggedIn();
 
-		return asiRepo.getASIDocument(asiDocId)
-				.toJSONDocument(newJsonOpts());
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONDocument(newJsonOpts()));
 	}
 
-	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.PATCH)
+	@PatchMapping("/{asiDocId}")
 	public List<JSONDocument> processChanges(
-			@PathVariable("asiDocId") final int asiDocId //
+			@PathVariable("asiDocId") final int asiDocIdInt //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
 		userSession.assertLoggedIn();
+
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
 
 		return Execution.callInNewExecution("processChanges", () -> {
 			asiRepo.processASIDocumentChanges(asiDocId, events);
@@ -108,40 +108,41 @@ public class ASIRestController
 		});
 	}
 
-	@RequestMapping(value = "/{asiDocId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
+	@GetMapping("/{asiDocId}/attribute/{attributeName}/typeahead")
 	public JSONLookupValuesList getAttributeTypeahead(
-			@PathVariable("asiDocId") final int asiDocId //
+			@PathVariable("asiDocId") final int asiDocIdInt //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		return asiRepo.getASIDocument(asiDocId)
-				.getFieldLookupValuesForQuery(attributeName, query)
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValuesForQuery(attributeName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{asiDocId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
+	@GetMapping("/{asiDocId}/attribute/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
-			@PathVariable("asiDocId") final int asiDocId //
+			@PathVariable("asiDocId") final int asiDocIdInt //
 			, @PathVariable("attributeName") final String attributeName //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		return asiRepo.getASIDocument(asiDocId)
-				.getFieldLookupValues(attributeName)
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValues(attributeName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
 	@PostMapping(value = "/{asiDocId}/complete")
-	public JSONLookupValue complete(@PathVariable("asiDocId") final int asiDocId)
+	public JSONLookupValue complete(@PathVariable("asiDocId") final int asiDocIdInt)
 	{
 		userSession.assertLoggedIn();
 
-		return Execution.callInNewExecution("complete", () -> asiRepo
-				.complete(asiDocId)
-				.transform(JSONLookupValue::ofLookupValue));
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+
+		return Execution.callInNewExecution("complete", () -> asiRepo.complete(asiDocId))
+				.transform(JSONLookupValue::ofLookupValue);
 	}
 }

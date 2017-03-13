@@ -405,22 +405,18 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
 	}
 
-	private final DocumentView.Builder newDocumentViewBuilder()
-	{
-		return DocumentView.builder(adWindowId)
-				.setAttributesProvider(attributesProvider);
-	}
-
 	private IDocumentView loadDocumentView(final ResultSet rs) throws SQLException
 	{
-		final DocumentView.Builder documentViewBuilder = newDocumentViewBuilder();
+		final DocumentView.Builder documentViewBuilder = DocumentView.builder(adWindowId);
 		final boolean loaded = sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
 		if (!loaded)
 		{
 			return null;
 		}
 
-		return documentViewBuilder.build();
+		return documentViewBuilder
+				.setAttributesProvider(attributesProvider)
+				.build();
 	}
 
 	@Override
@@ -493,7 +489,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
 		// and the records recently retrieved have a big chance to be cached.
 		return documentIds.stream()
-				.map(this::getOrRetrieveById)
+				.distinct()
+				.map(documentId -> {
+					try
+					{
+						return getOrRetrieveById(documentId);
+					}
+					catch (final EntityNotFoundException e)
+					{
+						return null;
+					}
+				})
 				.filter(document -> document != null);
 	}
 

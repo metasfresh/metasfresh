@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import com.hazelcast.util.function.BiConsumer;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -122,6 +123,11 @@ public class ASIDescriptorFactory
 			, final List<MAttribute> attributes //
 	)
 	{
+		if(attributes.isEmpty())
+		{
+			throw new EntityNotFoundException("Attributes not allowed");
+		}
+		
 		final DocumentEntityDescriptor.Builder attributeSetDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.ProductAttributes, asiDescriptorId)
 				.setCaption(name)

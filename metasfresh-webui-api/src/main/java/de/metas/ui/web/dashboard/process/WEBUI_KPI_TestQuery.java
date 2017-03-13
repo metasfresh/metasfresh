@@ -3,6 +3,7 @@ package de.metas.ui.web.dashboard.process;
 import java.util.Date;
 
 import org.compiere.Adempiere;
+import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -17,7 +18,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.KPI;
-import de.metas.ui.web.dashboard.KPIData;
+import de.metas.ui.web.dashboard.KPIDataLoader;
+import de.metas.ui.web.dashboard.KPIDataResult;
 import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 
@@ -60,6 +62,8 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 	private UserDashboardRepository userDashboardRepo;
 	@Autowired
 	private ObjectMapper jsonObjectMapper;
+	@Autowired
+	private Client elasticsearchClient;
 
 	@Param(parameterName = "DateFrom")
 	private Date p_DateFrom;
@@ -85,7 +89,11 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 
 		final long fromMillis = p_DateFrom == null ? -1 : p_DateFrom.getTime();
 		final long toMillis = p_DateTo == null ? -1 : p_DateTo.getTime();
-		final KPIData kpiData = kpi.retrieveData(fromMillis, toMillis);
+		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi)
+				.setTimeRange(fromMillis, toMillis)
+				.setFormatValues(true)
+				.assertESTypesExists()
+				.retrieveData();
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);
 		log.info("jsonData:\n {}", jsonData);

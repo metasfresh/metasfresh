@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,30 +67,96 @@ import de.metas.ui.web.WebRestApiApplication;
  *
  */
 @Profile(WebRestApiApplication.PROFILE_Webui)
-public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaProcess implements IProcessPrecondition
+public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements IProcessPrecondition
 {
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
+	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
+
+	protected final void setAllowMultipleReceiptsSchedules(final boolean allowMultipleReceiptsSchedules)
+	{
+		this.allowMultipleReceiptsSchedules = allowMultipleReceiptsSchedules;
+	}
+
+	protected final void setAllowNoQuantityAvailable(final boolean allowNoQuantityAvailable)
+	{
+		this.allowNoQuantityAvailable = allowNoQuantityAvailable;
+	}
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 1)
+		if (context.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
+		// NOTE: we shall allow one line only
+		// if (context.getSelectionSize() <= 1)
+		// {
+		// return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
+		// }
+
+		//
+		// Check if we are allowed to select multiple lines
+		if (!allowMultipleReceiptsSchedules && context.getSelectionSize() > 1)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select only one line");
+		}
+
+		//
+		// Fetch the receipt schedules which have some qty available for receiving
+		final List<I_M_ReceiptSchedule> receiptSchedules = context.getSelectedModels(I_M_ReceiptSchedule.class)
+				.stream()
+				.filter(receiptSchedule -> allowNoQuantityAvailable || getDefaultAvailableQtyToReceive(receiptSchedule).signum() > 0)
+				.collect(ImmutableList.toImmutableList());
+		if (receiptSchedules.isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject("nothing to receive");
+		}
+
+		//
+		// Make sure each of them are eligible for receiving
+		{
+			final ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
+					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
+					.filter(resolution -> !resolution.isAccepted())
+					.findFirst()
+					.orElse(null);
+			if (rejectResolution != null)
+			{
+				return rejectResolution;
+			}
+		}
+
+		//
+		// If more than one line selected, make sure the lines make sense together
+		// * enforce same BPartner (task https://github.com/metasfresh/metasfresh-webui/issues/207)
+		if (receiptSchedules.size() > 1)
+		{
+			final long bpartnersCount = receiptSchedules
+					.stream()
+					.map(receiptSchedule -> receiptScheduleBL.getC_BPartner_Effective_ID(receiptSchedule))
+					.distinct()
+					.count();
+			if (bpartnersCount != 1)
+			{
+				return ProcessPreconditionsResolution.reject("select only one BPartner");
+			}
+		}
+
+		//
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected final String doIt() throws Exception
 	{
-		final List<I_M_HU> hus = retrieveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
-				.create()
-				.stream(I_M_ReceiptSchedule.class)
+		final List<I_M_HU> hus = streamReceiptSchedulesToReceive()
 				.map(this::createPlanningVHU)
 				.filter(hu -> hu != null)
 				.collect(GuavaCollectors.toImmutableList());
@@ -97,6 +164,13 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
 
 		return MSG_OK;
+	}
+
+	protected Stream<I_M_ReceiptSchedule> streamReceiptSchedulesToReceive()
+	{
+		return retrieveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
+				.create()
+				.stream(I_M_ReceiptSchedule.class);
 	}
 
 	private I_M_HU createPlanningVHU(final I_M_ReceiptSchedule receiptSchedule)
@@ -119,15 +193,15 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 
 		//
 		// Allocation Destination: HU producer which will create 1 VHU
-		final HUProducerDestination huProducer = new HUProducerDestination(handlingUnitsDAO.retrieveVirtualPI(getCtx()));
-		huProducer.setMaxHUsToCreate(1); // we want one VHU
+		final HUProducerDestination huProducer = HUProducerDestination.of(handlingUnitsDAO.retrieveVirtualPI(getCtx()))
+				.setMaxHUsToCreate(1); // we want one VHU
 
 		//
 		// Transfer Qty
-		final HULoader loader = new HULoader(allocationSource, huProducer);
-		loader.setAllowPartialUnloads(false);
-		loader.setAllowPartialLoads(false);
-		loader.load(allocationRequest);
+		HULoader.of(allocationSource, huProducer)
+				.setAllowPartialUnloads(false)
+				.setAllowPartialLoads(false)
+				.load(allocationRequest);
 
 		//
 		// Get created VHU and return it
@@ -141,11 +215,23 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_MultiRow extends JavaPr
 		return vhu;
 	}
 
+	protected final BigDecimal getDefaultAvailableQtyToReceive(final I_M_ReceiptSchedule rs)
+	{
+		final BigDecimal qty = receiptScheduleBL.getQtyToMove(rs);
+		return qty == null || qty.signum() <= 0 ? BigDecimal.ZERO : qty;
+	}
+	
+	protected BigDecimal getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)
+	{
+		BigDecimal defaultAvailableQtyToReceive = getDefaultAvailableQtyToReceive(rs);
+		return defaultAvailableQtyToReceive;
+	}
+
 	private final IAllocationRequest createAllocationRequest(final I_M_ReceiptSchedule rs)
 	{
 		// Get Qty
-		final BigDecimal qty = receiptScheduleBL.getQtyToMove(rs);
-		if (qty == null || qty.signum() <= 0)
+		final BigDecimal qty = getEffectiveQtyToReceive(rs);
+		if (qty.signum() <= 0)
 		{
 			// nothing to do
 			return null;

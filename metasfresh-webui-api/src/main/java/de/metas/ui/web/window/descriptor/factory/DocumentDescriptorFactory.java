@@ -1,5 +1,8 @@
 package de.metas.ui.web.window.descriptor.factory;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -53,4 +56,36 @@ public interface DocumentDescriptorFactory
 			return descriptor.getIncludedEntityByDetailId(detailId).getTableName();
 		}
 	}
+	
+	default DocumentEntityDescriptor getDocumentEntityDescriptor(final DocumentPath documentPath)
+	{
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
+
+		if (documentPath.isRootDocument())
+		{
+			return rootEntityDescriptor;
+		}
+		else
+		{
+			return rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
+		}
+	}
+	
+	default TableRecordReference getTableRecordReference(final DocumentPath documentPath)
+	{
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
+
+		if (documentPath.isRootDocument())
+		{
+			final String tableName = rootEntityDescriptor.getTableName();
+			final int recordId = documentPath.getDocumentId().toInt();
+			return TableRecordReference.of(tableName, recordId);
+		}
+
+		final DocumentEntityDescriptor includedEntityDescriptor = rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
+		final String tableName = includedEntityDescriptor.getTableName();
+		final int recordId = documentPath.getSingleRowId().toInt();
+		return TableRecordReference.of(tableName, recordId);
+	}
+
 }

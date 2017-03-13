@@ -5,8 +5,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 
@@ -37,6 +40,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class KPIField
 {
 	public static final Builder builder()
@@ -51,13 +55,18 @@ public class KPIField
 	}
 
 	private final String fieldName;
+	private final boolean groupBy;
+
 	private final ITranslatableString caption;
+	private final ITranslatableString offsetCaption;
 	private final ITranslatableString description;
+	private final String unit;
 	private final KPIFieldValueType valueType;
+
+	private final String color;
 
 	private final String esPathStr;
 	private final List<String> esPath;
-	private final boolean esTimeField;
 	private final BucketValueExtractor bucketValueExtractor;
 
 	private KPIField(final Builder builder)
@@ -69,13 +78,18 @@ public class KPIField
 		Check.assumeNotEmpty(builder.esPath, "builder.esPath is not empty");
 
 		fieldName = builder.fieldName;
+		groupBy = builder.groupBy;
+
 		caption = builder.caption;
+		offsetCaption = builder.offsetCaption;
 		description = builder.description;
+		unit = builder.unit;
 		valueType = builder.valueType;
+
+		color = builder.color;
 
 		esPathStr = builder.esPathStr;
 		esPath = builder.esPath;
-		esTimeField = builder.esTimeField;
 		bucketValueExtractor = createBucketValueExtractor(esPath);
 	}
 
@@ -122,7 +136,10 @@ public class KPIField
 					final long millis = ((Number)value).longValue();
 					return JSONDate.toJson(millis);
 				}
-				break;
+				else
+				{
+					return value;
+				}
 			}
 			case DateTime:
 			{
@@ -140,7 +157,10 @@ public class KPIField
 					final long millis = ((Number)value).longValue();
 					return JSONDate.toJson(millis);
 				}
-				break;
+				else
+				{
+					return value;
+				}
 			}
 			case Number:
 			{
@@ -156,7 +176,10 @@ public class KPIField
 				{
 					return BigDecimal.valueOf(((Number)value).intValue());
 				}
-				break;
+				else
+				{
+					return value;
+				}
 			}
 			case String:
 			{
@@ -167,9 +190,71 @@ public class KPIField
 				throw new IllegalStateException("valueType not supported: " + valueType);
 			}
 		}
+	}
 
-		// Fallback
-		return value;
+	public final Object convertValueToJsonUserFriendly(final Object value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		if (valueType == KPIFieldValueType.Date)
+		{
+			if (value instanceof String)
+			{
+				final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
+				return DisplayType.getDateFormat(DisplayType.Date)
+						.format(date);
+			}
+			else if (value instanceof Date)
+			{
+				final Date date = (Date)value;
+				return DisplayType.getDateFormat(DisplayType.Date)
+						.format(date);
+			}
+			else if (value instanceof Number)
+			{
+				final long millis = ((Number)value).longValue();
+				final Date date = new Date(millis);
+				return DisplayType.getDateFormat(DisplayType.Date)
+						.format(date);
+			}
+			else
+			{
+				return value.toString();
+			}
+		}
+		else if (valueType == KPIFieldValueType.DateTime)
+		{
+			if (value instanceof String)
+			{
+				final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
+				return DisplayType.getDateFormat(DisplayType.DateTime)
+						.format(date);
+			}
+			else if (value instanceof Date)
+			{
+				final Date date = (Date)value;
+				return DisplayType.getDateFormat(DisplayType.DateTime)
+						.format(date);
+			}
+			else if (value instanceof Number)
+			{
+				final long millis = ((Number)value).longValue();
+				final Date date = new Date(millis);
+				return DisplayType.getDateFormat(DisplayType.DateTime)
+						.format(date);
+			}
+			else
+			{
+				return value.toString();
+			}
+		}
+		else
+		{
+			return convertValueToJson(value);
+		}
 	}
 
 	@Override
@@ -178,6 +263,7 @@ public class KPIField
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("fieldName", fieldName)
+				.add("groupBy", groupBy)
 				.add("esPath", esPath)
 				.add("valueType", valueType)
 				.toString();
@@ -188,9 +274,24 @@ public class KPIField
 		return fieldName;
 	}
 
+	public String getOffsetFieldName()
+	{
+		return fieldName + "_offset";
+	}
+
+	public boolean isGroupBy()
+	{
+		return groupBy;
+	}
+
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
+	}
+
+	public String getOffsetCaption(final String adLanguage)
+	{
+		return offsetCaption.translate(adLanguage);
 	}
 
 	public String getDescription(final String adLanguage)
@@ -203,19 +304,24 @@ public class KPIField
 		return valueType;
 	}
 
+	public String getUnit()
+	{
+		return unit;
+	}
+
 	public List<String> getESPath()
 	{
 		return esPath;
 	}
-	
+
 	public String getESPathAsString()
 	{
 		return esPathStr;
 	}
 
-	public boolean isESTimeField()
+	public String getColor()
 	{
-		return esTimeField;
+		return color;
 	}
 
 	public BucketValueExtractor getBucketValueExtractor()
@@ -226,10 +332,15 @@ public class KPIField
 	public static final class Builder
 	{
 		private String fieldName;
-		private ITranslatableString caption;
+		private boolean groupBy = false;
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString offsetCaption = ImmutableTranslatableString.empty();
 		private ITranslatableString description = ImmutableTranslatableString.empty();
+		private String unit;
 		private KPIFieldValueType valueType;
-		private boolean esTimeField;
+
+		private String color;
+
 		private String esPathStr;
 		private List<String> esPath;
 
@@ -251,15 +362,36 @@ public class KPIField
 			return this;
 		}
 
+		public Builder setGroupBy(final boolean groupBy)
+		{
+			this.groupBy = groupBy;
+			return this;
+		}
+
 		public Builder setCaption(final ITranslatableString caption)
 		{
+			Check.assumeNotNull(caption, "Parameter caption is not null");
 			this.caption = caption;
+			return this;
+		}
+
+		public Builder setOffsetCaption(final ITranslatableString offsetCaption)
+		{
+			Check.assumeNotNull(offsetCaption, "Parameter offsetCaption is not null");
+			this.offsetCaption = offsetCaption;
 			return this;
 		}
 
 		public Builder setDescription(final ITranslatableString description)
 		{
+			Check.assumeNotNull(description, "Parameter description is not null");
 			this.description = description;
+			return this;
+		}
+
+		public Builder setUnit(final String unit)
+		{
+			this.unit = unit;
 			return this;
 		}
 
@@ -269,18 +401,17 @@ public class KPIField
 			return this;
 		}
 
+		public Builder setColor(final String color)
+		{
+			this.color = color;
+			return this;
+		}
+
 		public Builder setESPath(final String esPathStr)
 		{
 			this.esPathStr = esPathStr.trim();
-			this.esPath = PATH_SPLITTER.splitToList(this.esPathStr);
+			esPath = PATH_SPLITTER.splitToList(this.esPathStr);
 			return this;
 		}
-
-		public Builder setESTimeField(final boolean esTimeField)
-		{
-			this.esTimeField = esTimeField;
-			return this;
-		}
-
 	}
 }

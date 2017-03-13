@@ -52,6 +52,12 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 })
 public class WebRestApiApplication
 {
+	/**
+	 * By default, we run in headless mode. But using this system property, we can also run with headless=false. 
+	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
+	 */
+	public static final String SYSTEM_PROPERTY_HEADLESS = "webui-api-run-headless";
+
 	public static final String PROFILE_Test = "test";
 	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
 	public static final String PROFILE_Webui = "webui";
@@ -70,8 +76,10 @@ public class WebRestApiApplication
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
 
+		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+
 		new SpringApplicationBuilder(WebRestApiApplication.class)
-				.headless(false) // FIXME: we need it for initial connection setup popup (if any)
+				.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
 				.profiles(PROFILE_Webui)
 				.run(args);

@@ -1,9 +1,12 @@
 package de.metas.ui.web.upload;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.FileUtils;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.MImage;
 import org.compiere.util.MimeType;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
@@ -52,6 +56,8 @@ import de.metas.ui.web.session.UserSession;
 public class ImageRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/image";
+	
+	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
 
 	@Autowired
 	private UserSession userSession;
@@ -63,13 +69,35 @@ public class ImageRestController
 
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
+		final String contentType = file.getContentType();
+		final String filenameNorm = normalizeUploadFilename(name, contentType);
 
 		final MImage adImage = new MImage(userSession.getCtx(), 0, ITrx.TRXNAME_None);
-		adImage.setName(name);
+		adImage.setName(filenameNorm);
 		adImage.setBinaryData(data);
+		// TODO: introduce adImage.setTemporary(true);
 		InterfaceWrapperHelper.save(adImage);
 
 		return adImage.getAD_Image_ID();
+	}
+	
+	private static final String normalizeUploadFilename(final String name, final String contentType)
+	{
+		final String fileExtension = MimeType.getExtensionByType(contentType);
+		
+		final String nameNormalized;
+		if(Check.isEmpty(name, true)
+				|| "blob".equals(name) // HARDCODED: this happens when the image is taken from webcam
+				)
+		{
+			nameNormalized = DATE_FORMAT.format(LocalDateTime.now());
+		}
+		else
+		{
+			nameNormalized = name.trim();
+		}
+		
+		return FileUtils.changeFileExtension(nameNormalized, fileExtension);
 	}
 
 	@GetMapping("/{imageId}")

@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -23,12 +26,12 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -53,6 +56,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
+import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
@@ -104,11 +108,13 @@ public final class Document
 	//
 	// Status
 	private boolean _new;
+	private boolean _deleted;
 	private final boolean _writable;
 	private boolean _initializing = false;
-	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
+	private DocumentValidStatus _valid = DocumentValidStatus.documentInitiallyInvalid();
 	private DocumentSaveStatus _saveStatus = DocumentSaveStatus.unknown();
 	private final DocumentStaleState _staleStatus;
+	private final ReentrantReadWriteLock _lock;
 
 	//
 	// Callouts
@@ -160,7 +166,9 @@ public final class Document
 		windowNo = builder.getWindowNo();
 		_writable = builder.isWritable();
 		_new = builder.isNewDocument();
+		_deleted = false;
 		_staleStatus = new DocumentStaleState();
+		_lock = builder.createLock();
 
 		//
 		// Create document fields
@@ -198,7 +206,7 @@ public final class Document
 			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
 			{
 				final DetailId detailId = includedEntityDescriptor.getDetailId();
-				final IIncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
+				final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this);
 				includedDocuments.put(detailId, includedDocumentsForDetailId);
 			}
 			this.includedDocuments = includedDocuments.build();
@@ -246,9 +254,11 @@ public final class Document
 		_writable = copyMode.isWritable();
 
 		_new = from._new;
+		_deleted = from._deleted;
 		_valid = from._valid;
 		_saveStatus = from._saveStatus;
 		_staleStatus = new DocumentStaleState(from._staleStatus);
+		_lock = from._lock; // always share the same lock
 
 		if (from._parentDocument != null)
 		{
@@ -430,7 +440,7 @@ public final class Document
 			}
 			else
 			{
-				throw Throwables.propagate(e);
+				throw AdempiereException.wrapIfNeeded(e);
 			}
 		}
 
@@ -622,11 +632,11 @@ public final class Document
 			}
 
 			//
-			// Window User Preferences
-			final String fieldName = fieldDescriptor.getFieldName();
-			if (documentType == DocumentType.Window)
+			// Window User Preferences (only if it's not a virtual field)
+			if (documentType == DocumentType.Window && !fieldDescriptor.isVirtualField())
 			{
 				final int adWindowId = documentTypeId.toInt();
+				final String fieldName = fieldDescriptor.getFieldName();
 
 				//
 				// Preference (user) - P|
@@ -687,16 +697,20 @@ public final class Document
 
 	/* package */final void assertWritable()
 	{
-		if (isWritable())
-		{
-			return;
-		}
 		if (_initializing)
 		{
 			return;
 		}
+		
+		if (!isWritable())
+		{
+			throw new InvalidDocumentStateException(this, "not a writable copy");
+		}
 
-		throw new InvalidDocumentStateException(this, "not a writable copy");
+		if(isDeleted())
+		{
+			throw new DocumentNotFoundException(getDocumentPath());
+		}
 	}
 
 	/* package */final void destroy()
@@ -759,6 +773,7 @@ public final class Document
 		return entityDescriptor;
 	}
 
+	/** @return parent document or null */
 	/* package */ Document getParentDocument()
 	{
 		return _parentDocument;
@@ -919,14 +934,26 @@ public final class Document
 		_new = false;
 	}
 
+	/* package */ void markAsDeleted()
+	{
+		_deleted = true;
+	}
+
+	/* package */ boolean isDeleted()
+	{
+		return _deleted;
+	}
+
 	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
 	{
 		Preconditions.checkNotNull(valid, "valid"); // shall not happen
-		final DocumentValidStatus validOld = _valid;
-		if (Objects.equals(validOld, valid))
-		{
-			return validOld; // no change
-		}
+
+		// Don't check if changed because we want ALWAYS to collect the valid status
+		// final DocumentValidStatus validOld = _valid;
+		// if (Objects.equals(validOld, valid))
+		// {
+		// return validOld; // no change
+		// }
 
 		_valid = valid;
 		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
@@ -945,7 +972,7 @@ public final class Document
 		// }
 
 		_saveStatus = saveStatus;
-		Execution.getCurrentDocumentChangesCollector().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
+		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
 		return _saveStatus;
 	}
 
@@ -1044,7 +1071,7 @@ public final class Document
 			includedDocumentsPerDetail.markStaleAll();
 		}
 	}
-
+	
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final IDocumentField documentField = getField(fieldName);
@@ -1396,6 +1423,9 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
+	/**
+	 * Checks document's valid status, sets it and returns it.
+	 */
 	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		//
@@ -1418,11 +1448,11 @@ public final class Document
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(validState);
+				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument());
 			}
 		}
 
-		return setValidStatusAndReturn(DocumentValidStatus.valid()); // valid
+		return setValidStatusAndReturn(DocumentValidStatus.documentValid()); // valid
 	}
 
 	public DocumentValidStatus getValidStatus()
@@ -1435,6 +1465,12 @@ public final class Document
 		return _saveStatus;
 	}
 
+	/**
+	 * Checks if this document has changes.
+	 * NOTE: it's not checking the included documents.
+	 * 
+	 * @return true if it has changes.
+	 */
 	private boolean hasChanges()
 	{
 		// If this is a new document then always consider it as changed
@@ -1460,7 +1496,12 @@ public final class Document
 		return changes;
 	}
 
-	/* package */boolean hasChangesRecursivelly()
+	/**
+	 * Checks if this document or any of it's included documents has changes.
+	 * 
+	 * @return true if it this document or any of it's included documents has changes.
+	 */
+	public boolean hasChangesRecursivelly()
 	{
 		//
 		// Check this document
@@ -1516,6 +1557,7 @@ public final class Document
 		{
 			// NOTE: usually if we do the right checkings we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
+			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx));
 			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
 		}
 	}
@@ -1560,6 +1602,7 @@ public final class Document
 	/* package */void deleteFromRepository()
 	{
 		getDocumentRepository().delete(this);
+		markAsDeleted();
 	}
 
 	/* package */void refreshFromRepository()
@@ -1597,6 +1640,34 @@ public final class Document
 	/* package */boolean isStaled()
 	{
 		return _staleStatus.isStaled();
+	}
+
+	public IAutoCloseable lockForReading()
+	{
+		// assume _lock is not null
+		final ReadLock readLock = _lock.readLock();
+		logger.debug("Acquiring read lock for {}: {}", this, readLock);
+		readLock.lock();
+		logger.debug("Acquired read lock for {}: {}", this, readLock);
+
+		return () -> {
+			readLock.unlock();
+			logger.debug("Released read lock for {}: {}", this, readLock);
+		};
+	}
+
+	public IAutoCloseable lockForWriting()
+	{
+		// assume _lock is not null
+		final WriteLock writeLock = _lock.writeLock();
+		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
+		writeLock.lock();
+		logger.debug("Acquired write lock for {}: {}", this, writeLock);
+
+		return () -> {
+			writeLock.unlock();
+			logger.debug("Released write lock for {}: {}", this, writeLock);
+		};
 	}
 
 	private final class DocumentStaleState
@@ -1709,6 +1780,18 @@ public final class Document
 			// Update document's valid status
 			document.checkAndGetValidStatus();
 
+			//
+			// Update document's save status
+			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
+			{
+				document.setSaveStatusAndReturn(DocumentSaveStatus.notSavedJustCreated());
+			}
+			else if (fieldInitializerMode == FieldInitializationMode.Load
+					|| fieldInitializerMode == FieldInitializationMode.Refresh)
+			{
+				document.setSaveStatusAndReturn(DocumentSaveStatus.savedJustLoaded());
+			}
+
 			return document;
 		}
 
@@ -1817,5 +1900,26 @@ public final class Document
 				return parentDocument.isWritable();
 			}
 		}
+
+		private ReentrantReadWriteLock createLock()
+		{
+			// don't create locks for any other entity which is not window
+			if (entityDescriptor.getDocumentType() != DocumentType.Window)
+			{
+				return null;
+			}
+
+			//
+			if (parentDocument == null)
+			{
+				return new ReentrantReadWriteLock();
+			}
+			else
+			{
+				// don't create lock for included documents
+				return null;
+			}
+		}
+
 	}
 }

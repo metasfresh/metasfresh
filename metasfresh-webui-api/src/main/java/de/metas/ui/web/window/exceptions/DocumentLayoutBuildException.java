@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 
@@ -33,6 +35,7 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
  *
  */
 @SuppressWarnings("serial")
+@ResponseStatus(code = HttpStatus.NOT_FOUND)
 public class DocumentLayoutBuildException extends AdempiereException
 {
 	public static final DocumentLayoutBuildException wrapIfNeeded(final Throwable throwable)

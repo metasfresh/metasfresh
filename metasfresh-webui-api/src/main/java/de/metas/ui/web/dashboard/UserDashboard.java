@@ -13,6 +13,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -26,11 +28,11 @@ import com.google.common.collect.Maps;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -80,22 +82,21 @@ public final class UserDashboard
 	{
 		return id;
 	}
-	
+
 	public Collection<UserDashboardItem> getTargetIndicatorItems()
 	{
 		return targetIndicatorItemsById.values();
 	}
-	
+
 	public UserDashboardItem getTargetIndicatorItemById(final int itemId)
 	{
 		final UserDashboardItem item = targetIndicatorItemsById.get(itemId);
-		if(item == null)
+		if (item == null)
 		{
-			throw new IllegalArgumentException("No target indicator item found for "+itemId);
+			throw new IllegalArgumentException("No target indicator item found for " + itemId);
 		}
 		return item;
 	}
-
 
 	public Collection<UserDashboardItem> getKPIItems()
 	{
@@ -105,9 +106,9 @@ public final class UserDashboard
 	public UserDashboardItem getKPIItemById(final int itemId)
 	{
 		final UserDashboardItem item = kpiItemsById.get(itemId);
-		if(item == null)
+		if (item == null)
 		{
-			throw new IllegalArgumentException("No KPI item found for "+itemId);
+			throw new EntityNotFoundException("No KPI item found for " + itemId);
 		}
 		return item;
 	}

@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -474,7 +473,8 @@ public class LayoutFactory
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setQueryOnActivate(entityDescriptor.isHighVolume());
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
@@ -515,13 +515,13 @@ public class LayoutFactory
 		//
 		// Quick input
 		{
-			final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor( //
+			final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor( //
 					entityDescriptor.getDocumentType() //
 					, entityDescriptor.getDocumentTypeId() //
 					, entityDescriptor.getTableNameOrNull() //
 					, entityDescriptor.getDetailId() //
 			);
-			layoutDetail.setQuickInput(quickInputDescriptor == null ? null : quickInputDescriptor.getLayout());
+			layoutDetail.setSupportQuickInput(supportQuickInput);
 		}
 
 		return layoutDetail;
@@ -558,6 +558,7 @@ public class LayoutFactory
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setQueryOnActivate(entityDescriptor.isHighVolume())
 				.addElements(layoutElements);
 
 		return advancedViewLayout;

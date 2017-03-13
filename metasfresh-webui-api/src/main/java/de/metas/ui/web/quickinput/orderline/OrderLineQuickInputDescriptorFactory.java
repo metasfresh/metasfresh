@@ -27,8 +27,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
@@ -146,30 +144,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final DocumentFieldDescriptor field_M_Product_ID = entityDescriptor.getField("M_Product_ID");
-		final DocumentFieldDescriptor field_M_HU_PI_Item_Product_ID = entityDescriptor.getField("M_HU_PI_Item_Product_ID");
-		final DocumentFieldDescriptor field_Qty = entityDescriptor.getField("Qty");
-
-		final QuickInputLayoutDescriptor.Builder quickInputLayout = QuickInputLayoutDescriptor.builder()
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption(field_M_Product_ID.getCaption())
-						// .setDescription(field_M_Product_ID.getDescription())
-						.setWidgetType(field_M_Product_ID.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_Product_ID.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_M_Product_ID.getLookupSourceType()))
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PI_Item_Product_ID.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption(field_Qty.getCaption())
-						// .setDescription(field_Qty.getDescription())
-						.setWidgetType(field_Qty.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_Qty.getLookupSourceType())));
-
-		return quickInputLayout.build();
+		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" } //
+				, { "Qty" }
+		});
 	}
 
 }

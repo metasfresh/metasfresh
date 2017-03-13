@@ -220,7 +220,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return valueClass;
 	}
-
+	
 	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
 	{
 		return lookupDescriptorProvider.provideForScope(scope);
@@ -230,6 +230,17 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 		return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+	}
+	
+	public Optional<String> getLookupTableName()
+	{
+		return extractLookupTableName(lookupDescriptorProvider);
+	}
+	
+	private static final Optional<String> extractLookupTableName(final LookupDescriptorProvider lookupDescriptorProvider)
+	{
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
+		return lookupDescriptor == null ? Optional.empty() : lookupDescriptor.getTableName();
 	}
 
 	@Nullable
@@ -319,7 +330,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	 *
 	 * @param fieldName field name, needed only for logging purposes
 	 * @param value value to be converted
-	 * @param widgetType widget type
+	 * @param widgetType widget type (optional)
 	 * @param targetType target type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
@@ -440,9 +451,22 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONLookupValue.integerLookupValueFromJsonMap(map);
-					return valueConv;
+					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
+					
+					if(Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+					{
+						// corner case: the frontend sent a lookup value like '{ 1234567 : "" }'
+						// => we need to resolve the name against the lookup
+						// see https://github.com/metasfresh/metasfresh-webui/issues/230
+						final LookupValue lookupValueResolved = lookupDataSource.findById(lookupValue.getId());
+						return convertToValueClass(fieldName, lookupValueResolved, widgetType, targetType, /* lookupDataSource */null);
+					}
+					else
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupValue;
+						return valueConv;
+					}
 				}
 				else if (Number.class.isAssignableFrom(fromType))
 				{
@@ -485,9 +509,22 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
-					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONLookupValue.stringLookupValueFromJsonMap(map);
-					return valueConv;
+					StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+					
+					if(Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+					{
+						// corner case: the frontend sent a lookup value like '{ "someKey" : "" }'
+						// => we need to resolve the name against the lookup
+						// see https://github.com/metasfresh/metasfresh-webui/issues/230
+						final LookupValue lookupValueResolved = lookupDataSource.findById(lookupValue.getId());
+						return convertToValueClass(fieldName, lookupValueResolved, widgetType, targetType, /* lookupDataSource */null);
+					}
+					else
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupValue;
+						return valueConv;
+					}
 				}
 				else if (String.class == fromType)
 				{
@@ -785,6 +822,11 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 			return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+		}
+		
+		public Optional<String> getLookupTableName()
+		{
+			return extractLookupTableName(lookupDescriptorProvider);
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)

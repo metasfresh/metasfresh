@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -9,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Evaluatee;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -50,34 +47,37 @@ public class DocumentReferencesService
 	@Autowired
 	private DocumentCollection documentCollection;
 
-	public Map<String, DocumentReference> getDocumentReferences(final Document document)
+	public List<DocumentReference> getDocumentReferences(final DocumentPath documentPath)
 	{
-		if (document == null || document.isNew())
-		{
-			return ImmutableMap.of();
-		}
+		return documentCollection.forDocumentReadonly(documentPath, document -> {
+			if(document.isNew())
+			{
+				return ImmutableList.of();
+			}
+			
+			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
 
-		final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
-
-		return ZoomInfoFactory.get()
-				.retrieveZoomInfos(zoomSource)
-				.stream()
-				.map(zoomInfo -> DocumentReference.of(zoomInfo))
-				.collect(GuavaCollectors.toImmutableMapByKey(DocumentReference::getId));
+			return ZoomInfoFactory.get()
+					.retrieveZoomInfos(zoomSource)
+					.stream()
+					.map(zoomInfo -> DocumentReference.of(zoomInfo))
+					.collect(ImmutableList.toImmutableList());
+		});
 	}
 
 	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final int targetWindowId)
 	{
-		final Document sourceDocument = documentCollection.getDocument(sourceDocumentPath);
-		if (sourceDocument.isNew())
-		{
-			throw new IllegalArgumentException("New documents cannot be referenced: "+sourceDocument);
-		}
-
-		final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
-
-		final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId);
-		return DocumentReference.of(zoomInfo);
+		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
+			if (sourceDocument.isNew())
+			{
+				throw new IllegalArgumentException("New documents cannot be referenced: "+sourceDocument);
+			}
+			
+			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
+			
+			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId);
+			return DocumentReference.of(zoomInfo);
+		});
 	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource
