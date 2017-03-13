@@ -13,20 +13,8 @@ class AttributesDropdown extends Component {
         super(props);
 
         this.state = {
-            shouldPropagateClickOutside: false,
+            clickedOutside: false,
             focused: false
-        }
-    }
-
-    componentWillReceiveProps = () => {
-        const {shouldPropagateClickOutside} = this.state;
-
-        if(shouldPropagateClickOutside){
-            const {onClickOutside} = this.props;
-
-            this.setState({
-                shouldPropagateClickOutside: false
-            }, () => onClickOutside());
         }
     }
 
@@ -44,7 +32,7 @@ class AttributesDropdown extends Component {
         }
 
         this.setState({
-            shouldPropagateClickOutside: true
+            clickedOutside: true
         })
     }
 
@@ -58,8 +46,8 @@ class AttributesDropdown extends Component {
         const {handlePatch, onClickOutside} = this.props;
 
         handlePatch(prop, value, attrId, () => {
-            const {focused, shouldPropagateClickOutside} = this.state;
-            if (!focused && shouldPropagateClickOutside){
+            const {focused, clickedOutside} = this.state;
+            if (!focused && clickedOutside){
                 onClickOutside();
             }
 
@@ -69,8 +57,8 @@ class AttributesDropdown extends Component {
         });
     }
 
-    handleBlur(willPatch){
-        const clickedOutside = this.state.shouldPropagateClickOutside;
+    handleBlur = (willPatch) => {
+        const { clickedOutside } = this.state;
         const { onClickOutside } = this.props;
 
         if (!willPatch && !clickedOutside){
@@ -79,7 +67,7 @@ class AttributesDropdown extends Component {
 
         this.setState({
             focused: false,
-            shouldPropagateClickOutside: clickedOutside
+            clickedOutside: clickedOutside
         }, () => {
             if (!willPatch){
                 onClickOutside();
@@ -105,7 +93,7 @@ class AttributesDropdown extends Component {
                     key={id}
                     type={item.type}
                     caption={item.caption}
-                    handleBlur={(patch) => this.handleBlur(patch)}
+                    handleBlur={this.handleBlur}
                     handlePatch={(prop, value) => this.handlePatch(prop, value, attrId)}
                     handleFocus={this.handleFocus}
                     handleChange={handleChange}
