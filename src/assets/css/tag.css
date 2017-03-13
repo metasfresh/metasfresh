@@ -35,9 +35,21 @@
     background-color: #fd8b0f;
 }
 
+.tag-error {
+    background-color:$brand-danger-color;
+    color: #fff;
+}
+
 .tag-secondary {
     background-color: #80909a;
     color: #fff;
+}
+
+.tag-sm {
+    font-size: .6rem;
+    padding: 0 .3rem;
+    position: relative;
+    top:-2px;
 }
 
 .tag-lg {
@@ -53,6 +65,7 @@
 
 .quick-actions-tag {
     max-width: 180px;
+    min-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
@@ -61,6 +74,7 @@
 @media (max-width: $breakpoint){
     .quick-actions-tag {
         max-width: 120px;
+        min-width: 120px;
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;

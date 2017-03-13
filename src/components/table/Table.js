@@ -6,7 +6,8 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteLocal
+    deleteLocal,
+    mapIncluded
 } from '../../actions/WindowActions';
 
 import {
@@ -52,18 +53,18 @@ class Table extends Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {dispatch} = this.props;
+        const {dispatch, type} = this.props;
 
         if(
             JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
         ){
-            dispatch(selectTableItems(nextState.selected));
+            dispatch(selectTableItems(nextState.selected, type));
         }
     }
 
     componentDidUpdate(prevProps) {
-        const {mainTable, open, rowData} = this.props;
+        const {mainTable, open, rowData, defaultSelected} = this.props;
 
         if(mainTable && open){
             this.table.focus();
@@ -74,6 +75,15 @@ class Table extends Component {
             JSON.stringify(rowData)
         ){
             this.getIndentData();
+        }
+
+        if(
+            JSON.stringify(prevProps.defaultSelected) !==
+            JSON.stringify(defaultSelected)
+        ){
+            this.setState({
+                selected: defaultSelected
+            })
         }
     }
 
@@ -88,7 +98,7 @@ class Table extends Component {
             let rowsData = [];
 
             rowData[tabid].map(item => {
-                rowsData = rowsData.concat(this.mapIncluded(item));
+                rowsData = rowsData.concat(mapIncluded(item));
             })
 
             this.setState({
@@ -114,7 +124,7 @@ class Table extends Component {
 
         rows.map( item => {
             if(item.id == selected[0]){
-                leafs = this.mapIncluded(item);
+                leafs = mapIncluded(item);
             }
         });
 
@@ -132,13 +142,13 @@ class Table extends Component {
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
-        const {dispatch} = this.props;
+        const {dispatch, type} = this.props;
 
         this.setState(prevState => ({
             selected: prevState.selected.concat([id])
         }), () => {
             const {selected} = this.state;
-            dispatch(selectTableItems(selected))
+            dispatch(selectTableItems(selected, type))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
@@ -272,38 +282,6 @@ class Table extends Component {
                 }
                 break;
         }
-    }
-
-    mapIncluded = (node, indent, isParentLastChild = false) => {
-        let ind = indent ? indent : [];
-        let result = [];
-
-        const nodeCopy = Object.assign({}, node, {
-            indent: ind
-        });
-
-        result = result.concat([nodeCopy]);
-
-        if(isParentLastChild){
-            ind[ind.length - 2] = false;
-        }
-
-        if(node.includedDocuments){
-            for(let i = 0; i < node.includedDocuments.length; i++){
-                let copy = node.includedDocuments[i];
-                if(i === node.includedDocuments.length - 1){
-                    copy = Object.assign({}, copy, {
-                        lastChild: true
-                    });
-                }
-
-                result = result.concat(
-                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
-                )
-            }
-        }
-
-        return result;
     }
 
     handleKeyDownDocList = (e) => {
@@ -519,9 +497,9 @@ class Table extends Component {
         }, () => {
             dispatch(
                 deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected)
-            ).then(() => {
+            ).then(response => {
                 if(docId){
-                    dispatch(deleteLocal(tabid, selected, 'master'))
+                    dispatch(deleteLocal(tabid, selected, 'master', response))
                 } else {
                     updateDocList();
                 }
@@ -588,6 +566,7 @@ class Table extends Component {
                             includedDocuments={item[key].includedDocuments}
                             lastSibling={item[key].lastChild}
                             contextType={item[key].type}
+                            notSaved={item[key].saveStatus && !item[key].saveStatus.saved}
                         />
                     </tbody>
                 );
@@ -668,7 +647,8 @@ class Table extends Component {
 
                     <div
                         className={
-                            'panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table ' +
+                            'panel panel-primary panel-bordered panel-bordered-force ' +
+                            'table-flex-wrapper document-list-table js-not-unselect ' +
                             ((
                                 (rowData && rowData[tabid] &&
                                 Object.keys(rowData[tabid]).length === 0) ||

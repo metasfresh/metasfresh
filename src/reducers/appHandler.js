@@ -2,8 +2,9 @@ import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
 
 const initialState = {
-	notifications: [],
+	notifications: {},
     isLogged: false,
+    processStatus: 'saved',
     inbox: {
         notifications: [],
         unreadCount: 0
@@ -25,20 +26,29 @@ export default function appHandler(state = initialState, action) {
         // NOTIFICATION ACTIONS
         case types.ADD_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: update(state.notifications, {$push:
-                    [{
+                notifications: Object.assign({}, state.notifications, {
+                    [action.title]: {
                         title: action.title,
                         msg: action.msg,
+                        shortMsg: action.shortMsg,
                         time: action.time,
-                        notifType: action.notifType
-                    }]
+                        notifType: action.notifType,
+                        count: state.notifications[action.title] ?
+                            state.notifications[action.title].count + 1 : 0
+                    }
                 })
             });
 
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: update(state.notifications, {$splice: [[action.id, 1]]})
+                notifications: Object.keys(state.notifications).reduce((res, key) => {
+                    if(key !== action.key) {
+                        res[key] = state.notifications[key];
+                    }
+                    return res;
+                }, {})
             });
+
         // END OF NOTIFICATION ACTIONS
         case types.GET_NOTIFICATIONS_SUCCESS:
             return Object.assign({}, state, {
@@ -60,6 +70,14 @@ export default function appHandler(state = initialState, action) {
                     notifications: {$merge: [action.notification]},
                     unreadCount: {$set: action.unreadCount}
                 }
+            })
+        case types.SET_PROCESS_STATE_PENDING:
+            return Object.assign({}, state, {
+                processStatus: 'pending'
+            })
+        case types.SET_PROCESS_STATE_SAVED:
+            return Object.assign({}, state, {
+                processStatus: 'saved'
             })
 
         default:

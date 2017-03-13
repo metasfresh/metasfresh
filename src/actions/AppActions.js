@@ -53,18 +53,6 @@ export function getAvailableLang() {
     return () => axios.get(config.API_URL + '/login/availableLanguages');
 }
 
-export function getUserDashboardWidgets() {
-    return () => axios.get(config.API_URL + '/dashboard/kpis');
-}
-
-export function setUserDashboardWidgets(payload) {
-    return () => axios.patch(config.API_URL + '/dashboard/kpis', payload);
-}
-
-export function getUserDashboardIndicators() {
-    return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
-}
-
 export function browseViewRequest(
     viewId, page, pageLength, orderBy, windowType
 ){
@@ -94,20 +82,22 @@ export function createViewRequest(
     });
 }
 
-export function addNotification(title, msg, time, notifType){
+export function addNotification(title, msg, time, notifType, shortMsg){
     return {
         type: types.ADD_NOTIFICATION,
         title: title,
         msg: msg,
+        shortMsg: shortMsg,
         time: time,
-        notifType: notifType
+        notifType: notifType,
+        id: Date.now()
     }
 }
 
-export function deleteNotification(id){
+export function deleteNotification(key){
     return {
         type: types.DELETE_NOTIFICATION,
-        id: id
+        key: key
     }
 }
 
@@ -201,6 +191,18 @@ export function newNotification(msg, count) {
     }
 }
 
+export function setProcessPending() {
+    return {
+        type: types.SET_PROCESS_STATE_PENDING
+    }
+}
+
+export function setProcessSaved() {
+    return {
+        type: types.SET_PROCESS_STATE_SAVED
+    }
+}
+
 export function getImageAction(id) {
     return axios({
         url: `${config.API_URL}/image/${id}`,
@@ -212,4 +214,24 @@ export function getImageAction(id) {
 export function postImageAction (data) {
     return axios.post(`${config.API_URL}/image`, data)
         .then(response => response.data);
+}
+
+export function getKPIsDashboard() {
+    return () => axios.get(config.API_URL + '/dashboard/kpis');
+}
+
+export function getTargetIndicatorsDashboard() {
+    return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
+}
+
+export function getKPIData(id) {
+    return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+'/data');
+}
+
+export function getTargetIndicatorsData(id) {
+    return () => axios.get(config.API_URL + '/dashboard/targetIndicators/'+id+'/data');
+}
+
+export function setUserDashboardWidgets(payload) {
+    return () => axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }

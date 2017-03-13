@@ -96,7 +96,7 @@ button {
 
 
 .btn-square {
-    height: 55px;
+    height: 54px;
     width: 55px;
     display: flex;
     flex-direction: column;
@@ -421,23 +421,42 @@ input:checked + .input-slider:before {
     border-radius: 3px;
 }
 
+.input-body-container {
+    position: relative;
+}
+
+.input-error-popup {
+    position: absolute;
+    right:0;
+    bottom: 100%;
+    margin-bottom: .3rem;
+    
+    padding: .2rem .5rem;
+    
+    font-size: .7rem;
+    color: $brand-danger-color;
+    background-color: #fff;
+    border: 1px solid $brand-danger-color;
+    border-radius: 3px;
+}
+
 .input-error {
     border-color: $brand-danger-color;
 }
 
-.input-error,
-.input-error * {
+.input-error input {
     color: $brand-font-color-danger;
 }
 
 .input-error.input-primary,
 .input-error.input-primary * {
-    background-color: $brand-danger-light-color;
+    border-color: $brand-danger-color !important;
+    background-color: $brand-danger-light-color !important;
 }
 
 .input-error.input-secondary,
 .input-error.input-secondary * {
-    border-width: 2px;
+    border-color: $brand-danger-color !important;
 }
 
 .input-secondary .input-icon {
@@ -543,6 +562,7 @@ input:checked + .input-slider:before {
 }
 
 .form-group {
+    position: relative;
     margin-bottom: 0.2rem;
 }
 
@@ -717,13 +737,23 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 .quick-input-container {
     display: flex;
     align-items: center;
+    flex-direction: row;
     flex:1;
 }
 
 .quick-input-container > * {
     margin:0;
-    width:100%;
+    flex:2;
 }
+
+.quick-input-container .hint {
+    flex:1;
+}
+
+.quick-input-container > *:first-of-type {
+    flex:4;
+}
+
 .btn-select {
     background: $brand-color-primary;
     color: white;

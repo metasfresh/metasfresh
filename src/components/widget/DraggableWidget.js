@@ -2,12 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
-import BarChart4 from '../charts/BarChart4';
-import BarChart5 from '../charts/BarChart5';
-import PieChart from '../charts/PieChart';
-import PieChart2 from '../charts/PieChart2';
-import StackedGroupedBars from '../charts/StackedGroupedBars';
-import StackedGroupedBars2 from '../charts/StackedGroupedBars2';
+import RawChart from '../charts/RawChart';
 
 const cardSource = {
     beginDrag(props) {
@@ -58,7 +53,8 @@ export class DraggableWidget extends Component {
         this.state = {
             toggleWidgetMenu: false,
             isMaximize: false,
-            refresh: false
+            refresh: false,
+            height: 400
         };
     }
 
@@ -78,34 +74,50 @@ export class DraggableWidget extends Component {
     maximizeWidget = () => {
         this.setState({
             isMaximize: true,
-            toggleWidgetMenu: false
+            toggleWidgetMenu: false,
+            forceChartReRender: true,
+            height: 600
+        }, () => {
+            this.setState({
+                forceChartReRender: false
+            })
         })
     }
 
     minimizeWidget = () => {
         this.setState({
             isMaximize: false,
-            toggleWidgetMenu: false
+            toggleWidgetMenu: false,
+            forceChartReRender: true,
+            height: 400
+        }, () => {
+            this.setState({
+                forceChartReRender: false
+            })
         })
     }
 
     handleRefresh = () => {
         this.setState({
-            refresh: true
+            refresh: true,
+            forceChartReRender: true
         }, () => {
             this.setState({
                 refresh: false,
-                toggleWidgetMenu: false
+                toggleWidgetMenu: false,
+                forceChartReRender: false
             })
         });
     }
 
     render() {
         const {
-            text, url, isDragging, connectDragSource, connectDropTarget,
-            hideWidgets, showWidgets, index, idMaximized, id
+            text, isDragging, connectDragSource, connectDropTarget,
+            hideWidgets, showWidgets, index, idMaximized, id, chartType,
+            caption, fields, groupBy, pollInterval
         } = this.props;
-        const { toggleWidgetMenu, isMaximize, refresh } = this.state;
+
+        const { toggleWidgetMenu, isMaximize, forceChartReRender, height } = this.state;
 
         return connectDragSource(connectDropTarget(
             <div className={
@@ -116,7 +128,7 @@ export class DraggableWidget extends Component {
             } >
                 <div className="draggable-widget-header">
                     {text}
-                    <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}></i>
+                    <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}/>
                     {toggleWidgetMenu &&
                         <div className="draggable-widget-menu">
 
@@ -129,38 +141,20 @@ export class DraggableWidget extends Component {
                         </div>
                     }
                 </div>
-                {this.props.dashboard == '/dashboard2' &&
-                    <div className="draggable-widget-body">
-                        {id===1000001 &&
-                            <BarChart5/>
-                        }
-                        {id===1000000 &&
-                            <PieChart/>
-                        }
-                        {id===1000003 &&
-                            <StackedGroupedBars/>
-                        }
-                        {id===1000002 &&
-                            <PieChart2/>
-                        }
-                        {id===1000006 &&
-                            <StackedGroupedBars2/>
-                        }
-                        {id===1000007 &&
-                            <BarChart4/>
-                        }
-                    </div>
-                }
-                {this.props.dashboard == '/dashboard1' &&
-                    <div className="draggable-widget-body">
-                        <iframe
-                            src={!refresh && url}
-                            scrolling="no"
-                            frameBorder="no"
-                        ></iframe>
-                    </div>
-                }
 
+                <div className="draggable-widget-body">
+                    <RawChart
+                        id={id}
+                        chartType={chartType}
+                        caption={caption}
+                        fields={fields}
+                        groupBy={groupBy}
+                        pollInterval={pollInterval}
+                        reRender={forceChartReRender}
+                        responsive={true}
+                        height={height}
+                    />
+                </div>
             </div>
 
             ));

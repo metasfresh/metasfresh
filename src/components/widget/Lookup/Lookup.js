@@ -19,6 +19,8 @@ class Lookup extends Component {
     constructor(props) {
         super(props);
 
+        const {properties} = this.props;
+
         this.state = {
             query: '',
             list: [],
@@ -28,8 +30,8 @@ class Lookup extends Component {
             property: '',
             properts: {},
             loading: false,
-            propertiesCopy: getItemsByProperty(this.props.properties, 'source', 'list'),
-            mainProperty: getItemsByProperty(this.props.properties, 'source', 'lookup'),
+            propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
+            mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
             shouldBeFocused: true
@@ -201,10 +203,18 @@ class Lookup extends Component {
     }
 
     handleAddNew = () => {
-        const {dispatch, windowType} = this.props;
+        const {
+            dispatch, newRecordWindowId, newRecordCaption, filterWidget,
+            parameterName
+        } = this.props;
 
-        //TODO: Waiting for windowType from API for the new instance of entity
-        dispatch(openModal('Add new', windowType, 'window'));
+        const {mainProperty} = this.state;
+
+        dispatch(openModal(
+            newRecordCaption, newRecordWindowId, 'window', null, null, null,
+            null, null, 'NEW',
+            filterWidget ? parameterName : mainProperty[0].field
+        ));
     }
 
     handleBlur = (callback) => {
@@ -378,7 +388,8 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
-            filterWidget, mandatory, rowId, tabIndex
+            filterWidget, mandatory, rowId, tabIndex, validStatus,
+            newRecordCaption
         } = this.props;
 
         const {
@@ -402,7 +413,13 @@ class Lookup extends Component {
                     'input-dropdown input-block input-' + (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
-                    (mandatory && isInputEmpty ? ' input-mandatory ' : '')
+                    (mandatory && isInputEmpty ? ' input-mandatory ' : '') +
+                    ((validStatus &&
+                        (
+                            !validStatus.valid &&
+                            !validStatus.initialValue
+                        )
+                    ) ? 'input-error ' : '')
                 }>
                     <div className={
                         'input-editable ' +
@@ -447,6 +464,7 @@ class Lookup extends Component {
                         disableOnClickOutside={!isOpen}
                         query={query}
                         creatingNewDisabled={isModal}
+                        newRecordCaption={newRecordCaption}
                     />
                 }
             </div>

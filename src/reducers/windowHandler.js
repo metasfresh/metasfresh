@@ -6,6 +6,7 @@ const initialState = {
     modal: {
         visible: false,
         type: '',
+        dataId: null,
         tabId: null,
         rowId: null,
         viewId: null,
@@ -15,7 +16,8 @@ const initialState = {
         modalTitle: '',
         modalType: '',
         isAdvanced: false,
-        viewDocumentIds: null
+        viewDocumentIds: null,
+        triggerField: null
     },
     rawModal: {
         visible: false,
@@ -25,12 +27,15 @@ const initialState = {
     master: {
         layout: {},
         data: [],
-        rowData: {}
+        rowData: {},
+        saveStatus: {},
+        validStatus: {}
     },
     indicator: 'saved',
     latestNewDocument: null,
     viewId: null,
-    selected: []
+    selected: [],
+    selectedWindowType: null
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -46,20 +51,23 @@ export default function windowHandler(state = initialState, action) {
                 modal: Object.assign({}, state.modal, {
                     visible: true,
                     type: action.windowType,
+                    dataId: action.dataId,
                     tabId: action.tabId,
                     rowId: action.rowId,
                     viewId: action.viewId,
                     title: action.title,
                     modalType: action.modalType,
                     isAdvanced: action.isAdvanced,
-                    viewDocumentIds: action.viewDocumentIds
+                    viewDocumentIds: action.viewDocumentIds,
+                    triggerField: action.triggerField
                 })
         })
 
         case types.UPDATE_MODAL:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
-                    rowId: action.rowId
+                    rowId: action.rowId,
+                    dataId: action.dataId
                 })
         })
 
@@ -91,7 +99,9 @@ export default function windowHandler(state = initialState, action) {
                     data: action.data,
                     docId: action.docId,
                     layout: {},
-                    rowData: {}
+                    rowData: {},
+                    saveStatus: action.saveStatus,
+                    validStatus: action.validStatus
                 })
         })
 
@@ -146,6 +156,33 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
+        case types.UPDATE_ROW_STATUS:
+            return update(state, {
+                [action.scope]: {
+                    rowData: {
+                        [action.tabid]: {
+                            [action.rowid]: {
+                                saveStatus: {$set: action.saveStatus}
+                            }
+                        }
+                    }
+                }
+            })
+
+        case types.UPDATE_DATA_VALID_STATUS:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    validStatus: action.validStatus
+                })
+            })
+
+        case types.UPDATE_DATA_SAVE_STATUS:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    saveStatus: action.saveStatus
+                })
+            })
+
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
@@ -153,7 +190,9 @@ export default function windowHandler(state = initialState, action) {
                         item.field === action.item.field ?
                             Object.assign({}, item, action.item) :
                             item
-                    )
+                    ),
+                    saveStatus: action.saveStatus,
+                    validStatus: action.validStatus
                 })
         })
 
@@ -197,7 +236,8 @@ export default function windowHandler(state = initialState, action) {
 
         case types.SELECT_TABLE_ITEMS:
             return Object.assign({}, state, {
-                selected: action.ids
+                selected: action.ids,
+                selectedWindowType: action.windowType
             })
 
         // LATEST NEW DOCUMENT CACHE
