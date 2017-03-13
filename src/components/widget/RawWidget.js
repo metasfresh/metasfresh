@@ -42,39 +42,38 @@ class RawWidget extends Component {
         handleFocus && handleFocus();
     }
 
-    handlePatch = (property, value, id, valueTo) => {
-        const {handlePatch, widgetData} = this.props;
+    willPatch = (value, valueTo) => {
+        const {widgetData} = this.props;
         const {cachedValue} = this.state;
-        let ret = null;
+        return (
+            JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
+            (
+                cachedValue !== undefined &&
+                (JSON.stringify(cachedValue) !== JSON.stringify(value))
+            )
+        );
+    }
+
+    handlePatch = (property, value, id, valueTo) => {
+        const {handlePatch} = this.props;
 
         // Do patch only when value is not equal state
         // or cache is set and it is not equal value
-
-        if(
-            JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-            JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
-            (cachedValue !== undefined &&
-                (JSON.stringify(cachedValue) !== JSON.stringify(value)))
-        ){
-
-            if(handlePatch) {
-                ret = handlePatch(property, value, id, valueTo);
-            }
-        }
-
-        if(ret){
+        if(this.willPatch(value, valueTo) && handlePatch){
             this.setState({
                 cachedValue: undefined
             });
+            return handlePatch(property, value, id, valueTo);
         }
 
-        return ret;
+        return null;
     }
 
     handleBlur = (widgetField, value, id) => {
         const {handleBlur} = this.props;
 
-        handleBlur && handleBlur();
+        handleBlur && handleBlur(this.willPatch(value));
 
         this.setState({
             isEdited: false

@@ -47,11 +47,12 @@ class Attributes extends Component {
 
     handlePatch = (prop, value, id, cb) => {
         const {dispatch, attributeType} = this.props;
+        const {data} = this.state;
 
         dispatch(patchRequest(attributeType, null, id, null, null, prop, value)).then(response => {
             response.data[0].fields.map(item => {
                 this.setState({
-                    data: this.state.data.map(field => {
+                    data: data && data.map(field => {
                         if(field.field === item.field){
                             return Object.assign({}, field, item);
                         }else{
