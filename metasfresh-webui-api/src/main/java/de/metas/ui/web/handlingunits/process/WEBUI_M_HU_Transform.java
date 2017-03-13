@@ -167,6 +167,8 @@ public class WEBUI_M_HU_Transform
 		 * <b>Important:</b> the user is allowed to exceed the LU TU-capacity which was configured in metasfresh! No new LUs will be created.<br>
 		 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 		 * <p>
+		 * <b>Also, please note that an aggregate TU is "de-aggregated" before it is added to the LU.</b>
+		 * <p>
 		 * Parameters
 		 * <ul>
 		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
@@ -374,7 +376,7 @@ public class WEBUI_M_HU_Transform
 	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
 		HUTransferService.get(getCtx())
-				.splitCU_To_ExistingTU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuHU);
+				.cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
 		// Notify
 		getView().addHUAndInvalidate(tuHU);
@@ -390,7 +392,7 @@ public class WEBUI_M_HU_Transform
 	{
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitCU_To_NewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
+				.cuToNewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -411,7 +413,7 @@ public class WEBUI_M_HU_Transform
 			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitCU_To_NewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
+				.cuToNewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -426,7 +428,7 @@ public class WEBUI_M_HU_Transform
 			final BigDecimal qtyTU)
 	{
 		HUTransferService.get(getCtx())
-				.splitTU_To_ExistingLU(tuRow.getM_HU(), qtyTU, luHU);
+				.tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
 		getView().addHUAndInvalidate(luHU);
@@ -448,7 +450,7 @@ public class WEBUI_M_HU_Transform
 			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitTU_To_NewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
+				.tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -469,7 +471,7 @@ public class WEBUI_M_HU_Transform
 		final I_M_HU sourceTuHU = tuRow.getM_HU();
 
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.splitTU_To_NewTUs(sourceTuHU, qtyTU, sourceTuHU.isHUPlanningReceiptOwnerPM());
+				.tuToNewTUs(sourceTuHU, qtyTU, sourceTuHU.isHUPlanningReceiptOwnerPM());
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
