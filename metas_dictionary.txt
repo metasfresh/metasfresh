@@ -81,6 +81,9 @@ endpoint
 endpoints
 deserialize
 accessor
+restorable
+autowired
+frontend
 instanceof
 pallet
 transactional
