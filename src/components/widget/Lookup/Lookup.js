@@ -144,8 +144,8 @@ class Lookup extends Component {
                 } else {
                     propertiesArray.push(propertiesCopy[index]);
                     return true;
-                } 
-            }).map((item, index) => {
+                }
+            }).map((item) => {
                 return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
                     subentity, subentityId
