@@ -88,27 +88,12 @@ public class WEBUI_M_HU_Transform
 	public static enum ActionType
 	{
 		/**
-		 * Takes a quantity out of a TU <b>or</b> to splits one CU into two.
-		 * <p>
-		 * Parameters:
-		 * <ul>
-		 * <li>the currently selected source CU line</li>
-		 * <li>the CU-quantity to take out or split</li>
-		 * </ul>
+		 * Invokes {@link HUTransferService#cuToNewCU(I_M_HU, BigDecimal)}.
 		 */
 		CU_To_NewCU,
 
 		/**
-		 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
-		 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
-		 * <p>
-		 * Parameters:
-		 * <ul>
-		 * <li>the currently selected source CU line</li>
-		 * <li>the PI item product to specify both the PI and capacity of the target TU</li>
-		 * <li>the CU-quantity to join or split</li>
-		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
-		 * </ul>
+		 * Invokes {@link HUTransferService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
 		 */
 		CU_To_NewTUs,
 
@@ -124,57 +109,22 @@ public class WEBUI_M_HU_Transform
 		TU_Set_Ownership,
 
 		/**
-		 * Similar to {@link #CU_To_NewTUs}, but the destination TU already exists (selectable as process parameter).<br>
-		 * <b>Important:</b> the user is allowed to exceed the TU capacity which was configured in metasfresh! No new TUs will be created.<br>
-		 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
-		 * <p>
-		 * Parameters
-		 * <ul>
-		 * <li>the currently selected source CU line</li>
-		 * <li>the target TU</li>
-		 * <li>the CU-quantity to join or split</li>
-		 * </ul>
+		 * Invokes {@link HUTransferService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
 		 */
 		CU_To_ExistingTU,
 
 		/**
-		 * Takes a TU off a LU or splits one TU into two. The resulting TUs will always have the same PI as the source TU
-		 * <p>
-		 * Parameters
-		 * <ul>
-		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
-		 * <li>the number of TUs to take off or split</li>
-		 * </ul>
+		 * Invokes {@link HUTransferService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
 		 */
 		TU_To_NewTUs,
 
 		/**
-		 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
-		 * Otherwise, the source is split and distributed over many LUs.
-		 * <p>
-		 * Parameters
-		 * <ul>
-		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
-		 * <li>{@link WEBUI_M_HU_Transform#PARAM_M_HU_PI_ITEM_ID} the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU</li>
-		 * <li>{@link WEBUI_M_HU_Transform#PARAM_QtyTU} the number of TUs to join or split onto the destination LU(s)</li>
-		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
-		 * </ul>
+		 * Invokes {@link HUTransferService#tuToNewLUs(I_M_HU, BigDecimal, I_M_HU_PI_Item, boolean)}.
 		 */
 		TU_To_NewLUs,
 
 		/**
-		 * Similar to {@link #TU_To_NewLUs}, but the destination LU already exists (selectable as process parameter).<br>
-		 * <b>Important:</b> the user is allowed to exceed the LU TU-capacity which was configured in metasfresh! No new LUs will be created.<br>
-		 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
-		 * <p>
-		 * <b>Also, please note that an aggregate TU is "de-aggregated" before it is added to the LU.</b>
-		 * <p>
-		 * Parameters
-		 * <ul>
-		 * <li>the currently selected source TU line (can be an aggregated HU and therefore represent many homogeneous TUs)</li>
-		 * <li>the target LU</li>
-		 * <li>the number of TUs to join or split one the target LU</li>
-		 * </ul>
+		 * Invokes {@link HUTransferService#tuToExistingLU(I_M_HU, BigDecimal, I_M_HU).
 		 */
 		TU_To_ExistingLU,
 
@@ -392,7 +342,7 @@ public class WEBUI_M_HU_Transform
 	{
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.cuToNewCU(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU);
+				.cuToNewCU(cuRow.getM_HU(), qtyCU);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
@@ -413,7 +363,7 @@ public class WEBUI_M_HU_Transform
 			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
-				.cuToNewTUs(cuRow.getM_HU(), cuRow.getM_Product(), cuRow.getC_UOM(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
+				.cuToNewTUs(cuRow.getM_HU(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 
 		// Notify
 		getView().addHUsAndInvalidate(createdHUs);
