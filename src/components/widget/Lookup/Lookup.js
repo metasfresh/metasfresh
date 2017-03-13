@@ -105,7 +105,6 @@ class Lookup extends Component {
                         }
                     )}
                 } else {
-                    console.log(property); //TO DO wrong property call
                     onChange(property, select);
 
                     this.setState((prevState) => update(this.state, {
@@ -134,16 +133,19 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
+        let propertiesArray = []; //need to have property which has no default value;
+
         // call for more properties
         if(propertiesCopy.length > 0){
-            const batchArray = propertiesCopy.filter((item) => {
+            const batchArray = propertiesCopy.filter((item, index) => {
                 const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
                 if(objectValue) {
                     return false;
                 } else {
+                    propertiesArray.push(propertiesCopy[index]);
                     return true;
                 } 
-            }).map((item) => {
+            }).map((item, index) => {
                 return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
                     subentity, subentityId
@@ -153,7 +155,9 @@ class Lookup extends Component {
             Promise.all(batchArray).then(props => {
                 const newProps = {};
                 props.map((prop, index) => {
-                    newProps[propertiesCopy[index].field] = prop.data.values;
+                    if(propertiesArray.length > 0){
+                        newProps[propertiesArray[index].field] = prop.data.values;
+                    }
                 });
 
                 this.setState({
