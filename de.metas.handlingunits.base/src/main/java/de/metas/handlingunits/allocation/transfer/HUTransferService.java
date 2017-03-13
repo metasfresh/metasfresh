@@ -167,7 +167,7 @@ public class HUTransferService
 	 * @param cuRow
 	 * @param qtyCU
 	 */
-	public List<I_M_HU> splitCU_To_NewCU(
+	public List<I_M_HU> cuToNewCU(
 			final I_M_HU cuHU,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
@@ -216,16 +216,12 @@ public class HUTransferService
 	 * @param qtyCU quantity to split
 	 * @param tuHU
 	 */
-	public void splitCU_To_ExistingTU(
+	public void cuToExistingTU(
 			final I_M_HU cuHU,
-			final I_M_Product cuProduct,
-			final I_C_UOM cuUOM,
 			final BigDecimal qtyCU,
 			final I_M_HU tuHU)
 	{
 		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
-		Preconditions.checkNotNull(cuProduct, "Param 'cuProduct' may not be null");
-		Preconditions.checkNotNull(cuUOM, "Param 'cuUOM' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -253,12 +249,18 @@ public class HUTransferService
 
 		if (destination != null)
 		{
+			final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
+			Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
 			HUSplitBuilderCoreEngine
 					.of(
 							huContext,
 							cuHU,
-							// forceAllocation = false; no need, because destination has no capacity constraints
-							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyCU, false),
+							// forceAllocation = true; we don't want to get bothered by capacity constraint, even if the destination *probably* doesn't have any to start with
+							huContext -> createCUAllocationRequest(huContext,
+									storages.get(0).getM_Product(),
+									storages.get(0).getC_UOM(),
+									qtyCU,
+									true),
 							destination)
 					.withPropagateHUValues()
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -295,7 +297,54 @@ public class HUTransferService
 		childCUs.forEach(cu -> {
 			setParent(cu, tuMaterialItem.get(0));
 		});
+	}
 
+	public void tuToExistingLU(
+			final I_M_HU tuHU //
+			, final BigDecimal qtyTU //
+			, final I_M_HU luHU)
+	{
+		Preconditions.checkNotNull(tuHU, "Param 'tuHU' may not be null");
+		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
+		Preconditions.checkNotNull(luHU, "Param 'luHU' may not be null");
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final List<I_M_HU> tuHUsToAttachToLU;
+		if (qtyTU.compareTo(getMaximumQtyTU(tuHU)) >= 0)
+		{
+			// qtyTU is so large that the complete tuHU will be dealt with
+			if (handlingUnitsBL.isAggregateHU(tuHU))
+			{
+				// de-aggregate tuHU. we only want to add "real" TUs.
+				// It might be the case that luHU only has "real" HUs already and in that case, we might be able to add an aggregate TU..
+				// but it make this BL more complicated and i'm not sure we need it, or that it is even a good thing in terms of predictability for the user.
+				tuHUsToAttachToLU = tuToNewTUs(tuHU, qtyTU, tuHU.isHUPlanningReceiptOwnerPM());
+			}
+			else
+			{
+				// just move huTU as-is
+				tuHUsToAttachToLU = ImmutableList.of(tuHU);
+			}
+		}
+		else
+		{
+			// create one or many new TUs for qtyTU
+			tuHUsToAttachToLU = tuToNewTUs(tuHU, qtyTU, tuHU.isHUPlanningReceiptOwnerPM());
+		}
+
+		tuHUsToAttachToLU.forEach(tuToAttach -> {
+
+			final I_M_HU_PI piOfChildHU = tuToAttach.getM_HU_PI_Version().getM_HU_PI();
+
+			final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, piOfChildHU, huContext);
+			Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", luHU, piOfChildHU);
+
+			final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
+
+			setParent(tuToAttach, parentItem);
+		});
 	}
 
 	/**
@@ -306,7 +355,7 @@ public class HUTransferService
 	 * @param tuPIItemProductId to TU
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> splitCU_To_NewTUs(
+	public List<I_M_HU> cuToNewTUs(
 			final I_M_HU cuHU,
 			final I_M_Product cuProduct,
 			final I_C_UOM cuUOM,
@@ -341,14 +390,15 @@ public class HUTransferService
 	}
 
 	/**
-	 * Split a given number of TUs from current TU line to new TUs.
+	 * Split a given number of TUs from current TU line to new TUs. This also has the effect of "de-aggregating" the given {@code sourceTuHU}.
+	 * 
 	 *
 	 * @param tuHU the source TU to split from.
 	 * @param qtyTU
 	 * @param tuPIItemProduct
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> splitTU_To_NewTUs(
+	public List<I_M_HU> tuToNewTUs(
 			final I_M_HU sourceTuHU,
 			final BigDecimal qtyTU,
 			final boolean isOwnPackingMaterials)
@@ -373,7 +423,7 @@ public class HUTransferService
 		}
 
 		// note: as of now an aggregated TU needs a parent, so also if the user just wants fully to remove an aggregate TU from it's parent, we still need to split it.
-		return split_To_TopLevelHUs(sourceTuHU, qtyTU, null, isOwnPackingMaterials);
+		return tuToTopLevelHUs(sourceTuHU, qtyTU, null, isOwnPackingMaterials);
 	}
 
 	private void setParent(final I_M_HU childHU, final I_M_HU_Item parentItem)
@@ -408,7 +458,7 @@ public class HUTransferService
 	 * @param isOwnPackingMaterials
 	 * @return
 	 */
-	public List<I_M_HU> splitTU_To_NewLUs(
+	public List<I_M_HU> tuToNewLUs(
 			final I_M_HU sourceTuHU,
 			final BigDecimal qtyTU,
 			final I_M_HU_PI_Item luPIItem,
@@ -432,10 +482,12 @@ public class HUTransferService
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.create(luPIItem.getM_HU_PI_Version());
 
-			final I_M_HU_Item haOldItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU);
+			final I_M_HU_Item haOldItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // needed in case sourceTuHU is an aggregate
 
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			Services.get(IHUJoinBL.class).assignTradingUnitToLoadingUnit(huContext, lu, sourceTuHU);
+			final IHUJoinBL huJoinBL = Services.get(IHUJoinBL.class);
+
+			huJoinBL.assignTradingUnitToLoadingUnit(huContext, lu, sourceTuHU);
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
 				final I_M_HU_Item haItemOfLU = handlingUnitsDAO.retrieveItems(lu).get(0);
@@ -448,7 +500,7 @@ public class HUTransferService
 			return ImmutableList.of(lu);
 		}
 
-		return split_To_TopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
 	}
 
 	/**
@@ -460,7 +512,7 @@ public class HUTransferService
 	 * @param luPIItem may be {@code null}. If null, then the resulting top level HU will be a TU
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> split_To_TopLevelHUs(
+	private List<I_M_HU> tuToTopLevelHUs(
 			final I_M_HU sourceTuHU,
 			final BigDecimal qtyTU,
 			final I_M_HU_PI_Item luPIItem,
@@ -470,11 +522,6 @@ public class HUTransferService
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
 
 		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(sourceTuHU);
-
-		// TODO cases to cover:
-		// 1. cuRows.isEmpty() for whatever reason: in this case, the TU shall be destroyed already, so this method can't be called with such a TU; throw an exception
-		// 2. cuRows.size() == 1: create source and destination, and create a request with a CU-qty of qtyTU * tuRow.getQtyCU() etc
-		// 3. cuRows.size() > 1: for the first cuRow, do 2.; then, for the following cuRows, basically do what action_SplitCU_To_ExistingTU() does
 
 		final List<I_M_HU> createdTUs;
 
@@ -548,7 +595,7 @@ public class HUTransferService
 
 			final BigDecimal qtyCU = Preconditions.checkNotNull(currentHuProductStorage.getQty(), "Qty of currentHuProductStorage=%s may not be null", currentHuProductStorage);
 			createdTUs.forEach(createdTU -> {
-				splitCU_To_ExistingTU(currentHuProductStorage.getM_HU(), currentHuProductStorage.getM_Product(), currentHuProductStorage.getC_UOM(), qtyCU, createdTU);
+				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
 			});
 		}
 
@@ -577,33 +624,5 @@ public class HUTransferService
 		}
 		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages below the given 'tuHU' may not be empty; tuHU=%s", tuHU);
 		return productStorages;
-	}
-
-	public void splitTU_To_ExistingLU(
-			final I_M_HU tuHU //
-			, final BigDecimal qtyTU //
-			, final I_M_HU luHU)
-	{
-		Preconditions.checkNotNull(tuHU, "Param 'tuHU' may not be null");
-		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
-		Preconditions.checkNotNull(luHU, "Param 'luHU' may not be null");
-
-		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(tuHU);
-
-		for (final IHUProductStorage productStorage : productStorages)
-		{
-			final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(luHU);
-
-			// Transfer Qty
-			HUSplitBuilderCoreEngine
-					.of(huContext,
-							tuHU,
-							// forceAllocation = true; if the user managed to balance another LU onto a fully loaded LU, then we need to be able to also do this in metasfresh
-							huContext -> createCUAllocationRequest(huContext, productStorage.getM_Product(), productStorage.getC_UOM(), productStorage.getQty(), true),
-							destination)
-					.withPropagateHUValues()
-					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
-					.performSplit();
-		}
 	}
 }

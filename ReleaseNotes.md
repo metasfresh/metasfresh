@@ -37,7 +37,7 @@ Here come the actual release notes:
   * [#1035](https://github.com/metasfresh/metasfresh/issues/1035) DLM - restrict number of mass-archived records
     * Performance and Database autovacuum improvement. Segmenting the mass archiving to allow better database maintenance.
   * [#1046](https://github.com/metasfresh/metasfresh/issues/1046) Automatic Naming of Pricelist Version Name
-    * Introducing the automatic naming of pricelist Version, adding the neede Informations into the Version identifier.
+    * Introducing the automatic naming of pricelist Version, adding the needed Information into the Version identifier.
   * [#1070](https://github.com/metasfresh/metasfresh/issues/1070) Price not transferred to flatrate term
     * Enhancing the processing of flatrate Terms after recording in orderline. Now also transferring the price into the flatrate term data after order completion.
   * [#1071](https://github.com/metasfresh/metasfresh/issues/1071) Empties document Jasper takes very long to generate
@@ -65,7 +65,7 @@ Here come the actual release notes:
   * [#1130](https://github.com/metasfresh/metasfresh/issues/1130) LU Transform "own Palette" Packing material
     * New functionality to set a "own palette" flag in Handling Unit Editor of Material Receipt, to allow the usage of own Packing Material (here only palettes) that are then not added to Material Receipt Lines from the vendor.
   * [#1132](https://github.com/metasfresh/metasfresh/issues/1132) Close/ Open Action for Material Receipt Candidate Lines
-    * Adding the Open/ Close processes to quickaction drop-down in Material Receipt candidates Window allowing the user to mrk rows as "processed" or reopen processed rows..
+    * Adding the Open/ Close processes to quickaction drop-down in Material Receipt candidates Window allowing the user to mark rows as "processed" or reopen processed rows.
   * [#1133](https://github.com/metasfresh/metasfresh/issues/1133) Reorder the columns in Grid View for Material Receipt Window
     * Reordering columns in Material Receipt Grid View in WebUI.
   * [#1135](https://github.com/metasfresh/metasfresh/issues/1135) Translation de_DE for Process Empties receive
@@ -80,11 +80,11 @@ Here come the actual release notes:
   * [#206](https://github.com/metasfresh/metasfresh-webui/issues/206) CU Handling Unit creation without multiline
     * Now the multiline functionality for creating CU without packing material (TU, LU) is allowed also for only 1 selected line.
   * [#207](https://github.com/metasfresh/metasfresh-webui/issues/207) Prohibit Material Receipt w/ selection of multi BP
-    * Disallowing the Material Receipt workflow when lines with different vendors are selected. This was a confusing experiance for the user, so we decided to switch off this functioanlity.
+    * Disallowing the Material Receipt workflow when lines with different vendors are selected. This was a confusing experience for the user, so we decided to switch off this functioanlity.
   * [#208](https://github.com/metasfresh/metasfresh-webui/issues/208) Receive CU w/ possible quantity adjustment
     * Adjustments to the action "Receive CU", now allowing the change of the initial quantity to be received.
   * [#209](https://github.com/metasfresh/metasfresh-webui/issues/209) HU Automatic Label Printing when received
-    * New Functionality that automatically print the Material Receipt Label for the LU as soon as the HU is switched from planning status to active. This allows a more efficient workflow for the user and avoids the printing of labels before being operative (active).
+    * New Functionality that automatically prints the Material Receipt Label for the LU as soon as the HU is switched from planning status to active. This allows a more efficient workflow for the user and avoids the printing of labels before being operative (active).
   * [#210](https://github.com/metasfresh/metasfresh-webui/issues/210) Print Material Receipt Document via Material Receipt Candidates Window
     * Added an action that provides the possibility to print the material Receipt Document for all Handling Units of a given Material Receipt candidate Line.
   * [#223](https://github.com/metasfresh/metasfresh-webui/issues/223) Attributes shall be shown on CU level too
@@ -100,7 +100,7 @@ Here come the actual release notes:
   * [#126](https://github.com/metasfresh/metasfresh-webui-frontend/issues/126) Add new Business Partner functionality in search Field
     * New Feature that allows to create a new customer Business Partner on the fly when editing a sales Order. This new functionality automatically is suggested to the user when the businesspartner search does not find a result.
   * [#446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/446) Error indicator for fields
-    * Introducing new Error indicators for fiels, allowing to provide detailed information to the user in case of error situations for a field. The available information is shown with a red color on the field and available when hovering then field with the mouse.
+    * Introducing new Error indicators for fields, allowing to provide detailed information to the user in case of error situations for a field. The available information is shown with a red color on the field and available when hovering then field with the mouse.
   * [#447](https://github.com/metasfresh/metasfresh-webui-frontend/issues/447) Not saved indicator for Grid view lines
     * Introducting a "not saved indicator" for grid view lines, now giving the user the transparency to recognize why a line cannot be saved.
   * [#448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/448) Query on activate document included tab
@@ -114,18 +114,18 @@ Here come the actual release notes:
   * [#490](https://github.com/metasfresh/metasfresh-webui-frontend/issues/490) Filter drop-down list too narrow
     * Layout change to prohibit the filter drop-down list getting to narrow, disallowing the user to read the filter criteria.
   * [#510](https://github.com/metasfresh/metasfresh-webui-frontend/issues/510) Improved Not Saved Indicator design
-    * Nice improvement for the design of the not saved indicator. It is now a thin red line instead of the saved indicator.
+    * Nice improvement for the design of the "not saved" indicator. It is now a thin red line instead of the "progress and save" indicator.
   * [#1073](https://github.com/metasfresh/metasfresh/issues/1073) Material Receipt Candidates order by Purchase Order ID desc
     * New Order by criteria for the Grid view in the Material Receipt Candidates Window.
   
 ## Fixes
 * metasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
-    * Fixes an issue that leads to hig volument logging on metasfresh application server.
+    * Fixes an issue that leads to high volume logging on metasfresh application server.
   * [#1039](https://github.com/metasfresh/metasfresh/issues/1039) Make C_OrderLine.M_Product_ID mandatory
     * Minor Fix making the Orderline ID mandatory.
   * [#1056](https://github.com/metasfresh/metasfresh/issues/1056) Purchase Order from Sales Order process, wrong InvoiceBPartner
-    * Fixes a Bug that did not select the correct Invoice Business Partrner Vendor from the Partner Releationship having the delivery vendor Partner different than the Invoice Business Partner vendor.
+    * Fixes a Bug that did not select the correct Invoice Business Partrner vendor from the Partner Releationship having the delivery vendor Partner different than the Invoice Business Partner vendor.
   * [#1059](https://github.com/metasfresh/metasfresh/issues/1059) ShipmentScheduleBL.updateSchedules fails after C_Order was voided
     * Minor fix in the ShipmentScheduler update that failed for a cornercase when the sales Order was voided.
   * [#1068](https://github.com/metasfresh/metasfresh/issues/1068) Settings on Swing Client are saved but window does not close
