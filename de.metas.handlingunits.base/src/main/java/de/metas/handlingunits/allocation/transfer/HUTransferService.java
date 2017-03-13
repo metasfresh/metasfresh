@@ -39,6 +39,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -474,7 +475,9 @@ public class HUTransferService
 		{
 			// don't split; just create a new LU and "move" the TU
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			final I_M_HU lu = handlingUnitsDAO
+
+			// create the new LU
+			final I_M_HU newLuHU = handlingUnitsDAO
 					.createHUBuilder(huContext)
 					.setC_BPartner(sourceTuHU.getC_BPartner())
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
@@ -482,22 +485,41 @@ public class HUTransferService
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.create(luPIItem.getM_HU_PI_Version());
 
-			final I_M_HU_Item haOldItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // needed in case sourceTuHU is an aggregate
+			// store the old parent-item of sourceTuHU
+			final I_M_HU_Item oldParentItemOfSourceTuHU = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // needed in case sourceTuHU is an aggregate
+
+			final I_M_HU_Item newParentItemOfSourceTuHU;
 
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			final IHUJoinBL huJoinBL = Services.get(IHUJoinBL.class);
-
-			huJoinBL.assignTradingUnitToLoadingUnit(huContext, lu, sourceTuHU);
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				final I_M_HU_Item haItemOfLU = handlingUnitsDAO.retrieveItems(lu).get(0);
-				haItemOfLU.setQty(haOldItem.getQty());
-				haItemOfLU.setM_HU_PI_Item(haOldItem.getM_HU_PI_Item());
+				// get the existing HA-item from newLuHU
+				newParentItemOfSourceTuHU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
+				Check.errorUnless(X_M_HU_Item.ITEMTYPE_HUAggregate.equals(handlingUnitsBL.getItemType(newParentItemOfSourceTuHU)),
+						"newLuHU's first M_HU_Item is not aggregate; newLuHU={}; first M_HU_Item={}", newLuHU, newParentItemOfSourceTuHU);
+			}
+			else
+			{
+				// create the new parent-item that will link sourceTuHU with newLuHU
+				final I_M_HU_PI piOfChildHU = sourceTuHU.getM_HU_PI_Version().getM_HU_PI();
+				final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(newLuHU, piOfChildHU, huContext);
+				Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", newLuHU, piOfChildHU);
+				newParentItemOfSourceTuHU = handlingUnitsDAO.createHUItemIfNotExists(newLuHU, parentPIItem).getLeft();
+			}
+
+			// assign sourceTuHU to newLuHU
+			setParent(sourceTuHU, newParentItemOfSourceTuHU);
+
+			// update the
+			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
+			{
+				final I_M_HU_Item haItemOfLU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
+				haItemOfLU.setQty(oldParentItemOfSourceTuHU.getQty());
+				haItemOfLU.setM_HU_PI_Item(oldParentItemOfSourceTuHU.getM_HU_PI_Item());
 				InterfaceWrapperHelper.save(haItemOfLU);
 			}
-			handlingUnitsDAO.saveHU(lu);
 
-			return ImmutableList.of(lu);
+			return ImmutableList.of(newLuHU);
 		}
 
 		return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);

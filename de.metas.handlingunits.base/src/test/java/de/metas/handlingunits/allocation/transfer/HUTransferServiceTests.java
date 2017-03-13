@@ -31,6 +31,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.interfaces.I_M_Warehouse;
 
 /*
@@ -599,7 +600,7 @@ public class HUTransferServiceTests
 	}
 
 	@Theory
-	public void testRealTU_To_NewLU(
+	public void testRealStandaloneTU_To_NewLU(
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
 		// prepare the existing TU
@@ -616,6 +617,51 @@ public class HUTransferServiceTests
 
 		assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
 		// data.helper.commitAndDumpHU(newLUs.get(0));
+		// the LU shall contain 'tuToSplit'
+		final Node newLUXML = HUXmlConverter.toXml(newLUs.get(0));
+		assertThat(newLUXML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/@M_HU_PI_Item_ID)", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_HU_ID)", is(Integer.toString(tuToSplit.getM_HU_ID()))));
+
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("20.000")));
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("20.000")));
+	}
+
+	/**
+	 * Similar to {@link #testRealStandaloneTU_To_NewLU(boolean)}, but the source TU is moved from an old LU to a new one
+	 * 
+	 * @param isOwnPackingMaterials
+	 */
+	@Theory
+	public void testRealTUwithLU_To_NewLU(
+			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		// prepare the existing TU
+		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
+		final I_M_HU tuToSplit = cuHU.getM_HU_Item_Parent().getM_HU();
+		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
+
+		// prepare tuToSplit onto a LU. This assumes that #testRealStandaloneTU_To_NewLU was green
+		final List<I_M_HU> oldLUs = HUTransferService.get(data.helper.getHUContext())
+				.tuToNewLUs(tuToSplit, BigDecimal.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
+		assertThat(oldLUs.size(), is(1)); // guard
+		assertThat(tuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(oldLUs.get(0).getM_HU_ID()));
+		assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+
+		// invoke the method under test
+		final List<I_M_HU> newLUs = HUTransferService.get(data.helper.getHUContext())
+				.tuToNewLUs(tuToSplit,
+						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
+
+		// the old LU shall now be destroyed
+		assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Destroyed));
+		
+		assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
+		
 		// the LU shall contain 'tuToSplit'
 		final Node newLUXML = HUXmlConverter.toXml(newLUs.get(0));
 		assertThat(newLUXML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
@@ -719,10 +765,10 @@ public class HUTransferServiceTests
 		// the original aggreagate HU is still intact
 		assertThat(existingLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@Qty)", is("2")));
 		assertThat(existingLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@M_HU_PI_Item_ID)", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
-		
+
 		// the aggregate 80kg TU which we moved in was de-aggregated into two 40kg TUs
 		assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg' and @Qty='40.000'])", is("2")));
-		//data.helper.commitAndDumpHU(existingLU);
+		// data.helper.commitAndDumpHU(existingLU);
 	}
 
 	// TODO: test with TUs that have multiple different CUs in them
@@ -741,7 +787,6 @@ public class HUTransferServiceTests
 	{
 		final I_M_HU cuHU = mkRealCUWithTUToSplit("2");
 
-		
 		final I_M_HU existingTU = handlingUnitsDAO.retrieveParent(cuHU);
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
