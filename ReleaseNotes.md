@@ -20,9 +20,10 @@ Here come the actual release notes:
   
 ## Fixes
 * metasfresh-backend
-  * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
- 
+  * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
+
 * metasfresh-webui-api
+  * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
 
 # metasfresh 5.0 (2017-10)
 
