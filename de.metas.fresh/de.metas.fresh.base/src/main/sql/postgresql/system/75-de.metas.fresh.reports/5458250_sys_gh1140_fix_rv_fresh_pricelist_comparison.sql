@@ -1,4 +1,4 @@
---DROP VIEW IF EXISTS rv_fresh_pricelist 
+﻿--DROP VIEW IF EXISTS rv_fresh_pricelist 
 
 --DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
