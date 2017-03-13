@@ -1281,7 +1281,7 @@ public class MRequest extends X_R_Request
 			.append(Msg.translate(getCtx(), "R_Request_ID"))
 			.append(": ").append(getDocumentNo())
 			.append("  ").append(getMailTag())
-			.append("\nSent by AdempiereMail");
+			.append("\nSent by Metasfresh");
 		if (serverAddress != null)
 			sb.append(" from ").append(serverAddress);
 		return sb.toString();
