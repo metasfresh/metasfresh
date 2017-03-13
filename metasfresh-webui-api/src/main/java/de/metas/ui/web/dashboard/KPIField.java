@@ -1,12 +1,14 @@
 package de.metas.ui.web.dashboard;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -15,6 +17,7 @@ import com.google.common.base.Splitter;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
@@ -54,6 +57,8 @@ public class KPIField
 		Object extractValue(final String containingAggName, final MultiBucketsAggregation.Bucket bucket);
 	}
 
+	private static final Logger logger = LogManager.getLogger(KPIField.class);
+
 	private final String fieldName;
 	private final boolean groupBy;
 
@@ -62,6 +67,7 @@ public class KPIField
 	private final ITranslatableString description;
 	private final String unit;
 	private final KPIFieldValueType valueType;
+	private final Integer numberPrecision;
 
 	private final String color;
 
@@ -85,6 +91,7 @@ public class KPIField
 		description = builder.description;
 		unit = builder.unit;
 		valueType = builder.valueType;
+		numberPrecision = builder.numberPrecision;
 
 		color = builder.color;
 
@@ -118,77 +125,104 @@ public class KPIField
 			return null;
 		}
 
-		switch (valueType)
+		try
 		{
-			case Date:
+			switch (valueType)
 			{
-				if (value instanceof String)
+				case Date:
 				{
-					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
-					return JSONDate.toJson(date);
+					if (value instanceof String)
+					{
+						final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
+						return JSONDate.toJson(date);
+					}
+					else if (value instanceof Date)
+					{
+						return JSONDate.toJson((Date)value);
+					}
+					else if (value instanceof Number)
+					{
+						final long millis = ((Number)value).longValue();
+						return JSONDate.toJson(millis);
+					}
+					else
+					{
+						return value;
+					}
 				}
-				else if (value instanceof Date)
+				case DateTime:
 				{
-					return JSONDate.toJson((Date)value);
+					if (value instanceof String)
+					{
+						final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
+						return JSONDate.toJson(date);
+					}
+					else if (value instanceof Date)
+					{
+						return JSONDate.toJson((Date)value);
+					}
+					else if (value instanceof Number)
+					{
+						final long millis = ((Number)value).longValue();
+						return JSONDate.toJson(millis);
+					}
+					else
+					{
+						return value;
+					}
 				}
-				else if (value instanceof Number)
+				case Number:
 				{
-					final long millis = ((Number)value).longValue();
-					return JSONDate.toJson(millis);
+					if (value instanceof String)
+					{
+						final BigDecimal bd = new BigDecimal(value.toString());
+						return roundToPrecision(bd);
+					}
+					else if (value instanceof Double)
+					{
+						final BigDecimal bd = BigDecimal.valueOf(((Double)value).doubleValue());
+						return roundToPrecision(bd);
+					}
+					else if (value instanceof Number)
+					{
+						final BigDecimal bd = BigDecimal.valueOf(((Number)value).intValue());
+						return roundToPrecision(bd);
+					}
+					else if (value instanceof Integer)
+					{
+						return value;
+					}
+					else
+					{
+						return value;
+					}
 				}
-				else
+				case String:
 				{
-					return value;
+					return value.toString();
+				}
+				default:
+				{
+					throw new IllegalStateException("valueType not supported: " + valueType);
 				}
 			}
-			case DateTime:
-			{
-				if (value instanceof String)
-				{
-					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
-					return JSONDate.toJson(date);
-				}
-				else if (value instanceof Date)
-				{
-					return JSONDate.toJson((Date)value);
-				}
-				else if (value instanceof Number)
-				{
-					final long millis = ((Number)value).longValue();
-					return JSONDate.toJson(millis);
-				}
-				else
-				{
-					return value;
-				}
-			}
-			case Number:
-			{
-				if (value instanceof String)
-				{
-					return new BigDecimal(value.toString());
-				}
-				else if (value instanceof Double)
-				{
-					return BigDecimal.valueOf(((Double)value).doubleValue());
-				}
-				else if (value instanceof Number)
-				{
-					return BigDecimal.valueOf(((Number)value).intValue());
-				}
-				else
-				{
-					return value;
-				}
-			}
-			case String:
-			{
-				return value.toString();
-			}
-			default:
-			{
-				throw new IllegalStateException("valueType not supported: " + valueType);
-			}
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed converting {} for field {}", value, this, ex);
+			return value.toString();
+		}
+	}
+
+	private final BigDecimal roundToPrecision(final BigDecimal bd)
+	{
+		if (numberPrecision == null)
+		{
+			return bd;
+		}
+		else
+		{
+			return bd.setScale(numberPrecision, RoundingMode.HALF_UP);
 		}
 	}
 
@@ -199,61 +233,69 @@ public class KPIField
 			return null;
 		}
 
-		if (valueType == KPIFieldValueType.Date)
+		try
 		{
-			if (value instanceof String)
+			if (valueType == KPIFieldValueType.Date)
 			{
-				final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
-				return DisplayType.getDateFormat(DisplayType.Date)
-						.format(date);
+				if (value instanceof String)
+				{
+					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
+					return DisplayType.getDateFormat(DisplayType.Date)
+							.format(date);
+				}
+				else if (value instanceof Date)
+				{
+					final Date date = (Date)value;
+					return DisplayType.getDateFormat(DisplayType.Date)
+							.format(date);
+				}
+				else if (value instanceof Number)
+				{
+					final long millis = ((Number)value).longValue();
+					final Date date = new Date(millis);
+					return DisplayType.getDateFormat(DisplayType.Date)
+							.format(date);
+				}
+				else
+				{
+					return value.toString();
+				}
 			}
-			else if (value instanceof Date)
+			else if (valueType == KPIFieldValueType.DateTime)
 			{
-				final Date date = (Date)value;
-				return DisplayType.getDateFormat(DisplayType.Date)
-						.format(date);
-			}
-			else if (value instanceof Number)
-			{
-				final long millis = ((Number)value).longValue();
-				final Date date = new Date(millis);
-				return DisplayType.getDateFormat(DisplayType.Date)
-						.format(date);
+				if (value instanceof String)
+				{
+					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
+					return DisplayType.getDateFormat(DisplayType.DateTime)
+							.format(date);
+				}
+				else if (value instanceof Date)
+				{
+					final Date date = (Date)value;
+					return DisplayType.getDateFormat(DisplayType.DateTime)
+							.format(date);
+				}
+				else if (value instanceof Number)
+				{
+					final long millis = ((Number)value).longValue();
+					final Date date = new Date(millis);
+					return DisplayType.getDateFormat(DisplayType.DateTime)
+							.format(date);
+				}
+				else
+				{
+					return value.toString();
+				}
 			}
 			else
 			{
-				return value.toString();
+				return convertValueToJson(value);
 			}
 		}
-		else if (valueType == KPIFieldValueType.DateTime)
+		catch (Exception ex)
 		{
-			if (value instanceof String)
-			{
-				final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
-				return DisplayType.getDateFormat(DisplayType.DateTime)
-						.format(date);
-			}
-			else if (value instanceof Date)
-			{
-				final Date date = (Date)value;
-				return DisplayType.getDateFormat(DisplayType.DateTime)
-						.format(date);
-			}
-			else if (value instanceof Number)
-			{
-				final long millis = ((Number)value).longValue();
-				final Date date = new Date(millis);
-				return DisplayType.getDateFormat(DisplayType.DateTime)
-						.format(date);
-			}
-			else
-			{
-				return value.toString();
-			}
-		}
-		else
-		{
-			return convertValueToJson(value);
+			logger.warn("Failed converting {} for field {}", value, this, ex);
+			return value.toString();
 		}
 	}
 
@@ -338,6 +380,7 @@ public class KPIField
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private String unit;
 		private KPIFieldValueType valueType;
+		private Integer numberPrecision;
 
 		private String color;
 
@@ -398,6 +441,12 @@ public class KPIField
 		public Builder setValueType(final KPIFieldValueType valueType)
 		{
 			this.valueType = valueType;
+			return this;
+		}
+
+		public Builder setNumberPrecision(final Integer numberPrecision)
+		{
+			this.numberPrecision = numberPrecision;
 			return this;
 		}
 

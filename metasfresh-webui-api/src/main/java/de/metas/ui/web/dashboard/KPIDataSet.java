@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 /*
  * #%L
@@ -53,6 +54,17 @@ public final class KPIDataSet
 		super();
 		this.name = name;
 		unit = null;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("name", name)
+				.add("unit", unit)
+				.add("values", values)
+				.toString();
 	}
 
 	public String getName()

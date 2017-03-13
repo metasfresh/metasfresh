@@ -19,6 +19,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
 import org.compiere.util.CCache;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -301,10 +302,29 @@ public class UserDashboardRepository
 				.setDescription(description)
 				.setUnit(kpiFieldDef.getUOMSymbol())
 				.setValueType(KPIFieldValueType.fromDisplayType(kpiFieldDef.getAD_Reference_ID()))
+				.setNumberPrecision(extractNumberPrecision(kpiFieldDef.getAD_Reference_ID()))
 				.setColor(kpiFieldDef.getColor())
 				//
 				.setESPath(kpiFieldDef.getES_FieldPath())
 				.build();
+	}
+	
+	private static final Integer extractNumberPrecision(final int displayType)
+	{
+		if (displayType == DisplayType.Integer)
+		{
+			return 0;
+		}
+		else if (displayType == DisplayType.Amount
+				|| displayType == DisplayType.CostPrice
+				|| displayType == DisplayType.Quantity)
+		{
+			return 2;
+		}
+		else 
+		{
+			return null;
+		}
 	}
 
 	public void changeUserDashboardKPIs(final JSONDashboardChanges jsonDashboardChanges)

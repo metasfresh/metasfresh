@@ -29,6 +29,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 
 /*
  * #%L
@@ -417,14 +418,14 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
-	public DocumentValidStatus checkAndGetValidStatus()
+	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
 	{
 		for (final Document document : getInnerDocumentsNoLoad())
 		{
-			final DocumentValidStatus validState = document.checkAndGetValidStatus();
+			final DocumentValidStatus validState = document.checkAndGetValidStatus(onValidStatusChanged);
 			if (!validState.isValid())
 			{
-				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid: ", this, document, validState);
+				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid", this, document, validState);
 				return validState;
 			}
 		}

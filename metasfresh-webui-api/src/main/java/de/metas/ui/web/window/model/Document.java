@@ -701,13 +701,13 @@ public final class Document
 		{
 			return;
 		}
-		
+
 		if (!isWritable())
 		{
 			throw new InvalidDocumentStateException(this, "not a writable copy");
 		}
 
-		if(isDeleted())
+		if (isDeleted())
 		{
 			throw new DocumentNotFoundException(getDocumentPath());
 		}
@@ -944,7 +944,7 @@ public final class Document
 		return _deleted;
 	}
 
-	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
+	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
 	{
 		Preconditions.checkNotNull(valid, "valid"); // shall not happen
 
@@ -956,7 +956,14 @@ public final class Document
 		// }
 
 		_valid = valid;
+		
 		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
+		
+		if (!valid.isValid())
+		{
+			onValidStatusChanged.onInvalidStatus(this, valid);
+		}
+		
 		return valid;
 	}
 
@@ -1071,7 +1078,7 @@ public final class Document
 			includedDocumentsPerDetail.markStaleAll();
 		}
 	}
-	
+
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final IDocumentField documentField = getField(fieldName);
@@ -1217,7 +1224,7 @@ public final class Document
 			, final String triggeringFieldName //
 			, final DependencyType triggeringDependencyType //
 			, final IDocumentChangesCollector documentChangesCollector //
-	)
+			)
 	{
 		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
 		{
@@ -1267,7 +1274,7 @@ public final class Document
 			field.updateValid();
 		}
 
-		checkAndGetValidStatus();
+		checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
 	}
 
 	public LookupValuesList getFieldLookupValues(final String fieldName)
@@ -1423,10 +1430,31 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
+	/* package */ static interface OnValidStatusChanged
+	{
+		public static final OnValidStatusChanged DO_NOTHING = (document, invalidStatus) -> {
+		};
+		
+		public static final OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus) -> {
+			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus));
+		};
+
+		void onInvalidStatus(Document document, DocumentValidStatus invalidStatus);
+	}
+
 	/**
 	 * Checks document's valid status, sets it and returns it.
 	 */
 	public DocumentValidStatus checkAndGetValidStatus()
+	{
+		return checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
+	}
+
+	/**
+	 * Checks document's valid status, sets it and returns it.
+	 * @param onValidStatusChanged callback to be called when the valid state of this document or of any of it's included documents was changed
+	 */
+	/* package */ final DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
 	{
 		//
 		// Check document fields
@@ -1436,7 +1464,7 @@ public final class Document
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", documentField, validState);
-				return setValidStatusAndReturn(validState);
+				return setValidStatusAndReturn(validState, onValidStatusChanged);
 			}
 		}
 
@@ -1444,15 +1472,15 @@ public final class Document
 		// Check included documents
 		for (final IIncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
-			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus();
+			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus(onValidStatusChanged);
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument());
+				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument(), onValidStatusChanged);
 			}
 		}
 
-		return setValidStatusAndReturn(DocumentValidStatus.documentValid()); // valid
+		return setValidStatusAndReturn(DocumentValidStatus.documentValid(), onValidStatusChanged); // valid
 	}
 
 	public DocumentValidStatus getValidStatus()
@@ -1540,7 +1568,7 @@ public final class Document
 
 		//
 		// Check if valid for saving
-		final DocumentValidStatus validState = checkAndGetValidStatus();
+		final DocumentValidStatus validState = checkAndGetValidStatus(OnValidStatusChanged.MARK_NOT_SAVED);
 		if (!validState.isValid())
 		{
 			logger.debug("Skip saving because document {} is not valid: {}", this, validState);
@@ -1557,7 +1585,7 @@ public final class Document
 		{
 			// NOTE: usually if we do the right checkings we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
-			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx));
+			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
 			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
 		}
 	}
@@ -1778,7 +1806,7 @@ public final class Document
 
 			//
 			// Update document's valid status
-			document.checkAndGetValidStatus();
+			document.checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
 
 			//
 			// Update document's save status
