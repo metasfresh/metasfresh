@@ -91,7 +91,8 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * If this instance's included {@link #destination} member is a {@link IHUProducerAllocationDestination}, then this method changes if by setting values from the included {@link #huToSplit}.
+	 * If this instance's included {@link #destination} member is a {@link IHUProducerAllocationDestination}, 
+	 * then this method changes that destination by setting values from the included {@link #huToSplit}.
 	 * Otherwise this method does nothing.
 	 * 
 	 * @return

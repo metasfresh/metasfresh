@@ -51,7 +51,7 @@ public class HUReceiptLineCandidatesBuilderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		context = new PlainContextAware(Env.getCtx());
+		context = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 
 		//
 		// Master data

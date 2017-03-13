@@ -12,6 +12,7 @@ import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -172,7 +173,7 @@ public class MigrationScriptFileLogger
 		return _writer;
 	}
 
-	private static final File createMigrationScriptFile(final String dbType) throws IOException
+	private static final File createMigrationScriptFile(final String dbType)
 	{
 		final int adClientId = 0;
 		final int scriptId = MSequence.getNextID(adClientId, I_AD_MigrationScript.Table_Name) * 10;
@@ -192,10 +193,21 @@ public class MigrationScriptFileLogger
 			{
 				System.out.println("Created migration scripts directory: " + directory);
 			}
+			else
+			{
+				System.out.println("Failed creating migration scripts directory: " + directory);
+			}
 		}
-		
-		final File file = File.createTempFile(prefix, sufix, directory);
-		return file;
+
+		try
+		{
+			final File file = File.createTempFile(prefix, sufix, directory);
+			return file;
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary file in " + directory, ex);
+		}
 	}
 	
 	public static final String getMigrationScriptDirectory()

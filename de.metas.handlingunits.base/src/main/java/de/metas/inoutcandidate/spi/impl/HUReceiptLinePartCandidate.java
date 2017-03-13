@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -119,7 +120,7 @@ import de.metas.inout.model.I_M_QualityNote;
 
 		//
 		// Shall be precisely the same attributes (i.e. M_HU_ID)
-		if (!Check.equals(getAttributes().getId(), receiptLinePart.getAttributes().getId()))
+		if (!Objects.equals(getAttributes().getId(), receiptLinePart.getAttributes().getId()))
 		{
 			return false;
 		}

@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Assert;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 import org.junit.Test;

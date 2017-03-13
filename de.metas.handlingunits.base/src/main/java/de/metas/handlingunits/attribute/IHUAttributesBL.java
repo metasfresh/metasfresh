@@ -26,8 +26,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 
 public interface IHUAttributesBL extends ISingletonService

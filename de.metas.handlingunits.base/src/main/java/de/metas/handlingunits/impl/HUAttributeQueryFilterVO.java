@@ -25,6 +25,7 @@ package de.metas.handlingunits.impl;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -410,7 +411,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		}
 
 		Check.assume(
-				Check.equals(this.attributeValueType, attributeValueType),
+				Objects.equals(this.attributeValueType, attributeValueType),
 				"Invalid attributeValueType for {}. Expected: {}",
 				this, attributeValueType
 				);

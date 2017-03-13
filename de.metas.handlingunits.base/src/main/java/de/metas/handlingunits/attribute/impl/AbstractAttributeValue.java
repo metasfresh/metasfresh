@@ -28,10 +28,11 @@ import java.math.MathContext;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -217,7 +218,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		//
 		// If nothing changed, then it's pointless to set the value and notify the listeners
 		// NOTE: also this is converting the case when setting a NULL value, attribute is mandatory, but also value is also NULL... so it's pointless to throw an exception
-		if (Check.equals(valueOld, valueNew))
+		if (Objects.equals(valueOld, valueNew))
 		{
 			return;
 		}
@@ -293,7 +294,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		//
 		// If nothing changed, then it's pointless to set the value and notify the listeners
-		if (Check.equals(valueOld, valueNew))
+		if (Objects.equals(valueOld, valueNew))
 		{
 			return;
 		}

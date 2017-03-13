@@ -126,7 +126,7 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 	@Test
 	public void test()
 	{
-		final PlainContextAware context = new PlainContextAware(Env.getCtx());
+		final PlainContextAware context = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 		final Date dateTrx = SystemTime.asDate();
 		final Object referencedModel = helper.createDummyReferenceModel();
 

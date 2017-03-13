@@ -203,6 +203,6 @@ public class WeightTareAttributeValueCallout
 			final Object valueOld,
 			final Object valueNew)
 	{
-		return !Check.equals(valueOld, valueNew);
+		return !Objects.equals(valueOld, valueNew);
 	}
 }

@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.util.lang.IPair;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
 
 /**
  * Implementations of this interface define a source of allocation, so that qtys from other parts of adempiere (e.g. material receipts) can be allocated to handling units.
