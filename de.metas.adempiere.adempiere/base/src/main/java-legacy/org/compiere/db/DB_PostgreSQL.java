@@ -388,22 +388,22 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		}
 		// end vpj-cd 24/06/2005 e-evolution
 
-		final String sql0 = retValue.get(0);
+		final String pgStatement = retValue.get(0);
 
 		// Diagnostics (show changed, but not if AD_Error)
 		if (log.isDebugEnabled())
 		{
-			if (!oraStatement.equals(sql0) && sql0.indexOf("AD_Error") == -1)
+			if (!oraStatement.equals(pgStatement) && pgStatement.indexOf("AD_Error") == -1)
 			{
 				// begin vpj-cd 24/06/2005 e-evolution
-				log.debug("PostgreSQL =>" + sql0 + "<= <" + oraStatement + ">");
+				log.debug("PostgreSQL =>" + pgStatement + "<= <" + oraStatement + ">");
 			}
 		}
 		// end vpj-cd 24/06/2005 e-evolution
 
 		//
-		Convert.logMigrationScript(oraStatement, sql0);
-		return sql0;
+		Convert.logMigrationScript(oraStatement, pgStatement);
+		return pgStatement;
 	}   // convertStatement
 
 	/**
