@@ -195,20 +195,22 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        dispatch(initLayout(
-            'documentView', windowType, null, null, null, null, type, true
-        )).then(response => {
-            this.setState({
-                layout: response.data
-            }, () => {
-                if(viewId && !isNewFilter){
-                    this.browseView();
-                }else{
-                    this.createView();
-                }
-                setModalTitle && setModalTitle(response.data.caption)
-            })
-        });
+        if(windowType){
+            dispatch(initLayout(
+                'documentView', windowType, null, null, null, null, type, true
+            )).then(response => {
+                this.setState({
+                    layout: response.data
+                }, () => {
+                    if(viewId && !isNewFilter){
+                        this.browseView();
+                    }else{
+                        this.createView();
+                    }
+                    setModalTitle && setModalTitle(response.data.caption)
+                })
+            });
+        }
     }
 
     /*
@@ -379,7 +381,7 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
-                                !isModal &&
+                                !isModal && windowType &&
                                 dispatch(push('/window/' + windowType + '/' + id))
                             }}
                             isModal={isModal}
