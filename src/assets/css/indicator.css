@@ -1,4 +1,3 @@
-
 .indicators-wrapper {
     border: 1px solid $brand-border-color;
     border-radius: 3px;
@@ -13,6 +12,8 @@
     width: 25%;
     height: 100%;
 }
+
+
 
 @media screen and (max-width: 991px) {
     .indicator {
@@ -68,6 +69,8 @@
 .indicator-error {
     animation-name: indicator-error;
     animation-duration: 1s;
+    width: 100%;
+    background-color: $brand-font-color-danger;
 }
 
 @keyframes indicator-pending {
@@ -112,7 +115,7 @@
         background-color: $brand-font-color-danger;
     }
     100% {
-        width: 0%;
-        background-color: transparent;
+        width: 100%;
+        background-color: $brand-font-color-danger;
     }
 }

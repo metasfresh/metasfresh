@@ -42,7 +42,7 @@ class FiltersItem extends Component {
                     item.valueTo ? item.valueTo : ''
                 );
             })
-        }else{
+        }else if(filter.parameters){
             filter.parameters.map(item => {
                 this.mergeData(
                     item.parameterName,

@@ -94,20 +94,22 @@ export function createViewRequest(
     });
 }
 
-export function addNotification(title, msg, time, notifType){
+export function addNotification(title, msg, time, notifType, shortMsg){
     return {
         type: types.ADD_NOTIFICATION,
         title: title,
         msg: msg,
+        shortMsg: shortMsg,
         time: time,
-        notifType: notifType
+        notifType: notifType,
+        id: Date.now()
     }
 }
 
-export function deleteNotification(id){
+export function deleteNotification(key){
     return {
         type: types.DELETE_NOTIFICATION,
-        id: id
+        key: key
     }
 }
 
@@ -198,6 +200,18 @@ export function newNotification(msg, count) {
         type: types.NEW_NOTIFICATION,
         notification: msg,
         unreadCount: count
+    }
+}
+
+export function setProcessPending() {
+    return {
+        type: types.SET_PROCESS_STATE_PENDING
+    }
+}
+
+export function setProcessSaved() {
+    return {
+        type: types.SET_PROCESS_STATE_SAVED
     }
 }
 

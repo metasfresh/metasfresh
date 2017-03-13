@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
+import Indicator from './Indicator';
 import {
     closeRawModal
 } from '../../actions/WindowActions';
@@ -70,7 +71,7 @@ class RawModal extends Component {
 
         return (
             <div
-                className="screen-freeze js-not-unselect raw-modal"
+                className="screen-freeze raw-modal"
             >
                 <div className="panel panel-modal panel-modal-primary">
                     <div
@@ -92,6 +93,7 @@ class RawModal extends Component {
                             </button>
                         </div>
                     </div>
+                    <Indicator />
                     <div
                         className="panel-modal-content js-panel-modal-content"
                         ref={c => { c && c.focus()}}

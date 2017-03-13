@@ -8,7 +8,7 @@ import Subheader from './SubHeader';
 import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../widget/MasterWidget';
 import SideList from './SideList';
-import Indicator from './Indicator';
+import Indicator from '../app/Indicator';
 import Inbox from '../inbox/Inbox';
 import Tooltips from '../tooltips/Tooltips';
 import Prompt from '../app/Prompt';
@@ -225,8 +225,9 @@ class Header extends Component {
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
-            windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu, selected, entity, query, attachments
+            windowType, dataId, breadcrumb, showSidelist, references, actions,
+            viewId, inbox, homemenu, selected, entity, query, attachments,
+            showIndicator, isDocumentNotSaved, selectedWindowType
         } = this.props;
 
         const {
@@ -370,7 +371,7 @@ class Header extends Component {
                             </div>
                         </div>
                     </div>
-                    <Indicator indicator={indicator} />
+                    {showIndicator && <Indicator {...{isDocumentNotSaved}}/>}
                 </nav>
 
                 {isSubheaderShow && <Subheader
@@ -388,6 +389,7 @@ class Header extends Component {
                     handleClone={this.handleClone}
                     redirect={this.redirect}
                     selected={selected}
+                    selectedWindowType={selectedWindowType}
                     entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
                     query={query}
@@ -418,7 +420,6 @@ class Header extends Component {
 
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    indicator: PropTypes.string.isRequired,
     selected: PropTypes.array.isRequired,
     viewId: PropTypes.string,
     homemenu: PropTypes.object.isRequired,
@@ -447,19 +448,19 @@ function mapStateToProps(state) {
     }
 
     const {
-        indicator,
-        selected
+        selected,
+        selectedWindowType
     } = windowHandler || {
-        indicator: '',
-        selected: []
+        selected: [],
+        selectedWindowType: null
     }
 
     return {
-        indicator,
         selected,
         viewId,
         inbox,
-        homemenu
+        homemenu,
+        selectedWindowType
     }
 }
 

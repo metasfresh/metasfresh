@@ -6,6 +6,12 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 class LookupList extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            listElementHeight: 0,
+            listVisibleElements: 0,
+            shouldListScrollUpdate: false
+        }
     }
 
     componentDidMount(){
@@ -73,16 +79,16 @@ class LookupList extends Component {
     }
 
     renderNew = () => {
-        const {query, selected, handleAddNew} = this.props;
+        const {selected, handleAddNew, newRecordCaption} = this.props;
         return (
             <div
                 className={
                     'input-dropdown-list-option input-dropdown-list-option-alt '  +
                     (selected === 'new' ? 'input-dropdown-list-option-key-on' : '')
                 }
-                onClick={() => handleAddNew(query)}
+                onClick={handleAddNew}
             >
-                <p>New {query ? '"' + query + '"' : ''}</p>
+                <p>{newRecordCaption}</p>
             </div>
         )
     }
@@ -117,7 +123,7 @@ class LookupList extends Component {
 
     render() {
         const {
-            loading, list, creatingNewDisabled
+            loading, list, creatingNewDisabled, newRecordCaption
         } = this.props;
 
         return (
@@ -126,7 +132,10 @@ class LookupList extends Component {
                 {(!loading && list.length === 0) && this.renderEmpty()}
                 <div ref={(c) => this.items = c}>
                     {list.map((item, index) => this.getDropdownComponent(index, item))}
-                    {list.length === 0 && !creatingNewDisabled && this.renderNew()}
+                    {
+                        list.length === 0 && newRecordCaption &&
+                        !creatingNewDisabled && this.renderNew()
+                    }
                 </div>
             </div>
         )

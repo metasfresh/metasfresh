@@ -34,14 +34,15 @@ class QuickActions extends Component {
     }
 
     componentDidUpdate = (prevProps) => {
-        const {selected, refresh, shouldNotUpdate} = this.props;
+        const {selected, refresh, shouldNotUpdate, viewId} = this.props;
         if(shouldNotUpdate){
             return;
         }
 
         if(
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
-            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
+            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh)) ||
+            (JSON.stringify(prevProps.viewId) !== JSON.stringify(viewId))
         ){
             this.fetchActions();
         }
@@ -72,7 +73,9 @@ class QuickActions extends Component {
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
-        dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
+        dispatch(
+            quickActionsRequest(windowType, viewId, selected)
+        ).then(response => {
             this.setState({
                 actions: response.data.actions
             })
@@ -87,11 +90,10 @@ class QuickActions extends Component {
 
     render() {
         const {
-            actions,
-            isDropdownOpen
+            actions, isDropdownOpen
         } = this.state;
 
-        const {shouldNotUpdate} = this.props;
+        const {shouldNotUpdate, processStatus} = this.props;
 
         if(actions.length){
             return (
@@ -100,7 +102,7 @@ class QuickActions extends Component {
                     <div className="quick-actions-wrapper">
                         <div
                             className={'tag tag-success tag-xlg spacer-right quick-actions-tag ' +
-                                (actions[0].disabled ? 'tag-default ' : 'pointer ')
+                                ((actions[0].disabled || processStatus === 'pending') ? 'tag-default ' : 'pointer ')
                             }
                             onClick={() => this.handleClick(actions[0])}
                             title={actions[0].caption}

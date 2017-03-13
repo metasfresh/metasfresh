@@ -16,7 +16,9 @@ import {
 } from '../../actions/GenericActions';
 
 import {
-    selectTableItems
+    selectTableItems,
+    getItemsByProperty,
+    mapIncluded
 } from '../../actions/WindowActions';
 
 import {
@@ -52,7 +54,7 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground
+            inBackground, dispatch
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
 
@@ -68,7 +70,7 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-
+                dispatch(selectTableItems([], null))
                 this.fetchLayoutAndData();
             });
         }
@@ -98,7 +100,6 @@ class DocumentList extends Component {
             this.setState({
                 viewId: defaultViewId
             });
-            this.connectWS(defaultViewId);
         }
 
         /*
@@ -112,20 +113,13 @@ class DocumentList extends Component {
             inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                this.props.dispatch(
-                    selectTableItems(cachedSelection)
-                )
+                dispatch(selectTableItems(cachedSelection, windowType))
             }else{
                 this.setState({
                     cachedSelection: selected
                 })
             }
         }
-    }
-
-    componentDidMount() {
-        const {viewId} = this.state;
-        this.connectWS(viewId);
     }
 
     componentWillUnmount() {
@@ -150,6 +144,28 @@ class DocumentList extends Component {
                 }
             });
         });
+    }
+
+    doesSelectionExist(selected) {
+        const {data} = this.state;
+        // When the rows are changing we should ensure
+        // that selection still exist
+
+        let rows = [];
+
+        data && data.result && data.result.map(item => {
+            rows = rows.concat(mapIncluded(item));
+        });
+
+        return (data && data.size && data.result && selected && selected[0] &&
+            getItemsByProperty(
+                rows, 'id', selected[0]
+            ).length
+        );
+    }
+
+    getTableData = (data) => {
+        return data;
     }
 
     disconnectWS = () => {
@@ -248,7 +264,9 @@ class DocumentList extends Component {
                 filters: response.data.filters
             }, refresh && {
                 refresh: Date.now()
-            }))
+            }), () => {
+                this.connectWS(response.data.viewId);
+            })
         });
     }
 
@@ -308,8 +326,10 @@ class DocumentList extends Component {
 
         const {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal
+            fetchQuickActionsOnInit, isModal, processStatus
         } = this.props;
+
+        const selectionValid = this.doesSelectionExist(selected);
 
         if(layout && data) {
             return (
@@ -336,10 +356,11 @@ class DocumentList extends Component {
                         <QuickActions
                             windowType={windowType}
                             viewId={viewId}
-                            selected={data.size && selected}
+                            selected={selectionValid ? selected : undefined}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
                             fetchOnInit={fetchQuickActionsOnInit}
+                            processStatus={processStatus}
                         />
                     </div>
                     <div className="document-list-body">
@@ -377,10 +398,11 @@ class DocumentList extends Component {
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={selected}
                             queryLimitHit={data.queryLimitHit}
+                            doesSelectionExist={this.doesSelectionExist}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
-                                    className="table-flex-wrapper attributes-selector"
+                                    className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
                                     windowType={windowType}
                                     viewId={viewId}
@@ -388,8 +410,10 @@ class DocumentList extends Component {
                                     <SelectionAttributes
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={data.size && selected}
-                                        shouldNotUpdate={inBackground}
+                                        selected={selectionValid ? selected : undefined}
+                                        shouldNotUpdate={
+                                            inBackground
+                                        }
                                     />
                                 </DataLayoutWrapper>
                             }

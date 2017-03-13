@@ -62,7 +62,7 @@ class FiltersNotFrequent extends Component {
                     }
                 >
                     <i className="meta-icon-preview" />
-                    { isActive ? 'Filter: ' + activeFilter.caption : 'Select other filter'}
+                    { isActive ? 'Filter: ' + activeFilter.caption : 'Filter'}
                 </button>
 
                 { isOpenDropdown &&

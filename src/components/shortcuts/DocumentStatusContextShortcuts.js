@@ -23,7 +23,7 @@ class DocumentStatusContextShortcuts extends Component {
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
-                dataShortcuts = { true }
+                alwaysFireHandler = { true }
             />
         )
     }

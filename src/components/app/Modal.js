@@ -3,26 +3,33 @@ import {connect} from 'react-redux';
 
 import Window from '../Window';
 import Process from '../Process';
+import Indicator from './Indicator';
 
 import {
     closeModal,
     createWindow,
     createProcess,
     startProcess,
-    handleProcessResponse
+    handleProcessResponse,
+    patch
 } from '../../actions/WindowActions';
+
+import {
+    processNewRecord
+} from '../../actions/GenericActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
 
         const {
-            rowId
+            rowId, dataId
         } = this.props;
 
         this.state = {
             scrolled: false,
             isNew: rowId === 'NEW',
+            isNewDoc: dataId === 'NEW',
             init: false,
             pending: false,
             waitingFetch: false
@@ -109,10 +116,27 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        const {closeCallback} = this.props;
-        const {isNew} = this.state;
-        closeCallback && closeCallback(isNew);
-        this.removeModal();
+        const {
+            dispatch, closeCallback, dataId, windowType, relativeType,
+            relativeDataId, triggerField
+        } = this.props;
+        const {isNew, isNewDoc} = this.state;
+
+        if(isNewDoc) {
+            dispatch(
+                processNewRecord('window', windowType, dataId)
+            ).then(response => {
+                dispatch(patch(
+                    'window', relativeType, relativeDataId, null, null,
+                    triggerField, {[response.data]: ''}
+                )).then(() => {
+                    this.removeModal();
+                })
+            });
+        }else{
+            closeCallback && closeCallback(isNew);
+            this.removeModal();
+        }
     }
 
     handleScroll = (event) => {
@@ -251,6 +275,7 @@ class Modal extends Component {
                             }
                         </div>
                     </div>
+                    <Indicator />
                     <div
                         className={
                             `panel-modal-content js-panel-modal-content

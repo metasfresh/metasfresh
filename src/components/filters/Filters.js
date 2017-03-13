@@ -97,7 +97,7 @@ class Filters extends Component {
                 item => item.mandatory && !item.value
             ).length);
         }else{
-            return false;
+            return true;
         }
     }
 

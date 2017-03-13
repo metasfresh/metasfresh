@@ -60,6 +60,9 @@
  * Feel really sorry about that, but it is hard to get over 
  * table styles in bootstrap and avoid !important.
  */
+.table-striped tbody tr {
+    border-left: 3px solid transparent;
+}
 .table-striped tbody tr.tr-odd:nth-child(even) {
     background-color: $brand-super-light-color;
 }
@@ -82,9 +85,16 @@
     border-bottom: 2px solid #ddd;
 }
 
+.row-not-saved {
+    background-color: #FEDADA !important;
+}
 
 .row-selected {
     background-color: #d5e3ec !important;
+}
+
+.row-selected.row-not-saved {
+    border-left: 3px solid #e78484;
 }
 
 .table-sub-summary-row {
@@ -363,7 +373,7 @@ $indent-signs-offset: 6px;
 
 .indent-root {
     right: 8px;
-    bottom: 0px;
+    bottom: 0;
 
     width:1px;
     height: 6px;
@@ -372,7 +382,7 @@ $indent-signs-offset: 6px;
 
 .indent-parent {
     right: 8px;
-    top: 0px;
+    top: 0;
 
     width:1px;
     height: 6px;

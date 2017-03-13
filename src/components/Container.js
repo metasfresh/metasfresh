@@ -13,7 +13,8 @@ class Container extends Component {
         const {
             docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
             dataId, windowType, breadcrumb, references, actions, showSidelist,
-            siteName, connectionError, noMargin, entity, children, query, attachments
+            siteName, connectionError, noMargin, entity, children, query, attachments,
+            showIndicator, isDocumentNotSaved
         } = this.props;
 
         return (
@@ -34,6 +35,8 @@ class Container extends Component {
                     showSidelist={showSidelist}
                     siteName = {siteName}
                     query={query}
+                    showIndicator={showIndicator}
+                    isDocumentNotSaved={isDocumentNotSaved}
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />
