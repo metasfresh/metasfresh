@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -167,12 +168,25 @@ public class MigrationScriptFileLogger
 		return Paths.get(getMigrationScriptDirectory(), filename);
 	}
 
-	private final Path getCreateFilePath()
+	private final synchronized Path getCreateFilePath()
 	{
 		if (_path == null || !Files.exists(_path))
 		{
-			_path = createPath(dbType);
-			System.out.println("Using scripts path: " + _path);
+			final Path path = createPath(dbType);
+			System.out.println("Using scripts path: " + path);
+
+			//
+			// Make sure the directories exist
+			try
+			{
+				Files.createDirectories(path.getParent());
+			}
+			catch (IOException ex)
+			{
+				throw AdempiereException.wrapIfNeeded(ex);
+			}
+			
+			_path = path;
 		}
 		return _path;
 	}

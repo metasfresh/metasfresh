@@ -5,7 +5,7 @@
 CREATE OR REPLACE VIEW report.fresh_AttributePrice AS 
 SELECT 	
 	pp.M_ProductPrice_ID, 
-	ai.m_attributesetinstance_id,
+	COALESCE(ai.m_attributesetinstance_id, pp.m_attributesetinstance_id) AS m_attributesetinstance_id,
 	pp.PriceStd, 
 	pp.IsActive, 
 	pp.M_HU_PI_Item_Product_ID, 
@@ -38,7 +38,7 @@ FROM
 WHERE 	
 	pp.IsActive = 'Y'
 GROUP BY 
-	pp.M_ProductPrice_ID, pp.PriceStd, pp.IsActive, pp.M_HU_PI_Item_Product_ID
+	pp.m_productprice_id, ai.m_attributesetinstance_id, pp.m_attributesetinstance_id, pp.pricestd, pp.isactive, pp.m_hu_pi_item_product_id
 ;
 
 
