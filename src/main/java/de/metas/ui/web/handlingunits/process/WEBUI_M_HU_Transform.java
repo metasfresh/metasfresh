@@ -14,11 +14,14 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -43,6 +46,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -184,6 +188,9 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM_TU)
 	private boolean p_HUPlanningReceiptOwnerPM_TU;
 
+	@Autowired
+	private DocumentCollection documentsCollection;
+
 	public WEBUI_M_HU_Transform()
 	{
 		Adempiere.autowire(this);
@@ -299,7 +306,6 @@ public class WEBUI_M_HU_Transform
 				throw new AdempiereException("@Unknown@ @Action@ " + action);
 			}
 		}
-
 		return MSG_OK;
 	}
 
@@ -316,6 +322,14 @@ public class WEBUI_M_HU_Transform
 		InterfaceWrapperHelper.save(hu);
 	}
 
+	private List<TableRecordReference> getM_ReceiptSchedules()
+	{
+		return getView()
+				.getReferencingDocumentPaths().stream()
+				.map(referencingDocumentPath -> documentsCollection.getTableRecordReference(referencingDocumentPath))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
 	/**
 	 * Split selected CU to an existing TU.
 	 *
@@ -326,6 +340,7 @@ public class WEBUI_M_HU_Transform
 	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
 		HUTransferService.get(getCtx())
+				.withReferencedObjects(getM_ReceiptSchedules())
 				.cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
 		// Notify
@@ -340,8 +355,10 @@ public class WEBUI_M_HU_Transform
 	 */
 	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
 	{
+
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.withReferencedObjects(getM_ReceiptSchedules())
 				.cuToNewCU(cuRow.getM_HU(), qtyCU);
 
 		// Notify
@@ -363,6 +380,7 @@ public class WEBUI_M_HU_Transform
 			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.withReferencedObjects(getM_ReceiptSchedules())
 				.cuToNewTUs(cuRow.getM_HU(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 
 		// Notify
@@ -378,6 +396,7 @@ public class WEBUI_M_HU_Transform
 			final BigDecimal qtyTU)
 	{
 		HUTransferService.get(getCtx())
+				.withReferencedObjects(getM_ReceiptSchedules())
 				.tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
@@ -400,6 +419,7 @@ public class WEBUI_M_HU_Transform
 			final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.withReferencedObjects(getM_ReceiptSchedules())
 				.tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
 
 		// Notify
@@ -421,6 +441,7 @@ public class WEBUI_M_HU_Transform
 		final I_M_HU sourceTuHU = tuRow.getM_HU();
 
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
+				.withReferencedObjects(getM_ReceiptSchedules())
 				.tuToNewTUs(sourceTuHU, qtyTU, sourceTuHU.isHUPlanningReceiptOwnerPM());
 
 		// Notify
