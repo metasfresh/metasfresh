@@ -198,6 +198,7 @@ public class CountryDAO implements ICountryDAO
 	}
 	
 	@Override
+	@Cached(cacheName = I_C_Country_Sequence.Table_Name + "#by#C_Country_ID")
 	public List<I_C_Country_Sequence> retrieveCountrySequence(final I_C_Country country, final I_AD_Org org, final String language)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(org);

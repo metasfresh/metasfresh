@@ -659,22 +659,23 @@ public class LocationBL implements ILocationBL
 	{
 		final String bPartnerBlock = null;
 		final String userBlock = null;
-		return mkAddress(null, location, bPartnerBlock, userBlock);
+		final I_C_BPartner bPartner = null;
+		return mkAddress(location, bPartner, bPartnerBlock, userBlock);
 	}
 	
 	@Override
-	public String mkAddress(final I_C_BPartner bpartner, final I_C_Location location, String bPartnerBlock, String userBlock)
+	public String mkAddress(final I_C_Location location, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
 	{
 		final Properties ctx = Env.getCtx();
 
 		final I_C_Country countryLocal = Services.get(ICountryDAO.class).getDefault(ctx);
 		final boolean isLocalAddress = location.getC_Country_ID() == countryLocal.getC_Country_ID();
 
-		final String addr = mkAddress(bpartner, location, isLocalAddress, bPartnerBlock, userBlock);
+		final String addr = mkAddress(location, isLocalAddress, bPartner, bPartnerBlock, userBlock);
 		return addr;
 	}
 
-	public String mkAddress(final I_C_BPartner bPartner, I_C_Location location, boolean isLocalAddress, String bPartnerBlock, String userBlock)
+	public String mkAddress(I_C_Location location, boolean isLocalAddress, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String adLanguage;
@@ -692,7 +693,9 @@ public class LocationBL implements ILocationBL
 		
 		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, orgId, I_AD_Org.class, ITrx.TRXNAME_None);
 		final de.metas.adempiere.model.I_C_Location loc = InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_Location.class);
-		return new AddressBuilder().buildAddressString(org, loc, adLanguage, isLocalAddress, bPartnerBlock, userBlock);
+		return new AddressBuilder(org)
+				.setLanguage(adLanguage)
+				.buildAddressString(loc, isLocalAddress, bPartnerBlock, userBlock);
 	}
 
 	@Override

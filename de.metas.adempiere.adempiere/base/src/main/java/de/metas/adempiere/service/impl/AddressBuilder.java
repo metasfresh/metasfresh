@@ -53,6 +53,29 @@ public class AddressBuilder
 {
 	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
 	
+	/**
+	 *  org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
+	 */
+	private final I_AD_Org org;
+	
+	public I_AD_Org getAD_Org()
+	{
+		return org;
+	}
+	
+	String language;
+	
+	public String getLanguage()
+	{
+		return language;
+	}
+
+	public AddressBuilder setLanguage(String language)
+	{
+		this.language = language;
+		return this;
+	}
+
 	public enum Uservars
 	{
 		Title("TI"),
@@ -73,9 +96,10 @@ public class AddressBuilder
 		}
 	}
 		
-	public AddressBuilder()
+	public AddressBuilder(final I_AD_Org org)
 	{
 		super();
+		this.org = org;
 	}
 
 	/**
@@ -88,9 +112,9 @@ public class AddressBuilder
 	 * @param userBlock
 	 * @return
 	 */
-	public String buildAddressString(final I_AD_Org org, final I_C_Location location, final String language, boolean isLocalAddress, String bPartnerBlock, String userBlock)
+	public String buildAddressString(final I_C_Location location, boolean isLocalAddress, String bPartnerBlock, String userBlock)
 	{
-		final String displaySequence =  getDisplaySequence(org, location.getC_Country(), isLocalAddress, language);
+		final String displaySequence =  getDisplaySequence(location.getC_Country(), isLocalAddress);
 
 		String inStr = displaySequence;
 		final StringBuilder outStr = new StringBuilder();
@@ -416,7 +440,7 @@ public class AddressBuilder
 		String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
 
 		// Addressblock
-		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(bPartner, location.getC_Location(), bPartnerBlock, userBlock);
+		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(location.getC_Location(), bPartner, bPartnerBlock, userBlock);
 
 		return fullAddressBlock;
 	}
@@ -619,7 +643,7 @@ public class AddressBuilder
 			{
 				I_C_Country country = Services.get(ICountryDAO.class).getDefault(ctx);
 				
-				ds = getDisplaySequence(user.getAD_Org(), country, isLocal, getAD_LanguageOrNull(ctx, user));
+				ds = getDisplaySequence(country, isLocal);
 			}
 
 			final List<String> bracketsTxt = extractBracketsString(ds);
@@ -723,9 +747,9 @@ public class AddressBuilder
 		return bracketsTxt;
 	}
 	
-	private String getDisplaySequence(final I_AD_Org org, I_C_Country country , final boolean isLocalAddress, final String language)
+	private String getDisplaySequence(I_C_Country country , final boolean isLocalAddress)
 	{
-		final List<I_C_Country_Sequence> sequences = Services.get(ICountryDAO.class).retrieveCountrySequence(country, org, language);
+		final List<I_C_Country_Sequence> sequences = Services.get(ICountryDAO.class).retrieveCountrySequence(country, getAD_Org(), getLanguage());
 		if (sequences.isEmpty())
 		{
 			final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
@@ -739,19 +763,4 @@ public class AddressBuilder
 		}
 	}
 
-	private String getAD_LanguageOrNull(final Properties ctx, final I_AD_User user)
-	{
-		if (user == null)
-		{
-			return null;
-		}
-		final org.compiere.model.I_C_BPartner bpartner = user.getC_BPartner();
-		if (bpartner == null)
-		{
-			return null;
-		}
-		return bpartner.getAD_Language();
-		
-		// TODO: here maybe, we will want to get the language from user/bp's organization then fallback to client
-	}
 }
