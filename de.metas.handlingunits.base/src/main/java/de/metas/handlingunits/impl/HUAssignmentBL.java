@@ -128,7 +128,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		}
 		else
 		{
-			builder.initializeAssignment(assignment); // update the existing I_M_HU_Assignment
+			builder.initializeAssignment(assignment); // going to update the existing I_M_HU_Assignment
 		}
 
 		updateHUAssignment(builder, hu, model, isTransferPackingMaterials, trxName);

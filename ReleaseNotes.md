@@ -10,23 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.2 (2017-12)
+
+** upcoming **
+
 # metasfresh 5.1 (2017-11)
 
-**upcoming release**
+**this week's release candidate**
 
 ## Features
 * metasfresh-backend
   * [#1124](https://github.com/metasfresh/metasfresh/issues/1124) metasfresh App Server start takes considerably longer
+  * [#1142](https://github.com/metasfresh/metasfresh/issues/1142) Improve migration scripts handling
   
 ## Fixes
 * metasfresh-backend
-  * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
- 
+  * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
+  * [#1153](https://github.com/metasfresh/metasfresh/issues/1153) Pricing wrong w/ more than 1 Packing Instruction
+
 * metasfresh-webui-api
+  * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
+  * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
 
 # metasfresh 5.0 (2017-10)
-
-**this week's release candidate**
 
 ## Features
 * metasfresh-backend

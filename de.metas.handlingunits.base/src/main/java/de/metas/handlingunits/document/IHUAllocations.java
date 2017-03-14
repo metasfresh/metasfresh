@@ -31,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 
 /**
  * Implementations of this interface are used to manage HU allocations to a particular document line.
@@ -43,7 +44,7 @@ import de.metas.handlingunits.model.I_M_HU;
 public interface IHUAllocations
 {
 	/**
-	 * Create LU/TU assignment and allocate given <code>tuHU</code>.
+	 * Create LU/TU {@link I_M_HU_Assignment} and allocate given HUs. Assignment is fairly generic, but creating allocations depends on this interface's implementor.
 	 *
 	 * @param luHU
 	 * @param tuHU
@@ -52,8 +53,11 @@ public interface IHUAllocations
 	 * @param uom qtyToAllocate's unit of measure
 	 * @param deleteOldTUAllocations if true, delete ALL old allocations between the TU and the document (be careful with this, as it might delete allocations which are still desired)
 	 */
-	void allocate(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu,
-			final BigDecimal qtyToAllocate, final I_C_UOM uom,
+	void allocate(final I_M_HU luHU, 
+			final I_M_HU tuHU, 
+			final I_M_HU vhu,
+			final BigDecimal qtyToAllocate, 
+			final I_C_UOM uom,
 			final boolean deleteOldTUAllocations);
 
 	/**

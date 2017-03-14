@@ -49,9 +49,7 @@ public interface IHUAssignmentBL extends ISingletonService
 	IHUAssignmentListener getHUAssignmentListeners();
 
 	/**
-	 * Assign given HUs <b>as top level HUs</b>
-	 *
-	 * NOTE: old assignments will NOT be touched.
+	 * Assign given HUs <b>as top level HUs</b>. This means, create {@link I_M_HU_Assignment} records and set their {@code M_HU_ID} to the given HUs' IDs.
 	 *
 	 * NOTE: model's trxName will be used.
 	 *

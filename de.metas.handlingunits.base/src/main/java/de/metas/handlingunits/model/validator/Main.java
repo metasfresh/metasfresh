@@ -299,8 +299,10 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IReceiptScheduleProducerFactory.class)
 					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class)
 					.registerWarehouseDestProvider(QualityInspectionWarehouseDestProvider.instance);
+			
 			Services.get(IReceiptScheduleBL.class)
 					.addReceiptScheduleListener(HUReceiptScheduleListener.instance);
+			
 			Services.get(IHUDocumentFactoryService.class)
 					.registerHUDocumentFactory(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleHUDocumentFactory());
 

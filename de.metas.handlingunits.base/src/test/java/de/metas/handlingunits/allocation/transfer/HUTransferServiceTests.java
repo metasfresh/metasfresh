@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -9,8 +10,12 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +26,8 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -28,9 +35,17 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.handlingunits.document.IHUDocument;
+import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.interfaces.I_M_Warehouse;
 
 /*
@@ -43,12 +58,12 @@ import de.metas.interfaces.I_M_Warehouse;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -91,9 +106,39 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("3"));
+				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 		assertThat(newCUs.size(), is(0));
 	}
+
+	private I_M_ReceiptSchedule create_receiptSchedule_for_realCUWithTU(final I_M_HU cu, final String cuQtyStr)
+	{
+		final List<IHUProductStorage> storages = data.helper.getHUContext().getHUStorageFactory().getStorage(cu).getProductStorages();
+		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
+
+		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
+		receiptSchedule.setM_Product(storages.get(0).getM_Product());
+		receiptSchedule.setC_UOM(storages.get(0).getC_UOM());
+		InterfaceWrapperHelper.save(receiptSchedule);
+
+		final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class);
+		receiptScheduleAlloc.setM_ReceiptSchedule(receiptSchedule);
+
+		receiptScheduleAlloc.setVHU(cu);
+		final I_M_HU tu = handlingUnitsDAO.retrieveParent(cu);
+		receiptScheduleAlloc.setM_TU_HU(tu);
+		receiptScheduleAlloc.setHU_QtyAllocated(new BigDecimal(cuQtyStr));
+		InterfaceWrapperHelper.save(receiptScheduleAlloc);
+
+		final I_M_HU_Assignment huAssignment = InterfaceWrapperHelper.newInstance(I_M_HU_Assignment.class);
+		huAssignment.setM_HU(tu == null ? cu : tu);
+
+		final TableRecordReference rsTableRef = TableRecordReference.of(receiptSchedule);
+		huAssignment.setAD_Table_ID(rsTableRef.getAD_Table_ID());
+		huAssignment.setRecord_ID(rsTableRef.getRecord_ID());
+		InterfaceWrapperHelper.save(huAssignment);
+
+		return receiptSchedule;
+	};
 
 	/**
 	 * Tests {@link HUTransferService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
@@ -103,11 +148,12 @@ public class HUTransferServiceTests
 	public void testCU_To_NewCU_MaxValueParent()
 	{
 		final I_M_HU cuToSplit = mkRealCUWithTUToSplit("3");
+		create_receiptSchedule_for_realCUWithTU(cuToSplit, "3");
 		final I_M_HU parentTU = cuToSplit.getM_HU_Item_Parent().getM_HU();
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("3"));
+				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 
 		assertThat(newCUs.size(), is(1));
 		assertThat(newCUs.get(0).getM_HU_ID(), is(cuToSplit.getM_HU_ID()));
@@ -161,7 +207,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE);
+				.cuToNewCU(cuToSplit, BigDecimal.ONE);
 
 		assertThat(newCUs.size(), is(1));
 
@@ -190,7 +236,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -210,7 +256,7 @@ public class HUTransferServiceTests
 	/**
 	 * Tests {@link HUTransferService#cuToNewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
 	 * by creating an <b>aggregate</b> HU with a qty of 80 (representing two IFCOs) and then splitting one.
-	 * 
+	 *
 	 * @param isOwnPackingMaterials
 	 */
 	@Theory
@@ -221,7 +267,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -255,7 +301,7 @@ public class HUTransferServiceTests
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("2"), data.piTU_Item_Product_IFCO_40KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, new BigDecimal("2"), data.piTU_Item_Product_IFCO_40KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -275,19 +321,18 @@ public class HUTransferServiceTests
 	/**
 	 * Run {@link HUTransferService#cuToNewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
 	 * by splitting a CU-quantity of 40 onto new TUs with a CU-capacity of 8 each.
-	 * 
+	 *
 	 * @param isOwnPackingMaterials
 	 */
 	@Theory
 	public void testRealCU_To_NewTUs_40Tomatoes_TU_Capacity_8(
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
-		// TODO talk about this behavior with mark
 		final I_M_HU cuToSplit = mkRealStandAloneCUToSplit("40");
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewTUs(cuToSplit, data.helper.pTomato, data.helper.uomKg, new BigDecimal("40"), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, new BigDecimal("40"), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(5));
 
@@ -314,7 +359,7 @@ public class HUTransferServiceTests
 		// just use the testee as a tool here, to create our "real" TU.
 		final I_M_HU cuHU = mkRealStandAloneCUToSplit("20");
 		final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+				.cuToNewTUs(cuHU, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 		assertThat(existingTUs.size(), is(1));
 		final I_M_HU existingTU = existingTUs.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(existingTU), is(false));
@@ -355,7 +400,7 @@ public class HUTransferServiceTests
 		{
 			final I_M_HU cuHU = mkRealStandAloneCUToSplit("30");
 			final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
-					.cuToNewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("30"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+					.cuToNewTUs(cuHU, new BigDecimal("30"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 			assertThat(existingTUs.size(), is(1));
 			existingTU = existingTUs.get(0);
 			assertThat(handlingUnitsBL.isAggregateHU(existingTU), is(false));
@@ -422,7 +467,7 @@ public class HUTransferServiceTests
 
 	/**
 	 * Verifies that if {@link HUTransferService#tuToNewTUs(I_M_HU, BigDecimal, boolean)} is run with the source TU's full qty or more and since .
-	 * 
+	 *
 	 * @param isOwnPackingMaterials
 	 */
 	@Test
@@ -463,7 +508,7 @@ public class HUTransferServiceTests
 
 	/**
 	 * Verifies the nothing is changed if {@link HUTransferService#tuToNewTUs(I_M_HU, BigDecimal, boolean)} is run with the source TU's full qty or more.
-	 * 
+	 *
 	 * @param isOwnPackingMaterials
 	 */
 	@Test
@@ -473,7 +518,7 @@ public class HUTransferServiceTests
 		// just use the testee as a tool here, to create our "real" TU.
 		final I_M_HU cuHU = mkRealStandAloneCUToSplit("20");
 		final List<I_M_HU> tusToSplit = HUTransferService.get(data.helper.getHUContext())
-				.cuToNewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+				.cuToNewTUs(cuHU, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 		assertThat(tusToSplit.size(), is(1));
 		final I_M_HU tuToSplit = tusToSplit.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
@@ -489,7 +534,7 @@ public class HUTransferServiceTests
 	/**
 	 * Similar to {@link #testSplitAggregateTU_To_NewTUs_MaxValue()}, but here the source TU is on a pallet.<br>
 	 * So this time, it shall be taken off the pallet.
-	 * 
+	 *
 	 * @param isOwnPackingMaterials
 	 */
 	@Theory
@@ -503,7 +548,7 @@ public class HUTransferServiceTests
 		{
 			final I_M_HU cuHU = mkRealStandAloneCUToSplit("20");
 			final List<I_M_HU> tusToSplit = HUTransferService.get(data.helper.getHUContext())
-					.cuToNewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+					.cuToNewTUs(cuHU, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 			assertThat(tusToSplit.size(), is(1));
 			tuToSplit = tusToSplit.get(0);
 			assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
@@ -599,11 +644,13 @@ public class HUTransferServiceTests
 	}
 
 	@Theory
-	public void testRealTU_To_NewLU(
+	public void testRealStandaloneTU_To_NewLU(
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
 		// prepare the existing TU
 		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
+		create_receiptSchedule_for_realCUWithTU(cuHU, "20");
+
 		final I_M_HU tuToSplit = cuHU.getM_HU_Item_Parent().getM_HU();
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
@@ -629,6 +676,53 @@ public class HUTransferServiceTests
 	}
 
 	/**
+	 * Similar to {@link #testRealStandaloneTU_To_NewLU(boolean)}, but the source TU is moved from an old LU to a new one
+	 *
+	 * @param isOwnPackingMaterials
+	 */
+	@Theory
+	public void testRealTUwithLU_To_NewLU(
+			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		// prepare the existing TU
+		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
+		create_receiptSchedule_for_realCUWithTU(cuHU, "20");
+
+		final I_M_HU tuToSplit = cuHU.getM_HU_Item_Parent().getM_HU();
+		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
+
+		// prepare tuToSplit onto a LU. This assumes that #testRealStandaloneTU_To_NewLU was green
+		final List<I_M_HU> oldLUs = HUTransferService.get(data.helper.getHUContext())
+				.tuToNewLUs(tuToSplit, BigDecimal.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
+		assertThat(oldLUs.size(), is(1)); // guard
+		assertThat(tuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(oldLUs.get(0).getM_HU_ID()));
+		assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+
+		// invoke the method under test
+		final List<I_M_HU> newLUs = HUTransferService.get(data.helper.getHUContext())
+				.tuToNewLUs(tuToSplit,
+						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
+						data.piLU_Item_IFCO,
+						isOwnPackingMaterials);
+
+		// the old LU shall now be destroyed
+		assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Destroyed));
+
+		assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
+
+		// the LU shall contain 'tuToSplit'
+		final Node newLUXML = HUXmlConverter.toXml(newLUs.get(0));
+		assertThat(newLUXML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/@M_HU_PI_Item_ID)", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_HU_ID)", is(Integer.toString(tuToSplit.getM_HU_ID()))));
+
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("20.000")));
+		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("20.000")));
+	}
+
+	/**
 	 * Split an aggregate TU to a LU that contains a "real" TU
 	 */
 	@Test
@@ -639,7 +733,7 @@ public class HUTransferServiceTests
 		{
 			final I_M_HU cuHU = mkRealStandAloneCUToSplit("20");
 			final List<I_M_HU> existingTUs = HUTransferService.get(data.helper.getHUContext())
-					.cuToNewTUs(cuHU, data.helper.pTomato, data.helper.uomKg, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
+					.cuToNewTUs(cuHU, new BigDecimal("20"), data.piTU_Item_Product_IFCO_40KgTomatoes, false);
 			assertThat(existingTUs.size(), is(1));
 			final I_M_HU exitingTu = existingTUs.get(0);
 			assertThat(handlingUnitsBL.isAggregateHU(exitingTu), is(false)); // guard; make sure it's "real"
@@ -719,13 +813,11 @@ public class HUTransferServiceTests
 		// the original aggreagate HU is still intact
 		assertThat(existingLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@Qty)", is("2")));
 		assertThat(existingLUXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@M_HU_PI_Item_ID)", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
-		
+
 		// the aggregate 80kg TU which we moved in was de-aggregated into two 40kg TUs
 		assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg' and @Qty='40.000'])", is("2")));
-		//data.helper.commitAndDumpHU(existingLU);
+		// data.helper.commitAndDumpHU(existingLU);
 	}
-
-	// TODO: test with TUs that have multiple different CUs in them
 
 	/**
 	 * <ul>
@@ -733,15 +825,15 @@ public class HUTransferServiceTests
 	 * <li>create a standalone CU with 3kg salad
 	 * <li><move 1.6kg of the salad to the TU
 	 * </ul>
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/237 Transform CU on existing TU not working
 	 */
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_partialCU()
 	{
 		final I_M_HU cuHU = mkRealCUWithTUToSplit("2");
+		create_receiptSchedule_for_realCUWithTU(cuHU, "20");
 
-		
 		final I_M_HU existingTU = handlingUnitsDAO.retrieveParent(cuHU);
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
@@ -772,16 +864,36 @@ public class HUTransferServiceTests
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_completeCU()
 	{
+		final BigDecimal four = new BigDecimal("4");
+		final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
+
 		final I_M_HU cu1 = mkRealCUWithTUToSplit("5");
+		final I_M_HU tuWithMixedCUs = handlingUnitsDAO.retrieveParent(cu1);
+		final I_M_ReceiptSchedule rs1 = create_receiptSchedule_for_realCUWithTU(cu1, "5");
+		final TableRecordReference rs1TableRef = TableRecordReference.of(rs1);
+
+		final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
+		assertThat(rs1HuDocument.size(), is(1));
+		assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == tuWithMixedCUs.getM_HU_ID()), is(true));
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, new BigDecimal("4"), data.helper.uomKg);
-		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
+		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
 
-		final I_M_HU tuWithMixedCUs = handlingUnitsDAO.retrieveParent(cu1);
+		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
+		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_realCUWithTU(cu2, "4");
+		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
+
+		final List<IHUDocument> rs2HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs2TableRef.getTableName(), rs2TableRef.getRecord_ID());
+		assertThat(rs2HuDocument.size(), is(1));
+		assertThat(rs2HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID()), is(true));
+
+		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
 
 		HUTransferService.get(data.helper.getHUContext())
-				.cuToExistingTU(cu2, new BigDecimal("4"), tuWithMixedCUs);
+				.withReferencedObjects(ImmutableList.of(
+						rs1TableRef,
+						TableRecordReference.of(rs2)))
+				.cuToExistingTU(cu2, four, tuWithMixedCUs);
 
 		// data.helper.commitAndDumpHU(tuWithMixedCUs);
 		final Node tuWithMixedCUsXML = HUXmlConverter.toXml(tuWithMixedCUs);
@@ -793,6 +905,27 @@ public class HUTransferServiceTests
 
 		assertThat(tuWithMixedCUsXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "])", is("1")));
 		assertThat(tuWithMixedCUsXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
+		{
+			final I_M_ReceiptSchedule receiptScheduleForCU1 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu1);
+			assertThat(receiptScheduleForCU1, notNullValue());
+			assertThat(receiptScheduleForCU1.getM_ReceiptSchedule_ID(), is(rs1.getM_ReceiptSchedule_ID()));
+
+			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
+			assertThat(rsas1ForCu1.size(), is(1));
+			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("5")));
+		}
+		{
+			final I_M_ReceiptSchedule receiptScheduleForCU2 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu2);
+			assertThat(receiptScheduleForCU2, notNullValue());
+			assertThat(receiptScheduleForCU2.getM_ReceiptSchedule_ID(), is(rs2.getM_ReceiptSchedule_ID()));
+
+			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU2, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu2.getM_HU_ID()).collect(Collectors.toList());
+			assertThat(rsas2ForCu2.size(), is(1));
+			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(four));
+		}
+
 	}
 
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
@@ -813,7 +946,8 @@ public class HUTransferServiceTests
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(strCuQty), data.helper.uomKg);
+		final BigDecimal cuQty = new BigDecimal(strCuQty);
+		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdTUs.size(), is(1));
