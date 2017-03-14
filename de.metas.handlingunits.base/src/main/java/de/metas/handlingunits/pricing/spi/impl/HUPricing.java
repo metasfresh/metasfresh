@@ -214,7 +214,7 @@ public class HUPricing extends AttributePricing
 		return -1;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final int huPIItemProductId)
+	private static IProductPriceQueryMatcher createHUPIItemProductMatcher(final int huPIItemProductId)
 	{
 		if (huPIItemProductId <= 0)
 		{
