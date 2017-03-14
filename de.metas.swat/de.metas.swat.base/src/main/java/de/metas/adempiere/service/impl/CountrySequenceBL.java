@@ -58,20 +58,6 @@ public class CountrySequenceBL implements ICountrySequenceBL
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
 
-		 Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Country_Sequence.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Country_Sequence.COLUMN_AD_Org_ID, org.getAD_Org_ID())
-				.addEqualsFilter(I_C_Country_Sequence.COLUMN_C_Country_ID, country.getC_Country_ID())
-				.addInArrayFilter(I_C_Country_Sequence.COLUMNNAME_AD_Language, language, "", null)
-				//
-				.orderBy()
-				.addColumn(I_C_Country_Sequence.COLUMNNAME_AD_Language, false)
-				.endOrderBy()
-				//
-				.create()
-				.listImmutable(I_C_Country_Sequence.class);
-
 		final Collection<List<I_C_Country_Sequence>> cSequences = countrySequences.getOrLoad(country.getC_Country_ID(), () -> Services.get(ICountryDAO.class).retrieveCountrySequence(ctx, country.getC_Country_ID())).values();
 		
 		final List<I_C_Country_Sequence> sequences = new ArrayList<>();
