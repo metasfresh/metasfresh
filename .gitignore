@@ -7,10 +7,10 @@
 
 *.launch
 
-metasfresh-webui-api/activemq-data/
-metasfresh-webui-api/data/
-metasfresh-webui-api/log/
-metasfresh-webui-api/tmp/
+/activemq-data/
+/data/
+/log/
+/tmp/
 
 hs_err*.log
 
