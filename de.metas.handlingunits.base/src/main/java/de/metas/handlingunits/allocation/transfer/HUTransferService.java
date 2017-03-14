@@ -195,7 +195,8 @@ public class HUTransferService
 		if (qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0)
 		{
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			if (handlingUnitsDAO.retrieveParentItem(cuHU) == null)
+			final I_M_HU_Item cuParentItem = handlingUnitsDAO.retrieveParentItem(cuHU);
+			if (cuParentItem == null)
 			{
 				// the caller wants to process the complete cuHU, but there is nothing to do because the cuHU is not attached to a parent.
 				return Collections.emptyList();
@@ -220,6 +221,8 @@ public class HUTransferService
 									for (final IHUDocumentLine huDocumentLine : huDocument.getLines())
 									{
 										final IHUAllocations huAllocations = huDocumentLine.getHUAllocations();
+
+										huAllocations.allocate(null, cuParentItem.getM_HU(), cuHU, qtyCU.negate(), singleProductStorage.getC_UOM(), false);
 										huAllocations.allocate(null, null, cuHU, qtyCU, singleProductStorage.getC_UOM(), false);
 									}
 								}
@@ -272,6 +275,7 @@ public class HUTransferService
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final IAllocationDestination destination;
 		if (handlingUnitsBL.isAggregateHU(tuHU))
@@ -293,6 +297,9 @@ public class HUTransferService
 				destination = HUProducerDestination.ofVirtualPI();
 			}
 		}
+
+		// get cuHU's old parent (if any) for later usage, before the changes start
+		final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(tuHU);
 
 		if (destination != null)
 		{
@@ -331,8 +338,6 @@ public class HUTransferService
 
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
 		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(tuHU)
 				.stream()
@@ -342,8 +347,8 @@ public class HUTransferService
 
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
 		// finally do the attaching
-		childCUs.forEach(cu -> {
-			setParent(cu,
+		childCUs.forEach(newChildCU -> {
+			setParent(newChildCU,
 					tuMaterialItem.get(0),
 					localHuContext -> {
 						final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
@@ -360,7 +365,8 @@ public class HUTransferService
 								for (final IHUDocumentLine huDocumentLine : huDocument.getLines())
 								{
 									final IHUAllocations huAllocations = huDocumentLine.getHUAllocations();
-									huAllocations.allocate(null, tuHU, cuHU, qtyCU, singleProductStorage.getC_UOM(), false);
+									huAllocations.allocate(null, oldParentTU, cuHU, qtyCU.negate(), singleProductStorage.getC_UOM(), false);
+									huAllocations.allocate(null, tuHU, newChildCU, qtyCU, singleProductStorage.getC_UOM(), false);
 								}
 							}
 						}
@@ -390,6 +396,8 @@ public class HUTransferService
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(tuHU);
 
 		final List<I_M_HU> tuHUsToAttachToLU;
 		if (qtyTU.compareTo(getMaximumQtyTU(tuHU)) >= 0)
@@ -423,7 +431,8 @@ public class HUTransferService
 
 			final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
 
-			setParent(tuToAttach, parentItem,
+			setParent(tuToAttach,
+					parentItem,
 					localHuContext -> {
 						final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 						for (final TableRecordReference ref : referencedObjects)
@@ -440,10 +449,11 @@ public class HUTransferService
 								{
 									final IHUAllocations huAllocations = huDocumentLine.getHUAllocations();
 
-									handlingUnitsDAO.retrieveIncludedHUs(tuHU).forEach(cuHU -> {
+									handlingUnitsDAO.retrieveIncludedHUs(tuToAttach).forEach(cuHU -> {
 
 										final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
-										huAllocations.allocate(luHU, tuHU, cuHU, singleProductStorage.getQty(), singleProductStorage.getC_UOM(), false);
+										huAllocations.allocate(oldParentLU, tuHU, cuHU, singleProductStorage.getQty().negate(), singleProductStorage.getC_UOM(), false);
+										huAllocations.allocate(luHU, tuToAttach, cuHU, singleProductStorage.getQty(), singleProductStorage.getC_UOM(), false);
 									});
 
 								}
@@ -511,6 +521,9 @@ public class HUTransferService
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+		// get cuHU's old parent (if any) for later usage, before the changes start
+		final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
+
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU
 		{
 			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but there sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
@@ -540,6 +553,7 @@ public class HUTransferService
 										handlingUnitsDAO.retrieveIncludedHUs(sourceTuHU).forEach(cuHU -> {
 
 											final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
+											huAllocations.allocate(oldParentLU, sourceTuHU, cuHU, singleProductStorage.getQty().negate(), singleProductStorage.getC_UOM(), false);
 											huAllocations.allocate(null, sourceTuHU, cuHU, singleProductStorage.getQty(), singleProductStorage.getC_UOM(), false);
 										});
 									}
@@ -554,7 +568,7 @@ public class HUTransferService
 		return tuToTopLevelHUs(sourceTuHU, qtyTU, null, isOwnPackingMaterials);
 	}
 
-	private void setParent(final I_M_HU childHU, final I_M_HU_Item parentItem, Consumer<IHUContext> c)
+	private void setParent(final I_M_HU childHU, final I_M_HU_Item parentItem, final Consumer<IHUContext> afterParentChange)
 	{
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor(huContext)
@@ -573,7 +587,7 @@ public class HUTransferService
 								true // destroyOldParentIfEmptyStorage
 						);
 
-						c.accept(localHuContext);
+						afterParentChange.accept(localHuContext);
 
 						return NULL_RESULT; // we don't care about the result
 					}
@@ -598,13 +612,15 @@ public class HUTransferService
 		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
 		Preconditions.checkNotNull(luPIItem, "Param 'luPI' may not be null");
-
+		
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
+		
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
 				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)
 		{
 			// don't split; just create a new LU and "move" the TU
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 			// create the new LU
 			final I_M_HU newLuHU = handlingUnitsDAO
@@ -662,6 +678,7 @@ public class HUTransferService
 									handlingUnitsDAO.retrieveIncludedHUs(sourceTuHU).forEach(cuHU -> {
 
 										final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
+										huAllocations.allocate(oldParentLU, sourceTuHU, cuHU, singleProductStorage.getQty().negate(), singleProductStorage.getC_UOM(), false);
 										huAllocations.allocate(newLuHU, sourceTuHU, cuHU, singleProductStorage.getQty(), singleProductStorage.getC_UOM(), false);
 									});
 								}

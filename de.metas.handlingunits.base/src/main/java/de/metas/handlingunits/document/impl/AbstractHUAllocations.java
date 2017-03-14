@@ -103,8 +103,11 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	 * @param uom
 	 * @param deleteOldTUAllocations if true, delete ALL old allocations between the TU and the document (be careful with this, as it might delete allocations which are still desired)
 	 */
-	protected abstract void createAllocation(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu,
-			final BigDecimal qtyToAllocate, final I_C_UOM uom,
+	protected abstract void createAllocation(final I_M_HU luHU, 
+			final I_M_HU tuHU, 
+			final I_M_HU vhu,
+			final BigDecimal qtyToAllocate, 
+			final I_C_UOM uom,
 			final boolean deleteOldTUAllocations);
 
 	/**
