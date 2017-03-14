@@ -31,7 +31,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Country_Sequence;
 import org.junit.Ignore;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
@@ -100,7 +102,7 @@ public class PlainCountryDAO extends CountryDAO
 	@Override
 	public List<I_C_Country_Sequence> retrieveCountrySequence(I_C_Country country, I_AD_Org org, String language)
 	{
-		return lookupMap.getRecords(I_C_Country_Sequence.class, new IPOJOFilter<I_C_Country_Sequence>()
+		return lookupMap.getRecords(I_C_Country_Sequence.class, new IQueryFilter<I_C_Country_Sequence>()
 		{
 
 			@Override
