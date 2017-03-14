@@ -36,6 +36,7 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
+  * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
   * [#524](https://github.com/metasfresh/metasfresh-webui-frontend/issues/524) Location Editor cannot read property bug
 
 # metasfresh 5.0 (2017-10)
