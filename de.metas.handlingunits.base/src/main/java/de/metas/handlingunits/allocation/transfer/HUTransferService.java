@@ -262,31 +262,31 @@ public class HUTransferService
 	 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
 	 * 
-	 * @param cuHU the source CU to be split or joined
+	 * @param sourceCuHU the source CU to be split or joined
 	 * @param qtyCU the CU-quantity to join or split
-	 * @param tuHU the target TU
+	 * @param targetTuHU the target TU
 	 */
 	public void cuToExistingTU(
-			final I_M_HU cuHU,
+			final I_M_HU sourceCuHU,
 			final BigDecimal qtyCU,
-			final I_M_HU tuHU)
+			final I_M_HU targetTuHU)
 	{
-		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
+		Preconditions.checkNotNull(sourceCuHU, "Param 'cuHU' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final IAllocationDestination destination;
-		if (handlingUnitsBL.isAggregateHU(tuHU))
+		if (handlingUnitsBL.isAggregateHU(targetTuHU))
 		{
 			// we will load directly to the given tuHU which is actually a VHU
-			destination = HUListAllocationSourceDestination.of(tuHU);
+			destination = HUListAllocationSourceDestination.of(targetTuHU);
 		}
 		else
 		{
 			// we are later going to attach something as a child to the given 'tuHU'
-			if (qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0)
+			if (qtyCU.compareTo(getMaximumQtyCU(sourceCuHU)) >= 0)
 			{
 				// we will attach the whole cuHU to tuHU and thus not load/split anything
 				destination = null;
@@ -299,15 +299,17 @@ public class HUTransferService
 		}
 
 		// get cuHU's old parent (if any) for later usage, before the changes start
-		final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(tuHU);
-		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
+		final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(sourceCuHU);
+		final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
+		
+		final IHUProductStorage singleProductStorage = getSingleProductStorage(sourceCuHU);
 
 		if (destination != null)
 		{
 			HUSplitBuilderCoreEngine
 					.of(
 							huContext,
-							cuHU,
+							sourceCuHU,
 							// forceAllocation = true; we don't want to get bothered by capacity constraint, even if the destination *probably* doesn't have any to start with
 							huContext -> createCUAllocationRequest(huContext,
 									singleProductStorage.getM_Product(),
@@ -320,7 +322,7 @@ public class HUTransferService
 					.performSplit();
 		}
 
-		if (handlingUnitsBL.isAggregateHU(tuHU))
+		if (handlingUnitsBL.isAggregateHU(targetTuHU))
 		{
 			return; // we are done; no attaching
 		}
@@ -329,7 +331,7 @@ public class HUTransferService
 		final List<I_M_HU> childCUs;
 		if (destination == null)
 		{
-			childCUs = ImmutableList.of(cuHU);
+			childCUs = ImmutableList.of(sourceCuHU);
 		}
 		else
 		{
@@ -338,13 +340,15 @@ public class HUTransferService
 		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
-		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(tuHU)
+		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
 				.collect(Collectors.toList());
-		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", tuHU);
+		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", targetTuHU);
 
 		// finally do the attaching
+		final I_M_HU targetTuHUParent = handlingUnitsDAO.retrieveParent(targetTuHU);
+
 		childCUs.forEach(newChildCU -> {
 			setParent(newChildCU,
 					tuMaterialItem.get(0),
@@ -355,7 +359,7 @@ public class HUTransferService
 							final List<IHUDocument> huDocuments = huDocumentFactoryService.createHUDocuments(localHuContext.getCtx(), ref.getTableName(), ref.getRecord_ID());
 							for (final IHUDocument huDocument : huDocuments)
 							{
-								final boolean huDocumentBelongsToCuHU = huDocument.getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cuHU.getM_HU_ID());
+								final boolean huDocumentBelongsToCuHU = huDocument.getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == sourceCuHU.getM_HU_ID());
 								if (!huDocumentBelongsToCuHU)
 								{
 									continue;
@@ -363,8 +367,8 @@ public class HUTransferService
 								for (final IHUDocumentLine huDocumentLine : huDocument.getLines())
 								{
 									final IHUAllocations huAllocations = huDocumentLine.getHUAllocations();
-									huAllocations.allocate(null, oldParentTU, cuHU, qtyCU.negate(), singleProductStorage.getC_UOM(), false);
-									huAllocations.allocate(null, tuHU, newChildCU, qtyCU, singleProductStorage.getC_UOM(), false);
+									huAllocations.allocate(oldParentLU, oldParentTU, sourceCuHU, qtyCU.negate(), singleProductStorage.getC_UOM(), false);
+									huAllocations.allocate(targetTuHUParent, targetTuHU, newChildCU, qtyCU, singleProductStorage.getC_UOM(), false);
 								}
 							}
 						}
@@ -610,10 +614,10 @@ public class HUTransferService
 		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
 		Preconditions.checkNotNull(luPIItem, "Param 'luPI' may not be null");
-		
+
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
-		
+
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
 				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)

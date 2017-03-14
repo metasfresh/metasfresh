@@ -9,8 +9,12 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Consumer;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +35,8 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.interfaces.I_M_Warehouse;
 
@@ -96,6 +102,22 @@ public class HUTransferServiceTests
 		assertThat(newCUs.size(), is(0));
 	}
 
+	private final Consumer<IPair<I_M_HU, BigDecimal>> create_receiptSchedule_for_realCUWithTU = p -> {
+
+		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
+		InterfaceWrapperHelper.save(receiptSchedule);
+
+		final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class);
+		receiptScheduleAlloc.setM_ReceiptSchedule(receiptSchedule);
+		final I_M_HU cu = p.getLeft();
+
+		receiptScheduleAlloc.setVHU(cu);
+		final I_M_HU tu = handlingUnitsDAO.retrieveParent(cu);
+		receiptScheduleAlloc.setM_TU_HU(tu);
+		receiptScheduleAlloc.setHU_QtyAllocated(p.getRight());
+		InterfaceWrapperHelper.save(receiptScheduleAlloc);
+	};
+
 	/**
 	 * Tests {@link HUTransferService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
 	 * and verifies that the method removes the given CU from its parent, if it has a parent and if the given qty is equal or greater than the CU's full quantity.
@@ -103,7 +125,7 @@ public class HUTransferServiceTests
 	@Test
 	public void testCU_To_NewCU_MaxValueParent()
 	{
-		final I_M_HU cuToSplit = mkRealCUWithTUToSplit("3");
+		final I_M_HU cuToSplit = mkRealCUWithTUToSplit("3", create_receiptSchedule_for_realCUWithTU);
 		final I_M_HU parentTU = cuToSplit.getM_HU_Item_Parent().getM_HU();
 
 		// invoke the method under test
@@ -603,7 +625,7 @@ public class HUTransferServiceTests
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
 		// prepare the existing TU
-		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
+		final I_M_HU cuHU = mkRealCUWithTUToSplit("20", create_receiptSchedule_for_realCUWithTU);
 		final I_M_HU tuToSplit = cuHU.getM_HU_Item_Parent().getM_HU();
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
@@ -638,7 +660,7 @@ public class HUTransferServiceTests
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
 		// prepare the existing TU
-		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
+		final I_M_HU cuHU = mkRealCUWithTUToSplit("20",create_receiptSchedule_for_realCUWithTU);
 		final I_M_HU tuToSplit = cuHU.getM_HU_Item_Parent().getM_HU();
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
@@ -782,7 +804,7 @@ public class HUTransferServiceTests
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_partialCU()
 	{
-		final I_M_HU cuHU = mkRealCUWithTUToSplit("2");
+		final I_M_HU cuHU = mkRealCUWithTUToSplit("2",create_receiptSchedule_for_realCUWithTU);
 
 		final I_M_HU existingTU = handlingUnitsDAO.retrieveParent(cuHU);
 
@@ -814,7 +836,7 @@ public class HUTransferServiceTests
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_completeCU()
 	{
-		final I_M_HU cu1 = mkRealCUWithTUToSplit("5");
+		final I_M_HU cu1 = mkRealCUWithTUToSplit("5", create_receiptSchedule_for_realCUWithTU);
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSalad, new BigDecimal("4"), data.helper.uomKg);
@@ -849,13 +871,15 @@ public class HUTransferServiceTests
 		return cuToSplit;
 	}
 
-	private I_M_HU mkRealCUWithTUToSplit(final String strCuQty)
+	private I_M_HU mkRealCUWithTUToSplit(final String strCuQty,
+			final Consumer<IPair<I_M_HU, BigDecimal>> createDocumentsForCU)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(strCuQty), data.helper.uomKg);
+		final BigDecimal cuQty = new BigDecimal(strCuQty);
+		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdTUs.size(), is(1));
@@ -864,6 +888,8 @@ public class HUTransferServiceTests
 		assertThat(createdCUs.size(), is(1));
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
+
+		createDocumentsForCU.accept(ImmutablePair.of(cuToSplit, cuQty));
 
 		return cuToSplit;
 	}
