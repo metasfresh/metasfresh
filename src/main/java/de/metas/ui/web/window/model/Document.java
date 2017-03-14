@@ -1349,6 +1349,24 @@ public final class Document
 
 		return false;
 	}
+	
+	/* package */ boolean isActive()
+	{
+		final IDocumentFieldView isActiveField = getFieldOrNull(WindowConstants.FIELDNAME_IsActive);
+		if (isActiveField != null)
+		{
+			return isActiveField.getValueAsBoolean();
+		}
+
+		final Document parentDocument = getParentDocument();
+		if (parentDocument != null)
+		{
+			return parentDocument.isActive();
+		}
+
+		return false;
+	}
+
 
 	/**
 	 * Set Dynamic Attribute.

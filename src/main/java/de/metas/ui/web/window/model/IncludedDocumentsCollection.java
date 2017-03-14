@@ -323,6 +323,11 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
 		}
 		
+		if (!parentDocument.isActive())
+		{
+			return LogicExpressionResult.namedConstant("ParentDocumentNotActive", false);
+		}
+		
 		if(parentDocument.isNew())
 		{
 			return LogicExpressionResult.namedConstant("ParentDocumentNew", false);
@@ -357,6 +362,11 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		if (parentDocument.isProcessed())
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
+		}
+		
+		if (!parentDocument.isActive())
+		{
+			return LogicExpressionResult.namedConstant("ParentDocumentNotActive", false);
 		}
 
 		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
