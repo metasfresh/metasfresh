@@ -3,7 +3,7 @@
 **/.classpath
 **/.project
 **/bin/
-**/metasfresh.properties
+**/metasfresh*.properties
 
 *.launch
 

@@ -14,6 +14,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -21,6 +22,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
+import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -75,6 +77,8 @@ public class WEBUI_M_HU_Transform
 		extends HUViewProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private static final  String SYSCONFIG_ALLOW_INFINIT_CAPACITY_TUS = "de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform.AllowNewTUsWithInfiniteCapacity";
+
 	/**
 	 *
 	 * Enumerates the actions supported by this process. There is an analog {@code AD_Ref_List} in the application dictionary. <b>Please keep it in sync</b>.
@@ -587,11 +591,15 @@ public class WEBUI_M_HU_Transform
 	private LookupValuesList retrieveHUPItemProductsForNewTU()
 	{
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final boolean allowInfiniteCapacity = sysConfigBL.getBooleanValue(SYSCONFIG_ALLOW_INFINIT_CAPACITY_TUS, true,
+				Env.getAD_Client_ID(getCtx()), Env.getAD_Org_ID(getCtx()));
 
 		final HUDocumentView cuRow = getSingleSelectedRow();
 
 		final Stream<I_M_HU_PI_Item_Product> stream = hupiItemProductDAO
-				.retrieveTUs(getCtx(), cuRow.getM_Product(), cuRow.getM_HU().getC_BPartner())
+				.retrieveTUs(getCtx(), cuRow.getM_Product(), cuRow.getM_HU().getC_BPartner(), allowInfiniteCapacity)
 				.stream();
 
 		return stream
