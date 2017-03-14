@@ -14,7 +14,13 @@ class SideList extends Component {
     }
 
     render() {
-        const {open, windowType, closeOverlays} = this.props;
+        const {
+            open,
+            windowType,
+            closeOverlays,
+            closeSideList,
+            isSideListShow
+        } = this.props;
 
         return (
             <div
@@ -29,6 +35,8 @@ class SideList extends Component {
                         type="list"
                         open={open}
                         closeOverlays={closeOverlays}
+                        closeSideList={closeSideList}
+                        isSideListShow={isSideListShow}
                     />
                 </div>
             </div>

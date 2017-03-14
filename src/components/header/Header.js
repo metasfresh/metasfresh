@@ -396,9 +396,10 @@ class Header extends Component {
                 />}
 
                 {showSidelist && isSideListShow && <SideList
-                    windowType={windowType ? parseInt(windowType) : ''}
+                    windowType={parseInt(windowType)}
                     closeOverlays={this.closeOverlays}
                     closeSideList={this.handleCloseSideList}
+                    isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
                 />}
 

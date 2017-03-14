@@ -195,24 +195,21 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        if(windowType){
-            dispatch(initLayout(
-                'documentView', windowType, null, null, null, null, type, true
-            )).then(response => {
-                this.setState({
-                    layout: response.data
-                }, () => {
-                    if(viewId && !isNewFilter){
-                        this.browseView();
-                    }else{
-                        this.createView();
-                    }
-                    setModalTitle && setModalTitle(response.data.caption)
-                })
-            });
-        }
+        dispatch(initLayout(
+            'documentView', windowType, null, null, null, null, type, true
+        )).then(response => {
+            this.setState({
+                layout: response.data
+            }, () => {
+                if(viewId && !isNewFilter){
+                    this.browseView();
+                }else{
+                    this.createView();
+                }
+                setModalTitle && setModalTitle(response.data.caption)
+            })
+        });
     }
-
     /*
      *  If viewId exist, than browse that view.
      */
@@ -328,7 +325,8 @@ class DocumentList extends Component {
 
         const {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus
+            fetchQuickActionsOnInit, isModal, processStatus, isSideListShow,
+            closeSideList
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);
@@ -381,8 +379,11 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
-                                !isModal && windowType &&
+                                !isModal &&
                                 dispatch(push('/window/' + windowType + '/' + id))
+                                if(isSideListShow) {
+                                    closeSideList();
+                                }
                             }}
                             isModal={isModal}
                             size={data.size}
