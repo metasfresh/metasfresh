@@ -25,6 +25,9 @@ Here come the actual release notes:
   * [#1134](https://github.com/metasfresh/metasfresh/issues/1134) Show Order ID in main window of Empties Receive
   * [#1142](https://github.com/metasfresh/metasfresh/issues/1142) Improve migration scripts handling
   
+* metasfresh-webui
+  * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
+  
 ## Fixes
 * metasfresh-backend
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
