@@ -156,6 +156,22 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_M_PriceList_Version plv = orderLineBL.getPriceListVersion(orderLine);
 
+		//
+		// Check if we have a product price specific to current PI Item Product
+		if(orderLine.getM_HU_PI_Item_Product_ID() > 0)
+		{
+			final boolean strictDefault = false;
+			final I_M_ProductPrice huProductPrice = ProductPriceQuery.newInstance(plv)
+					.setM_Product_ID(orderLine.getM_Product_ID())
+					.onlyAttributePricing()
+					.matching(HUPricing.createHUPIItemProductMatcher(orderLine.getM_HU_PI_Item_Product_ID()))
+					.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+			if(huProductPrice != null)
+			{
+				return huProductPrice;
+			}
+		}
+
 		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
 		final boolean strictDefault = true;
 		return ProductPriceQuery.newInstance(plv)
