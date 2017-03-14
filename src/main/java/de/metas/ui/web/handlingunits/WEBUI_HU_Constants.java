@@ -28,6 +28,5 @@ public final class WEBUI_HU_Constants
 	
 	private WEBUI_HU_Constants()
 	{
-		super();
 	}
 }
