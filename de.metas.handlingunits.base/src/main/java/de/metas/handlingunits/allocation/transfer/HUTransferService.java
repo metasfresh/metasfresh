@@ -347,7 +347,6 @@ public class HUTransferService
 					// after the childHU's parent item is set,
 					localHuContext -> {
 						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
-
 					},
 
 					// after the childHU's parent item is set,
