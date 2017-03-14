@@ -3,12 +3,14 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -46,6 +48,21 @@ public class WEBUI_M_ReceiptSchedule_SelectHUsToReverse extends JavaProcess impl
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		
+		// Receipt schedule shall not be already closed
+		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
+		if(receiptScheduleBL.isClosed(receiptSchedule))
+		{
+			return ProcessPreconditionsResolution.reject("already closed");
+		}
+		
+
+		// Receipt schedule shall not be about packing materials
+		if (receiptSchedule.isPackagingMaterial())
+		{
+			return ProcessPreconditionsResolution.reject("not applying for packing materials");
 		}
 
 		return ProcessPreconditionsResolution.accept();
