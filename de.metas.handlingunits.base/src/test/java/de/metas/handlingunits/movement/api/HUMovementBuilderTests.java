@@ -143,7 +143,7 @@ public class HUMovementBuilderTests
 		huGuard.accept(hu);
 
 		final I_M_Movement movement = new HUMovementBuilder()
-				.setContextInitial(testsupport.helper.ctx)
+				.setContextInitial(testsupport.helper.getContextProvider())
 				.setWarehouseFrom(warehouseFrom)
 				.setLocatorFrom(locatorFrom) // needs to match the HU's locator
 				.setWarehouseTo(warehouseTo)

@@ -126,7 +126,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	{
 		Preconditions.checkNotNull(itemDef, "Param 'itemDef' may not be null");
 		Preconditions.checkNotNull(product, "Param 'product' may not be null");
-		
+
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		if (partner != null)
 		{
@@ -462,7 +462,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				// Also it makes no sense to order by M_HU_PI_Item_ID
 				// .addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last)
 
-		// Get specific BPartner first
+				// Get specific BPartner first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
 				// Get specific Product first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, Direction.Descending, Nulls.Last) // Y first, N second
@@ -549,7 +549,21 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx, final I_M_Product cuProduct, final I_C_BPartner bpartner)
+	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx, 
+			final I_M_Product cuProduct, 
+			final I_C_BPartner bpartner)
+	{
+		//
+		// Filter out infinite capacity configurations
+		final boolean allowInfiniteCapacity = false;
+		return retrieveTUs(ctx, cuProduct, bpartner, allowInfiniteCapacity);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
+			final I_M_Product cuProduct,
+			final I_C_BPartner bpartner,
+			final boolean allowInfiniteCapacity)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 
@@ -570,9 +584,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			queryVO.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		}
 
-		//
-		// Filter out infinite capacity configurations
-		queryVO.setAllowInfiniteCapacity(false);
+		queryVO.setAllowInfiniteCapacity(allowInfiniteCapacity);
 
 		//
 		// Filter by current date (ValidFrom >= today, ValidTo <= today)
