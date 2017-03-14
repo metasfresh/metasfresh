@@ -30,7 +30,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 
 /**
@@ -77,4 +79,13 @@ public interface ICountryDAO extends ISingletonService
 	public List<I_C_Country> getCountries(Properties ctx);
 
 	List<I_C_Region> retrieveRegions(Properties ctx, int countryId);
+	
+	/**
+	 * retrieve country sequence per org and language
+	 * @param country
+	 * @param org
+	 * @param language
+	 * @return
+	 */
+	public List<I_C_Country_Sequence> retrieveCountrySequence(final I_C_Country country, final I_AD_Org org, final String language);
 }

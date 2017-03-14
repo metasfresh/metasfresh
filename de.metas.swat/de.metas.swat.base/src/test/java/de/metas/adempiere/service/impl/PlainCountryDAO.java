@@ -96,4 +96,29 @@ public class PlainCountryDAO extends CountryDAO
 			}
 		});
 	}
+
+	@Override
+	public List<I_C_Country_Sequence> retrieveCountrySequence(I_C_Country country, I_AD_Org org, String language)
+	{
+		return lookupMap.getRecords(I_C_Country_Sequence.class, new IPOJOFilter<I_C_Country_Sequence>()
+		{
+
+			@Override
+			public boolean accept(final I_C_Country_Sequence pojo)
+			{
+				if (pojo.getAD_Language() != language)
+				{
+					return false;
+				}
+				
+				if (pojo.getC_Country_ID() != pojo.getC_Country_ID())
+				{
+					return false;
+				}
+						
+				return true;
+			}
+		});
+	}
+
 }

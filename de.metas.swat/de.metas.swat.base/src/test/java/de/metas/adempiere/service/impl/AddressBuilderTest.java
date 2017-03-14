@@ -29,6 +29,7 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.util.Env;
@@ -45,6 +46,7 @@ import de.metas.interfaces.I_C_BPartner;
 public class AddressBuilderTest
 {
 	private AddressBuilder builder;
+	I_AD_Org org;
 
 	@BeforeClass
 	public static void staticInit()
@@ -56,6 +58,8 @@ public class AddressBuilderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		org = prepareAD_Org();
 
 		builder = new AddressBuilder();
 	}
@@ -70,7 +74,7 @@ public class AddressBuilderTest
 		final String userBlock = null;
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\nCity1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -85,7 +89,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\nCity1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -99,13 +103,13 @@ public class AddressBuilderTest
 		final String userBlock = null;
 		Assert.assertEquals(
 				"addr1\naddr2\nCity1\nRegion1 Country1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\nCity1\nRegion1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -119,13 +123,13 @@ public class AddressBuilderTest
 		final String userBlock = null;
 		Assert.assertEquals(
 				"street 12\n121212\nLondon UK",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 		Assert.assertEquals(
 				"LOCAL: " + "street 12\n121212\nLondon",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -140,13 +144,13 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"BPartner1\nstreet\n12\nD-121212 Berlin\nDeutschland",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 		Assert.assertEquals(
 				"LOCAL: " + "\nBPartner1\nstreet\n12\nD-121212 Berlin",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -160,13 +164,13 @@ public class AddressBuilderTest
 		final String userBlock = "Contact1";
 		Assert.assertEquals(
 				"BPartner1\nContact1\nstreet\n12\nD-121212 Berlin\nDeutschland",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 		Assert.assertEquals(
 				"LOCAL: " + "\nBPartner1\nContact1\nstreet\n12\nD-121212 Berlin",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -185,14 +189,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\nRegion Region1 Country1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1\nRegion Region1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -211,14 +215,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\n(Region Region1) Country1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1\n(Region Region1)",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -237,14 +241,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -263,14 +267,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\n(Region ) Country1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1\n(Region )",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -285,14 +289,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\nPostfach \nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1\nPostfach",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -307,14 +311,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\nPostfach 1234\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1\nPostfach 1234",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -329,14 +333,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr1\naddr2\n121212 City1\nTEST Postfach 1234\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr1\naddr2\n121212 City1\nTEST Postfach 1234",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -351,14 +355,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr2\naddr1\nPostfach \n121212 City1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr2\naddr1\nPostfach \n121212 City1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -373,14 +377,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr2\naddr1\nPostfach 1234\n121212 City1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr2\naddr1\nPostfach 1234\n121212 City1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -395,14 +399,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr2\naddr1\n121212 City1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr2\naddr1\n121212 City1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -417,14 +421,14 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr2\naddr1\n1234\n121212 City1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 
 		isLocalAddress = true;
 
 		Assert.assertEquals(
 				"LOCAL: addr2\naddr1\n1234\n121212 City1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -439,7 +443,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"addr2\naddr1\n121212 City1\nCountry1",
-				builder.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock)
+				builder.buildAddressString(org, location,"de_CH", isLocalAddress, bPartnerBlock, userBlock)
 				);
 	}
 
@@ -684,6 +688,17 @@ public class AddressBuilderTest
 		return country;
 	}
 
+	private I_AD_Org prepareAD_Org()
+		{
+		final I_AD_Org org = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_Org.class, ITrx.TRXNAME_None);
+		org.setName("Org1");
+		org.setValue("1");
+		InterfaceWrapperHelper.save(org);
+
+		return org;
+	}
+
+	
 	private I_C_Location prepareLocation(final String a1, final String a2, final String a3, final String a4,
 			final String city, final String regionName, final String postal, final boolean isPOBoxNum, final String POBox, final I_C_Country country)
 	{
@@ -708,6 +723,7 @@ public class AddressBuilderTest
 	{
 		final I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner_Location.class, ITrx.TRXNAME_None);
 		bpLoc.setC_Location_ID(location.getC_Location_ID());
+		bpLoc.setAD_Org(org);
 		InterfaceWrapperHelper.save(bpLoc);
 	
 		return bpLoc;
@@ -718,6 +734,7 @@ public class AddressBuilderTest
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		bpartner.setName(name);
 		bpartner.setName2(name2);
+		bpartner.setAD_Org(org);
 		bpartner.setIsCompany(isCompany);
 		InterfaceWrapperHelper.save(bpartner);
 				
@@ -728,6 +745,7 @@ public class AddressBuilderTest
 	{
 		final I_C_Greeting greeting = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Greeting.class, ITrx.TRXNAME_None);
 		greeting.setName(name);
+		greeting.setAD_Org_ID(org.getAD_Org_ID());
 		InterfaceWrapperHelper.save(greeting);
 		
 		return greeting;
@@ -740,6 +758,7 @@ public class AddressBuilderTest
 		user.setFirstname(firstName);
 		user.setLastname(lastName);
 		user.setTitle(title);
+		user.setAD_Org(org);
 		user.setC_Greeting_ID(greeting.getC_Greeting_ID());
 		InterfaceWrapperHelper.save(user);
 		

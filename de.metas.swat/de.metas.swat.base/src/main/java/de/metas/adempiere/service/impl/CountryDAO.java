@@ -36,13 +36,16 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Language;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User_SaveCustomInfo;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
 import org.compiere.model.Query;
@@ -193,4 +196,24 @@ public class CountryDAO implements ICountryDAO
 				.listImmutable(I_C_Region.class);
 
 	}
+	
+	@Override
+	public List<I_C_Country_Sequence> retrieveCountrySequence(final I_C_Country country, final I_AD_Org org, final String language)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Country_Sequence.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Country_Sequence.COLUMN_AD_Org_ID, org.getAD_Org_ID())
+				.addEqualsFilter(I_C_Country_Sequence.COLUMN_C_Country_ID, country.getC_Country_ID())
+				.addInArrayFilter(I_C_Country_Sequence.COLUMNNAME_AD_Language, language, "", null)
+				//
+				.orderBy()
+				.addColumn(I_C_Country_Sequence.COLUMNNAME_AD_Language, false)
+				.endOrderBy()
+				//
+				.create()
+				.list(I_C_Country_Sequence.class);
+	}	
 }

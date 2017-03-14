@@ -31,6 +31,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.model.I_C_Postal;
+import de.metas.interfaces.I_C_BPartner;
 
 public interface ILocationBL extends ISingletonService
 {
@@ -73,13 +74,13 @@ public interface ILocationBL extends ISingletonService
 	 * Build address string based on given locationId and bpartner and user blocks
 	 * 
 	 * task FRESH-119: transaction no longer needed in this method. Provide the location as object, not by its ID. This way we avoid unnecessary extra loading of the object based on id.
-	 * 
+	 * @param bpartner
 	 * @param location
 	 * @param bPartnerBlock
 	 * @param userBlock
 	 * @return address string
 	 */
-	String mkAddress(I_C_Location location, String bPartnerBlock, String userBlock);
+	String mkAddress(final I_C_BPartner bpartner, I_C_Location location, String bPartnerBlock, String userBlock);
 
 	/** Same as {@link #mkAddress(I_C_Location, String, String)} but bpartner and user blocks are empty */
 	String mkAddress(I_C_Location location);
