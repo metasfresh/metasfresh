@@ -880,6 +880,7 @@ public class HUTransferServiceTests
 		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
+
 		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_realCUWithTU(cu2, "4");
 		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
 
@@ -905,6 +906,8 @@ public class HUTransferServiceTests
 
 		assertThat(tuWithMixedCUsXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "])", is("1")));
 		assertThat(tuWithMixedCUsXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
+
+		// verify that the receipt M_ReceiptSchedule_Allocs are also OK
 		{
 			final I_M_ReceiptSchedule receiptScheduleForCU1 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu1);
 			assertThat(receiptScheduleForCU1, notNullValue());
