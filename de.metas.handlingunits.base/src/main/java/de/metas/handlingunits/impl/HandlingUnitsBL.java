@@ -555,7 +555,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public boolean isTopLevel(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-		final boolean topLevel = hu.getM_HU_Item_Parent_ID() <= 0;
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final boolean topLevel = handlingUnitsDAO.retrieveParentItem(hu) == null;
 		return topLevel;
 	}
 
@@ -788,7 +790,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
 		}
-		
+
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
 
 		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
