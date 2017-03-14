@@ -45,6 +45,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.adempiere.service.ICountrySequenceBL;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
@@ -749,7 +750,7 @@ public class AddressBuilder
 	
 	private String getDisplaySequence(I_C_Country country , final boolean isLocalAddress)
 	{
-		final List<I_C_Country_Sequence> sequences = Services.get(ICountryDAO.class).retrieveCountrySequence(country, getAD_Org(), getLanguage());
+		final List<I_C_Country_Sequence> sequences = Services.get(ICountrySequenceBL.class).retrieveCountrySequence(country, getAD_Org(), getLanguage());
 		if (sequences.isEmpty())
 		{
 			final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();

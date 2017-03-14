@@ -16,11 +16,11 @@ package de.metas.adempiere.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,8 +29,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -38,6 +40,8 @@ import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
@@ -54,6 +58,9 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
@@ -159,7 +166,7 @@ public class CountryDAO implements ICountryDAO
 				// Country code of Client Language
 				if (lang != null && lang.getCountryCode().equals(c.getCountryCode()))
 					s_default = c;
-				if (c.getC_Country_ID() == 100) // USA
+				if (c.getC_Country_ID() == 100)      // USA
 					usa = c;
 			}
 		}
@@ -175,7 +182,7 @@ public class CountryDAO implements ICountryDAO
 		}
 		if (s_default == null)
 			s_default = usa;
-		
+
 		s_log.debug("#" + s_countries.size() + " - Default=" + s_default);
 	} // loadAllCountries
 
@@ -196,25 +203,30 @@ public class CountryDAO implements ICountryDAO
 				.listImmutable(I_C_Region.class);
 
 	}
-	
-	@Override
-	@Cached(cacheName = I_C_Country_Sequence.Table_Name + "#by#C_Country_ID")
-	public List<I_C_Country_Sequence> retrieveCountrySequence(final I_C_Country country, final I_AD_Org org, final String language)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
 
-		return Services.get(IQueryBL.class)
+
+	@Cached(cacheName = I_C_Country_Sequence.Table_Name + "#by#C_Country_ID")
+	@Override
+	public ImmutableMap<Integer, List<I_C_Country_Sequence>> retrieveCountrySequence(@CacheCtx final Properties ctx, final int countryId)
+	{
+
+		final ImmutableList<I_C_Country_Sequence> sequences = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Country_Sequence.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Country_Sequence.COLUMN_AD_Org_ID, org.getAD_Org_ID())
-				.addEqualsFilter(I_C_Country_Sequence.COLUMN_C_Country_ID, country.getC_Country_ID())
-				.addInArrayFilter(I_C_Country_Sequence.COLUMNNAME_AD_Language, language, "", null)
+				.addEqualsFilter(I_C_Country_Sequence.COLUMN_C_Country_ID, countryId)
 				//
 				.orderBy()
 				.addColumn(I_C_Country_Sequence.COLUMNNAME_AD_Language, false)
 				.endOrderBy()
 				//
 				.create()
-				.list(I_C_Country_Sequence.class);
-	}	
+				.list(I_C_Country_Sequence.class)
+				.stream()
+				.collect(GuavaCollectors.toImmutableList());
+
+		final ImmutableMap.Builder<Integer, List<I_C_Country_Sequence>> builder = ImmutableMap.builder();
+		builder.put(countryId, sequences);
+		return builder.build();
+	}
+
 }

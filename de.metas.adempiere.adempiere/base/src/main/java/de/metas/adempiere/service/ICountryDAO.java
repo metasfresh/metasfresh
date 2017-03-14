@@ -35,6 +35,10 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.adempiere.util.CacheCtx;
+
 /**
  * @author cg
  *
@@ -81,11 +85,11 @@ public interface ICountryDAO extends ISingletonService
 	List<I_C_Region> retrieveRegions(Properties ctx, int countryId);
 	
 	/**
-	 * retrieve country sequence per org and language
-	 * @param country
-	 * @param org
-	 * @param language
+	 * 
+	 * @param ctx
+	 * @param countryId
 	 * @return
 	 */
-	public List<I_C_Country_Sequence> retrieveCountrySequence(final I_C_Country country, final I_AD_Org org, final String language);
+	public ImmutableMap<Integer, List<I_C_Country_Sequence>> retrieveCountrySequence(@CacheCtx final Properties ctx, final int countryId);
+	
 }
