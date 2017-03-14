@@ -125,7 +125,7 @@ public class HUTransferService
 	 */
 	public HUTransferService withReferencedObjects(final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = referencedObjects;
+		this.referencedObjects = Preconditions.checkNotNull(referencedObjects, "Param 'referencedOjects' may noot be null");
 		return this;
 	}
 
@@ -300,19 +300,18 @@ public class HUTransferService
 
 		// get cuHU's old parent (if any) for later usage, before the changes start
 		final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(tuHU);
+		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
 
 		if (destination != null)
 		{
-			final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
-			Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
 			HUSplitBuilderCoreEngine
 					.of(
 							huContext,
 							cuHU,
 							// forceAllocation = true; we don't want to get bothered by capacity constraint, even if the destination *probably* doesn't have any to start with
 							huContext -> createCUAllocationRequest(huContext,
-									storages.get(0).getM_Product(),
-									storages.get(0).getC_UOM(),
+									singleProductStorage.getM_Product(),
+									singleProductStorage.getC_UOM(),
 									qtyCU,
 									true),
 							destination)
@@ -345,7 +344,6 @@ public class HUTransferService
 				.collect(Collectors.toList());
 		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", tuHU);
 
-		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
 		// finally do the attaching
 		childCUs.forEach(newChildCU -> {
 			setParent(newChildCU,
