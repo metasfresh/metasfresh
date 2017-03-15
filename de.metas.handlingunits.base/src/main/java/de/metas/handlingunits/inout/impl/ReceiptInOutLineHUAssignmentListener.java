@@ -249,6 +249,13 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 			return;
 		}
 
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isTopLevel(hu))
+		{
+			logger.info("We only print top level HUs; nothing to do; hu={}", hu);
+			return;
+		}
+
 		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(ctx);
 		if (!process.isPresent())
 		{
