@@ -17,8 +17,20 @@ class TableItem extends Component {
     }
 
     handleEditProperty = (e, property, callback) => {
-        const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        const { activeCell } = this.state;
+        const elem = document.activeElement;
 
+        if(activeCell !== elem && !elem.className.includes('js-input-field')) {
+            this.setState({
+                activeCell: elem
+            })
+        }
+
+        this.editProperty(e, property, callback);
+    }
+
+    editProperty = (e, property, callback) => {
+        const { changeListenOnTrue, changeListenOnFalse } = this.props;
         if(
             !document.activeElement.className.includes('cell-disabled') ||
             document.activeElement.className.includes('cell-readonly')
@@ -49,15 +61,8 @@ class TableItem extends Component {
     }
 
     handleKey = (e, property) => {
-        const elem = document.activeElement;
         const { changeListenOnTrue } = this.props;
         const { edited, activeCell} = this.state;
-
-        if(!elem.className.includes('js-input-field')) {
-            this.setState({
-                activeCell: elem
-            })
-        }
 
         if(e.key === 'Enter' && !edited) {
             this.handleEditProperty(e, property, true);
