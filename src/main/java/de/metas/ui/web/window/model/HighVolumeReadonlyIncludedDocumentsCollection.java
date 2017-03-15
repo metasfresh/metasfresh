@@ -3,10 +3,13 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
@@ -40,6 +43,8 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	private final Document parentDocument;
 	private final DocumentEntityDescriptor entityDescriptor;
 
+	private static final LogicExpressionResult RESULT_TabReadOnly = LogicExpressionResult.namedConstant("Tab is readonly", false);
+
 	public HighVolumeReadonlyIncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
 		this.parentDocument = parentDocument;
@@ -58,6 +63,12 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	public IIncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		return this;
+	}
+	
+	@Override
+	public DetailId getDetailId()
+	{
+		return entityDescriptor.getDetailId();
 	}
 
 	@Override
@@ -85,23 +96,41 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 
 		return document;
 	}
+	
+	@Override
+	public void updateStatusFromParent()
+	{
+		// nothing
+	}
 
 	@Override
 	public void assertNewDocumentAllowed()
 	{
-		throw new InvalidDocumentStateException(parentDocument, "Tab is readonly");
+		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
+	}
+	
+	@Override
+	public LogicExpressionResult getAllowCreateNewDocument()
+	{
+		return RESULT_TabReadOnly;
 	}
 
 	@Override
 	public Document createNewDocument()
 	{
-		throw new InvalidDocumentStateException(parentDocument, "Tab is readonly");
+		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
+	}
+	
+	@Override
+	public LogicExpressionResult getAllowDeleteDocument()
+	{
+		return RESULT_TabReadOnly;
 	}
 
 	@Override
 	public void deleteDocuments(final Set<DocumentId> documentIds)
 	{
-		throw new InvalidDocumentStateException(parentDocument, "Tab is readonly");
+		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
 	}
 
 	@Override
@@ -124,6 +153,12 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	@Override
 	public void markStaleAll()
 	{
+	}
+
+	@Override
+	public boolean isStale()
+	{
+		return false;
 	}
 
 	@Override
