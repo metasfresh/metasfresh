@@ -20,8 +20,17 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#1102](https://github.com/metasfresh/metasfresh/issues/1102) Field Price List Version as search Field
   * [#1124](https://github.com/metasfresh/metasfresh/issues/1124) metasfresh App Server start takes considerably longer
+  * [#1134](https://github.com/metasfresh/metasfresh/issues/1134) Show Order ID in main window of Empties Receive
   * [#1142](https://github.com/metasfresh/metasfresh/issues/1142) Improve migration scripts handling
+  
+* metasfresh-webui
+  * [#244](https://github.com/metasfresh/metasfresh-webui-api/issues/244) KPIs: Introduce TimeRange ending offset
+  * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
+  
+* metasfresh-webui-frontend
+  * [#459](https://github.com/metasfresh/metasfresh-webui-frontend/issues/459) If quick input fails then don't show the quick input fields
   
 ## Fixes
 * metasfresh-backend
@@ -31,6 +40,11 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
   * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
+  
+* metasfresh-webui-frontend
+  * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
+  * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
+  * [#524](https://github.com/metasfresh/metasfresh-webui-frontend/issues/524) Location Editor cannot read property bug
 
 # metasfresh 5.0 (2017-10)
 
