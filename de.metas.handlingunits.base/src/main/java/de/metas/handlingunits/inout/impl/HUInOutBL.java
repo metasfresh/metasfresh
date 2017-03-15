@@ -24,6 +24,7 @@ package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
@@ -267,7 +269,15 @@ public class HUInOutBL implements IHUInOutBL
 
 				final int bpartnerID = inOut.getC_BPartner_ID();
 
-				partnerstoHUs.put(bpartnerID, Arrays.asList(hu));
+				List<I_M_HU> husForPartner = partnerstoHUs.get(bpartnerID);
+
+				if (husForPartner == null)
+				{
+					husForPartner = new ArrayList<I_M_HU>();
+					partnerstoHUs.put(bpartnerID, husForPartner);
+				}
+				
+				husForPartner.add(hu);
 			}
 		}
 
