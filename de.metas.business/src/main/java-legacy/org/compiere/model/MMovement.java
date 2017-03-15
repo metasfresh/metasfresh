@@ -582,66 +582,27 @@ public class MMovement extends X_M_Movement implements DocAction
 	 * 	Check Material Policy
 	 * 	Sets line ASI
 	 */
-	private void checkMaterialPolicy(MMovementLine line)
+	private void checkMaterialPolicy(final MMovementLine line)
 	{
-		int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
+		final int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
 		if (no > 0)
-			log.info("Deleted old #" + no);
+			log.info("Deleted old #{}", no);
 
-		boolean needSave = false;
-
-		//	Attribute Set Instance
+		//	Attribute Set Instance: generate a new ASI if not already set
 		if (line.getM_AttributeSetInstance_ID() == 0)
 		{
-			MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
-			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-			MStorage[] storages = MStorage.getWarehouse(getCtx(), 0, line.getM_Product_ID(), 0,
-					null, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
+			// NOTE: don't try to check M_Stoarge records and fetch ASIs to allocate on because:
+			// * it's totally performance killer (see task 1161)
+			// * we already applied the same approach on M_InOut (see task 09939)
+			// * we are going to remove M_AttributeSetInstance_ID from M_Storage anyways
 
-			BigDecimal qtyToDeliver = line.getMovementQty();
-
-			for (MStorage storage: storages)
-			{
-				if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
-				{
-					MMovementLineMA ma = new MMovementLineMA (line,
-							0, // storage.getM_AttributeSetInstance_ID(),
-							qtyToDeliver);
-					ma.saveEx();
-					qtyToDeliver = BigDecimal.ZERO;
-					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
-				}
-				else
-				{
-					MMovementLineMA ma = new MMovementLineMA (line,
-								0, // storage.getM_AttributeSetInstance_ID(),
-								storage.getQtyOnHand());
-					ma.saveEx();
-					qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
-				}
-				if (qtyToDeliver.signum() == 0)
-					break;
-			}
-
-			//	No AttributeSetInstance found for remainder
-			if (qtyToDeliver.signum() != 0)
-			{
-				//deliver using new asi
-				MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-				int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
-				MMovementLineMA ma = new MMovementLineMA (line, M_AttributeSetInstance_ID , qtyToDeliver);
-				ma.saveEx();
-				log.debug("##: " + ma);
-			}
-		}	//	attributeSetInstance
-
-		if (needSave)
-		{
-			line.saveEx();
+			final MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
+			final MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
+			line.setM_AttributeSetInstance(asi);
+			InterfaceWrapperHelper.save(line);
 		}
 	}	//	checkMaterialPolicy
-
+	
 	/**
 	 * 	Void Document.
 	 * 	@return true if success
