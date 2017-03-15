@@ -26,6 +26,7 @@ Here come the actual release notes:
   * [#1142](https://github.com/metasfresh/metasfresh/issues/1142) Improve migration scripts handling
   
 * metasfresh-webui
+  * [#244](https://github.com/metasfresh/metasfresh-webui-api/issues/244) KPIs: Introduce TimeRange ending offset
   * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
   
 * metasfresh-webui-frontend
