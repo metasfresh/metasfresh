@@ -67,12 +67,12 @@ class PieChartComponent extends Component {
     drawChart = (wrapperWidth, width, height, pie, arc, data, color) => {
         const {chartClass, fields} = this.props;
 
-        var svg = d3.select('.' + chartClass)
+        const svg = d3.select('.' + chartClass)
             .attr('width', width)
             .attr('height', height)
             .append('g');
 
-        var chart = svg
+        const chart = svg
             .attr('width', width)
             .attr('height', height)
             .append('g')
@@ -86,7 +86,7 @@ class PieChartComponent extends Component {
         chart.append('g')
             .attr('class', 'lines');
 
-        var g = d3.select('.slices').selectAll('.arc')
+        const g = d3.select('.slices').selectAll('.arc')
             .data(pie(data))
             .enter().append('g')
             .attr('class', 'arc');
@@ -102,24 +102,24 @@ class PieChartComponent extends Component {
     drawLegend = (svg, width, height, color) => {
         const {groupBy, data} = this.props;
 
-        var legend = svg
+        const legend = svg
             .attr('width', width)
             .attr('height', 0.30*height)
             .append('g')
             .attr('class', 'legends')
             .attr('transform', 'translate(' + 20 + ',' + 20 + ')');
 
-        var legendRectSize = 18;
-        var legendSpacing = 4;
+        const legendRectSize = 18;
+        const legendSpacing = 4;
 
-        var legendItem = legend.selectAll('.legend')
+        const legendItem = legend.selectAll('.legend')
         .data(color.domain())
         .enter()
         .append('g')
         .attr('class', 'legend')
         .attr('transform', function(d, i) {
-            var height = legendRectSize + legendSpacing;
-            var vert = i * height;
+            const height = legendRectSize + legendSpacing;
+            const vert = i * height;
             return 'translate(' + 0 + ',' + vert + ')';
         });
 
@@ -134,7 +134,7 @@ class PieChartComponent extends Component {
         .attr('y', legendRectSize - legendSpacing)
         .attr('font-size', 12)
         .text(function(d, i) {
-            return data[i][groupBy.fieldName];
+            return data[i][groupBy.fieldName] + (groupBy.unit ? ' [' + groupBy.unit + ']' : '');
         });
     };
 
@@ -146,8 +146,8 @@ class PieChartComponent extends Component {
             .on('resize.'+chartClass, () => {
                 this.clearChart();
                 const dimensions = this.setDimensions(chartWrap.offsetWidth);
-                this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie,
-                                dimensions.arc, data, color);
+                this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height,
+                                dimensions.pie, dimensions.arc, data, color);
             });
     };
 

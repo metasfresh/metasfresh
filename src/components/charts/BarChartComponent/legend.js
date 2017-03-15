@@ -60,7 +60,7 @@ const drawTexts = (legend, width) => {
         .attr('x', 2 * size.offset + size.width)
         .attr('y', 10)
         .attr('dy', '0.32em')
-        .text(d => d.caption)
+        .text(d => d.caption + (d.unit ? (' [' + d.unit + ']') : ''))
         .each(function(){
             addEllipsis(this, (width / legend.size()) - (size.offset + size.width))
         });
