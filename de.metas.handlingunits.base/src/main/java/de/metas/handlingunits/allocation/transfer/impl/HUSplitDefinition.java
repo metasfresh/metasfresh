@@ -48,7 +48,8 @@ public class HUSplitDefinition implements IHUSplitDefinition
 
 	public HUSplitDefinition(final I_M_HU_PI_Item luPIItem,
 			final I_M_HU_PI_Item tuPIItem,
-			final I_M_Product cuProduct, final I_C_UOM cuUOM,
+			final I_M_Product cuProduct, 
+			final I_C_UOM cuUOM,
 			final BigDecimal cuPerTU,
 			final BigDecimal tuPerLU,
 			final BigDecimal maxLUToAllocate)

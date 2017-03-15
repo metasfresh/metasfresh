@@ -199,7 +199,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 		if (handlingUnitsBL.isAggregateHU(tuHU))
 		{
-			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
+			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class); // check if the TU's capacity exceeds the current request
 			final IHUCapacityDefinition exceedingCapacityOfTU = capacityBL.getAvailableCapacity(request.getQty(), request.getC_UOM(), capacityPerTU);
 
 			if (exceedingCapacityOfTU.getCapacity().signum() > 0)

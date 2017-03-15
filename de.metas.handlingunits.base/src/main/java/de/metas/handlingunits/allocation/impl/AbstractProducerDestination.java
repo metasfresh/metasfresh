@@ -568,7 +568,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			if (currentResult.isZeroAllocated() && DYNATTR_IsEmptyHU.isSet(currentHU))
 			{
 				// this is OK *if* currentHU is an aggregate VHU, because the loadHU method shall only load anything to an aggregate VHU if it can completely "fill" one of the represented TUs.
-				// e.g. if the aggregate VHU represents IFCOs with a capaciy of 40kg and the request is only about 39kg, then loadHU shall not allocate anything to the aggregate VHU.
+				// e.g. if the aggregate VHU represents IFCOs with a capacity of 40kg and the request is only about 39kg, then loadHU shall not allocate anything to the aggregate VHU.
 				if (!handlingUnitsBL.isAggregateHU(currentHU))
 				{
 					final I_M_HU_PI_Version currentHU_PI_Version = currentHU.getM_HU_PI_Version();
@@ -596,7 +596,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				final boolean somethingWasAllocated = !currentResult.isZeroAllocated();
 				if (somethingWasAllocated)
 				{
-					// we need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
+					// we need to increase aggregatedHUsCount, so the system knows that now the "bag" represents yet one more HU.
 					// note that in the case of IsEmptyHU=true, the qty was already increased when the HU was created
 					incAggregatedHUsCount();
 				}
@@ -612,7 +612,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					if (currentResult.isZeroAllocated())
 					{
 						// there is something left to allocate, but the loadHU did not want to allocate onto currentHU which is aggregate.
-						// this only happens if the request's qty is less that a full unit of the TUs (e.g. IFCOs) that the aggregated 'currentHU' represent.
+						// this only happens if the request's qty is less than a full unit of the TUs (e.g. IFCOs) that the aggregated 'currentHU' represents.
 						// to stay in the IFCO-example, we now need to allocate to a partial IFCO. In order to do just that, we need to close the current HU.
 						currentHUCursor.closeCurrent();
 					}
