@@ -14,18 +14,14 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
+
 /* package */class EmptiesInOutProducer extends AbstractReturnsInOutProducer
-// implements IReturnsInOutProducer
 {
-	//
+
 	// Services
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-//	private final Properties _ctx;
-	private boolean executed = false;
-
 	/** InOut header reference. It will be created just when it is needed. */
-
 	private final EmptiesInOutLinesBuilder inoutLinesBuilder = EmptiesInOutLinesBuilder.newBuilder(inoutRef);
 
 	public EmptiesInOutProducer(final Properties ctx)
@@ -53,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 	{
 		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(ctx, docBaseType, adClientId, adOrgId, trxName);
 
+		// 07694: using the empties-subtype for receipts.
 		final String docSubType = isSOTrx ? X_C_DocType.DOCSUBTYPE_Leergutanlieferung : X_C_DocType.DOCSUBTYPE_Leergutausgabe;
 
 		for (final I_C_DocType docType : docTypes)

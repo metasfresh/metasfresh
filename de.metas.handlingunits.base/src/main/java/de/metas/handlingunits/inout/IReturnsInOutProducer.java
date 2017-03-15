@@ -47,29 +47,74 @@ public interface IReturnsInOutProducer
 	 */
 	I_M_InOut create();
 
-	// IEmptiesInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty);
+	/**
+	 * Set partner for the return inout.
+	 * 
+	 * @param bpartner
+	 * @return
+	 */
 	IReturnsInOutProducer setC_BPartner(final I_C_BPartner bpartner);
 
+	/**
+	 * Set partner location to the return inout.
+	 * 
+	 * @param bpLocation
+	 * @return
+	 */
 	IReturnsInOutProducer setC_BPartner_Location(final I_C_BPartner_Location bpLocation);
 
+	/**
+	 * Set return inout's movement type.
+	 * 
+	 * @param movementType
+	 * @return
+	 */
 	IReturnsInOutProducer setMovementType(String movementType);
 
+	/**
+	 * Set warehouse into the return inout.
+	 * 
+	 * @param warehouse
+	 * @return
+	 */
 	IReturnsInOutProducer setM_Warehouse(I_M_Warehouse warehouse);
 
+	/**
+	 * Set movement date into the return inout. Currently this value is used as DateOrdered too.
+	 * 
+	 * @param movementDate
+	 * @return
+	 */
 	IReturnsInOutProducer setMovementDate(Date movementDate);
 
 	/**
-	 * Set the order based on which the inout is created ( if it was selected)
+	 * Set the order based on which the inout is created (if it was selected).
 	 * 
 	 * @param order
 	 */
 	IReturnsInOutProducer setC_Order(I_C_Order order);
 
+	/**
+	 * Set the created return inout to not be completed.
+	 * 
+	 * @return
+	 */
 	IReturnsInOutProducer dontComplete();
 
+	/**
+	 * Check if there are lines for the return inout.
+	 * 
+	 * @return tru if there is no line created for the return inout, false if there is at least one line.
+	 */
 	boolean isEmpty();
 
-	//TODO Check how this will be implemented for returns
+	/**
+	 * Add packing maerial source for creating packing material lines in the return inout.
+	 * 
+	 * @param packingMaterial
+	 * @param qty
+	 * @return
+	 */
 	IReturnsInOutProducer addPackingMaterial(I_M_HU_PackingMaterial packingMaterial, int qty);
 
 }

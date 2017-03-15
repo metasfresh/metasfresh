@@ -60,7 +60,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private Properties _ctx;
-	private boolean executed = false;
+	protected boolean executed = false;
 
 	private I_C_BPartner _bpartner = null;
 	private int _bpartnerLocationId = -1;
@@ -166,14 +166,11 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			final boolean isSOTrx = inOutBL.getSOTrxFromMovementType(movementType);
 			// isSOTrx = 'Y' means packing material coming back from the customer -> incoming -> Receipt
 			// isSOTrx = 'N' means packing material is returned to the vendor -> outgoing -> Delivery
-			final String docBaseType = isSOTrx ? X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
+			final String docBaseType = isSOTrx ?  X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
 
 			inout.setMovementType(movementType);
 			inout.setIsSOTrx(isSOTrx);
 
-			// int docTypeId = -1;
-
-			// 07694: using the empties-subtype for receipts.
 			final int docTypeId = getReturnsDocTypeId(contextProvider, isSOTrx, inout, docBaseType);
 
 			inout.setC_DocType_ID(docTypeId);

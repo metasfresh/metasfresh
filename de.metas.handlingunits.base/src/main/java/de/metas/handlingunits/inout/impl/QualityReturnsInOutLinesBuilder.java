@@ -2,16 +2,13 @@ package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.ImmutableReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -20,6 +17,8 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -48,22 +47,28 @@ import de.metas.product.IProductBL;
  * #L%
  */
 
-public class QualityReturnsInOutLinesBuilder
+/**
+ * Builder for vendor return inout lines that are for non-packing material products
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLinesBuilder
 {
+
+	// services
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	// referenced inout header
 	private final IReference<I_M_InOut> _inoutRef;
 
-
+	/**
+	 * Map on product keys and their inout lines
+	 */
 	private final Map<ArrayKey, I_M_InOutLine> _inOutLines = new HashMap<>();
 
-	public static QualityReturnsInOutLinesBuilder newBuilder( final IReference<I_M_InOut> inoutRef)
+	public static QualityReturnsInOutLinesBuilder newBuilder(final IReference<I_M_InOut> inoutRef)
 	{
-		return new QualityReturnsInOutLinesBuilder(inoutRef);
-	}
-
-	public static QualityReturnsInOutLinesBuilder newBuilder(final I_M_InOut inout)
-	{
-		Check.assumeNotNull(inout, "Parameter inout is not null");
-		final IReference<I_M_InOut> inoutRef = ImmutableReference.valueOf(inout);
 		return new QualityReturnsInOutLinesBuilder(inoutRef);
 	}
 
@@ -74,21 +79,33 @@ public class QualityReturnsInOutLinesBuilder
 		Check.assumeNotNull(inoutRef, "inoutRef not null");
 		_inoutRef = inoutRef;
 	}
-	
+
 	private final I_M_InOut getM_InOut()
 	{
 		return _inoutRef.getValue();
 	}
-	
+
+	@Override
 	public QualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage)
 	{
+		final I_M_InOut inout = getM_InOut();
+		InterfaceWrapperHelper.save(inout); // make sure inout header is saved
+
 		updateInOutLine(productStorage);
-		
+
 		return this;
 	}
 
+	/**
+	 * Extract the product from the product storage together with its quantity.
+	 * If there is already an inout line for this product, update the existing qty based on the new one. If the inout line for this product does not exist yet, create it.
+	 * In the end assign the handling unit to the inout line and mark the HU as shipped.
+	 * 
+	 * @param productStorage
+	 */
 	private void updateInOutLine(final IHUProductStorage productStorage)
 	{
+		// services
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
@@ -99,6 +116,7 @@ public class QualityReturnsInOutLinesBuilder
 		}
 
 		final I_M_Product product = productStorage.getM_Product();
+
 		final I_M_InOutLine inOutLine = getCreateInOutLine(product);
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
@@ -106,34 +124,50 @@ public class QualityReturnsInOutLinesBuilder
 
 		//
 		// Adjust movement line's qty to move
-		final BigDecimal movementLine_Qty_Old = inOutLine.getMovementQty();
-		final BigDecimal movementLine_Qty_New = movementLine_Qty_Old.add(qtyToMove);
-		inOutLine.setMovementQty(movementLine_Qty_New);
+		final BigDecimal inOutLine_Qty_Old = inOutLine.getMovementQty();
+		final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMove);
+		inOutLine.setMovementQty(inOutLine_Qty_New);
 
-		// Make sure movement line it's saved
+		//
+		// Also set the qty entered
+		inOutLine.setQtyEntered(inOutLine_Qty_New);
+
+		// Make sure the inout line is saved
 		InterfaceWrapperHelper.save(inOutLine);
 
-		// Assign the HU to movement line
+		// Assign the HU to the inout line and mark it as shipped
 		{
 			final I_M_HU hu = productStorage.getM_HU();
-			final boolean isTransferPackingMaterials = true;
 			final String trxName = ITrx.TRXNAME_ThreadInherited;
-			huAssignmentBL.assignHU(inOutLine, hu, isTransferPackingMaterials, trxName);
 
-			// toDO: Check if this is fine
+			final I_M_HU huTopLevel = handlingUnitsBL.getTopLevelParent(hu);
+			final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(hu);
+			final I_M_HU tuHU = handlingUnitsBL.getTransportUnitHU(hu);
+
+			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(InterfaceWrapperHelper.getCtx(hu), inOutLine, huTopLevel, luHU, tuHU, trxName)
+					.build();
+
+			// mark hu as shipped
 			hu.setHUStatus(X_M_HU.HUSTATUS_Shipped);
-		}
 
+			InterfaceWrapperHelper.save(hu);
+		}
 	}
 
+	/**
+	 * Search the inout lines map (_inOutLines) and check if there is already a line for the given product. In case it already exists, return it. Otherwise, create a line for this product.
+	 * 
+	 * @param product
+	 * @return
+	 */
 	private I_M_InOutLine getCreateInOutLine(final I_M_Product product)
 	{
-//		if (_inoutRef.isInitialized())
-//		{
-//			// nothing created
-//			return null;
-//		}
+
+		// services
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+
 		final I_M_InOut inout = _inoutRef.getValue();
+
 		if (inout.getM_InOut_ID() <= 0)
 		{
 			// nothing created
@@ -143,38 +177,44 @@ public class QualityReturnsInOutLinesBuilder
 		//
 		// Check if we already have a movement line for our key
 		final ArrayKey inOutLineKey = mkInOutLineKey(product);
-		I_M_InOutLine inOutLine = _inOutLines.get(inOutLineKey);
-		if (inOutLine != null)
+		final I_M_InOutLine existingInOutLine = _inOutLines.get(inOutLineKey);
+
+		// return the existing inout line if found
+		if (existingInOutLine != null)
 		{
-			return inOutLine;
+			return existingInOutLine;
 		}
 
 		//
-		// Create a new inOut line
+		// Create a new inOut line for the product
 
-		inOutLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, inout);
-		inOutLine.setAD_Org_ID(inout.getAD_Org_ID());
-		inOutLine.setM_InOut_ID(inout.getM_InOut_ID());
+		final I_M_InOutLine newInOutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
+		newInOutLine.setAD_Org_ID(inout.getAD_Org_ID());
+		newInOutLine.setM_InOut_ID(inout.getM_InOut_ID());
 
-		// inOutLine.setIsPackagingMaterial(false);
-
-		inOutLine.setM_Product(product);
-		// movementLine.setMovementQty(qty);
+		newInOutLine.setM_Product(product);
 
 		// NOTE: we are not saving the inOut line
 
 		//
 		// Add the movement line to our map (to not created it again)
-		_inOutLines.put(inOutLineKey, inOutLine);
+		_inOutLines.put(inOutLineKey, newInOutLine);
 
-		return inOutLine;
+		return newInOutLine;
 	}
 
+	/**
+	 * Make a unique key for the given product. This will serve in mapping the inout lines to their products.
+	 * 
+	 * @param product
+	 * @return
+	 */
 	private ArrayKey mkInOutLineKey(final I_M_Product product)
 	{
 		return Util.mkKey(product.getM_Product_ID());
 	}
 
+	@Override
 	public boolean isEmpty()
 	{
 		return _inOutLines.isEmpty();
