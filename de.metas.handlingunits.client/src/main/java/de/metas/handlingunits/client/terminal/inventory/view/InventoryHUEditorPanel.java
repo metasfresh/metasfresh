@@ -36,7 +36,6 @@ import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.inventory.model.InventoryHUEditorModel;
-import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
 
@@ -47,13 +46,15 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	 */
 	public static final String ACTION_DirectMoveToWarehouse = "de.metas.handlingunits.client.terminal.inventory.view.InventoryHUEditorPanel#DirectMoveToWarehouse";
 
-	// task #1065
-	// button for moving HUs to quality Warehouse
+	/**
+	 * button for moving HUs to quality Warehouse (task #1065)
+	 */
 	private ITerminalButton bMoveToQualityWarehouse;
 	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; // TODO: Translate
-	
-	// task #1062
-	// button to create Vendor Return
+
+	/**
+	 * button to create Vendor Return inout (task #1062)
+	 */
 	private ITerminalButton bCreateVendorReturn;
 	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; // TODO: Translate
 
@@ -97,6 +98,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		}
 
 		// task #1065
+		// MoveToQualityWarehouse button
 		{
 			this.bMoveToQualityWarehouse = factory.createButton(ACTION_MoveToQualityWarehouse);
 
@@ -114,8 +116,9 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 
 			buttonsPanel.add(bMoveToQualityWarehouse, "");
 		}
-		
+
 		// task #1062
+		// CreateVendorReturn button
 		{
 			this.bCreateVendorReturn = factory.createButton(ACTION_CreateVendorReturn);
 
@@ -134,8 +137,6 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 			buttonsPanel.add(bCreateVendorReturn, "");
 		}
 	}
-
-
 
 	@Override
 	protected InventoryHUEditorModel getHUEditorModel()
@@ -188,22 +189,15 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		terminalFactory.showInfo(this, "Created", message);
 
 	}
-	
+
 	/**
 	 * task #1062
 	 * Create vendor return for the selected HUs
 	 */
 	private void doCreateVendorReturn()
 	{
-		final I_M_InOut vendorReturn = getHUEditorModel().createVendorReturn();
+		getHUEditorModel().createVendorReturn();
 
-		//
-		// Inform the user about which movement was created
-		final ITerminalFactory terminalFactory = getTerminalFactory();
-		final Properties ctx = getTerminalContext().getCtx();
-		final String message = msgBL.parseTranslation(ctx, "@M_InOut_ID@ #" + vendorReturn.getDocumentNo());
-		terminalFactory.showInfo(this, "Created", message);
-		
 	}
 
 }

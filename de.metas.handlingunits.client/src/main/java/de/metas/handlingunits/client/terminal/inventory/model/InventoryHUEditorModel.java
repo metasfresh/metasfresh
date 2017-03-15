@@ -2,40 +2,30 @@ package de.metas.handlingunits.client.terminal.inventory.model;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.apps.AEnv;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable2;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.flatrate.interfaces.I_C_BPartner;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
@@ -46,9 +36,22 @@ import de.metas.interfaces.I_M_Movement;
  */
 public class InventoryHUEditorModel extends HUEditorModel
 {
+
+	/**
+	 * M_InOut SO
+	 */
+	private static final int WINDOW_CUSTOMER_RETURN = 53097; // FIXME: HARDCODED
+
+	/**
+	 * M_InOut PO
+	 */
+	private static final int WINDOW_RETURN_TO_VENDOR = 53098; // FIXME: HARDCODED
+
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
 	private final I_M_Warehouse _warehouse;
+
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public InventoryHUEditorModel(final ITerminalContext terminalContext, final int warehouseId)
 	{
@@ -105,10 +108,78 @@ public class InventoryHUEditorModel extends HUEditorModel
 		return doDirectMoveToWarehouse(warehouseFrom, warehouseTo);
 	}
 
-	public I_M_InOut createVendorReturn()
+	/**
+	 * Create vendor return inout
+	 */
+	public void createVendorReturn()
 	{
+
+		// the resulting vendor return inout
+		final I_M_InOut[] result = new I_M_InOut[] { null };
+
+		trxManager.run(new TrxRunnable2()
+		{
+
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				result[0] = createVendorReturn0(localTrxName);
+
+			}
+
+			@Override
+			public boolean doCatch(final Throwable e) throws Throwable
+			{
+				throw new TerminalException(e.getLocalizedMessage(), e);
+			}
+
+			@Override
+			public void doFinally()
+			{
+				// nothing
+			}
+		});
+
+		//
+		// Open window with return document if it was created successfully
+		final I_M_InOut inOut = result[0];
+		if (inOut != null)
+		{
+			//
+			// Refresh the HUKeys
+			{
+				// Remove huKeys from their parents
+				for (final HUKey huKey : getSelectedHUKeys())
+				{
+					removeHUKeyFromParentRecursivelly(huKey);
+				}
+
+				// Move back to Root HU Key
+				setRootHUKey(getRootHUKey());
+
+				//
+				// Clear (attribute) cache (because it could be that we changed the attributes too)
+				clearCache();
+			}
+
+			// zoom into the created vendor return (return to customer not implemented yet)
+			AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
+		}
+	}
+
+	/**
+	 * 
+	 * Create vendor returns based on the selected hus
+	 * 
+	 * @param trxName
+	 * @return
+	 */
+	public I_M_InOut createVendorReturn0(final String trxName)
+	{
+
 		// services
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 		//
 		// Get selected HUs
@@ -137,86 +208,15 @@ public class InventoryHUEditorModel extends HUEditorModel
 			hus.add(hu);
 		}
 
-		return createReturnInOut(hus);
-	}
+		// warehouse of inout
+		final I_M_Warehouse warehouse = getM_Warehouse();
 
-	/**
-	 * Create return inouts for products of precarious quality
-	 * 
-	 * @param hus
-	 * @return
-	 */
-	private I_M_InOut createReturnInOut(final List<I_M_HU> hus)
-	{
-
-		// services
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final Map<Integer, List<I_M_HU>> partnerstoHUs = new HashMap<>();
-
-		// inoutline table id
-		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class);
-
-		for (final I_M_HU hu : hus)
-		{
-
-			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-
-			final List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
-
-			for (final I_M_HU_Assignment assignment : inOutLineHUAssignments)
-			{
-				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(ctxAware.getCtx(), assignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
-
-				final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
-
-				final int bpartnerID = inOut.getC_BPartner_ID();
-
-				partnerstoHUs.put(bpartnerID, Arrays.asList(hu));
-			}
-		}
-
-		// there will be as many return inouts as there are partners
-
-		Set<Integer> keySet = partnerstoHUs.keySet();
-
-		for (final int partnerId : keySet)
-		{
-			createInOut(partnerId, partnerstoHUs.get(partnerId));
-		}
-
-		return null;
-	}
-
-	private final org.compiere.model.I_M_InOut createInOut(final int partnerId, List<I_M_HU> hus)
-	{
-		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(getCtx(), hus);
-		producer.setC_BPartner(partner);
-
-		final I_C_BPartner_Location shipToLocation = bpartnerDAO.retrieveShipToLocation(getCtx(), partnerId, ITrx.TRXNAME_None);
-		producer.setC_BPartner_Location(shipToLocation);
-
-		final String movementType = X_M_Transaction.MOVEMENTTYPE_VendorReturns;
-
-		producer.setMovementType(movementType);
-		producer.setM_Warehouse(getM_Warehouse());
-
+		// movement date for inout
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
 
-		producer.setMovementDate(movementDate);
+		final I_M_InOut returnInOut = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehouse, movementDate);
 
-//		if (producer.isEmpty())
-//		{
-//			throw new AdempiereException("@NoSelection@");
-//		}
-
-		//
-		// Create Shipment document and return it
-		final org.compiere.model.I_M_InOut inOut = producer.create();
-		return inOut;
+		return returnInOut;
 	}
 
 	public I_M_Movement doDirectMoveToWarehouse(final I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo)
