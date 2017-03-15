@@ -45,7 +45,6 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ICountrySequenceBL;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
@@ -58,22 +57,21 @@ public class AddressBuilder
 	 *  org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
 	 */
 	private final I_AD_Org org;
+	private String adLanguage;
 	
-	public I_AD_Org getAD_Org()
+	private int getAD_Org_ID()
 	{
-		return org;
+		return org.getAD_Org_ID();
 	}
-	
-	String language;
-	
-	public String getLanguage()
+
+	private String getAD_Language()
 	{
-		return language;
+		return adLanguage;
 	}
 
 	public AddressBuilder setLanguage(String language)
 	{
-		this.language = language;
+		this.adLanguage = language;
 		return this;
 	}
 
@@ -748,18 +746,17 @@ public class AddressBuilder
 		return bracketsTxt;
 	}
 	
-	private String getDisplaySequence(I_C_Country country , final boolean isLocalAddress)
+	private String getDisplaySequence(final I_C_Country country , final boolean isLocalAddress)
 	{
-		final List<I_C_Country_Sequence> sequences = Services.get(ICountrySequenceBL.class).retrieveCountrySequence(country, getAD_Org(), getLanguage());
-		if (sequences.isEmpty())
+		final I_C_Country_Sequence countrySequence = Services.get(ICountryDAO.class).retrieveCountrySequence(country, getAD_Org_ID(), getAD_Language());
+		if(countrySequence == null)
 		{
 			final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
 			return displaySequence;
 		}
 		else
 		{
-			final I_C_Country_Sequence sequence = sequences.get(0);
-			final String displaySequence = isLocalAddress ? sequence.getDisplaySequenceLocal() : sequence.getDisplaySequence();
+			final String displaySequence = isLocalAddress ? countrySequence.getDisplaySequenceLocal() : countrySequence.getDisplaySequence();
 			return displaySequence;
 		}
 	}

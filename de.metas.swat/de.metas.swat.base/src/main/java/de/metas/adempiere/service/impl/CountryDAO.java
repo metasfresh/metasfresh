@@ -34,10 +34,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
@@ -53,9 +56,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
@@ -199,29 +199,48 @@ public class CountryDAO implements ICountryDAO
 
 	}
 
+	@Override
+	public I_C_Country_Sequence retrieveCountrySequence(final I_C_Country country, final int adOrgId, final String adLanguage)
+	{
+		Check.assumeNotNull(country, "Parameter country is not null");
+		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(country);
+		return retrieveCountrySequences(ctx, country.getC_Country_ID())
+				.stream()
+				.filter(countrySequence -> countrySequenceMatches(countrySequence, adOrgId, adLanguage))
+				.findFirst().orElse(null);
+	}
+	
+	private static boolean countrySequenceMatches(final I_C_Country_Sequence sequence, final int adOrgId, final String adLanguage)
+	{
+		if (sequence.getAD_Org_ID() != adOrgId)
+		{
+			return false;
+		}
+		
+		final String countrySequenceLanguage = sequence.getAD_Language();
+		if (!Check.isEmpty(countrySequenceLanguage, true) && !countrySequenceLanguage.equals(adLanguage))
+		{
+			return false;
+		}
+			
+		return true;
+	}
+
 
 	@Cached(cacheName = I_C_Country_Sequence.Table_Name + "#by#C_Country_ID")
-	@Override
-	public ImmutableMap<Integer, List<I_C_Country_Sequence>> retrieveCountrySequence(@CacheCtx final Properties ctx, final int countryId)
+	public List<I_C_Country_Sequence> retrieveCountrySequences(@CacheCtx final Properties ctx, final int countryId)
 	{
-
-		final ImmutableList<I_C_Country_Sequence> sequences = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Country_Sequence.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Country_Sequence.COLUMN_C_Country_ID, countryId)
 				//
 				.orderBy()
-				.addColumn(I_C_Country_Sequence.COLUMNNAME_AD_Language, false)
+				.addColumn(I_C_Country_Sequence.COLUMNNAME_AD_Language, Direction.Ascending, Nulls.Last)
 				.endOrderBy()
 				//
 				.create()
-				.list(I_C_Country_Sequence.class)
-				.stream()
-				.collect(GuavaCollectors.toImmutableList());
-
-		final ImmutableMap.Builder<Integer, List<I_C_Country_Sequence>> builder = ImmutableMap.builder();
-		builder.put(countryId, sequences);
-		return builder.build();
+				.listImmutable(I_C_Country_Sequence.class);
 	}
-
 }
