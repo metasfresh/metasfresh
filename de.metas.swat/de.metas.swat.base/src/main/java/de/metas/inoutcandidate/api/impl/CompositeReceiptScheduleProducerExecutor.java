@@ -118,6 +118,15 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 
 		return schedules;
 	}
+	
+	@Override
+	public void updateReceiptSchedules(final Object model)
+	{
+		for (final IReceiptScheduleProducer producer : producers)
+		{
+			producer.updateReceiptSchedules(model);
+		}
+	}
 
 	@Override
 	public void inactivateReceiptSchedules(final Object model)

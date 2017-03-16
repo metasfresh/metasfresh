@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.spi;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -55,6 +54,15 @@ public interface IReceiptScheduleProducer
 	 *         method will return an empty list
 	 */
 	List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(Object model, List<I_M_ReceiptSchedule> previousSchedules);
+
+	/**
+	 * Called by API when underlying document(line) was changed.
+	 * 
+	 * Compared with {@link #createOrUpdateReceiptSchedules(Object, List)} this method is just updating existing receipt schedules. Will never create new ones.
+	 * 
+	 * @param model
+	 */
+	void updateReceiptSchedules(Object model);
 
 	/**
 	 * Called by API when underlying document was deleted or re-activated.
