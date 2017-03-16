@@ -322,7 +322,7 @@ class RawWidget extends Component {
                             type="text"
                             ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             placeholder={fields[0].emptyText}
                             disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
@@ -342,7 +342,7 @@ class RawWidget extends Component {
                         <textarea
                             ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             placeholder={fields[0].emptyText}
                             onFocus={this.handleFocus}
@@ -364,7 +364,7 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
                             onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
@@ -383,7 +383,7 @@ class RawWidget extends Component {
                             ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
                             onChange={(e) => handleChange && handleChange(fields[0].field, e.target.value)}
@@ -404,7 +404,7 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
@@ -425,7 +425,7 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
@@ -444,7 +444,7 @@ class RawWidget extends Component {
                             ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
-                            value={widgetData[0].value}
+                            defaultValue={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
