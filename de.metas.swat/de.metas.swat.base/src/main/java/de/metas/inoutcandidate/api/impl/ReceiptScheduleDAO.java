@@ -148,6 +148,26 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
+	public List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOut(final org.compiere.model.I_M_InOut receipt)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<I_M_InOutLine> matchingReceiptLineQuery = queryBL.createQueryBuilder(I_M_InOutLine.class, receipt)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, receipt.getM_InOut_ID())
+				.create();
+		
+		return queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, receipt)
+				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, matchingReceiptLineQuery)
+				//
+				.orderBy()
+				.addColumn(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_Alloc_ID)
+				.endOrderBy()
+				//
+				.create()
+				.list(I_M_ReceiptSchedule_Alloc.class);
+	}
+
+	@Override
 	public List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLine(final org.compiere.model.I_M_InOutLine line)
 	{
 		return retrieveRsaForInOutLineQuery(line)
