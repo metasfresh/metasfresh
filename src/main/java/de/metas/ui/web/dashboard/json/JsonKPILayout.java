@@ -45,8 +45,8 @@ public class JsonKPILayout
 
 	// private final int id; // don't exported because is useless and confusing
 
-	@JsonProperty("caption")
-	private final String caption;
+	// @JsonProperty("caption")
+	// private final String caption; // don't exported because is useless and confusing; frontend shall display the dashboard item caption anyways
 
 	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -70,7 +70,7 @@ public class JsonKPILayout
 		final String adLanguage = jsonOpts.getAD_Language();
 
 		// id = kpi.getId();
-		caption = kpi.getCaption(adLanguage);
+		// caption = kpi.getCaption(adLanguage);
 		description = Strings.emptyToNull(kpi.getDescription(adLanguage));
 		chartType = kpi.getChartType().toJson();
 
