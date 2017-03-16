@@ -27,14 +27,9 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
-import org.adempiere.db.IDatabaseBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MLocator;
@@ -62,6 +57,7 @@ public final class StoragePA implements IStoragePA
 			+ "   LEFT JOIN M_Locator l ON l.M_Locator_ID=s.M_Locator_ID" //
 			+ " WHERE s.IsActive='Y' AND s.M_Product_ID=? AND l.M_Warehouse_ID=?";
 
+	@Override
 	public Collection<I_M_Storage> retrieveStorages(final int productId,
 			final String trxName)
 	{
@@ -72,6 +68,7 @@ public final class StoragePA implements IStoragePA
 		return Arrays.asList(storages);
 	}
 
+	@Override
 	public int retrieveWarehouseId(final I_M_Storage storage,
 			final String trxName)
 	{
@@ -88,46 +85,10 @@ public final class StoragePA implements IStoragePA
 		return new MLocator(Env.getCtx(), locatorId, trxName);
 	}
 
-	public Collection<I_M_Storage> retrieveAllStorages(final int productId, final int warehouseId, final String trxName)
-	{
-
-		final IDatabaseBL db = Services.get(IDatabaseBL.class);
-
-		final List<MStorage> storages = db.retrieveList(SQL_ALL_STORAGES,
-				new Object[] { productId, warehouseId }, MStorage.class,
-				trxName);
-
-		return new ArrayList<I_M_Storage>(storages);
-	}
-
-	/**
-	 * Invokes
-	 * {@link MStorage#getWarehouse(java.util.Properties, int, int, int, int, boolean, Timestamp, boolean, String)} .
-	 */
-	public List<I_M_Storage> retrieveStorages(final int warehouseId,
-			final int productId, final int attributeSetInstanceId,
-			final int attributeSetId, final boolean allAttributeInstances,
-			final Timestamp minGuaranteeDate, final boolean fiFo,
-			final String trxName)
-	{
-
-		final MStorage[] storages = MStorage.getWarehouse(Env.getCtx(),
-				warehouseId, productId, attributeSetInstanceId, attributeSetId,
-				allAttributeInstances, minGuaranteeDate, fiFo, trxName);
-
-		final ArrayList<I_M_Storage> result = new ArrayList<I_M_Storage>(
-				storages.length);
-
-		for (MStorage currentStorage : storages)
-		{
-			result.add(currentStorage);
-		}
-		return result;
-	}
-
 	/**
 	 * Invokes {@link MStorage#getQtyAvailable(int, int, int, int, String)}.
 	 */
+	@Override
 	public BigDecimal retrieveQtyAvailable(final int wareHouseId,
 			final int locatorId, final int productId,
 			final int attributeSetInstanceId, final String trxName)
@@ -137,6 +98,7 @@ public final class StoragePA implements IStoragePA
 				attributeSetInstanceId, trxName);
 	}
 
+	@Override
 	public BigDecimal retrieveQtyOrdered(final int productId,
 			final int warehouseId)
 	{

@@ -26,6 +26,7 @@ import java.util.Optional;
  */
 
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
@@ -263,7 +264,10 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 			return;
 		}
 
-		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, process.get());
+		final List<I_M_HU> husToProcess = huReportService
+				.getHUsToProcess(hu, process.get()).stream()
+				.filter(huToProcess -> handlingUnitsBL.isTopLevel(huToProcess)) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
+				.collect(Collectors.toList());
 		if (husToProcess.isEmpty())
 		{
 			logger.info("hu's type does not match process {}; nothing to do; hu={}", process.get().getValue(), hu);

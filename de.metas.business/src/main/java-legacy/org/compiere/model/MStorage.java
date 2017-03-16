@@ -111,57 +111,6 @@ public class MStorage extends X_M_Storage
 	}	// get
 
 	/**
-	 * Get all Storages for Product with ASI and QtyOnHand <> 0
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID product
-	 * @param M_Locator_ID locator
-	 * @param FiFo first in-first-out
-	 * @param trxName transaction
-	 * @return existing or null
-	 */
-	public static MStorage[] getAllWithASI(final Properties ctx, final int M_Product_ID, final int M_Locator_ID,
-			final boolean FiFo, final String trxName)
-	{
-		final ArrayList<MStorage> list = new ArrayList<MStorage>();
-		String sql = "SELECT * FROM M_Storage "
-				+ "WHERE M_Product_ID=? AND M_Locator_ID=?"
-				+ " AND M_AttributeSetInstance_ID > 0 "
-				+ " AND QtyOnHand <> 0 "
-				+ "ORDER BY M_AttributeSetInstance_ID";
-		if (!FiFo)
-		{
-			sql += " DESC";
-		}
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			pstmt.setInt(1, M_Product_ID);
-			pstmt.setInt(2, M_Locator_ID);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				list.add(new MStorage(ctx, rs, trxName));
-			}
-		}
-		catch (final SQLException ex)
-		{
-			s_log.error(sql, ex);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		final MStorage[] retValue = new MStorage[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}	// getAllWithASI
-
-	/**
 	 * Get all Storages for Product where QtyOnHand <> 0
 	 *
 	 * @param ctx context
