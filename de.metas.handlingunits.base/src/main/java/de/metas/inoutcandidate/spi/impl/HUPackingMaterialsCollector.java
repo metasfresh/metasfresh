@@ -243,27 +243,35 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		//
-		// Update counters
+		// Extract the TUs
 		final String huUnitTypeToUse = huUnitTypeOverride == null ? handlingUnitsBL.getHU_UnitType(hu) : huUnitTypeOverride;
-		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
+		final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
+		final int countTUsAbs;
+		if(aggregateHU)
 		{
-			// 'hu' is a TU; count it
-
-			final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
-
-			final int countTUsAbs = aggregateHU
-					? hu.getM_HU_Item_Parent().getQty().intValueExact() // gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
-					: 1; // 'hu' represents one TU
-
-			if (remove)
-			{
-				countTUs -= countTUsAbs;
-			}
-			else
-			{
-				countTUs += countTUsAbs;
-			}
+			// gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
+			countTUsAbs = handlingUnitsDAO.retrieveParentItem(hu).getQty().intValueExact();
 		}
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
+		{
+			countTUsAbs = 1; // pure TU.. that counts ONE
+		}
+		else
+		{
+			countTUsAbs = 0;
+		}
+		
+		//
+		// Update the TUs counter
+		if (remove)
+		{
+			countTUs -= countTUsAbs;
+		}
+		else
+		{
+			countTUs += countTUsAbs;
+		}
+
 
 		return true;
 	}

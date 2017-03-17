@@ -80,9 +80,23 @@ public class OrderReceiptScheduleProducer extends AbstractReceiptScheduleProduce
 
 		return schedulers;
 	}
+	
+	@Override
+	public void updateReceiptSchedules(final Object model)
+	{
+		final I_C_Order order = checkAndGetOrder(model);
+
+		final IReceiptScheduleProducer orderLineProducer = createOrderLineReceiptScheduleProducer();
+
+		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order);
+		for (final I_C_OrderLine ol : orderLines)
+		{
+			orderLineProducer.updateReceiptSchedules(ol);
+		}
+	}
 
 	@Override
-	public void inactivateReceiptSchedules(Object model)
+	public void inactivateReceiptSchedules(final Object model)
 	{
 		final I_C_Order order = checkAndGetOrder(model);
 
