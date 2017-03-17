@@ -18,10 +18,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#247](https://github.com/metasfresh/metasfresh-webui-api/issues/247) When product has no attribute set, allow user to edit at least pricing attributes
+  * [#252](https://github.com/metasfresh/metasfresh-webui-api/issues/252) Provide to frontend: tab allow create new and delete as they change
 
 * metasfresh
   * [#1145](https://github.com/metasfresh/metasfresh/issues/1145) Refactor adempiereJasper servlets and implement them with @RestController
   * [#1146](https://github.com/metasfresh/metasfresh/issues/1146) Change "sent by" in Request Notifications
+  * [#1152](https://github.com/metasfresh/metasfresh/issues/1152) Support address sequence configuration in multi org environment
+  * [#1165](https://github.com/metasfresh/metasfresh/issues/1165) QtyDelivered not set back correctly after reactivating and voiding a material receipt
   
 # metasfresh 5.1 (2017-11)
 
