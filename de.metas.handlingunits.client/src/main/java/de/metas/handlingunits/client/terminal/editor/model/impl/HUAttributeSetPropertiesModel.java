@@ -229,13 +229,13 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * @see #getAdditionalInputMethods(int)
 	 *
 	 */
-	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute)
+	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute, final int warehouseId)
 	{
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
 				.getAttributeDeviceAccessors(attribute.getValue())
 				.consumeWarningMessageIfAny(warningMessage -> Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, warningMessage))
-				.stream()
+				.stream(warehouseId)
 				.map(DeviceAccessorAsInputMethod::new)
 				.collect(GuavaCollectors.toImmutableList());
 	}
@@ -559,9 +559,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			super();
 
+			final int warehouseId = attributeStorage.getM_Warehouse_ID();
+			
 			final List<String> propertyNames = new ArrayList<>();
 			final Map<String, I_M_Attribute> propertyName2attribute = new HashMap<>();
 			final HashMap<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction = new HashMap<>(); // task 04966
+			
 
 			for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
 			{
@@ -578,7 +581,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 				propertyName2attribute.put(propertyName, attribute);
 
 				// task 04966
-				final List<IInputMethod<?>> inputMethods = mkAdditionalInputMethods(attribute);
+				final List<IInputMethod<?>> inputMethods = mkAdditionalInputMethods(attribute, warehouseId);
 				propertyName2AdditionalInputAction.put(propertyName, ImmutableList.copyOf(inputMethods));
 			}
 
