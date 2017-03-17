@@ -52,8 +52,12 @@ Here come the actual release notes:
     * Extended Functionality to mark rows as saved, allowing the front-end save indicator to react on that.
   
 * metasfresh-webui-frontend
+  * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
+    * Integration of D3JS into the webui frontend. D3JS is used for the generation of Barchart and Piechart KPI on the metasfresh Dashboard.
+  * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
+    * Implementaion of the Number Indicator/ comparator widget for the Target KPI in Dashboard.
   * [#459](https://github.com/metasfresh/metasfresh-webui-frontend/issues/459) If quick input fails then don't show the quick input fields
-    * Improvement of User Experience. Not showing Quick Input Fields if 
+    * Improvement of User Experience. Not showing Quick Input Fields only if these are configured in the application dictionary.
   
 ## Fixes
 * metasfresh-backend
@@ -71,12 +75,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
+    * Housekeeping task to cleanup the metasfresh-webui repository, getting rid of discontinued stuff.
   * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
+    * Fixes a Bug that allowed to propoagate Attribute Values on a whole Handling Unit just through moving a low level HU into the Handling Unit.
   
 * metasfresh-webui-frontend
-  * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
-  * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
   * [#524](https://github.com/metasfresh/metasfresh-webui-frontend/issues/524) Location Editor cannot read property bug
+    * Fixing a Bug that broke the functionality of the Location Editor.
 
 # metasfresh 5.0 (2017-10)
 
