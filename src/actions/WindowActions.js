@@ -16,7 +16,8 @@ import {
 import {
     addNotification,
     setProcessSaved,
-    setProcessPending
+    setProcessPending,
+    browseViewRequest
 } from './AppActions'
 
 export function setLatestNewDocument(id) {
@@ -331,6 +332,10 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
             } else {
                 //Existing master document
                 return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
+                .catch(() => {
+                    dispatch(push('/window/'+ windowType));
+                    
+                });
             }
         }
     }
