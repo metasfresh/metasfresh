@@ -19,6 +19,9 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#247](https://github.com/metasfresh/metasfresh-webui-api/issues/247) When product has no attribute set, allow user to edit at least pricing attributes
 
+* metasfresh
+  * [#1145](https://github.com/metasfresh/metasfresh/issues/1145) Refactor adempiereJasper servlets and implement them with @RestController
+
 # metasfresh 5.1 (2017-11)
 
 **this week's release candidate**
