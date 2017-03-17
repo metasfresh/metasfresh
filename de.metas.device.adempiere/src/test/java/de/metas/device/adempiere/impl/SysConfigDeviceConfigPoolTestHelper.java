@@ -1,6 +1,7 @@
 package de.metas.device.adempiere.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -29,11 +30,11 @@ import de.metas.device.adempiere.DeviceConfig;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,9 +46,9 @@ public class SysConfigDeviceConfigPoolTestHelper
 
 	private final IHostIdentifier clientHost = NetUtils.getLocalHost();
 
-	public final DeviceConfig createDeviceConfigAndAssertValid(final String deviceName, final String attributeCode, final int warehouseId)
+	public final DeviceConfig createDeviceConfigAndAssertValid(final String deviceName, final String attributeCode, final Set<Integer> warehouseIds)
 	{
-		createMockedDeviceSysconfigs(deviceName, attributeCode, warehouseId);
+		createMockedDeviceSysconfigs(deviceName, attributeCode, warehouseIds);
 
 		final SysConfigDeviceConfigPool configPool = createSysConfigDeviceConfigPool();
 		final List<DeviceConfig> deviceConfigs = configPool.getDeviceConfigsForAttributeCode(attributeCode);
@@ -58,12 +59,12 @@ public class SysConfigDeviceConfigPoolTestHelper
 		Assert.assertEquals("attributeCode", ImmutableSet.of(attributeCode), deviceConfig.getAssignedAttributeCodes());
 		Assert.assertEquals("DeviceClass", MOCKED_DEVICE_DeviceClass, deviceConfig.getDeviceClassname());
 		Assert.assertEquals("RequestClassname", ImmutableSet.of(MOCKED_DEVICE_RequestClass), deviceConfig.getRequestClassnames(attributeCode));
-		Assert.assertEquals("M_Warehouse_ID", warehouseId, deviceConfig.getAssignedWarehouseId());
+		Assert.assertEquals("M_Warehouse_ID", warehouseIds, deviceConfig.getAssignedWarehouseIds());
 
 		return deviceConfig;
 	}
 
-	private final void createMockedDeviceSysconfigs(final String deviceName, final String attributeCode, final int warehouseId)
+	private final void createMockedDeviceSysconfigs(final String deviceName, final String attributeCode, final Set<Integer> warehouseIds)
 	{
 		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
 		Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
@@ -80,10 +81,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		putSysConfig("de.metas.device." + deviceName + ".AvailableOn1", host);
 		putSysConfig("de.metas.device." + deviceName + "." + attributeCode, MOCKED_DEVICE_RequestClass);
 
-		if (warehouseId > 0)
-		{
-			putSysConfig("de.metas.device." + deviceName + ".M_Warehouse_ID", String.valueOf(warehouseId));
-		}
+		warehouseIds.forEach(warehouseId -> putSysConfig("de.metas.device." + deviceName + ".M_Warehouse_ID." + warehouseId, String.valueOf(warehouseId)));
 	}
 
 	private static final void putSysConfig(final String name, final String value)
@@ -99,7 +97,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		final SysConfigDeviceConfigPool configPool = new SysConfigDeviceConfigPool(clientHost, adClientId, adOrgId);
 		return configPool;
 	}
-	
+
 	public AttributesDevicesHub createDevicesHub()
 	{
 		final SysConfigDeviceConfigPool configPool = createSysConfigDeviceConfigPool();

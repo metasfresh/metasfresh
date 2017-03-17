@@ -1,6 +1,7 @@
 package de.metas.device.adempiere;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -158,8 +159,8 @@ public class AttributesDevicesHub
 			{
 				final String deviceName = deviceConfig.getDeviceName();
 				final String displayName = createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName);
-				final int assignedWarehouseId = deviceConfig.getAssignedWarehouseId();
-				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, assignedWarehouseId, request);
+				final Set<Integer> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds();
+				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, assignedWarehouseIds, request);
 				deviceAccessors.add(deviceAccessor);
 			}
 		}
@@ -219,7 +220,7 @@ public class AttributesDevicesHub
 	{
 		private final String displayName;
 		private final IDevice device;
-		private final int assignedWarehouseId;
+		private final Set<Integer> assignedWarehouseIds;
 		private final IDeviceRequest<ISingleValueResponse> request;
 
 		private final String publicId;
@@ -229,7 +230,7 @@ public class AttributesDevicesHub
 				, final IDevice device //
 				, final String deviceName //
 				, final String attributeCode //
-				, final int assignedWarehouseId //
+				, final Set<Integer> assignedWarehouseIds //
 				, final IDeviceRequest<ISingleValueResponse> request //
 		)
 		{
@@ -242,7 +243,7 @@ public class AttributesDevicesHub
 
 			this.displayName = displayName;
 			this.device = device;
-			this.assignedWarehouseId = assignedWarehouseId;
+			this.assignedWarehouseIds = assignedWarehouseIds;
 			this.request = request;
 
 			publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
@@ -255,7 +256,7 @@ public class AttributesDevicesHub
 					.add("displayName", displayName)
 					.add("request", request)
 					.add("device", device)
-					.add("assignedWarehouseId", assignedWarehouseId)
+					.add("assignedWarehouseId", assignedWarehouseIds)
 					.add("publicId", publicId)
 					.toString();
 		}
@@ -272,12 +273,12 @@ public class AttributesDevicesHub
 
 		public boolean isAvailableForWarehouse(final int warehouseId)
 		{
-			if (assignedWarehouseId <= 0)
+			if (assignedWarehouseIds.isEmpty())
 			{
 				return true;
 			}
 
-			return assignedWarehouseId == warehouseId;
+			return assignedWarehouseIds.contains(warehouseId);
 		}
 
 		public synchronized Object acquireValue()
