@@ -1,40 +1,3 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date, character varying);
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report;
-
-create table de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
-	CurrencyCode char(3)
-	, DocumentNo varchar
-	, DateInvoiced date
-	, DateAcct date
-	, NetDays numeric
-	, DiscountDays numeric
-	, DueDate date
-	, DaysDue integer
-	, DiscountDate date
-	, GrandTotal numeric
-	, PaidAmt numeric
-	, OpenAmt numeric
-	--
-	, BPValue varchar
-	, BPName varchar
-	, C_BPartner_ID numeric
-	--
-	, IsInPaySelection boolean
-	, C_Invoice_ID numeric
-	, IsSOTrx char(1)
-	, AD_Org_ID numeric
-	, AD_Client_ID numeric
-	, InvoiceCollectionType char(1)
-	, Reference_Date date
-
-	,grandtotalconvert numeric
-	,openamtconvert numeric
-	,main_iso_code char(3)
-);
-
-
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN Reference_Date date DEFAULT now(), IN switchDate character varying DEFAULT 'N')
 RETURNS SETOF de_metas_endcustomer_fresh_reports.OpenItems_Report AS
 $$
@@ -135,27 +98,3 @@ FROM
 $$
 LANGUAGE sql STABLE
 ;
-
-/*
-WHERE
-	oi.AD_Org_ID = (CASE WHEN $P{AD_Org_ID} IS NULL THEN oi.AD_Org_ID ELSE $P{AD_Org_ID} END)
-	AND oi.IsSOTrx = (CASE WHEN $P{IsSOTrx} IS NULL THEN oi.IsSOTrx ELSE $P{IsSOTrx} END)
-	AND oi.C_BPartner_ID = (CASE WHEN $P{C_BPartner_ID} IS NULL THEN oi.C_BPartner_ID ELSE $P{C_BPartner_ID} END)
-	AND ($P{DaysDue} IS NULL OR $P{DaysDue} <= 0 OR oi.daysdue >= $P{DaysDue})
-	AND COALESCE( oi.InvoiceCollectionType, '') = (CASE WHEN COALESCE($P{InvoiceCollectionType}, '') = '' THEN COALESCE( oi.InvoiceCollectionType, '' ) ELSE $P{InvoiceCollectionType} END)
-	AND (
-		oi.DateInvoiced >= ( CASE WHEN $P{StartDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{StartDate}::date END )
-		AND oi.DateInvoiced <= ( CASE WHEN $P{EndDate}::date IS NULL THEN oi.DateInvoiced ELSE $P{EndDate}::date END )
-	)
-	-- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
-	AND ( $P{PassForPayment} = 'Y' OR NOT oi.PassForPayment )
-ORDER BY
-	c.iso_code,
-	bp.Name,
-	bp.value,
-	oi.DateInvoiced,
-	oi.DocumentNo
-;
-
-*/
-
