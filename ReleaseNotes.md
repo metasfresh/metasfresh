@@ -58,13 +58,16 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-backend
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
+    * Fixed a Bug that showes to many prices on printed Partner Pricelists.
   * [#1153](https://github.com/metasfresh/metasfresh/issues/1153) Pricing wrong w/ more than 1 Packing Instruction
   * [#1160](https://github.com/metasfresh/metasfresh/issues/1160) Material receipt label is printed for each TU on an LU
     * Bug Fix for the automatic Label Printing in Material Receipt Process. Now only the defined amount of copies are printed.
   * [#1162](https://github.com/metasfresh/metasfresh/issues/1162) Split from non-aggregate HUs can lead to wrong TU quantities
     * Bug Fix for the Split action in Handling Unit Editor.
   * [#1171](https://github.com/metasfresh/metasfresh/issues/1171) Inactive BPartner is not shown in open items report
+    * Fix for the Open Items report. Now also showing Open Items for decativated Business Partners.
   * [#1172](https://github.com/metasfresh/metasfresh/issues/1172) Show only those weighing machines which are available for HU's warehouse
+    * Filtering the shown weighing devices to thiose that are valid for the given Warehouse in HU Storage.
 
 * metasfresh-webui-api
   * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
