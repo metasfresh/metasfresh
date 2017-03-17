@@ -295,6 +295,11 @@ public class DocumentCollection
 	private void commitRootDocument(final Document document)
 	{
 		final boolean wasNew = document.isNew();
+
+		//
+		// Make sure all included detail (tab) statuses are up2date.
+		document.updateIncludedDetailsStatus();
+		
 		//
 		// Try saving it if possible
 		document.saveIfValidAndHasChanges();

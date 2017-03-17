@@ -68,6 +68,10 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	private boolean _fullyLoaded;
 	private final Set<DocumentId> _staleDocumentIds;
 
+	private static final LogicExpressionResult DISALLOW_Initially = LogicExpressionResult.namedConstant("initially not allowed", false);
+	private LogicExpressionResult _allowNew = DISALLOW_Initially;
+	private LogicExpressionResult _allowDelete = DISALLOW_Initially;
+
 	public IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
@@ -76,6 +80,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		// State
 		_fullyLoaded = false;
 		_staleDocumentIds = new HashSet<>();
+		updateStatusFromParent();
 
 		// Documents map
 		_documents = new LinkedHashMap<>();
@@ -90,6 +95,8 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		// State
 		_fullyLoaded = from._fullyLoaded;
 		_staleDocumentIds = new HashSet<>(from._staleDocumentIds);
+		_allowNew = from._allowNew;
+		_allowDelete = from._allowDelete;
 
 		// Deep-copy documents map
 		_documents = new LinkedHashMap<>(Maps.transformValues(from._documents, includedDocumentOrig -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
@@ -103,6 +110,11 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 				.add("detailId", entityDescriptor.getDetailId())
 				.add("documentsCount", _documents.size())
 				.toString();
+	}
+
+	private DocumentPath getParentDocumentPath()
+	{
+		return parentDocument.getDocumentPath();
 	}
 
 	private final void assertWritable()
@@ -125,7 +137,8 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		_fullyLoaded = false;
 	}
 
-	private final boolean isStale()
+	@Override
+	public final boolean isStale()
 	{
 		return !_staleDocumentIds.isEmpty();
 	}
@@ -161,9 +174,10 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		_staleDocumentIds.addAll(_documents.keySet());
 
 		Execution.getCurrentDocumentChangesCollectorOrNull()
-				.collectStaleDetailId(parentDocument.getDocumentPath(), getDetailId());
+				.collectStaleDetailId(getParentDocumentPath(), getDetailId());
 	}
 
+	@Override
 	public DetailId getDetailId()
 	{
 		return entityDescriptor.getDetailId();
@@ -195,16 +209,14 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 
 		//
 		// Load from underlying repository
-		// document = loadById(id);
 		final Document documentNew = DocumentQuery.builder(entityDescriptor)
 				.setRecordId(documentId)
 				.setParentDocument(parentDocument)
 				.retriveDocumentOrNull();
 		if (documentNew == null)
 		{
-			final DocumentPath documentPath = parentDocument
-					.getDocumentPath()
-					.createChildPath(entityDescriptor.getDetailId(), documentId);
+			final DocumentPath documentPath = getParentDocumentPath()
+					.createChildPath(getDetailId(), documentId);
 			throw new DocumentNotFoundException(documentPath);
 		}
 
@@ -290,6 +302,13 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
+	public void updateStatusFromParent()
+	{
+		updateAndGetAllowCreateNewDocument();
+		updateAndGetAllowDeleteDocument();
+	}
+
+	@Override
 	public synchronized Document createNewDocument()
 	{
 		assertWritable();
@@ -300,6 +319,8 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 
 		final DocumentId documentId = document.getDocumentId();
 		_documents.put(documentId, document);
+		
+		updateAndGetAllowCreateNewDocument();
 
 		return document;
 	}
@@ -307,7 +328,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	@Override
 	public void assertNewDocumentAllowed()
 	{
-		final LogicExpressionResult allowCreateNewDocument = getAllowCreateNewDocument();
+		final LogicExpressionResult allowCreateNewDocument = updateAndGetAllowCreateNewDocument();
 		if (allowCreateNewDocument.isFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
@@ -316,19 +337,50 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		}
 	}
 
+	@Override
 	public LogicExpressionResult getAllowCreateNewDocument()
+	{
+		return _allowNew;
+	}
+
+	private LogicExpressionResult updateAndGetAllowCreateNewDocument()
+	{
+		final LogicExpressionResult allowNew = computeAllowCreateNewDocument();
+		setAllowCreateNewDocument(allowNew);
+		return allowNew;
+	}
+
+	private void setAllowCreateNewDocument(final LogicExpressionResult allowNew)
+	{
+		Preconditions.checkNotNull(allowNew);
+		final LogicExpressionResult allowNewOld = _allowNew;
+		_allowNew = allowNew;
+
+		if (!allowNewOld.equalsByNameAndValue(allowNew))
+		{
+			Execution.getCurrentDocumentChangesCollectorOrNull()
+					.collectAllowNew(getParentDocumentPath(), getDetailId(), allowNew);
+		}
+	}
+
+	private LogicExpressionResult computeAllowCreateNewDocument()
 	{
 		if (parentDocument.isProcessed())
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
 		}
-		
-		if(parentDocument.isNew())
+
+		if (!parentDocument.isActive())
+		{
+			return LogicExpressionResult.namedConstant("ParentDocumentNotActive", false);
+		}
+
+		if (parentDocument.isNew())
 		{
 			return LogicExpressionResult.namedConstant("ParentDocumentNew", false);
 		}
-		
-		if(hasNewDocuments())
+
+		if (hasNewDocuments())
 		{
 			return LogicExpressionResult.namedConstant("A new document already exists", false);
 		}
@@ -337,26 +389,57 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		return allowCreateNew;
 	}
-	
+
 	private final boolean hasNewDocuments()
 	{
-		return getInnerDocumentsNoLoad().stream().anyMatch(document->document.isNew());
+		return getInnerDocumentsNoLoad().stream().anyMatch(document -> document.isNew());
 	}
 
 	private void assertDeleteDocumentAllowed(final Document document)
 	{
-		final LogicExpressionResult allowDelete = getAllowDeleteDocument();
+		final LogicExpressionResult allowDelete = updateAndGetAllowDeleteDocument();
 		if (allowDelete.isFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed: " + allowDelete);
 		}
 	}
 
-	private LogicExpressionResult getAllowDeleteDocument()
+	@Override
+	public LogicExpressionResult getAllowDeleteDocument()
+	{
+		return _allowDelete;
+	}
+
+	private LogicExpressionResult updateAndGetAllowDeleteDocument()
+	{
+		final LogicExpressionResult allowDelete = computeAllowDeleteDocument();
+		setAllowDeleteDocument(allowDelete);
+		return allowDelete;
+	}
+
+	private void setAllowDeleteDocument(final LogicExpressionResult allowDelete)
+	{
+		Preconditions.checkNotNull(allowDelete);
+		final LogicExpressionResult allowDeleteOld = _allowDelete;
+		_allowDelete = allowDelete;
+
+		if (!allowDeleteOld.equalsByNameAndValue(allowDelete))
+		{
+			Execution.getCurrentDocumentChangesCollectorOrNull()
+					.collectAllowDelete(getParentDocumentPath(), getDetailId(), allowDelete);
+		}
+	}
+
+	private LogicExpressionResult computeAllowDeleteDocument()
 	{
 		if (parentDocument.isProcessed())
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
+		}
+
+		if (!parentDocument.isActive())
+		{
+			return LogicExpressionResult.namedConstant("ParentDocumentNotActive", false);
 		}
 
 		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
@@ -468,8 +551,6 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		}
 
 		assertWritable();
-		
-		// TODO: check if application dictionary says that is allowed
 
 		for (final DocumentId documentId : documentIds)
 		{

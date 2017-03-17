@@ -3,7 +3,10 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 
@@ -31,13 +34,21 @@ import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 
 public interface IIncludedDocumentsCollection
 {
+	DetailId getDetailId();
+
 	IIncludedDocumentsCollection copy(Document parentDocumentCopy, CopyMode copyMode);
 
 	List<Document> getDocuments();
 
 	Document getDocumentById(DocumentId documentId);
 
+	void updateStatusFromParent();
+
 	void assertNewDocumentAllowed();
+
+	LogicExpressionResult getAllowCreateNewDocument();
+
+	LogicExpressionResult getAllowDeleteDocument();
 
 	Document createNewDocument();
 
@@ -51,5 +62,10 @@ public interface IIncludedDocumentsCollection
 
 	void markStaleAll();
 
+	/** @return true if contains at least one stale document */
+	boolean isStale();
+
 	int getNextLineNo();
+
+
 }
