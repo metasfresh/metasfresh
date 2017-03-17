@@ -423,13 +423,10 @@ public final class ProcessExecutor
 		logger.debug("startWorkflow: {} ({})", AD_Workflow_ID, pi);
 
 		final MWorkflow wf = MWorkflow.get(pi.getCtx(), AD_Workflow_ID);
-		MWFProcess wfProcess = null;
-		if (pi.isBatch())
-			wfProcess = wf.start(pi);		// may return null
-		else
-		{
-			wfProcess = wf.startWait(pi);	// may return null
-		}
+
+		// note: depending on a pi flag we also called wf.start(pi);, but that flag always had a constant value.
+		final MWFProcess wfProcess = wf.startWait(pi);	// may return null
+
 		final boolean started = wfProcess != null;
 		logger.debug("startWorkflow finish: started={}, wfProcess={}", started, wfProcess);
 
@@ -638,12 +635,14 @@ public final class ProcessExecutor
 
 		public void executeASync()
 		{
+			processInfo.setAsync(true); // #1160 advise the product info, that we want an asynchronous execution
 			final ProcessExecutor worker = build();
 			worker.executeAsync();
 		}
 
 		public ProcessExecutor executeSync()
 		{
+			processInfo.setAsync(false); // #1160 advise the product info, that we want a synchronous execution
 			final ProcessExecutor worker = build();
 			worker.executeSync();
 			return worker;
