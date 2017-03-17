@@ -31,7 +31,6 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.product.IProductBL;
 
@@ -356,7 +355,8 @@ public final class ASIEditingInfo
 		{
 			case Regular:
 			{
-				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID());
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID())
+						.stream();
 				break;
 			}
 			case ProductWindow:
@@ -367,12 +367,36 @@ public final class ASIEditingInfo
 			}
 			case ProcessParameter:
 			{
-				attributes = retrieveProcessParameterAttributes();
+				attributes = Services.get(IQueryBL.class)
+						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
+						.addOnlyActiveRecordsFilter()
+						.addOnlyContextClient()
+						//
+						.orderBy()
+						.addColumn(I_M_Attribute.COLUMNNAME_Name)
+						.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+						.endOrderBy()
+						//
+						.create()
+						.stream(MAttribute.class);
 				break;
 			}
 			case Pricing:
 			{
-				attributes = retrievePricingAttributes(ImmutableSet.of());
+				attributes = Services.get(IQueryBL.class)
+						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
+						.addOnlyActiveRecordsFilter()
+						.addOnlyContextClient()
+						.addEqualsFilter(I_M_Attribute.COLUMNNAME_IsPricingRelevant, true)
+						.addEqualsFilter(I_M_Attribute.COLUMNNAME_AttributeValueType, X_M_Attribute.ATTRIBUTEVALUETYPE_List) // atm only list attributes are supported, see IPricingAttribute
+						//
+						.orderBy()
+						.addColumn(I_M_Attribute.COLUMNNAME_Name)
+						.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+						.endOrderBy()
+						//
+						.create()
+						.stream(MAttribute.class);
 				break;
 			}
 			default:
@@ -392,9 +416,9 @@ public final class ASIEditingInfo
 	 * 
 	 * @param attributeSet
 	 * @param attributeSetInstanceId
-	 * @return stream of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
+	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
-	private static final Stream<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(@Nullable final MAttributeSet attributeSet, final int attributeSetInstanceId)
+	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(@Nullable final MAttributeSet attributeSet, final int attributeSetInstanceId)
 	{
 		final LinkedHashMap<Integer, MAttribute> attributes = new LinkedHashMap<>(); // preserve the order
 
@@ -429,53 +453,7 @@ public final class ASIEditingInfo
 		}
 
 		//
-		// Always add pricing attributes
-		// Would also cover the case when there is no attributeSet (because product does not support it) nor attributeSetInstance,
-		// In that case the user will be able to edit at least the pricing attributes.
-		retrievePricingAttributes(attributes.keySet())
-				.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
-
-		//
-		return attributes.values().stream();
-	}
-
-	private static Stream<MAttribute> retrieveProcessParameterAttributes()
-	{
-		final Stream<MAttribute> attributes;
-		attributes = Services.get(IQueryBL.class)
-				.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				//
-				.orderBy()
-				.addColumn(I_M_Attribute.COLUMNNAME_Name)
-				.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-				.endOrderBy()
-				//
-				.create()
-				.stream(MAttribute.class);
-		return attributes;
-	}
-
-	private static Stream<MAttribute> retrievePricingAttributes(final Set<Integer> excludeAttributeIds)
-	{
-		final Stream<MAttribute> attributes;
-		attributes = Services.get(IQueryBL.class)
-				.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Attribute.COLUMNNAME_IsPricingRelevant, true)
-				.addEqualsFilter(I_M_Attribute.COLUMNNAME_AttributeValueType, X_M_Attribute.ATTRIBUTEVALUETYPE_List) // atm only list attributes are supported, see IPricingAttribute
-				.addNotInArrayFilter(I_M_Attribute.COLUMNNAME_M_Attribute_ID, excludeAttributeIds)
-				//
-				.orderBy()
-				.addColumn(I_M_Attribute.COLUMNNAME_Name)
-				.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-				.endOrderBy()
-				//
-				.create()
-				.stream(MAttribute.class);
-		return attributes;
+		return ImmutableList.copyOf(attributes.values());
 	}
 
 	public static enum WindowType
