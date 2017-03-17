@@ -12,7 +12,12 @@ Here come the actual release notes:
 
 # metasfresh 5.2 (2017-12)
 
-** upcoming **
+**upcoming**
+
+## Features
+
+* metasfresh-webui-api
+  * [#247](https://github.com/metasfresh/metasfresh-webui-api/issues/247) When product has no attribute set, allow user to edit at least pricing attributes
 
 # metasfresh 5.1 (2017-11)
 
@@ -29,7 +34,7 @@ Here come the actual release notes:
   * [#1161](https://github.com/metasfresh/metasfresh/issues/1161) Picking Terminal add Packing Material to Picking Slot takes too long
   * [#1162](https://github.com/metasfresh/metasfresh/issues/1162) Split from non-aggregate HUs can lead to wrong TU quantities
   
-* metasfresh-webui
+* metasfresh-webui-api
   * [#244](https://github.com/metasfresh/metasfresh-webui-api/issues/244) KPIs: Introduce TimeRange ending offset
   * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
   
