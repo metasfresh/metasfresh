@@ -1,6 +1,7 @@
 package de.metas.device.adempiere.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -11,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.device.adempiere.AttributesDevicesHub;
 import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
@@ -55,21 +57,19 @@ public class SysConfigDeviceConfigPoolTest
 	@Test
 	public void testDeviceConfig_NoWarehouse()
 	{
-		final int warehouseId = -1;
-		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", warehouseId);
+		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", ImmutableSet.of());
 
 		//
 		// Test device accessor
 		{
 			final AttributesDevicesHub devicesHub = helper.createDevicesHub();
 			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors("WeightGross")
-					.stream(warehouseId)
+					.stream(-1) // any
 					.collect(ImmutableList.toImmutableList());
 
 			final AttributeDeviceAccessor deviceAccessor = ListUtils.singleElement(deviceAccessors);
-			
+
 			// shall be available for ANY warehouse
-			assertAvailableForWarehouse(deviceAccessor, warehouseId, true);
 			assertAvailableForWarehouse(deviceAccessor, -1, true);
 			assertAvailableForWarehouse(deviceAccessor, 1, true);
 			assertAvailableForWarehouse(deviceAccessor, 2, true);
@@ -79,25 +79,28 @@ public class SysConfigDeviceConfigPoolTest
 	@Test
 	public void testDeviceConfig_WithWarehouse()
 	{
-		final int warehouseId = 12345;
-		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", warehouseId);
+		final Set<Integer> warehouseIds = ImmutableSet.of(1000001, 1000002);
+		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", warehouseIds);
+		// POJOLookupMap.get().dumpStatus(); // dump configuration
 
 		//
 		// Test device accessor
+		final AttributesDevicesHub devicesHub = helper.createDevicesHub();
+		for (final int warehouseId : warehouseIds)
 		{
-			final AttributesDevicesHub devicesHub = helper.createDevicesHub();
 			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors("WeightGross")
 					.stream(warehouseId)
 					.collect(ImmutableList.toImmutableList());
 
 			final AttributeDeviceAccessor deviceAccessor = ListUtils.singleElement(deviceAccessors);
-			
+
 			// shall be available only for configured warehouse
 			assertAvailableForWarehouse(deviceAccessor, warehouseId, true);
 			assertAvailableForWarehouse(deviceAccessor, -1, false);
 			assertAvailableForWarehouse(deviceAccessor, 1, false);
 			assertAvailableForWarehouse(deviceAccessor, 2, false);
 		}
+
 	}
 
 	private static final void assertAvailableForWarehouse(final AttributeDeviceAccessor deviceAccessor, final int warehouseId, final boolean expectedAvailable)
