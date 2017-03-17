@@ -57,9 +57,10 @@ public final class DocumentViewAttributesLayout
 	{
 		super();
 
+		final int warehouseId = attributeStorage.getM_Warehouse_ID();
 		elements = attributeStorage.getAttributeValues()
 				.stream()
-				.map(av -> createElement(av))
+				.map(av -> createElement(av, warehouseId))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -71,7 +72,7 @@ public final class DocumentViewAttributesLayout
 				.toString();
 	}
 
-	private static final DocumentLayoutElementDescriptor createElement(final IAttributeValue attributeValue)
+	private static final DocumentLayoutElementDescriptor createElement(final IAttributeValue attributeValue, final int warehouseId)
 	{
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
 		final IModelTranslationMap attributeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(attribute);
@@ -87,16 +88,16 @@ public final class DocumentViewAttributesLayout
 				.setWidgetType(widgetType)
 				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeName)
 						.setPublicField(true)
-						.addDevices(createDevices(attribute.getValue())))
+						.addDevices(createDevices(attribute.getValue(), warehouseId)))
 				.build();
 	}
 
-	private static final List<JSONDeviceDescriptor> createDevices(final String attributeCode)
+	private static final List<JSONDeviceDescriptor> createDevices(final String attributeCode, final int warehouseId)
 	{
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
 				.getAttributeDeviceAccessors(attributeCode)
-				.stream()
+				.stream(warehouseId)
 				.map(attributeDeviceAccessor -> createDevice(attributeDeviceAccessor))
 				.collect(GuavaCollectors.toImmutableList());
 
