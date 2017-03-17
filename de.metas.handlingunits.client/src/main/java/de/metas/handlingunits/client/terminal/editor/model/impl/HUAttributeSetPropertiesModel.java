@@ -384,9 +384,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		final String attributeValueType = attributeValue.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final org.adempiere.mm.attributes.model.I_M_Attribute attributeEx = InterfaceWrapperHelper.create(attribute, org.adempiere.mm.attributes.model.I_M_Attribute.class);
-			final BigDecimal valueMin = getValueMin(attributeEx);
-			final BigDecimal valueMax = getValueMax(attributeEx);
+			final BigDecimal valueMin = getValueMin(attribute);
+			final BigDecimal valueMax = getValueMax(attribute);
 
 			//
 			// Case: valueMin and valueMax could not be null but both empty
@@ -431,9 +430,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		return getIndexedAttributeStorage().getAdditionalInputMethods(propertyName);
 	}
 
-	private BigDecimal getValueMin(final org.adempiere.mm.attributes.model.I_M_Attribute attribute)
+	private static BigDecimal getValueMin(final I_M_Attribute attribute)
 	{
-		if (InterfaceWrapperHelper.isNull(attribute, org.adempiere.mm.attributes.model.I_M_Attribute.COLUMNNAME_ValueMin))
+		if (InterfaceWrapperHelper.isNull(attribute, I_M_Attribute.COLUMNNAME_ValueMin))
 		{
 			return null;
 		}
@@ -443,9 +442,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		}
 	}
 
-	private BigDecimal getValueMax(final org.adempiere.mm.attributes.model.I_M_Attribute attribute)
+	private static BigDecimal getValueMax(final I_M_Attribute attribute)
 	{
-		if (InterfaceWrapperHelper.isNull(attribute, org.adempiere.mm.attributes.model.I_M_Attribute.COLUMNNAME_ValueMax))
+		if (InterfaceWrapperHelper.isNull(attribute, I_M_Attribute.COLUMNNAME_ValueMax))
 		{
 			return null;
 		}
