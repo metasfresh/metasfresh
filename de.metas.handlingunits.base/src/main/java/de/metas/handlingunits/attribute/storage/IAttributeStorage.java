@@ -370,4 +370,13 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @throws HUException if any storage is disposed
 	 */
 	boolean assertNotDisposedTree();
+
+	/**
+	 * @return warehouse on which this attribute storage sits (e.g. in case of a HU, it's the HU's warehouse).
+	 */
+	default int getM_Warehouse_ID()
+	{
+		return -1;
+	}
+
 }
