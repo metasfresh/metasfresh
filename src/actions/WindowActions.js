@@ -16,8 +16,7 @@ import {
 import {
     addNotification,
     setProcessSaved,
-    setProcessPending,
-    browseViewRequest
+    setProcessPending
 } from './AppActions'
 
 export function setLatestNewDocument(id) {
@@ -334,7 +333,6 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
                 return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
                 .catch(() => {
                     dispatch(push('/window/'+ windowType));
-                    
                 });
             }
         }
