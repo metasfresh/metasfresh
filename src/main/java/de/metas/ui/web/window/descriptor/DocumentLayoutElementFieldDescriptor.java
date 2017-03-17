@@ -301,18 +301,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return documentFieldBuilder != null && documentFieldBuilder.isSpecialField();
 		}
 
-		public Builder addDevice(final JSONDeviceDescriptor device)
-		{
-			Check.assumeNotNull(device, "Parameter device is not null");
-			if (_devices == null)
-			{
-				_devices = new ArrayList<>();
-			}
-			_devices.add(device);
-
-			return this;
-		}
-
 		public Builder addDevices(final List<JSONDeviceDescriptor> devices)
 		{
 			if (devices == null || devices.isEmpty())
