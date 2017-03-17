@@ -54,7 +54,7 @@ Here come the actual release notes:
   * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
     * Integration of D3JS into the webui frontend. D3JS is used for the generation of Barchart and Piechart KPI on the metasfresh Dashboard.
   * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
-    * Implementaion of the Number Indicator/ comparator widget for the Target KPI in Dashboard.
+    * Implementation of the Number Indicator/ comparator widget for the Target KPI in Dashboard.
   * [#459](https://github.com/metasfresh/metasfresh-webui-frontend/issues/459) If quick input fails then don't show the quick input fields
     * Improvement of User Experience. Not showing Quick Input Fields only if these are configured in the application dictionary.
   
@@ -63,6 +63,7 @@ Here come the actual release notes:
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
     * Fixed a Bug that showes to many prices on printed Partner Pricelists.
   * [#1153](https://github.com/metasfresh/metasfresh/issues/1153) Pricing wrong w/ more than 1 Packing Instruction
+    * Fixed a bug that did not wlloe to define and use prices for product prices withe more than one packing instruction.
   * [#1160](https://github.com/metasfresh/metasfresh/issues/1160) Material receipt label is printed for each TU on an LU
     * Bug Fix for the automatic Label Printing in Material Receipt Process. Now only the defined amount of copies are printed.
   * [#1162](https://github.com/metasfresh/metasfresh/issues/1162) Split from non-aggregate HUs can lead to wrong TU quantities
