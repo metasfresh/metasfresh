@@ -47,10 +47,13 @@ Here come the actual release notes:
     
 * metasfresh-webui-api
   * [#244](https://github.com/metasfresh/metasfresh-webui-api/issues/244) KPIs: Introduce TimeRange ending offset
+    * Extended functionalitie for KPI definition. Now allowing to set an offet that is used for a ofsetted timerange dataset used for comparison in bar charts.
   * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
+    * Extended Functionality to mark rows as saved, allowing the front-end save indicator to react on that.
   
 * metasfresh-webui-frontend
   * [#459](https://github.com/metasfresh/metasfresh-webui-frontend/issues/459) If quick input fails then don't show the quick input fields
+    * Improvement of User Experience. Not showing Quick Input Fields if 
   
 ## Fixes
 * metasfresh-backend
