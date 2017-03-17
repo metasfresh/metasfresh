@@ -41,6 +41,7 @@ Here come the actual release notes:
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
   * [#1153](https://github.com/metasfresh/metasfresh/issues/1153) Pricing wrong w/ more than 1 Packing Instruction
   * [#1171](https://github.com/metasfresh/metasfresh/issues/1171) Inactive BPartner is not shown in open items report
+  * [#1172](https://github.com/metasfresh/metasfresh/issues/1172) Show only those weighing machines which are available for HU's warehouse
 
 * metasfresh-webui-api
   * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
