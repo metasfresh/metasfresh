@@ -21,7 +21,8 @@ Here come the actual release notes:
 
 * metasfresh
   * [#1145](https://github.com/metasfresh/metasfresh/issues/1145) Refactor adempiereJasper servlets and implement them with @RestController
-
+  * [#1146](https://github.com/metasfresh/metasfresh/issues/1146) Change "sent by" in Request Notifications
+  
 # metasfresh 5.1 (2017-11)
 
 **this week's release candidate**
