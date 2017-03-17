@@ -21,6 +21,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#1102](https://github.com/metasfresh/metasfresh/issues/1102) Field Price List Version as search Field
+  * [#1122](https://github.com/metasfresh/metasfresh/issues/1122) Reporting SQL for Products and vendor/ customer
   * [#1124](https://github.com/metasfresh/metasfresh/issues/1124) metasfresh App Server start takes considerably longer
   * [#1134](https://github.com/metasfresh/metasfresh/issues/1134) Show Order ID in main window of Empties Receive
   * [#1142](https://github.com/metasfresh/metasfresh/issues/1142) Improve migration scripts handling
