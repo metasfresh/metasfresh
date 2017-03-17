@@ -17,7 +17,6 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-webui-api
-  * [#247](https://github.com/metasfresh/metasfresh-webui-api/issues/247) When product has no attribute set, allow user to edit at least pricing attributes
   * [#252](https://github.com/metasfresh/metasfresh-webui-api/issues/252) Provide to frontend: tab allow create new and delete as they change
 
 * metasfresh
