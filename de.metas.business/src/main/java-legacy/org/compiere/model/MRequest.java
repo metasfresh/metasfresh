@@ -29,6 +29,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -1281,7 +1282,8 @@ public class MRequest extends X_R_Request
 			.append(Msg.translate(getCtx(), "R_Request_ID"))
 			.append(": ").append(getDocumentNo())
 			.append("  ").append(getMailTag())
-			.append("\nSent by AdempiereMail");
+			.append("\nSent by ")
+			.append(Adempiere.getName());
 		if (serverAddress != null)
 			sb.append(" from ").append(serverAddress);
 		return sb.toString();
