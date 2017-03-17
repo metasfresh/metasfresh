@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -373,7 +374,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
 		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, null);
 		final ITrxItemProcessorExecutor<I_M_ReceiptSchedule, InOutGenerateResult> executor = executorService.createExecutor(processorCtx, producer);
-
+		executor.setExceptionHandler(LoggableTrxItemExceptionHandler.instance); // i don't care if this is deprecated as long as i have *no* idea of how to port it to the "new" way
 		executor.execute(receiptSchedules);
 	}
 

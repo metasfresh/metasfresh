@@ -235,12 +235,12 @@ public interface IReceiptScheduleBL extends ISingletonService
 	/**
 	 * Close receipt schedule line and mark it as processed.
 	 *
-	 * Call the {@link IReceiptScheduleListener}s' beforeClose method, then set the schedule to <code>Processed=Y</code>, then saves the given <code>receiptSchedule</code>, then calls the listeners' afterClose() methods and finally saves the record again.
+	 * Call the {@link IReceiptScheduleListener}s' beforeClose method, then set the schedule to <code>Processed=Y</code>, then save the given <code>receiptSchedule</code>, then call the listeners' afterClose() methods and finally save the record again.
 	 * <p>
 	 * The saving prior to <code>afterClose()</code> is done because the listeners might also retrieve the same <code>receiptSchedule</code> data record from the DB and might also change and save it.
 	 * See {@link C_OrderLine_ReceiptSchedule} for an example.
 	 * <p>
-	 * The saving after <code>afterClose()</code> is done to acomodate for listeners that only alter the given <code>receiptSchedule</code> without saving it (which is actually the nice thing to do).
+	 * The saving after <code>afterClose()</code> is done to accommodate for listeners that only alter the given <code>receiptSchedule</code> without saving it (which is actually the nice thing to do).
 	 *
 	 *
 	 * @param rs
