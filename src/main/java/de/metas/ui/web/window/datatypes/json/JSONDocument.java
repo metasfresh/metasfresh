@@ -148,27 +148,13 @@ public final class JSONDocument implements Serializable
 
 	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONOptions jsonOpts)
 	{
-		final Collection<DocumentChanges> documentChangedEventList = documentChangesCollector.getDocumentChangesByPath().values();
-		if (documentChangedEventList.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<JSONDocument> jsonDocuments = new ArrayList<>(documentChangedEventList.size());
-		for (final DocumentChanges documentChangedEvents : documentChangedEventList)
-		{
-			final JSONDocument jsonDocument = ofEvent(documentChangedEvents, jsonOpts);
-			if (jsonDocument == null)
-			{
-				continue;
-			}
-			jsonDocuments.add(jsonDocument);
-		}
-
-		return jsonDocuments;
+		return documentChangesCollector.streamOrderedDocumentChanges()
+				.map(documentChanges -> ofEventOrNull(documentChanges, jsonOpts))
+				.filter(jsonDocument -> jsonDocument != null)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)
+	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)
 	{
 		if (documentChangedEvents.isEmpty())
 		{

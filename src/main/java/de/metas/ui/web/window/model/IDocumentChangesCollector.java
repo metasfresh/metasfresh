@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
@@ -33,7 +33,16 @@ import de.metas.ui.web.window.descriptor.DetailId;
 
 public interface IDocumentChangesCollector
 {
-	Map<DocumentPath, DocumentChanges> getDocumentChangesByPath();
+	/**
+	 * Mark the changes of given document path as primary changes.
+	 * 
+	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
+	 * 
+	 * @param documentPath
+	 */
+	void setPrimaryChange(DocumentPath documentPath);
+
+	Stream<DocumentChanges> streamOrderedDocumentChanges();
 
 	void collectValueChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 

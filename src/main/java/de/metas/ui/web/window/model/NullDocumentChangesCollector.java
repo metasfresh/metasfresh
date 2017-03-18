@@ -1,11 +1,10 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -37,15 +36,21 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 {
 	public static final transient NullDocumentChangesCollector instance = new NullDocumentChangesCollector();
 
+	@Override
+	public void setPrimaryChange(final DocumentPath documentPath)
+	{
+		// do nothing
+	}
+
 	private NullDocumentChangesCollector()
 	{
 		super();
 	}
 
 	@Override
-	public Map<DocumentPath, DocumentChanges> getDocumentChangesByPath()
+	public Stream<DocumentChanges> streamOrderedDocumentChanges()
 	{
-		return ImmutableMap.of();
+		return Stream.empty();
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 public final class DocumentChanges
 {
 	private final DocumentPath documentPath;
+	private boolean primaryChange;
 	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
 	private DocumentValidStatus documentValidStatus = null;
 	private DocumentSaveStatus documentSaveStatus = null;
@@ -76,6 +77,21 @@ public final class DocumentChanges
 				.add("fields", fieldChangesByName.isEmpty() ? null : fieldChangesByName)
 				.add("includedDetailInfos", includedDetailInfos.isEmpty() ? null : includedDetailInfos)
 				.toString();
+	}
+	
+	/**
+	 * Mark this documents changes as primary changes.
+	 * 
+	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
+	 */
+	public void setPrimaryChange()
+	{
+		this.primaryChange = true;
+	}
+	
+	public boolean isPrimaryChange()
+	{
+		return primaryChange;
 	}
 
 	public Set<String> getFieldNames()
@@ -146,6 +162,11 @@ public final class DocumentChanges
 
 	/* package */void collectFrom(final DocumentChanges fromDocumentChanges)
 	{
+		if(fromDocumentChanges.isPrimaryChange())
+		{
+			setPrimaryChange();
+		}
+		
 		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
 			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField(),

@@ -269,6 +269,7 @@ public class WindowRestController
 	{
 		documentCollection.forDocumentWritable(documentPath, document -> {
 			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+			Execution.getCurrentDocumentChangesCollector().setPrimaryChange(document.getDocumentPath());
 			return null; // void
 		});
 		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
