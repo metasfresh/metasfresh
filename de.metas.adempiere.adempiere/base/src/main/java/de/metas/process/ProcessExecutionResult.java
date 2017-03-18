@@ -469,13 +469,26 @@ public class ProcessExecutionResult
 	 *
 	 * If needed, it will load the logs.
 	 *
-	 * @return logs inner list
+	 * @return logs inner list; never fails
 	 */
 	private final List<ProcessInfoLog> getLogsInnerList()
 	{
 		if (logs == null)
 		{
-			logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
+			try
+			{
+				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
+			}
+			catch(final Exception ex)
+			{
+				// Don't fail log lines failed loading because most of the APIs rely on this.
+				// In case we would propagate the exception we would face:
+				// * worst case would be that it will stop some important execution.
+				// * best case the exception would be lost somewhere without any notification
+				logs = new ArrayList<>();
+				logs.add(ProcessInfoLog.ofMessage("Ops, sorry we failed loading the log lines. (details in console)"));
+				logger.warn("Failed loading log lines for {}", this, ex);
+			}
 		}
 		return logs;
 	}
