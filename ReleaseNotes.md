@@ -28,6 +28,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
 * metasfresh-webui-api
+  * [#256](https://github.com/metasfresh/metasfresh-webui-api/issues/256) Cannot create a new BPartner contact
   * [#259](https://github.com/metasfresh/metasfresh-webui-api/issues/259) New Warehouse is not saveable
   
 # metasfresh 5.1 (2017-11)
