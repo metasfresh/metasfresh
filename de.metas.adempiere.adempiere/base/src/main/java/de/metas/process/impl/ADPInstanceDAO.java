@@ -382,8 +382,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			final List<ProcessInfoLog> logs = new ArrayList<>();
 			while (rs.next())
 			{
-				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				final int logId = rs.getInt(1);
+				final Timestamp date = rs.getTimestamp(2);
+				final BigDecimal number = rs.getBigDecimal(3);
+				final String message = rs.getString(4);
+				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message);
 				log.markAsSavedInDB();
 				logs.add(log);
 			}
