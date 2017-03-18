@@ -368,7 +368,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
-				+ "ORDER BY Log_ID";
+				// Order chronologically
+				// note: sometimes Log_ID=0, sometimes P_Date is null so we sort by both to make sure we will have a chronologically order.
+				+ "ORDER BY Log_ID, P_Date";
 		final Object[] sqlParams = new Object[] { adPInstanceId };
 
 		PreparedStatement pstmt = null;
