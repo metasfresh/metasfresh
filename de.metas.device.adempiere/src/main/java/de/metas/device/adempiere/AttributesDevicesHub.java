@@ -1,6 +1,7 @@
 package de.metas.device.adempiere;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -39,11 +40,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -77,11 +78,17 @@ public class AttributesDevicesHub
 
 	public AttributesDevicesHub(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
 	{
-		super();
-
-		deviceConfigPool = Services.get(IDeviceConfigPoolFactory.class).getDeviceConfigPool(clientHost, adClientId, adOrgId);
-		deviceConfigPool.addListener(deviceConfigPoolListener);
+		this(Services.get(IDeviceConfigPoolFactory.class).getDeviceConfigPool(clientHost, adClientId, adOrgId));
 	}
+	
+	@VisibleForTesting
+	public AttributesDevicesHub(final IDeviceConfigPool deviceConfigPool)
+	{
+		Check.assumeNotNull(deviceConfigPool, "Parameter deviceConfigPool is not null");
+		this.deviceConfigPool = deviceConfigPool;
+		this.deviceConfigPool.addListener(deviceConfigPoolListener);
+	}
+
 
 	@Override
 	public String toString()
@@ -89,14 +96,6 @@ public class AttributesDevicesHub
 		return MoreObjects.toStringHelper(this)
 				.add("deviceConfigPool", deviceConfigPool)
 				.toString();
-	}
-
-	public Stream<AttributeDeviceAccessor> streamAllDeviceAccessors()
-	{
-		return deviceConfigPool.getAllAttributeCodes()
-				.stream()
-				.map(attributeCode -> getAttributeDeviceAccessors(attributeCode))
-				.flatMap(deviceAccessorsList -> deviceAccessorsList.stream());
 	}
 
 	public AttributeDeviceAccessor getAttributeDeviceAccessorById(final String id)
@@ -160,7 +159,8 @@ public class AttributesDevicesHub
 			{
 				final String deviceName = deviceConfig.getDeviceName();
 				final String displayName = createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName);
-				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, request);
+				final Set<Integer> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds();
+				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, assignedWarehouseIds, request);
 				deviceAccessors.add(deviceAccessor);
 			}
 		}
@@ -220,11 +220,19 @@ public class AttributesDevicesHub
 	{
 		private final String displayName;
 		private final IDevice device;
+		private final Set<Integer> assignedWarehouseIds;
 		private final IDeviceRequest<ISingleValueResponse> request;
 
 		private final String publicId;
 
-		private AttributeDeviceAccessor(final String displayName, final IDevice device, final String deviceName, final String attributeCode, final IDeviceRequest<ISingleValueResponse> request)
+		private AttributeDeviceAccessor( //
+				final String displayName //
+				, final IDevice device //
+				, final String deviceName //
+				, final String attributeCode //
+				, final Set<Integer> assignedWarehouseIds //
+				, final IDeviceRequest<ISingleValueResponse> request //
+		)
 		{
 			super();
 
@@ -235,6 +243,7 @@ public class AttributesDevicesHub
 
 			this.displayName = displayName;
 			this.device = device;
+			this.assignedWarehouseIds = assignedWarehouseIds;
 			this.request = request;
 
 			publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
@@ -247,6 +256,7 @@ public class AttributesDevicesHub
 					.add("displayName", displayName)
 					.add("request", request)
 					.add("device", device)
+					.add("assignedWarehouseId", assignedWarehouseIds)
 					.add("publicId", publicId)
 					.toString();
 		}
@@ -259,6 +269,16 @@ public class AttributesDevicesHub
 		public String getDisplayName()
 		{
 			return displayName;
+		}
+
+		public boolean isAvailableForWarehouse(final int warehouseId)
+		{
+			if (assignedWarehouseIds.isEmpty())
+			{
+				return true;
+			}
+
+			return assignedWarehouseIds.contains(warehouseId);
 		}
 
 		public synchronized Object acquireValue()
@@ -334,6 +354,12 @@ public class AttributesDevicesHub
 		public Stream<AttributeDeviceAccessor> stream()
 		{
 			return attributeDeviceAccessors.stream();
+		}
+
+		public Stream<AttributeDeviceAccessor> stream(final int warehouseId)
+		{
+			return stream()
+					.filter(attributeDeviceAccessor -> attributeDeviceAccessor.isAvailableForWarehouse(warehouseId));
 		}
 
 		public AttributeDeviceAccessor getByIdOrNull(final String id)

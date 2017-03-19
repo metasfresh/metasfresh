@@ -79,6 +79,7 @@ public class HUItemStorage implements IHUItemStorage
 
 	/**
 	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
+	 * 
 	 * @param storageFactory
 	 * @param item
 	 */
@@ -271,6 +272,13 @@ public class HUItemStorage implements IHUItemStorage
 	public IHUCapacityDefinition getAvailableCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
 	{
 		final IHUCapacityDefinition capacity = getCapacity(product, uom, date);
+		if (handlingUnitsBL.isAggregateHU(getM_HU_Item().getM_HU()))
+		{
+			// if this is an aggregate HU's item, then ignore the qty that was already added and ignore the item's full capacity
+			// otherwise the allocation strategy might refuse to allocate more to this aggregate HU
+			// fixes gh #1162!
+			return capacity;
+		}
 		final BigDecimal qty = getQty(product, uom);
 
 		final IHUCapacityDefinition capacityAvailable = capacityBL.getAvailableCapacity(qty, uom, capacity);
@@ -425,13 +433,13 @@ public class HUItemStorage implements IHUItemStorage
 	public boolean requestNewHU()
 	{
 		Check.assume(allowRequestReleaseIncludedHU, "Requesting/Releasing new HU shall be allowed for {}", this);
-		
+
 		if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
 		{
 			// a "HUAggregate" item can have one (virtual) child HU
 			return getHUCount() < 1;
 		}
-		
+
 		// for other items, check out the available capacity to decide
 		final int count = getHUCount();
 		final int max = getHUCapacity();
@@ -487,7 +495,7 @@ public class HUItemStorage implements IHUItemStorage
 	@Override
 	public int getHUCapacity()
 	{
-		if(X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
+		if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
 		{
 			return Quantity.QTY_INFINITE.intValue();
 		}

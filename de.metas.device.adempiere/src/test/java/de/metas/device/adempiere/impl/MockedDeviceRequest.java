@@ -1,10 +1,16 @@
-package de.metas.product;
+package de.metas.device.adempiere.impl;
+
+import java.math.BigDecimal;
+
+import de.metas.device.adempiere.impl.MockedDeviceRequest.Response;
+import de.metas.device.api.IDeviceRequest;
+import de.metas.device.api.ISingleValueResponse;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.device.adempiere
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +28,21 @@ package de.metas.product;
  * #L%
  */
 
+public class MockedDeviceRequest implements IDeviceRequest<Response>
+{
+	public static final class Response implements ISingleValueResponse<BigDecimal>
+	{
+		@Override
+		public BigDecimal getSingleValue()
+		{
+			return BigDecimal.ZERO;
+		}
+		
+	}
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Storage;
-
-public interface IStoragePA extends ISingletonService {
-
-	Collection<I_M_Storage> retrieveStorages(int productId, String trxName);
-
-	int retrieveWarehouseId(I_M_Storage storage, String trxName);
-
-	BigDecimal retrieveQtyAvailable(int M_Warehouse_ID, int M_Locator_ID,
-			int M_Product_ID, int M_AttributeSetInstance_ID, String trxName);
-
-	BigDecimal retrieveQtyOrdered(int productId, int warehouseId);
-
+	@Override
+	public Class<Response> getResponseClass()
+	{
+		return Response.class;
+	}
 }

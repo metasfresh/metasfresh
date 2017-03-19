@@ -38,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.IHUAware;
@@ -386,4 +387,23 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	{
 		return handlingUnitsBL.isVirtual(getM_HU());
 	}
+	
+	@Override
+	public int getM_Warehouse_ID()
+	{
+		final I_M_HU hu = getM_HU();
+		if (hu == null)
+		{
+			return -1;
+		}
+		
+		final I_M_Locator locator = hu.getM_Locator();
+		if(locator == null)
+		{
+			return -1;
+		}
+		
+		return locator.getM_Warehouse_ID();
+	}
+	
 }

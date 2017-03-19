@@ -63,7 +63,12 @@ import de.metas.logging.LogManager;
 
 	private static final String CFG_DEVICE_PREFIX = "de.metas.device";
 	private static final String CFG_DEVICE_NAME_PREFIX = CFG_DEVICE_PREFIX + ".Name";
-	private static final String IPADDRESS_ANY = "0.0.0.0";
+	private static final String DEVICE_PARAM_AvailableOn = "AvailableOn";
+	private static final String DEVICE_PARAM_DeviceClass = "DeviceClass";
+	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
+	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
+	
+	/*package */static final String IPADDRESS_ANY = "0.0.0.0";
 
 	private final IHostIdentifier clientHost;
 	private final int adClientId;
@@ -158,27 +163,20 @@ import de.metas.logging.LogManager;
 			return null;
 		}
 
-		final DeviceConfig.Builder deviceConfig = DeviceConfig.builder(deviceName)
-				.setParameterValueSupplier(this::getDeviceParamValue)
-				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames);
-
-		//
-		// Fetch attribute codes assigned to current device
-		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + ".AttributeInternalName";
-		final Collection<String> assignedAttributeCodes = sysConfigBL.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId).values();
+		final Set<String> assignedAttributeCodes = getDeviceAssignedAttributeCodes(deviceName);
 		if (assignedAttributeCodes.isEmpty())
 		{
-			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attribSysConfigPrefix);
+			// NOTE: a warning was already logged
 			return null;
 		}
-		deviceConfig.setAssignedAttributeCodes(assignedAttributeCodes);
 
-		//
-		// Fetch device classname
-		final String deviceClassname = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, "DeviceClass", null);
-		deviceConfig.setDeviceClassname(deviceClassname);
-
-		return deviceConfig.build();
+		return DeviceConfig.builder(deviceName)
+				.setDeviceClassname(getDeviceClassname(deviceName))
+				.setAssignedAttributeCodes(assignedAttributeCodes)
+				.setParameterValueSupplier(this::getDeviceParamValue)
+				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames)
+				.setAssignedWarehouseIds(getDeviceWarehouseIds(deviceName))
+				.build();
 	}
 
 	/**
@@ -196,7 +194,7 @@ import de.metas.logging.LogManager;
 
 	private boolean isDeviceAvailableHost(final String deviceName)
 	{
-		final String availableOnSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + ".AvailableOn";
+		final String availableOnSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AvailableOn;
 		final Collection<String> availableForHosts = sysConfigBL.getValuesForPrefix(availableOnSysConfigPrefix, adClientId, adOrgId).values();
 		if (availableForHosts.isEmpty())
 		{
@@ -225,6 +223,56 @@ import de.metas.logging.LogManager;
 	{
 		final String paramValue = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, parameterName, defaultValue);
 		return paramValue;
+	}
+	
+	private Set<String> getDeviceAssignedAttributeCodes(final String deviceName)
+	{
+		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
+		final Collection<String> assignedAttributeCodes = sysConfigBL.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId).values();
+		if (assignedAttributeCodes.isEmpty())
+		{
+			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attribSysConfigPrefix);
+			return ImmutableSet.of();
+		}
+		
+		return ImmutableSet.copyOf(assignedAttributeCodes);
+	}
+
+	/**
+	 * @param deviceName
+	 * @return M_Warehouse_IDs
+	 */
+	private Set<Integer> getDeviceWarehouseIds(final String deviceName)
+	{
+		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
+		return sysConfigBL.getValuesForPrefix(sysconfigPrefix, adClientId, adOrgId)
+				.values()
+				.stream()
+				.map(warehouseIdStr -> {
+					try
+					{
+						return Integer.parseInt(warehouseIdStr);
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Failed parsing {} for {}*", warehouseIdStr, sysconfigPrefix, ex);
+						return null;
+					}
+				})
+				.filter(warehouseId -> warehouseId != null)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @param deviceName
+	 * @return device implementation classname; never returns null
+	 * @throws DeviceConfigException if no classname was found
+	 */
+	private String getDeviceClassname(final String deviceName)
+	{
+		final String deviceClassname = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, DEVICE_PARAM_DeviceClass, null);
+		// note: assume not null because in that case, the method above would fail
+		return deviceClassname;
 	}
 
 	private Set<String> getDeviceRequestClassnames(final String deviceName, final String attributeCode)

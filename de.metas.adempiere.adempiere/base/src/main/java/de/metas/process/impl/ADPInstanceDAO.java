@@ -368,7 +368,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
-				+ "ORDER BY Log_ID";
+				// Order chronologically
+				// note: sometimes Log_ID=0, sometimes P_Date is null so we sort by both to make sure we will have a chronologically order.
+				+ "ORDER BY Log_ID, P_Date";
 		final Object[] sqlParams = new Object[] { adPInstanceId };
 
 		PreparedStatement pstmt = null;
@@ -382,8 +384,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			final List<ProcessInfoLog> logs = new ArrayList<>();
 			while (rs.next())
 			{
-				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				final int logId = rs.getInt(1);
+				final Timestamp date = rs.getTimestamp(2);
+				final BigDecimal number = rs.getBigDecimal(3);
+				final String message = rs.getString(4);
+				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message);
 				log.markAsSavedInDB();
 				logs.add(log);
 			}

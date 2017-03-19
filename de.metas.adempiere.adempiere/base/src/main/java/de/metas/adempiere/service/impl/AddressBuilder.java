@@ -32,7 +32,9 @@ import java.util.regex.Pattern;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -51,6 +53,28 @@ public class AddressBuilder
 {
 	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
 	
+	/**
+	 *  org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
+	 */
+	private final I_AD_Org org;
+	private String adLanguage;
+	
+	private int getAD_Org_ID()
+	{
+		return org.getAD_Org_ID();
+	}
+
+	private String getAD_Language()
+	{
+		return adLanguage;
+	}
+
+	public AddressBuilder setLanguage(String language)
+	{
+		this.adLanguage = language;
+		return this;
+	}
+
 	public enum Uservars
 	{
 		Title("TI"),
@@ -71,9 +95,10 @@ public class AddressBuilder
 		}
 	}
 		
-	public AddressBuilder()
+	public AddressBuilder(final I_AD_Org org)
 	{
 		super();
+		this.org = org;
 	}
 
 	/**
@@ -88,9 +113,8 @@ public class AddressBuilder
 	 */
 	public String buildAddressString(final I_C_Location location, boolean isLocalAddress, String bPartnerBlock, String userBlock)
 	{
-		final I_C_Country country = location.getC_Country();
+		final String displaySequence =  getDisplaySequence(location.getC_Country(), isLocalAddress);
 
-		final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
 		String inStr = displaySequence;
 		final StringBuilder outStr = new StringBuilder();
 
@@ -415,7 +439,7 @@ public class AddressBuilder
 		String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
 
 		// Addressblock
-		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(location.getC_Location(), bPartnerBlock, userBlock);
+		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(location.getC_Location(), bPartner, bPartnerBlock, userBlock);
 
 		return fullAddressBlock;
 	}
@@ -617,7 +641,8 @@ public class AddressBuilder
 			if (ds == null || ds.length() == 0)
 			{
 				I_C_Country country = Services.get(ICountryDAO.class).getDefault(ctx);
-				ds = isLocal ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
+				
+				ds = getDisplaySequence(country, isLocal);
 			}
 
 			final List<String> bracketsTxt = extractBracketsString(ds);
@@ -719,6 +744,21 @@ public class AddressBuilder
 		}
 
 		return bracketsTxt;
+	}
+	
+	private String getDisplaySequence(final I_C_Country country , final boolean isLocalAddress)
+	{
+		final I_C_Country_Sequence countrySequence = Services.get(ICountryDAO.class).retrieveCountrySequence(country, getAD_Org_ID(), getAD_Language());
+		if(countrySequence == null)
+		{
+			final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
+			return displaySequence;
+		}
+		else
+		{
+			final String displaySequence = isLocalAddress ? countrySequence.getDisplaySequenceLocal() : countrySequence.getDisplaySequence();
+			return displaySequence;
+		}
 	}
 
 }

@@ -154,7 +154,6 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 			return AllocationUtils.nullResult();
 		}
 
-		final boolean itemOfAggregateHU = handlingUnitsBL.isAggregateHU(vhuItem.getM_HU());
 		final BigDecimal qtyToAllocate = request.getQty();
 		final BigDecimal qtyAllocated = requestActual.getQty();
 
