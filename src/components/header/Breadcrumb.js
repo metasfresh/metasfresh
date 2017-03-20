@@ -28,7 +28,7 @@ class Breadcrumb extends Component {
 
     renderBtn = (menu, index) => {
         const {
-            handleMenuOverlay, menuOverlay, windowType, siteName, openModal, isDocumentNotSaved
+            handleMenuOverlay, menuOverlay, windowType, siteName, openModal
         } = this.props;
 
         return (<div key={index}>
@@ -63,7 +63,6 @@ class Breadcrumb extends Component {
                         siteName={siteName}
                         handleMenuOverlay={handleMenuOverlay}
                         openModal={openModal}
-                        isDocumentNotSaved={isDocumentNotSaved}
                     />
                 }
             </div>

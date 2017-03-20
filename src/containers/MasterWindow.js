@@ -15,6 +15,7 @@ import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
+import {push} from 'react-router-redux';
 
 class MasterWindow extends Component {
     constructor(props){
@@ -22,41 +23,37 @@ class MasterWindow extends Component {
 
         this.state = {
             newRow: false,
-            modalTitle: null,
-            saved: false
+            modalTitle: null
         }
-
-        // window.addEventListener("beforeunload", function (event) {
-        //     console.log("hellooww")
-        //     event.returnValue = "Hellooww"
-        // })
     }
 
     componentDidUpdate(prevProps) {
         const {master} = this.props;
-        // console.log(master.saveStatus.saved);
+        const isDocumentNotSaved = !master.saveStatus.saved;
 
-        // console.log('state '+this.state.saved);
-        // console.log(prevProps.master.saveStatus.saved);
-        // console.log(master.saveStatus.saved);
-        
-        // if(prevProps.master.saveStatus.saved != master.saveStatus.saved){
-        //     console.log('set state');
-        //     this.setState({
-        //         saved: master.saveStatus.saved
-        //     })
-        // }
-
-        if(master.saveStatus.saved) {
-            // console.log('removed');
-            window.removeEventListener("beforeunload", function (event) {
-            })
+        if(isDocumentNotSaved) {
+            window.addEventListener("beforeunload", this.functionToRun)
         } else {
-            // console.log('added');
-            window.addEventListener("beforeunload", function (event) {
-                event.returnValue = "";
-            })
+            window.removeEventListener("beforeunload", this.functionToRun)
         }
+    }
+
+    componentWillUnmount() {
+        const { master } = this.props;
+        const isDocumentNotSaved = !master.saveStatus.saved;
+
+        if(isDocumentNotSaved){
+            const result = window.confirm('Do you really want to leave?');
+
+            if(!result){
+                this.context.router.goBack();
+            }
+        }
+        
+    }
+
+    functionToRun = (e) => {
+        e.returnValue = "";
     }
 
     closeModalCallback = (isNew) => {
@@ -137,8 +134,6 @@ class MasterWindow extends Component {
             master.data,
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
-
-        console.log(master.saveStatus.saved);
 
         return (
             <Container
@@ -264,6 +259,10 @@ function mapStateToProps(state) {
         rawModal,
         indicator
     }
+}
+
+MasterWindow.contextTypes = {
+    router: React.PropTypes.object.isRequired
 }
 
 MasterWindow = connect(mapStateToProps)(MasterWindow)

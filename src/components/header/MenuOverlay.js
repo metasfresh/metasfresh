@@ -238,10 +238,6 @@ class MenuOverlay extends Component {
     }
 
     linkClick = (item) => {
-
-        console.log('click');
-        console.log(item);
-
         const {dispatch} = this.props;
         if(item.elementId && item.type == 'newRecord') {
             this.handleNewRedirect(item.elementId)

@@ -21,7 +21,7 @@ class MenuOverlayContainer extends Component {
         const {
             children, elementId, caption, type, handleClickOnFolder, handleRedirect,
             handleNewRedirect, handlePath, printChildren, deep, back, handleMenuOverlay,
-            openModal, isDocumentNotSaved
+            openModal
         } = this.props;
 
         return (
@@ -53,7 +53,6 @@ class MenuOverlayContainer extends Component {
                         handleMenuOverlay={handleMenuOverlay}
                         printChildren={false}
                         openModal={openModal}
-                        isDocumentNotSaved={isDocumentNotSaved}
                         />
                 }
 
@@ -79,7 +78,6 @@ class MenuOverlayContainer extends Component {
                             back={back}
                             handleMenuOverlay={handleMenuOverlay}
                             openModal={openModal}
-                            isDocumentNotSaved={isDocumentNotSaved}
                             {...subitem}
                         />
                 )}
