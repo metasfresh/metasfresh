@@ -3,21 +3,14 @@
 **/.classpath
 **/.project
 **/bin/
-**/metasfresh.properties
+**/metasfresh*.properties
 
 *.launch
 
-metasfresh-webui-api/activemq-data/
-metasfresh-webui-api/data/
-metasfresh-webui-api/log/
-metasfresh-webui-api/tmp/
-
-metasfresh-webui-vaadin/log/
-metasfresh-webui-vaadin/activemq-data/
-metasfresh-webui-vaadin/src/main/webapp/VAADIN/themes/metasfresh/styles.css
-metasfresh-webui-vaadin/src/main/webapp/VAADIN/widgetsets/
-
-metasfresh-webui-vaadin/src/main/webapp/VAADIN/themes/metasfresh/styles.scss.cache
+/activemq-data/
+/data/
+/log/
+/tmp/
 
 hs_err*.log
 
