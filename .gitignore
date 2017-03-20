@@ -10,6 +10,7 @@
 **/metasfresh.properties
 **/de.metas.endcustomer.mf15.swingui/log/
 **/de.metas.endcustomer.mf15.serverRoot/log/
+**/de.metas.endcustomer.mf15.serverRoot/data/
 **/activemq-data/
 
 **/.~lock*
