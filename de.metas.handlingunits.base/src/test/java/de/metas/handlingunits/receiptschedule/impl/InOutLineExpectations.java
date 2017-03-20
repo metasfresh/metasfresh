@@ -51,7 +51,7 @@ public class InOutLineExpectations<ParentExpectationType> extends AbstractHUExpe
 	public static InOutLineExpectations<Object> newExpectations()
 	{
 		final InOutLineExpectations<Object> inoutLineExpectations = new InOutLineExpectations<>(null);
-		inoutLineExpectations.setContext(new PlainContextAware(Env.getCtx()));
+		inoutLineExpectations.setContext(PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx()));
 		return inoutLineExpectations;
 	}
 

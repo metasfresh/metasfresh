@@ -50,7 +50,6 @@ public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 
 	public AbstractHUDocumentLine(final IProductStorage storage, final Object referenceModel)
 	{
-		super();
 		Check.assumeNotNull(storage, "storage not null");
 		this.storage = storage;
 

@@ -213,9 +213,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			{
 				currentHU = null;
 			}
-
 		}
-
 		return result;
 	}
 

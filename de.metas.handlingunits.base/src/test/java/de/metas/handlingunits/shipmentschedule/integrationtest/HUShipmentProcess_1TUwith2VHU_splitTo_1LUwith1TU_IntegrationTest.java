@@ -37,11 +37,9 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Locator;
 import org.junit.Assert;
 import org.w3c.dom.Node;
 
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.expectations.HUsExpectation;

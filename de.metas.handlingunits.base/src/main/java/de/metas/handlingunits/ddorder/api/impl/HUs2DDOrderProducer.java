@@ -7,13 +7,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -530,7 +531,7 @@ public class HUs2DDOrderProducer
 
 		public void addDDOrderLineCandidate(final DDOrderLineCandidate candidateToAdd)
 		{
-			Check.assume(Check.equals(this.aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {} \nBut it was: {}", this.aggregationKey, candidateToAdd.getAggregationKey());
+			Check.assume(Objects.equals(this.aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {} \nBut it was: {}", this.aggregationKey, candidateToAdd.getAggregationKey());
 
 			this.hus.addAll(candidateToAdd.getM_HUs());
 

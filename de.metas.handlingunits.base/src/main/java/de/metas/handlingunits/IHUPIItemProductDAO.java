@@ -144,6 +144,16 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	List<I_M_HU_PI_Item_Product> retrieveAllForProduct(I_M_Product product);
 
 	/**
+	 * Invoke {@link #retrieveTUs(Properties, I_M_Product, I_C_BPartner, boolean)} with {@code allowInfiniteCapacity = false}.
+	 * 
+	 * @param ctx
+	 * @param cuProduct
+	 * @param bpartner
+	 * @return
+	 */
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner);
+
+	/**
 	 * Retrieve available {@link I_M_HU_PI_Item_Product}s for TUs which are matching our product and bpartner.
 	 *
 	 * NOTE: the default bpartner's TU, if any, will be returned first.
@@ -151,8 +161,9 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param ctx
 	 * @param cuProduct
 	 * @param bpartner
+	 * @param allowInfiniteCapacity
 	 * @return
 	 */
-	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner);
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner, boolean allowInfiniteCapacity);
 
 }

@@ -74,7 +74,7 @@ public interface IHUIterator
 	 */
 	IHUContext getHUContext();
 
-	void setHUContext(IHUContext huContext);
+	IHUIterator setHUContext(IHUContext huContext);
 
 	Properties getCtx();
 

@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.propagation.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
@@ -177,7 +178,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 			if (childAttributeSet.hasAttribute(attribute))
 			{
 				final Object valueSet = childAttributeSet.getValue(attribute);
-				if (Check.equals(valueSet, result.getSplitValue()))
+				if (Objects.equals(valueSet, result.getSplitValue()))
 				{
 					remainingValue = result.getRemainingValue();
 				}

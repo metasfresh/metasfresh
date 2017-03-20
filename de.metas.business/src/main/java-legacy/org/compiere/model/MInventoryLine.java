@@ -354,54 +354,6 @@ public class MInventoryLine extends X_M_InventoryLine
 	}	// afterSave
 
 	/**
-	 * Create Material Allocations for new Instances
-	 */
-	private void createMA()
-	{
-		MStorage[] storages = MStorage.getAll(getCtx(), getM_Product_ID(), getM_Locator_ID(), get_TrxName());
-
-		boolean allZeroASI = true;
-		for (int i = 0; i < storages.length; i++)
-		{
-			if (storages[i].getM_AttributeSetInstance_ID() != 0)
-			{
-				allZeroASI = false;
-				break;
-			}
-		}
-		if (allZeroASI)
-			return;
-
-		MInventoryLineMA ma = null;
-		BigDecimal sum = BigDecimal.ZERO;
-		for (int i = 0; i < storages.length; i++)
-		{
-			MStorage storage = storages[i];
-			if (storage.getQtyOnHand().signum() == 0)
-				continue;
-			if (ma != null
-					&& ma.getM_AttributeSetInstance_ID() == storage.getM_AttributeSetInstance_ID())
-			{
-				ma.setMovementQty(ma.getMovementQty().add(storage.getQtyOnHand()));
-			}
-			else
-			{
-				ma = new MInventoryLineMA(this,
-						0, // storage.getM_AttributeSetInstance_ID(),
-						storage.getQtyOnHand());
-			}
-			if (!ma.save())
-				;
-			sum = sum.add(storage.getQtyOnHand());
-		}
-		if (sum.compareTo(getQtyBook()) != 0)
-		{
-			log.warn("QtyBook=" + getQtyBook() + " corrected to Sum of MA=" + sum);
-			setQtyBook(sum);
-		}
-	}	// createMA
-
-	/**
 	 * Is Internal Use Inventory
 	 *
 	 * @return true if is internal use inventory

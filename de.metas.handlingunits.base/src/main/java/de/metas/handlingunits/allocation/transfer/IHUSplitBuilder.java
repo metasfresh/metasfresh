@@ -71,7 +71,8 @@ public interface IHUSplitBuilder
 	IHUSplitBuilder setCUProduct(I_M_Product product);
 
 	/**
-	 * Set the qty which we want to split off. Note that the BL will split less if the capacity of the "splitting target" is less.
+	 * Set the qty which we want to split off. Note that the BL will split less if the capacity of the "splitting target" is less.<br>
+	 * When we split, this {@code qty} is usually the "full" quantity of the split source.
 	 * 
 	 * @param qty the quantity of the product which we want to split.
 	 *            If we want to split 3 IFCOs with two of them containing 10 items each and the third IFCO containing 7 items, then this value is 27.

@@ -13,15 +13,14 @@ package de.metas.handlingunits.document.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -96,7 +95,7 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	}
 
 	/**
-	 * Creates allocations for HUs
+	 * Creates allocations for HUs. By allocations, we mean records that can later be represented by {@link IHUAllocations}. Current example is {@code M_ReceiptSchedule_Alloc}.
 	 *
 	 * @param luHU
 	 * @param tuHU
@@ -104,8 +103,11 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	 * @param uom
 	 * @param deleteOldTUAllocations if true, delete ALL old allocations between the TU and the document (be careful with this, as it might delete allocations which are still desired)
 	 */
-	protected abstract void createAllocation(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu,
-			final BigDecimal qtyToAllocate, final I_C_UOM uom,
+	protected abstract void createAllocation(final I_M_HU luHU, 
+			final I_M_HU tuHU, 
+			final I_M_HU vhu,
+			final BigDecimal qtyToAllocate, 
+			final I_C_UOM uom,
 			final boolean deleteOldTUAllocations);
 
 	/**
@@ -147,8 +149,8 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	}
 
 	@Override
-	public final void allocate(final I_M_HU luHU, 
-			final I_M_HU tuHU, 
+	public final void allocate(final I_M_HU luHU,
+			final I_M_HU tuHU,
 			final I_M_HU vhu,
 			final BigDecimal qtyToAllocate,
 			final I_C_UOM uom,
@@ -261,6 +263,5 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	{
 		return "AbstractHUAllocations [contextProvider=" + contextProvider + ", documentLineModel=" + documentLineModel + ", productStorage=" + productStorage + ", assignedHUs=" + assignedHUs + ", assignedHUsTrxName=" + assignedHUsTrxName + "]";
 	}
-
 
 }

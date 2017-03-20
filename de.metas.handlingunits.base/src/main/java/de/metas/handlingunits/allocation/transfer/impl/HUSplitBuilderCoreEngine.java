@@ -72,7 +72,7 @@ public class HUSplitBuilderCoreEngine
 	/**
 	 * Creates and returns a new instance. Note that all four parameters are mandatory.
 	 * 
-	 * @param huContextInitital an intitial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
+	 * @param huContextInitital an initial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
 	 * @param huToSplit
 	 * @param requestProvider a function which will be applied from within the {@link #performSplit()} method to get the actual request, using the "inner" mutable copy of {@code huContextInitital}.
 	 * @param destination
@@ -91,8 +91,11 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * If this instance's included {@link #destination} member is a {@link IHUProducerAllocationDestination}, then this method changes if by setting values from the included {@link #huToSplit}.
+	 * If this instance's included {@link #destination} member is a {@link IHUProducerAllocationDestination},
+	 * then this method changes that destination by setting values from the included {@link #huToSplit}.
 	 * Otherwise this method does nothing.
+	 * <p>
+	 * Note that this is <b>not</b> about attribute propagation.
 	 * 
 	 * @return
 	 * 
@@ -146,7 +149,8 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * Set a value to be passed to the {@link HULoader#setAllowPartialUnloads(boolean)} when {@link #performSplit()} is done. The default is {@code false} because of backwards compatibility.
+	 * Set a value to be passed to the {@link HULoader#setAllowPartialUnloads(boolean)} when {@link #performSplit()} is done.<br>
+	 * The default is {@code false} because of backwards compatibility.
 	 * 
 	 * @param allowPartialUnloads
 	 * @return

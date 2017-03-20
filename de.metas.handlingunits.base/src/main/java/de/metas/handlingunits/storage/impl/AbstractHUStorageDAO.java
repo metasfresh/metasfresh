@@ -25,6 +25,7 @@ package de.metas.handlingunits.storage.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
@@ -76,7 +77,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 			{
 				//
 				// Validated for null before with that Check
-				if (Check.equals(foundUOMType, storageUOMType))
+				if (Objects.equals(foundUOMType, storageUOMType))
 				{
 					//
 					// We don't care about it if it's the same UOMType

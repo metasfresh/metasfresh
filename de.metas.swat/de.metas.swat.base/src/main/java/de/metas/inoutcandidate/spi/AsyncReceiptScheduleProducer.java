@@ -53,6 +53,12 @@ public class AsyncReceiptScheduleProducer extends AbstractReceiptScheduleProduce
 
 		return null;
 	}
+	
+	@Override
+	public void updateReceiptSchedules(Object model)
+	{
+		throw new IllegalStateException("Update receipt schedules is supported to run synchronously");
+	}
 
 	@Override
 	public void inactivateReceiptSchedules(Object model)

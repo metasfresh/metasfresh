@@ -121,9 +121,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final void setHUContext(final IHUContext huContext)
+	public IHUIterator setHUContext(final IHUContext huContext)
 	{
 		_huContext = huContext;
+		return this;
 	}
 
 	@Override

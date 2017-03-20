@@ -241,6 +241,31 @@ public interface I_WEBUI_KPI
     public static final String COLUMNNAME_ES_TimeRange = "ES_TimeRange";
 
 	/**
+	 * Set Time range end.
+	 * Time range's ending offset (relative to now)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End);
+
+	/**
+	 * Get Time range end.
+	 * Time range's ending offset (relative to now)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getES_TimeRange_End();
+
+    /** Column definition for ES_TimeRange_End */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_TimeRange_End = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ES_TimeRange_End", null);
+    /** Column name ES_TimeRange_End */
+    public static final String COLUMNNAME_ES_TimeRange_End = "ES_TimeRange_End";
+
+	/**
 	 * Set Elasticsearch Type.
 	 *
 	 * <br>Type: String

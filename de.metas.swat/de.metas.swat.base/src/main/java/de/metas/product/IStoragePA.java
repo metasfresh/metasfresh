@@ -24,39 +24,14 @@ package de.metas.product;
 
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.List;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Storage;
-import org.compiere.model.MStorage;
 
 public interface IStoragePA extends ISingletonService {
 
 	Collection<I_M_Storage> retrieveStorages(int productId, String trxName);
-
-	/**
-	 * Retrieves all active {@link I_M_Storage}s that have the given product and
-	 * (indirectly via {@link I_M_Locator}) warehouse.
-	 * 
-	 * Also retrieves storeges with <code>QtyOnHand=0</code>, which is a
-	 * difference to
-	 * {@link MStorage#getWarehouse(java.util.Properties, int, int, int, Timestamp, boolean, boolean, int, String)}
-	 * .
-	 * 
-	 * @param productId
-	 * @param warehouseId
-	 * @param trxName
-	 * @return
-	 */
-	Collection<I_M_Storage> retrieveAllStorages(int productId, int warehouseId,			String trxName);
-
-	List<I_M_Storage> retrieveStorages(int warehouseId, int productId,
-			int attributeSetInstanceId, int attributeSetId,
-			boolean allAttributeInstances, Timestamp minGuaranteeDate,
-			boolean fiFo, String trxName);
 
 	int retrieveWarehouseId(I_M_Storage storage, String trxName);
 

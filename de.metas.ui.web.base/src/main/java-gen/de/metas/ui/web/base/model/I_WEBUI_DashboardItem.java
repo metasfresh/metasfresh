@@ -99,6 +99,56 @@ public interface I_WEBUI_DashboardItem
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Time range.
+	 * Time range using format 'PnDTnHnMn.nS'
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setES_TimeRange (java.lang.String ES_TimeRange);
+
+	/**
+	 * Get Time range.
+	 * Time range using format 'PnDTnHnMn.nS'
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getES_TimeRange();
+
+    /** Column definition for ES_TimeRange */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_ES_TimeRange = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "ES_TimeRange", null);
+    /** Column name ES_TimeRange */
+    public static final String COLUMNNAME_ES_TimeRange = "ES_TimeRange";
+
+	/**
+	 * Set Time range end.
+	 * Time range's ending offset (relative to now)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End);
+
+	/**
+	 * Get Time range end.
+	 * Time range's ending offset (relative to now)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getES_TimeRange_End();
+
+    /** Column definition for ES_TimeRange_End */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_ES_TimeRange_End = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "ES_TimeRange_End", null);
+    /** Column name ES_TimeRange_End */
+    public static final String COLUMNNAME_ES_TimeRange_End = "ES_TimeRange_End";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *

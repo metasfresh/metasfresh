@@ -15,7 +15,6 @@ import org.compiere.model.X_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUTrxDAO;

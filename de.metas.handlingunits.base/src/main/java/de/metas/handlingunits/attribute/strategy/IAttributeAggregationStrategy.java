@@ -32,7 +32,7 @@ import org.compiere.model.I_M_Attribute;
 public interface IAttributeAggregationStrategy extends IAttributeStrategy
 {
 	/**
-	 * @param attribute the "child" attribute whose value shall be aggregated.
+	 * @param attribute the "child" attribute whose value shall be aggregated to the parent.
 	 * @param valueOld the old "parent" value into which the given <code>valueDelta</code> shall be aggregated.
 	 * @param valueDelta the value (typically coming from the given <code>attribute</code>) the shall be aggregated to the given <code>valueOld</code>.
 	 * @return value the new value after <code>valueDelta</code> has been aggregated/integrated into <code>valueOld</code>.
