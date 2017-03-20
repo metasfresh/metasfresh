@@ -13,18 +13,8 @@ class AttributesDropdown extends Component {
         super(props);
 
         this.state = {
-            shouldPropagateClickOutside: false,
+            clickedOutside: false,
             focused: false
-        }
-    }
-
-    componentWillReceiveProps = () => {
-        const {shouldPropagateClickOutside} = this.state;
-
-        if(shouldPropagateClickOutside){
-            const {onClickOutside} = this.props;
-
-            onClickOutside();
         }
     }
 
@@ -37,28 +27,51 @@ class AttributesDropdown extends Component {
 
         //we need to wait for fetching all of PATCH fields on blur
         //to complete on updated instance
-        if(focused){
-            this.setState(Object.assign({}, this.state, {
-                shouldPropagateClickOutside: true
-            }))
-        }else{
-            onClickOutside();
+        if(!focused){
+            return onClickOutside();
         }
+
+        this.setState({
+            clickedOutside: true
+        })
     }
 
     handleFocus = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             focused: true
-        }))
+        })
     }
 
-    handleBlur = (prop, value, attrId) => {
-        const {handlePatch} = this.props;
+    handlePatch = (prop, value, attrId) => {
+        const {handlePatch, onClickOutside} = this.props;
 
         handlePatch(prop, value, attrId, () => {
-            this.setState(Object.assign({}, this.state, {
+            const {focused, clickedOutside} = this.state;
+            if (!focused && clickedOutside){
+                onClickOutside();
+            }
+
+            this.setState({
                 focused: false
-            }));
+            });
+        });
+    }
+
+    handleBlur = (willPatch) => {
+        const { clickedOutside } = this.state;
+        const { onClickOutside } = this.props;
+
+        if (!willPatch && !clickedOutside){
+            return;
+        }
+
+        this.setState({
+            focused: false,
+            clickedOutside: clickedOutside
+        }, () => {
+            if (!willPatch){
+                onClickOutside();
+            }
         });
     }
 
@@ -80,7 +93,8 @@ class AttributesDropdown extends Component {
                     key={id}
                     type={item.type}
                     caption={item.caption}
-                    handlePatch={(prop, value) => this.handleBlur(prop, value, attrId)}
+                    handleBlur={this.handleBlur}
+                    handlePatch={(prop, value) => this.handlePatch(prop, value, attrId)}
                     handleFocus={this.handleFocus}
                     handleChange={handleChange}
                     tabIndex={tabIndex}
@@ -105,6 +119,10 @@ AttributesDropdown.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-AttributesDropdown = connect()(onClickOutside(AttributesDropdown))
+AttributesDropdown = connect(
+    state => ({
+        pendingIndicator: state.windowHandler.indicator
+    })
+)(onClickOutside(AttributesDropdown))
 
 export default AttributesDropdown

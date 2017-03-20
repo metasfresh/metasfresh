@@ -210,7 +210,6 @@ class DocumentList extends Component {
             })
         });
     }
-
     /*
      *  If viewId exist, than browse that view.
      */
@@ -326,7 +325,8 @@ class DocumentList extends Component {
 
         const {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus
+            fetchQuickActionsOnInit, isModal, processStatus, isSideListShow,
+            closeSideList
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);
@@ -381,6 +381,9 @@ class DocumentList extends Component {
                             onDoubleClick={(id) => {
                                 !isModal &&
                                 dispatch(push('/window/' + windowType + '/' + id))
+                                if(isSideListShow) {
+                                    closeSideList();
+                                }
                             }}
                             isModal={isModal}
                             size={data.size}

@@ -7,74 +7,160 @@ class PieChartComponent extends Component {
     }
 
     componentDidMount() {
-        var data = [
-            { label: 'Alice', value: 12 },
-            { label: 'Bob', value: 9 },
-            { label: 'Carol', value: 14 },
-            { label: 'Dwayne', value: 15 },
-            { label: 'Anne', value: 8 },
-            { label: 'Robin', value: 28 },
-            { label: 'Eve', value: 12 },
-            { label: 'Karen', value: 6 },
-            { label: 'Lisa', value: 22 },
-            { label: 'Tom', value: 18 }
-        ];
+        const {data, responsive, colors} = this.props;
 
-        var color = d3.scaleOrdinal()
-            .range(['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00']);
+        const color = d3.scaleOrdinal()
+            .range(colors);
 
-        var dimensions = this.setDimensions();
-        this.drawChart(dimensions.width, dimensions.height,
-                                dimensions.pie, dimensions.arc, data, color);
+        const dimensions = this.setDimensions();
+        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie,
+                        dimensions.arc, data, color, dimensions.radius);
+        if(responsive){
+            this.addResponsive(data, color);
+        }
 
     }
 
-    setDimensions = (width=800, height=600) => {
-        var radius = Math.min(width, height) / 2;
+    shouldComponentUpdate(nextProps){
+        return !(this.props.reRender && !nextProps.reRender)
+    }
 
-        var arc = d3.arc()
-            .outerRadius(radius * 0.8)
-            .innerRadius(radius * 0.4);
+    componentDidUpdate() {
+        const {data, colors, chartClass} = this.props;
+        const chartWrapp = document.getElementsByClassName(chartClass+'-wrapper')[0];
+        const color = d3.scaleOrdinal()
+            .range(colors);
+        this.clearChart();
+        const dimensions = this.setDimensions(chartWrapp.offsetWidth);
+        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie,
+                            dimensions.arc, data, color);
+    }
 
-        var pie = d3.pie()
+    setDimensions = (width=400) => {
+        const {chartClass, responsive, fields, height} = this.props;
+        let wrapperWidth = 0;
+        let chartWidth = width;
+        let chartHeight = height;
+
+        if(responsive) {
+            wrapperWidth = document.getElementsByClassName(chartClass+'-wrapper')[0].offsetWidth;
+            if(wrapperWidth<height){
+                chartWidth = wrapperWidth;
+            }
+
+        }
+        const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
+        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
+        const pie = d3.pie()
             .sort(null)
-            .value(function(d) { return d.value; });
+            .value( d => d[fields[0].fieldName]);
 
         return {
-                width: width,
-                height:height,
+                wrapperWidth: wrapperWidth,
+                width: chartWidth,
+                height: chartHeight,
                 radius: radius,
                 arc: arc,
                 pie: pie
             };
     }
+    drawChart = (wrapperWidth, width, height, pie, arc, data, color) => {
+        const {chartClass, fields} = this.props;
 
-    drawChart = (width, height, pie, arc, data, color) => {
-        var svg = d3.select('body').append('svg')
+        const svg = d3.select('.' + chartClass)
+            .attr('width', width)
+            .attr('height', height)
+            .append('g');
+
+        const chart = svg
             .attr('width', width)
             .attr('height', height)
             .append('g')
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+            .attr('class', 'chart')
+            .attr('transform', 'translate(' + wrapperWidth / 2 + ',' + 0.66*height + ')');
 
-        var g = svg.selectAll('.arc')
+        chart.append('g')
+            .attr('class', 'slices');
+        chart.append('g')
+            .attr('class', 'labels');
+        chart.append('g')
+            .attr('class', 'lines');
+
+        const g = d3.select('.slices').selectAll('.arc')
             .data(pie(data))
             .enter().append('g')
             .attr('class', 'arc');
 
         g.append('path')
             .attr('d', arc)
-            .style('fill', function(d) { return color(d.data.value); });
+            .attr('class', 'pie-path')
+            .style('fill', d => color(d.data[fields[0].fieldName]));
 
-        g.append('text')
-            .attr('transform', function(d) { return 'translate(' + arc.centroid(d) + ')'; })
-            .attr('dy', '.35em')
-            .text(function(d) { return d.data.label; });
-    }
+        this.drawLegend(svg, width, height, color);
+    };
+
+    drawLegend = (svg, width, height, color) => {
+        const {groupBy, data} = this.props;
+
+        const legend = svg
+            .attr('width', width)
+            .attr('height', 0.30*height)
+            .append('g')
+            .attr('class', 'legends')
+            .attr('transform', 'translate(' + 20 + ',' + 20 + ')');
+
+        const legendRectSize = 18;
+        const legendSpacing = 4;
+
+        const legendItem = legend.selectAll('.legend')
+        .data(color.domain())
+        .enter()
+        .append('g')
+        .attr('class', 'legend')
+        .attr('transform', function(d, i) {
+            const height = legendRectSize + legendSpacing;
+            const vert = i * height;
+            return 'translate(' + 0 + ',' + vert + ')';
+        });
+
+        legendItem.append('rect')
+        .attr('width', legendRectSize)
+        .attr('height', legendRectSize)
+        .style('fill', color)
+        .style('stroke', color);
+
+        legendItem.append('text')
+        .attr('x', legendRectSize + legendSpacing)
+        .attr('y', legendRectSize - legendSpacing)
+        .attr('font-size', 12)
+        .text(function(d, i) {
+            return data[i][groupBy.fieldName] + (groupBy.unit ? ' [' + groupBy.unit + ']' : '');
+        });
+    };
+
+    addResponsive = (data, color) => {
+        const {chartClass} = this.props;
+        const chartWrap = document.getElementsByClassName(chartClass+'-wrapper')[0];
+
+        d3.select(window)
+            .on('resize.'+chartClass, () => {
+                this.clearChart();
+                const dimensions = this.setDimensions(chartWrap.offsetWidth);
+                this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height,
+                                dimensions.pie, dimensions.arc, data, color);
+            });
+    };
+
+    clearChart = () => {
+        const {chartClass} = this.props;
+        document.getElementsByClassName(chartClass)[0].childNodes[0].remove();
+    };
 
     render() {
+        const {chartClass} = this.props;
         return (
-            <div>
-                <svg className="piechart"></svg>
+            <div className={chartClass+'-wrapper' + ' chart-wrapper'}>
+                <svg className={chartClass} />
             </div>
         );
     }

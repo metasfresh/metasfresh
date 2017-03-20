@@ -1,38 +1,81 @@
 .indicators-wrapper {
-    border: 1px solid $brand-border-color;
     border-radius: 3px;
     overflow: hidden;
-    height: 130px;
     margin: .5rem;
-    font-size: 0;
+    display: flex;
 }
 
 .indicator {
-    display: inline-block;
     width: 25%;
-    height: 100%;
+    border: 1px solid $brand-border-color;
+    border-right: none;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    height: 130px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.indicator:last-child {
+    border-right: 1px solid $brand-border-color;
+}
+
+.indicator-value {
+    font-size: 2.2rem;
+    font-weight: bold;
+    text-align: center;
+    flex: 2;
+    display: flex;
+    align-items: flex-end;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.indicator-caption {
+    float: right;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background: $brand-super-light-color;
+    padding: 5px;
+}
+
+.indicator-kpi-caption {
+    font-size: 0.8rem;
+    text-align: center;
+    flex: 1;
+    vertical-align: middle;
+    display: flex;
 }
 
 
 
 @media screen and (max-width: 991px) {
     .indicator {
-        width: 50%;
-        height: 130px;
-        border: 0 !important;
+        border-right: 1px solid $brand-border-color;
+        width: calc(50% - 1rem);
+        margin: .5rem;
         display: inline-block;
+        text-align: center;
+        padding: 20px;
+    }
+    .indicators-wrapper {
+        margin: 0;
+        display: block;
+    }
+    .indicator-value {
+        display: block;
+    }
+    .indicator-kpi-caption {
+        display: block;
     }
 }
 
 @media screen and (max-width: 768px) {
-    .indicators-wrapper {
-        height: 100%;
-    }
     .indicator {
-        width: 100%;
+        width: calc(100% - 1rem);
         height: 130px;
-        border: 0 !important;
-        display: block;
     }
 }
 

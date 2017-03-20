@@ -114,10 +114,11 @@ class Breadcrumb extends Component {
 
                     {siteName && <div className="divider">/</div>}
 
-                    {siteName && <div className="hidden-xs-down">
-                        <span className="header-item icon-sm">{siteName}</span>
-                    </div>}
-
+                    {siteName &&
+                        <div>
+                            <span className="header-item icon-sm">{siteName}</span>
+                        </div>
+                    }
                 </div>
             </div>
 

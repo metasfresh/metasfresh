@@ -497,9 +497,9 @@ class Table extends Component {
         }, () => {
             dispatch(
                 deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected)
-            ).then(() => {
+            ).then(response => {
                 if(docId){
-                    dispatch(deleteLocal(tabid, selected, 'master'))
+                    dispatch(deleteLocal(tabid, selected, 'master', response))
                 } else {
                     updateDocList();
                 }
