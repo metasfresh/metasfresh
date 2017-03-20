@@ -17,6 +17,9 @@ class Container extends Component {
             showIndicator, isDocumentNotSaved
         } = this.props;
 
+        console.log('---');
+        console.log(isDocumentNotSaved);
+
         return (
             <div>
                 <Header

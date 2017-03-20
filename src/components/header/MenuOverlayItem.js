@@ -15,6 +15,8 @@ class MenuOverlayItem extends Component {
         if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
              document.getElementsByClassName('js-menu-overlay')[0].focus();
         }
+console.log('-------');
+        console.log(this.props.isDocumentNotSaved);
     }
 
     clickedItem = (e, elementId, nodeId, type ) => {
@@ -34,9 +36,23 @@ class MenuOverlayItem extends Component {
     }
 
     handleClick = (elementId) => {
-        const {handleRedirect} = this.props;
-        handleRedirect(elementId);
-        this.renderBreadcrumb(elementId)
+        const {isDocumentNotSaved} = this.props;
+        console.log('handleClick');
+        if(isDocumentNotSaved){
+            const result = window.confirm('Do you really want to leave?');
+            console.log(result);
+            if(result){
+                const {handleRedirect} = this.props;
+                handleRedirect(elementId);
+                this.renderBreadcrumb(elementId)
+            }
+        }else {
+            const {handleRedirect} = this.props;
+            handleRedirect(elementId);
+            this.renderBreadcrumb(elementId)
+        }
+        
+        
     }
 
     handleKeyDown = (e) => {

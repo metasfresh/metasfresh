@@ -22,7 +22,40 @@ class MasterWindow extends Component {
 
         this.state = {
             newRow: false,
-            modalTitle: null
+            modalTitle: null,
+            saved: false
+        }
+
+        // window.addEventListener("beforeunload", function (event) {
+        //     console.log("hellooww")
+        //     event.returnValue = "Hellooww"
+        // })
+    }
+
+    componentDidUpdate(prevProps) {
+        const {master} = this.props;
+        // console.log(master.saveStatus.saved);
+
+        // console.log('state '+this.state.saved);
+        // console.log(prevProps.master.saveStatus.saved);
+        // console.log(master.saveStatus.saved);
+        
+        // if(prevProps.master.saveStatus.saved != master.saveStatus.saved){
+        //     console.log('set state');
+        //     this.setState({
+        //         saved: master.saveStatus.saved
+        //     })
+        // }
+
+        if(master.saveStatus.saved) {
+            // console.log('removed');
+            window.removeEventListener("beforeunload", function (event) {
+            })
+        } else {
+            // console.log('added');
+            window.addEventListener("beforeunload", function (event) {
+                event.returnValue = "";
+            })
         }
     }
 
@@ -104,6 +137,8 @@ class MasterWindow extends Component {
             master.data,
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
+
+        console.log(master.saveStatus.saved);
 
         return (
             <Container

@@ -284,6 +284,7 @@ class Header extends Component {
                                     menuOverlay={menuOverlay}
                                     handleMenuOverlay={this.handleMenuOverlay}
                                     openModal={this.openModal}
+                                    isDocumentNotSaved={isDocumentNotSaved}
                                 />
 
                             </div>
