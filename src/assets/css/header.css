@@ -313,6 +313,12 @@
     top:55px;
 }
 
+@media screen and (max-width: 543px){
+    .menu-overlay {
+        top: 118px;
+    }
+}
+
 .menu-overlay-body {
     padding: 1rem 1.2rem 1.8rem 1.2rem;
     min-height: 400px;
