@@ -17,7 +17,9 @@ const initialState = {
         modalType: '',
         isAdvanced: false,
         viewDocumentIds: null,
-        triggerField: null
+        triggerField: null,
+        saveStatus: {},
+        validStatus: {}
     },
     rawModal: {
         visible: false,
