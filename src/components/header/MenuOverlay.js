@@ -186,7 +186,7 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
         const {path} = this.state;
-        const {handleMenuOverlay, isDocumentNotSaved} = this.props;
+        const {handleMenuOverlay} = this.props;
         return (
              <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
@@ -209,7 +209,6 @@ class MenuOverlay extends Component {
                             parent={node}
                             back={e => this.handleClickBack(e)}
                             handleMenuOverlay={handleMenuOverlay}
-                            isDocumentNotSaved={isDocumentNotSaved}
                             {...item}
                         />
                     )}
@@ -352,7 +351,6 @@ class MenuOverlay extends Component {
                                             handlePath={this.handlePath}
                                             handleMenuOverlay={handleMenuOverlay}
                                             openModal={openModal}
-                                            isDocumentNotSaved={isDocumentNotSaved}
                                             {...result}
                                         />
                                     )}

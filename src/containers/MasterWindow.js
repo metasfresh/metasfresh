@@ -15,7 +15,6 @@ import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
-import {push} from 'react-router-redux';
 
 class MasterWindow extends Component {
     constructor(props){
@@ -27,14 +26,25 @@ class MasterWindow extends Component {
         }
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidMount(){
         const {master} = this.props;
         const isDocumentNotSaved = !master.saveStatus.saved;
 
-        if(isDocumentNotSaved) {
-            window.addEventListener("beforeunload", this.functionToRun)
-        } else {
-            window.removeEventListener("beforeunload", this.functionToRun)
+        if(isDocumentNotSaved){
+            window.addEventListener('beforeunload', this.confirm);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const {master} = this.props;
+        const isDocumentNotSaved = !master.saveStatus.saved;
+        const isDocumentSaved = master.saveStatus.saved;
+
+        if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
+            window.addEventListener('beforeunload', this.confirm)
+        }
+        if (!prevProps.master.saveStatus.saved && isDocumentSaved) {
+            window.removeEventListener('beforeunload', this.confirm)
         }
     }
 
@@ -46,14 +56,14 @@ class MasterWindow extends Component {
             const result = window.confirm('Do you really want to leave?');
 
             if(!result){
+                window.removeEventListener('beforeunload', this.confirm)
                 this.context.router.goBack();
             }
         }
-        
     }
 
-    functionToRun = (e) => {
-        e.returnValue = "";
+    confirm = (e) => {
+        e.returnValue = '';
     }
 
     closeModalCallback = (isNew) => {
