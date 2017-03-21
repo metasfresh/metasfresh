@@ -103,11 +103,9 @@ export function deleteNotification(key){
 
 export function updateUri(pathname, query, prop, value) {
     return (dispatch) => {
-        let url = pathname;
-        url += '?';
+        let url = pathname + '?';
 
-        // add new prop
-        // or overwrite existing
+        // add new prop or overwrite existing
         query[prop] = value;
 
         const queryKeys = Object.keys(query);

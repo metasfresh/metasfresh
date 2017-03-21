@@ -187,6 +187,10 @@ class MasterWindow extends Component {
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
+                        isDocumentNotSaved={
+                            !modal.saveStatus.saved &&
+                            !modal.validStatus.initialValue
+                        }
                      />
                  }
                  {rawModal.visible &&

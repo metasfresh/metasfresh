@@ -259,7 +259,6 @@ class DocumentList extends Component {
 
             this.setState(Object.assign({}, {
                 data: response.data,
-                viewId: response.data.viewId,
                 filters: response.data.filters
             }, refresh && {
                 refresh: Date.now()
