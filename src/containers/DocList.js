@@ -135,7 +135,6 @@ DocList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired,
     query: PropTypes.object.isRequired,
-    search: PropTypes.string.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
     rawModal: PropTypes.object.isRequired,
@@ -183,15 +182,13 @@ function mapStateToProps(state) {
     }
 
     const {
-        search,
         pathname
     } = routing.locationBeforeTransitions || {
-        search: '',
         pathname: ''
     }
 
     return {
-        modal, breadcrumb, search, pathname, actions, selected, indicator,
+        modal, breadcrumb, pathname, actions, selected, indicator,
         latestNewDocument, references, rawModal, attachments, processStatus
     }
 }

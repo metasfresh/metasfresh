@@ -57,7 +57,6 @@ class DocumentList extends Component {
             inBackground, dispatch
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
-
         /*
          * If we browse list of docs, changing type of Document
          * does not re-construct component, so we need to
@@ -259,7 +258,6 @@ class DocumentList extends Component {
 
             this.setState(Object.assign({}, {
                 data: response.data,
-                viewId: response.data.viewId,
                 filters: response.data.filters
             }, refresh && {
                 refresh: Date.now()
