@@ -151,6 +151,18 @@ class RawWidget extends Component {
         const widgetField = filterWidget ?
             fields[0].parameterName : fields[0].field;
 
+        const widgetProperties = {
+            ref: c => this.rawWidget = c,
+            className: 'input-field js-input-field',
+            value: widgetValue,
+            placeholder: fields[0].emptyText,
+            disabled: widgetData[0].readonly || disabled,
+            onFocus: this.handleFocus,
+            tabIndex: fullScreen ? -1 : tabIndex,
+            onChange: e => handleChange && handleChange(widgetField, e.target.value),
+            onBlur: e => this.handleBlur(widgetField, e.target.value, id)
+        }
+
         switch(widgetType){
             case 'Date':
                 if(range){
@@ -323,16 +335,8 @@ class RawWidget extends Component {
                         }
                     >
                         <input
+                            {...widgetProperties}
                             type="text"
-                            ref={c => this.rawWidget = c}
-                            className="input-field js-input-field"
-                            value={widgetValue}
-                            placeholder={fields[0].emptyText}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
@@ -344,15 +348,7 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
-                            ref={c => this.rawWidget = c}
-                            className="input-field js-input-field"
-                            value={widgetValue}
-                            disabled={widgetData[0].readonly || disabled}
-                            placeholder={fields[0].emptyText}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
+                            {...widgetProperties}
                         />
                     </div>
                 )
@@ -363,17 +359,10 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetValue}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -384,15 +373,8 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
-                            value={widgetValue}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(fields[0].field, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -403,17 +385,10 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetValue}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -424,17 +399,10 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetValue}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -445,15 +413,8 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
-                            value={widgetValue}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
