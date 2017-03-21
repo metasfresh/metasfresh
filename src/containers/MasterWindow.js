@@ -148,8 +148,8 @@ class MasterWindow extends Component {
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
                         isDocumentNotSaved={
-                            !modal.saveStatus.saved &&
-                            !modal.validStatus.initialValue
+                            (modal.saveStatus && !modal.saveStatus.saved) &&
+                            (modal.validStatus && !modal.validStatus.initialValue)
                         }
                      />
                  }
