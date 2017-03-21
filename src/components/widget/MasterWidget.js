@@ -189,7 +189,7 @@ class MasterWidget extends Component {
                 fullScreen={fullScreen}
                 disabled={disabled}
                 buttonProcessId={buttonProcessId}
-                value={data}
+                inputValue={data}
             />
         )
     }
