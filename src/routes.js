@@ -52,15 +52,11 @@ export const getRoutes = (store) => {
             <Route onEnter={authRequired}>
                 <IndexRoute component={Dashboard} />
                 <Route path="/window/:windowType"
-                    component={(nextState) => {
-                        const params = nextState.location.pathname.split('/');
-
-                        return <DocList
+                    component={(nextState) =>
+                        <DocList
                             query={nextState.location.query}
-                            windowType={params[params.length - 1]}
+                            windowType={nextState.params.windowType}
                         />
-                    }
-
                     }
                 />
                 <Route path="/window/:windowType/:docId"

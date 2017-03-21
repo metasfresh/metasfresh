@@ -73,7 +73,6 @@ class QuickActions extends Component {
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
-
         dispatch(
             quickActionsRequest(windowType, viewId, selected)
         ).then(response => {
