@@ -288,10 +288,6 @@ public class HUTransferService
 			}
 		}
 
-		// get cuHU's old parent (if any) for later usage, before the changes start
-		final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(sourceCuHU);
-		final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(sourceCuHU);
 
 		if (destination != null)
@@ -325,8 +321,8 @@ public class HUTransferService
 		}
 		else
 		{
+			// destination must be the HUProducerDestination we created further up, otherwise we would already have returned
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
-
 		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
@@ -337,21 +333,24 @@ public class HUTransferService
 		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", targetTuHU);
 
 		// finally do the attaching
-		final I_M_HU targetTuHUParent = handlingUnitsDAO.retrieveParent(targetTuHU);
 
 		// iterate the child CUs and set their parent item
 		childCUs.forEach(newChildCU -> {
 			setParent(newChildCU,
 					tuMaterialItem.get(0),
 
-					// after the childHU's parent item is set,
+					// before the childHU's parent item is set,
 					localHuContext -> {
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(sourceCuHU);
+						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
 						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
 					},
 
 					// after the childHU's parent item is set,
 					localHuContext -> {
-						updateAllocation(targetTuHUParent, targetTuHU, newChildCU, qtyCU, false, localHuContext);
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
 					});
 		});
 	}
