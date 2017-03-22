@@ -26,17 +26,15 @@ package de.metas.printing.model.validator;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Session;
-import org.compiere.model.MSession;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.logging.LogManager;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingDAO;
@@ -82,14 +80,10 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 		try
 		{
 			//
-			// Config AD_Session
-			final String hostKey = Services.get(IHostKeyBL.class).getCreateHostKey();
-
+			// Get HostKey
 			final Properties ctx = Env.getCtx();
-			final MSession session = MSession.get(ctx, false);
-			session.setHostKey(hostKey);
-			InterfaceWrapperHelper.save(session);
-			session.updateContext(false);
+			final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
+			final String hostKey = session.getHostKey();
 
 			//
 			// Create/Start the printing client thread *if* we do not use another client's config
@@ -114,7 +108,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void beforeLogout(final I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		// make sure printing client is stopped BEFORE logout, when session is still active and database accessible
 		final IPrintingClientDelegate printingClient = Services.get(IPrintingClientDelegate.class);
@@ -122,7 +116,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void afterLogout(final I_AD_Session session)
+	public void afterLogout(final MFSession session)
 	{
 		// reset, because for another user/role, the client startup might be OK
 		clientStartupIssue = null;
