@@ -25,6 +25,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -95,6 +96,14 @@ public class SqlDocumentViewBinding
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 		_keyField = builder.getKeyField();
 	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("tableName", _tableName)
+				.toString();
+	}
 
 	public String getTableName()
 	{
@@ -108,13 +117,13 @@ public class SqlDocumentViewBinding
 
 	private SqlDocumentFieldDataBindingDescriptor getKeyField()
 	{
-		Check.assumeNotNull(_keyField, "Parameter _keyField is not null");
+		Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
 		return _keyField;
 	}
 
 	public String getKeyColumnName()
 	{
-		return _keyField.getColumnName();
+		return getKeyField().getColumnName();
 	}
 
 	private Collection<SqlDocumentFieldDataBindingDescriptor> getFields()

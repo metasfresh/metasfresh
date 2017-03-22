@@ -29,6 +29,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -203,6 +204,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private String getKeyColumnName()
 	{
+		Preconditions.checkNotNull(keyColumnName, "View %s has key column", this);
 		return keyColumnName;
 	}
 
