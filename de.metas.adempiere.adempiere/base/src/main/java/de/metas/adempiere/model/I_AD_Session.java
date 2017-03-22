@@ -22,20 +22,7 @@ package de.metas.adempiere.model;
  * #L%
  */
 
-
+@Deprecated
 public interface I_AD_Session extends org.compiere.model.I_AD_Session
 {
-	public static final String COLUMNNAME_IsLoginIncorect = "IsLoginIncorrect";
-	@Override
-	public boolean isLoginIncorrect();
-	@Override
-	public void setIsLoginIncorrect(boolean isLoginIncorrect);
-	
-	public static final String COLUMNNAME_LoginUsername = "LoginUsername";
-	public String getLoginUsername();
-	public void setLoginUsername(String LoginUsername);
-	
-	public static final String COLUMNNAME_HostKey = "HostKey";
-	public String getHostKey();
-	public void setHostKey(String HostKey);
 }

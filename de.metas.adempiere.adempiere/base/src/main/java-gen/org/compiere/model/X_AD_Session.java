@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1102738660L;
+	private static final long serialVersionUID = -609916524L;
 
     /** Standard Constructor */
     public X_AD_Session (Properties ctx, int AD_Session_ID, String trxName)
@@ -49,29 +33,13 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Session[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -111,7 +79,7 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
 		return ii.intValue();
 	}
 
-	/** Set Session.
+	/** Set Nutzersitzung.
 		@param AD_Session_ID 
 		User Session Online or Web
 	  */
@@ -124,7 +92,7 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
 			set_ValueNoCheck (COLUMNNAME_AD_Session_ID, Integer.valueOf(AD_Session_ID));
 	}
 
-	/** Get Session.
+	/** Get Nutzersitzung.
 		@return User Session Online or Web
 	  */
 	@Override
@@ -135,14 +103,6 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
 			 return 0;
 		return ii.intValue();
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), String.valueOf(getAD_Session_ID()));
-    }
 
 	/** Set Client Info.
 		@param Client_Info 
@@ -177,6 +137,25 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Host key.
+		@param HostKey 
+		Unique identifier of a host
+	  */
+	@Override
+	public void setHostKey (java.lang.String HostKey)
+	{
+		set_Value (COLUMNNAME_HostKey, HostKey);
+	}
+
+	/** Get Host key.
+		@return Unique identifier of a host
+	  */
+	@Override
+	public java.lang.String getHostKey () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_HostKey);
 	}
 
 	/** Set IsLoginIncorrect.
@@ -219,6 +198,22 @@ public class X_AD_Session extends org.compiere.model.PO implements I_AD_Session,
 	public java.sql.Timestamp getLoginDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_LoginDate);
+	}
+
+	/** Set Login User Name.
+		@param LoginUsername Login User Name	  */
+	@Override
+	public void setLoginUsername (java.lang.String LoginUsername)
+	{
+		set_Value (COLUMNNAME_LoginUsername, LoginUsername);
+	}
+
+	/** Get Login User Name.
+		@return Login User Name	  */
+	@Override
+	public java.lang.String getLoginUsername () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LoginUsername);
 	}
 
 	/** Set Verarbeitet.
