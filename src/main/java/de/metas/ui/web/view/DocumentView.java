@@ -19,6 +19,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -246,9 +247,15 @@ public final class DocumentView implements IDocumentView
 			{
 				return DocumentId.of(idJson.toString());
 			}
+			else if (idJson instanceof JSONLookupValue)
+			{
+				// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
+				final JSONLookupValue jsonLookupValue = (JSONLookupValue)idJson;
+				return DocumentId.of(jsonLookupValue.getKey());
+			}
 			else
 			{
-				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' to integer");
+				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' (" + idJson.getClass() + ") to integer");
 			}
 
 		}
