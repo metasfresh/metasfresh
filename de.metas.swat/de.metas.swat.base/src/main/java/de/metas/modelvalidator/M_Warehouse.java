@@ -1,5 +1,10 @@
 package de.metas.modelvalidator;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,16 +30,25 @@ package de.metas.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_M_Warehouse;
 
 @Validator(I_M_Warehouse.class)
+@Callout(I_M_Warehouse.class)
 public class M_Warehouse
 {
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+	
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
+	@CalloutMethod(columnNames = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
 	public void syncLocation(I_M_Warehouse warehouse)
 	{
 		final I_C_BPartner_Location bpLocation = warehouse.getC_BPartner_Location();

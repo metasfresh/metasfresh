@@ -19,6 +19,8 @@ package org.compiere.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
@@ -33,7 +35,7 @@ import org.compiere.model.MProjectLine;
  * 			<li>FR [ 2791635 ] Use saveEx whenever is possible
  * 				https://sourceforge.net/tracker/?func=detail&aid=2791635&group_id=176962&atid=879335
  */
-public class ProjectClose extends SvrProcess
+public class ProjectClose extends JavaProcess
 {
 	/**	Project from Record			*/
 	private int 		m_C_Project_ID = 0;
@@ -43,7 +45,7 @@ public class ProjectClose extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

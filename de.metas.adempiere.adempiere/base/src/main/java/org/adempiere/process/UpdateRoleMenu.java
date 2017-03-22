@@ -26,18 +26,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.MRoleMenu;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
-public class UpdateRoleMenu extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class UpdateRoleMenu extends JavaProcess
 {
 	private int p_role_id = 0;
 	
 	@Override
 	protected void prepare() 
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

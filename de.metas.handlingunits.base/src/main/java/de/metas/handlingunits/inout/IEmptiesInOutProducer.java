@@ -13,19 +13,19 @@ package de.metas.handlingunits.inout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
@@ -47,17 +47,17 @@ public interface IEmptiesInOutProducer
 	 */
 	I_M_InOut create();
 
-	void addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty);
+	IEmptiesInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty);
 
-	void setC_BPartner(final I_C_BPartner bpartner);
+	IEmptiesInOutProducer setC_BPartner(final I_C_BPartner bpartner);
 
-	void setC_BPartner_Location(final I_C_BPartner_Location bpLocation);
+	IEmptiesInOutProducer setC_BPartner_Location(final I_C_BPartner_Location bpLocation);
 
-	void setMovementType(String movementType);
+	IEmptiesInOutProducer setMovementType(String movementType);
 
-	void setM_Warehouse(I_M_Warehouse warehouse);
+	IEmptiesInOutProducer setM_Warehouse(I_M_Warehouse warehouse);
 
-	void setMovementDate(Date movementDate);
+	IEmptiesInOutProducer setMovementDate(Date movementDate);
 
 	/**
 	 * Check if this producer is empty.
@@ -67,4 +67,13 @@ public interface IEmptiesInOutProducer
 	 * @return true if empty.
 	 */
 	boolean isEmpty();
+
+	/**
+	 * Set the order based on which the inout is created ( if it was selected)
+	 * 
+	 * @param order
+	 */
+	IEmptiesInOutProducer setC_Order(I_C_Order order);
+	
+	IEmptiesInOutProducer dontComplete();
 }

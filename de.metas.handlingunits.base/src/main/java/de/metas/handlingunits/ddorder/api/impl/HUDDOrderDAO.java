@@ -97,7 +97,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderLineIds)
+				.addInArrayOrAllFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderLineIds)
 				//
 				// Collect HUs from those candidates
 				.andCollect(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID)
@@ -117,7 +117,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		// Create a query to select ALL candidate assignments for given DD_OrderLine
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ddOrderline)
-				.addInArrayFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID());
+				.addInArrayOrAllFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID());
 
 		// Remove selected assignments
 		removeFromHUsScheduledToMoveList(query);
@@ -166,7 +166,7 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		final IQueryBuilder<I_DD_OrderLine_HU_Candidate> query = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class, ddOrderline)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_DD_OrderLine_ID, ddOrderline.getDD_OrderLine_ID())
-				.addInArrayFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huIds);
+				.addInArrayOrAllFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huIds);
 
 		// Remove selected assignments
 		removeFromHUsScheduledToMoveList(query);

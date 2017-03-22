@@ -17,7 +17,8 @@
 package org.compiere.model;
 
 import org.adempiere.util.Check;
-import org.compiere.process.ProcessInfo;
+
+import de.metas.process.ProcessInfo;
 
 
 /**

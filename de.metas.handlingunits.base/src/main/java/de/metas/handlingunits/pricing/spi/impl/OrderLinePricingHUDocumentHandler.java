@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,42 +12,41 @@ package de.metas.handlingunits.pricing.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
-
-import com.google.common.base.Optional;
+import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAttributeAware;
-import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
+import de.metas.pricing.attributebased.IProductPriceAware;
 
 /**
  * Note: currently this implementation is used to update a given record's ASI when its {@link I_M_HU_PI_Item_Product} changes.
- * 
+ *
  *
  */
 public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
@@ -54,7 +55,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 * Does nothing and returns <code>null</code>.
 	 */
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final I_M_Product product)
 	{
 		// Not needed.
 		return null;
@@ -71,7 +72,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 * <li>there is no default <code>M_ProductPrice_Attribute</code> to be found, or
 	 * <li>the default <code>M_ProductPrice_Attribute</code> has a M_HU_PI_Item_Product_ID which differs from the order line's M_HU_PI_Item_Product_ID
 	 * </ul>
-	 * 
+	 *
 	 *
 	 * @see InterfaceWrapperHelper#isValueChanged(Object, String)
 	 * @see IOrderLineBL#getPriceListVersion(de.metas.interfaces.I_C_OrderLine)
@@ -95,7 +96,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 			return;
 		}
 
-		final I_M_ProductPrice_Attribute productPriceAttribute;
+		final I_M_ProductPrice productPrice;
 
 		// task 08839: get the productPriceAttribute, considering to get the explicid one the might be attached to this order line.
 		// this is needed in case we create the order from an C_OCLand and do not wan tthe system to guess a default ASI and PIIP.
@@ -103,44 +104,42 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(orderLine);
 
 		final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
-		final Optional<IProductPriceAttributeAware> orderLineHasExplicitASI = attributePricingBL.getDynAttrProductPriceAttributeAware(asiAware);
+		final Optional<IProductPriceAware> orderLineHasExplicitASI = attributePricingBL.getDynAttrProductPriceAttributeAware(asiAware);
 		if (orderLineHasExplicitASI.isPresent()
 				&& orderLineHasExplicitASI.get().isExplicitProductPriceAttribute())
 		{
-			final IProductPriceAttributeAware productPriceAttributeAware = orderLineHasExplicitASI.get();
+			final IProductPriceAware productPriceAttributeAware = orderLineHasExplicitASI.get();
 			final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 			final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-			final int productPriceAttributeID = productPriceAttributeAware.getM_ProductPrice_Attribute_ID();
-			if (productPriceAttributeID > 0)
+			final int productPriceId = productPriceAttributeAware.getM_ProductPrice_ID();
+			if (productPriceId > 0)
 			{
-				productPriceAttribute = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice_Attribute.Table_Name, productPriceAttributeID, I_M_ProductPrice_Attribute.class, trxName);
+				productPrice = InterfaceWrapperHelper.create(ctx, productPriceId, I_M_ProductPrice.class, trxName);
 			}
 			else
 			{
-				productPriceAttribute = null;
+				productPrice = null;
 			}
 		}
 		else
 		{
-			productPriceAttribute = getDefaultProductPriceAttribute(orderLine);
+			productPrice = getDefaultProductPriceAttribute(orderLine);
 		}
 
-		if (productPriceAttribute == null)
+		if (productPrice == null)
 		{
 			// no default Product Price Attribute was found => nothing to do
 			return;
 		}
 
-		final de.metas.handlingunits.model.I_M_ProductPrice_Attribute productPriceAttributeEx = InterfaceWrapperHelper.create(productPriceAttribute,
-				de.metas.handlingunits.model.I_M_ProductPrice_Attribute.class);
-		final int pricePIItemProductId = productPriceAttributeEx.getM_HU_PI_Item_Product_ID();
+		final int pricePIItemProductId = productPrice.getM_HU_PI_Item_Product_ID();
 		if (pricePIItemProductId > 0 && orderLine.getM_HU_PI_Item_Product_ID() != pricePIItemProductId)
 		{
 			// "HU PI Item Product" from Product Price Attribute does not match the one from Order Line
 			return;
 		}
 
-		final I_M_AttributeSetInstance asi = attributePricingBL.generateASI(productPriceAttribute);
+		final I_M_AttributeSetInstance asi = attributePricingBL.generateASI(productPrice);
 		orderLine.setM_AttributeSetInstance(asi);
 	}
 
@@ -152,15 +151,32 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 * @see IOrderLineBL#getPriceListVersion(de.metas.interfaces.I_C_OrderLine)
 	 * @see IAttributePricingBL#getDefaultAttributePriceOrNull(Object, int, I_M_PriceList_Version, boolean)
 	 */
-	private I_M_ProductPrice_Attribute getDefaultProductPriceAttribute(final I_C_OrderLine orderLine)
+	private I_M_ProductPrice getDefaultProductPriceAttribute(final I_C_OrderLine orderLine)
 	{
-		final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		final I_M_PriceList_Version plv = orderLineBL.getPriceListVersion(orderLine);
+
+		//
+		// Check if we have a product price specific to current PI Item Product
+		if(orderLine.getM_HU_PI_Item_Product_ID() > 0)
+		{
+			final boolean strictDefault = false;
+			final I_M_ProductPrice huProductPrice = ProductPriceQuery.newInstance(plv)
+					.setM_Product_ID(orderLine.getM_Product_ID())
+					.onlyAttributePricing()
+					.matching(HUPricing.createHUPIItemProductMatcher(orderLine.getM_HU_PI_Item_Product_ID()))
+					.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+			if(huProductPrice != null)
+			{
+				return huProductPrice;
+			}
+		}
 
 		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
 		final boolean strictDefault = true;
-		return attributePricingBL.getDefaultAttributePriceOrNull(orderLine, orderLine.getM_Product_ID(), plv, strictDefault);
+		return ProductPriceQuery.newInstance(plv)
+				.setM_Product_ID(orderLine.getM_Product_ID())
+				.onlyAttributePricing()
+				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
 	}
 }

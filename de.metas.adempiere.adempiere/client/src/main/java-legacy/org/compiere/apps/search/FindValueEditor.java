@@ -26,6 +26,7 @@ import javax.swing.table.TableCellEditor;
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
+import org.compiere.model.MQuery.Operator;
 
 /**
  * Cell editor for Find Value/ValueTo fields. Editor depends on Column setting. Has to save entries how they are used in the query, i.e. '' for strings.
@@ -76,13 +77,14 @@ final class FindValueEditor extends AbstractCellEditor implements TableCellEdito
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int rowIndex, final int columnIndex)
 	{
-		final FindAdvancedSearchTableModelRow row = getRow(table, rowIndex);
+		final IUserQueryRestriction row = getRow(table, rowIndex);
 
 		//
 		// Update valueTo enabled
-		isValueToEnabled = isValueToColumn && row.isBinaryOperator();
+		final Operator operator = row.getOperator();
+		isValueToEnabled = isValueToColumn && operator != null && operator.isRangeOperator();
 
-		final FindPanelSearchField searchField = row.getSearchField();
+		final FindPanelSearchField searchField = FindPanelSearchField.castToFindPanelSearchField(row.getSearchField());
 		if (searchField == null)
 		{
 			// shall not happen
@@ -117,7 +119,7 @@ final class FindValueEditor extends AbstractCellEditor implements TableCellEdito
 		return isValueDisplayed();
 	}
 
-	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	private IUserQueryRestriction getRow(final JTable table, final int viewRowIndex)
 	{
 		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
 		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);

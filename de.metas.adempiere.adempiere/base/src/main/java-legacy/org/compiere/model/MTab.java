@@ -21,11 +21,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.Check;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Tab Model
@@ -165,6 +168,7 @@ public class MTab extends X_AD_Tab
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 	//	UPDATE AD_Tab SET IsInsertRecord='N' WHERE IsInsertRecord='Y' AND IsReadOnly='Y'
@@ -178,6 +182,13 @@ public class MTab extends X_AD_Tab
 				throw new FillMandatoryException("AD_ColumnSortOrder_ID");	
 			}			
 		}
+
+		// Prevent adding more wrong cases.
+		if(is_ValueChanged(COLUMNNAME_OrderByClause) && !Check.isEmpty(getOrderByClause(), true))
+		{
+			throw new AdempiereException("OrderByClause shall be empty. See https://github.com/metasfresh/metasfresh/issues/412");
+		}
+		
 		return true;
 	}
 	

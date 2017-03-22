@@ -1,41 +1,19 @@
 package de.metas.inout.process;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
-public class M_InOut_ApproveForInvoicing extends SvrProcess implements ISvrProcessPrecondition
+public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcessPrecondition
 {
 
 	private int p_M_InOut_ID = 0;
@@ -43,7 +21,7 @@ public class M_InOut_ApproveForInvoicing extends SvrProcess implements ISvrProce
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -77,19 +55,19 @@ public class M_InOut_ApproveForInvoicing extends SvrProcess implements ISvrProce
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 		// Make this process only available for inout entries that are active and have the status Completed or Closed
 
-		if (I_M_InOut.Table_Name.equals(gridTab.get_TableName()))
+		if (I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
-			final I_M_InOut inOut = InterfaceWrapperHelper.create(gridTab, I_M_InOut.class);
-			return docActionBL.isStatusOneOf(inOut.getDocStatus(),
-					DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			final I_M_InOut inOut = context.getSelectedModel(I_M_InOut.class);
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(inOut.getDocStatus(),
+					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 
 }

@@ -2,11 +2,12 @@ package org.eevolution.process;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.model.MHRProcess;
 
-public class PayrollProcessing extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class PayrollProcessing extends JavaProcess
 {
 	public static final String PARAM_HR_Process_ID = "HR_Process_ID";
 
@@ -16,7 +17,7 @@ public class PayrollProcessing extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

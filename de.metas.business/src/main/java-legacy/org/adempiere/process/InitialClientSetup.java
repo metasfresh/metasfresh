@@ -30,22 +30,22 @@
 package org.adempiere.process;
 
 import java.io.File;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.MCity;
 import org.compiere.model.MSetup;
 import org.compiere.print.PrintUtil;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Process to create a new client (tenant)
@@ -53,7 +53,7 @@ import de.metas.currency.ICurrencyDAO;
  *  @author Carlos Ruiz
  *    [ 2598506 ] FR - Implement Initial Client Setup
  */
-public class InitialClientSetup extends SvrProcess
+public class InitialClientSetup extends JavaProcess
 {
 	
 	// Process Parameters
@@ -82,7 +82,7 @@ public class InitialClientSetup extends SvrProcess
 	@Override
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -174,8 +174,9 @@ public class InitialClientSetup extends SvrProcess
 			throw new AdempiereException("@NotUnique@ " + p_NormalUserName);
 
 		// City_ID overrides CityName if both used
-		if (p_C_City_ID > 0) {
-			MCity city = MCity.get(getCtx(), p_C_City_ID);
+		if (p_C_City_ID > 0)
+		{
+			final I_C_City city = InterfaceWrapperHelper.create(getCtx(), p_C_City_ID, I_C_City.class, ITrx.TRXNAME_None);
 			if (! city.getName().equals(p_CityName)) {
 				log.info("City name changed from " + p_CityName + " to " + city.getName());
 				p_CityName = city.getName();

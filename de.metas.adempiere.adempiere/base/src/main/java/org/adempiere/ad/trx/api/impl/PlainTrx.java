@@ -51,9 +51,9 @@ public class PlainTrx extends AbstractTrx
 {
 	private final List<ITrxSavepoint> activeSavepoints = new ArrayList<ITrxSavepoint>();
 
-	public PlainTrx(final ITrxManager trxManager, final String trxName)
+	public PlainTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super(trxManager, trxName);
+		super(trxManager, trxName, autoCommit);
 	}
 
 	public PlainTrxManager getPlainTrxManager()

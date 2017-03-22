@@ -181,7 +181,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 			if (!collectedDD_Order_IDs.isEmpty())
 			{
 				final List<I_DD_Order> collectedDDOrders = queryBL.createQueryBuilder(I_DD_Order.class, context)
-						.addInArrayFilter(I_DD_Order.COLUMN_DD_Order_ID, collectedDD_Order_IDs)
+						.addInArrayOrAllFilter(I_DD_Order.COLUMN_DD_Order_ID, collectedDD_Order_IDs)
 						.create()
 						.list();
 				logger.info("Collected DD Orders: {}", collectedDDOrders);

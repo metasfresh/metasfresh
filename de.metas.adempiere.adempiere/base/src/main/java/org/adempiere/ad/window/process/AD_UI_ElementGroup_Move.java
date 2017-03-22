@@ -6,9 +6,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_ElementGroup;
-import org.compiere.process.SvrProcess;
 
 import de.metas.process.Param;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AD_UI_ElementGroup_Move extends SvrProcess
+public class AD_UI_ElementGroup_Move extends JavaProcess
 {
 	@Param(parameterName = I_AD_UI_Column.COLUMNNAME_AD_UI_Column_ID, mandatory = true)
 	private int p_AD_UI_Column_ID;
@@ -46,7 +46,7 @@ public class AD_UI_ElementGroup_Move extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		getProcessInfo().setRefreshAllAfterExecution(true);
+		getResult().setRefreshAllAfterExecution(true);
 
 		final I_AD_UI_ElementGroup uiElementGroup = getRecord(I_AD_UI_ElementGroup.class);
 		final I_AD_UI_Column toUIColumn = InterfaceWrapperHelper.create(getCtx(), p_AD_UI_Column_ID, I_AD_UI_Column.class, ITrx.TRXNAME_ThreadInherited);

@@ -30,11 +30,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Loc
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Shipper_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Warehouse_ID;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,30 +44,22 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.MPInstance;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.exception.NoContainerException;
-import de.metas.adempiere.process.PerformPackaging;
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -80,6 +68,9 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
 
 /**
@@ -95,7 +86,6 @@ public abstract class Packing extends MvcGenForm
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IProcessPA processPA = Services.get(IProcessPA.class);
 
 	private static final String MSG_DOING_PACKAGING = "Verarbeite Kommsionierung";
 	private static final String MSG_SHIP_TO_ADDRESS = "Lieferanschrift";
@@ -116,7 +106,7 @@ public abstract class Packing extends MvcGenForm
 		super();
 
 		this.ctx = Env.getCtx();
-		this.adPInstanceId = shipmentSchedulePA.createADPInstanceId(ctx);
+		this.adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -275,65 +265,6 @@ public abstract class Packing extends MvcGenForm
 
 		//
 		miniTable.autoSize();
-	}
-
-	@Override
-	public void addViewListerners(final Properties ctx, final IFormView view)
-	{
-		final IPackingView packingView = (IPackingView)view;
-
-		packingView.addWarehouseListener(new VetoableChangeListener()
-		{
-			@Override
-			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
-			{
-				final Integer warehouseId = (Integer)evt.getNewValue();
-				final PackingMd model = getModel();
-				model.setM_Warehouse_ID(warehouseId == null ? 0 : warehouseId);
-				executeQuery();
-			}
-		});
-		packingView.addDisplayNonDeliverableItemsListener(new VetoableChangeListener()
-		{
-			@Override
-			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
-			{
-				final Boolean display = (Boolean)evt.getNewValue();
-				final PackingMd model = getModel();
-				model.setDisplayNonDeliverableItems(display != null ? display.booleanValue() : false);
-
-				executeQuery();
-			}
-		});
-
-		packingView.addRefreshListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				// just refresh
-				executeQuery();
-			}
-		});
-
-		packingView.addOpenNextOneListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				// refresh
-				executeQuery();
-
-				// now select the first entry
-				final PackingMd model = getModel();
-				if (model.isEmpty())
-				{
-					// nothing to pack
-					return;
-				}
-				createPackingDetails(ctx, new int[] { 0 });
-			}
-		});
 	}
 
 	public final void createPackingDetails(final Properties ctx, final int[] rows)
@@ -619,77 +550,44 @@ public abstract class Packing extends MvcGenForm
 		});
 	}
 
-	public ProcessCtl invokeProcess(final IPackingDetailsModel model)
+	private void invokeProcess(final IPackingDetailsModel model)
 	{
-		final ProcessCtl[] workers = new ProcessCtl[1];
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ProcessCtl worker = invokeProcess0(model, localTrxName);
-				workers[0] = worker;
-			}
-		});
-
-		return workers[0];
-	}
-
-	private ProcessCtl invokeProcess0(final IPackingDetailsModel model, final String trxName)
-	{
-		final ITrx trx = trxManager.get(trxName, false);
-		Check.assumeNotNull(trx, "Transaction shall be created for trxName={}", trxName);
-
-		getModel().setTrx(trx);
-
-		final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
-
-		final MPInstance instance = new MPInstance(ctx, processId, 0, 0);
-		instance.saveEx();
-
-		final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
-		pi.setTitle("Kommisionierungsbelege");
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
-
-		final ProcessInfoParameter pipSelectection = new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null);
-
-		final ProcessInfoParameter pipShipper = new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null);
-
-		final ProcessInfoParameter pipNonItems = new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null);
-
-		pi.setParameter(new ProcessInfoParameter[] { pipSelectection, pipShipper, pipNonItems });
-
-		getModel().setProcessInfo(pi);
-
-		lockUI(pi);
-
-		// final ProcessCtl worker = new ProcessCtl(this,
-		// getModel().getWindowNo(), pi, trx);
-		// worker.start();
-		// don't run asynchronously
-		final ProcessCtl worker = ProcessCtl.process(this, getModel().getWindowNo(), null, pi, trx);
-		return worker;
+		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
+		// NOTE assume this is not called
+		throw new UnsupportedOperationException();
+		
+//		final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
+//
+//		final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
+//		pi.setTitle("Kommisionierungsbelege");
+//		pi.setWindowNo(getModel().getWindowNo());
+//		pi.setParameter(new ProcessInfoParameter[] {
+//				new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null) //
+//				, new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null) //
+//				, new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null) //
+//		});
+//
+//		return ProcessCtl.builder()
+//				.setAsyncParent(this)
+//				.setProcessInfo(pi)
+//				.execute();
 	}
 
 	@Override
-	public void unlockUI(ProcessInfo pi)
+	public void unlockUI(final ProcessInfo pi)
 	{
 		super.unlockUI(pi);
 
-		// display the process results
-		ProcessInfoUtil.setLogFromDB(pi);
-
-		final StringBuffer iText = new StringBuffer();
+		final ProcessExecutionResult result = pi.getResult();
+		final StringBuilder iText = new StringBuilder();
 		iText.append("<b>") //
-				.append(pi.getSummary()) //
+				.append(result.getSummary()) //
 				.append("</b><br>(") //
 				.append(Msg.getMsg(ctx, "Belegerstellung")) //
 				.append(")<br>") //
-				.append(pi.getLogInfo(true));
+				.append(result.getLogInfo(true));
 
-		getView().modelPropertyChange(
-				new PropertyChangeEvent(this, PROP_INFO_TEXT, null, iText
-						.toString()));
+		getView().modelPropertyChange(new PropertyChangeEvent(this, PROP_INFO_TEXT, null, iText.toString()));
 	}
 
 	@Override

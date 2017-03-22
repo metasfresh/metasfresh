@@ -19,8 +19,6 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MInventory;
 import org.compiere.model.MInventoryLine;
@@ -30,25 +28,29 @@ import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
 /**
  *	Update existing Inventory Count List with current Book value
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: InventoryCountUpdate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class InventoryCountUpdate extends SvrProcess
+public class InventoryCountUpdate extends JavaProcess
 {
 	/** Physical Inventory		*/
 	private int		p_M_Inventory_ID = 0;
 	/** Update to What			*/
 	private boolean	p_InventoryCountSetZero = false;
-	
+
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -62,12 +64,13 @@ public class InventoryCountUpdate extends SvrProcess
 		p_M_Inventory_ID = getRecord_ID();
 	}	//	prepare
 
-	
+
 	/**
 	 * 	Process
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("M_Inventory_ID=" + p_M_Inventory_ID);
@@ -118,10 +121,10 @@ public class InventoryCountUpdate extends SvrProcess
 			no = DB.executeUpdate(sql, get_TrxName());
 			log.info("Set Count to Zero=" + no);
 		}
-		
+
 		if (multiple > 0)
 			return "@M_InventoryLine_ID@ - #" + (no + noMA) + " --> @InventoryProductMultiple@";
-		
+
 		return "@M_InventoryLine_ID@ - #" + no;
 	}	//	doIt
 
@@ -153,12 +156,13 @@ public class InventoryCountUpdate extends SvrProcess
 						continue;
 					onHand = onHand.add(storage.getQtyOnHand());
 					//	No ASI
-					if (storage.getM_AttributeSetInstance_ID() == 0 
+					if (storage.getM_AttributeSetInstance_ID() == 0
 						&& storages.length == 1)
 						continue;
 					//	Save ASI
-					ma = new MInventoryLineMA (il, 
-						storage.getM_AttributeSetInstance_ID(), storage.getQtyOnHand());
+					ma = new MInventoryLineMA (il,
+						0, // storage.getM_AttributeSetInstance_ID(),
+						storage.getQtyOnHand());
 					if (!ma.save())
 						;
 				}
@@ -189,6 +193,6 @@ public class InventoryCountUpdate extends SvrProcess
 		log.info("#" + no);
 		return no;
 	}	//	updateWithMA
-	
-	
+
+
 }	//	InventoryCountUpdate

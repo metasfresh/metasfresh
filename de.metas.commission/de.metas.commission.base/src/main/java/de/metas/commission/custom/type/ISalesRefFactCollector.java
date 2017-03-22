@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.compiere.model.MDiscountSchema;
+import org.compiere.model.I_M_DiscountSchema;
 
 import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_AdvCommissionSalaryGroup;
@@ -53,5 +53,5 @@ public interface ISalesRefFactCollector extends ICommissionType
 
 	int getPeriodsLookBack(Properties ctx, I_C_AdvCommissionCondition contract, String trxName);
 
-	MDiscountSchema retrieveDiscountSchema(I_C_AdvCommissionSalaryGroup forecastRank, I_C_Sponsor sponsor, Timestamp loginDate);
+	I_M_DiscountSchema retrieveDiscountSchema(I_C_AdvCommissionSalaryGroup forecastRank, I_C_Sponsor sponsor, Timestamp loginDate);
 }

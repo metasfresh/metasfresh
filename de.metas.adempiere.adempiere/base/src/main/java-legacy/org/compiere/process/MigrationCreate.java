@@ -29,7 +29,10 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
-public class MigrationCreate extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class MigrationCreate extends JavaProcess
 {
 
 	private I_AD_Migration migrationFrom;
@@ -42,7 +45,7 @@ public class MigrationCreate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] params = getParameter();
+		ProcessInfoParameter[] params = getParametersAsArray();
 		for (ProcessInfoParameter p : params)
 		{
 			String para = p.getParameterName();

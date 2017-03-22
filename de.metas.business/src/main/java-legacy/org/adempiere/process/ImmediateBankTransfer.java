@@ -34,6 +34,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -41,8 +43,6 @@ import org.compiere.model.MCash;
 import org.compiere.model.MCashBook;
 import org.compiere.model.MCashLine;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Env;
  
@@ -59,7 +59,7 @@ import org.compiere.util.Env;
  *	@author Alejandro Falcone
  *	
  **/
-public class ImmediateBankTransfer extends SvrProcess
+public class ImmediateBankTransfer extends JavaProcess
 {
 	 /** DocAction          */
     private String      p_docAction = DocAction.ACTION_Complete;
@@ -84,7 +84,7 @@ public class ImmediateBankTransfer extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

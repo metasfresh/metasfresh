@@ -402,7 +402,7 @@ public class ServerSyncBL implements IServerSyncBL
 				@Override
 				public void run(final String localTrxName) throws Exception
 				{
-					final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(tempCtx);
+					final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(tempCtx);
 					processor.processEvent(context, pmmProduct);
 				}
 			});

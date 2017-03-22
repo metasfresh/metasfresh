@@ -17,9 +17,10 @@
 //package org.eevolution.process;
 package org.eevolution.process;
 
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Msg;
 import org.eevolution.model.MHRYear;
+
+import de.metas.process.JavaProcess;
 
 /**
  *	Create Periods of Payroll
@@ -28,7 +29,7 @@ import org.eevolution.model.MHRYear;
  *  @author Cristina Ghita , www.arhipac.ro
  *  @version $Id: HRCreatePeriods.java,v 1.0 2005/10/05 04:58:38 ogomezi Exp $
  */
-public class HRCreatePeriods extends SvrProcess
+public class HRCreatePeriods extends JavaProcess
 {
 	/**
 	 * 	Prepare

@@ -34,7 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.reflections.Reflections;
@@ -113,7 +113,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 	{
 		final Set<Class<?>> subTypesOf = reflectionTypeProvider.getTypesAnnotatedWith(annotation);
 
-		final ArrayList<Class<?>> result = new ArrayList<Class<?>>();
+		final ArrayList<Class<?>> result = new ArrayList<>();
 		for (final Class<?> clazz : subTypesOf)
 		{
 			if (isIgnore(clazz))
@@ -129,7 +129,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 	{
 		final Set<Class<?>> subTypesOf = reflectionTypeProvider.getSubTypesOf(type);
 
-		final ArrayList<Class<?>> result = new ArrayList<Class<?>>();
+		final ArrayList<Class<?>> result = new ArrayList<>();
 		for (final Class<?> clazz : subTypesOf)
 		{
 			if (isIgnore(clazz))
@@ -171,7 +171,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				existingRecord.setIsActive(true);
 				existingRecord.setIsInterface(clazz.isInterface());
 				InterfaceWrapperHelper.save(existingRecord);
-				ILoggable.THREADLOCAL.getLoggable().addLog(
+				Loggables.get().addLog(
 						"Reactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						existingRecord, javaClassType, existingRecord.getClassname());
 			}
@@ -180,14 +180,14 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				final String clazzName = clazz.getName();
 
 				final I_AD_JavaClass newJavaClassRecord = InterfaceWrapperHelper.newInstance(I_AD_JavaClass.class, contextAware);
-				newJavaClassRecord.setAD_EntityType(javaClassType.getAD_EntityType());
+				newJavaClassRecord.setEntityType(javaClassType.getEntityType());
 				newJavaClassRecord.setAD_JavaClass_Type(javaClassType);
 				newJavaClassRecord.setClassname(clazzName);
 				newJavaClassRecord.setName(clazzName);
 				newJavaClassRecord.setIsInterface(clazz.isInterface());
 				InterfaceWrapperHelper.save(newJavaClassRecord);
 
-				ILoggable.THREADLOCAL.getLoggable().addLog(
+				Loggables.get().addLog(
 						"Created new AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						newJavaClassRecord, javaClassType, clazzName);
 			}
@@ -199,7 +199,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 		{
 			staleClassRecord.setIsActive(false);
 			InterfaceWrapperHelper.save(staleClassRecord);
-			ILoggable.THREADLOCAL.getLoggable().addLog(
+			Loggables.get().addLog(
 					"Deactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 					staleClassRecord, javaClassType, staleClassRecord.getClassname());
 		}

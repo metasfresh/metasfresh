@@ -78,22 +78,22 @@ public class VDocAction extends CDialog
 	 * 
 	 * @param WindowNo window no
 	 * @param mTab tab
-	 * @param button button
 	 * @param Record_ID record id
 	 */
-	public VDocAction(final int WindowNo, final GridTab mTab, final VButton button, final int Record_ID)
+	public VDocAction(final int WindowNo, final GridTab mTab, final int Record_ID)
 	{
 		super(Env.getWindow(WindowNo), Services.get(IMsgBL.class).translate(Env.getCtx(), "DocAction"), true);
 		log.info("");
 		m_WindowNo = WindowNo;
 		m_mTab = mTab;
+		m_AD_Table_ID = mTab.getAD_Table_ID();
+		
 		//
 		try
 		{
 			jbInit();
 
 			// dynamic init preparation
-			m_AD_Table_ID = m_mTab.getAD_Table_ID();
 			if (s_value == null)
 				readReference();
 			//
@@ -108,18 +108,21 @@ public class VDocAction extends CDialog
 	}	// VDocAction
 
 	//
-	private int m_WindowNo = 0;
-	private int m_AD_Table_ID;
+	private final int m_WindowNo;
+	private final int m_AD_Table_ID;
+	private final GridTab m_mTab;
+	
 	private boolean m_OKpressed = false;
 	private final boolean batchProcessingEnabled = false; // metas-tsa: we disabled it because it's buggy
 	private boolean m_batch = false;
-	private GridTab m_mTab;
+	
 	//
 	private static String[] s_value = null;
 	private static String[] s_name;
 	private static String[] s_description;
+	
 	/** Logger */
-	private static Logger log = LogManager.getLogger(VDocAction.class);
+	private static final transient Logger log = LogManager.getLogger(VDocAction.class);
 	//
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();

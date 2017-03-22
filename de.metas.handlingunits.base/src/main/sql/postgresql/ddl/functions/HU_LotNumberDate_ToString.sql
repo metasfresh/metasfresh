@@ -1,3 +1,7 @@
+-- PLEASE KEEP IN SYNC WITH org.adempiere.mm.attributes.api.ILotNumberBL.calculateLotNumber(Date).
+-- this sql function is according to international standard ISO 8601.
+-- Please, check https://en.wikipedia.org/wiki/ISO_week_date for extra details
+
 DROP FUNCTION IF EXISTS "de.metas.handlingunits".HU_LotNumberDate_ToString(p_Date date);
 
 CREATE OR REPLACE FUNCTION "de.metas.handlingunits".HU_LotNumberDate_ToString(p_Date date)
@@ -17,6 +21,7 @@ begin
 	v_DayOfWeek := extract(DOW from p_Date);
 
 	-- Convert DOW from (0 to 6, 0-Sunday, 6-Saturday) form to (1 to 7, 1-Monday, 7-Sunday) form.
+	-- This adjustment is needed because, according to ISO 8601, Monday is the first day of week.
 	if (v_DayOfWeek = 0) then
 		v_DayOfWeek := 7;
 	end if;

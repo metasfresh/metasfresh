@@ -336,9 +336,37 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<? extends Object> values);
 
 	/**
-	 * Filter only those HUs which have given internal barcode.
+	 * Filter only those HUs which have <code>attributeName</code> with any of the given <code>values</code>.
 	 *
-	 * NOTE: i.e. is searching for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode
+	 * <p>
+	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouses(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
+	 * opposed to any) of the specified attributes and values will match the query.
+	 *
+	 * @param attributeName
+	 * @param values list of accepted values
+	 * @return this
+	 */
+	IHUQueryBuilder addOnlyWithAttributeInList(String attributeName, Object... values);
+
+	/**
+	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
+
+	/**
+	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
+
+	/**
+	 * Filter the HUs by barcode.
+	 * HU identification by barcode can be either of the 2 below: 
+	 * <li>the M_HU.Value equals the inserted barcode (like before)</li>
+	 * <li>the HU has a linked M_HU_Attribute entry with M_Attribute of type Barcode (defined in the DIM_Barcode_Attributes dimension spec) and with the value that equals the inserted barcode</li> 
 	 *
 	 * @param barcode
 	 * @return this

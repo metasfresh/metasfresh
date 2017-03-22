@@ -4,12 +4,13 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.documentation</groupId>
 	<artifactId>de.metas.documentation</artifactId>
+	<version>1.0.0</version>
 
 	<properties>
 		<migration-sql-basedir></migration-sql-basedir>
@@ -25,12 +26,12 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>	
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>2.5.4</version>
 		</dependency>
 		
 	</dependencies>

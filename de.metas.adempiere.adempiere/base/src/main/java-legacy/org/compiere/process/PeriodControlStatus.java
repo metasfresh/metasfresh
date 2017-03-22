@@ -25,6 +25,7 @@ import org.compiere.model.X_C_PeriodControl;
 import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.service.IPeriodBL;
+import de.metas.process.JavaProcess;
 
 /**
  * Open/Close Period Control
@@ -32,7 +33,7 @@ import de.metas.adempiere.service.IPeriodBL;
  * @author Jorg Janke
  * @version $Id: PeriodControlStatus.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class PeriodControlStatus extends SvrProcess
+public class PeriodControlStatus extends JavaProcess
 {
 	private int periodId;
 

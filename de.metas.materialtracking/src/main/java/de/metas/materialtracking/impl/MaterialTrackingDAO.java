@@ -332,7 +332,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
 				.addCompareFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, periodEndDate)
-				.addInArrayFilter(I_M_Material_Tracking.COLUMN_AD_Org_ID, 0, org.getAD_Org_ID())
+				.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMN_AD_Org_ID, 0, org.getAD_Org_ID())
 				.create()
 				.list(de.metas.materialtracking.model.I_M_Material_Tracking.class);
 	}

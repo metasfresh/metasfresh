@@ -25,6 +25,9 @@ import org.compiere.model.MClient;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *  Inventory Valuation.
@@ -35,7 +38,7 @@ import org.compiere.util.DB;
  *  @author 	Michael Judd (mjudd) Akuna Ltd - BF [ 2685127 ]
  *  
  */
-public class InventoryValue extends SvrProcess
+public class InventoryValue extends JavaProcess
 {
 	/** Price List Used         */
 	private int         p_M_PriceList_Version_ID;
@@ -53,7 +56,7 @@ public class InventoryValue extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

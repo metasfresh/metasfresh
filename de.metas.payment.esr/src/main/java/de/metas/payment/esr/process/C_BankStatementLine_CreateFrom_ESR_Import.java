@@ -30,17 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -55,6 +51,11 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Create {@link I_C_BankStatementLine}/{@link I_C_BankStatementLine_Ref} from {@link I_ESR_ImportLine}s.
@@ -62,7 +63,7 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
  * @author tsa
  *
  */
-public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implements ISvrProcessPrecondition
+public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
@@ -88,21 +89,21 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implem
 	 * @return <code>true</code> if the given gridTab belongs to a bank statement that is drafted or in progress
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (I_C_BankStatement.Table_Name.equals(gridTab.get_TableName()))
+		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(gridTab, I_C_BankStatement.class);
-			return docActionBL.isStatusOneOf(bankStatement,
-					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress);
+			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(bankStatement,
+					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress));
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 

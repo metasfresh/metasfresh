@@ -713,8 +713,29 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String getDocumentInfo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		return dt.getName() + " " + getDocumentNo();
+		final StringBuilder documentInfo = new StringBuilder();
+		
+		//
+		// DocType
+		I_C_DocType docType = getC_DocType();
+		if(docType == null)
+		{
+			docType = getC_DocTypeTarget();
+		}
+		if(docType != null)
+		{
+			documentInfo.append(docType.getName());
+		}
+		
+		//
+		// DocumentNo
+		if(documentInfo.length() > 0)
+		{
+			documentInfo.append(" ");
+		}
+		documentInfo.append(getDocumentNo());
+		
+		return documentInfo.toString();
 	}	// getDocumentInfo
 
 	/**
@@ -1943,7 +1964,7 @@ public class MOrder extends X_C_Order implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)

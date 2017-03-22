@@ -59,6 +59,15 @@ public final class NullTrxListenerManager implements ITrxListenerManager
 	{
 		throw new UnsupportedOperationException();
 	}
+	
+	/**
+	 * @throws UnsupportedOperationException always
+	 */
+	@Override
+	public void onAfterCommit(Runnable runnable)
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Does nothing

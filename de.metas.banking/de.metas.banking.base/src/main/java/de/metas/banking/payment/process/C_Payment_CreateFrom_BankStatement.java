@@ -41,24 +41,25 @@ package de.metas.banking.payment.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Renamed and refactored from <code>de.metas.banking.process.BankStatementPayment</code> (swat).
@@ -66,7 +67,7 @@ import de.metas.document.engine.IDocActionBL;
  * Create Payment from Bank Statement Info
  * 
  */
-public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements ISvrProcessPrecondition
+public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements IProcessPrecondition
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
@@ -78,7 +79,7 @@ public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements IS
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			final String name = para[i].getParameterName();
@@ -141,14 +142,14 @@ public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements IS
 	 * @return <code>true</code> if the given gridTab belongs to a bank statement that is completed or closed.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (I_C_BankStatement.Table_Name.equals(gridTab.get_TableName()))
+		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(gridTab, I_C_BankStatement.class);
-			return docActionBL.isStatusOneOf(bankStatement,
-					DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(bankStatement,
+					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 }

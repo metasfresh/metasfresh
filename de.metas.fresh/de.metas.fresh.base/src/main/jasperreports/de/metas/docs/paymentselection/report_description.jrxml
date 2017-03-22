@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-06T13:25:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -18,16 +22,16 @@
 	loc.city
 FROM
 	C_PaySelection ps
-	INNER JOIN AD_Org org ON ps.AD_Org_ID = org.AD_Org_ID
-	INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
+	INNER JOIN AD_Org org ON ps.AD_Org_ID = org.AD_Org_ID AND org.isActive = 'Y'
+	INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id AND org_bp.isActive = 'Y'
 	INNER JOIN C_BPartner_Location	org_bpl ON org_bpl.C_BPartner_Location_ID =
 	(
 		SELECT First_agg (C_BPartner_Location_ID::Text ORDER BY IsBillToDefault DESC, IsBillTo DESC)
-		FROM C_BPartner_Location sub_bpl WHERE sub_bpl.c_bpartner_id = org_bp.c_bpartner_id
-	)::Numeric
-	INNER JOIN c_location loc ON org_bpl.c_location_id	= loc.c_location_id
+		FROM C_BPartner_Location sub_bpl WHERE sub_bpl.c_bpartner_id = org_bp.c_bpartner_id AND sub_bpl.isActive = 'Y'
+	)::Numeric AND org_bpl.isActive = 'Y'
+	INNER JOIN c_location loc ON org_bpl.c_location_id	= loc.c_location_id AND loc.isActive = 'Y'
 WHERE
-	ps.C_PaySelection_ID = $P{Record_ID}
+	ps.C_PaySelection_ID = $P{Record_ID} AND ps.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="paydate" class="java.sql.Timestamp"/>
@@ -42,7 +46,7 @@ WHERE
 	<title>
 		<band height="213" splitType="Stretch">
 			<textField pattern="dd. MMMMM yyyy" isBlankWhenNull="false">
-				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="425" y="150" width="91" height="13"/>
+				<reportElement key="textField-3" x="425" y="150" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -55,7 +59,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{paydate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="334" y="150" width="91" height="13"/>
+				<reportElement key="textField-3" x="334" y="150" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -68,14 +72,14 @@ WHERE
 				<textFieldExpression><![CDATA[$F{city} + ", "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="d3fdad98-2a22-4697-9e67-83dcfba69448" key="textField-3" x="37" y="200" width="487" height="13"/>
+				<reportElement key="textField-3" x="37" y="200" width="487" height="13" uuid="d3fdad98-2a22-4697-9e67-83dcfba69448"/>
 				<textElement markup="none">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Wir haben unsere Bank beauftragt, in den nächsten Tagen die folgenden Beträge auf Ihr Konto zu überweisen."]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="74a18506-8dad-4c05-b9d9-06c257ab2271" key="textField-3" x="37" y="180" width="200" height="13"/>
+				<reportElement key="textField-3" x="37" y="180" width="200" height="13" uuid="74a18506-8dad-4c05-b9d9-06c257ab2271"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>

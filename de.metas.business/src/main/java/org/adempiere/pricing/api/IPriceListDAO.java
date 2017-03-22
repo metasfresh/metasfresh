@@ -26,48 +26,16 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_M_DiscountSchemaLine;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-
-import de.metas.adempiere.model.I_M_PriceList;
-import de.metas.adempiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_ProductPrice;
 
 public interface IPriceListDAO extends ISingletonService
 {
-	void updateScalePrices(I_M_PriceList_Version plv, I_M_DiscountSchemaLine dsl, int adPinstanceId, String trxName);
-
-	/**
-	 * Updates following fields by taking them from base <code>plv</code>:
-	 * <ul>
-	 * <li> {@link I_M_ProductPrice#COLUMNNAME_C_TaxCategory_ID}
-	 * <li> {@link I_M_ProductPrice#COLUMNNAME_UseScalePrice}
-	 * <li> {@link I_M_ProductPrice#COLUMNNAME_IsSeasonFixedPrice}
-	 * </ul>
-	 *
-	 * Only those products will be updated which have a record in T_Selection for given <code>adPInstanceId</code>.
-	 *
-	 * @param plv
-	 * @param adPinstanceId
-	 * @param trxName transaction name that shall be used for updating
-	 */
-	void updateTaxCategory(I_M_PriceList_Version plv, I_M_DiscountSchemaLine discountSchemaLine, int adPinstanceId, String trxName);
-
 	I_M_PriceList retrievePriceList(Properties ctx, int priceListId);
-
-	I_M_ProductPrice retrieveProductPrice(org.compiere.model.I_M_PriceList_Version plv, int productId);
-
-	I_M_ProductPrice retrieveProductPriceOrNull(I_M_PriceList_Version plv, int productId);
-
-	I_M_ProductPrice retrieveProductPriceOrNull(Properties ctx, int priceListVersionId, int productId, String trxName);
-
-	Iterator<I_M_ProductPrice> retrieveAllProductPrices(I_M_PriceList_Version plv);
-
-	IQueryBuilder<I_M_ProductPrice> retrieveProductPricesQuery(I_M_PriceList_Version plv);
 
 	/**
 	 * Retrieves <b>all</b> (including inactive) {@link I_M_ProductPrice} record of the given price list version
@@ -115,19 +83,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv);
-
-	/**
-	 * Creates query filter for the given <code>dsl</code>. The includes the following column-values form the given dsl (if they are set):
-	 * <ul>
-	 * <li><code>M_Product_ID</code>
-	 * <li><code>M_Product_Category_ID</code>
-	 * <li><code>C_TaxCategory_ID</code>
-	 * </ul>
-	 *
-	 * @param dsl
-	 * @return
-	 */
-	IQueryFilter<I_M_ProductPrice> createQueryFilter(I_M_DiscountSchemaLine dsl);
-
-	IQueryFilter<I_M_ProductPrice> createProductPriceQueryFilterForProductInSelection(int adPInstanceId);
+	
+	/** @return next product price's MatchSeqNo */
+	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 }

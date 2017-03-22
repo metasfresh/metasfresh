@@ -36,7 +36,7 @@ public interface IMaterialTrackingPPOrderBL extends ISingletonService
 	/**
 	 *
 	 * @param ppOrder
-	 * @return <code>true</code> if the given <code>ppOrder</code> is a quality inspection, <code>false</code> if not
+	 * @return <code>true</code> if the given <code>ppOrder</code> is a quality inspection (Waschprobe), <code>false</code> if not
 	 */
 	boolean isQualityInspection(I_PP_Order ppOrder);
 

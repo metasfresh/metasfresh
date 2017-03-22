@@ -47,11 +47,12 @@ import java.util.ArrayList;
 
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MWarehouse;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.MPPProductPlanning;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * CreateProductPlanning
@@ -61,7 +62,7 @@ import org.eevolution.model.MPPProductPlanning;
  * 
  * @author Teo Sarca, http://www.arhipac.ro
  */
-public class CreateProductPlanning extends SvrProcess
+public class CreateProductPlanning extends JavaProcess
 {
 	/** Process Parameters */;
 	private int             p_M_Product_Category_ID = 0;
@@ -98,7 +99,7 @@ public class CreateProductPlanning extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

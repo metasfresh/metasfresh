@@ -19,6 +19,9 @@ import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.xml.XMLWriter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * 
  * Process to export an AD migration script as XML
@@ -27,7 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
  * @author Teo Sarca
  * 
  */
-public class MigrationToXML extends SvrProcess
+public class MigrationToXML extends JavaProcess
 {
 
 	private int migrationId = 0;
@@ -36,7 +39,7 @@ public class MigrationToXML extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameterName().equals("AD_Migration_ID"))
 			{

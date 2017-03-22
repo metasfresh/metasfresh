@@ -13,11 +13,11 @@ package org.adempiere.ad.trx.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,14 +68,65 @@ public interface ITrxManager extends ISingletonService
 	boolean remove(ITrx trx);
 
 	/**
-	 * Creates transaction runnable configuration
+	 * Creates a builder for a transaction runnable configuration.
 	 *
-	 * @param trxMode
+	 * @return
+	 */
+	ITrxRunConfigBuilder newTrxRunConfigBuilder();
+
+	interface ITrxRunConfigBuilder
+	{
+		/**
+		 * Decide if the connection should perform an auto-commit after each statement.
+		 * Makes e.g. sense with long-running transactions that only do selects (yes, also a select acquires a lock).
+		 * <p>
+		 * The default is <code>false</code>.
+		 */
+		ITrxRunConfigBuilder setAutoCommit(boolean autoCommit);
+
+		/**
+		 * The default is {@link TrxPropagation#REQUIRES_NEW}.
+		 * 
+		 * @param trxPropagation
+		 * @return
+		 */
+		ITrxRunConfigBuilder setTrxPropagation(TrxPropagation trxPropagation);
+
+		/**
+		 * What to do if a runnable succeeds. Ignored if autoCommit is <code>true</code>.
+		 * <p>
+		 * The default is {@link OnRunnableSuccess#COMMIT}
+		 *
+		 * @param onRunnableSuccess
+		 * @return
+		 */
+		ITrxRunConfigBuilder setOnRunnableSuccess(OnRunnableSuccess onRunnableSuccess);
+
+		/**
+		 * Specify what to do if a runnable fails. Ignored if autoCommit is <code>true</code>.
+		 * <p>
+		 * the default is {@link OnRunnableFail#ASK_RUNNABLE}.
+		 *
+		 * @param onRunnableFail
+		 * @return
+		 */
+		ITrxRunConfigBuilder setOnRunnableFail(OnRunnableFail onRunnableFail);
+
+		ITrxRunConfig build();
+	}
+
+	/**
+	 * Creates transaction runnable configuration.
+	 *
+	 * @param trxPropagation
 	 * @param onRunnableSuccess
 	 * @param onRunnableFail
 	 * @return
+	 *
+	 * @deprecated please use {@link #newTrxRunConfigBuilder()} instead.
 	 */
-	ITrxRunConfig createTrxRunConfig(TrxPropagation trxMode, OnRunnableSuccess onRunnableSuccess, OnRunnableFail onRunnableFail);
+	@Deprecated
+	ITrxRunConfig createTrxRunConfig(TrxPropagation trxPropagation, OnRunnableSuccess onRunnableSuccess, OnRunnableFail onRunnableFail);
 
 	/**
 	 * Get/Create actual transaction.
@@ -134,6 +185,8 @@ public interface ITrxManager extends ISingletonService
 	String createTrxName(String prefix, boolean createTrx);
 
 	<T> T call(Callable<T> callable);
+	
+	void run(Runnable runnable);
 
 	/**
 	 * Same as calling {@link #run(String, TrxRunnable)} with trxName=null
@@ -179,12 +232,13 @@ public interface ITrxManager extends ISingletonService
 	void run(String trxName, boolean manageTrx, TrxRunnable r);
 
 	/**
-	 * Execute callable object using provided transaction. If execution fails, database operations will be rolled back.
+	 * Execute the callable object using either the provided transaction or create a new one, depending on the {@code manageTrx} parameter.
+	 * If execution fails, database operations will be rolled back.
 	 * <p>
 	 * Example:
 	 *
 	 * <pre>
-	 * Trx.call(null, new {@link TrxCallable}() {
+	 * Trx.call("myTrxNamePrefix", true, new {@link TrxCallable}() {
 	 *     public SomeResult call() {
 	 *         // do something using in transaction
 	 *     }
@@ -247,7 +301,7 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Gets {@link ITrxListenerManager} associated with given transaction, identified by <code>trxName</code>.
-	 * 
+	 *
 	 * @param trxName
 	 * @return {@link ITrxListenerManager}; never returns null
 	 * @throws TrxNotFoundException if transaction was not found
@@ -270,6 +324,11 @@ public interface ITrxManager extends ISingletonService
 	 * @return auto-commit {@link ITrxListenerManager}; never returns null
 	 */
 	ITrxListenerManager getTrxListenerManagerOrAutoCommit(String trxName);
+
+	/**
+	 * Same as {@link #getTrxListenerManagerOrAutoCommit(String)} but it will use {@link ITrx#TRXNAME_ThreadInherited}.
+	 */
+	ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit();
 
 	/**
 	 *
@@ -380,6 +439,11 @@ public interface ITrxManager extends ISingletonService
 	 * @see #isNull(String)
 	 */
 	<T> void assertModelTrxNameNotNull(T model);
+
+	/**
+	 * @return true if current thread has thread inherited transaction set
+	 */
+	boolean hasThreadInheritedTrx();
 
 	/**
 	 * Assumes current thread has thread inherited transaction set.

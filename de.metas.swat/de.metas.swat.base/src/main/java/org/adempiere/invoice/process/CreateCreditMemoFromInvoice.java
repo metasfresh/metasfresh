@@ -31,12 +31,12 @@ import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class CreateCreditMemoFromInvoice extends SvrProcess
+public class CreateCreditMemoFromInvoice extends JavaProcess
 {
 	private static final String PARA_C_DocType_ID = "C_DocType_ID";
 	private int C_DocType_ID = -1;
@@ -95,7 +95,7 @@ public class CreateCreditMemoFromInvoice extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

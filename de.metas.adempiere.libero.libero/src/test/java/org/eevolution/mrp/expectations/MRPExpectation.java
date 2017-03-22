@@ -371,7 +371,7 @@ public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<P
 		}
 		if (!_ddOrderLinesToInclude.isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMN_DD_OrderLine_ID, _ddOrderLinesToInclude);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMN_DD_OrderLine_ID, _ddOrderLinesToInclude);
 		}
 		if (!_ddOrderLinesToExclude.isEmpty())
 		{
@@ -379,11 +379,11 @@ public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<P
 		}
 		if (!_ppOrdersToInclude.isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMN_PP_Order_ID, _ppOrdersToInclude);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMN_PP_Order_ID, _ppOrdersToInclude);
 		}
 		if (_mrpFirmType != null && !_mrpFirmType.getDocStatuses().isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_DocStatus, _mrpFirmType.getDocStatuses());
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_DocStatus, _mrpFirmType.getDocStatuses());
 		}
 
 		queryBuilder.orderBy()

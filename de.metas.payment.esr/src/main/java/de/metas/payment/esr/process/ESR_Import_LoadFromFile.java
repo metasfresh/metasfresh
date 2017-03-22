@@ -32,8 +32,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -43,6 +41,8 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates ESR import lines for the given V11 file and matches them against system invoices and bPartners.
@@ -50,7 +50,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
  * @author ts
  * 
  */
-public class ESR_Import_LoadFromFile extends SvrProcess
+public class ESR_Import_LoadFromFile extends JavaProcess
 {
 	// services
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
@@ -68,7 +68,7 @@ public class ESR_Import_LoadFromFile extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

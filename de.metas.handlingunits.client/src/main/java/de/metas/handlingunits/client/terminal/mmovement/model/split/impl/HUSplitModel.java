@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,8 +39,8 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.builder.IHUSplitBuilder;
-import de.metas.handlingunits.allocation.builder.impl.HUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.ISplittableHUKey;
@@ -154,7 +153,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		for (final IProductStorage productStorage : productStorages)
 		{
 			final I_M_Product product = productStorage.getM_Product();
-			final BigDecimal qty = productStorage.getQty();
+			final BigDecimal qty = productStorage.getQty(); // qty is the full qty available in the source. how much we will really split is also restricted by the destination
 			final I_C_UOM uom = productStorage.getC_UOM();
 			final CUSplitKey key = new CUSplitKey(getTerminalContext(), product, qty, uom);
 			keys.add(key);
@@ -381,7 +380,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 
 		//
 		// Gets the most top level parent of the HUKey which we just split
-		// and entirelly rebuid all HUKey structure from that level down,  
+		// and entirely rebuid all HUKey structure from that level down,
 		// just to make sure the entire HU structure is up2date.
 		ISplittableHUKey huToRebuild = huToSplitKey;
 		IHUKey huToRebuildParent = huToRebuild.getParent();

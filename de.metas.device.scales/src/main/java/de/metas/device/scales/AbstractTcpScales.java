@@ -32,16 +32,32 @@ import de.metas.device.api.request.DeviceRequestConfigureDevice;
 import de.metas.device.api.request.IDeviceConfigParam;
 import de.metas.device.api.request.IDeviceResponseGetConfigParams;
 import de.metas.device.scales.endpoint.ITcpConnectionEndPoint;
+import de.metas.device.scales.endpoint.MockedEndpoint;
+import de.metas.device.scales.endpoint.TcpConnectionEndPoint;
 import de.metas.device.scales.impl.ConfigureDeviceHandler;
 import de.metas.device.scales.impl.ScalesGetGrossWeightHandler;
 import de.metas.device.scales.util.DeviceConfigParam;
 
 public abstract class AbstractTcpScales extends AbstractBaseDevice
 {
+	/**
+	 * In production, this is usually {@link TcpConnectionEndPoint}, because as of now, we didn't implement any other EP.
+	 * For testing, we also have {@link MockedEndpoint}.
+	 */
 	public static final String PARAM_ENDPOINT_CLASS = "Endpoint.Class";
+
 	public static final String PARAM_ENDPOINT_PORT = "Endpoint.Port";
 	public static final String PARAM_ENDPOINT_IP = "Endpoint.IP";
+
+	/**
+	 * See {@link TcpConnectionEndPoint#setReturnLastLine(boolean)}.
+	 */
 	public static final String PARAM_ENDPOINT_RETURN_LAST_LINE = "Endpoint.ReturnLastLine";
+
+	/**
+	 * See {@link TcpConnectionEndPoint#setReadTimeoutMillis(int)}.
+	 */
+	public static final String PARAM_ENDPOINT_READ_TIMEOUT_MILLIS = "Endpoint.ReadTimeOutMillis";
 
 	/**
 	 * Weight values coming from the device shall be rounded to this precision before they are forwarded to metasfresh.<br>
@@ -97,6 +113,7 @@ public abstract class AbstractTcpScales extends AbstractBaseDevice
 		params.add(new DeviceConfigParam(PARAM_ENDPOINT_IP, "Endpoint.IP", ""));
 		params.add(new DeviceConfigParam(PARAM_ENDPOINT_PORT, "Endpoint.Port", ""));
 		params.add(new DeviceConfigParam(PARAM_ENDPOINT_RETURN_LAST_LINE, PARAM_ENDPOINT_RETURN_LAST_LINE, "N"));
+		params.add(new DeviceConfigParam(PARAM_ENDPOINT_READ_TIMEOUT_MILLIS, PARAM_ENDPOINT_READ_TIMEOUT_MILLIS, "500"));
 		params.add(new DeviceConfigParam(PARAM_ROUND_TO_PRECISION, "RoundToPrecision", "-1"));
 
 		return new IDeviceResponseGetConfigParams()

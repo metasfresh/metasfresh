@@ -24,14 +24,14 @@ package org.adempiere.ui.process;
 
 
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Process used to test the distributed event bus by sending events to a given topic.
@@ -39,7 +39,7 @@ import de.metas.event.Type;
  * @author tsa
  *
  */
-public class EventBus_SendTestEvent extends SvrProcess
+public class EventBus_SendTestEvent extends JavaProcess
 {
 
 	private String p_TopicName;
@@ -50,7 +50,7 @@ public class EventBus_SendTestEvent extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

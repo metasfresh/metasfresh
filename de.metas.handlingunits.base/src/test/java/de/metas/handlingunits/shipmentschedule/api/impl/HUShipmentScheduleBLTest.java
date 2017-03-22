@@ -1,5 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
+
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -8,8 +11,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +58,7 @@ public class HUShipmentScheduleBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		contextProvider = new PlainContextAware(Env.getCtx());
+		contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 	}
 
 	@Test
@@ -73,11 +74,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(BigDecimal.ZERO));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(new BigDecimal(2)));
 
 	}
 
@@ -94,11 +95,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(new BigDecimal(2)));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(BigDecimal.ZERO));
 
 	}
 
@@ -115,11 +116,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(new BigDecimal(2)));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(BigDecimal.ZERO));
 
 	}
 
@@ -136,11 +137,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(new BigDecimal(2)));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(BigDecimal.ZERO));
 
 	}
 
@@ -157,11 +158,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(new BigDecimal(2)));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(BigDecimal.ZERO));
 
 	}
 
@@ -171,7 +172,7 @@ public class HUShipmentScheduleBLTest
 		final I_M_ShipmentSchedule schedule = createSchedule(new BigDecimal(1), new BigDecimal(1));
 
 		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Completed);
-		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2)); // this doesn't matter. the HUs are counted 
+		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(-99)); // this doesn't matter. the HUs are counted 
 
 		final I_M_HU lu = createHU(typeLU);
 
@@ -182,12 +183,13 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(BigDecimal.ZERO));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(BigDecimal.ONE));
-
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(BigDecimal.ONE));
+		
+		// assertThat(iol.getQtyEnteredTU(), comparesEqualTo(BigDecimal.ONE)); iol.getQtyEnteredTU() is not updated by the allocaction
 	}
 
 	
@@ -209,11 +211,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(BigDecimal.ONE));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(BigDecimal.ONE));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(BigDecimal.ONE));
 
 	}
 	
@@ -239,11 +241,11 @@ public class HUShipmentScheduleBLTest
 		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
 		InterfaceWrapperHelper.save(schedule);
 
-		Assert.assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), Matchers.equalTo(BigDecimal.ZERO));
-		Assert.assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), Matchers.equalTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(BigDecimal.ZERO));
 
-		Assert.assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), Matchers.equalTo(new BigDecimal(2)));
-		Assert.assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), Matchers.equalTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(new BigDecimal(2)));
+		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(new BigDecimal(2)));
 
 	}
 	private I_M_HU createHU(final String unitType)

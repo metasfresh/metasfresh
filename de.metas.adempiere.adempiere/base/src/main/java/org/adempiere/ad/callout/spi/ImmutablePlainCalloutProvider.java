@@ -68,8 +68,7 @@ public final class ImmutablePlainCalloutProvider implements ICalloutProvider
 	@Override
 	public TableCalloutsMap getCallouts(final Properties ctx, final String tableName)
 	{
-		final TableCalloutsMap callouts = registeredCalloutsByTableId.get(tableName);
-		return callouts == null ? TableCalloutsMap.EMPTY : callouts;
+		return registeredCalloutsByTableId.getOrDefault(tableName, TableCalloutsMap.EMPTY);
 	}
 
 	public static final class Builder
@@ -103,9 +102,7 @@ public final class ImmutablePlainCalloutProvider implements ICalloutProvider
 			{
 				registeredCalloutsByTableId = new HashMap<>();
 			}
-			registeredCalloutsByTableId.compute(tableName, (tableNameKey, currentTabCalloutsMap) -> {
-				return TableCalloutsMap.compose(currentTabCalloutsMap, columnName, callout);
-			});
+			registeredCalloutsByTableId.compute(tableName, (tableNameKey, currentTabCalloutsMap) -> TableCalloutsMap.compose(currentTabCalloutsMap, columnName, callout));
 
 			return this;
 		}

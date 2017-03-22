@@ -69,7 +69,7 @@ public abstract class ReadPaymentDialogWindowAdapter extends WindowAdapter
 
 		//
 		// Update information
-		final ReadPaymentPanelResult result = readPaymentPanel.getResultIfValid().orNull();
+		final ReadPaymentPanelResult result = readPaymentPanel.getResultIfValid().orElse(null);
 		if (result == null)
 		{
 			return;

@@ -27,7 +27,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,6 +35,7 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -49,6 +50,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
@@ -56,7 +58,6 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
@@ -186,7 +187,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, m_Product_ID);
+			final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
+					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
 			return productPrice.getC_TaxCategory_ID();
 		}
@@ -213,14 +215,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, m_Product_ID);
-
+			final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
+					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 			return productPrice.getC_TaxCategory_ID();
 		}
 
-		throw new AdempiereException("@NotFound@ @C_TaxCategory_ID@ ("
-				+ "@C_InvoiceLine_ID@:" + invoiceLine
-				+ ")");
+		throw new TaxCategoryNotFoundException(invoiceLine);
 	}
 
 	@Override

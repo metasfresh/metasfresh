@@ -38,16 +38,17 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import net.sourceforge.barbecue.Barcode;
-import net.sourceforge.barbecue.output.OutputException;
-
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.MPrintTableFormat;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+
+import net.sourceforge.barbecue.Barcode;
+import net.sourceforge.barbecue.output.OutputException;
 
 /**
  * Table Print Element. Maintains a logical cross page table, which is
@@ -1129,7 +1130,7 @@ public class TableElement extends PrintElement
 			code = new Integer(((KeyNamePair)pp).getKey());
 		//
 		MQuery query = new MQuery(tableName);
-		query.addRestriction(columnName, MQuery.EQUAL, code, null,
+		query.addRestriction(columnName, Operator.EQUAL, code, null,
 				pp.toString());
 		return query;
 	} // getDrillDown

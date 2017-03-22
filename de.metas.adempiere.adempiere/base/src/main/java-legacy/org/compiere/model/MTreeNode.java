@@ -831,6 +831,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private String webuiNameBrowse;
 	private String webuiNameNew;
 	private String webuiNameNewBreadcrumb;
+	private String mainTableName;
 
 	public int getAD_Window_ID()
 	{
@@ -922,5 +923,17 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		return webuiNameNewBreadcrumb;
 	}
 
-
+	/**
+	 * @param mainTableName table name of main tab or null
+	 */
+	public void setMainTableName(String mainTableName)
+	{
+		this.mainTableName = mainTableName;
+	}
+	
+	/** @return table name of main tab or null */
+	public String getMainTableName()
+	{
+		return mainTableName;
+	}
 }   // MTreeNode

@@ -70,6 +70,15 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
 	 *
+	 * @param ctx
+	 * @param productId
+	 * @return M_AttributeSet_ID or {@link IAttributeDAO#M_AttributeSet_ID_None}
+	 */
+	int getM_AttributeSet_ID(Properties ctx, int productId);
+
+	/**
+	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
+	 *
 	 * @param product
 	 * @return
 	 */

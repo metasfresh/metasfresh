@@ -45,7 +45,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 /**
  * {@link IHUStorageDAO} implementation which acts like a save buffer:
  * <ul>
- * <li>automatically loads attributes from underlying {@link IHUStorageDAO}, if they does not already exist in our local cache
+ * <li>automatically loads attributes from underlying {@link IHUStorageDAO}, if they do not already exist in our local cache
  * <li>on save, instead of directly saving them we are just adding them to the cache/buffer. Later, on {@link #flush()} everything will be saved.
  * </ul>
  * 

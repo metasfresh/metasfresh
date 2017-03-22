@@ -1,5 +1,11 @@
 package de.metas.materialtracking.impl;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
+import org.adempiere.util.Services;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -23,13 +29,8 @@ package de.metas.materialtracking.impl;
  */
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingListener;
@@ -135,9 +136,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 	private void logRequest(final MTLinkRequest request, final String msgSuffix)
 	{
 		logger.debug(request + msgSuffix); // log the request
-		ILoggable.THREADLOCAL
-				.getLoggableOr(ILoggable.NULL)
-				.addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.
+		Loggables.get().addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.
 	}
 
 	@Override

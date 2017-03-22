@@ -18,13 +18,15 @@ package org.compiere.process;
 
 import org.compiere.model.MDocTypeCounter;
 
+import de.metas.process.JavaProcess;
+
 /**
  *	Validate Counter Document
  *	
  *  @author Jorg Janke
  *  @version $Id: DocTypeCounterValidate.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class DocTypeCounterValidate extends SvrProcess
+public class DocTypeCounterValidate extends JavaProcess
 {
 	/**	Counter Document		*/
 	private int					p_C_DocTypeCounter_ID = 0;

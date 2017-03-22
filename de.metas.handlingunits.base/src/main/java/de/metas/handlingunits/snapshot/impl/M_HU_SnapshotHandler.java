@@ -52,7 +52,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 	protected void createSnapshotsByIds(final Set<Integer> huIds)
 	{
 		query(I_M_HU.class)
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
 				.create()
 				.insertDirectlyInto(I_M_HU_Snapshot.class)
 				.mapCommonColumns()
@@ -151,7 +151,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		}
 		final List<Integer> huItemIdsList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Item.class, getContext())
-				.addInArrayFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
+				.addInArrayOrAllFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
 				.create()
 				.listIds();
 		return new HashSet<>(huItemIdsList);
@@ -165,7 +165,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		}
 		final List<Integer> huIdsList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU.class, getContext())
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, huItemIds)
+				.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, huItemIds)
 				.create()
 				.listIds();
 		return new HashSet<>(huIdsList);

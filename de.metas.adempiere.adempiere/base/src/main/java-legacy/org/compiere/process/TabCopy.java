@@ -20,6 +20,9 @@ import org.compiere.model.MField;
 import org.compiere.model.MTab;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Copy Tab Fields
@@ -27,7 +30,7 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: TabCopy.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class TabCopy extends SvrProcess
+public class TabCopy extends JavaProcess
 {
 	/**	Tab	To					*/
 	private int			p_AD_TabTo_ID = 0;
@@ -39,7 +42,7 @@ public class TabCopy extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

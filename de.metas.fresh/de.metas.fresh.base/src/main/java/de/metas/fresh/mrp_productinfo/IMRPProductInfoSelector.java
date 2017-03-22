@@ -3,6 +3,11 @@ package de.metas.fresh.mrp_productinfo;
 import java.sql.Timestamp;
 import java.util.Map;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+
+import de.metas.fresh.mrp_productinfo.impl.MRPProductInfoSelectorFactory;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -41,17 +46,17 @@ public interface IMRPProductInfoSelector extends Comparable<IMRPProductInfoSelec
 	int getM_AttributeSetInstance_ID();
 
 	/**
-	 * Never return <code>null</code>
+	 * Return the model this instance was created from or {@code null} if this instance was created from an {@link IParams}.
 	 *
 	 * @return
 	 */
-	Object getModel();
+	Object getModelOrNull();
 
 	/**
 	 * Returns a string that looks like this:
 	 *
 	 * <pre>
-	 * TableName[Date=(Timestamp),M_Product_ID=(int),M_AttributeSetInstance_ID=(int)]
+	 * ParamPrefix[Date=(Timestamp),M_Product_ID=(int),M_AttributeSetInstance_ID=(int)]
 	 * </pre>
 	 *
 	 * @return
@@ -77,4 +82,16 @@ public interface IMRPProductInfoSelector extends Comparable<IMRPProductInfoSelec
 	 */
 	@Override
 	boolean equals(Object obj);
+
+	/**
+	 * If this instance was created from a model (using {@link MRPProductInfoSelectorFactory#createOrNullForModel(Object)}),
+	 * then return a string that starts with the model's table name as returned by {@link InterfaceWrapperHelper#getModelTableName(Object)}.
+	 * 
+	 * If this instance was created using {@link MRPProductInfoSelectorFactory#createForParams(org.adempiere.util.api.IParams)},
+	 * then return the common prefix of the three parameter names whose parameter values were used to generate this instance.
+	 * 
+	 * 
+	 * @return never return {@code null}.
+	 */
+	String getParamPrefix();
 }

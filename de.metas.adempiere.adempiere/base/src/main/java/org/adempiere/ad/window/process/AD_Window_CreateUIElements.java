@@ -12,7 +12,7 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -22,10 +22,11 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -49,7 +50,7 @@ import com.google.common.collect.Ordering;
  * #L%
  */
 
-public class AD_Window_CreateUIElements extends SvrProcess
+public class AD_Window_CreateUIElements extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception
@@ -159,7 +160,7 @@ public class AD_Window_CreateUIElements extends SvrProcess
 
 		private final void log(final String msg, final Object... msgParameters)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+			Loggables.get().addLog(msg, msgParameters);
 		}
 
 		public void generate(final I_AD_Window adWindow)

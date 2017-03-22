@@ -28,7 +28,10 @@ import java.io.FilenameFilter;
 import org.adempiere.ad.migration.xml.XMLLoader;
 import org.adempiere.exceptions.AdempiereException;
 
-public class MigrationFromXML extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class MigrationFromXML extends JavaProcess
 {
 
 	private String fileName;
@@ -36,7 +39,7 @@ public class MigrationFromXML extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameterName().equals("FileName"))
 			{

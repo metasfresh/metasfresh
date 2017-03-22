@@ -39,9 +39,9 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.flatrate.interfaces.I_C_DocType;
 import de.metas.flatrate.modelvalidator.C_Flatrate_Conditions;
 import de.metas.flatrate.modelvalidator.C_Invoice_Candidate;
-import de.metas.flatrate.process.C_FlatrateTerm_Create_From_OLCand;
-import de.metas.flatrate.process.C_FlatrateTerm_Extend;
-import de.metas.flatrate.process.C_FlatrateTerm_Prepare_Closing;
+import de.metas.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
+import de.metas.flatrate.process.C_Flatrate_Term_Extend;
+import de.metas.flatrate.process.C_Flatrate_Term_Prepare_Closing;
 
 @RunWith(IntegrationTestRunner.class)
 public class ADConfigurationTests extends AIntegrationTestDriver
@@ -56,13 +56,13 @@ public class ADConfigurationTests extends AIntegrationTestDriver
 	@Test
 	public void config()
 	{
-		assertProcessExists(getCtx(), "C_Flatrate_Term_Extend", C_FlatrateTerm_Extend.class, getTrxName());
-		assertProcessExists(C_FlatrateTerm_Prepare_Closing.class, null);
+		assertProcessExists(getCtx(), "C_Flatrate_Term_Extend", C_Flatrate_Term_Extend.class, getTrxName());
+		assertProcessExists(C_Flatrate_Term_Prepare_Closing.class, null);
 
 		// 03660
-		assertProcessExists(C_FlatrateTerm_Create_From_OLCand.class, null);
+		assertProcessExists(C_Flatrate_Term_Create_From_OLCand.class, null);
 
-		assertProcessExists(getCtx(), "C_Flatrate_Term_ProcessNoticeDates", C_FlatrateTerm_Extend.class, getTrxName());
+		assertProcessExists(getCtx(), "C_Flatrate_Term_ProcessNoticeDates", C_Flatrate_Term_Extend.class, getTrxName());
 
 		assertProcessSchedulerExists(getCtx(), "C_Flatrate_Term_ProcessNoticeDates", getTrxName());
 

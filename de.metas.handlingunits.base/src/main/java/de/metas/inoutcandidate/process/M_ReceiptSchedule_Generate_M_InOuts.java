@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,7 +46,7 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
+
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -60,7 +61,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  * @task 08648
  *
  */
-public class M_ReceiptSchedule_Generate_M_InOuts extends SvrProcess
+public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 {
 
 	private static final transient Logger logger = LogManager.getLogger(M_ReceiptSchedule_Generate_M_InOuts.class);

@@ -10,25 +10,22 @@ package org.adempiere.ad.persistence;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -37,15 +34,18 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import de.metas.logging.LogManager;
+
 /**
  * Class responsible for loading model classes by given Table Name.
- * 
+ *
  * @author tsa
  *
  */
@@ -108,7 +108,6 @@ public class TableModelClassLoader
 		this.tableName2class = CacheBuilder.newBuilder()
 				.build(new CacheLoader<String, Class<?>>()
 				{
-
 					@Override
 					public Class<?> load(final String tableName) throws Exception
 					{
@@ -174,7 +173,7 @@ public class TableModelClassLoader
 
 	private final Class<?> findModelClassByTableName(final String tableName)
 	{
-		if (tableName == null || tableName.endsWith("_Trl"))
+		if (Check.isEmpty(tableName, true) || tableName.endsWith("_Trl"))
 		{
 			return NO_CLASS;
 		}
@@ -297,7 +296,7 @@ public class TableModelClassLoader
 
 	/**
 	 * Get PO class.
-	 * 
+	 *
 	 * @param className fully qualified class name
 	 * @return class or <code>null</code> if model class was not found or it's not valid
 	 */

@@ -30,6 +30,8 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
@@ -64,6 +66,8 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
 
 /**
@@ -79,8 +83,18 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		CopyRecordFactory.addOnRecordCopiedListener(new CloneASIListener());
+		
+		// 
+		registerFactories();
 	}
 
+	public void registerFactories()
+	{
+		//
+		// Register notifier
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNotifier(new NotifyAsyncBatch());
+	}
+	
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -100,6 +114,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass(), client); // 04599
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type(), client); // 04599
+		
+		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance, client); // FRESH-727
 
 		//
 		// Currency
@@ -130,16 +146,33 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// Task 09548
 		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
 
-		engine.addModelValidator(de.metas.order.model.validator.OrderModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE, client);
+
+		engine.addModelValidator(de.metas.invoice.model.interceptor.InvoiceModuleInterceptor.INSTANCE, client);
 
 		// gh-issue #288
 		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
+		
+		//
+		// Script/Rule engine
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance, client);
+		
+		//
+		// Request
+		engine.addModelValidator(de.metas.request.model.interceptor.RequestsModuleInterceptor.instance, client);
+		
+		//
+		// BPartner
+		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
 	}
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
+		
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
 	}
 
 	@Override
@@ -250,6 +283,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PriceList.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PriceList_Version.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice.Table_Name);
+
+		// gh #1184: also propagate pricing rule changes to other hosts
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_PricingRule.Table_Name);
 
 		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);

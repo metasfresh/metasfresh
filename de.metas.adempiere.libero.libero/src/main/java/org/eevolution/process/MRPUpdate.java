@@ -50,8 +50,6 @@ import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
 import org.compiere.model.POResultSet;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -61,6 +59,9 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MPPOrder;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	MRPUpdate
  *	
@@ -69,7 +70,7 @@ import org.eevolution.model.MPPOrder;
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 @Deprecated
-public class MRPUpdate extends SvrProcess
+public class MRPUpdate extends JavaProcess
 {
 	private int     m_AD_Client_ID  = 0;		
 	private int     p_AD_Org_ID     = 0;
@@ -86,7 +87,7 @@ public class MRPUpdate extends SvrProcess
 	{
 		m_AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 //		Planner_ID = Integer.parseInt(Env.getContext(getCtx(), "#AD_User_ID"));
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

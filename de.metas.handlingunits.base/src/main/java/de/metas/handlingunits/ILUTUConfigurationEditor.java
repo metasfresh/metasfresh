@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.util.function.Function;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -62,7 +64,7 @@ public interface ILUTUConfigurationEditor
 	 * @param lutuConfigurationEditor
 	 * @return this instance
 	 */
-	ILUTUConfigurationEditor edit(final Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor);
+	ILUTUConfigurationEditor edit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor);
 
 	/**
 	 * Updates this instance's editing-configuration (see {@link #getEditingLUTUConfiguration()}) from the underlying document.
@@ -73,14 +75,14 @@ public interface ILUTUConfigurationEditor
 	ILUTUConfigurationEditor updateFromModel();
 
 	/**
-	 * Saves the changes made to the {@link I_M_HU_LUTU_Configuration} by this editor back to the DB and exists the editing mode.
+	 * Save the changes made to the {@link I_M_HU_LUTU_Configuration} by this editor back to the DB and exist the editing mode.
 	 *
 	 * @return this instance
 	 */
 	ILUTUConfigurationEditor save();
 
 	/**
-	 * Synchronizes this editing-configuration (see {@link #getEditingLUTUConfiguration()}) back to the underlying document.
+	 * Synchronize this editing-configuration (see {@link #getEditingLUTUConfiguration()}) back to the underlying {@link I_M_HU_LUTU_Configuration}.
 	 *
 	 * @return this instance
 	 */

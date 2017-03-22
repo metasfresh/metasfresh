@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -39,19 +38,33 @@ import org.adempiere.util.Check;
  */
 public class POJOInSelectionQueryFilter<T> implements IQueryFilter<T>
 {
-	private final int selectionId;
+	public static final <T> POJOInSelectionQueryFilter<T> inSelection(final int selectionId)
+	{
+		final boolean include = true;
+		return new POJOInSelectionQueryFilter<>(selectionId, include);
+	}
 
-	public POJOInSelectionQueryFilter(final int selectionId)
+	public static final <T> POJOInSelectionQueryFilter<T> notInSelection(final int selectionId)
+	{
+		final boolean include = false;
+		return new POJOInSelectionQueryFilter<>(selectionId, include);
+	}
+
+	private final int selectionId;
+	private final boolean include;
+
+	private POJOInSelectionQueryFilter(final int selectionId, final boolean include)
 	{
 		super();
 		Check.assume(selectionId > 0, "selectionId > 0");
 		this.selectionId = selectionId;
+		this.include = include;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "InSelection-" + selectionId;
+		return (include ? "InSelection-" : "NotInSelection-") + selectionId;
 	}
 
 	@Override
@@ -63,7 +76,15 @@ public class POJOInSelectionQueryFilter<T> implements IQueryFilter<T>
 		}
 
 		final int id = InterfaceWrapperHelper.getId(model);
-		return POJOLookupMap.get().isInSelection(selectionId, id);
+		final boolean isInSelection = POJOLookupMap.get().isInSelection(selectionId, id);
+		if (include)
+		{
+			return isInSelection;
+		}
+		else // exclude
+		{
+			return !isInSelection;
+		}
 	}
 
 	public int getSelectionId()

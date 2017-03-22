@@ -154,6 +154,29 @@ public interface I_C_POS_HUEditor_Filter
     public static final String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
 
 	/**
+	 * Set POS HU Editor Filter.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID);
+
+	/**
+	 * Get POS HU Editor Filter.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_POS_HUEditor_Filter_ID();
+
+    /** Column definition for C_POS_HUEditor_Filter_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_C_POS_HUEditor_Filter_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "C_POS_HUEditor_Filter_ID", null);
+    /** Column name C_POS_HUEditor_Filter_ID */
+    public static final String COLUMNNAME_C_POS_HUEditor_Filter_ID = "C_POS_HUEditor_Filter_ID";
+
+	/**
 	 * Set Spaltenname.
 	 * Name der Spalte in der Datenbank
 	 *
@@ -177,29 +200,6 @@ public interface I_C_POS_HUEditor_Filter
     public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_ColumnName = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "ColumnName", null);
     /** Column name ColumnName */
     public static final String COLUMNNAME_ColumnName = "ColumnName";
-
-	/**
-	 * Set POS HU Editor Filter.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID);
-
-	/**
-	 * Get POS HU Editor Filter.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_POS_HUEditor_Filter_ID();
-
-    /** Column definition for C_POS_HUEditor_Filter_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_C_POS_HUEditor_Filter_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "C_POS_HUEditor_Filter_ID", null);
-    /** Column name C_POS_HUEditor_Filter_ID */
-    public static final String COLUMNNAME_C_POS_HUEditor_Filter_ID = "C_POS_HUEditor_Filter_ID";
 
 	/**
 	 * Get Erstellt.

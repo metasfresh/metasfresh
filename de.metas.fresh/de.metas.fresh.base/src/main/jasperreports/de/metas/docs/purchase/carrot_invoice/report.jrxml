@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-17T10:53:40 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-05T18:32:40 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,6 +8,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -26,26 +27,28 @@
 		SELECT 	0
 		FROM 	C_InvoiceLine il
 			-- Withhold Product
-			LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice')
+			LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice') AND mtr_i.isActive = 'Y'
 				AND mtr_i.Record_ID = il.C_Invoice_ID
-			LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID
-			LEFT OUTER JOIN M_QualityInsp_LagerKonf_Version qilkv ON mt.M_QualityInsp_LagerKonf_Version_ID = qilkv.M_QualityInsp_LagerKonf_Version_ID
+			LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID AND mt.isActive = 'Y'
+			LEFT OUTER JOIN M_QualityInsp_LagerKonf_Version qilkv ON mt.M_QualityInsp_LagerKonf_Version_ID = qilkv.M_QualityInsp_LagerKonf_Version_ID  AND qilkv.isActive = 'Y'
 		WHERE 	il.M_Product_ID = qilkv.M_Product_Witholding_ID
 			AND il.C_Invoice_ID = i.C_Invoice_ID
+			AND il.isActive = 'Y'
 	) AS printwithhold,
 	EXISTS (
 		SELECT 	0
 		FROM 	C_InvoiceLine il
 			-- Withhold Product
-			INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
-		WHERE	p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+			INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID  AND p.isActive = 'Y'
+		WHERE	p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID'  AND isActive = 'Y')  
+				AND il.isActive = 'Y'
 	) AS printHUs
 FROM
 	C_Invoice i
-	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID
-	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language}
+	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID  AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language}  AND dtt.isActive = 'Y'
 WHERE
-	i.C_Invoice_ID = $P{RECORD_ID}
+	i.C_Invoice_ID = $P{RECORD_ID}  AND i.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>

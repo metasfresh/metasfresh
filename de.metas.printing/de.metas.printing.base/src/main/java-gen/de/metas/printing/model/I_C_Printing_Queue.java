@@ -16,12 +16,13 @@
  *****************************************************************************/
 package de.metas.printing.model;
 
+import org.compiere.model.I_C_BPartner;
 
 /** Generated Interface for C_Printing_Queue
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Printing_Queue 
+public interface I_C_Printing_Queue
 {
 
     /** TableName=C_Printing_Queue */
@@ -86,30 +87,28 @@ public interface I_C_Printing_Queue
 
 	/**
 	 * Set Sprache.
+	 * Language for this entity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Language_ID (int AD_Language_ID);
+	public void setAD_Language (java.lang.String AD_Language);
 
 	/**
 	 * Get Sprache.
+	 * Language for this entity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Language_ID();
+	public java.lang.String getAD_Language();
 
-	public org.compiere.model.I_AD_Language getAD_Language();
-
-	public void setAD_Language(org.compiere.model.I_AD_Language AD_Language);
-
-    /** Column definition for AD_Language_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Language> COLUMN_AD_Language_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Language>(I_C_Printing_Queue.class, "AD_Language_ID", org.compiere.model.I_AD_Language.class);
-    /** Column name AD_Language_ID */
-    public static final String COLUMNNAME_AD_Language_ID = "AD_Language_ID";
+    /** Column definition for AD_Language */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "AD_Language", null);
+    /** Column name AD_Language */
+    public static final String COLUMNNAME_AD_Language = "AD_Language";
 
 	/**
 	 * Set Sektion.

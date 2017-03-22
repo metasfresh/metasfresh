@@ -15,9 +15,10 @@ package org.adempiere.process;
 
 import java.sql.PreparedStatement;
 
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Insert AD_Sequence records that restart sequence at every year into
@@ -26,13 +27,13 @@ import org.compiere.util.DB;
  * @author Elaine
  * 
  */
-public class UpdateSequenceNo extends SvrProcess {
+public class UpdateSequenceNo extends JavaProcess {
 
 	private String year;
 
 	@Override
 	protected void prepare() {
-		ProcessInfoParameter[] parameters = this.getParameter();
+		ProcessInfoParameter[] parameters = this.getParametersAsArray();
 		for (ProcessInfoParameter p : parameters) {
 			if (p.getParameterName().equals("CalendarYear")) {
 				year = p.getParameter().toString();

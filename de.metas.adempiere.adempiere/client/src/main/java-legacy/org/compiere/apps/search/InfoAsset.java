@@ -29,6 +29,7 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
@@ -287,7 +288,7 @@ public class InfoAsset extends Info
 		if (A_Asset_ID == null)
 			return;
 		MQuery query = new MQuery("A_Asset");
-		query.addRestriction("A_Asset_ID", MQuery.EQUAL, A_Asset_ID);
+		query.addRestriction("A_Asset_ID", Operator.EQUAL, A_Asset_ID);
 		query.setRecordCount(1);
 		int AD_WindowNo = getAD_Window_ID("A_Asset", true);
 		zoom (AD_WindowNo, query);

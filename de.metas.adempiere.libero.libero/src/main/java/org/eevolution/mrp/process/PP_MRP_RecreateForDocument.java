@@ -25,15 +25,17 @@ package org.eevolution.mrp.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
-import org.compiere.process.SvrProcess;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Recreates {@link I_PP_MRP} records for selected document/record
@@ -41,7 +43,7 @@ import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
  * @author tsa
  *
  */
-public class PP_MRP_RecreateForDocument extends SvrProcess implements ISvrProcessPrecondition
+public class PP_MRP_RecreateForDocument extends JavaProcess implements IProcessPrecondition
 {
 	/** Standard AD_Process.Value */
 	public static final transient String PROCESSVALUE = "PP_MRP_RecreateForDocument";
@@ -53,10 +55,10 @@ public class PP_MRP_RecreateForDocument extends SvrProcess implements ISvrProces
 	private Object model;
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final String tableName = gridTab.getTableName();
-		return mrpSupplyProducerFactory.getAllSupplyProducers().isRecreatedMRPRecordsSupported(tableName);
+		final String tableName = context.getTableName();
+		return ProcessPreconditionsResolution.acceptIf(mrpSupplyProducerFactory.getAllSupplyProducers().isRecreatedMRPRecordsSupported(tableName));
 	}
 
 	@Override

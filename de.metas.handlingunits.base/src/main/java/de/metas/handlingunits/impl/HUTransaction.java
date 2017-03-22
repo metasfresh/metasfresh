@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.UUID;
@@ -110,8 +109,6 @@ public final class HUTransaction implements IHUTransaction
 			final I_M_Locator locator,
 			final String huStatus)
 	{
-		super();
-
 		id = UUID.randomUUID().toString();
 
 		// Dimension
@@ -337,8 +334,7 @@ public final class HUTransaction implements IHUTransaction
 		return counterpartTrx;
 	}
 
-	@Override
-	public void setCounterpart(final IHUTransaction counterpartTrx)
+	private void setCounterpart(final IHUTransaction counterpartTrx)
 	{
 		Check.assumeNotNull(counterpartTrx, "counterpartTrx not null");
 		Check.assume(this != counterpartTrx, "counterpartTrx != this");
@@ -363,8 +359,14 @@ public final class HUTransaction implements IHUTransaction
 	@Override
 	public void pair(final IHUTransaction counterpartTrx)
 	{
+		Check.errorUnless(counterpartTrx instanceof HUTransaction,
+				"Param counterPartTrx needs to be a HUTransaction counterPartTrx={}",
+				counterpartTrx);
+
 		this.setCounterpart(counterpartTrx);
-		counterpartTrx.setCounterpart(this);
+		
+		// by casting to HUTransaction (which currently is the only implementation of IHUTransaction), we don't have to make setCounterpart() public.
+		((HUTransaction)counterpartTrx).setCounterpart(this);
 	}
 
 	@Override

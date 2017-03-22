@@ -30,16 +30,16 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 /**
- * Contains business logic to create different {@link IHUTransaction}s for different purposes.
- *
- * @author ts
+ * Declare business logic to create different {@link IHUTransaction}s for different purposes.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IHUTransactionBL extends ISingletonService
 {
 	/**
-	 * Current use: creates a IHUTransaction for a LU, which is created from a receipt schedule. Just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not
-	 * just to the TUs (task 06748).
+	 * Current use: creates a IHUTransaction for a LU, which is created from a receipt schedule.<br>
+	 * Just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not just to the TUs (task 06748).
 	 *
 	 * @param luHU
 	 * @param luItemPI

@@ -1,5 +1,10 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,13 +29,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 /**

@@ -58,8 +58,8 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import mockit.Expectations;
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 
 public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 {
@@ -161,12 +161,14 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		Services.registerService(ITaxBL.class, taxBL);
 
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
+				minTimes = 0;
 				result = activity;
 
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product));
+				minTimes = 0;
 				result = null;
 
 				final Properties ctx = Env.getCtx();
@@ -185,6 +187,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						, order1.getC_BPartner_Location_ID()
 						, order1.isSOTrx()
 						, trxName);
+				minTimes = 0;
 				result = 3;
 		}};
 		// @formatter:on

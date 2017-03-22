@@ -32,6 +32,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.KeyNamePair;
@@ -96,6 +97,22 @@ public class ManufacturingOrderKey extends TerminalKey
 		{
 			final String documentNo = order.getDocumentNo();
 			sb.append(documentNo);
+		}
+		
+		//
+		// Document Type
+		{
+			I_C_DocType docType = order.getC_DocType();
+			if (docType == null || docType.getC_DocType_ID() <= 0)
+			{
+				docType = order.getC_DocTypeTarget();
+			}
+			if(docType != null)
+			{
+				final I_C_DocType docTypeTrl = InterfaceWrapperHelper.translate(docType, I_C_DocType.class);
+				sb.append(" - ");
+				sb.append(Util.maskHTML(docTypeTrl.getName()));
+			}
 		}
 
 		//

@@ -58,14 +58,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MSequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -90,6 +88,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.process.IADPInstanceDAO;
 
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
@@ -578,7 +577,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL
 				// .mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				//
-				.execute();
+				.execute()
+				.getRowsInserted();
 
 		logger.debug("Invalidated {} invoice candidates for {}", new Object[] { count, icQuery });
 
@@ -793,7 +793,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public InvoiceCandRecomputeTag generateNewRecomputeTag()
 	{
-		final int adPInstanceId = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, I_AD_PInstance.Table_Name);
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
 		return InvoiceCandRecomputeTag.ofAD_PInstance_ID(adPInstanceId);
 	}
 
@@ -838,7 +838,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			}
 			else
 			{
-				queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
+				queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
 			}
 		}
 
@@ -904,7 +904,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Delete only the specified invoice candidate IDs
 		if (!Check.isEmpty(onlyInvoiceCandidateIds))
 		{
-			queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, onlyInvoiceCandidateIds);
+			queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, onlyInvoiceCandidateIds);
 		}
 
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
@@ -1280,7 +1280,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
+				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
 				// Invalidate no matter if Processed or not
 				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 		;
@@ -1332,7 +1332,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Only filter invoice candidates of the organizations this role has access to
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
 
-		return queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
+		return queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
 
 	}
 

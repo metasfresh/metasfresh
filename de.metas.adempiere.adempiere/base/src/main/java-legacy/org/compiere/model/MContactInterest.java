@@ -20,16 +20,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
- 
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+
 /**
  *  Business Partner Contact Interest.
- *  Adempiere compies with spamming laws.
- *  If the opt out date is set (by the user), 
+ *  Adempiere complies with spamming laws.
+ *  If the opt out date is set (by the user),
  *  you should not subscribe the user again.
  *  Internally, the isActive flag is used.
  *
@@ -39,7 +40,7 @@ import org.compiere.util.Env;
 public class MContactInterest extends X_R_ContactInterest
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4720845687902863428L;
 
@@ -50,9 +51,9 @@ public class MContactInterest extends X_R_ContactInterest
 	 *	@param AD_User_ID user
 	 * 	@param isActive create as active
 	 *	@param trxName transaction
-	 *	@return Contact Interest 
+	 *	@return Contact Interest
 	 */
-	public static MContactInterest get (Properties ctx, 
+	public static MContactInterest get (Properties ctx,
 		int R_InterestArea_ID, int AD_User_ID, boolean isActive, String trxName)
 	{
 		MContactInterest retValue = null;
@@ -84,10 +85,10 @@ public class MContactInterest extends X_R_ContactInterest
 		catch (Exception e)
 		{
 			pstmt = null;
-		}		
+		}
 		if (retValue == null)
 		{
-			retValue = new MContactInterest (ctx, R_InterestArea_ID, AD_User_ID, 
+			retValue = new MContactInterest (ctx, R_InterestArea_ID, AD_User_ID,
 				isActive, trxName);
 			s_log.debug("NOT found - " + retValue);
 		}
@@ -96,18 +97,16 @@ public class MContactInterest extends X_R_ContactInterest
 		return retValue;
 	}	//	get
 
-	
+
 	/**************************************************************************
 	 * 	Persistency Constructor
 	 *	@param ctx context
-	 *	@param ignored ignored
+	 *	@param id ignored
 	 *	@param trxName transaction
 	 */
-	public MContactInterest (Properties ctx, int ignored, String trxName)
+	public MContactInterest (Properties ctx, int id, String trxName)
 	{
-		super(ctx, 0, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-Key");
+		super(ctx, id, trxName);
 	}	//	MContactInterest
 
 	/**
@@ -118,8 +117,7 @@ public class MContactInterest extends X_R_ContactInterest
 	 * 	@param isActive create as active
 	 *	@param trxName transaction
 	 */
-	public MContactInterest (Properties ctx, int R_InterestArea_ID, int AD_User_ID, 
-		boolean isActive, String trxName)
+	public MContactInterest (Properties ctx, int R_InterestArea_ID, int AD_User_ID, boolean isActive, String trxName)
 	{
 		super(ctx, 0, trxName);
 		setR_InterestArea_ID (R_InterestArea_ID);
@@ -146,6 +144,7 @@ public class MContactInterest extends X_R_ContactInterest
 	 * 	User action only.
 	 *	@param OptOutDate date
 	 */
+	@Override
 	public void setOptOutDate (Timestamp OptOutDate)
 	{
 		if (OptOutDate == null)
@@ -154,7 +153,7 @@ public class MContactInterest extends X_R_ContactInterest
 		super.setOptOutDate(OptOutDate);
 		setIsActive(false);
 	}	//	setOptOutDate
-	
+
 	/**
 	 * 	Unsubscribe.
 	 * 	User action only.
@@ -172,12 +171,13 @@ public class MContactInterest extends X_R_ContactInterest
 	{
 		return getOptOutDate() != null;
 	}	//	isOptOut
-	
+
 	/**
 	 * 	Set Subscribe Date
 	 * 	User action only.
 	 *	@param SubscribeDate date
 	 */
+	@Override
 	public void setSubscribeDate (Timestamp SubscribeDate)
 	{
 		if (SubscribeDate == null)
@@ -215,7 +215,7 @@ public class MContactInterest extends X_R_ContactInterest
 
 	/**
 	 * 	Is Subscribed.
-	 * 	Active is set internally, 
+	 * 	Active is set internally,
 	 * 	the opt out date is set by the user via the web UI.
 	 *	@return true if subscribed
 	 */
@@ -229,6 +229,7 @@ public class MContactInterest extends X_R_ContactInterest
 	 * 	String representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MContactInterest[")

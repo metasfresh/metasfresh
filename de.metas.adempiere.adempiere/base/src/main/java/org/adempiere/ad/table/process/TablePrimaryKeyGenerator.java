@@ -9,7 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -127,7 +127,7 @@ class TablePrimaryKeyGenerator
 
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+		Loggables.get().addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)
@@ -216,11 +216,15 @@ class TablePrimaryKeyGenerator
 		final String tableName = columnPK.getAD_Table().getTableName();
 		final String pkColumnName = columnPK.getColumnName();
 		final String pkName = (tableName + "_pkey").toLowerCase();
+		final String pkNameAlt = (tableName + "_key").toLowerCase(); // some tables also have this PK name
 
 		final String sqlDefaultValue = DB.TO_TABLESEQUENCE_NEXTVAL(tableName);
 
 		executeDDL("ALTER TABLE " + tableName + " ADD COLUMN " + pkColumnName + " numeric(10,0) NOT NULL DEFAULT " + sqlDefaultValue);
+
 		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkName);
+		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkNameAlt);
+
 		executeDDL("ALTER TABLE " + tableName + " ADD CONSTRAINT " + pkName + " PRIMARY KEY (" + pkColumnName + ")");
 	}
 

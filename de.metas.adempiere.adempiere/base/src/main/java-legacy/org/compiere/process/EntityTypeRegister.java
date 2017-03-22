@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.process.JavaProcess;
 
 /**
  * 	Register Entity Type
@@ -26,7 +27,7 @@ package org.compiere.process;
  *  TODO: remove it because our business model is not charging money for new entity types.
  */
 @Deprecated
-public class EntityTypeRegister extends SvrProcess
+public class EntityTypeRegister extends JavaProcess
 {
 	@Override
 	protected void prepare ()

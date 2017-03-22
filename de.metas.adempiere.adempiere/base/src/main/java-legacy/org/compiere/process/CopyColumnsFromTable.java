@@ -25,13 +25,16 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * Copy columns from one table to other
  *
  * @author Carlos Ruiz - globalqss
  * @version $Id: CopyColumnsFromTable
  */
-public class CopyColumnsFromTable extends SvrProcess
+public class CopyColumnsFromTable extends JavaProcess
 {
 	/** Target Table */
 	private int p_target_AD_Table_ID = 0;
@@ -45,7 +48,7 @@ public class CopyColumnsFromTable extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -39,11 +39,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.model.I_C_AdvCommissionSalaryGroup;
 import de.metas.commission.model.I_C_Sponsor;
@@ -54,7 +53,7 @@ import de.metas.commission.service.ISalesRepFactBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 
-public class DumpTree extends SvrProcess
+public class DumpTree extends JavaProcess
 {
 	private final static String EOL = System.getProperty("line.separator");
 
@@ -330,7 +329,7 @@ public class DumpTree extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final Object[] params = readParameters(getCtx(), getParameter());
+		final Object[] params = readParameters(getCtx(), getParametersAsArray());
 		orgId = (Integer)params[0];
 		period = (MPeriod)params[1];
 		outputFile = (File)params[2];

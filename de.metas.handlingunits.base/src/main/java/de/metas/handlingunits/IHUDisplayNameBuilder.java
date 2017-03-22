@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -35,6 +34,15 @@ public interface IHUDisplayNameBuilder
 	 * @return display name of underlying HU
 	 */
 	public String build();
+
+	/**
+	 * @return
+	 *         <ul>
+	 *         <li>the packing instructions name of current HU
+	 *         <li>or if it's an aggregate HU - the name of the PI that is represented.
+	 *         </ul>
+	 */
+	String getPIName();
 
 	/**
 	 * @return true if included HU count shall be displayed
@@ -55,6 +63,15 @@ public interface IHUDisplayNameBuilder
 	 * @param includedHUCountSuffix included HU suffix (i.e TU, VHU etc)
 	 */
 	public IHUDisplayNameBuilder setIncludedHUCountSuffix(String includedHUCountSuffix);
+
+	/**
+	 * Gets included HUs count for current HU.
+	 * 
+	 * NOTE this method does not care about {@link #isShowIncludedHUCount()}.
+	 * 
+	 * @return included HUs count for current HU
+	 */
+	int getIncludedHUsCount();
 
 	/**
 	 * @return true if {@link I_M_HU_PI#getName()} shall be displayed below value

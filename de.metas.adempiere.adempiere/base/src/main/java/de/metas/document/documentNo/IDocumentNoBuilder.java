@@ -3,35 +3,9 @@
  */
 package de.metas.document.documentNo;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.compiere.model.PO;
-
-import com.google.common.base.Supplier;
-
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
 
 /**
  * @author cg
@@ -53,23 +27,45 @@ public interface IDocumentNoBuilder
 
 	IDocumentNoBuilder setDocumentSequenceInfo(DocumentSequenceInfo documentSeqInfo);
 
-	IDocumentNoBuilder setDocumentSequenceInfo(Supplier<DocumentSequenceInfo> documentSeqInfoSupplier);
-
 	IDocumentNoBuilder setDocumentSequenceInfoByTableName(String tableName, int adClientId, int adOrgId);
+
+	IDocumentNoBuilder setDocumentSequenceByDocTypeId(int C_DocType_ID, boolean useDefiniteSequence);
 
 	IDocumentNoBuilder setFailOnError(boolean failOnError);
 
-	IDocumentNoBuilder setPO(PO po);
-
-	IDocumentNoBuilder setSequenceByDocTypeId(int C_DocType_ID, boolean useDefiniteSequence);
+	/**
+	 * Sets the document/model for which we are building the DocumentNo.
+	 * 
+	 * @param documentModel document/model or null
+	 */
+	IDocumentNoBuilder setDocumentModel(Object documentModel);
 
 	/**
 	 * Explicitly set which is the sequence no to be used. In this case, the builder won't fetch and increment current sequence number but it will just use this one.
 	 *
 	 * @param sequenceNo
-	 * @return
 	 */
 	IDocumentNoBuilder setSequenceNo(int sequenceNo);
 
+	/**
+	 * Does nothing!
+	 * We are keeping this method here just to keep the old logic (in case we want to turn on trxName usage).
+	 * 
+	 * @param trxName
+	 * @return
+	 */
 	IDocumentNoBuilder setTrxName(String trxName);
+
+	/**
+	 * Advises the builder to use a preliminary DocumentNo.
+	 * 
+	 * If enabled, the builder:
+	 * <ul>
+	 * <li>will just fetch the current next DocumentNo without incrementing it
+	 * <li>will return a DocumentNo which is wrapped with preliminary markers (see {@link IPreliminaryDocumentNoBuilder#withPreliminaryMarkers(String)}).
+	 * </ul>
+	 * 
+	 * @param usePreliminaryDocumentNo
+	 */
+	IDocumentNoBuilder setUsePreliminaryDocumentNo(boolean usePreliminaryDocumentNo);
 }

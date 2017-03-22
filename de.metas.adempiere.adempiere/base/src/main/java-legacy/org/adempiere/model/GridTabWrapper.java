@@ -490,7 +490,7 @@ public class GridTabWrapper implements InvocationHandler, IInterfaceWrapper
 		final Class<?> returnType = method.getReturnType();
 
 		Object retValue = null;
-		if (idField.getVO().IsParent)
+		if (idField.getVO().isParentLink())
 		{
 			retValue = getReferencedObjectFromParentTab(returnType, record_id);
 		}

@@ -28,9 +28,10 @@ import org.compiere.model.MTreeNode;
 import org.compiere.model.MTree_NodeCMC;
 import org.compiere.model.MTree_NodeCMS;
 import org.compiere.model.MWebProject;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Deploy Web Project
@@ -38,7 +39,7 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: WebProjectDeploy.java,v 1.10 2006/09/04 21:21:31 comdivision Exp $
  */
-public class WebProjectDeploy extends SvrProcess
+public class WebProjectDeploy extends JavaProcess
 {
 	/**	WebProject					*/
 	private int		p_CM_WebProject_ID = 0;
@@ -57,7 +58,7 @@ public class WebProjectDeploy extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -16,12 +16,13 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.process.DocAction;
@@ -31,7 +32,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -240,7 +240,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 				}
 			}
 
-			return new ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>>(plv, issuedInOutLinesForPPOrder);
+			return new ImmutablePair<>(plv, issuedInOutLinesForPPOrder);
 		}
 
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
@@ -254,7 +254,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 
 			if (!priceLists.hasNext())
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, country);
+				Loggables.get().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, country);
 				return null;
 			}
 
@@ -264,7 +264,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
 			if (plv == null)
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
+				Loggables.get().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
 			}
 			return plv;
 		}
@@ -281,7 +281,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			// now get *all* the receipt lines that took place while the PLV was valid
 			final ICompositeQueryFilter<I_M_InOut> inOutFilter = queryBL.createCompositeQueryFilter(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GREATER_OR_EQUAL, plv.getValidFrom());
 
 			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv);

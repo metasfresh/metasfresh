@@ -40,7 +40,7 @@ public interface ISplittableHUKey extends IHUKey
 {
 	/**
 	 *
-	 * @return underlying HU; never return null
+	 * @return underlying HU; never return {@code null}.
 	 */
 	I_M_HU getM_HU();
 

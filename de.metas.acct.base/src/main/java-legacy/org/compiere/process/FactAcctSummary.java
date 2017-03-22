@@ -20,6 +20,8 @@ package org.compiere.process;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,7 +35,7 @@ import org.compiere.model.I_PA_ReportCube;
  * accounting facts, grouped by the dimensions selected in active report cubes.
  * @author Paul Bowden
  */
-public class FactAcctSummary extends SvrProcess
+public class FactAcctSummary extends JavaProcess
 {
 	// Services
 	private final transient IFactAcctCubeBL factAcctCubeBL = Services.get(IFactAcctCubeBL.class);
@@ -46,7 +48,7 @@ public class FactAcctSummary extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] params = getParameter();
+		final ProcessInfoParameter[] params = getParametersAsArray();
 		for (final ProcessInfoParameter p : params)
 		{
 			final String parameterName = p.getParameterName();

@@ -1,20 +1,27 @@
 package de.metas.device.scales.endpoint;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import de.metas.device.scales.impl.ICmd;
+import de.metas.device.scales.impl.sics.ISiscCmd;
+import de.metas.device.scales.impl.sics.SicsWeighCmdS;
 
 /*
  * #%L
@@ -45,12 +52,20 @@ public class TcpConnectionEndPointTest
 
 	private static TcpConnectionEndPoint tcpConnectionEndPoint;
 
+	private static List<String> serverSocketReceived = new ArrayList<>();
+
+	private static final int readTimeoutMillis = 100;
+
+	private static Thread serverSocketThread;
+
 	@BeforeClass
 	public static void setupEP()
 	{
 		tcpConnectionEndPoint = new TcpConnectionEndPoint();
 		tcpConnectionEndPoint.setHost("localhost");
 		tcpConnectionEndPoint.setReturnLastLine(true);
+
+		tcpConnectionEndPoint.setReadTimeoutMillis(readTimeoutMillis);
 	}
 
 	/**
@@ -63,8 +78,9 @@ public class TcpConnectionEndPointTest
 	public void setUpServer() throws InterruptedException
 	{
 		exitServerSocketThread = false;
+		serverSocketReceived.clear();
 
-		final Thread serverSocketThread = new Thread()
+		serverSocketThread = new Thread()
 		{
 			@Override
 			public void run()
@@ -85,33 +101,41 @@ public class TcpConnectionEndPointTest
 					while (!exitServerSocketThread)
 					{
 						try (final Socket myServerSocket = myServer.accept();
-								final DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
-								final DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
+								final InputStream in = myServerSocket.getInputStream();
+								final OutputStream out = myServerSocket.getOutputStream();)
 						{
-							final byte[] bytes = new byte[10];
+							final byte[] bytes = new byte[10]; // the index shall be big enough to get everything in one read.
 
-							final int read = dis.read(bytes);
+							final int read = in.read(bytes);
 							if (read > 0)
 							{
-								final String string = new String(bytes);
+								final String string = new String(bytes, 0, read, ICmd.SICS_CMD_CHARSET);
 								System.out.println("TcpConnectionEndPointTest" + ": server socked received: '" + string + "'; weight=" + weight);
+								serverSocketReceived.add(string);
 
 								// returning CRLF, thx http://stackoverflow.com/questions/13821578/crlf-into-java-string#13821601
 								// first sending a wrong result. the client EP is supposed to only take the last line.
-								final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight - 10)) + "\r\n";
-								dos.writeBytes(wrongServerReturnString);
+								final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight - 10)) + ISiscCmd.SICS_CMD_TERMINATOR;
+								out.write(wrongServerReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
 								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with wrongServerReturnString=" + wrongServerReturnString);
 
-								final String serverReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight)) + "\r\n";
-								dos.writeBytes(serverReturnString);
+								final String serverReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight)) + ISiscCmd.SICS_CMD_TERMINATOR;
+								out.write(serverReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
 								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with serverReturnString=" + serverReturnString);
 
-								dos.flush();
+								// before sending out the 3rd message, which is once again wrong, we wait longer than the endpoint's timeout.
+								// therefore we expect this message to be ignored
+								Thread.sleep(readTimeoutMillis + 50);
+								final String anotherWrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight + 10)) + ISiscCmd.SICS_CMD_TERMINATOR;
+								out.write(anotherWrongServerReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
+								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with anotherWrongServerReturnString=" + anotherWrongServerReturnString);
+
+								out.flush();
 							}
 						}
 					}
 				}
-				catch (final IOException e)
+				catch (final IOException | InterruptedException e)
 				{
 					e.printStackTrace();
 					fail("Caught " + e);
@@ -132,31 +156,48 @@ public class TcpConnectionEndPointTest
 	public void test1()
 	{
 		weight = 300;
+		final String cmd = SicsWeighCmdS.getInstance().getCmd();
 
-		final String result = tcpConnectionEndPoint.sendCmd("S");
+		final String result = tcpConnectionEndPoint.sendCmd(cmd);
 		final String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
 
 		assertThat(result, is(expectedResult));
+		assertThat(serverSocketReceived.size(), is(1));
+		assertThat(serverSocketReceived.get(0), is(cmd));
 	}
 
 	@Test
 	public void test2()
 	{
 		weight = 200;
+		final String cmd = SicsWeighCmdS.getInstance().getCmd();
 
-		String result = tcpConnectionEndPoint.sendCmd("S");
+		String result = tcpConnectionEndPoint.sendCmd(cmd);
 		String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
 		assertThat(result, is(expectedResult));
+		assertThat(serverSocketReceived.size(), is(1));
+		assertThat(serverSocketReceived.get(0), is(cmd));
 
 		weight = 220;
-		result = tcpConnectionEndPoint.sendCmd("S");
+		result = tcpConnectionEndPoint.sendCmd(cmd);
 		expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
 		assertThat(result, is(expectedResult));
+		assertThat(serverSocketReceived.size(), is(2));
+		assertThat(serverSocketReceived.get(1), is(cmd));
 	}
 
+	/**
+	 * Makes sure that the server socked thread has finished.
+	 *
+	 * @throws InterruptedException
+	 */
 	@After
-	public void tearDown()
+	public void tearDown() throws InterruptedException
 	{
 		exitServerSocketThread = true;
+
+		assertThat(serverSocketThread, notNullValue());
+		serverSocketThread.join(1000); // waiting for just one second, we don't want the whole build to stall
+		assertThat(serverSocketThread.isAlive(), is(false));
 	}
 }

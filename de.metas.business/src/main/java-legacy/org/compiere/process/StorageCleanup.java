@@ -20,8 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
@@ -31,23 +29,27 @@ import org.compiere.model.MStorage;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
 /**
  * 	StorageCleanup
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: StorageCleanup.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class StorageCleanup extends SvrProcess
+public class StorageCleanup extends JavaProcess
 {
 	/** Movement Document Type	*/
 	private int	p_C_DocType_ID = 0;
-	
+
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -65,6 +67,7 @@ public class StorageCleanup extends SvrProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("");
@@ -74,7 +77,7 @@ public class StorageCleanup extends SvrProcess
 			+ " AND Created < now()-3";
 		int no = DB.executeUpdate(sql, get_TrxName());
 		log.info("Deleted Empty #" + no);
-		
+
 		//
 		sql = "SELECT * "
 			+ "FROM M_Storage s "
@@ -118,7 +121,7 @@ public class StorageCleanup extends SvrProcess
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		
+
 		return "#" + lines;
 	}	//	doIt
 
@@ -145,16 +148,16 @@ public class StorageCleanup extends SvrProcess
 		for (int i = 0; i < sources.length; i++)
 		{
 			MStorage source = sources[i];
-			
+
 			//	Movement Line
 			MMovementLine ml = new MMovementLine(mh);
 			ml.setM_Product_ID(target.getM_Product_ID());
 			ml.setM_LocatorTo_ID(target.getM_Locator_ID());
-			ml.setM_AttributeSetInstanceTo_ID(target.getM_AttributeSetInstance_ID());
+			ml.setM_AttributeSetInstanceTo_ID(0 /* target.getM_AttributeSetInstance_ID() */);
 			//	From
 			ml.setM_Locator_ID(source.getM_Locator_ID());
-			ml.setM_AttributeSetInstance_ID(source.getM_AttributeSetInstance_ID());
-			
+			ml.setM_AttributeSetInstance_ID(0 /* source.getM_AttributeSetInstance_ID() */);
+
 			BigDecimal qtyMove = qty;
 			if (qtyMove.compareTo(source.getQtyOnHand()) > 0)
 				qtyMove = source.getQtyOnHand();
@@ -164,18 +167,18 @@ public class StorageCleanup extends SvrProcess
 			ml.setLine(lines*10);
 			if (!ml.save())
 				return 0;
-			
+
 			qty = qty.subtract(qtyMove);
 			if (qty.signum() <= 0)
 				break;
 		}	//	for all movements
-		
+
 		//	Process
 		mh.processIt(MMovement.ACTION_Complete);
 		mh.save();
-		
-		addLog(0, null, new BigDecimal(lines), "@M_Movement_ID@ " + mh.getDocumentNo() + " (" 
-			+ MRefList.get(getCtx(), MMovement.DOCSTATUS_AD_Reference_ID, 
+
+		addLog(0, null, new BigDecimal(lines), "@M_Movement_ID@ " + mh.getDocumentNo() + " ("
+			+ MRefList.get(getCtx(), MMovement.DOCSTATUS_AD_Reference_ID,
 				mh.getDocStatus(), get_TrxName()) + ")");
 
 		eliminateReservation(target);
@@ -192,7 +195,7 @@ public class StorageCleanup extends SvrProcess
 		if (target.getQtyReserved().signum() != 0 || target.getQtyOrdered().signum() != 0)
 		{
 			int M_Locator_ID = target.getM_Locator_ID();
-			MStorage storage0 = MStorage.get(getCtx(), M_Locator_ID, 
+			MStorage storage0 = MStorage.get(getCtx(), M_Locator_ID,
 				target.getM_Product_ID(), 0, get_TrxName());
 			if (storage0 == null)
 			{
@@ -200,14 +203,14 @@ public class StorageCleanup extends SvrProcess
 				if (M_Locator_ID != defaultLoc.getM_Locator_ID())
 				{
 					M_Locator_ID = defaultLoc.getM_Locator_ID();
-					storage0 = MStorage.get(getCtx(), M_Locator_ID, 
+					storage0 = MStorage.get(getCtx(), M_Locator_ID,
 						target.getM_Product_ID(), 0, get_TrxName());
 				}
 			}
 			if (storage0 != null)
 			{
-				BigDecimal reserved = Env.ZERO;
-				BigDecimal ordered = Env.ZERO;
+				BigDecimal reserved = BigDecimal.ZERO;
+				BigDecimal ordered = BigDecimal.ZERO;
 				if (target.getQtyReserved().add(storage0.getQtyReserved()).signum() >= 0)
 					reserved = target.getQtyReserved();		//	negative
 				if (target.getQtyOrdered().add(storage0.getQtyOrdered()).signum() >= 0)
@@ -215,15 +218,15 @@ public class StorageCleanup extends SvrProcess
 				//	Eliminate Reservation
 				if (reserved.signum() != 0 || ordered.signum() != 0)
 				{
-					if (MStorage.add(getCtx(), target.getM_Warehouse_ID(), target.getM_Locator_ID(), 
-						target.getM_Product_ID(), 
+					if (MStorage.add(getCtx(), target.getM_Warehouse_ID(), target.getM_Locator_ID(),
+						target.getM_Product_ID(),
 						target.getM_AttributeSetInstance_ID(), target.getM_AttributeSetInstance_ID(),
-						Env.ZERO, reserved.negate(), ordered.negate(), get_TrxName()))
+						BigDecimal.ZERO, reserved.negate(), ordered.negate(), get_TrxName()))
 					{
-						if (MStorage.add(getCtx(), storage0.getM_Warehouse_ID(), storage0.getM_Locator_ID(), 
-							storage0.getM_Product_ID(), 
+						if (MStorage.add(getCtx(), storage0.getM_Warehouse_ID(), storage0.getM_Locator_ID(),
+							storage0.getM_Product_ID(),
 							storage0.getM_AttributeSetInstance_ID(), storage0.getM_AttributeSetInstance_ID(),
-							Env.ZERO, reserved, ordered, get_TrxName()))
+							BigDecimal.ZERO, reserved, ordered, get_TrxName()))
 							log.info("Reserved=" + reserved + ",Ordered=" + ordered);
 						else
 							log.warn("Failed Storage0 Update");
@@ -234,7 +237,7 @@ public class StorageCleanup extends SvrProcess
 			}
 		}
 	}	//	eliminateReservation
-	
+
 	/**
 	 * 	Get Storage Sources
 	 *	@param M_Product_ID product
@@ -243,7 +246,7 @@ public class StorageCleanup extends SvrProcess
 	 */
 	private MStorage[] getSources (int M_Product_ID, int M_Locator_ID)
 	{
-		ArrayList<MStorage> list = new ArrayList<MStorage>();
+		ArrayList<MStorage> list = new ArrayList<>();
 		String sql = "SELECT * "
 			+ "FROM M_Storage s "
 			+ "WHERE QtyOnHand > 0"
@@ -285,5 +288,5 @@ public class StorageCleanup extends SvrProcess
 		list.toArray(retValue);
 		return retValue;
 	}	//	getSources
-	
+
 }	//	StorageCleanup

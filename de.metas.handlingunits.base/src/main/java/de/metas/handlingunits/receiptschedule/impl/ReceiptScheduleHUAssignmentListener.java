@@ -63,8 +63,8 @@ public final class ReceiptScheduleHUAssignmentListener extends HUAssignmentListe
 	}
 
 	/**
-	 * Makes sure that only HUs which have <code>HUStatus=Planning</code> are allowed to be assigned to an Receipt Schedule. If the given <code>model</code> is <code>null</code> or not a
-	 * I_M_ReceiptSchedule, the method just returns.
+	 * Makes sure that only HUs which have <code>HUStatus=Planning</code> are allowed to be assigned to an Receipt Schedule. 
+	 * If the given <code>model</code> is <code>null</code> or not an {@link I_M_ReceiptSchedule}, the method just returns.
 	 */
 	@Override
 	public void assertAssignable(final I_M_HU hu, final Object model, final String trxName) throws HUNotAssignableException
@@ -85,6 +85,10 @@ public final class ReceiptScheduleHUAssignmentListener extends HUAssignmentListe
 		}
 	}
 
+	/**
+	 * Updates the given assigned {@code hu}'s {@code M_Locator_ID} from the I_M_ReceiptSchedule that is given {@code model}.
+	 * 
+	 */
 	@Override
 	public void onHUAssigned(final I_M_HU hu, final Object model, final String trxName)
 	{

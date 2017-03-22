@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -282,8 +281,9 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		//
 		// Create Transaction Line for each transaction line candidate
 		// Also build some indexes to be able to set counterparts after
-		final List<I_M_HU_Trx_Line> trxLines = new ArrayList<I_M_HU_Trx_Line>(trxCandidates.size());
+		final List<I_M_HU_Trx_Line> trxLines = new ArrayList<I_M_HU_Trx_Line>();
 		final Map<IHUTransaction, I_M_HU_Trx_Line> trxCandidate2trxLine = new IdentityHashMap<IHUTransaction, I_M_HU_Trx_Line>();
+
 		for (final IHUTransaction trxCandidate : trxCandidates)
 		{
 			final I_M_HU_Trx_Hdr trxHdr = trxHdrRef.getValue();

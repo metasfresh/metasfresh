@@ -157,7 +157,7 @@ public class WebuiPush implements IWebuiPush
 
 		final IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 
-		final IQueryBuilder<I_PMM_Product> allPMMProductsQuery = pmmProductDAO.retrieveAllPMMProductsValidOnDateQuery(SystemTime.asTimestamp());
+		final IQueryBuilder<I_PMM_Product> allPMMProductsQuery = pmmProductDAO.retrievePMMProductsValidOnDateQuery(SystemTime.asTimestamp());
 		final List<I_PMM_Product> allPMMProducts = allPMMProductsQuery.create().list();
 		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
 

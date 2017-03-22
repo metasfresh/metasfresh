@@ -8,9 +8,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.process.SvrProcess;
 
 import de.metas.process.Param;
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.exceptions.NoCompletedRfQResponsesFoundException;
@@ -51,7 +51,7 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQ_CreatePO extends SvrProcess
+public class C_RfQ_CreatePO extends JavaProcess
 {
 	// services
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);

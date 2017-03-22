@@ -46,8 +46,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.eevolution.model.I_HR_Period;
@@ -63,13 +61,15 @@ import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_AdvCommissionPayroll;
 import de.metas.commission.service.ICommissionConditionDAO;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 
  * @author ts
  * @see "<a href="http://dewiki908/mediawiki/index.php/US691:_Provisionsberechnung_08-2010_%282010090110000033%29 ">US691: Provisionsberechnung 08-2010 (2010090110000033)</a>"
  */
-public class InvoiceCommission extends SvrProcess
+public class InvoiceCommission extends JavaProcess
 {
 
 	private static final String MSG_MISSING_HR_PERIOD_1P = "Missing_HR_Period_1P";
@@ -164,7 +164,7 @@ public class InvoiceCommission extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

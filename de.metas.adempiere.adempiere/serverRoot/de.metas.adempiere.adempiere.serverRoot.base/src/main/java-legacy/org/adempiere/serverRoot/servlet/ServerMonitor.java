@@ -772,7 +772,7 @@ public class ServerMonitor extends HttpServlet
 			{
 				tr line = new tr();
 				line.addElement(new th().addElement(system.getDBAddress()));
-				line.addElement(new td().addElement(Ini.getAdempiereHome()));
+				line.addElement(new td().addElement(Ini.getMetasfreshHome()));
 				table.addElement(line);
 			}
 

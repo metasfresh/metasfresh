@@ -69,6 +69,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.M_Element;
 import org.compiere.swing.CLabel;
@@ -915,7 +916,7 @@ public class InfoSimple extends Info
 		}
 		final String p_tableName = getTableName();
 		final MQuery query = new MQuery(p_tableName);
-		query.addRestriction(p_tableName + "_ID", MQuery.EQUAL, ID);
+		query.addRestriction(p_tableName + "_ID", Operator.EQUAL, ID);
 		query.setRecordCount(1);
 		final int AD_WindowNo = getAD_Window_ID(p_tableName, true);
 		zoom(AD_WindowNo, query);

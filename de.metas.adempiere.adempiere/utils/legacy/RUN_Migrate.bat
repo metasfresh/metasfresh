@@ -1,1 +1,0 @@
-Start /MIN http://www.adempiere.com/wiki/index.php/Migration

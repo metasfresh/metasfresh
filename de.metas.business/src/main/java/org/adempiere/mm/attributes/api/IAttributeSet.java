@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 
 import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
@@ -83,6 +84,10 @@ public interface IAttributeSet
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	int getValueAsInt(I_M_Attribute attribute);
+
+	Date getValueAsDate(I_M_Attribute attribute);
+	
+	String getValueAsString(I_M_Attribute attribute);
 
 	/**
 	 * Set attribute's value and propagate to its parent/child attribute sets.

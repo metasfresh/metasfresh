@@ -46,12 +46,11 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.JavaProcess;
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.util.CacheIgnore;
 
@@ -68,7 +67,7 @@ public class SweepTableBL implements ISweepTableBL
 
 	@Override
 	public boolean sweepTable(final Properties ctx, final String tableName,
-			final int targetClientId, final SvrProcess process,
+			final int targetClientId, final JavaProcess process,
 			final String trxName)
 	{
 		return sweepTable(ctx, tableName, "1=1", targetClientId, process,
@@ -78,7 +77,7 @@ public class SweepTableBL implements ISweepTableBL
 	@Override
 	public boolean sweepTable(final Properties ctx, final String tableName,
 			final String whereClause, final int targetClientId,
-			final SvrProcess process, final String trxName)
+			final JavaProcess process, final String trxName)
 	{
 		final String whereClauseToUse = "( " + whereClause + " )"
 				+ " AND AD_Client_ID=" + Env.getAD_Client_ID(ctx);
@@ -96,7 +95,7 @@ public class SweepTableBL implements ISweepTableBL
 	@Override
 	public boolean sweepTable(final Properties ctx, final String tableName,
 			final Collection<Integer> initalIds, final int targetClientId,
-			final SvrProcess process, final String trxName)
+			final JavaProcess process, final String trxName)
 	{
 		final RuntimeContext sweepCtx = new RuntimeContext();
 		sweepCtx.ctx = ctx;
@@ -823,7 +822,7 @@ public class SweepTableBL implements ISweepTableBL
 		private Properties ctx;
 		private String trxName;
 		private int targetClientId = -1;
-		private SvrProcess process;
+		private JavaProcess process;
 
 		/**
 		 * (TableName#RecordId) => {@link #DELETED} or {@link #REFERRING_RECORDS_ADDED}

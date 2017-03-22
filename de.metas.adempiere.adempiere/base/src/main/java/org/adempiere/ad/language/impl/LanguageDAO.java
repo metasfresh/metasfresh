@@ -71,7 +71,7 @@ public class LanguageDAO implements ILanguageDAO
 	{
 		final IQueryBuilder<I_AD_Language> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayFilter(I_AD_Language.COLUMNNAME_AD_Client_ID, 0, clientId)
+				.addInArrayOrAllFilter(I_AD_Language.COLUMNNAME_AD_Client_ID, 0, clientId)
 				.addOnlyActiveRecordsFilter();
 
 		// Only Base or System languages

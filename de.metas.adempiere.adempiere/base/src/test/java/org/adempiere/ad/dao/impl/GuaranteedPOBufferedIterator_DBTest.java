@@ -174,7 +174,7 @@ public class GuaranteedPOBufferedIterator_DBTest
 		final IQueryBuilder<I_Test> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Test.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_Test.COLUMNNAME_Test_ID, recordIds)
+				.addInArrayOrAllFilter(I_Test.COLUMNNAME_Test_ID, recordIds)
 				//
 				.orderBy()
 				.addColumn(I_Test.COLUMNNAME_Test_ID)

@@ -6,10 +6,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -52,9 +52,6 @@ public class DocumentEventBus<ModelType> extends QueueableForwardingEventBus
 
 	private final String eventAD_Message;
 	private final Function<ModelType, Object[]> eventAD_MessageParamsExtractor;
-
-	@VisibleForTesting
-	public static final String EVENT_PROPERTY_Record = "record";
 
 	private DocumentEventBus(final Builder<ModelType> builder)
 	{
@@ -145,7 +142,7 @@ public class DocumentEventBus<ModelType> extends QueueableForwardingEventBus
 		final Event event = Event.builder()
 				.setDetailADMessage(eventAD_Message, adMessageParams)
 				.addRecipient_User_ID(recipientUserIdToUse)
-				.putProperty(EVENT_PROPERTY_Record, TableRecordReference.of(document))
+				.setRecord(TableRecordReference.of(document))
 				.build();
 		return event;
 	}

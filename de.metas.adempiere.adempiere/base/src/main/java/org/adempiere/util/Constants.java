@@ -57,10 +57,6 @@ public final class Constants
 
 	public static final String REPLENISHTYPE_EnsureFutureQty = "7";
 
-	public static final String AD_Process_TYPE_Java = "Java";
-
-	public static final String AD_Process_TYPE_SQL = "SQL";
-
 	/*
 	 * metas 00135: changed from "AEI" to "AEC" to fit the convention of the view C_Invoice_v where the DocBaseType
 	 * of negative outgoing Invoices (e.g Credit Memo) end with 'C'.

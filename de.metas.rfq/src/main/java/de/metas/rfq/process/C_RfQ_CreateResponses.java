@@ -2,13 +2,13 @@ package de.metas.rfq.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfqBL;
@@ -43,7 +43,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQ_CreateResponses extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQ_CreateResponses extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
@@ -54,10 +54,10 @@ public class C_RfQ_CreateResponses extends SvrProcess implements ISvrProcessPrec
 	private boolean p_IsSendRfQ;
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_RfQ rfq = InterfaceWrapperHelper.create(gridTab, I_C_RfQ.class);
-		return rfqBL.isCompleted(rfq);
+		final I_C_RfQ rfq = context.getSelectedModel(I_C_RfQ.class);
+		return ProcessPreconditionsResolution.acceptIf(rfqBL.isCompleted(rfq));
 	}
 
 	@Override

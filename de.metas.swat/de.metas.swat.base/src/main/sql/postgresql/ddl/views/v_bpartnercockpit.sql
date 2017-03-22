@@ -6,11 +6,9 @@ CREATE OR REPLACE VIEW v_bpartnercockpit AS
  bp.m_discountschema_id, bp.c_dunning_id, bp.freightcostrule, bp.deliveryviarule, bp.salesrep_id, stats.socreditstatus, bp.issalesrep, bp.iscustomer, c.ad_user_id, 
  c.name AS contactname, c.firstname, c.lastname, c.description AS contactdescription, c.email, c.emailuser, c.c_greeting_id AS bpcontactgreeting, c.comments, c.phone, c.phone2, c.fax, 
  c.notificationtype, l.c_bpartner_location_id, a.postal, a.city, a.address1, a.address2, a.address3, a.address4, a.c_region_id, a.c_country_id, cc.name AS countryname, ''::bpchar AS createso, 
- bps.firstsale, stats.totalopenbalance, bps.revenuey0 AS revenueoneyear, 
+ stats.totalopenbalance,
  btrim((((((COALESCE(bp.name::text, ''::text) || ' '::text) || COALESCE(bp.name2::text, ''::text)) || ' '::text) || COALESCE(c.firstname, ''::character varying)::text) || ' '::text) || COALESCE(c.name, ''::character varying)::text) AS autosuche, 
- bpcs.search, bps.creditused, bps.lifetimevalue, bps.openamt, bps.revenued30, bps.revenuem0, bps.revenuem1, bps.revenuem12, bps.revenuem2, bps.revenuem3, bps.revenuem4, bps.revenuem5, bps.revenuem6, 
- bps.revenuem7, bps.revenuem8, bps.revenuem9, bps.revenuem10, bps.revenuem11, bps.revenueq0, bps.revenueq1, bps.revenueq2, bps.revenueq3, bps.revenueq4, bps.revenuey0, bps.revenuey1, bps.revenuey2, 
- bps.revenuey3, bps.revenuey4, bps.revenuey5, bps.anzahlabos, bps.ebenenbonus, bps.leistungsbonus, bps.prov, bp.iscompany, c.isdefaultcontact, ((
+ bpcs.search, bp.iscompany, c.isdefaultcontact, ((
         CASE
             WHEN l.isshipto = 'Y'::bpchar AND l.isshiptodefault = 'N'::bpchar THEN 'Liefer. '::text
             WHEN l.isshipto = 'Y'::bpchar AND l.isshiptodefault = 'Y'::bpchar THEN 'Liefer. (S) '::text
@@ -47,10 +45,5 @@ CREATE OR REPLACE VIEW v_bpartnercockpit AS
    LEFT JOIN ad_user c ON bp.c_bpartner_id = c.c_bpartner_id AND (c.c_bpartner_location_id IS NULL OR c.c_bpartner_location_id = l.c_bpartner_location_id) AND c.isactive = 'Y'::bpchar
    LEFT JOIN c_location a ON l.c_location_id = a.c_location_id
    LEFT JOIN c_country cc ON a.c_country_id = cc.c_country_id
-   LEFT JOIN x_bpartner_stats_mv bps ON bp.c_bpartner_id = bps.c_bpartner_id
    LEFT JOIN x_bpartner_cockpit_search_mv bpcs ON bp.c_bpartner_id = bpcs.c_bpartner_id
   WHERE bp.iscustomer = 'Y'::bpchar OR bp.isprospect = 'Y'::bpchar;
-
-
-
-

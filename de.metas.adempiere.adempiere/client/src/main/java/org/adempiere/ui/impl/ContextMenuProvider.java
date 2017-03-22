@@ -300,7 +300,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 	private final List<I_AD_Field_ContextMenu> retrieveContextMenuForClient(@CacheCtx final Properties ctx, final int adClientId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field_ContextMenu.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayFilter(I_AD_Field_ContextMenu.COLUMN_AD_Client_ID, 0, adClientId)
+				.addInArrayOrAllFilter(I_AD_Field_ContextMenu.COLUMN_AD_Client_ID, 0, adClientId)
 				.addOnlyActiveRecordsFilter()
 				//
 				.orderBy()

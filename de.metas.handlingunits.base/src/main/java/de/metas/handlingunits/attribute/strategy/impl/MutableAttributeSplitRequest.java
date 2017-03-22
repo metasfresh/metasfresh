@@ -26,7 +26,7 @@ package de.metas.handlingunits.attribute.strategy.impl;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.mm.attributes.model.I_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 

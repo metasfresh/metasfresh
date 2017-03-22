@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
+import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -183,5 +184,5 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return new QueryInsertExecutor<>(toModelClass, this);
 	}
 
-	abstract <ToModelType> int executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter);
+	abstract <ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter);
 }

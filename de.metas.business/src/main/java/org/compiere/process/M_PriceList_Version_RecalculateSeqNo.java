@@ -32,11 +32,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
 
-public class M_PriceList_Version_RecalculateSeqNo extends SvrProcess
+// TODO: consider removing it
+@Deprecated
+public class M_PriceList_Version_RecalculateSeqNo extends JavaProcess
 {
 	@Override
 	protected void prepare()

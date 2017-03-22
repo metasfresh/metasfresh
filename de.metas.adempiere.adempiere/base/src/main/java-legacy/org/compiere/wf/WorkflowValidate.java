@@ -20,8 +20,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.process.SvrProcess;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Validate Workflow Process
@@ -29,7 +30,7 @@ import org.compiere.wf.exceptions.WorkflowNotValidException;
  * @author Jorg Janke
  * @version $Id: WorkflowValidate.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class WorkflowValidate extends SvrProcess
+public class WorkflowValidate extends JavaProcess
 {
 	private int p_AD_Worlflow_ID = 0;
 

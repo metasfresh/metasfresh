@@ -13,15 +13,14 @@ package de.metas.handlingunits.receiptschedule.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -33,9 +32,10 @@ import org.compiere.model.I_C_UOM;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.impl.HUTrxListenerAdapter;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -44,20 +44,28 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 
 /**
  *
- * NOTE: can be accessed only via {@link #instance} to make sure we are not registering it twice
+ * Added to the system via {@link IHUTrxBL#addListener(de.metas.handlingunits.IHUTrxListener)}.
+ *
+ * NOTE: can be accessed only via {@link #instance} to make sure we are not registering it twice.
  *
  * @author tsa
  *
  */
-public final class ReceiptScheduleHUTrxListener extends HUTrxListenerAdapter
+public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 {
 	public static final ReceiptScheduleHUTrxListener instance = new ReceiptScheduleHUTrxListener();
 
 	private ReceiptScheduleHUTrxListener()
 	{
-		super();
 	}
 
+	/**
+	 * Creates {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s. according to the processed {@link I_M_HU_Trx_Line},
+	 * if that line's referenced object is a receipt schedule.
+	 * <p>
+	 * Will not delete pre-existing allocations in the process.
+	 * 
+	 */
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
 	{
@@ -120,7 +128,7 @@ public final class ReceiptScheduleHUTrxListener extends HUTrxListenerAdapter
 		//
 		// Create TU/LU allocation to Receipt Schedule
 		final ReceiptScheduleHUAllocations huAllocations = new ReceiptScheduleHUAllocations(receiptSchedule);
-
+// "\nluHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(luHU))+"\ntuHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(tuHU))+"\nvhu\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(vhu))
 		//
 		// 07698: do not delete old allocations when creating them from transaction line
 		final boolean deleteOldTUAllocations = false;

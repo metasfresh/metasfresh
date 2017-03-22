@@ -25,6 +25,8 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * No parameters implementation of {@link IParams}. Get your instance using {@link IParams#NULL}.
@@ -75,5 +77,14 @@ import java.sql.Timestamp;
 	public BigDecimal getParameterAsBigDecimal(String paraCheckNetamttoinvoice)
 	{
 		return null;
+	}
+
+	/**
+	 * Returns an empty list.
+	 */
+	@Override
+	public Collection<String> getParameterNames()
+	{
+		return Collections.emptyList();
 	}
 }

@@ -14,7 +14,7 @@
 //package org.eevolution.process;
 package org.eevolution.process;
 
-import org.compiere.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Create Concept of current Payroll
@@ -22,7 +22,7 @@ import org.compiere.process.SvrProcess;
  *  @author Oscar Gómez Islas
  *  @version $Id: HRCreateConcept.java,v 1.0 2005/10/24 04:58:38 ogomezi Exp $
  */
-public class HRAttributeEmployee extends SvrProcess
+public class HRAttributeEmployee extends JavaProcess
 {
 
 	

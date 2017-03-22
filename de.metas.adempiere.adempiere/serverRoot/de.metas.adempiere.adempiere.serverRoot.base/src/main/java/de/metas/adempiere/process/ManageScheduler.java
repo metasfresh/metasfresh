@@ -26,12 +26,13 @@ package de.metas.adempiere.process;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTable;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
 
-public class ManageScheduler extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class ManageScheduler extends JavaProcess
 {
 	private static final String PARAM_ACTION = "Action";
 
@@ -57,7 +58,7 @@ public class ManageScheduler extends SvrProcess
 			p_AD_Scheduler_ID = getRecord_ID();
 		}
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{
@@ -114,12 +115,12 @@ public class ManageScheduler extends SvrProcess
 		final AdempiereServer scheduler = adempiereServerMgr.getServer(schedulerModel.getServerID());
 		if (scheduler == null)
 		{
-			addLog("Creating server scheduler for " + schedulerModel.getName());
 			adempiereServerMgr.add(schedulerModel);
+			addLog("Created server scheduler for " + schedulerModel.getName());
 		}
 
-		addLog("Starting " + schedulerModel.getName());
 		adempiereServerMgr.start(schedulerModel.getServerID());
+		addLog("Started " + schedulerModel.getName());
 		return true;
 	}
 

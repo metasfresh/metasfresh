@@ -37,6 +37,8 @@ import org.compiere.model.MTab;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)
@@ -46,7 +48,7 @@ import de.metas.logging.LogManager;
  * 
  * @author Teo Sarca <li>BF [ 2827782 ] TabCreateFields process not setting entity type well https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2827782&group_id=176962
  */
-public class TabCreateFields extends SvrProcess
+public class TabCreateFields extends JavaProcess
 {
 	private static final Logger log = LogManager.getLogger(TabCreateFields.class);
 
@@ -70,7 +72,7 @@ public class TabCreateFields extends SvrProcess
 	protected void prepare()
 	{
 		p_AD_Tab_ID = getRecord_ID();
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

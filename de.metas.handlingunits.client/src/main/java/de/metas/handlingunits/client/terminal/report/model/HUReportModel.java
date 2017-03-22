@@ -16,47 +16,30 @@ package de.metas.handlingunits.client.terminal.report.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.service.IADProcessDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.apps.ProcessCtl;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.MPInstance;
-import org.compiere.process.ProcessInfo;
-import org.compiere.report.IJasperService;
-import org.compiere.util.DB;
-import org.compiere.util.Language;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.IDisposable;
@@ -66,10 +49,13 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
+import de.metas.handlingunits.report.HUReportExecutor;
+import de.metas.process.IADProcessDAO;
 
 /**
  * Model responsible for generating HU labels and reports
@@ -138,7 +124,7 @@ public class HUReportModel implements IDisposable
 
 		final List<I_AD_Process> availableReportProcesses = Services.get(IADProcessDAO.class).retrieveReportProcessesForTable(getCtx(), I_M_HU.Table_Name);
 
-		final List<ITerminalKey> availableProcessKeys = new ArrayList<ITerminalKey>(availableReportProcesses.size());
+		final List<ITerminalKey> availableProcessKeys = new ArrayList<>(availableReportProcesses.size());
 
 		// In case of no selected HUs display the available processes for the current HU
 
@@ -148,9 +134,11 @@ public class HUReportModel implements IDisposable
 			selectedHUs.add(getCurrentHU());
 		}
 
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		for (final I_M_HU hu : selectedHUs)
 		{
-			final String selectedHUUnitType = hu.getM_HU_PI_Version().getHU_UnitType();
+			final String selectedHUUnitType = handlingUnitsBL.getEffectivePIVersion(hu).getHU_UnitType();
 
 			// BL NOT IMPLEMENTED YET FOR VIRTUAL PI REPORTS, because we don't have any
 
@@ -217,6 +205,8 @@ public class HUReportModel implements IDisposable
 			final HUADProcessKey processKey = new HUADProcessKey(getTerminalContext(), process);
 			availableProcessKeys.add(processKey);
 		}
+
+		Collections.sort(availableProcessKeys, HUADProcessKey.COMPARATOR_ByName);
 		reportKeyLayout.setKeys(availableProcessKeys);
 	}
 
@@ -341,7 +331,7 @@ public class HUReportModel implements IDisposable
 		return husToProcess;
 	}
 
-	public final void setHUsToProcess(final List<I_M_HU> husToProcess)
+	private final void setHUsToProcess(final List<I_M_HU> husToProcess)
 	{
 		this.husToProcess = husToProcess;
 	}
@@ -371,110 +361,11 @@ public class HUReportModel implements IDisposable
 		executeReport0(process, printCopies);
 	}
 
-	/**
-	 * AD_SysConfig for "BarcodeServlet".
-	 */
-	private static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
-	private static final String PARA_BarcodeURL = "barcodeURL";
-
 	private final void executeReport0(final I_AD_Process process, final BigDecimal printCopies)
 	{
-		final ITrxManager trxManagerService = Services.get(ITrxManager.class);
-
-		//
-		// Create AD_PInstance
-		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
-
-		final Set<Integer> huBPartnerIds = new HashSet<>();
-
-		// 05978: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
-		// transaction.
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.save(pinstance);
-
-				//
-				// Parameter: BarcodeURL
-				{
-					final String barcodeServlet = Services.get(ISysConfigBL.class).getValue(HUReportModel.SYSCONFIG_BarcodeServlet,
-							null, // defaultValue,
-							pinstance.getAD_Client_ID(),
-							pinstance.getAD_Org_ID());
-					final I_AD_PInstance_Para para_BarcodeURL = InterfaceWrapperHelper.newInstance(I_AD_PInstance_Para.class, pinstance);
-					para_BarcodeURL.setAD_PInstance_ID(pinstance.getAD_PInstance_ID()); // have to manually set this
-					para_BarcodeURL.setSeqNo(10);
-					para_BarcodeURL.setParameterName(HUReportModel.PARA_BarcodeURL);
-					para_BarcodeURL.setP_String(barcodeServlet);
-					InterfaceWrapperHelper.save(para_BarcodeURL);
-				}
-
-				//
-				// Parameter: PrintCopies
-				{
-					final I_AD_PInstance_Para para_PrintCopies = InterfaceWrapperHelper.newInstance(I_AD_PInstance_Para.class, pinstance);
-					para_PrintCopies.setAD_PInstance_ID(pinstance.getAD_PInstance_ID()); // have to manually set this
-					para_PrintCopies.setSeqNo(20);
-					para_PrintCopies.setParameterName(IJasperService.PARAM_PrintCopies);
-					para_PrintCopies.setP_Number(printCopies);
-					InterfaceWrapperHelper.save(para_PrintCopies);
-				}
-
-				//
-				// ProcessInfo
-				pi.setTableName(I_M_HU.Table_Name);
-				// pi.setRecord_ID(selectedHUId);
-				pi.setTitle(process.getName());
-				pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
-
-				final List<Integer> huIds = new ArrayList<>();
-
-				for (final I_M_HU hu : getHUsToProcess())
-				{
-					final int huId = hu.getM_HU_ID();
-					huIds.add(huId);
-
-					// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
-					final int bpartnerId = hu.getC_BPartner_ID();
-					if (bpartnerId > 0)
-					{
-						huBPartnerIds.add(bpartnerId);
-					}
-				}
-
-				//
-				// Use BPartner's Language as reporting language if our HUs have an unique BPartner
-				if (huBPartnerIds.size() == 1)
-				{
-					final int bpartnerId = huBPartnerIds.iterator().next();
-					final Language bpartnerLanguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), bpartnerId);
-					pi.setReportLanguage(bpartnerLanguage);
-				}
-
-				DB.createT_Selection(pinstance.getAD_PInstance_ID(), huIds, localTrxName);
-			}
-		});
-
-		final ITerminalContext terminalContext = getTerminalContext();
-
-		//
-		// Execute report in a new transaction
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
-				ProcessCtl.process(
-						null, // ASyncProcess parent
-						terminalContext.getWindowNo(),
-						null, // IProcessParameter
-						pi,
-						localTrx);
-			}
-		});
+		HUReportExecutor.get(getCtx())
+				.withWindowNo(getTerminalContext().getWindowNo())
+				.withNumberOfCopies(printCopies.intValueExact())
+				.executeHUReportAfterCommit(process, getHUsToProcess());
 	}
 }

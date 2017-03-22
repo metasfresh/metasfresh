@@ -39,8 +39,6 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -49,12 +47,14 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * @author cg
  * 
  */
-public class UpdateAddresses extends SvrProcess
+public class UpdateAddresses extends JavaProcess
 {
 
 	private int p_AD_Table_ID = -1;
@@ -63,7 +63,7 @@ public class UpdateAddresses extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -38,8 +38,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -82,7 +80,6 @@ import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_HR_Movement;
 import de.metas.commission.order.spi.impl.CommissionOrderCopyHandler;
-import de.metas.commission.pricing.spi.impl.CommissionPlvCreationListener;
 import de.metas.commission.service.IComRelevantPoBL;
 import de.metas.commission.service.ICommissionFactBL;
 import de.metas.commission.service.ICommissionPayrollBL;
@@ -196,7 +193,7 @@ public class CommissionValidator implements ModelValidator
 			engine.addModelValidator(new C_Invoice(), client);
 			engine.addModelValidator(new M_InOut(), client);
 			
-			Services.get(IPriceListBL.class).addPlvCreationListener(new CommissionPlvCreationListener());
+			// Services.get(IPriceListBL.class).addPlvCreationListener(new CommissionPlvCreationListener());
 
 			Services.get(ICopyHandlerBL.class).registerCopyHandler(
 					org.compiere.model.I_C_Order.class, 
@@ -291,22 +288,6 @@ public class CommissionValidator implements ModelValidator
 		if (po instanceof MHRProcess)
 		{
 			return payrollValidate((MHRProcess)po, timing);
-		}
-		else if (po instanceof MInvoice)
-		{
-			return invoiceValidate((MInvoice)po, timing);
-		}
-		return null;
-	}
-
-	private String invoiceValidate(final MInvoice invoice, final int timing)
-	{
-		if (timing == ModelValidator.TIMING_AFTER_VOID || timing == ModelValidator.TIMING_AFTER_REVERSECORRECT)
-		{
-			for (final MInvoiceLine il : invoice.getLines())
-			{
-				MRelation.deleteForPO(il);
-			}
 		}
 		return null;
 	}

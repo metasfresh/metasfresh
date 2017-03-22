@@ -111,6 +111,12 @@ public class MRPTestHelper
 		{
 			return trxName;
 		}
+
+		@Override
+		public boolean isAllowThreadInherited()
+		{
+			return false;
+		}
 	};
 
 	//

@@ -19,13 +19,15 @@ package org.compiere.process;
 import org.compiere.model.MLandedCost;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.JavaProcess;
+
 /**
  * 	Distribute Landed Costs
  *	
  *  @author Jorg Janke
  *  @version $Id: LandedCostDistribute.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class LandedCostDistribute extends SvrProcess
+public class LandedCostDistribute extends JavaProcess
 {
 	/** Parameter			*/
 	private int			p_C_LandedCost_ID = 0;

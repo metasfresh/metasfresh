@@ -24,6 +24,7 @@ package de.metas.async.api;
 
 import java.util.concurrent.Future;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.async.model.I_C_Async_Batch;
@@ -99,10 +100,23 @@ public interface IWorkPackageBuilder
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
+	 * 
+	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 *
 	 * @param trxName
 	 */
 	IWorkPackageBuilder bindToTrxName(String trxName);
+	
+	/**
+	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
+	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
+	 * 
+	 * If there is no thread inherited transaction, the workpackage will be marked as ready immediately, on build.
+	 */
+	default IWorkPackageBuilder bindToThreadInheritedTrx()
+	{
+		return bindToTrxName(ITrx.TRXNAME_ThreadInherited);
+	}
 
 	/** Sets locker to be used to lock enqueued elements */
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);

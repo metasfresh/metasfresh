@@ -37,14 +37,15 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Migrate AD_Column.Callout fields to new approach, by using AD_ColumnCallout table
  * @author Teo Sarca, teo.sarca@gmail.com
  */
-public class AD_ColumnCallout_Migrate extends SvrProcess
+public class AD_ColumnCallout_Migrate extends JavaProcess
 {
 	@Override
 	protected void prepare()

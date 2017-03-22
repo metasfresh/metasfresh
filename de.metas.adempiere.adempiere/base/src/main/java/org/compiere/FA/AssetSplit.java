@@ -48,8 +48,9 @@ import org.compiere.model.X_A_Asset_Addition;
 import org.compiere.model.X_A_Asset_Split;
 import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.model.X_A_Depreciation_Workfile;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -58,7 +59,7 @@ import org.compiere.util.DB;
  *  @author Rob Klein
  *  @version $Id: AssetSplit,v 1.0 $
  */
-public class AssetSplit extends SvrProcess
+public class AssetSplit extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Asset_Split_ID = 0;

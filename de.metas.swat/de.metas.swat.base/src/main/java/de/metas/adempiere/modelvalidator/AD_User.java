@@ -25,6 +25,10 @@ package de.metas.adempiere.modelvalidator;
 
 import java.util.Properties;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,11 +50,18 @@ import de.metas.adempiere.model.I_AD_User;
  * 
  */
 @Validator(I_AD_User.class)
+@Callout(value = I_AD_User.class)
 public class AD_User
 {
 
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
+	
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
 
 	// 04270
 	@ModelChange(
@@ -79,9 +90,10 @@ public class AD_User
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname })
+	@CalloutMethod(columnNames = {I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname})
 	public void setName(final I_AD_User user)
 	{
-		final String contactName = Services.get(IUserBL.class).buildContactName(user.getFirstName(), user.getLastName());
+		final String contactName = Services.get(IUserBL.class).buildContactName(user.getFirstname(), user.getLastname());
 		user.setName(contactName);
 	}
 

@@ -224,6 +224,15 @@ public class MockedCalloutField implements ICalloutField
 		Check.assumeNotNull(modelConv, "modelConv not null");
 		return modelConv;
 	}
+	
+	@Override
+	public <T> T getModelBeforeChanges(Class<T> modelClass)
+	{
+		final T modelConv = InterfaceWrapperHelper.createOld(model, modelClass);
+		Check.assumeNotNull(modelConv, "modelConv not null");
+		return modelConv;
+	}
+
 
 	public void setModel(final Object model)
 	{

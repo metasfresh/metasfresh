@@ -42,7 +42,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  *
  * This object is instantiated with a {@link IAttributeStorageFactory} implementation class.
  *
- * The implemention class will be instantiated only when needed and all methods will be redirected to that underlying implementation.
+ * The implementation class will be instantiated only when needed and all methods will be redirected to that underlying implementation.
  *
  * @author tsa
  *

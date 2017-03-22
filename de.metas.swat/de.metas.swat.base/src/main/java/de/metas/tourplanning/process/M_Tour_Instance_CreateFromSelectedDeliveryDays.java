@@ -25,17 +25,16 @@ package de.metas.tourplanning.process;
 
 import java.util.Iterator;
 
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.tourplanning.api.ITourInstanceBL;
 import de.metas.tourplanning.api.ITourInstanceDAO;
@@ -45,7 +44,7 @@ import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 
-public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends SvrProcess
+public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 {
 	//
 	// Services
@@ -68,7 +67,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{
@@ -247,12 +246,14 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends SvrProcess
 
 	private Iterator<I_M_DeliveryDay> retrieveSelectedDeliveryDays()
 	{
-		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = retrieveSelectedRecordsQueryBuilder(I_M_DeliveryDay.class);
-		queryBuilder.orderBy()
+		return retrieveSelectedRecordsQueryBuilder(I_M_DeliveryDay.class)
+				//
+				.orderBy()
 				.clear()
-				.addColumn(I_M_DeliveryDay.COLUMN_SeqNo);
-
-		return queryBuilder.create()
+				.addColumn(I_M_DeliveryDay.COLUMN_SeqNo)
+				.endOrderBy()
+				//
+				.create()
 				.iterate(I_M_DeliveryDay.class);
 	}
 }

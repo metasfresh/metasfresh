@@ -285,6 +285,25 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set Batch Enqueued Count.
+		@param BatchEnqueuedCount Batch Enqueued Count	  */
+	@Override
+	public void setBatchEnqueuedCount (int BatchEnqueuedCount)
+	{
+		set_Value (COLUMNNAME_BatchEnqueuedCount, Integer.valueOf(BatchEnqueuedCount));
+	}
+
+	/** Get Batch Enqueued Count.
+		@return Batch Enqueued Count	  */
+	@Override
+	public int getBatchEnqueuedCount () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_BatchEnqueuedCount);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch() throws RuntimeException
 	{

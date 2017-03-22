@@ -43,13 +43,18 @@ public class PlainTrxManager extends AbstractTrxManager
 	// NOTE: atm, the actual JDBC are not failing in this case, but, i think is helpful in tests to be much more strict to enforce consistency
 	private boolean failCommitIfTrxNotStarted = true;
 	private boolean failRollbackIfTrxNotStarted = true;
+	
+	public PlainTrxManager()
+	{
+		super();
+	}
 
 	@Override
-	protected ITrx createTrx(String trxName)
+	protected ITrx createTrx(String trxName, final boolean autoCommit)
 	{
 		try
 		{
-			return new PlainTrx(this, trxName);
+			return new PlainTrx(this, trxName, autoCommit);
 		}
 		catch (Exception e)
 		{

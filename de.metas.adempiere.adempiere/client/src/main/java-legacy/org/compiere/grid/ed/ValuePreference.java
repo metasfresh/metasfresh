@@ -25,10 +25,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -41,22 +37,28 @@ import javax.swing.border.TitledBorder;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.GridField;
+import org.compiere.model.I_AD_Preference;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Maintain Value Preferences.
@@ -500,7 +502,7 @@ public class ValuePreference extends CDialog
 		//  --- Inserting
 		int Client_ID = cbClient.isSelected() ? m_AD_Client_ID : 0;
 		int Org_ID = cbOrg.isSelected() ? m_AD_Org_ID : 0;
-		int AD_Preference_ID = DB.getNextID(m_ctx, "AD_Preference", null);
+		int AD_Preference_ID = DB.getNextID(m_ctx, I_AD_Preference.Table_Name, ITrx.TRXNAME_None);
 		//
 		StringBuffer sql = new StringBuffer ("INSERT INTO AD_Preference ("
 			+ "AD_Preference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,CreatedBy,Updated,UpdatedBy,"

@@ -41,6 +41,8 @@ import org.compiere.util.DB;
 
 import de.metas.email.MailAuthenticator;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
 
 /**
@@ -49,7 +51,7 @@ import de.metas.logging.LogManager;
  *  @author Carlos Ruiz based on initial work by Jorg Janke - sponsored by DigitalArmour
  *  @version $Id: RequestEMailProcessor.java,v 1.2 2006/10/23 06:01:20 cruiz Exp $
  */
-public class RequestEMailProcessor extends SvrProcess
+public class RequestEMailProcessor extends JavaProcess
 {
 	private String	p_IMAPHost = null;
 	private String	p_IMAPUser = null;
@@ -87,7 +89,7 @@ public class RequestEMailProcessor extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

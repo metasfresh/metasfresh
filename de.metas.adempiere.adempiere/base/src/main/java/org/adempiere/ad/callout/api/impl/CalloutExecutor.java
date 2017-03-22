@@ -23,6 +23,7 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
+import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -200,7 +201,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			return false;
 		}
 
-		if (!tableName.equals(field.getTableName()))
+		if (tableName != ICalloutProvider.ANY_TABLE && !tableName.equals(field.getTableName()))
 		{
 			logger.warn("Field {} is not handled by {} because it's TableName does not match", field, this, new Exception("TRACE"));
 			return false;
@@ -335,6 +336,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		return tableCalloutsMap.hasColumnCallouts(field.getColumnName(), executionBlackListIds);
 	}
 
+	@Override
 	public ICalloutExecutor newInstanceSharingMasterData()
 	{
 		return new CalloutExecutor(tableName, tableCalloutsMap, executionBlackListIds);
@@ -343,21 +345,25 @@ public final class CalloutExecutor implements ICalloutExecutor
 	public static final class Builder
 	{
 		private String tableName;
-		private ICalloutProvider _calloutProvider;
+		private ICalloutProvider _calloutProvider = null;
 
 		private Builder()
 		{
 			super();
 		}
 
-		public CalloutExecutor build()
+		public ICalloutExecutor build()
 		{
-			final ICalloutProvider calloutFactory = getCalloutProvider();
-			final Properties ctx = Env.getCtx(); // FIXME: get rid of ctx!
+			final ICalloutProvider calloutFactory = getCalloutProviderEffective();
+			final Properties ctx = Env.getCtx(); // FIXME: get rid of ctx or user server's ctx
 			final TableCalloutsMap tableCalloutsMap = calloutFactory.getCallouts(ctx, tableName);
 			if (tableCalloutsMap == null)
 			{
 				throw new NullPointerException("Got null table callouts map from " + calloutFactory + " for AD_Table_ID=" + tableName);
+			}
+			if(tableCalloutsMap.isEmpty())
+			{
+				return NullCalloutExecutor.instance;
 			}
 			final Set<String> executionBlackListIds = null;
 			return new CalloutExecutor(tableName, tableCalloutsMap, executionBlackListIds);
@@ -374,8 +380,20 @@ public final class CalloutExecutor implements ICalloutExecutor
 			_calloutProvider = calloutProvider;
 			return this;
 		}
+		
+		public Builder addCalloutProvider(final ICalloutProvider calloutProviderToAdd)
+		{
+			_calloutProvider = CompositeCalloutProvider.compose(_calloutProvider, calloutProviderToAdd);
+			return this;
+		}
+		
+		public Builder addDefaultCalloutProvider()
+		{
+			addCalloutProvider(getDefaultCalloutProvider());
+			return this;
+		}
 
-		private ICalloutProvider getCalloutProvider()
+		private ICalloutProvider getCalloutProviderEffective()
 		{
 			if (_calloutProvider == null)
 			{
@@ -387,7 +405,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			}
 		}
 
-		public ICalloutProvider getDefaultCalloutProvider()
+		private ICalloutProvider getDefaultCalloutProvider()
 		{
 			return Services.get(ICalloutFactory.class).getProvider();
 		}

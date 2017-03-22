@@ -33,6 +33,7 @@ import de.metas.adempiere.util.GlobalLock;
  * @author tsa
  * 
  */
+@Deprecated
 public interface IGlobalLockSystem extends ISingletonService
 {
 

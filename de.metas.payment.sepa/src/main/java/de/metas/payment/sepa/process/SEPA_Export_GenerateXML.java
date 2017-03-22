@@ -27,11 +27,11 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Export SEPA Customer Direct Debit XML (not used in vs82, but kept in case we extend the requirements).
@@ -39,7 +39,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/Vs82_05680_SEPA_Marshaller_for_vs82_%28109872507874%29
  */
-public class SEPA_Export_GenerateXML extends SvrProcess
+public class SEPA_Export_GenerateXML extends JavaProcess
 {
 	private int p_SEPA_Export_ID = -1;
 
@@ -51,7 +51,7 @@ public class SEPA_Export_GenerateXML extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@FunctionalInterface
 public interface TrxCallable<ResultType> extends Callable<ResultType>
 {
 	/** Value to be returned by {@link #doCatch(Throwable)} */
@@ -32,10 +32,10 @@ public interface TrxCallable<ResultType> extends Callable<ResultType>
 	boolean DONT_ROLLBACK = false;
 	
 	@Override
-	public ResultType call() throws Exception;
+	ResultType call() throws Exception;
 
 	/**
-	 * Method called when {@link #run(String)} throws an exception. In this method you can handle this exception or throw another exception. If an exception is thrown or method returns true, the
+	 * Method called when {@link #call()} throws an exception. In this method you can handle this exception or throw another exception. If an exception is thrown or method returns true, the
 	 * transaction will be rollback.
 	 * 
 	 * Please note, this method is called before transaction is rolled-back or savepoint is released
@@ -43,12 +43,18 @@ public interface TrxCallable<ResultType> extends Callable<ResultType>
 	 * @param e exception
 	 * @return true if transaction should be rollback
 	 */
-	public boolean doCatch(Throwable e) throws Throwable;
+	default boolean doCatch(Throwable e) throws Throwable
+	{
+		throw e;
+	}
 
 	/**
 	 * Method called after {@link #run(String)} runs.
 	 * 
 	 * Please note, this method is called AFTER transaction is rolled-back or savepoint is released
 	 */
-	public void doFinally();
+	default void doFinally()
+	{
+		// nothing
+	}
 }

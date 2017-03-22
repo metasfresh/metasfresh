@@ -31,7 +31,7 @@ import org.compiere.model.I_M_Attribute;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 
 /**
- * Defines something which has weighting capabilities.
+ * Defines something which has weighting capabilities. Use {@link IWeightableFactory#createWeightableOrNull(org.adempiere.mm.attributes.api.IAttributeSet)} to get an instance.
  *
  * Mainly, it wraps an {@link IAttributeStorage} or (something else) and expose a lot of methods around the "Weightable HU" concern.
  *

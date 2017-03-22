@@ -8,9 +8,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
-import org.compiere.process.SvrProcess;
 
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import de.metas.process.RunOutOfTrx;
  * #L%
  */
 
-public class AD_Table_CreatePK_ForWindow extends SvrProcess
+public class AD_Table_CreatePK_ForWindow extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);

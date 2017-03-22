@@ -8,6 +8,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.util.DB;
@@ -58,7 +59,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		final ILoggable loggable = getLoggable();
+		final ILoggable loggable = Loggables.get();
 		final IParams params = getParameters();
 
 		//

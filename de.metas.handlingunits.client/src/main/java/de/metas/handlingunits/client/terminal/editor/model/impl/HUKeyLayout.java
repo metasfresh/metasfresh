@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -168,7 +167,9 @@ public class HUKeyLayout extends KeyLayout implements IKeyLayoutSelectionModelAw
 	@Override
 	public String toString()
 	{
-		return "HUKeyLayout [parentHUKey=" + parentHUKey + ", parentHUKey_ChildrenChangedListener=" + parentHUKey_ChildrenChangedListener + "]";
+		return "HUKeyLayout [parentHUKey=" + parentHUKey
+				+ ", parentHUKey_ChildrenChangedListener="
+				+ parentHUKey_ChildrenChangedListener + "]";
 	}
 
 	private final void onParentHUKeyChildrenChanged()

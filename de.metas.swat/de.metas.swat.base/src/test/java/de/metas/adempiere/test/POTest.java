@@ -26,10 +26,10 @@ package de.metas.adempiere.test;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import mockit.NonStrictExpectations;
-
 import org.adempiere.util.MiscUtils;
 import org.compiere.model.PO;
+
+import mockit.Expectations;
 
 /**
  * 
@@ -49,31 +49,23 @@ public class POTest {
 		
 	public static void recordGenericExpectations(final PO poMock, final int id) {
 
-		new NonStrictExpectations() 
-		{
-			{
-				onInstance(poMock).getCtx(); returns(POTest.CTX);
-
-				onInstance(poMock).get_TrxName(); returns(POTest.TRX_NAME);
-
-				onInstance(poMock).get_ID(); returns(id);
-
-				onInstance(poMock).getAD_Client_ID(); returns(AD_CLIENT_ID);
-				
-				onInstance(poMock).getAD_Org_ID(); returns(AD_Org_ID);
-			}
-		};
+		new Expectations() 
+		{{
+			poMock.getCtx(); minTimes = 0; result = POTest.CTX;
+			poMock.get_TrxName(); minTimes = 0; result = POTest.TRX_NAME;
+			poMock.get_ID(); minTimes = 0; result = id;
+			poMock.getAD_Client_ID(); minTimes = 0; result = AD_CLIENT_ID;
+			poMock.getAD_Org_ID(); minTimes = 0; result = AD_Org_ID;
+		}};
 	}
 
 	public static void recordSaveOk(final PO poMock) {
 
-		new NonStrictExpectations() {
-			{
-				poMock.save();	returns(true);
-				
-				poMock.save(POTest.TRX_NAME);	returns(true);
-			}
-		};
+		new Expectations() 
+		{{
+				poMock.save();	result = true;
+				poMock.save(POTest.TRX_NAME);	result = true;
+		}};
 
 	}
 

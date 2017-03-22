@@ -19,6 +19,8 @@ package org.compiere.process;
 //import org.compiere.process.*;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPayment;
@@ -30,7 +32,7 @@ import org.compiere.util.Util;
  * @author Jorg Janke
  * @version $Id: PaymentOnline.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class PaymentOnline extends SvrProcess
+public class PaymentOnline extends JavaProcess
 {
 	private String creditCardNumber;
 	private String creditCardVV;
@@ -40,7 +42,7 @@ public class PaymentOnline extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

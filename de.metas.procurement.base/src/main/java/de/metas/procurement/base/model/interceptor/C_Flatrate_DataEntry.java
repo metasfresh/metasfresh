@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -25,11 +26,11 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,12 +44,10 @@ public class C_Flatrate_DataEntry
 	{
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
-			ifColumnsChanged = {
-					I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Planned,
-					I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM,
-					I_C_Flatrate_DataEntry.COLUMNNAME_C_Currency_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {
+			I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Planned,
+			I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM,
+			I_C_Flatrate_DataEntry.COLUMNNAME_C_Currency_ID })
 	public void updateFlatrateAmt(final I_C_Flatrate_DataEntry dataEntry)
 	{
 		updateFlatrateAmt0(dataEntry);
@@ -65,10 +64,19 @@ public class C_Flatrate_DataEntry
 
 	private void updateFlatrateAmt0(final I_C_Flatrate_DataEntry dataEntry)
 	{
+		// gh #770: null values in one of the two factors shall result in the product being null and not 0.
+		if (InterfaceWrapperHelper.isNull(dataEntry, I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM)
+				|| InterfaceWrapperHelper.isNull(dataEntry, I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Planned))
+		{
+			dataEntry.setFlatrateAmt(null);
+			return;
+		}
+
 		final BigDecimal product = dataEntry.getQty_Planned().multiply(dataEntry.getFlatrateAmtPerUOM());
 		final BigDecimal flatrateAmt;
 		if (dataEntry.getC_Currency_ID() > 0)
 		{
+			// round to currency precision
 			flatrateAmt = product.setScale(dataEntry.getC_Currency().getStdPrecision(), RoundingMode.HALF_UP);
 		}
 		else

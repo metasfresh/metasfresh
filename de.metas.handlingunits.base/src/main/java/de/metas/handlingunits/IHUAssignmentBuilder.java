@@ -92,14 +92,14 @@ public interface IHUAssignmentBuilder
 	IHUAssignmentBuilder initializeAssignment(Properties ctx, String trxName);
 
 	/**
-	 * Initialize this builder with values from a pre-existing assignment, to be modified.
+	 * Initialize this builder with values from the given pre-existing {@code assignment}.
 	 *
-	 * @param assignment the blueprint for this instance's assignment. Won't be changed
+	 * @param assignment this instance's assignment. The builder will operate on this instance and probably change it.
 	 */
 	IHUAssignmentBuilder initializeAssignment(I_M_HU_Assignment assignment);
 
 	/**
-	 * Create and save assignment
+	 * Create/modify and save assignment
 	 *
 	 * @return
 	 */

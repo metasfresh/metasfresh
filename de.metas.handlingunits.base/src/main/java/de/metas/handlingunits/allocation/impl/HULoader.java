@@ -64,6 +64,11 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public class HULoader
 {
+	public static final HULoader of(final IAllocationSource source, final IAllocationDestination destination)
+	{
+		return new HULoader(source, destination);
+	}
+	
 	private final IAllocationSource source;
 	private final IAllocationDestination destination;
 
@@ -83,9 +88,8 @@ public class HULoader
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public HULoader(final IAllocationSource source, final IAllocationDestination destination)
+	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
 	{
-		super();
 		// this.huContext = huContext;
 		this.source = source;
 		this.destination = destination;
@@ -110,9 +114,10 @@ public class HULoader
 	 *
 	 * @param allowPartialUnloads true if partial unloads are allowed (i.e. source does not have all the requested qty)
 	 */
-	public void setAllowPartialUnloads(final boolean allowPartialUnloads)
+	public HULoader setAllowPartialUnloads(final boolean allowPartialUnloads)
 	{
 		this.allowPartialUnloads = allowPartialUnloads;
+		return this;
 	}
 
 	/**
@@ -126,21 +131,25 @@ public class HULoader
 
 	/**
 	 *
-	 * @param allowPartialLoads true if partial loads are allowed (i.e. destination can not accept all qty that was unloaded from source)
+	 * @param allowPartialLoads true if partial loads are allowed (i.e. if it is OK in case the destination can not accept all qty that was unloaded from source).
 	 */
-	public void setAllowPartialLoads(final boolean allowPartialLoads)
+	public HULoader setAllowPartialLoads(final boolean allowPartialLoads)
 	{
 		this.allowPartialLoads = allowPartialLoads;
+		return this;
 	}
 
-	public void setForceLoad(final boolean forceLoad)
+	/**
+	 * If this setter is called with {@code true}, then the loader will load into the destination whatever was unloaded from the source, no matter what the destination's capacity is.
+	 * <p>
+	 * The default if this setter is not called is {@code false}.
+	 * 
+	 * @param forceLoad
+	 */
+	public HULoader setForceLoad(final boolean forceLoad)
 	{
 		this.forceLoad = forceLoad;
-	}
-
-	public final boolean isForceLoad()
-	{
-		return forceLoad;
+		return this;
 	}
 
 	/**
@@ -187,7 +196,7 @@ public class HULoader
 	 * <ul>
 	 * <li>managing database transaction</li>
 	 * <li>collecting and automatically processing {@link IHUTransactionAttribute}s</li>
-	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getDestroyedHUPackingMaterialsCollector()})</li>
+	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
 	 *
 	 * @param huContext
@@ -234,8 +243,12 @@ public class HULoader
 
 	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>.
+	 * <p>
+	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransaction}s are created).<br>
+	 * If not all from the given {@code unloadRequest} is unloaded, then the it will only try to load the lesser qtys which were unloaded.<br>
+	 * However, in the end, only the stuff that will be "accepted" by the {@link IAllocationDestination} will really be moved.<br>
 	 *
-	 * NOTE:
+	 * NOTEs:
 	 * <ul>
 	 * <li>that transactions from result will be already processed.
 	 * <li>context's trxName will be used, no transaction management will be performed (see {@link #load(IAllocationRequest)} which is doing the magic)
@@ -280,7 +293,7 @@ public class HULoader
 
 		//
 		// Notify listeners that load was completed
-		huContext.getTrxListeners().afterLoad(huContext, Collections.<IAllocationResult> singletonList(finalResult));
+		huContext.getTrxListeners().afterLoad(huContext, Collections.singletonList(finalResult));
 
 		//
 		// Notify our source that the unload was completed
@@ -290,7 +303,9 @@ public class HULoader
 	}
 
 	/**
-	 * Loads everything from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s.
+	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s trx candidates.
+	 * For each trx candidates, the code will attempts to loadto the {@link IAllocationDestination}.
+	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransaction}s will be created based of what was actually loaded to the destination.
 	 *
 	 * After running this method:
 	 * <ul>
@@ -361,10 +376,11 @@ public class HULoader
 			// Iterate each load transaction:
 			// * create it's counterpart unload transaction (taking properties from unloadTrx)
 			// * transfer attributes
-			final List<IHUTransaction> loadTransactions = loadResult.getTransactions();
+			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
+			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
 
 			BigDecimal qtyUnloaded = BigDecimal.ZERO;
-			for (final IHUTransaction loadTrx : loadTransactions)
+			for (final IHUTransaction loadTrx : aggregatedLoadTransactions)
 			{
 				final IHUTransaction unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
 				unloadTrxPartial.pair(loadTrx);
@@ -407,9 +423,10 @@ public class HULoader
 			final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
 					loadResult.getQtyToAllocate(),   // qtyToAllocate
 					loadResult.getQtyAllocated(),   // qtyAllocated
-					trxs,   // transactions
+					trxs, //
 					attributeTrxs // attribute transactions
 			);
+
 			huTrxBL.createTrx(huContext, result);
 
 			//
@@ -427,7 +444,7 @@ public class HULoader
 	private final IAllocationRequest createQtyLoadRequest(final IAllocationRequest unloadRequestActual, final IHUTransaction unloadTrx)
 	{
 		final IAllocationRequestBuilder builder = AllocationUtils.createQtyLoadRequestBuilder(unloadRequestActual, unloadTrx);
-		if (isForceLoad())
+		if (forceLoad)
 		{
 			builder.setForceQtyAllocation(true);
 		}
@@ -596,9 +613,10 @@ public class HULoader
 	 * 
 	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
 	 */
-	public void setSkipAttributesTransfer(final boolean skipAttributesTransfer)
+	public HULoader setSkipAttributesTransfer(final boolean skipAttributesTransfer)
 	{
 		this.skipAttributesTransfer = skipAttributesTransfer;
+		return this;
 	}
 
 	/**

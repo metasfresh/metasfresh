@@ -77,7 +77,7 @@ public class PMMBalanceDAO implements IPMMBalanceDAO
 			throw new AdempiereException("@NotSupported@ " + DateSegment.class + ": " + dateSegment);
 		}
 
-		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
+		final PlainContextAware context = PlainContextAware.newWithThreadInheritedTrx();
 		I_PMM_Balance balanceRecord = Services.get(IQueryBL.class).createQueryBuilder(I_PMM_Balance.class, context)
 				//
 				// BPartner + Product segment

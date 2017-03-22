@@ -14,7 +14,7 @@ public class X_R_RequestType extends org.compiere.model.PO implements I_R_Reques
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1111411973L;
+	private static final long serialVersionUID = 955384659L;
 
     /** Standard Constructor */
     public X_R_RequestType (Properties ctx, int R_RequestType_ID, String trxName)
@@ -36,6 +36,8 @@ public class X_R_RequestType extends org.compiere.model.PO implements I_R_Reques
 			setIsIndexed (false);
 			setIsSelfService (true);
 // Y
+			setIsUseForPartnerRequestWindow (false);
+// N
 			setName (null);
 			setR_RequestType_ID (0);
 			setR_StatusCategory_ID (0);
@@ -368,6 +370,32 @@ public class X_R_RequestType extends org.compiere.model.PO implements I_R_Reques
 	public boolean isSelfService () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelfService);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsUseForPartnerRequestWindow.
+		@param IsUseForPartnerRequestWindow 
+		Flag that tells if the R_Request entries of this type will be displayed or not in the business partner request window (Vorgang)
+	  */
+	@Override
+	public void setIsUseForPartnerRequestWindow (boolean IsUseForPartnerRequestWindow)
+	{
+		set_Value (COLUMNNAME_IsUseForPartnerRequestWindow, Boolean.valueOf(IsUseForPartnerRequestWindow));
+	}
+
+	/** Get IsUseForPartnerRequestWindow.
+		@return Flag that tells if the R_Request entries of this type will be displayed or not in the business partner request window (Vorgang)
+	  */
+	@Override
+	public boolean isUseForPartnerRequestWindow () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsUseForPartnerRequestWindow);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

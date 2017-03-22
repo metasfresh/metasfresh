@@ -20,7 +20,8 @@ RETURNS TABLE
 	sr_phone character varying(40),
 	sr_fax character varying(40),
 	sr_email character varying(60),
-	printname character varying(60)
+	printname character varying(60),
+	datepromised timestamp with time zone
 )
 AS
 $$
@@ -50,22 +51,23 @@ SELECT
 	srep.phone	as sr_phone,
 	srep.fax	as sr_fax,
 	srep.email	as sr_email,
-	COALESCE(dtt.PrintName, dt.PrintName) AS PrintName
+	COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
+	o.datepromised
 FROM
 	C_Order o
-	INNER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID
-	LEFT OUTER JOIN AD_User srep		ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
-	LEFT OUTER JOIN AD_User cont		ON o.Bill_User_ID = cont.AD_User_ID
-	LEFT OUTER JOIN C_DocType dt 		ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
-	LEFT OUTER JOIN C_DocType_Trl dtt 	ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2
+	INNER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	LEFT OUTER JOIN AD_User srep		ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100 AND srep.isActive = 'Y'
+	LEFT OUTER JOIN AD_User cont		ON o.Bill_User_ID = cont.AD_User_ID AND cont.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType dt 		ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt 	ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
 
 	-- Translatables
-	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID
-	LEFT OUTER JOIN C_Greeting_Trl cogrt	ON cont.C_Greeting_ID = cogrt.C_Greeting_ID AND cogrt.ad_language = $2
-	LEFT OUTER JOIN C_Greeting srgr	ON srep.C_Greeting_ID = srgr.C_Greeting_ID
-	LEFT OUTER JOIN C_Greeting_Trl srgrt	ON srep.C_Greeting_ID = srgrt.C_Greeting_ID AND srgrt.ad_language = $2
+	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
+	LEFT OUTER JOIN C_Greeting_Trl cogrt	ON cont.C_Greeting_ID = cogrt.C_Greeting_ID AND cogrt.ad_language = $2 AND cogrt.isActive = 'Y'
+	LEFT OUTER JOIN C_Greeting srgr	ON srep.C_Greeting_ID = srgr.C_Greeting_ID AND srgr.isActive = 'Y'
+	LEFT OUTER JOIN C_Greeting_Trl srgrt	ON srep.C_Greeting_ID = srgrt.C_Greeting_ID AND srgrt.ad_language = $2 AND srgrt.isActive = 'Y'
 WHERE
-	o.C_Order_ID = $1
+	o.C_Order_ID = $1 AND o.isActive = 'Y'
 $$
 LANGUAGE sql STABLE
 ;

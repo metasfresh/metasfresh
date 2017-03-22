@@ -97,7 +97,7 @@ import de.metas.payment.sepa.spi.ISEPAMarshaller;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
- * <a href=http://www.six-interbank-clearing.com/en/home/standardization/iso-payments/customer-bank/implementation-guidelines.html">here</a>.
+ * <a href="http://www.six-interbank-clearing.com/en/home/standardization/iso-payments/customer-bank/implementation-guidelines.html">here</a>.
  * <p>
  * Important note:<b>This is a partial implementation!!</b> The above-mentioned document specifies 9 different mayment modes ("Zahlarten") for different business case, ranging from scanned ESR-String,
  * domestic transaction to "dowhat you want, it's the banks problem" arbitrary currencies and ways to specify the accounts and banks</b>

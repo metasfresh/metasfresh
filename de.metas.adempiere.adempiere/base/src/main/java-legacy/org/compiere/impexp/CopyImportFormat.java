@@ -16,9 +16,8 @@
  *****************************************************************************/
 package org.compiere.impexp;
 
-import java.math.BigDecimal;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -27,7 +26,7 @@ import org.compiere.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: CopyImportFormat.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class CopyImportFormat extends SvrProcess
+public class CopyImportFormat extends JavaProcess
 {
 	private int from_AD_ImpFormat_ID = 0;
 	private int to_AD_ImpFormat_ID = 0;
@@ -35,16 +34,16 @@ public class CopyImportFormat extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter para : getParameters())
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = para.getParameterName();
+			if (para.getParameter() == null)
 				;
-			else if (name.equals("AD_ImpFormat_ID"))
-				from_AD_ImpFormat_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			else if ("AD_ImpFormat_ID".equals(name))
+				from_AD_ImpFormat_ID = para.getParameterAsInt();
 			else
 				log.error("prepare - Unknown Parameter: " + name);
 		}
@@ -57,6 +56,7 @@ public class CopyImportFormat extends SvrProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("doIt = From=" + from_AD_ImpFormat_ID + " To=" + to_AD_ImpFormat_ID);

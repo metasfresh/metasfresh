@@ -44,30 +44,19 @@ import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterName;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
-
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.MPInstance;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.PackingDetailsV;
 import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.LegacyPackingItem;
+import de.metas.adempiere.form.PackingDetailsMd;
+import de.metas.adempiere.form.PackingDetailsV;
 import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
@@ -87,6 +76,14 @@ import de.metas.picking.terminal.ProductKey;
 import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
+import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 
 /**
  * @author cg
@@ -329,7 +326,7 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		}
 		else if (AbstractPackageDataPanel.ACTION_OK.equals(evt.getNewValue()))
 		{
-			final ProcessCtl worker = packageTerminalPanel.processPackingDetails();
+			final ProcessExecutor worker = packageTerminalPanel.processPackingDetails();
 			if (worker != null)
 			{
 				worker.waitToComplete();
@@ -434,31 +431,25 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		// save tree
 		saveTree();
 
+		final PackingDetailsMd model = (PackingDetailsMd)packageTerminalPanel.getModel();
+		final I_M_PackagingTree savedTree = model.getPackingTreeModel().getSavedTree();
+		final int M_PackagingTree_ID = savedTree == null ? 0 : savedTree.getM_PackagingTree_ID();
+
 		final JasperPrint jasperPrint;
 		final int AD_Form_ID = packageTerminalPanel.getParent().getPickingFrame().getAD_Form_ID();
 		final IADProcessDAO processPA = Services.get(IADProcessDAO.class);
 		final I_AD_Process process = processPA.retrieveProcessByForm(getCtx(), AD_Form_ID);
-		final MPInstance instance = new MPInstance(Env.getCtx(), process.getAD_Process_ID(), 0, 0);
-		instance.saveEx();
 
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), 0, 0);
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
-		final PackingDetailsMd model = (PackingDetailsMd)packageTerminalPanel.getModel();
-		final I_M_PackagingTree savedTree = model.getPackingTreeModel().getSavedTree();
-		final int M_PackagingTree_ID = savedTree == null ? 0 : savedTree.getM_PackagingTree_ID();
-		final ProcessInfoParameter pipM_PackagingTree_ID =
-				new ProcessInfoParameter("M_PackagingTree_ID", M_PackagingTree_ID, null, "M_PackagingTree_ID", null);
-		final ProcessInfoParameter pipC_BPartner_ID =
-				new ProcessInfoParameter("C_BPartner_ID", model.getPackingTreeModel().getBp_id(), null, "C_BPartner_ID", null);
-
-		final ProcessInfoParameter pipShipper =
-				new ProcessInfoParameter("shipper", model.selectedShipperId, null, "pipShipper", null);
-
-		pi.setParameter(new ProcessInfoParameter[] { pipM_PackagingTree_ID, pipC_BPartner_ID, pipShipper });
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setAD_Process(process)
+				.addParameter("M_PackagingTree_ID", M_PackagingTree_ID)
+				.addParameter("C_BPartner_ID", model.getPackingTreeModel().getBp_id())
+				.addParameter("shipper", model.selectedShipperId)
+				.build();
 
 		try
 		{
-			jasperPrint = JRClient.get().createJasperPrint(Env.getCtx(), pi);
+			jasperPrint = JRClient.get().createJasperPrint(pi);
 		}
 		catch (final Exception e)
 		{

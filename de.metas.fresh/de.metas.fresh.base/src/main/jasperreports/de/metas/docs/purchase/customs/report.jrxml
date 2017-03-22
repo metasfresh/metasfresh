@@ -5,10 +5,12 @@
 	<property name="ireport.zoom" value="1.0000000000000016"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="RECORD_ID" class="java.lang.Integer">
+	<parameter name="RECORD_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[new Integer(0)]]></defaultValueExpression>
 	</parameter>
 	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
@@ -18,54 +20,13 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT DISTINCT
-	ol.AD_Org_ID,
-	ol.C_OrderLine_ID,
-	ol.C_Order_ID,
-	EXISTS(
-		SELECT 0
-		FROM
-			M_ReceiptSchedule rs2
-			INNER JOIN M_ReceiptSchedule_Alloc rsa2 ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
-			INNER JOIN M_InOutLine iol ON iol.M_InOutLine_ID = rsa.M_InOutLine_ID
-			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
-			-- Find out if the assigned HUs have snapshots
-			INNER JOIN M_HU_Assignment thuas ON iol.M_InOutLine_ID = thuas.Record_ID
-			-- Get snapshot weight
-			INNER JOIN M_HU_Attribute_Snapshot thuwns ON thuas.M_HU_ID = thuwns.M_HU_ID
-				AND thuwns.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'WeightNet'))
-				AND thuwns.Snapshot_UUID = io.Snapshot_UUID
-		WHERE
-			rs.AD_Table_ID = ( SELECT Get_Table_ID('C_OrderLine') ) AND rs.Record_ID = ol.C_OrderLine_ID
-	) AS HasWeightSnapshot
-FROM
-	-- Get an orderline for the given in out id
-	M_InOutLine iol
-	INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-	INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID AND rs.AD_Table_ID = ( SELECT Get_Table_ID('C_OrderLine') )
-	INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
-WHERE
-	iol.M_InOut_ID = $P{RECORD_ID}
-LIMIT 1
-;]]>
+		<![CDATA[SELECT * FROM
+de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID});]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="c_orderline_id" class="java.math.BigDecimal"/>
 	<field name="c_order_id" class="java.math.BigDecimal"/>
 	<field name="hasweightsnapshot" class="java.lang.Boolean"/>
-	<background>
-		<band height="461">
-			<textField>
-				<reportElement uuid="48ff7c6b-a05f-46de-a70b-ab50ece90cd9" x="97" y="398" width="400" height="63" forecolor="#CCCCCC">
-					<printWhenExpression><![CDATA[!$F{hasweightsnapshot}]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Center">
-					<font size="48" isBold="true" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Aus Bestand"]]></textFieldExpression>
-			</textField>
-		</band>
-	</background>
 	<title>
 		<band height="269" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>

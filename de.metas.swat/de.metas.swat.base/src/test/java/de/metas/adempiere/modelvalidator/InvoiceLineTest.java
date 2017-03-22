@@ -27,11 +27,6 @@ import static org.junit.Assert.assertNull;
 
 import java.util.Collections;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-import mockit.Verifications;
-import mockit.integration.junit4.JMockit;
-
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MInvoiceLine;
@@ -40,6 +35,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import de.metas.adempiere.test.POTest;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
+import mockit.integration.junit4.JMockit;
 
 // don't know why we need this in this particular class (jmockit.jar is before junit.jar in the classpath), but we do
 @RunWith(JMockit.class)
@@ -66,25 +65,22 @@ public class InvoiceLineTest {
 
 		POTest.recordGenericExpectations(ilPO, 10);
 		
-		new NonStrictExpectations() {{
+		new Expectations() {{
 				Services.get(IInvoiceDAO.class);
-				returns(invoicePA);
+				result = invoicePA;
 
-				invoicePA.retrieveReferringLines(POTest.CTX, 10,
-						POTest.TRX_NAME);
-				returns(Collections.singletonList(referringIlPO));
-			}
-		};
+				invoicePA.retrieveReferringLines(POTest.CTX, 10, POTest.TRX_NAME);
+				result = Collections.singletonList(referringIlPO);
+		}};
 
 		String result = new InvoiceLine().modelChange(ilPO,
 				ModelValidator.TYPE_BEFORE_DELETE);
 		assertNull(result);
 
-		new Verifications() {
-			{
+		new Verifications() 
+		{{
 				referringIlPO.setRef_InvoiceLine_ID(0);
 				referringIlPO.saveEx();
-			}
-		};
+		}};
 	}
 }

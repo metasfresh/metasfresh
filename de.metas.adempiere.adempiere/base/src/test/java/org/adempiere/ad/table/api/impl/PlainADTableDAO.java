@@ -40,10 +40,10 @@ public class PlainADTableDAO extends ADTableDAO
 		I_AD_Column adColumn = super.retrieveColumnOrNull(tableName, columnName);
 
 		//
-		// Automatically create the AD_Column if is missing... there are a couple of tests which are rellying on this feature
+		// Automatically create the AD_Column if is missing... there are a couple of tests which are relying on this feature
 		if (adColumn == null)
 		{
-			final IContextAware context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+			final IContextAware context = PlainContextAware.newWithTrxName(Env.getCtx(), ITrx.TRXNAME_None);
 			final int adTableId = retrieveTableId(tableName);
 
 			adColumn = InterfaceWrapperHelper.newInstance(I_AD_Column.class, context);

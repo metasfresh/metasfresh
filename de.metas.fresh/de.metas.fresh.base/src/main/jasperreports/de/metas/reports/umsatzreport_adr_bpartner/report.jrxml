@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-16T16:12:34 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/umsatzreport_adr_bpartner/report" uuid="f0c87073-442f-4c7c-8390-c00eb0a5188c">
 	<property name="ireport.zoom" value="1.9487171000000014"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Base_Period_Start" class="java.util.Date"/>
 	<parameter name="Base_Period_End" class="java.util.Date"/>
 	<parameter name="IsSOTrx" class="java.lang.String"/>
@@ -11,6 +15,7 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT * FROM report.fresh_ADR_umsatzliste_bpartner_report (
 $P{Base_Period_Start},
@@ -19,7 +24,8 @@ $P{Base_Period_End},
 $P{IsSOTrx},
 $P{C_BPartner_ID},
 $P{M_AttributeSetInstance_ID},
-$P{ad_language}
+$P{ad_language},
+$P{AD_Org_ID}
 
 )
 order by productname]]>
@@ -31,48 +37,49 @@ order by productname]]>
 	<field name="attributes" class="java.lang.String"/>
 	<field name="startdate" class="java.lang.String"/>
 	<field name="enddate" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="75" splitType="Stretch">
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="39" y="1" width="465" height="19"/>
+				<reportElement x="39" y="1" width="465" height="19" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{headline}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="39" y="42" width="170" height="12"/>
+				<reportElement x="39" y="42" width="170" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{periodrange}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="209" y="31" width="295" height="12"/>
+				<reportElement x="209" y="31" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("Y") ? $R{sales} : $R{purchase}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="39" y="20" width="170" height="12"/>
+				<reportElement x="39" y="20" width="170" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="209" y="42" width="295" height="12"/>
+				<reportElement x="209" y="42" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="209" y="20" width="295" height="12"/>
+				<reportElement x="209" y="20" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -80,7 +87,7 @@ order by productname]]>
 $R{all} : $F{bpartnername}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="209" y="53" width="295" height="12"/>
+				<reportElement x="209" y="53" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -88,14 +95,14 @@ $R{all} : $F{bpartnername}]]></textFieldExpression>
 $R{all} : $F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="39" y="53" width="170" height="12"/>
+				<reportElement x="39" y="53" width="170" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="39" y="31" width="170" height="12"/>
+				<reportElement x="39" y="31" width="170" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -109,21 +116,21 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 	<columnHeader>
 		<band height="24" splitType="Stretch">
 			<textField>
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="39" y="0" width="170" height="12"/>
+				<reportElement x="39" y="0" width="170" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="209" y="0" width="140" height="12"/>
+				<reportElement x="209" y="0" width="140" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sameperiodsum}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="384" y="0" width="120" height="12"/>
+				<reportElement x="384" y="0" width="120" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -134,21 +141,21 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="39" y="0" width="170" height="12"/>
+				<reportElement x="39" y="0" width="170" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="209" y="0" width="140" height="12"/>
+				<reportElement x="209" y="0" width="140" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="384" y="0" width="120" height="12"/>
+				<reportElement x="384" y="0" width="120" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
@@ -159,7 +166,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 	<pageFooter>
 		<band height="20" splitType="Stretch">
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement uuid="f86c275a-4413-45da-8de0-099aa8ccc32b" key="textField-30" x="479" y="8" width="47" height="12" forecolor="#000000"/>
+				<reportElement key="textField-30" x="479" y="8" width="47" height="12" forecolor="#000000" uuid="f86c275a-4413-45da-8de0-099aa8ccc32b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -172,7 +179,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="f86c275a-4413-45da-8de0-099aa8ccc32b" key="textField-30" x="285" y="8" width="191" height="12" forecolor="#000000"/>
+				<reportElement key="textField-30" x="285" y="8" width="191" height="12" forecolor="#000000" uuid="f86c275a-4413-45da-8de0-099aa8ccc32b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

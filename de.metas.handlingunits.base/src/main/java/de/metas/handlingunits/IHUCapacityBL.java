@@ -61,8 +61,8 @@ public interface IHUCapacityBL extends ISingletonService
 	IHUCapacityDefinition getCapacity(I_M_HU_PI_Item_Product itemDefProduct, I_M_Product product, I_C_UOM uom);
 
 	/**
-	 * Retrieves the I_M_HU_PI_Item_Product for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there is no such record, if returns a capacity definition with a
-	 * zero-capacity. If a record is found, it returns the result of {@link #getCapacity(I_M_HU_PI_Item_Product, I_M_Product, I_C_UOM)}.
+	 * Retrieve the and evaluate the {@link I_M_HU_PI_Item_Product} for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there is no such record, if returns a capacity definition with a
+	 * zero-capacity. If a record is found, return the result of {@link #getCapacity(I_M_HU_PI_Item_Product, I_M_Product, I_C_UOM)}.
 	 *
 	 * @param huItem
 	 * @param product
@@ -75,6 +75,14 @@ public interface IHUCapacityBL extends ISingletonService
 
 	boolean isInfiniteCapacity(I_M_HU_PI_Item_Product itemDefProduct);
 
+	/**
+	 * Evaluate the given {@code capacityDefinition} and create a new one based how much the given {@code qtyUsed} and {@code qtyUsedUOM} would take away.
+	 * 
+	 * @param qtyUsed
+	 * @param qtyUsedUOM
+	 * @param capacityDefinition
+	 * @return
+	 */
 	IHUCapacityDefinition getAvailableCapacity(BigDecimal qtyUsed, I_C_UOM qtyUsedUOM, IHUCapacityDefinition capacityDefinition);
 
 	/**

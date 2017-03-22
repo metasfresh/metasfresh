@@ -19,6 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionList;
@@ -34,7 +36,7 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version $Id: DistributionCreate.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class DistributionCreate extends SvrProcess
+public class DistributionCreate extends JavaProcess
 {
 	/**	Product					*/
 	private int 			p_M_Product_ID = 0;
@@ -68,7 +70,7 @@ public class DistributionCreate extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

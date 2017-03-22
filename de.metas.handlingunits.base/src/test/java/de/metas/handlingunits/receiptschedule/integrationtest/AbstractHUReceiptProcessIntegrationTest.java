@@ -96,7 +96,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 
 		//
 		// Contexts
-		contextGlobal = new PlainContextAware(huTestHelper.getCtx(), ITrx.TRXNAME_None);
+		contextGlobal = PlainContextAware.newOutOfTrxAllowThreadInherited(huTestHelper.getCtx());
 
 		//
 		// Product/UOM

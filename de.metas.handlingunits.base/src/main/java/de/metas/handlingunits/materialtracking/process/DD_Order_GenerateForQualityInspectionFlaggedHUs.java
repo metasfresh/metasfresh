@@ -8,7 +8,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.compiere.process.SvrProcess;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -18,6 +17,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -47,7 +47,7 @@ import de.metas.process.RunOutOfTrx;
  * @author metas-dev <dev@metasfresh.com>
  * @task 08639
  */
-public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends SvrProcess
+public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 {
 	// services
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);

@@ -13,25 +13,26 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inout.model.I_M_QualityNote;
 
 /**
  * It's a part of an {@link HUReceiptLineCandidate}.
@@ -43,11 +44,16 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 {
 	//
 	// Params
-	private final IHUReceiptLinePartAttributes _attributes;
+	private final HUReceiptLinePartAttributes _attributes;
 
 	//
 	// Aggregated values
 	private boolean _stale = true;
+
+	/**
+	 * Keep the M_QualityNote linked to the candidate
+	 */
+	private I_M_QualityNote _qualityNote = null;
 	private IQtyAndQuality _qtyAndQuality = null;
 	private BigDecimal _qty = BigDecimal.ZERO;
 	private int _subProducerBPartnerId = -1;
@@ -56,7 +62,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 	private final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 	private final transient List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocsRO = Collections.unmodifiableList(receiptScheduleAllocs);
 
-	public HUReceiptLinePartCandidate(final IHUReceiptLinePartAttributes attributes)
+	public HUReceiptLinePartCandidate(final HUReceiptLinePartAttributes attributes)
 	{
 		super();
 
@@ -114,7 +120,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 
 		//
 		// Shall be precisely the same attributes (i.e. M_HU_ID)
-		if (!Check.equals(getAttributes().getId(), receiptLinePart.getAttributes().getId()))
+		if (!Objects.equals(getAttributes().getId(), receiptLinePart.getAttributes().getId()))
 		{
 			return false;
 		}
@@ -122,7 +128,9 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 		return true;
 	}
 
-	/** @return collected {@link I_M_ReceiptSchedule_Alloc}s */
+	/**
+	 * @return collected {@link I_M_ReceiptSchedule_Alloc}s
+	 */
 	public List<I_M_ReceiptSchedule_Alloc> getReceiptScheduleAllocs()
 	{
 		return receiptScheduleAllocsRO;
@@ -135,38 +143,49 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 			return;
 		}
 
-		final IHUReceiptLinePartAttributes attributes = getAttributes();
+		final HUReceiptLinePartAttributes attributes = getAttributes();
 
 		//
 		// Qty & Quality
 		final BigDecimal qualityDiscountPercent = attributes.getQualityDiscountPercent();
 		final MutableQtyAndQuality qtyAndQuality = new MutableQtyAndQuality();
+		I_M_QualityNote qualityNote = null;
 		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
 
 		//
 		// Quality Notice (only if we have a discount percentage)
 		if (qualityDiscountPercent.signum() != 0)
 		{
+			qualityNote = attributes.getQualityNote();
 			final String qualityNoticeDisplayName = attributes.getQualityNoticeDisplayName();
 			qtyAndQuality.addQualityNotices(QualityNoticesCollection.valueOfQualityNote(qualityNoticeDisplayName));
 		}
 
 		//
 		// Update values
+		if (_qualityNote == null)
+		{
+			// set the quality note only if it was not set before. Only the first one is needed
+			_qualityNote = qualityNote;
+		}
 		_qtyAndQuality = qtyAndQuality;
 		_subProducerBPartnerId = attributes.getSubProducer_BPartner_ID();
 		_attributeStorageAggregationKey = attributes.getAttributeStorageAggregationKey();
 		_stale = false; // not stale anymore
 	}
 
-	/** @return part attributes; never return null */
+	/**
+	 * @return part attributes; never return null
+	 */
 	// package level access for testing purposes
-	IHUReceiptLinePartAttributes getAttributes()
+	HUReceiptLinePartAttributes getAttributes()
 	{
 		return _attributes;
 	}
 
-	/** @return qty & quality; never returns null */
+	/**
+	 * @return qty & quality; never returns null
+	 */
 	public final IQtyAndQuality getQtyAndQuality()
 	{
 		updateIfStale();
@@ -183,6 +202,16 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 	{
 		updateIfStale();
 		return _attributeStorageAggregationKey;
+	}
+
+	/**
+	 * Get the quality note linked with the part candidate
+	 * 
+	 * @return
+	 */
+	public I_M_QualityNote getQualityNote()
+	{
+		return _qualityNote;
 	}
 
 }

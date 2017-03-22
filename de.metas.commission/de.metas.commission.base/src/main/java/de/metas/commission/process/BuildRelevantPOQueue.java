@@ -30,19 +30,19 @@ import java.util.Collection;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.commission.model.I_C_AdvCommissionRelevantPO;
 import de.metas.commission.model.MCAdvComRelevantPOType;
 import de.metas.commission.model.MCAdvCommissionFactCand;
 import de.metas.commission.model.MCAdvCommissionRelevantPO;
 
-public class BuildRelevantPOQueue extends SvrProcess
+public class BuildRelevantPOQueue extends JavaProcess
 {
 
 	private int orgId;
@@ -104,7 +104,7 @@ public class BuildRelevantPOQueue extends SvrProcess
 	protected void prepare()
 	{
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

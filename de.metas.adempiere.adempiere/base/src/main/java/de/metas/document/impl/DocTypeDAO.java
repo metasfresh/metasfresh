@@ -136,7 +136,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, adClientId);
-		filters.addInArrayFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
+		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
 
 		if (docSubType != DOCSUBTYPE_Any)

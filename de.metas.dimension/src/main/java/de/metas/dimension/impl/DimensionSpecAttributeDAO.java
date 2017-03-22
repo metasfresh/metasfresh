@@ -31,7 +31,6 @@ import org.compiere.model.I_M_Attribute;
 import de.metas.dimension.IDimensionSpecAttributeDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 
 public class DimensionSpecAttributeDAO implements IDimensionSpecAttributeDAO
 {
@@ -59,18 +58,5 @@ public class DimensionSpecAttributeDAO implements IDimensionSpecAttributeDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_DIM_Dimension_Spec_Attribute.class);
-	}
-
-	@Override
-	public List<I_DIM_Dimension_Spec_AttributeValue> retrieveDimSpecAttrValues(final I_DIM_Dimension_Spec_Attribute dimSpecAttr)
-	{
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_AttributeValue.class, dimSpecAttr)
-				.addEqualsFilter(I_DIM_Dimension_Spec_AttributeValue.COLUMNNAME_DIM_Dimension_Spec_Attribute_ID, dimSpecAttr.getDIM_Dimension_Spec_Attribute_ID())
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_DIM_Dimension_Spec_AttributeValue.class);
 	}
 }

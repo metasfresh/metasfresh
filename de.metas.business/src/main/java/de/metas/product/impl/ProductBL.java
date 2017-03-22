@@ -25,8 +25,6 @@ package de.metas.product.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -47,10 +45,12 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MProductCategoryAcct;
 import org.compiere.model.X_M_Product;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 public final class ProductBL implements IProductBL
@@ -186,6 +186,14 @@ public final class ProductBL implements IProductBL
 			return IAttributeDAO.M_AttributeSet_ID_None;
 		}
 		return attributeSet_ID;
+	}
+
+	@Override
+	public int getM_AttributeSet_ID(final Properties ctx, final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
+		return getM_AttributeSet_ID(product);
 	}
 
 	@Override

@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.script.ScriptEngine;
-
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -67,6 +65,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
 
 /**
  * Model Validation Engine
@@ -149,6 +149,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			"A" // Applications
 	);
 
+	private static Boolean _failOnMissingModelInteceptors = null;
 	/** List of errors that we encounted while initializing the model interceptors */
 	private static final List<ModelInterceptorInitException> _modelInterceptorInitErrors = new ArrayList<>();
 
@@ -284,9 +285,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private final boolean isFailOnMissingModelInteceptors()
 	{
+		final Boolean failOnMissingModelInteceptorsOverride = _failOnMissingModelInteceptors;
+		if(failOnMissingModelInteceptorsOverride != null)
+		{
+			return failOnMissingModelInteceptorsOverride;
+		}
+		
 		final I_AD_System system = MSystem.get(Env.getCtx());
 		final boolean isFail = system.isFailOnMissingModelValidator();
 		return isFail;
+	}
+	
+	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
+	{
+		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
 	}
 
 	private List<I_AD_ModelValidator> retrieveModelValidators(final Properties ctx)
@@ -401,15 +413,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	// private VetoableChangeSupport m_changeSupport = new VetoableChangeSupport(this);
 
 	/** Validators */
-	private ArrayList<ModelValidator> m_validators = new ArrayList<ModelValidator>();
+	private ArrayList<ModelValidator> m_validators = new ArrayList<>();
 	/** Model Change Listeners */
-	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<String, ArrayList<ModelValidator>>();
+	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<>();
 	/** Document Validation Listeners */
-	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<String, ArrayList<ModelValidator>>();
+	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<>();
 	/** Data Import Validation Listeners */
-	private Hashtable<String, ArrayList<IImportValidator>> m_impValidateListeners = new Hashtable<String, ArrayList<IImportValidator>>();
+	private Hashtable<String, ArrayList<IImportValidator>> m_impValidateListeners = new Hashtable<>();
 
-	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<ModelValidator>();
+	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
 
 	/**
 	 * Contains model validators for subsequent processing. The boolean value tells if the subsequent processing takes place directly when fireModelChange() is invoked with this type (
@@ -440,7 +452,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param AD_Org_ID org
 	 * @param AD_Role_ID role
 	 * @param AD_User_ID user
-	 * @return error message or null
+	 * @return error message or empty/null
 	 */
 	public String loginComplete(int AD_Client_ID, int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
@@ -456,38 +468,29 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 
 		// now process the script model validator login
-		List<MRule> loginRules = MRule.getModelValidatorLoginRules(Env.getCtx());
-		if (loginRules != null)
+		final Properties ctx = Env.getCtx();
+		final List<I_AD_Rule> loginRules = Services.get(IADRuleDAO.class).retrieveByEventType(ctx, X_AD_Rule.EVENTTYPE_ModelValidatorLoginEvent);
+		if (loginRules != null && !loginRules.isEmpty())
 		{
-			for (MRule loginRule : loginRules)
+			for (final I_AD_Rule loginRule : loginRules)
 			{
-				// currently just JSR 223 supported
-				if (loginRule.getRuleType().equals(MRule.RULETYPE_JSR223ScriptingAPIs)
-						&& loginRule.getEventType().equals(MRule.EVENTTYPE_ModelValidatorLoginEvent))
+				try
 				{
-					String error;
-					try
-					{
-						ScriptEngine engine = loginRule.getScriptEngine();
-
-						MRule.setContext(engine, Env.getCtx(), 0);  // no window
-						// now add the method arguments to the engine
-						engine.put(MRule.ARGUMENTS_PREFIX + "Ctx", Env.getCtx());
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_Client_ID", AD_Client_ID);
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_Org_ID", AD_Org_ID);
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_Role_ID", AD_Role_ID);
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_User_ID", AD_User_ID);
-
-						Object retval = engine.eval(loginRule.getScript());
-						error = (retval == null ? "" : retval.toString());
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-						error = e.toString();
-					}
-					if (error != null && error.length() > 0)
-						return error;
+					ScriptEngineFactory.get()
+							.createExecutor(loginRule)
+							.putContext(ctx, Env.WINDOW_None) // no window
+							.putArgument("AD_Client_ID", AD_Client_ID)
+							.putArgument("AD_Org_ID", AD_Org_ID)
+							.putArgument("AD_Role_ID", AD_Role_ID)
+							.putArgument("AD_User_ID", AD_User_ID)
+							.setThrowExceptionIfResultNotEmpty()
+							.execute(loginRule.getScript());
+				}
+				catch (final Exception e)
+				{
+					log.warn("Failed executing login script for {}", loginRule, e);
+					final String error = AdempiereException.extractMessage(e);
+					return error;
 				}
 			}
 		}
@@ -518,7 +521,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private List<IUserLoginListener> getUserLoginListener(final int adClientId)
 	{
-		final List<IUserLoginListener> listeners = new ArrayList<IUserLoginListener>();
+		final List<IUserLoginListener> listeners = new ArrayList<>();
 		for (int i = 0; i < m_validators.size(); i++)
 		{
 			final ModelValidator validator = m_validators.get(i);
@@ -590,7 +593,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
 		{
-			list = new ArrayList<ModelValidator>();
+			list = new ArrayList<>();
 			list.add(listener);
 			m_modelChangeListeners.put(propertyName, list);
 		}
@@ -638,6 +641,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 		if (list.size() == 0)
 			m_modelChangeListeners.remove(propertyName);
 	}	// removeModelValidator
+
+	@Override
+	public void removeModelChange(String tableName, IModelInterceptor interceptor)
+	{
+		if (interceptor == null)
+		{
+			return;
+		}
+
+		final ModelValidator modelValidator = ModelInterceptor2ModelValidatorWrapper.wrapIfNeeded(interceptor);
+		this.removeModelChange(tableName, modelValidator);
+	}
 
 	/**
 	 * Fire Model Change. Call modelChange method of added validators
@@ -729,15 +744,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			// NOTE: we are wrapping it to a transaction (savepoint) because we also want to make sure Thread TrxName is set
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
-			final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
-					TrxPropagation.NESTED, // we expect to run into a transaction at this point
-					OnRunnableSuccess.DONT_COMMIT,
-					// OnRunnableFail: don't rollback => no savepoint shall be created (avoid HUGE performance issues)
-					OnRunnableFail.DONT_ROLLBACK
-					);
+
+			final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
+					.setTrxPropagation(TrxPropagation.NESTED) // we expect to run into a transaction at this point
+					.setOnRunnableSuccess(OnRunnableSuccess.DONT_COMMIT)
+					.setOnRunnableFail(OnRunnableFail.DONT_ROLLBACK) // OnRunnableFail: don't rollback => no savepoint shall be created (avoid HUGE performance issues)
+					.build();
 			trxManager.run(trxName, trxRunConfig, new TrxRunnableAdapter()
 			{
-
 				@Override
 				public void run(String localTrxName) throws Exception
 				{
@@ -813,31 +827,22 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 		for (final I_AD_Table_ScriptValidator scriptValidator : scriptValidators)
 		{
-			final MRule rule = MRule.get(po.getCtx(), scriptValidator.getAD_Rule_ID());
-			// currently just JSR 223 supported
+			final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveById(po.getCtx(), scriptValidator.getAD_Rule_ID());
 			if (rule != null
 					&& rule.isActive()
-					&& rule.getRuleType().equals(X_AD_Rule.RULETYPE_JSR223ScriptingAPIs)
-					&& rule.getEventType().equals(ruleEventType) // MRule.EVENTTYPE_ModelValidatorTableEvent)
+					&& rule.getEventType().equals(ruleEventType)
 			)
 			{
 				try
 				{
-					final ScriptEngine engine = rule.getScriptEngine();
-					final int windowNo = po.get_WindowNo();
-					MRule.setContext(engine, po.getCtx(), windowNo);
-					// now add the method arguments to the engine
-					engine.put(MRule.ARGUMENTS_PREFIX + "Ctx", po.getCtx());
-					engine.put(MRule.ARGUMENTS_PREFIX + "PO", po);
-					engine.put(MRule.ARGUMENTS_PREFIX + "Type", changeTypeOrDocTiming);
-					engine.put(MRule.ARGUMENTS_PREFIX + "Event", ruleEventModelValidator);
-
-					final Object retval = engine.eval(rule.getScript());
-					final String error = (retval == null ? "" : retval.toString());
-					if (error != null && error.length() > 0)
-					{
-						throw new AdempiereException(error);
-					}
+					ScriptEngineFactory.get()
+							.createExecutor(rule)
+							.putContext(po.getCtx(), po.get_WindowNo())
+							.putArgument("PO", po)
+							.putArgument("Type", changeTypeOrDocTiming)
+							.putArgument("Event", ruleEventModelValidator)
+							.setThrowExceptionIfResultNotEmpty()
+							.execute(rule.getScript());
 				}
 				catch (Exception e)
 				{
@@ -940,7 +945,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
 		{
-			list = new ArrayList<ModelValidator>();
+			list = new ArrayList<>();
 			list.add(listener);
 			m_docValidateListeners.put(propertyName, list);
 		}
@@ -1131,7 +1136,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		ArrayList<IImportValidator> list = m_impValidateListeners.get(propertyName);
 		if (list == null)
 		{
-			list = new ArrayList<IImportValidator>();
+			list = new ArrayList<>();
 			list.add(listener);
 			m_impValidateListeners.put(propertyName, list);
 		}
@@ -1190,10 +1195,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 *
 	 * @author Teo Sarca, FR [ 1724662 ]
 	 */
-	public StringBuffer getInfoDetail(StringBuffer sb, Properties ctx)
+	public StringBuilder getInfoDetail(StringBuilder sb, Properties ctx)
 	{
 		if (sb == null)
-			sb = new StringBuffer();
+			sb = new StringBuilder();
 		sb.append("=== ModelValidationEngine ===").append(Env.NL);
 		sb.append("Validators #").append(m_validators.size()).append(Env.NL);
 		for (ModelValidator mv : m_validators)

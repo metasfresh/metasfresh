@@ -22,13 +22,16 @@ package org.adempiere.util.collections;
  * #L%
  */
 
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.adempiere.util.EmptyIterator;
 
@@ -141,7 +144,7 @@ public final class IteratorUtils
 
 		// iterator is not closeable, nothing to do
 	}
-	
+
 	public static void closeQuietly(final Iterator<?> iterator)
 	{
 		try
@@ -228,9 +231,22 @@ public final class IteratorUtils
 	{
 		return new UnmodifiableIterator<T>(iterator);
 	}
-	
+
 	public static <T> Iterator<T> emptyIterator()
 	{
 		return EmptyIterator.getInstance();
+	}
+
+	/**
+	 * @param iterator
+	 * @return the iterator wrapped to stream
+	 */
+	public static <T> Stream<T> stream(final Iterator<T> iterator)
+	{
+		final int characteristics = 0;
+		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, characteristics);
+
+		final boolean parallel = false;
+		return StreamSupport.stream(spliterator, parallel);
 	}
 }

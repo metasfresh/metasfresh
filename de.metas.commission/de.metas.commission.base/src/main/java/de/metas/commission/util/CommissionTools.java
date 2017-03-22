@@ -30,18 +30,22 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MProductScalePrice;
+import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Constants;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MDiscountSchema;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
 import de.metas.commission.exception.CommissionException;
@@ -51,6 +55,7 @@ import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.I_M_DiscountSchema;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductPA;
 
 public final class CommissionTools
 {
@@ -82,8 +87,7 @@ public final class CommissionTools
 
 		final BigDecimal commissionPoints;
 
-		final I_M_ProductScalePrice psp =
-				InterfaceWrapperHelper.create(MProductScalePrice.getForPriceList(pl.get_ID(), productId, qty, trxName), I_M_ProductScalePrice.class);
+		final I_M_ProductScalePrice psp = retrieveProductScalePrice(pl, productId, qty, trxName);
 
 		if (psp != null)
 		{
@@ -186,10 +190,10 @@ public final class CommissionTools
 		final Object[] msgParams = { ssr.getC_Sponsor_Parent().getSponsorNo(),
 				ssr.getC_Sponsor().getSponsorNo(), sb.toString() };
 
-		return Msg.getMsg(ctx, Messages.SPONSOR_IS_CHILD_3P, msgParams);
+		return Services.get(IMsgBL.class).getMsg(ctx, Messages.SPONSOR_IS_CHILD_3P, msgParams);
 	}
 
-	public static MDiscountSchema retrieveDiscountSchemaForValue(
+	public static I_M_DiscountSchema retrieveDiscountSchemaForValue(
 			final Properties ctx, final String discountSchemaValue,
 			final String trxName)
 	{
@@ -201,7 +205,7 @@ public final class CommissionTools
 				.setOnlyActiveRecords(true).setClient_ID()
 				.setParameters(parameters)
 				.setOrderBy(org.compiere.model.I_M_DiscountSchema.COLUMNNAME_M_DiscountSchema_ID)
-				.first();
+				.first(I_M_DiscountSchema.class);
 	}
 
 	public static boolean isEmployeeInvoice(final I_C_Invoice invoice)
@@ -213,5 +217,33 @@ public final class CommissionTools
 						.getC_DocType().getDocBaseType());
 
 		return completedPayroll;
+	}
+	
+	public static I_M_ProductScalePrice retrieveProductScalePrice(final I_M_PriceList priceList, final int productId, final BigDecimal qty, final String trxName)
+	{
+		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(priceList
+				, SystemTime.asDate() //date
+				, null // processed
+				);
+		if(plv == null)
+		{
+			return null;
+		}
+		
+		final org.compiere.model.I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, productId)
+				.orElse(null);
+		
+		if(productPrice == null)
+		{
+			return null;
+		}
+		if(!productPrice.isUseScalePrice())
+		{
+			return null;
+		}
+		
+		final boolean createNew = false;
+		final org.adempiere.model.I_M_ProductScalePrice productScalePrice = Services.get(IProductPA.class).retrieveOrCreateScalePrices(productPrice.getM_ProductPrice_ID(), qty, createNew, trxName);
+		return InterfaceWrapperHelper.create(productScalePrice, I_M_ProductScalePrice.class);
 	}
 }

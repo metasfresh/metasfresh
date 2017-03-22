@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-10T14:03:30 -->
+<!-- 2017-03-22T14:35:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_esr" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9ad91fd2-2369-44ef-8fdd-a6b2c907244c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -55,24 +55,24 @@ FROM
 		LEFT JOIN (
 			SELECT	rn.referenceNo, rnd.Record_ID
 			FROM	C_ReferenceNo_Doc rnd
-				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID
-			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
-				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference')
+				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
+				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference' AND isActive = 'Y') AND rnd.isActive = 'Y'
 		) rn ON i.C_Invoice_ID = rn.Record_ID
 
 		LEFT JOIN (
 			SELECT	rn.referenceNo, rnd.Record_ID
 			FROM	C_ReferenceNo_Doc rnd
-				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID
-			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
-				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'ESRReferenceNumber')
+				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
+				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'ESRReferenceNumber' AND isActive = 'Y') AND rnd.isActive = 'Y'
 		) cl ON i.C_Invoice_ID = cl.Record_ID
 
-		LEFT JOIN AD_Org o		ON i.AD_Org_ID = o.AD_Org_ID
-		LEFT JOIN C_BPartner bp 	ON o.AD_Org_ID = bp.AD_OrgBP_ID
-		LEFT JOIN C_BP_Bankaccount bpb ON bp.C_BPartner_ID = bpb.C_BPartner_ID AND bpb.IsEsrAccount='Y'
+		LEFT JOIN AD_Org o		ON i.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
+		LEFT JOIN C_BPartner bp 	ON o.AD_Org_ID = bp.AD_OrgBP_ID AND bp.isActive = 'Y'
+		LEFT JOIN C_BP_Bankaccount bpb ON bp.C_BPartner_ID = bpb.C_BPartner_ID AND bpb.IsEsrAccount='Y' AND bpb.isActive = 'Y'
 	WHERE
-		i.C_Invoice_ID = $P{c_invoice_id}
+		i.C_Invoice_ID = $P{c_invoice_id} AND i.isActive = 'Y'
 	ORDER BY
 		bpb.IsDefaultESR DESC, bpb.C_BP_BankAccount_ID
 	) x

@@ -17,8 +17,9 @@ import java.util.ArrayList;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.print.MPrintFormat;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Trx;
+
+import de.metas.process.ProcessInfo;
 
 /**
  * Generate custom form base class

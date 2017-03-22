@@ -24,7 +24,6 @@ package de.metas.handlingunits.attribute.impl;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -76,16 +75,6 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		return retrieveDirectPIAttributes(ctx, piVersionId, trxName);
 	}
 
-	private final List<I_M_HU_PI_Attribute> retrieveDirectPIAttributes(final I_M_HU_PI_Version version, final String trxName)
-	{
-		Check.assumeNotNull(version, "version not null");
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
-		final int piVersionId = version.getM_HU_PI_Version_ID();
-
-		return retrieveDirectPIAttributes(ctx, piVersionId, trxName);
-	}
-
 	@Cached(cacheName = I_M_HU_PI_Attribute.Table_Name
 			+ "#by"
 			+ "#" + I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID)
@@ -106,7 +95,7 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		final List<I_M_HU_PI_Attribute> piAttributes = queryBuilder.create()
 				// Retrieve all attributes, including those inactive
 				// .setOnlyActiveRecords(true)
-				.list(I_M_HU_PI_Attribute.class);
+				.listImmutable(I_M_HU_PI_Attribute.class); // immutable because this is a cached method
 
 		//
 		// If we are fetching out of transaction, make all PI Attributes readonly
@@ -119,23 +108,28 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		}
 
 		//
-		// Make the PI Attributes list readonly (NOTE: this is a cached method)
-		final List<I_M_HU_PI_Attribute> piAttributesRO = Collections.unmodifiableList(piAttributes);
-
-		return piAttributesRO;
+		return piAttributes;
 	}
 
 	@Override
 	public List<I_M_HU_PI_Attribute> retrievePIAttributes(final I_M_HU_PI_Version version)
 	{
-		final List<I_M_HU_PI_Attribute> attributes = new ArrayList<I_M_HU_PI_Attribute>();
-		final Set<Integer> seenAttributeIds = new HashSet<Integer>();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
+		final int M_HU_PI_Version_ID = version.getM_HU_PI_Version_ID();
+		return retrievePIAttributes(ctx, M_HU_PI_Version_ID);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Attribute> retrievePIAttributes(final Properties ctx, final int M_HU_PI_Version_ID)
+	{
+		final List<I_M_HU_PI_Attribute> attributes = new ArrayList<>();
+		final Set<Integer> seenAttributeIds = new HashSet<>();
 
 		//
 		// Retrieve and add Direct Attributes
 		// NOTE: we want to make use of caching, that's why we are retrieving out of transaction.
 		// Anyway, this is master data and this method is not supposed to be used when you want to retrieve master data for modifying it.
-		final List<I_M_HU_PI_Attribute> attributesDirect = retrieveDirectPIAttributes(version, ITrx.TRXNAME_None);
+		final List<I_M_HU_PI_Attribute> attributesDirect = retrieveDirectPIAttributes(ctx, M_HU_PI_Version_ID, ITrx.TRXNAME_None);
 		attributes.addAll(attributesDirect);
 		for (final I_M_HU_PI_Attribute piAttribute : attributesDirect)
 		{
@@ -145,11 +139,10 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		//
 		// Retrieve an add template attributes (from NoPI)
 		// only if given version is not of NoPI
-		if (version.getM_HU_PI_ID() != HandlingUnitsDAO.NO_HU_PI_ID)
+		if (M_HU_PI_Version_ID != HandlingUnitsDAO.NO_HU_PI_Version_ID)
 		{
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 			final I_M_HU_PI noPI = handlingUnitsDAO.retrieveNoPI(ctx);
 			final List<I_M_HU_PI_Attribute> noPIAttributes = retrieveDirectPIAttributes(noPI);
 

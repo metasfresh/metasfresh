@@ -86,9 +86,23 @@ public class WeakList<T> extends AbstractList<T>
 
 	public boolean add(final T o, final boolean weak)
 	{
+		lock.lock();
+		try
+		{
+			return add0(o, weak);
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
+	private final boolean add0(final T o, final boolean weak)
+	{
 		expungeStaleEntries();
 		return list.add(new ListEntry(o, weak));
 	}
+
 
 	@Override
 	public boolean add(final T o)
@@ -101,7 +115,31 @@ public class WeakList<T> extends AbstractList<T>
 			{
 				weak = true;
 			}
-			return add(o, weak);
+			return add0(o, weak);
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+
+	/**
+	 * Adds given object if not already added.
+	 * 
+	 * @param o
+	 * @return true if object was added
+	 */
+	public boolean addIfAbsent(final T o)
+	{
+		lock.lock();
+		try
+		{
+			if (contains(o))
+			{
+				return false;
+			}
+
+			return add(o);
 		}
 		finally
 		{

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.printing</groupId>
 		<artifactId>de.metas.printing.common</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

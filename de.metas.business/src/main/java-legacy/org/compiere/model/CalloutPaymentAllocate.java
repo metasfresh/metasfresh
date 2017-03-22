@@ -21,161 +21,156 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
- * 	Callout for Allocate Payments
- *	
- *  @author Jorg Janke
- *  @version $Id: CalloutPaymentAllocate.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ * Callout for Allocate Payments
+ * 
+ * @author Jorg Janke
+ * @version $Id: CalloutPaymentAllocate.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class CalloutPaymentAllocate extends CalloutEngine
 {
 	/**
-	 *  Payment_Invoice.
-	 *  when Invoice selected
-	 *  - set InvoiceAmt = invoiceOpen
-	 *  	- DiscountAmt = C_Invoice_Discount (ID, DateTrx)
-	 *   	- Amount = invoiceOpen (ID) - Discount
-	 * 		- WriteOffAmt,OverUnderAmt = 0
-	 *  @param ctx context
-	 *  @param WindowNo current Window No
-	 *  @param mTab Grid Tab
-	 *  @param mField Grid Field
-	 *  @param value New Value
-	 *  @return null or error message
+	 * Payment_Invoice.
+	 * when Invoice selected
+	 * - set InvoiceAmt = invoiceOpen
+	 * - DiscountAmt = C_Invoice_Discount (ID, DateTrx)
+	 * - Amount = invoiceOpen (ID) - Discount
+	 * - WriteOffAmt,OverUnderAmt = 0
 	 */
-	public String invoice (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String invoice(final ICalloutField calloutField)
 	{
-		Integer C_Invoice_ID = (Integer)value;
-		if (isCalloutActive()		//	assuming it is resetting value
-			|| C_Invoice_ID == null || C_Invoice_ID.intValue() == 0)
-			return "";
-
-		//	Check Payment
-		int C_Payment_ID = Env.getContextAsInt(ctx, WindowNo, "C_Payment_ID");
-		MPayment payment = new MPayment (ctx, C_Payment_ID, null);
-		if (payment.getC_Charge_ID() != 0 || payment.getC_Invoice_ID() != 0 
-			|| payment.getC_Order_ID() != 0)
-			return Msg.getMsg(ctx, "PaymentIsAllocated");
-		
-		mTab.setValue("DiscountAmt", Env.ZERO);
-		mTab.setValue("WriteOffAmt", Env.ZERO);
-		mTab.setValue("OverUnderAmt", Env.ZERO);
-
-		int C_InvoicePaySchedule_ID = 0;
-		if (Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "C_Invoice_ID") == C_Invoice_ID.intValue()
-			&& Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "C_InvoicePaySchedule_ID") != 0)
+		final I_C_PaymentAllocate paymentAlloc = calloutField.getModel(I_C_PaymentAllocate.class);
+		final int C_Invoice_ID = paymentAlloc.getC_Invoice_ID();
+		if (isCalloutActive()		// assuming it is resetting value
+				|| C_Invoice_ID <= 0)
 		{
-			C_InvoicePaySchedule_ID = Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "C_InvoicePaySchedule_ID");
+			return NO_ERROR;
 		}
 
-		//  Payment Date
-		Timestamp ts = Env.getContextAsDate(ctx, WindowNo, "DateTrx");
+		// Check Payment
+		// final int C_Payment_ID = paymentAlloc.getC_Payment_ID();
+		final I_C_Payment payment = paymentAlloc.getC_Payment();
+		if (payment.getC_Charge_ID() > 0 || payment.getC_Invoice_ID() > 0
+				|| payment.getC_Order_ID() > 0)
+		{
+			throw new AdempiereException("@PaymentIsAllocated@");
+		}
+
+		paymentAlloc.setDiscountAmt(BigDecimal.ZERO);
+		paymentAlloc.setWriteOffAmt(BigDecimal.ZERO);
+		paymentAlloc.setOverUnderAmt(BigDecimal.ZERO);
+
+		int C_InvoicePaySchedule_ID = 0;
+		if (calloutField.getTabInfoContextAsInt("C_Invoice_ID") == C_Invoice_ID
+				&& calloutField.getTabInfoContextAsInt("C_InvoicePaySchedule_ID") > 0)
+		{
+			C_InvoicePaySchedule_ID = calloutField.getTabInfoContextAsInt("C_InvoicePaySchedule_ID");
+		}
+
+		// Payment Date
+		final Timestamp ts = paymentAlloc.getC_Payment().getDateTrx();
 		//
-		String sql = "SELECT C_BPartner_ID,C_Currency_ID,"		//	1..2
-			+ " invoiceOpen(C_Invoice_ID, ?),"					//	3		#1
-			+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx "	//	4..5	#2/3
-			+ "FROM C_Invoice WHERE C_Invoice_ID=?";			//			#4
+		final String sql = "SELECT C_BPartner_ID,C_Currency_ID,"		// 1..2
+				+ " invoiceOpen(C_Invoice_ID, ?),"					// 3 #1
+				+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx "	// 4..5 #2/3
+				+ "FROM C_Invoice WHERE C_Invoice_ID=?";			// #4
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, C_InvoicePaySchedule_ID);
 			pstmt.setTimestamp(2, ts);
 			pstmt.setInt(3, C_InvoicePaySchedule_ID);
-			pstmt.setInt(4, C_Invoice_ID.intValue());
+			pstmt.setInt(4, C_Invoice_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-			//	mTab.setValue("C_BPartner_ID", new Integer(rs.getInt(1)));
-			//	int C_Currency_ID = rs.getInt(2);					//	Set Invoice Currency
-			//	mTab.setValue("C_Currency_ID", new Integer(C_Currency_ID));
+				// mTab.setValue("C_BPartner_ID", new Integer(rs.getInt(1)));
+				// int C_Currency_ID = rs.getInt(2); // Set Invoice Currency
+				// mTab.setValue("C_Currency_ID", new Integer(C_Currency_ID));
 				//
-				BigDecimal InvoiceOpen = rs.getBigDecimal(3);		//	Set Invoice OPen Amount
+				BigDecimal InvoiceOpen = rs.getBigDecimal(3);		// Set Invoice OPen Amount
 				if (InvoiceOpen == null)
-					InvoiceOpen = Env.ZERO;
-				BigDecimal DiscountAmt = rs.getBigDecimal(4);		//	Set Discount Amt
+				{
+					InvoiceOpen = BigDecimal.ZERO;
+				}
+				BigDecimal DiscountAmt = rs.getBigDecimal(4);		// Set Discount Amt
 				if (DiscountAmt == null)
-					DiscountAmt = Env.ZERO;
-				mTab.setValue("InvoiceAmt", InvoiceOpen);
-				mTab.setValue("Amount", InvoiceOpen.subtract(DiscountAmt));
-				mTab.setValue("DiscountAmt", DiscountAmt);
-				//  reset as dependent fields get reset
-				Env.setContext(ctx, WindowNo, "C_Invoice_ID", C_Invoice_ID.toString());
-				mTab.setValue("C_Invoice_ID", C_Invoice_ID);
+				{
+					DiscountAmt = BigDecimal.ZERO;
+				}
+				paymentAlloc.setInvoiceAmt(InvoiceOpen);
+				paymentAlloc.setAmount(InvoiceOpen.subtract(DiscountAmt));
+				paymentAlloc.setDiscountAmt(DiscountAmt);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(e, sql);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
+			rs = null;
+			pstmt = null;
 		}
-		return "";
-	}	//	invoice
+		return NO_ERROR;
+	}	// invoice
 
 	/**
-	 *  Payment_Amounts.
-	 *	Change of:
-	 *		- IsOverUnderPayment -> set OverUnderAmt to 0
-	 *		- C_Currency_ID, C_ConvesionRate_ID -> convert all
-	 *		- PayAmt, DiscountAmt, WriteOffAmt, OverUnderAmt -> PayAmt
-	 *			make sure that add up to InvoiceOpenAmt
-	 *  @param ctx context
-	 *  @param WindowNo current Window No
-	 *  @param mTab Grid Tab
-	 *  @param mField Grid Field
-	 *  @param value New Value
-	 *  @param oldValue Old Value
-	 *  @return null or error message
+	 * Payment_Amounts.
+	 * Change of:
+	 * - IsOverUnderPayment -> set OverUnderAmt to 0
+	 * - C_Currency_ID, C_ConvesionRate_ID -> convert all
+	 * - PayAmt, DiscountAmt, WriteOffAmt, OverUnderAmt -> PayAmt
+	 * make sure that add up to InvoiceOpenAmt
 	 */
-	public String amounts (Properties ctx, int WindowNo, GridTab mTab, GridField mField, 
-		Object value, Object oldValue)
+	public String amounts(final ICalloutField calloutField)
 	{
-		if (isCalloutActive())		//	assuming it is resetting value
-			return "";
-		//	No Invoice
-		int C_Invoice_ID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
-		if (C_Invoice_ID == 0)
-			return "";
-		//	Get Info from Tab
-		BigDecimal Amount = (BigDecimal)mTab.getValue("Amount");
-		BigDecimal DiscountAmt = (BigDecimal)mTab.getValue("DiscountAmt");
-		BigDecimal WriteOffAmt = (BigDecimal)mTab.getValue("WriteOffAmt");
-		BigDecimal OverUnderAmt = (BigDecimal)mTab.getValue("OverUnderAmt");
-		BigDecimal InvoiceAmt = (BigDecimal)mTab.getValue("InvoiceAmt");
-		log.debug("Amt=" + Amount + ", Discount=" + DiscountAmt
-			+ ", WriteOff=" + WriteOffAmt + ", OverUnder=" + OverUnderAmt
-			+ ", Invoice=" + InvoiceAmt);
+		if (isCalloutActive()) 		// assuming it is resetting value
+		{
+			return NO_ERROR;
+		}
 
-		//	Changed Column
-		String colName = mField.getColumnName();
-		//  PayAmt - calculate write off
-		if (colName.equals("Amount"))
+		final I_C_PaymentAllocate paymentAlloc = calloutField.getModel(I_C_PaymentAllocate.class);
+
+		// No Invoice
+		final int C_Invoice_ID = paymentAlloc.getC_Invoice_ID();
+		if (C_Invoice_ID <= 0)
+		{
+			return NO_ERROR;
+		}
+
+		// Get Info from Tab
+		BigDecimal Amount = paymentAlloc.getAmount();
+		final BigDecimal DiscountAmt = paymentAlloc.getDiscountAmt();
+		BigDecimal WriteOffAmt = paymentAlloc.getWriteOffAmt();
+		final BigDecimal OverUnderAmt = paymentAlloc.getOverUnderAmt();
+		final BigDecimal InvoiceAmt = paymentAlloc.getInvoiceAmt();
+
+		// Changed Column
+		final String colName = calloutField.getColumnName();
+		// PayAmt - calculate write off
+		if (I_C_PaymentAllocate.COLUMNNAME_Amount.equals(colName))
 		{
 			WriteOffAmt = InvoiceAmt.subtract(Amount).subtract(DiscountAmt).subtract(OverUnderAmt);
-			mTab.setValue("WriteOffAmt", WriteOffAmt);
+			paymentAlloc.setWriteOffAmt(WriteOffAmt);
 		}
-		else    //  calculate Amount
+		else    // calculate Amount
 		{
 			Amount = InvoiceAmt.subtract(DiscountAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
-			mTab.setValue("Amount", Amount);
+			paymentAlloc.setAmount(Amount);
 		}
 
-		return "";
-	}	//	amounts
+		return NO_ERROR;
+	}	// amounts
 
-	
-}	//	CalloutPaymentAllocate
+}	// CalloutPaymentAllocate

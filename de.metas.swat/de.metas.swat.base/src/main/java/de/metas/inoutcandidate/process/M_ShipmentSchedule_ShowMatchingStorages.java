@@ -35,14 +35,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.SvrProcess;
 
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.JavaProcess;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageQuery;
 
-public class M_ShipmentSchedule_ShowMatchingStorages extends SvrProcess
+public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 {
 	private I_M_ShipmentSchedule shipmentSchedule;
 

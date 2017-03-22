@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -29,6 +28,8 @@ import de.metas.inout.model.I_M_InOut;
 
 /**
  * Intended to be used by InOut creating {@link org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor}s to create both shipments and receipts.
+ * <p>
+ * Use {@link IInOutCandidateBL#createInOutGenerateResult(boolean)} to get an instance.
  * 
  */
 public interface InOutGenerateResult

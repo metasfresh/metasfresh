@@ -177,10 +177,10 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	private static final String SQL_DEFAULT_VENDOR =  //
-	"SELECT bp.* " //
-			+ " FROM C_BPartner bp "
-			+ "   LEFT JOIN M_Product_PO p ON p.C_BPartner_ID = bp.C_BPartner_ID "
-			+ " WHERE p.M_Product_ID=? " + " ORDER BY p.IsCurrentVendor DESC";
+			"SELECT bp.* " //
+					+ " FROM C_BPartner bp "
+					+ "   LEFT JOIN M_Product_PO p ON p.C_BPartner_ID = bp.C_BPartner_ID "
+					+ " WHERE p.M_Product_ID=? " + " ORDER BY p.IsCurrentVendor DESC";
 
 	@Override
 	public I_C_BPartner retrieveDefaultVendor(final int productId, final String trxName) throws ProductHasNoVendorException
@@ -317,21 +317,25 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx);
 
+		// #928
+		// Only retrieve users that are default for sales or purchase (depending on the isSOTrx)
 		// Sales
 		if (isSOTrx)
 		{
-			queryBuilder.orderBy()
-					.addColumn(I_AD_User.COLUMNNAME_IsSalesContact, Direction.Descending, Nulls.Last);
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact, true);
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact_Default, true);
+
 		}
 		// Purchase
 		else
 		{
-			queryBuilder.orderBy()
-					.addColumn(I_AD_User.COLUMNNAME_IsPurchaseContact, Direction.Descending, Nulls.Last);
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact, true);
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, true);
 		}
 
 		queryBuilder.orderBy()
-				.addColumn(I_AD_User.COLUMNNAME_IsDefaultContact, Direction.Descending, Nulls.Last)
+				// #928: DefaultContact is no longer relevant in contact retrieval. The Sales and Purchase defaults are used instead
+				// .addColumn(I_AD_User.COLUMNNAME_IsDefaultContact, Direction.Descending, Nulls.Last)
 				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.Last);
 
 		return queryBuilder.create().first();
@@ -704,7 +708,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			partnerLocationId = null;
 		}
-		queryBuilder.addInArrayFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
+		queryBuilder.addInArrayOrAllFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
 		queryBuilder.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true);
 
 		final IQuery<I_C_BP_Relation> query = queryBuilder

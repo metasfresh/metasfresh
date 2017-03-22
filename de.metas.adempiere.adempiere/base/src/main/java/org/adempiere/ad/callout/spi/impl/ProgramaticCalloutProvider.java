@@ -29,7 +29,7 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 	@Override
 	public TableCalloutsMap getCallouts(final Properties ctx, final String tableName)
 	{
-		final TableCalloutsMap callouts = registeredCalloutsByTableId.get(tableName);
+		final TableCalloutsMap callouts = registeredCalloutsByTableId.get(tableName.toLowerCase());
 		return callouts == null ? TableCalloutsMap.EMPTY : callouts;
 	}
 
@@ -40,10 +40,12 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 		Check.assumeNotNull(columnName, "ColumnName not null");
 		Check.assumeNotNull(callout, "callout not null");
 
+		String tableNameToUse = tableName.toLowerCase();
+
 		//
 		// Add the new callout to our internal map
 		final AtomicBoolean registered = new AtomicBoolean(false);
-		registeredCalloutsByTableId.compute(tableName, (tableNameKey, currentTabCalloutsMap) -> {
+		registeredCalloutsByTableId.compute(tableNameToUse, (tableNameKey, currentTabCalloutsMap) -> {
 			if (currentTabCalloutsMap == null)
 			{
 				registered.set(true);
@@ -63,7 +65,7 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 			return false;
 		}
 
-		logger.debug("Registered callout for {}.{}: {}", tableName, columnName, callout);
+		logger.debug("Registered callout for {}.{}: {}", tableNameToUse, columnName, callout);
 
 		// Make sure this provider is registered to ICalloutFactory.
 		// We assume the factory won't register it twice.

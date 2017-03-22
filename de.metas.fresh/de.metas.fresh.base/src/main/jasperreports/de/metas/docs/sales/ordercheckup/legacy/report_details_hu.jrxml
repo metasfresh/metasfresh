@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-16T09:35:15 -->
+<!-- 2016-10-06T19:10:50 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="5.000000000000015"/>
 	<property name="ireport.x" value="81"/>
 	<property name="ireport.y" value="19"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -37,31 +39,31 @@
 	uom.UOMSymbol AS UOMSymbol
 FROM
 	C_Order o
-	LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID
-	LEFT OUTER JOIN C_OrderLine olpm ON ol.C_PackingMaterial_OrderLine_ID = olpm.C_OrderLine_ID
+	LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
+	LEFT OUTER JOIN C_OrderLine olpm ON ol.C_PackingMaterial_OrderLine_ID = olpm.C_OrderLine_ID AND olpm.isActive = 'Y'
 
-	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID
+	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 
 	-- TAKE THE M_HU_PI_Item_Product_ID OF THE PACKING MATERIAL LINE
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON olpm.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y' 
-	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
-	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID
+	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
+	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID AND pmi.isActive = 'Y'
 		AND pmi.ItemType= 'PM'
-	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID
+	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID AND pm.isActive = 'Y'
 
 	-- Product and its translation FROM THE ORIGINAL ORDER LINE BECAUSE WE NEED IT IN WHERECLAUSE
-	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID
+	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 
-	LEFT OUTER JOIN M_Product ppm ON olpm.M_Product_ID = ppm.M_Product_ID
+	LEFT OUTER JOIN M_Product ppm ON olpm.M_Product_ID = ppm.M_Product_ID AND ppm.isActive = 'Y'
 
 	-- JUST IN CASE THERE IS A BPP FOR THE PACKING MATERIAL 
 	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND bpp.isActive = 'Y' 
 		AND ppm.M_Product_ID = bpp.M_Product_ID
 
-	LEFT OUTER JOIN M_Product_Category pc ON ppm.M_Product_Category_ID = pc.M_Product_Category_ID
+	LEFT OUTER JOIN M_Product_Category pc ON ppm.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 
 	-- Unit of measurement and its translation FROM THE PACKING MATERIAL LINE
-	LEFT OUTER JOIN C_UOM uom ON olpm.C_UOM_ID = uom.C_UOM_ID
+	LEFT OUTER JOIN C_UOM uom ON olpm.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 
 	-- ADR Attribute FROM THE PACKING MATERIAL LINE
 	LEFT OUTER JOIN	(
@@ -74,7 +76,7 @@ FROM
 
 
 WHERE
-	1=1 AND
+	1=1 AND o.isActive = 'Y' AND
 	CASE
 		WHEN $P{M_Warehouse_ID} IS NOT NULL
 			THEN
@@ -83,7 +85,7 @@ WHERE
 			EXISTS (SELECT 1 FROM PP_Product_Planning pp WHERE p.M_Product_ID = pp.M_Product_ID
 				AND pp.IsActive = 'Y' AND pp.IsManufactured='Y'
 				AND pp.M_Warehouse_ID = $P{M_Warehouse_ID}
-				AND EXISTS ( SELECT 1 from M_Warehouse w where w.M_Warehouse_ID = $P{M_Warehouse_ID}  AND w.AD_User_ID > 0 )
+				AND EXISTS ( SELECT 1 from M_Warehouse w where w.M_Warehouse_ID = $P{M_Warehouse_ID}  AND w.AD_User_ID > 0 AND w.isActive = 'Y')
 				)
 			)
 		ELSE true
@@ -100,7 +102,7 @@ WHERE
 	END
 
 	AND pc.M_Product_Category_ID =
-		(SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+		(SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
 

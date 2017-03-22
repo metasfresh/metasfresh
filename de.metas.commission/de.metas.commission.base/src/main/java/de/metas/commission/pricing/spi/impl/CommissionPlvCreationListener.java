@@ -1,63 +1,35 @@
 package de.metas.commission.pricing.spi.impl;
 
-/*
- * #%L
- * de.metas.commission.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Iterator;
-
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL.IPlvCreationListener;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import de.metas.adempiere.model.I_M_PriceList;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.commission.interfaces.I_M_DiscountSchemaLine;
 import de.metas.commission.service.IPriceListBL;
+import de.metas.logging.LogManager;
 
 /**
  * Contains the code from the former jboss-aop aspect <code>de.metas.commission.aop.PriceListCreate</code>
  * @author ts
  * @task http://dewiki908/mediawiki/index.php/07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
  */
-public class CommissionPlvCreationListener implements IPlvCreationListener
+public class CommissionPlvCreationListener // implements IPlvCreationListener
 {
 
 	private static final Logger logger = LogManager.getLogger(CommissionPlvCreationListener.class);
 
-	@Override
+//	@Override
 	public void onPlvCreation(final IContextAware ctxAware,
 			final I_M_PriceList_Version targetPriceListVersion,
-			final Iterator<I_M_ProductPrice> oldProductPrices,
 			final org.compiere.model.I_M_DiscountSchemaLine dsl,
 			final int adPinstanceId)
 	{
 		final I_M_DiscountSchemaLine dslToUse = InterfaceWrapperHelper.create(dsl, I_M_DiscountSchemaLine.class);
 
-		if (targetPriceListVersion.getM_Pricelist_Version_Base_ID() == 0)
+		if (targetPriceListVersion.getM_Pricelist_Version_Base_ID() <= 0)
 		{
 			logger.info(targetPriceListVersion + " has M_Pricelist_Version_Base_ID=0; nothing to do");
 			// process.addLog("Only working with base price list version");
@@ -95,7 +67,7 @@ public class CommissionPlvCreationListener implements IPlvCreationListener
 	 * 	This further means that the commission aspect can work with the results created by the swat aspect.
 	 * </pre>
 	 */
-	@Override
+//	@Override
 	public int getExecutionOrderSeqNo()
 	{
 		return 10;

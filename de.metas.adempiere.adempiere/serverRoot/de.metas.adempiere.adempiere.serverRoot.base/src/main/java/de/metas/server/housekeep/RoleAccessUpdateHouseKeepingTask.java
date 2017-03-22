@@ -1,7 +1,6 @@
 package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.util.ILoggable;
 import org.compiere.process.RoleAccessUpdate;
 import org.compiere.util.Env;
 
@@ -31,9 +30,9 @@ public class RoleAccessUpdateHouseKeepingTask implements IStartupHouseKeepingTas
 {
 
 	@Override
-	public void executeTask(ILoggable loggable)
+	public void executeTask()
 	{
-		RoleAccessUpdate.updateAllRoles(Env.getCtx(), loggable);
+		RoleAccessUpdate.updateAllRoles(Env.getCtx());
 	}
 
 }

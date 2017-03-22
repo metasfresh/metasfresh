@@ -1,5 +1,10 @@
 package org.adempiere.ui.api.impl;
 
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -27,6 +32,8 @@ import org.adempiere.ui.api.IWindowBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.WindowManager;
+import org.compiere.model.I_AD_Menu;
+import org.compiere.model.I_AD_Window;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -118,4 +125,26 @@ public class WindowBL implements IWindowBL
 		}
 		return AEnv.findInWindowManager(AD_Window_ID);
 	}
+	
+	@Override
+	public I_AD_Window getWindowFromMenu(final Properties ctx, final int menuID)
+	{
+		final I_AD_Menu menu = InterfaceWrapperHelper.create(ctx, menuID, I_AD_Menu.class, ITrx.TRXNAME_None);
+		
+		if(menu == null)
+		{
+			return null;
+		}
+		
+		final I_AD_Window window = menu.getAD_Window();
+		
+		// only return the window if active
+		if(window.isActive())
+		{
+			return window;
+		}
+		return null;
+		
+	}
+
 }

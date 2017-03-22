@@ -27,9 +27,6 @@ import static org.junit.Assert.assertSame;
 import java.util.Arrays;
 import java.util.List;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -39,6 +36,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class InvoiceBLSortLinesTests
 {
@@ -244,34 +243,35 @@ public class InvoiceBLSortLinesTests
 		if (inoutId <= 0)
 		{
 			// @formatter:off
-			new NonStrictExpectations()
+			new Expectations()
 			{{
-				il.getC_InvoiceLine_ID(); result = invoiceLineId;
+				il.getC_InvoiceLine_ID(); minTimes = 0; result = invoiceLineId;
 
-				il.getM_InOutLine(); result  = null;
-				il.getM_InOutLine_ID(); result = 0;
+				il.getM_InOutLine(); minTimes = 0; result  = null;
+				il.getM_InOutLine_ID(); minTimes = 0; result = 0;
 
-				il.isFreightCostLine(); result = freightCost;
+				il.isFreightCostLine(); minTimes = 0; result = freightCost;
 
-				il.getLine(); result = lineNo;
+				il.getLine(); minTimes = 0; result = lineNo;
 			}};
 			// @formatter:on
 		}
 		else
 		{
 			// @formatter:off
-			new NonStrictExpectations()
+			new Expectations()
 			{{
 				il.getC_InvoiceLine_ID();
+				minTimes = 0;
 				result = invoiceLineId;
 
-				il.getM_InOutLine_ID(); result = 1;
-				il.getM_InOutLine(); result = iol;
-				iol.getM_InOut_ID(); result = inoutId;
+				il.getM_InOutLine_ID(); minTimes = 0; result = 1;
+				il.getM_InOutLine(); minTimes = 0; result = iol;
+				iol.getM_InOut_ID(); minTimes = 0; result = inoutId;
 
-				il.isFreightCostLine();	result = freightCost;
+				il.isFreightCostLine();	minTimes = 0; result = freightCost;
 
-				il.getLine(); result = lineNo;
+				il.getLine(); minTimes = 0; result = lineNo;
 			}};
 			// @formatter:on
 		}

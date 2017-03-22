@@ -25,19 +25,19 @@ package org.compiere.report;
 
 import java.io.ByteArrayOutputStream;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.compiere.model.PrintInfo;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 public abstract class AbstractJasperService implements IJasperService
 {
@@ -86,8 +86,7 @@ public abstract class AbstractJasperService implements IJasperService
 
 		if (pi.getParameter() != null)
 		{
-			final ProcessInfoParameter[] processInfoParameters = pi.getParameter();
-			for (final ProcessInfoParameter param : processInfoParameters)
+			for (final ProcessInfoParameter param : pi.getParameter())
 			{
 				final String parameterName = param.getParameterName();
 				final Object objParam = param.getParameter();

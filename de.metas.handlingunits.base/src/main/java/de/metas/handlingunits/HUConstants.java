@@ -112,6 +112,8 @@ public final class HUConstants
 	}
 
 	public static final String DIM_PP_Order_ProductAttribute_To_Transfer = "PP_Order_ProductAttribute_Transfer";
+	
+	public static final String DIM_Barcode_Attributes = "DIM_Barcode_Attributes";
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29

@@ -25,12 +25,12 @@ package org.compiere.acct;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.ProductAcctType;
+import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostDetail;
@@ -79,18 +80,18 @@ public class Doc_PPCostCollector extends Doc
 	{
 		super(docBuilder, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 	}   //Doc Cost Collector
-	
+
 
 	/**	Pseudo Line */
 	protected DocLine_CostCollector m_line = null;
-	
+
 	/** Collector Cost */
 	protected MPPCostCollector m_cc = null;
-	
+
 	/** Routing Service */
 	protected RoutingService m_routingService = null;
 
-	
+
 	/**
 	 *  Load Document Details
 	 *  @return error message or null
@@ -102,19 +103,19 @@ public class Doc_PPCostCollector extends Doc
 		m_cc = (MPPCostCollector)getPO();
 		setDateDoc (m_cc.getMovementDate());
 		setDateAcct(m_cc.getMovementDate());
-		
+
 		//	Pseudo Line
-		m_line = new DocLine_CostCollector (m_cc, this); 
+		m_line = new DocLine_CostCollector (m_cc, this);
 		m_line.setQty (m_cc.getMovementQty(), false);    //  sets Trx and Storage Qty
-		
+
 		//	Pseudo Line Check
 		if (m_line.getM_Product_ID() == 0)
 			log.warn(m_line.toString() + " - No Product");
 		log.debug(m_line.toString());
-		
+
 		// Load the RoutingService
 		m_routingService = RoutingServiceFactory.get().getRoutingService(m_cc.getAD_Client_ID());
-		
+
 		return null;
 	}   //  loadDocumentDetails
 
@@ -139,7 +140,7 @@ public class Doc_PPCostCollector extends Doc
 	{
 		setC_Currency_ID (as.getC_Currency_ID());
 		final ArrayList<Fact> facts = new ArrayList<Fact>();
-		
+
 		if(MPPCostCollector.COSTCOLLECTORTYPE_MaterialReceipt.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createMaterialReceipt(as));
@@ -175,13 +176,13 @@ public class Doc_PPCostCollector extends Doc
 		//
 		return facts;
 	}   //  createFact
-	
+
 	protected void createLines(MCostElement element, MAcctSchema as, Fact fact , MProduct product,
 								MAccount debit, MAccount credit, BigDecimal cost, BigDecimal qty)
 	{
 		if(cost == null || debit == null || credit == null)
 			return;
-		
+
 		log.info("CostElement: " +element+ "Product: "+product.getName()
 					+" Debit: " + debit.getDescription() + " Credit: "+ credit.getDescription()
 					+ " Cost: " + cost +" Qty: "+ qty);
@@ -189,7 +190,7 @@ public class Doc_PPCostCollector extends Doc
 		FactLine dr = null;
 		FactLine cr = null;
 		if(cost.signum() != 0)
-		{	
+		{
 			dr = fact.createLine(m_line, debit , as.getC_Currency_ID(), cost, null);
 			dr.setQty(qty);
 			String desc = element.getName();
@@ -206,37 +207,37 @@ public class Doc_PPCostCollector extends Doc
 			cr.setC_Activity_ID(m_cc.getC_Activity_ID());
 			cr.setC_Campaign_ID(m_cc.getC_Campaign_ID());
 			cr.setM_Locator_ID(m_cc.getM_Locator_ID());
-		}			
+		}
 	}
-	
+
 	/**
 	 * The Receipt Finish good product created the next account fact
-	 * Debit Product Asset Account for each Cost Element using Current Cost 
+	 * Debit Product Asset Account for each Cost Element using Current Cost
 	 * Create a fact line for each cost element type
 	 * 		Material
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * 		Overhead 
+	 * 		Overhead
 	 * 		Outsite Processing
-	 * Debit Scrap Account for each Cost Element using Current Cost 
+	 * Debit Scrap Account for each Cost Element using Current Cost
 	 * Create a fact line for each cost element type
 	 * 		Material
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * 		Overhead 
-	 * 		Outsite Processing			
-	 * Credit Work in Process Account for each Cost Element using Current Cost 
+	 * 		Overhead
+	 * 		Outsite Processing
+	 * Credit Work in Process Account for each Cost Element using Current Cost
 	 * Create a fact line for each cost element type
 	 * 		Material
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * 		Overhead 
-	 * 		Outsite Processing		
+	 * 		Overhead
+	 * 		Outsite Processing
 	 */
 	protected Fact createMaterialReceipt(MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		
+
 		final MProduct product = m_cc.getM_Product();
 		final MAccount credit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
 
@@ -246,7 +247,7 @@ public class Doc_PPCostCollector extends Doc
 			if (m_cc.getMovementQty().signum() != 0)
 			{
 				MAccount debit = m_line.getAccount(ProductCost.ACCTTYPE_P_Asset, as);
-				BigDecimal cost = cd.getAmt(); 
+				BigDecimal cost = cd.getAmt();
 				if (cost.scale() > as.getStdPrecision())
 					cost = cost.setScale(as.getStdPrecision(), RoundingMode.HALF_UP);
 				createLines(element, as, fact, product, debit, credit, cost, m_cc.getMovementQty());
@@ -262,7 +263,7 @@ public class Doc_PPCostCollector extends Doc
 		}
 		return fact;
 	}
-	
+
 	/**
 	 * The Issue Component product created next account fact
 	 * Debit Work in Process Account for each Cost Element using current cost
@@ -270,28 +271,28 @@ public class Doc_PPCostCollector extends Doc
 	 * 		Material
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * 		Overhead 
-	 * 		Outsite Processing	
+	 * 		Overhead
+	 * 		Outsite Processing
 	 * Credit Product Asset Account for each Cost Element using current cost
 	 * Create a fact line for each cost element type
 	 * 		Material
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * 		Overhead 
-	 * 		Outsite Processing		
+	 * 		Overhead
+	 * 		Outsite Processing
 	 * Credit Floor Stock Account for each Cost Element using current cost
 	 * Create a fact line for each cost element type
 	 * 		Material
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * 		Overhead 
-	 * 		Outsite Processing		
+	 * 		Overhead
+	 * 		Outsite Processing
 	 */
 	protected Fact createComponentIssue(MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final MProduct product = m_cc.getM_Product();
-		
+
 		MAccount debit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
 		MAccount credit = m_line.getAccount(ProductCost.ACCTTYPE_P_Asset, as);
 		if(m_cc.isFloorStock())
@@ -310,14 +311,14 @@ public class Doc_PPCostCollector extends Doc
 
 		return fact;
 	}
-	
+
 	/**
 	 * Feedback Labor and Burden absorbed
 	 * Debit Work in Process Account for each Labor or Burden using the current cost rate
 	 * Create a fact line for labor or burden
 	 * 		Labor(Resources)
 	 * 		Burden
-	 * Credit Labor Absorbed or Burden Absorbed Account 
+	 * Credit Labor Absorbed or Burden Absorbed Account
 	 * Create a fact line for labor or burden
 	 * 		Labor Absorbed
 	 * 		Burden Absorbed
@@ -327,11 +328,11 @@ public class Doc_PPCostCollector extends Doc
 		final ArrayList<Fact> facts = new ArrayList<Fact>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
-		
+
 		final MProduct product = m_cc.getM_Product();
 
 		MAccount debit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
-		
+
 		for (MCostDetail cd : getCostDetails())
 		{
 			BigDecimal costs = cd.getAmt();
@@ -344,12 +345,12 @@ public class Doc_PPCostCollector extends Doc
 		//
 		return facts;
 	}
-	
+
 	protected Fact createVariance(MAcctSchema as, ProductAcctType VarianceAcctType)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final MProduct product = m_cc.getM_Product();
-		
+
 		MAccount debit = m_line.getAccount(VarianceAcctType, as);
 		MAccount credit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
 
@@ -365,14 +366,14 @@ public class Doc_PPCostCollector extends Doc
 		return fact;
 	}
 
-	
-	public Collection<MCostElement> getCostElements()
+
+	public Collection<I_M_CostElement> getCostElements()
 	{
 		final String costingMethod = MCostElement.COSTINGMETHOD_StandardCosting;
-		final Collection<MCostElement> elements = MCostElement.getByCostingMethod(getCtx(), costingMethod);
+		final Collection<I_M_CostElement> elements = MCostElement.getByCostingMethod(getCtx(), costingMethod);
 		return elements;
 	}
-	
+
 	protected static final MProduct getProductForResource(Properties ctx, int S_Resource_ID, String trxName)
 	{
 		final String whereClause = MProduct.COLUMNNAME_S_Resource_ID+"=?";
@@ -381,7 +382,7 @@ public class Doc_PPCostCollector extends Doc
 		.firstIdOnly();
 		return MProduct.get(ctx, M_Product_ID);
 	}
-	
+
 	private List<MCostDetail> getCostDetails()
 	{
 		if (m_costDetails == null)

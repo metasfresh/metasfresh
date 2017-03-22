@@ -305,6 +305,8 @@ public final class MimeType
 			.put(".java", "text/x-java-source")
 			.put(".jar", "application/java-archive")
 			.put(".jcm", "application/x-java-commerce")
+			//
+			.put(".jpg", "image/jpeg") // default
 			.put(".jfif", "image/jpeg")
 			// .put( ".jfif", "image/pjpeg")
 			.put(".jfif-tbnl", "image/jpeg")
@@ -312,8 +314,8 @@ public final class MimeType
 			// .put( ".jpe", "image/pjpeg")
 			.put(".jpeg", "image/jpeg")
 			// .put( ".jpeg", "image/pjpeg")
-			.put(".jpg", "image/jpeg")
 			// .put( ".jpg", "image/pjpeg")
+			//
 			.put(".jps", "image/x-jps")
 			.put(".js", "application/x-javascript")
 			.put(".jut", "image/jutvision")

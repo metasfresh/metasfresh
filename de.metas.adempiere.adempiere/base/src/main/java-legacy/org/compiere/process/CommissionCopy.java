@@ -19,6 +19,9 @@ package org.compiere.process;
 import org.compiere.model.MCommission;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Copy Commission	
@@ -26,7 +29,7 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: CommissionCopy.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class CommissionCopy extends SvrProcess
+public class CommissionCopy extends JavaProcess
 {
 	/**	From Commission			*/
 	private int 	p_C_Commission_ID = 0;
@@ -38,7 +41,7 @@ public class CommissionCopy extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

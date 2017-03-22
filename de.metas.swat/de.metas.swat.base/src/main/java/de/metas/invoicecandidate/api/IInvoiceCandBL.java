@@ -35,7 +35,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -123,7 +122,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, ILoggable loggable);
 
-	IInvoiceGenerateResult generateInvoicesFromQueue(I_AD_PInstance adPInstance);
+	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 
@@ -250,7 +249,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Set the {@value I_C_Invoice_Candidate#COLUMN_Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>.<br>
-	 * <code>Processed_Valc</code> can be overridden by <code>Processed_Override</code>.
+	 * <code>Processed_Calc</code> can be overridden by <code>Processed_Override</code>.
 	 * If it is not overridden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
 	 * <p>
 	 * The <code>Processed_Calc</code> shall be set to <code>true</code> if
@@ -268,13 +267,20 @@ public interface IInvoiceCandBL extends ISingletonService
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
 	/**
-	 * Converts the given <code>qty</code> to the given <code>ic</code>'s price UOM.
+	 * Converts the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
 	 * <p>
 	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
+	 * <p>
+	 * <b>SIDE-FFECT (gh #428):</b> if the qty can't be converted due to a missing UOM conversion rule,<br>
+	 * then return <code>null</code>, set the given <code>ic</code>'s <code>IsError='Y'</code> and append an info-message to the <code>ic</code>'s <code>ErrorMsg</code>.<br>
+	 * But don't save the <code>ic</code>.
 	 *
 	 * @param qty the "raw" Qty in terms of the product UOM
 	 * @param ic the invoice candidate whose price UOM, product and product UOM we use for the conversion.
-	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then the given <code>qty</code> is returned.
+	 *
+	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
+	 *
+	 * @see org.adempiere.uom.api.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
 	 */
 	BigDecimal convertToPriceUOM(BigDecimal qty, I_C_Invoice_Candidate ic);
 

@@ -62,7 +62,7 @@ public class PMM_RfQ_DAO implements IPMM_RfQ_DAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_RfQResponseLine.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_RfQResponseLine.COLUMNNAME_DocStatus, X_C_RfQResponseLine.DOCSTATUS_Drafted)
+				.addInArrayOrAllFilter(I_C_RfQResponseLine.COLUMNNAME_DocStatus, X_C_RfQResponseLine.DOCSTATUS_Drafted)
 				.orderBy()
 				.addColumn(I_C_RfQResponseLine.COLUMNNAME_C_RfQResponse_ID)
 				.addColumn(I_C_RfQResponseLine.COLUMNNAME_Line)

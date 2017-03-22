@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.util.Check;
+import org.compiere.model.MQuery;
 import org.compiere.util.Util;
 
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -41,26 +42,33 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public static enum Operator
 	{
-		EQUAL("="),
-		NOT_EQUAL("<>"),
-		LESS("<"),
-		LESS_OR_EQUAL("<="),
-		GREATER(">"),
-		GREATER_OR_EQUAL(">="),
-		CONTAINS_SUBSTRING("LIKE"),
-		CONTRAINS_SUBSTRING_IGNORECASE("ILIKE");
+		EQUAL("=", MQuery.Operator.EQUAL),
+		NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL),
+		LESS("<", MQuery.Operator.LESS),
+		LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL),
+		GREATER(">", MQuery.Operator.GREATER),
+		GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL),
+		CONTAINS_SUBSTRING("LIKE", MQuery.Operator.LIKE),
+		CONTRAINS_SUBSTRING_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
 
 		private final String sql;
+		private final MQuery.Operator mqueryOperator;
 
-		Operator(final String sql)
+		Operator(final String sql, final MQuery.Operator mqueryOperator)
 		{
 			Check.assumeNotEmpty(sql, "sql not empty");
 			this.sql = sql;
+			this.mqueryOperator = mqueryOperator;
 		}
 
 		public final String getSql()
 		{
 			return sql;
+		}
+		
+		public final MQuery.Operator asMQueryOperator()
+		{
+			return mqueryOperator;
 		}
 	}
 

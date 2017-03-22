@@ -9,8 +9,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -57,9 +55,6 @@ public class PurchaseOrderGeneratedEventBus extends QueueableForwardingEventBus
 	private static final transient Logger logger = ProcurementConstants.getLogger(PurchaseOrderGeneratedEventBus.class);
 
 	private static final String MSG_Event_Generated = "Event_ProcurementPurchaseOrderGenerated";
-
-	@VisibleForTesting
-	public static final String EVENT_PROPERTY_Record = "record";
 
 	private PurchaseOrderGeneratedEventBus(IEventBus delegate)
 	{
@@ -135,7 +130,7 @@ public class PurchaseOrderGeneratedEventBus extends QueueableForwardingEventBus
 		final Event event = Event.builder()
 				.setDetailADMessage(MSG_Event_Generated, adMessageParams)
 				.addRecipient_User_ID(recipientUserIdToUse)
-				.putProperty(EVENT_PROPERTY_Record, TableRecordReference.of(document))
+				.setRecord(TableRecordReference.of(document))
 				.build();
 		return event;
 	}

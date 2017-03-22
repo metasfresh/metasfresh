@@ -53,6 +53,4 @@ public interface ITableSequenceChecker
 
 	ITableSequenceChecker setTrxName(String trxName);
 
-	ITableSequenceChecker setLogger(ILoggable logger);
-
 }

@@ -17,8 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,8 +25,9 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
+import de.metas.logging.LogManager;
 
 /**
  * System Configuration

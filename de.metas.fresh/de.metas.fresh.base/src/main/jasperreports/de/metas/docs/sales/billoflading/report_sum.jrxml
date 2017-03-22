@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-06T16:00:27 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="555" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.3579476910000072"/>
 	<property name="ireport.x" value="103"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -18,11 +22,11 @@
 	Count(0) as count
 FROM
 	M_ShipperTransportation mst
-	INNER JOIN M_ShippingPackage msp ON (msp.M_ShipperTransportation_id= mst.M_ShipperTransportation_id)
-	INNER JOIN M_Package_HU mphu ON (mphu.M_Package_ID=msp.M_Package_ID)
+	INNER JOIN M_ShippingPackage msp ON (msp.M_ShipperTransportation_id= mst.M_ShipperTransportation_id) AND msp.isActive = 'Y'
+	INNER JOIN M_Package_HU mphu ON (mphu.M_Package_ID=msp.M_Package_ID) AND mphu.isActive = 'Y'
 	INNER JOIN M_HU hu ON (hu.M_HU_ID=mphu.M_HU_ID)
-	INNER JOIN M_HU_PI_Version hu_pi_ver ON (hu_pi_ver.M_HU_PI_Version_ID=hu.M_HU_PI_Version_ID)
-	INNER JOIN M_HU_PI hu_pi ON (hu_pi.M_HU_PI_ID=hu_pi_ver.M_HU_PI_ID)
+	INNER JOIN M_HU_PI_Version hu_pi_ver ON (hu_pi_ver.M_HU_PI_Version_ID=hu.M_HU_PI_Version_ID) AND hu_pi_ver.isActive = 'Y'
+	INNER JOIN M_HU_PI hu_pi ON (hu_pi.M_HU_PI_ID=hu_pi_ver.M_HU_PI_ID) AND hu_pi.isActive = 'Y'
 WHERE
 	mst.M_ShipperTransportation_ID = $P{RECORD_ID}
 	AND (
@@ -31,6 +35,7 @@ WHERE
 			ELSE $P{C_BPartner_Location_ID}
 		END
 	) = msp.C_BPartner_Location_ID
+	AND mst.isActive = 'Y'
 GROUP BY
 	hu_pi.Name
 ;]]>
@@ -56,14 +61,14 @@ GROUP BY
 		<band height="13" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{C_BPartner_Location_ID}.intValue() != 0]]></printWhenExpression>
 			<textField>
-				<reportElement uuid="267e7752-6d28-4fd3-8097-099e353cbb05" x="383" y="0" width="79" height="13"/>
+				<reportElement x="383" y="0" width="79" height="13" uuid="267e7752-6d28-4fd3-8097-099e353cbb05"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu_pi_name}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="37da80a4-8827-4486-aa90-4ba1c6f79610" x="310" y="0" width="62" height="13">
+				<reportElement x="310" y="0" width="62" height="13" uuid="37da80a4-8827-4486-aa90-4ba1c6f79610">
 					<printWhenExpression><![CDATA[$V{Line_COUNT}.intValue() == 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -72,7 +77,7 @@ GROUP BY
 				<text><![CDATA[Total Gebinde:]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="56835833-3ea8-43d8-ad50-5956e2cde353" x="462" y="0" width="34" height="13"/>
+				<reportElement x="462" y="0" width="34" height="13" uuid="56835833-3ea8-43d8-ad50-5956e2cde353"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -82,25 +87,25 @@ GROUP BY
 		<band height="13">
 			<printWhenExpression><![CDATA[$P{C_BPartner_Location_ID}.intValue() == 0]]></printWhenExpression>
 			<textField>
-				<reportElement uuid="d91364d3-daaa-464b-b02b-c3748b846c30" x="462" y="0" width="34" height="13"/>
+				<reportElement x="462" y="0" width="34" height="13" uuid="d91364d3-daaa-464b-b02b-c3748b846c30"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{count}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="5699940a-3dc1-4722-8a35-4d7d600368de" x="294" y="0" width="78" height="13">
+				<reportElement x="294" y="0" width="78" height="13" uuid="5699940a-3dc1-4722-8a35-4d7d600368de">
 					<printWhenExpression><![CDATA[$V{Line_COUNT}.intValue() == 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Gesamt Gebinde:]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="a5d59d47-4f15-4c06-90e9-c25b86e6b821" x="383" y="0" width="79" height="13"/>
+				<reportElement x="383" y="0" width="79" height="13" uuid="a5d59d47-4f15-4c06-90e9-c25b86e6b821"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu_pi_name}]]></textFieldExpression>
 			</textField>

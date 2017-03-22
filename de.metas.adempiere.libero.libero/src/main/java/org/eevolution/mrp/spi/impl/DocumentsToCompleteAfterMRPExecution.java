@@ -172,10 +172,10 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 
 		final List<I_PP_Order> ppOrdersToComplete = queryBL
 				.createQueryBuilder(I_PP_Order.class, getContext())
-				.addInArrayFilter(I_PP_Order.COLUMN_PP_Order_ID, ppOrderIdsToComplete)
+				.addInArrayOrAllFilter(I_PP_Order.COLUMN_PP_Order_ID, ppOrderIdsToComplete)
 				//
 				// Not already processed
-				.addInArrayFilter(I_PP_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress)
+				.addInArrayOrAllFilter(I_PP_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress)
 				.addEqualsFilter(I_PP_Order.COLUMN_Processed, false)
 				//
 				// Retrieve them
@@ -198,7 +198,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 		// Retrieve MRP Demands
 		final List<I_PP_MRP> mrpDemands = queryBL
 				.createQueryBuilder(I_PP_MRP.class, getContext())
-				.addInArrayFilter(I_PP_MRP.COLUMN_PP_MRP_ID, ddOrderMRPDemandIdsToComplete)
+				.addInArrayOrAllFilter(I_PP_MRP.COLUMN_PP_MRP_ID, ddOrderMRPDemandIdsToComplete)
 				.create()
 				.list();
 
@@ -237,10 +237,10 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 		// Retrieve DD_Orders
 		final List<I_DD_Order> ddOrdersToComplete = queryBL
 				.createQueryBuilder(I_DD_Order.class, getContext())
-				.addInArrayFilter(I_DD_Order.COLUMN_DD_Order_ID, ddOrderIdsToComplete)
+				.addInArrayOrAllFilter(I_DD_Order.COLUMN_DD_Order_ID, ddOrderIdsToComplete)
 				//
 				// Not already processed
-				.addInArrayFilter(I_DD_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress)
+				.addInArrayOrAllFilter(I_DD_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress)
 				.addEqualsFilter(I_DD_Order.COLUMN_Processed, false)
 				//
 				// Retrieve them

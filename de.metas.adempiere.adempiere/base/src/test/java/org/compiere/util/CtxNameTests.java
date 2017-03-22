@@ -22,7 +22,6 @@ package org.compiere.util;
  * #L%
  */
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -141,7 +140,7 @@ public class CtxNameTests
 		assertEquals("default", CtxName.parse("nameUnknown/old/default").getValueAsString(ev2));
 		assertEquals("default", CtxName.parse("nameUnknown/upper/old/default").getValueAsString(ev2));
 	}
-	
+
 	@Test
 	public void test_getValueAsString_Evaluatee_MissingIDVariable_WithDefault()
 	{
@@ -152,7 +151,7 @@ public class CtxNameTests
 
 		assertEquals("It shall return default value", "123", name.getValueAsString(evalCtx));
 	}
-	
+
 	@Test
 	public void test_getValueAsString_Evaluatee_MissingStringVariable_WithDefault()
 	{
@@ -175,6 +174,7 @@ public class CtxNameTests
 
 		assertEquals("It shall return null value", CtxName.VALUE_NULL, name.getValueAsString(evalCtx));
 	}
+
 	@Test
 	public void test_getValueAsString_Evaluatee_MissingStringVariable_NoDefault()
 	{
@@ -186,7 +186,6 @@ public class CtxNameTests
 
 		assertEquals("It shall return null value", CtxName.VALUE_NULL, name.getValueAsString(evalCtx));
 	}
-
 
 	@Test
 	public void test_getValueAsString_Evaluatee2_MissingVariable_WithDefault()
@@ -222,5 +221,13 @@ public class CtxNameTests
 		assertEquals(CtxName.VALUE_NULL, CtxName.parse("name1").getValueAsString(ev2));
 		assertEquals("default", CtxName.parse("name1/old/default").getValueAsString(ev2));
 		assertEquals("default", CtxName.parse("name1/upper/old/default").getValueAsString(ev2));
+	}
+
+	@Test
+	public void test_EmptyDefault()
+	{
+		final CtxName ctxName = CtxName.parseWithMarkers("@Description/@");
+		assertEquals("Name", "Description", ctxName.getName());
+		assertEquals("DefaultValue", "", ctxName.getDefaultValue());
 	}
 }

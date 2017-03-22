@@ -15,7 +15,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -176,7 +176,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 			if (rs.next())
 			{
 				final String resultStr = rs.getString(1);
-				ILoggable.THREADLOCAL.getLoggable().addLog(resultStr);
+				Loggables.get().addLog(resultStr);
 			}
 
 		}

@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer( IN M_InOut_ID numeric, IN AD_Language Character Varying (6) );
+--DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer( IN M_InOut_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer( IN M_InOut_ID numeric, IN AD_Language Character Varying (6) )
 
 RETURNS TABLE
@@ -23,24 +23,24 @@ FROM
 	SELECT
 		null			as textleft,
 		CASE WHEN io.descriptionbottom IS NOT NULL
-			THEN '<br><br><br>'
+			THEN E'\n\n\n'
 			ELSE ''
 		END || dt.documentnote 	as textcenter,
-		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y') as language,
+		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y' AND isActive = 'Y') as language,
 		io.m_inout_id		as m_inout_id,
 		'docnote' 		as tag,
 		3			as pozition
 	FROM
 		m_inout io
-		LEFT JOIN c_doctype dt 		ON io.c_doctype_id 	= dt.c_doctype_id
-
+		LEFT JOIN c_doctype dt 		ON io.c_doctype_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE io.isActive = 'Y'
 	UNION
 ---------------------------------------------------------------------------------------------
 	--Docnote TRL
 	SELECT
 		null			as textleft,
 		CASE WHEN io.descriptionbottom IS NOT NULL
-			THEN '<br><br><br>'
+			THEN E'\n\n\n'
 			ELSE ''
 		END || dt.documentnote	as textcenter,
 		dt.ad_language		as language,
@@ -49,8 +49,8 @@ FROM
 		3			as pozition
 	FROM
 		m_inout io
-		LEFT JOIN c_doctype_trl dt 	ON io.c_doctype_id 	= dt.c_doctype_id
-
+		LEFT JOIN c_doctype_trl dt 	ON io.c_doctype_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE io.isActive = 'Y'
 	UNION
 ---------------------------------------------------------------------------------------------
 	--Descriptionbottom
@@ -63,6 +63,7 @@ FROM
 		2			as pozition
 	FROM
 		m_inout io
+	WHERE io.isActive = 'Y'
 	)footer
 WHERE
 	footer.m_inout_id = $1

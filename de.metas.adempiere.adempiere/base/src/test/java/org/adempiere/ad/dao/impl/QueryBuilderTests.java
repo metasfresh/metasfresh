@@ -105,7 +105,7 @@ public class QueryBuilderTests
 		POJOWrapper.getWrapper(product1_NotActive).setValue("AD_Client_ID", 12345);
 		InterfaceWrapperHelper.save(product1_NotActive);
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class)
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.filterByClientId();
 
@@ -131,7 +131,7 @@ public class QueryBuilderTests
 		POJOWrapper.getWrapper(product1_NotActive).setValue("AD_Client_ID", 12345);
 		InterfaceWrapperHelper.save(product1_NotActive);
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class)
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.filterByClientId();
 
@@ -160,7 +160,7 @@ public class QueryBuilderTests
 		POJOWrapper.getWrapper(product1_NotActive).setValue("AD_Client_ID", 12345);
 		InterfaceWrapperHelper.save(product1_NotActive);
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class)
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.filter(new ContextClientQueryFilter<I_M_Product>());
 
@@ -176,7 +176,7 @@ public class QueryBuilderTests
 		assertThat(product1_NotActive, notNullValue()); // simple guard;
 		assertThat(product2, notNullValue()); // simple guard;
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class);
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null); // tableName=null
 
 		//
 		// Retrieve active records and test
@@ -223,7 +223,7 @@ public class QueryBuilderTests
 		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
 		final int selectionId = adPInstance.getAD_PInstance_ID();
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class);
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null); // tableName=null)
 		final IQuery<I_M_Product> query = builder.create();
 
 		//
@@ -262,7 +262,7 @@ public class QueryBuilderTests
 		final int selectionId = adPInstance.getAD_PInstance_ID();
 
 		// Query selection and test
-		final List<I_M_Product> list = new QueryBuilder<I_M_Product>(I_M_Product.class)
+		final List<I_M_Product> list = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
 				.setOnlySelection(selectionId)
 				.create()
 				.list();
@@ -277,7 +277,7 @@ public class QueryBuilderTests
 	@Test
 	public void test_Explode_OR_Joins_To_SQL_Unions()
 	{
-		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class)
+		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setJoinOr()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions);
 

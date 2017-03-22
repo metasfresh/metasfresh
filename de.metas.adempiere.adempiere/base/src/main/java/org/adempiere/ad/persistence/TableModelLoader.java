@@ -10,12 +10,12 @@ package org.adempiere.ad.persistence;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ import de.metas.logging.MetasfreshLastError;
 
 /**
  * Class responsible for loading {@link PO}.
- * 
+ *
  * @author tsa
  *
  */
@@ -76,12 +76,12 @@ public final class TableModelLoader
 		{
 			checkCache = false;
 		}
-		
+
 		return getPO(ctx, tableName, Record_ID, checkCache, trxName);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param Record_ID
 	 * @param checkCache true if object shall be checked in cache first
 	 * @param trxName
@@ -108,7 +108,7 @@ public final class TableModelLoader
 	/**
 	 * Loads the PO from database.
 	 * In case some errors were encountered, they will be logged and <code>null</code> will be returned.
-	 * 
+	 *
 	 * @param ctx
 	 * @param tableName
 	 * @param Record_ID
@@ -161,7 +161,7 @@ public final class TableModelLoader
 
 	/**
 	 * Get PO Class Instance
-	 * 
+	 *
 	 * @param ctx
 	 * @param tableName
 	 * @param rs result set
@@ -228,7 +228,7 @@ public final class TableModelLoader
 
 	/**
 	 * Get PO class instance
-	 * 
+	 *
 	 * @param whereClause
 	 * @param params
 	 * @param trxName
@@ -290,7 +290,7 @@ public final class TableModelLoader
 
 		return po;
 	}
-	
+
 	public final <ModelType> ModelType retrieveModel(final Properties ctx, final String tableName, final Class<?> modelClass, final ResultSet rs, final String trxName)
 	{
 		final PO po = getPO(ctx, tableName, rs, trxName);

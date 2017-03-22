@@ -447,6 +447,31 @@ public interface I_R_RequestType
     public static final String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
+	 * Set IsUseForPartnerRequestWindow.
+	 * Flag that tells if the R_Request entries of this type will be displayed or not in the business partner request window (Vorgang)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsUseForPartnerRequestWindow (boolean IsUseForPartnerRequestWindow);
+
+	/**
+	 * Get IsUseForPartnerRequestWindow.
+	 * Flag that tells if the R_Request entries of this type will be displayed or not in the business partner request window (Vorgang)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isUseForPartnerRequestWindow();
+
+    /** Column definition for IsUseForPartnerRequestWindow */
+    public static final org.adempiere.model.ModelColumn<I_R_RequestType, Object> COLUMN_IsUseForPartnerRequestWindow = new org.adempiere.model.ModelColumn<I_R_RequestType, Object>(I_R_RequestType.class, "IsUseForPartnerRequestWindow", null);
+    /** Column name IsUseForPartnerRequestWindow */
+    public static final String COLUMNNAME_IsUseForPartnerRequestWindow = "IsUseForPartnerRequestWindow";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *

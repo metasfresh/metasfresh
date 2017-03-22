@@ -35,7 +35,7 @@ create table de_metas_endcustomer_fresh_reports.OpenItems_Report
 );
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN Reference_Date date DEFAULT now(), IN switchDate character varying DEFAULT 'N')
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN Reference_Date date DEFAULT now(), IN switchDate character varying DEFAULT 'N')
 RETURNS SETOF de_metas_endcustomer_fresh_reports.OpenItems_Report AS
 $$
 SELECT
@@ -67,12 +67,12 @@ SELECT
 	-- foreign currency
 	(case when oi.main_currency != oi.C_Currency_ID 
 		THEN oi.GrandTotal * 
-			(select currencyrate from fact_acct where record_id = oi.c_invoice_id and ad_table_id = get_table_id('C_Invoice') limit 1 ) 
+			(select currencyrate from fact_acct where record_id = oi.c_invoice_id and ad_table_id = get_table_id('C_Invoice') and isActive = 'Y' limit 1 ) 
 	ELSE NULL 
 	END) AS grandtotalconvert,
 	(case when oi.main_currency != oi.C_Currency_ID 
 		THEN oi.OpenAmt * 
-			(select currencyrate from fact_acct where record_id = oi.c_invoice_id and ad_table_id = get_table_id('C_Invoice') limit 1 ) 
+			(select currencyrate from fact_acct where record_id = oi.c_invoice_id and ad_table_id = get_table_id('C_Invoice') and isActive = 'Y' limit 1 ) 
 	ELSE NULL 
 	END) AS openamtconvert,
 
@@ -90,7 +90,7 @@ FROM
 			i.IsSOTrx,
 			i.DateInvoiced,
 			i.DateAcct,
-			EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID) AS IsInPaySelection,
+			EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y') AS IsInPaySelection,
 			COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
 			p.DiscountDays,
 			COALESCE( PaymentTermDueDate( p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ), ips.DueDate ) AS DueDate,
@@ -116,16 +116,16 @@ FROM
 			c.iso_code as main_iso_code
 		FROM
 			C_Invoice_v i
-			LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
-			LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
+			LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID AND p.isActive = 'Y'
+			LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y' AND ips.isActive = 'Y'
 			
-			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=i.ad_client_id 
-			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
-			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
+			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=i.ad_client_id  AND ci.isActive = 'Y'
+			LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID AND acs.isActive = 'Y'
+			LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
 			
 
 		WHERE true
-			AND i.DocStatus IN ('CO','CL','RE')
+			AND i.DocStatus IN ('CO','CL','RE') AND i.isActive = 'Y'
 	)as oi
 	INNER JOIN C_BPartner bp 	ON oi.C_BPartner_ID = bp.C_BPartner_ID
 	INNER JOIN C_Currency c 	ON oi.C_Currency_ID = c.C_Currency_ID

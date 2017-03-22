@@ -26,13 +26,16 @@ import org.compiere.model.X_C_Conversion_Rate;
 import org.compiere.model.X_I_Conversion_Rate;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Import Currency Conversion Rates 
  *	
  *  @author Jorg Janke
  *  @version $Id: ImportConversionRate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportConversionRate extends SvrProcess
+public class ImportConversionRate extends JavaProcess
 {
 	
 	/**	Client to be imported to			*/
@@ -54,7 +57,7 @@ public class ImportConversionRate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

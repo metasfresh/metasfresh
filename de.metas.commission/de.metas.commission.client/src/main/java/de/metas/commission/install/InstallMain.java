@@ -40,15 +40,15 @@ import java.util.Properties;
 import org.compiere.Adempiere;
 import org.compiere.model.MColumn;
 import org.compiere.model.X_AD_Table;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import de.metas.commission.model.I_C_AdvComSalesRepFact;
 import de.metas.commission.model.I_C_AdvCommissionFact;
 import de.metas.commission.model.I_C_AdvCommissionInstance;
 import de.metas.commission.model.I_C_AdvCommissionRelevantPO;
+import de.metas.logging.LogManager;
 
 public class InstallMain {
 
@@ -481,7 +481,6 @@ public class InstallMain {
 	public static void main(final String[] args) {
 
 		Adempiere.startupEnvironment(false);
-		Ini.setAdempiereHome(".");
 		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 		
 		doIt();

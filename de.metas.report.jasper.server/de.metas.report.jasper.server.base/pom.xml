@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>de.metas.report.jasper.server</artifactId>
 		<groupId>de.metas.report.jasper.server</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>de.metas.report.jasper.server.base</artifactId>
@@ -18,36 +18,11 @@
 			<artifactId>jasperreports</artifactId>
 		</dependency>
 
-		<!-- 
-		Adding spring-core to avoid:
-java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.core.io.Resource
-        at org.jboss.mx.loading.LoadMgr3.beginLoadTask(LoadMgr3.java:212)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClassImpl(RepositoryClassLoader.java:521)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClass(RepositoryClassLoader.java:415)
-        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
-        at java.lang.Class.forName0(Native Method)
-        at java.lang.Class.forName(Class.java:270)
-        at net.sf.jasperreports.engine.util.JRClassLoader.loadClassForRealName(JRClassLoader.java:157)
-		 -->
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- 
-		Adding spring-beans to avoid:
-java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.beans.factory.ListableBeanFactory
-        at org.jboss.mx.loading.LoadMgr3.beginLoadTask(LoadMgr3.java:212)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClassImpl(RepositoryClassLoader.java:521)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClass(RepositoryClassLoader.java:415)
-        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
-        at java.lang.Class.forName0(Native Method)
-        at java.lang.Class.forName(Class.java:270)
-        at net.sf.jasperreports.engine.util.JRClassLoader.loadClassForRealName(JRClassLoader.java:157)
-		-->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-		</dependency>
+		
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -67,20 +42,15 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		-->
 		
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		
-		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.report.jasper.commons</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.barcode4j</groupId>

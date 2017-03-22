@@ -13,22 +13,28 @@ package de.metas.handlingunits.document;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.process.ProcessInfo;
+import de.metas.handlingunits.document.impl.HUDocumentFactoryService;
+import de.metas.process.ProcessInfo;
 
+/**
+ * Implementors can be registered in {@link HUDocumentFactoryService} and will then be invoked accordingly by its {@code create..} methods.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IHUDocumentFactory
 {
 	List<IHUDocument> createHUDocuments(final Properties ctx, final String tableName, final int recordId);

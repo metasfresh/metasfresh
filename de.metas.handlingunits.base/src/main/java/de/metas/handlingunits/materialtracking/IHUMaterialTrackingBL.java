@@ -38,6 +38,8 @@ public interface IHUMaterialTrackingBL extends ISingletonService
 	String ATTRIBUTEVALUE_IsQualityInspection_Yes = "Y";
 	String ATTRIBUTEVALUE_IsQualityInspection_No = "N";
 
+	String ATTRIBUTENAME_QualityInspectionCycle = "QualityInspectionCycle";
+
 	/**
 	 * Wraps given {@link IAttributeStorage} to {@link IQualityInspectionSchedulable} if supported.
 	 * 

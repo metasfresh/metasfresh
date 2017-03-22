@@ -42,7 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
  * @author tsa
  *
  */
-/* public */class PlainHUPackingAware implements IHUPackingAware
+public class PlainHUPackingAware implements IHUPackingAware
 {
 	private int productId = -1;
 	private int asiId = -1;

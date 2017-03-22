@@ -250,7 +250,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		// Retrieve shipment lines which are in progress
 		// ... because when they will be processed, their qty will be subtracted from storage
 		final IQueryBuilder<I_M_InOutLine> shipmentLinesInProgressQueryBuilder = inOutDAO.createUnprocessedShipmentLinesQuery(getCtx())
-				.addInArrayFilter(I_M_InOutLine.COLUMN_M_Product_ID, productIds)
+				.addInArrayOrAllFilter(I_M_InOutLine.COLUMN_M_Product_ID, productIds)
 				.addNotEqualsFilter(I_M_InOutLine.COLUMNNAME_MovementQty, BigDecimal.ZERO);
 
 		// Skip those shipment lines which were already considered

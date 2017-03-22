@@ -58,8 +58,6 @@ public interface IOLCandBL extends ISingletonService
 
 	String mkRelationTypeInternalName(I_C_OLCandProcessor processor);
 
-	String mkRelTypeIntNameOlC2Ol();
-
 	/**
 	 * Method creates a <code>ModelRelationTarget</code> instance that contains the basic data required to add an explicit relation between the given <code>processor</code> and a set of
 	 * {@link I_C_OLCand}s.

@@ -1,5 +1,6 @@
 package org.compiere.util;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 public final class KeyNamePairList
 {
 	@JsonCreator
-	public static final KeyNamePairList of(@JsonProperty("l") final List<KeyNamePair> values)
+	public static final KeyNamePairList of(@JsonProperty("l") final Collection<KeyNamePair> values)
 	{
 		if (values == null || values.isEmpty())
 		{
@@ -64,7 +65,7 @@ public final class KeyNamePairList
 	@JsonProperty("l")
 	private final List<KeyNamePair> values;
 
-	private KeyNamePairList(final List<KeyNamePair> values)
+	private KeyNamePairList(final Collection<KeyNamePair> values)
 	{
 		super();
 		this.values = ImmutableList.copyOf(values);

@@ -19,6 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectType;
@@ -29,7 +31,7 @@ import org.compiere.model.MProjectType;
  *	@author Jorg Janke
  *	@version $Id: ProjectSetType.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class ProjectSetType extends SvrProcess
+public class ProjectSetType extends JavaProcess
 {
 	/**	Project directly from Project	*/
 	private int				m_C_Project_ID = 0;
@@ -41,7 +43,7 @@ public class ProjectSetType extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -341,6 +341,9 @@ public abstract class KeyLayout implements IKeyLayout
 	 * Then it actually invokes the given callable and finally detaches the newly created references.
 	 * This way, the references is owned by this keyLayout.
 	 * The components that belong to this keyLayout (whether this keyLayout directly knows them or not) will be disposed when they aren't needed anymore while this keyLayout itself can live on.
+	 * <p>
+	 * <b>Important:</b> when calling this method, make sure that you really want to do changes.
+	 * Even for a callable that just returns without having called {@link #setKeys(Collection)}, this method will dispose the current {@link ITerminalContextReferences} and create a new one.
 	 *
 	 * @param f the code that (re)creates and (re)sets this keyLayout's keys by calling {@link #setKeys(Collection)}.
 	 * @see ITerminalContext#detachReferences(ITerminalContextReferences).

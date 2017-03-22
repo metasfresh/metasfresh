@@ -30,6 +30,7 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 
 /**
  * @author cg
@@ -39,6 +40,8 @@ public interface IAsyncBatchBL extends ISingletonService
 {
 	String AD_SYSCONFIG_ASYNC_BOILERPLATE_ID = "de.metas.async.api.IAsyncBatchBL.BoilerPlate_ID";
 
+	public static String ENQUEUED = "Enqueued";
+	
 	/**
 	 * @return {@link I_C_Async_Batch} builder
 	 */
@@ -46,15 +49,17 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * update first enqueued, last enqueued and count Enqueued
-	 *
-	 * @param qw
+	 * 
+	 * @param workPackage
 	 */
-	void increaseEnqueued(final I_C_Queue_WorkPackage workPackage);
+	int increaseEnqueued(final I_C_Queue_WorkPackage workPackage);
+
+	int decreaseEnqueued(I_C_Queue_WorkPackage workPackage);
 
 	/**
 	 * update last processed and count processed
-	 *
-	 * @param qw
+	 * 
+	 * @param workPackage
 	 */
 	void increaseProcessed(final I_C_Queue_WorkPackage workPackage);
 
@@ -76,14 +81,36 @@ public interface IAsyncBatchBL extends ISingletonService
 	 */
 	void enqueueAsyncBatch(I_C_Async_Batch asyncBatch);
 
-	// ts: commented out, because it's currently not called and because it uses business logic that was move to de.metas.business
-	// if we need to use this again, then pls create or register a listener, or check if INotificationBL can be used or extended instead.
-	/***
-	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by {@value #AD_SYSCONFIG_ASYNC_BOILERPLATE_ID}. If there is no such
-	 * AS_SysConfig or no <code>AD_BoilerPlate</code> record, then the method does nothing.
-	 *
+	/**
+	 * check if the keep alive time has expired for the current batch
+	 * 
 	 * @param asyncBatch
-	 * @see de.metas.letters.model.MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
+	 * @return
 	 */
-	// void sendEMail(final I_C_Async_Batch asyncBatch);
+	boolean keepAliveTimeExpired(I_C_Async_Batch asyncBatch);
+
+	/**
+	 * create notification records in async batch has notification of type WPP
+	 * 
+	 * @param workPackage
+	 */
+	void createNotificationRecord(I_C_Queue_WorkPackage workPackage);
+
+	/**
+	 * check is the given workpackage can be notified
+	 * if there is one below it, that can be notified, return that
+	 * 
+	 * @param asyncBatch
+	 * @param workpackage
+	 * @return workpackage
+	 */
+	I_C_Queue_WorkPackage notify(I_C_Async_Batch asyncBatch, I_C_Queue_WorkPackage workpackage);
+
+	/**
+	 * mark workpackage as notified
+	 * 
+	 * @param workpackageNotified
+	 */
+	void markWorkpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
+
 }

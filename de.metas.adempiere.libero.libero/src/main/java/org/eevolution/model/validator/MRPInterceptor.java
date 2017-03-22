@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
@@ -42,6 +41,7 @@ import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
+import de.metas.process.IADProcessDAO;
 
 /**
  * MRP Model Interceptors

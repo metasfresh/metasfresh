@@ -45,7 +45,7 @@ public final class LoggingConstants
 	/**
 	 * Default log directory, if neither {@link #SYSTEM_PROP_LogDir} nor {@link #ENV_VAR_LogDir} are available.
 	 */
-	public static final String DEFAULT_LogDir = Ini.getAdempiereHome() + File.separator + "log";
+	public static final String DEFAULT_LogDir = Ini.getMetasfreshHome() + File.separator + "log";
 
 	public static final String DEFAULT_LogFilePrefix = "metasfresh";
 

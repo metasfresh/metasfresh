@@ -10,18 +10,17 @@ package org.compiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -34,6 +33,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
 import de.metas.logging.LogManager;
 
 public abstract class AbstractPOCacheLocal
@@ -59,18 +61,25 @@ public abstract class AbstractPOCacheLocal
 		this.tableName = tableName;
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		this.idColumnName = poInfo.getKeyColumnName();
+		idColumnName = poInfo.getKeyColumnName();
 		if (idColumnName == null)
 		{
 			throw new IllegalStateException("Table " + tableName + " does not have a simple primary key");
 		}
 
-		this.loadWhereClause = idColumnName + "=?";
+		loadWhereClause = idColumnName + "=?";
 	}
 
-	public final <T> T get(Class<T> clazz)
+	public final <T> T get(final Class<T> clazz)
 	{
-		return get(clazz, false);
+		final boolean requery = false;
+		return get(clazz, requery);
+	}
+
+	public final Object get()
+	{
+		final boolean requery = false;
+		return get(Object.class, requery);
 	}
 
 	protected abstract Properties getParentCtx();
@@ -87,10 +96,10 @@ public abstract class AbstractPOCacheLocal
 		return new SoftReference<PO>(po);
 	}
 
-	public final <T> T get(Class<T> clazz, boolean requery)
+	private final <T> T get(final Class<T> clazz, final boolean requery)
 	{
 		PO po = poRef == null ? null : poRef.get();
-		int id = getId();
+		final int id = getId();
 		if (id <= 0)
 		{
 			//
@@ -100,7 +109,7 @@ public abstract class AbstractPOCacheLocal
 					&& po.get_ID() != id // NOTE: we do this checking because we could have a valid PO with the ID=0 (e.g. M_AttributeSetInstance.M_AttributeSet_ID)
 			)
 			{
-				this.poRef = null;
+				poRef = null;
 				return null;
 			}
 
@@ -144,7 +153,7 @@ public abstract class AbstractPOCacheLocal
 		if (po == null)
 		{
 			setId(-1);
-			this.poRef = null;
+			poRef = null;
 			return;
 		}
 
@@ -153,7 +162,7 @@ public abstract class AbstractPOCacheLocal
 
 		if (isValidPO(po))
 		{
-			this.poRef = createPOReference(po);
+			poRef = createPOReference(po);
 		}
 	}
 
@@ -186,15 +195,17 @@ public abstract class AbstractPOCacheLocal
 		return true;
 	}
 
-	private boolean isSameTrxName(String trxName1, String trxName2)
+	private boolean isSameTrxName(final String trxName1, final String trxName2)
 	{
 		return Services.get(ITrxManager.class).isSameTrxName(trxName1, trxName2);
 	}
 
-	private PO load(Properties ctx, int id, String trxName)
+	private PO load(final Properties ctx, final int id, final String trxName)
 	{
 		if (id < 0)
+		{
 			return null;
+		}
 
 		// NOTE: we call MTable.getPO because we want to hit the ModelCacheService.
 		// If we are using Query directly then cache won't be asked to retrieve (but it will just be asked to put to cache)
@@ -202,7 +213,7 @@ public abstract class AbstractPOCacheLocal
 		if (id == 0)
 		{
 			// FIXME: this is a special case because the system will consider we want a new record. Fix this workaround
-			final PO po = new Query(ctx, this.tableName, this.loadWhereClause, trxName)
+			final PO po = new Query(ctx, tableName, loadWhereClause, trxName)
 					.setParameters(id)
 					.firstOnly();
 			return po;
@@ -231,12 +242,13 @@ public abstract class AbstractPOCacheLocal
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + " ["
-				+ ", parentColumnName=" + parentColumnName
-				+ ", tableName=" + tableName
-				+ ", idColumnName=" + idColumnName
-				+ ", loadWhereClause=" + loadWhereClause
-				+ ", po=" + poRef
-				+ "]";
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("parentColumnName", parentColumnName)
+				.add("tableName", tableName)
+				.add("idColumnName", idColumnName)
+				.add("loadWhereClause", loadWhereClause)
+				.add("po", poRef)
+				.toString();
 	}
 }

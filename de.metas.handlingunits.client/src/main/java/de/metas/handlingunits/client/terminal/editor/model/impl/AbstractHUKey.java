@@ -143,16 +143,6 @@ import de.metas.handlingunits.model.I_M_HU;
 		_nameBuilder = NullHUKeyNameBuilder.instance;
 
 		//
-		// Iterate all children and remove them
-		// We are doing like this because we want to unregister any listener from them
-		// => don't do this on dispose
-		// final List<IHUKey> childrenLoaded = children.getChildrenNoLoad();
-		// for (final IHUKey child : new ArrayList<>(childrenLoaded))
-		// {
-		// removeChild(child);
-		// }
-
-		//
 		// Clear properties
 		properties.clear();
 
@@ -166,9 +156,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "["
-				+ getValue()
-				+ "]";
+		return getClass().getSimpleName() + "[" + getValue() + "]";
 	}
 
 	@Override

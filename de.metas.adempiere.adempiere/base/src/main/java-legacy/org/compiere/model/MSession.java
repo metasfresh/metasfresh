@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -32,7 +31,8 @@ import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 
@@ -127,7 +127,7 @@ public class MSession extends X_AD_Session
 	 */
 	public static MSession get (Properties ctx, String Remote_Addr, String Remote_Host, String WebSession)
 	{
-		int AD_Session_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
+		final int AD_Session_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
 		MSession session = get(ctx, AD_Session_ID, false);
 		if (session == null)
 		{
@@ -171,9 +171,7 @@ public class MSession extends X_AD_Session
 	}
 
 	/**	Sessions					*/
-	private static CCache<Integer, MSession> s_sessions = Ini.isClient()
-		? new CCache<Integer, MSession>("AD_Session_ID", 1, 0)		//	one client session
-		: new CCache<Integer, MSession>("AD_Session_ID", 30, 0);	//	no time-out
+	private static CCache<Integer, MSession> s_sessions = CCache.newLRUCache(I_AD_Session.Table_Name, 100, 0);
 
 
 	/**************************************************************************
@@ -223,7 +221,7 @@ public class MSession extends X_AD_Session
 	 *	@param webSessionId web session
 	 *	@param trxName transaction
 	 */
-	public MSession (Properties ctx, String Remote_Addr, String Remote_Host, String webSessionId, String trxName)
+	private MSession (Properties ctx, String Remote_Addr, String Remote_Host, String webSessionId, String trxName)
 	{
 		this (ctx, 0, trxName);
 		if (Remote_Addr != null)
@@ -301,10 +299,10 @@ public class MSession extends X_AD_Session
 	 */
 	public void logout()
 	{
-		final boolean processedOld = isProcessed();
+		final boolean alreadyProcessed = isProcessed();
 
 		// Fire BeforeLogout event only if current session is not yet closes(i.e. processed)
-		if (!processedOld)
+		if (!alreadyProcessed)
 		{
 			ModelValidationEngine.get().fireBeforeLogout(this);
 		}
@@ -312,10 +310,9 @@ public class MSession extends X_AD_Session
 		setProcessed(true);
 		save();
 		s_sessions.remove(getAD_Session_ID());
-		log.info(TimeUtil.formatElapsed(getCreated(), getUpdated()));
 
 		// Fire AfterLogout event only if current session was closed right now
-		if (!processedOld && isProcessed())
+		if (!alreadyProcessed && isProcessed())
 		{
 			ModelValidationEngine.get().fireAfterLogout(this);
 		}
@@ -351,8 +348,21 @@ public class MSession extends X_AD_Session
 		return getCreatedBy();
 	}
 
-
 	public static final String CTX_Prefix = "#AD_Session.";
+
+	private static final List<String> CTX_IgnoredColumnNames = ImmutableList.of(
+			COLUMNNAME_AD_Session_ID // this one will be exported particularly
+			, COLUMNNAME_AD_Client_ID
+			, COLUMNNAME_AD_Org_ID
+			, COLUMNNAME_Created
+			, COLUMNNAME_CreatedBy
+			, COLUMNNAME_Updated
+			, COLUMNNAME_UpdatedBy
+			, COLUMNNAME_IsActive
+			, COLUMNNAME_Processed
+			, COLUMNNAME_Remote_Addr
+			, COLUMNNAME_Remote_Host
+			, COLUMNNAME_WebSession);
 
 	/**
 	 * Export attributes from session to context.
@@ -423,27 +433,13 @@ public class MSession extends X_AD_Session
 			return false;
 		}
 
-		final List<String> ignoredColumnNames = Arrays.asList(
-				COLUMNNAME_AD_Session_ID // this one will be exported particularly
-				, COLUMNNAME_AD_Client_ID
-				, COLUMNNAME_AD_Org_ID
-				, COLUMNNAME_Created
-				, COLUMNNAME_CreatedBy
-				, COLUMNNAME_Updated
-				, COLUMNNAME_UpdatedBy
-				, COLUMNNAME_IsActive
-				, COLUMNNAME_Processed
-				, COLUMNNAME_Remote_Addr
-				, COLUMNNAME_Remote_Host
-				, COLUMNNAME_WebSession);
-
 		final String columnName = get_ColumnName(columnIndex);
 		if(columnName == null)
 		{
 			return false;
 		}
 
-		if(ignoredColumnNames.contains(columnName))
+		if(CTX_IgnoredColumnNames.contains(columnName))
 		{
 			return false;
 		}

@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -61,9 +59,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -75,8 +71,11 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
+import de.metas.process.IADPInstanceDAO;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -85,7 +84,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
-	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<POJOLookupMap>();
+	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
 	public static POJOLookupMap get()
 	{
@@ -195,7 +194,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	/**
 	 * Map of cached objects (TableName -> Record_ID -> Object)
 	 */
-	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<String, Map<Integer, Object>>();
+	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
 	Map<Integer, Set<Integer>> selectionId2selection = new HashMap<>();
 
 	private boolean copyOnSave = true;
@@ -393,7 +392,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				if (tableRecords == null)
 				{
 					// we use LinkedHashMap to preserve the order in which the objects are saved
-					tableRecords = new LinkedHashMap<Integer, Object>();
+					tableRecords = new LinkedHashMap<>();
 					cachedObjects.put(tableName, tableRecords);
 				}
 
@@ -509,7 +508,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return Collections.emptyList();
 		}
 
-		final List<T> result = filter == null ? new ArrayList<T>() : new ArrayList<T>(recordsMap.size());
+		final List<T> result = filter == null ? new ArrayList<>() : new ArrayList<>(recordsMap.size());
 		for (Object o : recordsMap.values())
 		{
 			final T record = copy(POJOWrapper.create(o, clazz));
@@ -541,7 +540,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		// NOTE: in case of raw records we are not doing a copy of models
 
-		final List<Object> records = new ArrayList<Object>(recordsMap.values());
+		final List<Object> records = new ArrayList<>(recordsMap.values());
 		return records;
 	}
 
@@ -658,7 +657,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		sb.append("\nDatabase Name: ").append(databaseName).append("(").append(getClass()).append(")");
 
-		final List<String> tableNamesToUse = new ArrayList<String>();
+		final List<String> tableNamesToUse = new ArrayList<>();
 		if (tableNames == null || tableNames.length == 0)
 		{
 			tableNamesToUse.addAll(cachedObjects.keySet());
@@ -797,8 +796,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	private final CopyOnWriteArrayList<IModelInterceptor> interceptors = new CopyOnWriteArrayList<IModelInterceptor>();
-	private final Map<String, CompositeModelInterceptor> tableName2interceptors = new HashMap<String, CompositeModelInterceptor>();
+	private final CopyOnWriteArrayList<IModelInterceptor> interceptors = new CopyOnWriteArrayList<>();
+	private final Map<String, CompositeModelInterceptor> tableName2interceptors = new HashMap<>();
 
 	@Override
 	public void addModelValidator(Object interceptorObj, I_AD_Client client)
@@ -885,6 +884,17 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public void addModelChange(String tableName, IModelInterceptor interceptor)
 	{
 		addModelInterceptor(tableName, interceptor);
+	}
+
+	@Override
+	public void removeModelChange(String tableName, IModelInterceptor interceptor)
+	{
+		final CompositeModelInterceptor tableInterceptors = tableName2interceptors.get(tableName);
+		if (tableInterceptors == null)
+		{
+			return; // nothing to do
+		}
+		tableInterceptors.removeModelInterceptor(interceptor);
 	}
 
 	@Override
@@ -990,8 +1000,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	private final Set<String> appliesIncludeOnlyTablePrefixes = new HashSet<String>();
-	private final Set<String> appliesExcludeTablePrefixes = new HashSet<String>();
+	private final Set<String> appliesIncludeOnlyTablePrefixes = new HashSet<>();
+	private final Set<String> appliesExcludeTablePrefixes = new HashSet<>();
 
 	public void addAppliesIncludeOnlyTablenamePrefix(final String tablenamePrefix)
 	{
@@ -1062,9 +1072,10 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public I_AD_PInstance createSelectionPInstance(final Properties ctx)
 	{
-		final IContextAware contextProvider = new PlainContextAware(ctx);
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class, contextProvider);
-		InterfaceWrapperHelper.save(adPInstance);
+		final int adProcessId = 0; // N/A
+		final int adTableId = 0;
+		final int recordId = 0;
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, adTableId, recordId);
 		return adPInstance;
 	}
 

@@ -26,9 +26,10 @@ package org.eevolution.process;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_Order;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Process used to manually trigger the completion of forward and backward {@link I_DD_Order}s
@@ -36,7 +37,7 @@ import org.eevolution.model.I_DD_Order;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
  */
-public class DD_Order_CompleteForwardBackward extends SvrProcess
+public class DD_Order_CompleteForwardBackward extends JavaProcess
 {
 
 	private I_DD_Order p_ddOrder;

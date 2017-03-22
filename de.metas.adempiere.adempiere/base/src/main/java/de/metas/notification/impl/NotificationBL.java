@@ -173,5 +173,4 @@ public class NotificationBL implements INotificationBL
 	{
 		ctxProviders.setDefaultCtxProvider(defaultCtxProvider);
 	}
-
 }

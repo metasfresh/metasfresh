@@ -36,7 +36,8 @@ public class NoUOMConversionException extends AdempiereException
 
 	private static String buildMessage(int M_Product_ID, int C_UOM_ID, int C_UOM_To_ID)
 	{
-		StringBuffer sb = new StringBuffer("@"+AD_Message+"@ - ");
+		final StringBuilder sb = new StringBuilder("@"+AD_Message+"@ - ");
+		
 		//
 		sb.append("@M_Product_ID@:");
 		MProduct product = MProduct.get(Env.getCtx(), M_Product_ID);

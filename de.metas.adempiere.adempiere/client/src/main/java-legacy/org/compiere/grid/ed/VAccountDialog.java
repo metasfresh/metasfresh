@@ -34,8 +34,6 @@ import java.beans.VetoableChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -73,15 +71,16 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAccountLookup;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 /**
  * Dialog to enter Account Info
@@ -492,17 +491,17 @@ public final class VAccountDialog extends CDialog
 
 		// Finish
 		m_query = new MQuery();
-		m_query.addRestriction("C_AcctSchema_ID", MQuery.EQUAL, m_C_AcctSchema_ID);
-		m_query.addRestriction("IsFullyQualified", MQuery.EQUAL, "Y");
+		m_query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, m_C_AcctSchema_ID);
+		m_query.addRestriction("IsFullyQualified", Operator.EQUAL, "Y");
 		if (m_mAccount.getC_ValidCombination_ID() <= 0)
 		{
-			m_mTab.setQuery(MQuery.getEqualQuery("1", "2"));
+			m_mTab.setQuery(MQuery.getNoRecordQuery());
 		}
 		else
 		{
 			final MQuery query = new MQuery();
-			query.addRestriction("C_AcctSchema_ID", MQuery.EQUAL, m_C_AcctSchema_ID);
-			query.addRestriction("C_ValidCombination_ID", MQuery.EQUAL, m_mAccount.getC_ValidCombination_ID());
+			query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, m_C_AcctSchema_ID);
+			query.addRestriction("C_ValidCombination_ID", Operator.EQUAL, m_mAccount.getC_ValidCombination_ID());
 			m_mTab.setQuery(query);
 		}
 		m_mTab.query(false);
@@ -772,7 +771,7 @@ public final class VAccountDialog extends CDialog
 			String value = f_Alias.getValue().toString().toUpperCase();
 			if (!value.endsWith("%"))
 				value += "%";
-			query.addRestriction("UPPER(Alias)", MQuery.LIKE, value);
+			query.addRestriction("UPPER(Alias)", Operator.LIKE, value);
 		}
 		// Combination (mandatory)
 		if (includeAliasCombination && f_Combination.getValue().toString().length() > 0)
@@ -780,50 +779,50 @@ public final class VAccountDialog extends CDialog
 			String value = f_Combination.getValue().toString().toUpperCase();
 			if (!value.endsWith("%"))
 				value += "%";
-			query.addRestriction("UPPER(Combination)", MQuery.LIKE, value);
+			query.addRestriction("UPPER(Combination)", Operator.LIKE, value);
 		}
 		// Org (mandatory)
 		if (f_AD_Org_ID != null && f_AD_Org_ID.getValue() != null)
-			query.addRestriction("AD_Org_ID", MQuery.EQUAL, f_AD_Org_ID.getValue());
+			query.addRestriction("AD_Org_ID", Operator.EQUAL, f_AD_Org_ID.getValue());
 		// Account (mandatory)
 		if (f_Account_ID != null && f_Account_ID.getValue() != null)
-			query.addRestriction("Account_ID", MQuery.EQUAL, f_Account_ID.getValue());
+			query.addRestriction("Account_ID", Operator.EQUAL, f_Account_ID.getValue());
 		if (f_SubAcct_ID != null && f_SubAcct_ID.getValue() != null)
-			query.addRestriction("C_SubAcct_ID", MQuery.EQUAL, f_SubAcct_ID.getValue());
+			query.addRestriction("C_SubAcct_ID", Operator.EQUAL, f_SubAcct_ID.getValue());
 
 		// Product
 		if (f_M_Product_ID != null && f_M_Product_ID.getValue() != null)
-			query.addRestriction("M_Product_ID", MQuery.EQUAL, f_M_Product_ID.getValue());
+			query.addRestriction("M_Product_ID", Operator.EQUAL, f_M_Product_ID.getValue());
 		// BPartner
 		if (f_C_BPartner_ID != null && f_C_BPartner_ID.getValue() != null)
-			query.addRestriction("C_BPartner_ID", MQuery.EQUAL, f_C_BPartner_ID.getValue());
+			query.addRestriction("C_BPartner_ID", Operator.EQUAL, f_C_BPartner_ID.getValue());
 		// Campaign
 		if (f_C_Campaign_ID != null && f_C_Campaign_ID.getValue() != null)
-			query.addRestriction("C_Campaign_ID", MQuery.EQUAL, f_C_Campaign_ID.getValue());
+			query.addRestriction("C_Campaign_ID", Operator.EQUAL, f_C_Campaign_ID.getValue());
 		// Loc From
 		if (f_C_LocFrom_ID != null && f_C_LocFrom_ID.getValue() != null)
-			query.addRestriction("C_LocFrom_ID", MQuery.EQUAL, f_C_LocFrom_ID.getValue());
+			query.addRestriction("C_LocFrom_ID", Operator.EQUAL, f_C_LocFrom_ID.getValue());
 		// Loc To
 		if (f_C_LocTo_ID != null && f_C_LocTo_ID.getValue() != null)
-			query.addRestriction("C_LocTo_ID", MQuery.EQUAL, f_C_LocTo_ID.getValue());
+			query.addRestriction("C_LocTo_ID", Operator.EQUAL, f_C_LocTo_ID.getValue());
 		// Project
 		if (f_C_Project_ID != null && f_C_Project_ID.getValue() != null)
-			query.addRestriction("C_Project_ID", MQuery.EQUAL, f_C_Project_ID.getValue());
+			query.addRestriction("C_Project_ID", Operator.EQUAL, f_C_Project_ID.getValue());
 		// SRegion
 		if (f_C_SalesRegion_ID != null && f_C_SalesRegion_ID.getValue() != null)
-			query.addRestriction("C_SalesRegion_ID", MQuery.EQUAL, f_C_SalesRegion_ID.getValue());
+			query.addRestriction("C_SalesRegion_ID", Operator.EQUAL, f_C_SalesRegion_ID.getValue());
 		// Org Trx
 		if (f_AD_OrgTrx_ID != null && f_AD_OrgTrx_ID.getValue() != null)
-			query.addRestriction("AD_OrgTrx_ID", MQuery.EQUAL, f_AD_OrgTrx_ID.getValue());
+			query.addRestriction("AD_OrgTrx_ID", Operator.EQUAL, f_AD_OrgTrx_ID.getValue());
 		// Activity
 		if (f_C_Activity_ID != null && f_C_Activity_ID.getValue() != null)
-			query.addRestriction("C_Activity_ID", MQuery.EQUAL, f_C_Activity_ID.getValue());
+			query.addRestriction("C_Activity_ID", Operator.EQUAL, f_C_Activity_ID.getValue());
 		// User 1
 		if (f_User1_ID != null && f_User1_ID.getValue() != null)
-			query.addRestriction("User1_ID", MQuery.EQUAL, f_User1_ID.getValue());
+			query.addRestriction("User1_ID", Operator.EQUAL, f_User1_ID.getValue());
 		// User 2
 		if (f_User2_ID != null && f_User2_ID.getValue() != null)
-			query.addRestriction("User2_ID", MQuery.EQUAL, f_User2_ID.getValue());
+			query.addRestriction("User2_ID", Operator.EQUAL, f_User2_ID.getValue());
 		return query;
 	}
 

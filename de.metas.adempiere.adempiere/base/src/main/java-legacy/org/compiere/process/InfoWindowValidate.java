@@ -16,13 +16,15 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.process.JavaProcess;
+
 /**
  * 	Validate Info Window SQL
  *	
  *  @author Jorg Janke
  *  @version $Id: InfoWindowValidate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class InfoWindowValidate extends SvrProcess
+public class InfoWindowValidate extends JavaProcess
 {
 	/**	Info Window			*/
 	private int p_AD_InfoWindow_ID = 0;

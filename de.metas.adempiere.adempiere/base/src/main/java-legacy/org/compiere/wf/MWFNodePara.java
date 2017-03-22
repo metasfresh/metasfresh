@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.MProcessPara;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Node_Para;
 
@@ -79,21 +78,6 @@ public class MWFNodePara extends X_AD_WF_Node_Para
 		super(ctx, rs, trxName);
 	}	//	MWFNodePara
 	
-	
-	/** Linked Process Parameter			*/
-	private MProcessPara 	m_processPara = null;
-	
-	/**
-	 * 	Get Process Parameter
-	 *	@return process parameter
-	 */
-	public MProcessPara getProcessPara()
-	{
-		if (m_processPara == null)
-			m_processPara = new MProcessPara (getCtx(), getAD_Process_Para_ID(), get_TrxName());
-		return m_processPara;
-	}	//	getProcessPara
-	
 	/**
 	 * 	Get Attribute Name.
 	 * 	If not set - retrieve it
@@ -103,9 +87,9 @@ public class MWFNodePara extends X_AD_WF_Node_Para
 	public String getAttributeName ()
 	{
 		String an = super.getAttributeName ();
-		if (an == null || an.length() == 0 && getAD_Process_Para_ID() != 0)
+		if (an == null || an.length() == 0 && getAD_Process_Para_ID() > 0)
 		{
-			an = getProcessPara().getColumnName();
+			an = getAD_Process_Para().getColumnName();
 			setAttributeName(an);
 			save();
 		}
@@ -118,7 +102,7 @@ public class MWFNodePara extends X_AD_WF_Node_Para
 	 */
 	public int getDisplayType()
 	{
-		return getProcessPara().getAD_Reference_ID();
+		return getAD_Process_Para().getAD_Reference_ID();
 	}	//	getDisplayType
 
 	/**
@@ -127,7 +111,7 @@ public class MWFNodePara extends X_AD_WF_Node_Para
 	 */
 	public boolean isMandatory()
 	{
-		return getProcessPara().isMandatory();
+		return getAD_Process_Para().isMandatory();
 	}	//	isMandatory
 	
 	/**

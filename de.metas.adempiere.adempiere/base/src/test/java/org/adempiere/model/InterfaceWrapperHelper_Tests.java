@@ -11,8 +11,11 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_Test;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import mockit.Expectations;
 
 /*
  * #%L
@@ -37,7 +40,6 @@ import org.junit.Test;
  */
 
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 
 public class InterfaceWrapperHelper_Tests
 {
@@ -72,6 +74,15 @@ public class InterfaceWrapperHelper_Tests
 	{
 	}
 
+	public static interface ITaxAware
+	{
+		public String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+		public int getC_Tax_ID();
+
+		public void setC_Tax_ID(final int taxId);
+	}
+
 	private PlainContextAware contextProvider;
 	/** Mocked {@link GridTab}, used by some tests */
 	@Mocked
@@ -84,7 +95,7 @@ public class InterfaceWrapperHelper_Tests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		contextProvider = new PlainContextAware(Env.getCtx());
+		contextProvider = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 	}
 
 	/**
@@ -164,11 +175,14 @@ public class InterfaceWrapperHelper_Tests
 	public void test_wrapToOldValues_GridTabWrapper()
 	{
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 			gridTab.getTableName();
+			minTimes = 0;
 			result = I_TestModel.Table_Name;
+			
 			gridTab.get_TableName();
+			minTimes = 0;
 			result = I_TestModel.Table_Name;
 		}};
 		// @formatter:on
@@ -181,9 +195,10 @@ public class InterfaceWrapperHelper_Tests
 	public void test_wrapToOldValues_POWrapper()
 	{
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 			po.get_TableName();
+			minTimes = 0;
 			result = I_TestModel.Table_Name;
 		}};
 		// @formatter:on
@@ -238,5 +253,38 @@ public class InterfaceWrapperHelper_Tests
 
 		final ITableRecordReference testModelRef = TableRecordReference.of(testModel);
 		assertThat(InterfaceWrapperHelper.getId(testModelRef), is(testModelRef.getRecord_ID()));
+	}
+
+	@Test
+	public void test_getTableName_withModelClassTableName_withExpectedTableName()
+	{
+		String tableName = InterfaceWrapperHelper.getTableName(I_TestModel.class, I_TestModel.Table_Name);
+		Assert.assertEquals(I_TestModel.Table_Name, tableName);
+	}
+
+	@Test
+	public void test_getTableName_withModelClassTableName_withNullExpectedTableName()
+	{
+		String tableName = InterfaceWrapperHelper.getTableName(I_TestModel.class, null);
+		Assert.assertEquals(I_TestModel.Table_Name, tableName);
+	}
+
+	@Test(expected = InterfaceWrapperHelper.MissingTableNameException.class)
+	public void test_getTableName_withModelClassTableName_withWrongExpectedTableName()
+	{
+		InterfaceWrapperHelper.getTableName(I_TestModel.class, "WrongTableName");
+	}
+
+	@Test
+	public void test_getTableName_withNonModelClass_withExpectedTableName()
+	{
+		String tableName = InterfaceWrapperHelper.getTableName(ITaxAware.class, "expectedTableName");
+		Assert.assertEquals("expectedTableName", tableName);
+	}
+
+	@Test(expected = InterfaceWrapperHelper.MissingTableNameException.class)
+	public void test_getTableName_withNonModelClass_withNullExpectedTableName()
+	{
+		InterfaceWrapperHelper.getTableName(ITaxAware.class, null);
 	}
 }

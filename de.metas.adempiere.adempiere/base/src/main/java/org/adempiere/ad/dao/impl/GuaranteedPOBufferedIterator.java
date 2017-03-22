@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,8 +26,6 @@ package org.adempiere.ad.dao.impl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.exceptions.DBException;
@@ -35,9 +33,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
+
+import de.metas.logging.LogManager;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
@@ -166,14 +167,15 @@ import com.google.common.collect.PeekingIterator;
 				+ "\n LEFT OUTER JOIN " + tableName + " ON (" + keyColumnNameFQ + "=s.ZZ_Record_ID)";
 		final String selectionWhereClause = "s.ZZ_UUID=?";
 		final String selectionOrderBy = "s.ZZ_Line";
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<ET>(query.getCtx(), clazzToUse, selectionWhereClause, trxName)
+		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<ET>(query.getCtx(), clazzToUse, tableName, selectionWhereClause, trxName)
 				.setParameters(querySelectionUUID)
 				.setSqlFrom(selectionSqlFrom)
 				.setOrderBy(selectionOrderBy);
 
 		//
 		// Create the buffered iterator which will retrieve from selection, page by page
-		this.bufferedIterator = new POBufferedIterator<ET, ET>(querySelection, clazzToUse);
+		// provide column ZZ_Line so the iterator can page without using OFFSET
+		this.bufferedIterator = new POBufferedIterator<>(querySelection, clazzToUse, "ZZ_Line");
 		this.peekingBufferedIterator = Iterators.peekingIterator(this.bufferedIterator);
 	}
 

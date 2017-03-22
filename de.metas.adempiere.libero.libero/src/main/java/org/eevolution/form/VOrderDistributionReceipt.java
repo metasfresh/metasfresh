@@ -77,6 +77,7 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.print.MPrintFormat;
@@ -555,7 +556,7 @@ public class VOrderDistributionReceipt extends CPanel
 
 					 MPrintFormat format = MPrintFormat.get(Env.getCtx(), MPrintFormat.getPrintFormat_ID("Inventory Move Hdr (Example)", MMovement.Table_ID,  0), false);
 					 MQuery query = new MQuery(MMovement.Table_Name);
-					 query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, MQuery.EQUAL, movement.getM_Movement_ID());
+					 query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, Operator.EQUAL, movement.getM_Movement_ID());
 		                                
 					//	Engine
 		             PrintInfo info = new PrintInfo(MMovement.Table_Name,MMovement.Table_ID, movement.getM_Movement_ID());               

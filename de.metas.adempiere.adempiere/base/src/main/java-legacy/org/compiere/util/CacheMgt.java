@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -123,7 +123,7 @@ public final class CacheMgt
 		final Boolean registerWeak = null; // auto
 		return register(instance, registerWeak);
 	}
-	
+
 	private boolean register(final CacheInterface instance, final Boolean registerWeak)
 	{
 		if (instance == null)
@@ -131,29 +131,33 @@ public final class CacheMgt
 			return false;
 		}
 
+		//
+		// Extract cache instance's tableName (if any)
+		final String tableName = getTableNameOrNull(instance);
+
+		//
+		// Determine if we shall register the cache instance weakly or not.
+		final boolean registerWeakEffective;
+		if (tableName != null)
+		{
+			registerWeakEffective = registerWeak == null ? true : registerWeak;
+		}
+		else
+		{
+			// NOTE: if the cache is not providing an TableName, we register them with a hard-reference because probably is a cache listener
+			registerWeakEffective = registerWeak == null ? false : registerWeak;
+		}
+
 		cacheInstancesLock.lock();
 		try
 		{
-			final String tableName = getTableNameOrNull(instance);
-			final boolean registerWeakEffective;
 			if (tableName != null)
 			{
 				//
-				// Add to TableName count
-				AtomicInteger count = tableNames.get(tableName);
-				if (count == null)
-				{
-					count = new AtomicInteger(0);
-					tableNames.put(tableName, count);
-				}
-				count.incrementAndGet();
-
-				registerWeakEffective = registerWeak == null ? true : registerWeak;
-			}
-			else
-			{
-				// NOTE: if the cache is not providing an TableName, we register them with a hard-reference because probably is a cache listener
-				registerWeakEffective = registerWeak == null ? false : registerWeak;
+				// Increment tableName counter
+				tableNames
+						.computeIfAbsent(tableName, k -> new AtomicInteger(0))
+						.incrementAndGet();
 			}
 
 			return cacheInstances.add(instance, registerWeakEffective);
@@ -388,16 +392,40 @@ public final class CacheMgt
 					{
 						// nothing to reset
 					}
-					else if (cacheInstance instanceof ITableAwareCacheInterface)
+					else if (cacheInstance instanceof CCache)
 					{
+						// NOTE: CCache requires all reset events, even if they were not it's table.
+						// inside checks if table matches OR if it's cache name starts with given table name.
+						// A total fucked up, not performant.
+						// FIXME at least we shall use ConcurrentSkipListMap and prepare the steps to switch to some well known cache frameworks.
 						final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
 						final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 						if (itemsRemoved > 0)
 						{
-							log.debug("Rest cache instance: {}", cacheInstance);
+							log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
 							total += itemsRemoved;
 							counter++;
 						}
+					}
+					else if (cacheInstance instanceof ITableAwareCacheInterface)
+					{
+						if (tableName.equals(((ITableAwareCacheInterface)cacheInstance).getTableName()))
+						{
+							final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
+							final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
+							if (itemsRemoved > 0)
+							{
+								log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+								total += itemsRemoved;
+								counter++;
+							}
+						}
+					}
+					else
+					{
+						// NOTE: for other cache implementations we shall skip reseting by tableName/key because they don't support it.
+						// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService() 
+						log.debug("Unknown cache instance to reset: {}", cacheInstance);
 					}
 				}
 			}
@@ -523,7 +551,7 @@ public final class CacheMgt
 			return 0;
 		}
 	}
-	
+
 	/**
 	 * Adds an listener which will be fired when the cache for given table is about to be reset.
 	 * 
@@ -549,7 +577,7 @@ public final class CacheMgt
 			Check.assumeNotNull(listener, "listener not null");
 			this.listener = listener;
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -558,7 +586,7 @@ public final class CacheMgt
 					.add("listener", listener)
 					.toString();
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -567,7 +595,7 @@ public final class CacheMgt
 					.append(listener)
 					.toHashcode();
 		}
-		
+
 		@Override
 		public boolean equals(Object obj)
 		{
@@ -806,7 +834,7 @@ public final class CacheMgt
 			}
 			final TableRecordReference record = new TableRecordReference(tableName, recordId);
 			records.add(record);
-			
+
 			log.debug("Scheduled cache invalidation on transaction commit: {}", record);
 		}
 

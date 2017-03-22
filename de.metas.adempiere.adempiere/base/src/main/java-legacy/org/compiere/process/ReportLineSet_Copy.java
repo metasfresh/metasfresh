@@ -21,13 +21,16 @@ import org.compiere.report.MReportLine;
 import org.compiere.report.MReportLineSet;
 import org.compiere.report.MReportSource;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Copy Line Set at the end of the Line Set
  *
  *  @author Jorg Janke
  *  @version $Id: ReportLineSet_Copy.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ReportLineSet_Copy extends SvrProcess
+public class ReportLineSet_Copy extends JavaProcess
 {
 	/**
 	 * 	Constructor
@@ -45,7 +48,7 @@ public class ReportLineSet_Copy extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -31,7 +31,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Copy Single Layout settings (one row layout) to grid layout.
@@ -41,7 +42,7 @@ import org.compiere.process.SvrProcess;
  * @author tsa
  *
  */
-public class AD_Tab_SetGridLayoutFromSingleLayout extends SvrProcess
+public class AD_Tab_SetGridLayoutFromSingleLayout extends JavaProcess
 {
 
 	private int p_AD_Tab_ID = -1;

@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for M_RMALine
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_M_RMALine 
 {
 
@@ -31,252 +12,481 @@ public interface I_M_RMALine
     public static final String Table_Name = "M_RMALine";
 
     /** AD_Table_ID=660 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
+
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_Client>(I_M_RMALine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
 
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_Org>(I_M_RMALine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Betrag.
+	 * Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAmt (java.math.BigDecimal Amt);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Betrag.
+	 * Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAmt();
 
+    /** Column definition for Amt */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Amt = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Amt", null);
     /** Column name Amt */
     public static final String COLUMNNAME_Amt = "Amt";
 
-	/** Set Amount.
-	  * Amount
-	  */
-	public void setAmt (BigDecimal Amt);
+	/**
+	 * Set Kosten.
+	 * Additional document charges
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Charge_ID (int C_Charge_ID);
 
-	/** Get Amount.
-	  * Amount
-	  */
-	public BigDecimal getAmt();
+	/**
+	 * Get Kosten.
+	 * Additional document charges
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Charge_ID();
 
+	public org.compiere.model.I_C_Charge getC_Charge();
+
+	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
+
+    /** Column definition for C_Charge_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_C_Charge>(I_M_RMALine.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
-	/** Set Charge.
-	  * Additional document charges
-	  */
-	public void setC_Charge_ID (int C_Charge_ID);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get Charge.
-	  * Additional document charges
-	  */
-	public int getC_Charge_ID();
-
-	public I_C_Charge getC_Charge() throws RuntimeException;
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_User>(I_M_RMALine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
 
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
 
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Zeile Nr..
+	 * Unique line for this document
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLine (int Line);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Zeile Nr..
+	 * Unique line for this document
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLine();
 
+    /** Column definition for Line */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Line", null);
     /** Column name Line */
     public static final String COLUMNNAME_Line = "Line";
 
-	/** Set Line No.
-	  * Unique line for this document
-	  */
-	public void setLine (int Line);
+	/**
+	 * Set Zeilennetto.
+	 * Line Extended Amount (Quantity * Actual Price) without Freight and Charges
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
-	/** Get Line No.
-	  * Unique line for this document
-	  */
-	public int getLine();
+	/**
+	 * Get Zeilennetto.
+	 * Line Extended Amount (Quantity * Actual Price) without Freight and Charges
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getLineNetAmt();
 
+    /** Column definition for LineNetAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_LineNetAmt = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "LineNetAmt", null);
     /** Column name LineNetAmt */
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
-	/** Set Line Amount.
-	  * Line Extended Amount (Quantity * Actual Price) without Freight and Charges
-	  */
-	public void setLineNetAmt (BigDecimal LineNetAmt);
+	/**
+	 * Set Versand-/Wareneingangsposition.
+	 * Line on Shipment or Receipt document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
-	/** Get Line Amount.
-	  * Line Extended Amount (Quantity * Actual Price) without Freight and Charges
-	  */
-	public BigDecimal getLineNetAmt();
+	/**
+	 * Get Versand-/Wareneingangsposition.
+	 * Line on Shipment or Receipt document
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_InOutLine_ID();
 
+	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+
+    /** Column definition for M_InOutLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_M_InOutLine>(I_M_RMALine.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
     /** Column name M_InOutLine_ID */
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
-	/** Set Shipment/Receipt Line.
-	  * Line on Shipment or Receipt document
-	  */
-	public void setM_InOutLine_ID (int M_InOutLine_ID);
+	/**
+	 * Set Warenrücksendung - Freigabe (RMA).
+	 * Return Material Authorization
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_RMA_ID (int M_RMA_ID);
 
-	/** Get Shipment/Receipt Line.
-	  * Line on Shipment or Receipt document
-	  */
-	public int getM_InOutLine_ID();
+	/**
+	 * Get Warenrücksendung - Freigabe (RMA).
+	 * Return Material Authorization
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_RMA_ID();
 
-	public I_M_InOutLine getM_InOutLine() throws RuntimeException;
+	public org.compiere.model.I_M_RMA getM_RMA();
 
+	public void setM_RMA(org.compiere.model.I_M_RMA M_RMA);
+
+    /** Column definition for M_RMA_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_M_RMA> COLUMN_M_RMA_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_M_RMA>(I_M_RMALine.class, "M_RMA_ID", org.compiere.model.I_M_RMA.class);
     /** Column name M_RMA_ID */
     public static final String COLUMNNAME_M_RMA_ID = "M_RMA_ID";
 
-	/** Set RMA.
-	  * Return Material Authorization
-	  */
-	public void setM_RMA_ID (int M_RMA_ID);
+	/**
+	 * Set RMA-Position.
+	 * Return Material Authorization Line
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_RMALine_ID (int M_RMALine_ID);
 
-	/** Get RMA.
-	  * Return Material Authorization
-	  */
-	public int getM_RMA_ID();
+	/**
+	 * Get RMA-Position.
+	 * Return Material Authorization Line
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_RMALine_ID();
 
-	public I_M_RMA getM_RMA() throws RuntimeException;
-
+    /** Column definition for M_RMALine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_M_RMALine_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "M_RMALine_ID", null);
     /** Column name M_RMALine_ID */
     public static final String COLUMNNAME_M_RMALine_ID = "M_RMALine_ID";
 
-	/** Set RMA Line.
-	  * Return Material Authorization Line
-	  */
-	public void setM_RMALine_ID (int M_RMALine_ID);
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessed (boolean Processed);
 
-	/** Get RMA Line.
-	  * Return Material Authorization Line
-	  */
-	public int getM_RMALine_ID();
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessed();
 
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set Processed.
-	  * The document has been processed
-	  */
-	public void setProcessed (boolean Processed);
+	/**
+	 * Set Menge.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQty (java.math.BigDecimal Qty);
 
-	/** Get Processed.
-	  * The document has been processed
-	  */
-	public boolean isProcessed();
+	/**
+	 * Get Menge.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQty();
 
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
 
-	/** Set Quantity.
-	  * Quantity
-	  */
-	public void setQty (BigDecimal Qty);
+	/**
+	 * Set Gelieferte Menge.
+	 * Delivered Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
 
-	/** Get Quantity.
-	  * Quantity
-	  */
-	public BigDecimal getQty();
+	/**
+	 * Get Gelieferte Menge.
+	 * Delivered Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDelivered();
 
+    /** Column definition for QtyDelivered */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "QtyDelivered", null);
     /** Column name QtyDelivered */
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
-	/** Set Delivered Quantity.
-	  * Delivered Quantity
-	  */
-	public void setQtyDelivered (BigDecimal QtyDelivered);
+	/**
+	 * Set Berechn. Menge.
+	 * Menge, die bereits in Rechnung gestellt wurde
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced);
 
-	/** Get Delivered Quantity.
-	  * Delivered Quantity
-	  */
-	public BigDecimal getQtyDelivered();
+	/**
+	 * Get Berechn. Menge.
+	 * Menge, die bereits in Rechnung gestellt wurde
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoiced();
 
+    /** Column definition for QtyInvoiced */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "QtyInvoiced", null);
     /** Column name QtyInvoiced */
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
-	/** Set Quantity Invoiced.
-	  * Invoiced Quantity
-	  */
-	public void setQtyInvoiced (BigDecimal QtyInvoiced);
+	/**
+	 * Set Referenced RMA Line.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRef_RMALine_ID (int Ref_RMALine_ID);
 
-	/** Get Quantity Invoiced.
-	  * Invoiced Quantity
-	  */
-	public BigDecimal getQtyInvoiced();
+	/**
+	 * Get Referenced RMA Line.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRef_RMALine_ID();
 
+	public org.compiere.model.I_M_RMALine getRef_RMALine();
+
+	public void setRef_RMALine(org.compiere.model.I_M_RMALine Ref_RMALine);
+
+    /** Column definition for Ref_RMALine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_M_RMALine> COLUMN_Ref_RMALine_ID = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_M_RMALine>(I_M_RMALine.class, "Ref_RMALine_ID", org.compiere.model.I_M_RMALine.class);
     /** Column name Ref_RMALine_ID */
     public static final String COLUMNNAME_Ref_RMALine_ID = "Ref_RMALine_ID";
 
-	/** Set Referenced RMA Line	  */
-	public void setRef_RMALine_ID (int Ref_RMALine_ID);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get Referenced RMA Line	  */
-	public int getRef_RMALine_ID();
-
-	public I_M_RMALine getRef_RMALine() throws RuntimeException;
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_RMALine, Object>(I_M_RMALine.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_RMALine, org.compiere.model.I_AD_User>(I_M_RMALine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
 }

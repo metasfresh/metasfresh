@@ -1,30 +1,7 @@
 package de.metas.device.api;
 
-/*
- * #%L
- * de.metas.device.api
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.metas.device.api.request.DeviceRequestConfigureDevice;
 import de.metas.device.api.request.DeviceRequestGetConfigParams;
@@ -38,24 +15,16 @@ public abstract class AbstractBaseDevice implements IDevice
 	 */
 	public AbstractBaseDevice()
 	{
-		// registering the the handler that returns out requered config info
-		final IDeviceRequestHandler<DeviceRequestGetConfigParams, IDeviceResponseGetConfigParams> handler = new IDeviceRequestHandler<DeviceRequestGetConfigParams, IDeviceResponseGetConfigParams>()
-		{
-			@Override
-			public IDeviceResponseGetConfigParams handleRequest(DeviceRequestGetConfigParams request)
-			{
-				return getRequiredConfigParams();
-			}
-		};
-		registerHandler(DeviceRequestGetConfigParams.class, handler);
+		// registering the the handler that returns out required configuration info
+		registerHandler(DeviceRequestGetConfigParams.class, request -> getRequiredConfigParams());
 		
 		registerHandler(DeviceRequestConfigureDevice.class, getConfigureDeviceHandler());
 	}
 
 	@SuppressWarnings("rawtypes")
-	private final Map<Class<?>, IDeviceRequestHandler> requestType2Handler = new HashMap<Class<?>, IDeviceRequestHandler>();
+	private final Map<Class<?>, IDeviceRequestHandler> requestType2Handler = new ConcurrentHashMap<>();
 
-	public <O extends IDeviceResponse, I extends IDeviceRequest<O>, H extends IDeviceRequestHandler<I, O>> void registerHandler(final Class<I> requestType, final H handler)
+	protected <O extends IDeviceResponse, I extends IDeviceRequest<O>, H extends IDeviceRequestHandler<I, O>> void registerHandler(final Class<I> requestType, final H handler)
 	{
 		requestType2Handler.put(requestType, handler);
 	}

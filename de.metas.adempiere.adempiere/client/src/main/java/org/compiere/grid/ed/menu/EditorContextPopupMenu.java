@@ -141,7 +141,23 @@ public class EditorContextPopupMenu extends JPopupMenu
 		{
 			logger.warn("Cannot bind on " + editor + " because Component can't be identified.");
 		}
+	}
+	
+	private int getWindowNo()
+	{
+		//
+		// Get WindowNo from editor
+		final VEditor editor = menuCtx.getEditor();
+		if(editor != null)
+		{
+			if(editor instanceof java.awt.Component)
+			{
+				return Env.getWindowNo((java.awt.Component)editor);
+			}
+		}
 
+		// Fallback
+		return Env.WINDOW_MAIN;
 	}
 
 	/** Called when {@link VEditor#getField()} was set */
@@ -398,7 +414,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		}
 		catch (Exception e)
 		{
-			final int windowNo = Env.getWindowNo(item);
+			final int windowNo = getWindowNo();
 			Services.get(IClientUI.class).error(windowNo, e);
 		}
 		finally

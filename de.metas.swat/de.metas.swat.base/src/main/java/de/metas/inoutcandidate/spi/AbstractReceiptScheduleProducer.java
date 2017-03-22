@@ -47,4 +47,9 @@ public abstract class AbstractReceiptScheduleProducer implements IReceiptSchedul
 	{
 		return factory;
 	}
+	
+	protected final IReceiptScheduleWarehouseDestProvider getWarehouseDestProvider()
+	{
+		return getReceiptScheduleProducerFactory().getWarehouseDestProvider();
+	}
 }

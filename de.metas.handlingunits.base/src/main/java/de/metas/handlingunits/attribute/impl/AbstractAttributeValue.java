@@ -25,34 +25,39 @@ package de.metas.handlingunits.attribute.impl;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.StaticAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IAttributeValueListener;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.logging.LogManager;
 
 /**
  * Generic {@link IAttributeValue} value implementation
@@ -88,7 +93,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		Check.assumeNotNull(attribute, "attribute not null");
 		this.attribute = InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
 
-		_attributeValuesProvider = retrieveAttributeValuesProvider(this.attribute);
+		_attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(this.attribute);
 		if (_attributeValuesProvider != null)
 		{
 			valueType = _attributeValuesProvider.getAttributeValueType();
@@ -99,6 +104,20 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			valueType = attribute.getAttributeValueType();
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		final I_M_Attribute attribute = getM_Attribute();
+		final String name = attribute == null ? "?" : attribute.getName();
+		final Object value = getValue();
+		
+		return MoreObjects.toStringHelper(this)
+				.add("name", name)
+				.add("value", value)
+				.add("type", valueType)
+				.toString();
 	}
 
 	public final IAttributeStorage getAttributeStorage()
@@ -111,56 +130,14 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		return getAttributeStorage().getHUAttributeStorageFactory().getHUAttributesDAO();
 	}
 
-	protected final IAttributeValuesProvider getAttributeValuesProvider()
+	@Override
+	public final IAttributeValuesProvider getAttributeValuesProvider()
 	{
 		if (_attributeValuesProvider == null)
 		{
 			throw new InvalidAttributeValueException("No AttributeValueProvider was found");
 		}
 		return _attributeValuesProvider;
-	}
-
-	/**
-	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
-	 *
-	 * @param attribute
-	 * @return {@link IAttributeValuesProvider} or null
-	 */
-	private final IAttributeValuesProvider retrieveAttributeValuesProvider(final I_M_Attribute attribute)
-	{
-		final IAttributeValueGenerator attributeHandler = getAttributeValueGeneratorOrNull();
-
-		//
-		// First try: check if attributeHandler is implementing IAttributeValuesProvider and return it if that's the case
-		if (attributeHandler instanceof IAttributeValuesProvider)
-		{
-			return (IAttributeValuesProvider)attributeHandler;
-		}
-		//
-		// Second try: check if our attribute is of type list, in which case we are dealing with standard M_AttributeValues
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
-		{
-			return new StaticAttributeValuesProvider();
-		}
-		//
-		// Fallback: there is no IAttributeValuesProvider because attribute does not support Lists
-		else
-		{
-			return null;
-		}
-	}
-
-	@Override
-	public String toString()
-	{
-		final I_M_Attribute attribute = getM_Attribute();
-		final String name = attribute == null ? "?" : attribute.getName();
-		final Object value = getValue();
-
-		return getClass().getSimpleName() + "["
-				+ name + "=" + value
-				+ ", type=" + valueType
-				+ "]";
 	}
 
 	//@formatter:off
@@ -241,7 +218,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		//
 		// If nothing changed, then it's pointless to set the value and notify the listeners
 		// NOTE: also this is converting the case when setting a NULL value, attribute is mandatory, but also value is also NULL... so it's pointless to throw an exception
-		if (Check.equals(valueOld, valueNew))
+		if (Objects.equals(valueOld, valueNew))
 		{
 			return;
 		}
@@ -317,7 +294,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		//
 		// If nothing changed, then it's pointless to set the value and notify the listeners
-		if (Check.equals(valueOld, valueNew))
+		if (Objects.equals(valueOld, valueNew))
 		{
 			return;
 		}
@@ -471,7 +448,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			// If our list provider accepts any values
 			// Then don't validate it, just return the given value converted to number
 			final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
-			if (attributeValuesProvider.isAllowAnyValue(getAttributeStorage(), getM_Attribute()))
+			if (attributeValuesProvider.isAllowAnyValue())
 			{
 				return toNumber(value);
 			}
@@ -527,6 +504,22 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			final int key = ((KeyNamePair)value).getKey();
 			return BigDecimal.valueOf(key);
 		}
+		else if (value instanceof Map)
+		{
+			// Usually this happens when a JSON deserialized value is passed.
+			// In this case we consider the Map has one entry: key=value.
+			@SuppressWarnings("unchecked")
+			final Map<String, String> keyNamePairAsMap = (Map<String, String>)value;
+			final String key = extractKey(keyNamePairAsMap, attribute);
+			try
+			{
+				valueBD = new BigDecimal(key);
+			}
+			catch (final Exception e)
+			{
+				throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + BigDecimal.class, e);
+			}
+		}
 		else
 		{
 			throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + BigDecimal.class);
@@ -549,7 +542,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			// If our list provider accepts any values
 			// Then don't validate it, just return the given value converted to string
 			final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
-			if (attributeValuesProvider.isAllowAnyValue(getAttributeStorage(), getM_Attribute()))
+			if (attributeValuesProvider.isAllowAnyValue())
 			{
 				return value.toString();
 			}
@@ -572,10 +565,10 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	{
 		Check.assumeNotNull(value, "value not null");
 
-		final String valueStr;
+		final Object valueNormalized;
 		if (value instanceof NamePair)
 		{
-			valueStr = ((NamePair)value).getID();
+			valueNormalized = ((NamePair)value).getID();
 		}
 		else if (value instanceof Number)
 		{
@@ -587,29 +580,57 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			{
 				return null;
 			}
-			valueStr = String.valueOf(valueInt);
+			valueNormalized = String.valueOf(valueInt);
+		}
+		else if (value instanceof Map)
+		{
+			// Usually this happens when a JSON deserialized value is passed.
+			// In this case we consider the Map has one entry: key=value.
+			@SuppressWarnings("unchecked")
+			final Map<String, String> keyNamePairAsMap = (Map<String, String>)value;
+			valueNormalized = extractKey(keyNamePairAsMap, attribute);
 		}
 		else
 		{
-			valueStr = value.toString();
+			valueNormalized = value;
 		}
 
 		final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
-		final NamePair attributeValue = attributeValuesProvider.getAttributeValueOrNull(getAttributeStorage(), attribute, valueStr);
+		final Evaluatee evalCtx = attributeValuesProvider.prepareContext(getAttributeStorage());
+		final NamePair attributeValue = attributeValuesProvider.getAttributeValueOrNull(evalCtx, valueNormalized);
 		if (attributeValue != null)
 		{
 			return attributeValue;
 		}
 
-		throw new InvalidAttributeValueException("Invalid list value '" + value + "' for " + attribute + "."
-				+ " Available values are: " + getAvailableValues());
+		throw new InvalidAttributeValueException("Invalid list value '" + value + "' (" + value.getClass() + ") for " + attribute + "."
+				+ " Available values are: " + getAvailableValues()
+				+ "\n Normalized value: " + valueNormalized);
+	}
+	
+	private static final String extractKey(final Map<String, String> keyNamePairAsMap, final I_M_Attribute attribute)
+	{
+		if(keyNamePairAsMap == null)
+		{
+			return null;
+		}
+		final Set<Map.Entry<String, String>> entrySet = keyNamePairAsMap.entrySet();
+		if (entrySet.size() != 1)
+		{
+			throw new InvalidAttributeValueException("Invalid list value '" + keyNamePairAsMap + "' (" + keyNamePairAsMap.getClass() + ") for " + attribute + ".");
+		}
+		final Map.Entry<String, String> e = entrySet.iterator().next();
+		final String key = e.getKey();
+		return key;
+
 	}
 	
 	@Override
 	public List<? extends NamePair> getAvailableValues()
 	{
 		final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
-		final List<? extends NamePair> availableValues = attributeValuesProvider.getAvailableValues(getAttributeStorage(), attribute);
+		final Evaluatee evalCtx = attributeValuesProvider.prepareContext(getAttributeStorage());
+		final List<? extends NamePair> availableValues = attributeValuesProvider.getAvailableValues(evalCtx);
 		
 		//
 		// Case: we are dealing with a high volume attribute values list and we got not values (i.e. they were not loaded)
@@ -622,7 +643,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			try
 			{
 				final NamePair valueNP = valueToAttributeValue(value);
-				return Collections.singletonList(valueNP);
+				return ImmutableList.of(valueNP);
 			}
 			catch (Exception e)
 			{
@@ -666,7 +687,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	public NamePair getNullAttributeValue()
 	{
 		final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
-		return attributeValuesProvider.getNullValue(attribute);
+		return attributeValuesProvider.getNullValue();
 	}
 
 	@Override
@@ -681,6 +702,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(valueType);
 	}
 	
+	@Override
 	public final boolean isDateValue()
 	{
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(valueType);

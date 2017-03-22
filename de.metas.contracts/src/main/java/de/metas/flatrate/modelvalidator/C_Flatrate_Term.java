@@ -1,5 +1,7 @@
 package de.metas.flatrate.modelvalidator;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.contracts
@@ -13,11 +15,11 @@ package de.metas.flatrate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,11 +45,11 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -140,15 +142,17 @@ public class C_Flatrate_Term
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateAndValidateDates(final I_C_Flatrate_Term term)
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_M_PricingSystem_ID, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
+	})
+	public void validatePricing(final I_C_Flatrate_Term term)
 	{
 		if (X_C_Flatrate_Term.DOCSTATUS_Completed.equals(term.getDocStatus()))
 		{
 			return; // nothing to do
 		}
-
-		final List<String> errors = new ArrayList<String>();
 
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{
@@ -156,44 +160,53 @@ public class C_Flatrate_Term
 			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 			flatrateBL.validatePricing(term);
 		}
+	}
 
-		final PO po = InterfaceWrapperHelper.getPO(term);
-
-		if (po.is_ValueChanged(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
-				|| po.is_ValueChanged(I_C_Flatrate_Term.COLUMNNAME_StartDate)
-				|| po.is_ValueChanged(I_C_Flatrate_Term.COLUMNNAME_EndDate)
-				|| po.is_ValueChanged(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Transition_ID))
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.COLUMNNAME_StartDate, I_C_Flatrate_Term.COLUMNNAME_EndDate, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Transition_ID
+	})
+	public void validatePeriods(final I_C_Flatrate_Term term)
+	{
+		if (term.getStartDate() != null && !term.isProcessed())
 		{
-			if (term.getStartDate() != null)
-			{
-				Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
-			}
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			if (term.getStartDate() != null && term.getEndDate() != null
-					&& !X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
-			{
-				final I_C_Calendar invoicingCal = term.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract();
-				final List<I_C_Period> periodsOfTerm = Services.get(ICalendarDAO.class).retrievePeriods(po.getCtx(), invoicingCal, term.getStartDate(),
-						term.getEndDate(), po.get_TrxName());
+			Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
+		}
 
-				if (periodsOfTerm.isEmpty())
+		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
+		final String trxName = InterfaceWrapperHelper.getTrxName(term);
+
+		final List<String> errors = new ArrayList<String>();
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		if (term.getStartDate() != null
+				&& term.getEndDate() != null
+				&& !X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
+		{
+			final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+
+			final I_C_Calendar invoicingCal = term.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract();
+
+			final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(ctx, invoicingCal, term.getStartDate(), term.getEndDate(), trxName);
+
+			if (periodsOfTerm.isEmpty())
+			{
+				errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
+						new Object[] { term.getStartDate(), term.getEndDate() }));
+			}
+			else
+			{
+				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
 				{
-					errors.add(msgBL.getMsg(po.getCtx(), MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
-							new Object[] { term.getStartDate(), term.getEndDate() }));
+					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
+							new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
-				else
+				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
+				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
 				{
-					if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
-					{
-						errors.add(msgBL.getMsg(po.getCtx(), MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
-								new Object[] { term.getStartDate(), invoicingCal.getName() }));
-					}
-					final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
-					if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
-					{
-						errors.add(msgBL.getMsg(po.getCtx(), MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
-								new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
-					}
+					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
+							new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
 				}
 			}
 		}
@@ -235,9 +248,9 @@ public class C_Flatrate_Term
 
 		final List<I_C_Flatrate_Term> predecessorTerms =
 				new Query(ctx, I_C_Flatrate_Term.Table_Name, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID + "=?", trxName)
-						.setParameters(term.getC_Flatrate_Term_ID())
-						.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
-						.list(I_C_Flatrate_Term.class);
+				.setParameters(term.getC_Flatrate_Term_ID())
+				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.list(I_C_Flatrate_Term.class);
 
 		Check.assume(predecessorTerms.size() <= 1, term + " has max 1 predecessor");
 		for (final I_C_Flatrate_Term predecessor : predecessorTerms)
@@ -286,7 +299,11 @@ public class C_Flatrate_Term
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_EndDate
+	})
 	public void checkEndDateNotNull(final I_C_Flatrate_Term term)
 	{
 		if (term.getEndDate() == null)
@@ -330,7 +347,7 @@ public class C_Flatrate_Term
 	public void beforeComplete(final I_C_Flatrate_Term term)
 	{
 		// TODO: refactor it to specific IFlatrateHandlers
-		
+
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
@@ -375,7 +392,7 @@ public class C_Flatrate_Term
 	public void afterComplete(final I_C_Flatrate_Term term)
 	{
 		// TODO: refactor it to specific IFlatrateHandlers
-		
+
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
 		{
@@ -396,6 +413,36 @@ public class C_Flatrate_Term
 		{
 			Services.get(IFlatrateBL.class).createDataEntriesForTerm(term);
 		}
+	}
+
+	/**
+	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
+	 *
+	 * @param term
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/549
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void updatePredecessorDates(final I_C_Flatrate_Term term)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		queryBL.createQueryBuilder(I_C_Flatrate_Term.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, term.getC_Flatrate_Term_ID())
+				.create().list() // note that there should be just one predecessor, but here we don't really need to care about this question
+				.stream()
+				.forEach(predecessorTerm -> {
+
+					final Timestamp newEndDate = TimeUtil.addDays(term.getStartDate(), -1);
+					predecessorTerm.setEndDate(newEndDate);
+					if (newEndDate.before(predecessorTerm.getNoticeDate()))
+					{
+						predecessorTerm.setNoticeDate(newEndDate);
+					}
+
+					InterfaceWrapperHelper.save(predecessorTerm);
+				});
 	}
 
 	/**

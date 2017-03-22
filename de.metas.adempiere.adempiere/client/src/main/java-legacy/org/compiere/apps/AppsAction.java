@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -56,7 +56,9 @@ public final class AppsAction extends AbstractAction
 {
 	private static final long serialVersionUID = 8522301377339185496L;
 
-	/** @return Application Action builder */
+	/**
+	 * @return Application Action builder
+	 */
 	public static final Builder builder()
 	{
 		return new Builder();
@@ -69,7 +71,16 @@ public final class AppsAction extends AbstractAction
 		_acceleratorDefault = builder.getAccelerator();
 		toggleButton = builder.isToggleButton();
 
-		final String displayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), _actionCommand);
+		final String displayName;
+		if (builder.isIsRetrieveAppsActionMessage())
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			displayName = msgBL.getMsg(Env.getCtx(), _actionCommand);
+		}
+		else
+		{
+			displayName = _actionCommand;
+		}
 
 		//
 		// Button insets
@@ -93,7 +104,7 @@ public final class AppsAction extends AbstractAction
 				toolTipText = displayName;
 			}
 			final int pos = toolTipText.indexOf('&');
-			if (pos != -1 && toolTipText.length() > pos)	// We have a mnemonic - creates ALT-_
+			if (pos != -1 && toolTipText.length() > pos)     	// We have a mnemonic - creates ALT-_
 			{
 				final Character ch = toolTipText.toUpperCase().charAt(pos + 1);
 				if (ch != ' ')
@@ -293,7 +304,9 @@ public final class AppsAction extends AbstractAction
 		return button;
 	}
 
-	/** @return current created button or null */
+	/**
+	 * @return current created button or null
+	 */
 	private AbstractButton getButtonIfExists()
 	{
 		return _button;
@@ -520,14 +533,18 @@ public final class AppsAction extends AbstractAction
 		private Insets buttonInsets = null;
 		private Boolean buttonDefaultCapable = null;
 
+		/**
+		 * See {@link #setRetrieveAppsActionMsg(boolean)}.
+		 */
+		private boolean retrieveAppsActionMessage = true;
+
 		private Builder()
 		{
-			super();
 		}
 
 		/**
 		 * Build the action.
-		 * 
+		 *
 		 * @return built action.
 		 */
 		public final AppsAction build()
@@ -568,6 +585,24 @@ public final class AppsAction extends AbstractAction
 		{
 			Check.assumeNotEmpty(action, "action not empty");
 			return action;
+		}
+
+		/**
+		 * Shall we invoke {@link IMsgBL} to attempt and get the action's displayed name from the <code>action</code> string?
+		 * Default is <code>true</code>, because that used to be the hardcoded behavior.
+		 *
+		 * @param retrieveAppsActionMessage
+		 * @return
+		 */
+		public Builder setRetrieveAppsActionMsg(final boolean retrieveAppsActionMessage)
+		{
+			this.retrieveAppsActionMessage = retrieveAppsActionMessage;
+			return this;
+		}
+
+		private boolean isIsRetrieveAppsActionMessage()
+		{
+			return retrieveAppsActionMessage;
 		}
 
 		public Builder setAccelerator(final KeyStroke accelerator)
@@ -652,7 +687,7 @@ public final class AppsAction extends AbstractAction
 
 		/**
 		 * Advice the builder if a small size button is needed or not.
-		 * 
+		 *
 		 * @param smallSize true if small size button shall be created
 		 */
 		public Builder setSmallSize(final boolean smallSize)
@@ -685,7 +720,7 @@ public final class AppsAction extends AbstractAction
 
 		/**
 		 * Sets the <code>defaultCapable</code> property, which determines whether the button can be made the default button for its root pane.
-		 * 
+		 *
 		 * @param defaultCapable
 		 * @return
 		 * @see JButton#setDefaultCapable(boolean)

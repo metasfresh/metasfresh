@@ -36,17 +36,18 @@ import org.adempiere.processing.interfaces.IProcessablePO;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MIssue;
-import org.compiere.model.MPInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Issue;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.JavaProcess;
 
 public class ProcessingService implements IProcessingService
 {
@@ -73,7 +74,7 @@ public class ProcessingService implements IProcessingService
 		final int processId;
 		if (e.getAdPInstanceId() != NO_AD_PINSTANCE_ID)
 		{
-			final MPInstance pInstance = new MPInstance(ctx, e.getAdPInstanceId(), trxName);
+			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, e.getAdPInstanceId());
 			processId = pInstance.getAD_Process_ID();
 		}
 		else
@@ -149,7 +150,7 @@ public class ProcessingService implements IProcessingService
 	}
 
 	@Override
-	public void process(final MADProcessablePO processablePOPointer, final SvrProcess parent)
+	public void process(final MADProcessablePO processablePOPointer, final JavaProcess parent)
 	{
 		final int adPInstanceId;
 		if (parent == null)
@@ -158,7 +159,7 @@ public class ProcessingService implements IProcessingService
 		}
 		else
 		{
-			adPInstanceId = parent.getProcessInfo().getAD_PInstance_ID();
+			adPInstanceId = parent.getAD_PInstance_ID();
 		}
 
 		try
@@ -223,7 +224,7 @@ public class ProcessingService implements IProcessingService
 		}
 	}
 
-	private void handleError(final MADProcessablePO processablePOPointer, final SvrProcess parent, final String summary, final ProcessingException pe)
+	private void handleError(final MADProcessablePO processablePOPointer, final JavaProcess parent, final String summary, final ProcessingException pe)
 	{
 		handleProcessingException(
 				processablePOPointer.getCtx(),

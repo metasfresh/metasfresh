@@ -24,7 +24,10 @@ import org.adempiere.ad.migration.executor.IMigrationExecutorContext.MigrationOp
 import org.adempiere.ad.migration.executor.IMigrationExecutorProvider;
 import org.adempiere.util.Services;
 
-public class MigrationApply extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class MigrationApply extends JavaProcess
 {
 	private int p_AD_Migration_ID = -1;
 	
@@ -39,7 +42,7 @@ public class MigrationApply extends SvrProcess
 	{
 		p_AD_Migration_ID = getRecord_ID();
 
-		for (ProcessInfoParameter p : getParameter())
+		for (ProcessInfoParameter p : getParametersAsArray())
 		{
 			final String name = p.getParameterName();
 			if (PARAM_FailOnError.equals(name))

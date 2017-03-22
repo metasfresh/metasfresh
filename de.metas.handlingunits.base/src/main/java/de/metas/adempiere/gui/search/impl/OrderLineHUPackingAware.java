@@ -26,6 +26,7 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -45,6 +46,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
  */
 public class OrderLineHUPackingAware implements IHUPackingAware
 {
+	public static final OrderLineHUPackingAware of(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		return new OrderLineHUPackingAware(InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class));
+	}
+	
 	private final I_C_OrderLine orderLine;
 
 	/**

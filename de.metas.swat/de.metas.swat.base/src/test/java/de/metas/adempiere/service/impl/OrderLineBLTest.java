@@ -35,6 +35,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
@@ -44,7 +45,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Currency;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -103,7 +103,7 @@ public class OrderLineBLTest
 		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.create(ctx, I_C_UOM_Conversion.class, ITrx.TRXNAME_None);
 		conversion.setC_UOM_ID(uom.getC_UOM_ID());
 		conversion.setC_UOM_To_ID(priceUom.getC_UOM_ID());
-		conversion.setMultiplyRate(Env.ONE);
+		conversion.setMultiplyRate(BigDecimal.ONE);
 		InterfaceWrapperHelper.save(conversion);
 
 		final I_M_ProductPrice productprice = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice.class, ITrx.TRXNAME_None);

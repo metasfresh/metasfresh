@@ -1,42 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"  ?>
-<!-- Created with iReport - A designer for JasperReports -->
-<!DOCTYPE jasperReport PUBLIC "//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport
-		 name="report_details_footer"
-		 columnCount="1"
-		 printOrder="Vertical"
-		 orientation="Portrait"
-		 pageWidth="521"
-		 pageHeight="842"
-		 columnWidth="521"
-		 columnSpacing="0"
-		 leftMargin="0"
-		 rightMargin="0"
-		 topMargin="0"
-		 bottomMargin="0"
-		 whenNoDataType="NoPages"
-		 isTitleNewPage="false"
-		 isSummaryNewPage="false"
-		 resourceBundle="de/metas/docs/sales/order/report">
-	<property name="ireport.scriptlethandling" value="0" />
-	<property name="ireport.encoding" value="UTF-8" />
-	<import value="java.util.*" />
-	<import value="net.sf.jasperreports.engine.*" />
-	<import value="net.sf.jasperreports.engine.data.*" />
-
-	<style 
-		name="Test"
-		isDefault="true"
-		isStyledText="true"
-	/>
-
-	<parameter name="dre_id" isForPrompting="true" class="java.lang.Integer">
-		<defaultValueExpression ><![CDATA[$P{dre_id}]]></defaultValueExpression>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-06T16:17:05 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="211ce7c0-5a6a-446e-a1e2-3f2b607dbee5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Test" isDefault="true" markup="styled"/>
+	<parameter name="dre_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[$P{dre_id}]]></defaultValueExpression>
 	</parameter>
-	<parameter name="ad_language" isForPrompting="true" class="java.lang.String">
-		<defaultValueExpression ><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
-	<queryString><![CDATA[SELECT 
+	<queryString>
+		<![CDATA[SELECT 
 	* 
 FROM
 	(
@@ -50,10 +31,10 @@ FROM
 		1			as position
 	FROM 
 		c_dunningrunentry dre
-		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id
-		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id
-		join c_paymentterm p on dl.c_paymentterm_id = p.c_paymentterm_id
-
+		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id AND dr.isActive = 'Y'
+		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id AND dl.isActive = 'Y'
+		join c_paymentterm p on dl.c_paymentterm_id = p.c_paymentterm_id AND p.isActive = 'Y'
+	WHERE dre.isActive = 'Y'
 	UNION
 ---------------------------------------------------------------------------------------------
 	--Zahlungsbedingungen	
@@ -65,10 +46,11 @@ FROM
 		1			as position
 	FROM 
 		c_dunningrunentry dre
-		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id
-		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id
-		join c_paymentterm p on dl.c_paymentterm_id = p.c_paymentterm_id
-		join c_paymentterm_trl pt on dl.c_paymentterm_id = pt.c_paymentterm_id
+		JOIN c_dunningrun dr ON dre.c_dunningrun_id = dr.c_dunningrun_id AND dr.isActive = 'Y'
+		JOIN c_dunninglevel dl ON dr.c_dunninglevel_id = dl.c_dunninglevel_id AND dl.isActive = 'Y'
+		join c_paymentterm p on dl.c_paymentterm_id = p.c_paymentterm_id AND p.isActive = 'Y'
+		join c_paymentterm_trl pt on dl.c_paymentterm_id = pt.c_paymentterm_id AND pt.isActive = 'Y'
+	WHERE dre.isActive = 'Y'
 	)footer
 WHERE 
 	footer.c_dunningrunentry_id = $P{dre_id} 
@@ -76,65 +58,55 @@ WHERE
 	AND text1 <> ''
 ORDER BY
 	position
-;]]></queryString>
-
+;]]>
+	</queryString>
 	<field name="text1" class="java.lang.String"/>
 	<field name="language" class="java.lang.String"/>
 	<field name="c_dunningrunentry_id" class="java.math.BigDecimal"/>
 	<field name="tag" class="java.lang.String"/>
 	<field name="position" class="java.lang.Integer"/>
-
-		<background>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</background>
-		<title>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</title>
-		<pageHeader>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</pageHeader>
-		<columnHeader>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</columnHeader>
-		<detail>
-			<band height="11"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						style="Test"
-						x="0"
-						y="0"
-						width="521"
-						height="11"
-						key="textField-1"
-						isPrintWhenDetailOverflows="true"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font size="8"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[($F{tag}.equals("descr")
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="0" y="0" width="521" height="11" isPrintWhenDetailOverflows="true" uuid="b84af8f3-0c64-494b-abf0-2227986829f4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{tag}.equals("descr")
 	? ($F{text1} + "\n\n\n")
 	: ($F{tag}.equals("cond")
 		? $R{paymentcond} + " " + $F{text1}
 		: $F{text1}
 	)
 )]]></textFieldExpression>
-				</textField>
-			</band>
-		</detail>
-		<columnFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</columnFooter>
-		<pageFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</pageFooter>
-		<summary>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</summary>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
 </jasperReport>

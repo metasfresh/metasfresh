@@ -1,50 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-12-07T15:39:26 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.4641000000000028"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="C_Order_ID" class="java.math.BigDecimal"/>
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT
-	CASE
-		WHEN io.DocNo_hi = io.DocNo_lo THEN io.DocNo_lo
-		ELSE io.DocNo_lo || ' ff.'
-	END AS documentno,
-	io.movementdate,
-	io.BPartnerAddress,
-	bp.value,
-	io.deliverto
-FROM
-	C_Order o
-	INNER JOIN (
-		SELECT
-			ol.C_Order_ID,
-			MAX(io.movementdate) as movementdate,
-			MIN(io.Documentno) as Docno_lo,
-			MAX(io.Documentno) as Docno_hi,
-			first_agg(io.C_BPartner_ID::text ORDER BY io.Documentno)::numeric AS C_BPartner_ID,
-			first_agg(io.BPartnerAddress ORDER BY io.Documentno ) AS BPartnerAddress,
-			first_agg(io.DeliveryToAddress ORDER BY io.Documentno )AS deliverto
-		FROM
-			C_OrderLine ol
-			INNER JOIN M_ReceiptSchedule rs ON rs.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_OrderLine')
-				AND ol.C_OrderLine_ID = rs.RECORD_ID
-			INNER JOIN M_ReceiptSchedule_Alloc rsa ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
-			INNER JOIN M_InOutLine iol ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
-		GROUP BY
-			ol.C_Order_ID
-	) io ON o.C_Order_ID = io.C_Order_ID
-	INNER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
-WHERE
-	o.C_Order_ID = $P{C_Order_ID}
-;]]>
+		<![CDATA[SELECT * FROM 
+de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Description($P{C_Order_ID});]]>
 	</queryString>
 	<field name="documentno" class="java.lang.String"/>
 	<field name="movementdate" class="java.sql.Timestamp"/>
@@ -57,14 +29,14 @@ WHERE
 	<title>
 		<band height="210" splitType="Stretch">
 			<staticText>
-				<reportElement uuid="73aa47b1-e122-4e68-8232-5cc2f9fa942f" key="textField-5" x="349" y="176" width="44" height="12"/>
+				<reportElement key="textField-5" x="349" y="176" width="44" height="12" uuid="73aa47b1-e122-4e68-8232-5cc2f9fa942f"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="bb712730-1ec3-406c-b259-045c9e03f407" key="textField-10" x="156" y="187" width="150" height="12">
+				<reportElement key="textField-10" x="156" y="187" width="150" height="12" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
 					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -79,14 +51,14 @@ WHERE
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="ae312a34-0cb1-4eec-b253-ed05d342c0af" key="textField-6" x="37" y="142" width="120" height="12" forecolor="#000000"/>
+				<reportElement key="textField-6" x="37" y="142" width="120" height="12" forecolor="#000000" uuid="ae312a34-0cb1-4eec-b253-ed05d342c0af"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Hausverzollung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="5f1c30aa-c2a9-4c5a-b8d0-0b94ecb26f2f" key="textField-11" x="37" y="187" width="120" height="12">
+				<reportElement key="textField-11" x="37" y="187" width="120" height="12" uuid="5f1c30aa-c2a9-4c5a-b8d0-0b94ecb26f2f">
 					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
@@ -95,7 +67,7 @@ WHERE
 				<text><![CDATA[Geschäftspartner-Nr.]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba" key="textField-1" x="156" y="176" width="150" height="12" forecolor="#000000"/>
+				<reportElement key="textField-1" x="156" y="176" width="150" height="12" forecolor="#000000" uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -108,7 +80,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd. MMMMM yyyy" isBlankWhenNull="false">
-				<reportElement uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf" key="textField-3" x="393" y="176" width="121" height="12"/>
+				<reportElement key="textField-3" x="393" y="176" width="121" height="12" uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -121,7 +93,7 @@ WHERE
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="307f7342-1f16-46f3-bbb8-cd0537e79b5f" key="textField-6" x="37" y="176" width="120" height="12" forecolor="#000000"/>
+				<reportElement key="textField-6" x="37" y="176" width="120" height="12" forecolor="#000000" uuid="307f7342-1f16-46f3-bbb8-cd0537e79b5f"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -138,14 +110,14 @@ WHERE
 	<detail>
 		<band height="12" splitType="Stretch">
 			<staticText>
-				<reportElement uuid="9eb97175-65f4-4073-8b8a-c1a46ba629cf" key="textField-6" x="37" y="0" width="120" height="12" forecolor="#000000"/>
+				<reportElement key="textField-6" x="37" y="0" width="120" height="12" forecolor="#000000" uuid="9eb97175-65f4-4073-8b8a-c1a46ba629cf"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Lieferant]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="bb712730-1ec3-406c-b259-045c9e03f407" key="textField-10" x="156" y="0" width="150" height="12">
+				<reportElement key="textField-10" x="156" y="0" width="150" height="12" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
 					<printWhenExpression><![CDATA[new Boolean($F{value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -162,7 +134,7 @@ WHERE
 		</band>
 		<band height="12">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="156" y="0" width="150" height="12" forecolor="#000000"/>
+				<reportElement key="textField-1" x="156" y="0" width="150" height="12" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -175,18 +147,18 @@ WHERE
 				<textFieldExpression><![CDATA[$F{deliverto} + "\n"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="35345af8-92cf-46ff-9b62-0494f6593d40" key="textField-6" x="37" y="0" width="120" height="12" forecolor="#000000">
+				<reportElement key="textField-6" x="37" y="0" width="120" height="12" forecolor="#000000" uuid="35345af8-92cf-46ff-9b62-0494f6593d40">
 					<printWhenExpression><![CDATA[new Boolean ($F{deliverto} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Abladeort]]></text>
 			</staticText>
 		</band>
 		<band height="12">
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf" key="textField-3" x="156" y="0" width="150" height="12"/>
+				<reportElement key="textField-3" x="156" y="0" width="150" height="12" uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -199,9 +171,9 @@ WHERE
 				<textFieldExpression><![CDATA[$F{movementdate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="73aa47b1-e122-4e68-8232-5cc2f9fa942f" key="textField-5" x="37" y="0" width="120" height="12"/>
+				<reportElement key="textField-5" x="37" y="0" width="120" height="12" uuid="73aa47b1-e122-4e68-8232-5cc2f9fa942f"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Anlieferung]]></text>
 			</staticText>

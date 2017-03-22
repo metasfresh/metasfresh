@@ -21,24 +21,25 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 
 /**
  *	Movement Material Allocation
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MMovementLineMA.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MMovementLineMA extends X_M_MovementLineMA
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -9056217457105828481L;
 
@@ -82,12 +83,12 @@ public class MMovementLineMA extends X_M_MovementLineMA
 		{
 			pstmt = null;
 		}
-		
+
 		MMovementLineMA[] retValue = new MMovementLineMA[list.size ()];
 		list.toArray (retValue);
 		return retValue;
 	}	//	get
-	
+
 	/**
 	 * 	Delete all Material Allocation for Movement
 	 *	@param M_Movement_ID movement
@@ -101,11 +102,11 @@ public class MMovementLineMA extends X_M_MovementLineMA
 			+ " AND M_Movement_ID=" + M_Movement_ID + ")";
 		return DB.executeUpdate(sql, trxName);
 	}	//	deleteInOutMA
-	
+
 	/**	Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MMovementLineMA.class);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -116,8 +117,6 @@ public class MMovementLineMA extends X_M_MovementLineMA
 		String trxName)
 	{
 		super (ctx, M_MovementLineMA_ID, trxName);
-		if (M_MovementLineMA_ID != 0)
-			throw new IllegalArgumentException("Multi-Key");
 	}	//	MMovementLineMA
 
 	/**
@@ -130,7 +129,7 @@ public class MMovementLineMA extends X_M_MovementLineMA
 	{
 		super (ctx, rs, trxName);
 	}	//	MMovementLineMA
-	
+
 	/**
 	 * 	Parent Constructor
 	 *	@param parent parent
@@ -146,11 +145,12 @@ public class MMovementLineMA extends X_M_MovementLineMA
 		setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 		setMovementQty(MovementQty);
 	}	//	MMovementLineMA
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MMovementLineMA[");

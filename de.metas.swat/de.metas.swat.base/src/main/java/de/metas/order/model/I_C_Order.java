@@ -69,5 +69,11 @@ public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 	public static final String COLUMNNAME_QtyMoved = "QtyMoved";
 	public BigDecimal getQtyMoved();
 	public void setQtyMoved(BigDecimal QtyMoved);
+	
+	// #653
+	public static final String COLUMNNAME_LotNumberDate = "LotNumberDate";
+	public void setLotNumberDate (java.sql.Timestamp LotNumberDate);
+	public java.sql.Timestamp getLotNumberDate();
+
 	// @formatter:on
 }

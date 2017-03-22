@@ -28,19 +28,19 @@ package de.metas.callcenter.process;
 
 import org.compiere.model.Query;
 import org.compiere.model.X_R_Group;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.I_R_Group_Prospect;
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.process.JavaProcess;
 
 /**
  * Call Center - Run Daily Maintenance Tasks
  * @author Teo Sarca, teo.sarca@gmail.com
  *
  */
-public class CallCenterDailyMaintenance extends SvrProcess
+public class CallCenterDailyMaintenance extends JavaProcess
 {
 	@Override
 	protected void prepare()

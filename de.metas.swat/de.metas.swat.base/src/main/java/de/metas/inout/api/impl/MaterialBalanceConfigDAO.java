@@ -58,33 +58,33 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 
 		// product id
 		final I_M_Product product = line.getM_Product();
-		queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null);
 
 		// product category
-		queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_Category_ID, product.getM_Product_Category_ID(), null);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_Category_ID, product.getM_Product_Category_ID(), null);
 
 		// partner
 		final I_C_BPartner partner = inout.getC_BPartner();
-		queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID(), null);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID(), null);
 
 		// partner group
-		queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_C_BP_Group_ID, partner.getC_BP_Group_ID(), null);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_C_BP_Group_ID, partner.getC_BP_Group_ID(), null);
 
 		// warehouse
-		queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Warehouse_ID, inout.getM_Warehouse_ID(), null);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Warehouse_ID, inout.getM_Warehouse_ID(), null);
 
 		// Do not allow a config to be fetched if the vendor/customer flags don't fit the partner's vendor/customer flags
 
 		// only for vendor
 		if (partner.isCustomer())
 		{
-			queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_IsCustomer, true, null);
+			queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_IsCustomer, true, null);
 		}
 
 		// only for customer
 		if (partner.isVendor())
 		{
-			queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_IsVendor, true, null);
+			queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_IsVendor, true, null);
 		}
 
 		// only for flat rate
@@ -105,11 +105,11 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 
 		if (isUseForFlatrate)
 		{
-			queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_IsForFlatrate, true, null);
+			queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_IsForFlatrate, true, null);
 		}
 		else
 		{
-			queryBuilder.addInArrayFilter(I_M_Material_Balance_Config.COLUMNNAME_IsForFlatrate, false, null);
+			queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_IsForFlatrate, false, null);
 		}
 
 		// ORDER BY

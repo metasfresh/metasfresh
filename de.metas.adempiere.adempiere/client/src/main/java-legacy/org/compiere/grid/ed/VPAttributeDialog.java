@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.grid.ed;
 
@@ -20,18 +20,16 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -39,24 +37,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
@@ -68,22 +63,21 @@ import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.PAttributeInstance;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.I_M_Lot;
+import org.compiere.model.I_M_LotCtl;
+import org.compiere.model.I_M_SerNoCtl;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MDocType;
-import org.compiere.model.MLot;
-import org.compiere.model.MLotCtl;
 import org.compiere.model.MQuery;
-import org.compiere.model.MSerNoCtl;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
-import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CEditor;
@@ -91,15 +85,15 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -108,104 +102,94 @@ import de.metas.adempiere.form.IClientUI;
  * @author Jorg Janke
  * @version $Id: VPAttributeDialog.java,v 1.4 2006/07/30 00:51:27 jjanke Exp $
  */
-public class VPAttributeDialog extends CDialog
-		implements ActionListener
+@SuppressWarnings("serial")
+public class VPAttributeDialog extends CDialog implements ActionListener
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1062346984681892620L;
-
 	// services
 	private final transient Logger log = LogManager.getLogger(getClass());
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final transient IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	// private static final String COLUMNNAME_ASILastUpdated = "ASILastUpdated";
 
-	/*****************************************************************************
-	 * Mouse Listener for Popup Menu
-	 */
-	static final class VPAttributeDialog_mouseAdapter extends java.awt.event.MouseAdapter
-	{
-		/**
-		 * Constructor
-		 *
-		 * @param adaptee adaptee
-		 */
-		VPAttributeDialog_mouseAdapter(VPAttributeDialog adaptee)
-		{
-			m_adaptee = adaptee;
-		}	// VPAttributeDialog_mouseAdapter
-
-		private VPAttributeDialog m_adaptee;
-
-		/**
-		 * Mouse Listener
-		 *
-		 * @param e MouseEvent
-		 */
-		@Override
-		public void mouseClicked(MouseEvent e)
-		{
-			// System.out.println("mouseClicked " + e.getID() + " " + e.getSource().getClass().toString());
-			// popup menu
-			if (SwingUtilities.isRightMouseButton(e))
-				m_adaptee.popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
-		}	// mouse Clicked
-
-	}	// VPAttributeDialog_mouseAdapter
-
 	/**
-	 * Product Attribute Instance Dialog
-	 *
-	 * @param frame parent frame
-	 * @param M_AttributeSetInstance_ID Product Attribute Set Instance id
-	 * @param M_Product_ID Product id
-	 * @param C_BPartner_ID b partner
-	 * @param productWindow this is the product window (define Product Instance)
-	 * @param AD_Column_ID column
-	 * @param WindowNo window
+	 * VPAttributeDialog's context.
+	 * NOTE: this is not the parent window No
 	 */
-	public VPAttributeDialog(final Frame frame,
-			final int M_AttributeSetInstance_ID,
-			final int M_Product_ID,
-			final boolean productWindow,
-			final int AD_Column_ID,
-			final IVPAttributeContext attributeContext)
+	private final int m_WindowNo;
+	private final IVPAttributeContext attributeContext;
+	private final MAttributeSet _attributeSet;
+	private final MAttributeSetInstance _asiTemplate;
+	private final List<MAttribute> _availableAttributes;
+	private final boolean _allowSelectExistingASI;
+
+	private MAttributeSetInstance asiEdited = null;
+	private int _locatorId;
+	private final int _productId;
+	private final int _callerColumnId;
+
+	/** Row Counter */
+	private int m_row = 0;
+	/** List of Editors */
+	private Map<Integer, CEditor> attributeId2editor = new HashMap<>();
+	/** Editing attributes */
+	private List<MAttribute> editorAttributes = new ArrayList<>();
+	/** Length of Instance value (40) */
+	private static final int INSTANCE_VALUE_LENGTH = 40;
+
+	private CButton bSelectExistingASI = new CButton(Images.getImageIcon2("PAttribute16"));
+
+	//
+	// Lot
+	private final boolean isLotEnabled;
+	private final VString fieldLotString = new VString("Lot", false, false, true, 20, 20, null, null);
+	private CComboBox<KeyNamePair> fieldLot = null;
+	private final CButton bLot = new CButton(msgBL.getMsg(Env.getCtx(), "New"));
+	// Lot Popup
+	private final JPopupMenu popupMenu = new JPopupMenu();
+	private CMenuItem mZoom;
+	//
+	// SerNo
+	private final boolean isSerNoEnabled;
+	private final VString fieldSerNo = new VString("SerNo", false, false, true, 20, 20, null, null);
+	private final CButton bSerNo = new CButton(msgBL.getMsg(Env.getCtx(), "New"));
+	//
+	// GuaranteeDate
+	private final boolean isGuaranteeDateEnabled;
+	private final VDate fieldGuaranteeDate = new VDate("GuaranteeDate", false, false, true, DisplayType.Date, msgBL.translate(Env.getCtx(), "GuaranteeDate"));
+	//
+	private final CTextField fieldDescription = new CTextField(20);
+	//
+	private final CPanel centerPanel = new CPanel();
+
+	public VPAttributeDialog(final Frame frame, final ASIEditingInfo asiInfo, final IVPAttributeContext attributeContext)
 	{
 		super(frame, Services.get(IMsgBL.class).translate(Env.getCtx(), "M_AttributeSetInstance_ID"), true);
 
-		log.info("M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
-				+ ", M_Product_ID=" + M_Product_ID
-				+ ", IsProductWindow=" + productWindow
-				+ ", Column=" + AD_Column_ID);
-
 		m_WindowNo = Env.createWindowNo(this);
-		// m_M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
-		m_M_Product_ID = M_Product_ID;
-		m_productWindow = productWindow;
-		m_AD_Column_ID = AD_Column_ID;
 		this.attributeContext = attributeContext;
+
+		final I_M_AttributeSet attributeSet = asiInfo.getM_AttributeSet();
+		_attributeSet = LegacyAdapters.convertToPO(attributeSet);
+		_asiTemplate = asiInfo.getM_AttributeSetInstance();
+		_availableAttributes = asiInfo.getAvailableAttributes();
+		_allowSelectExistingASI = asiInfo.isAllowSelectExistingASI();
+
+		_productId = attributeContext.getM_Product_ID();
+		_callerColumnId = asiInfo.getCallerColumnId();
+
+		this.isLotEnabled = asiInfo.isLotEnabled();
+		this.isSerNoEnabled = asiInfo.isSerNoEnabled();
+		this.isGuaranteeDateEnabled = asiInfo.isGuaranteeDateEnabled();
 
 		//
 		// Initialize
 		try
 		{
 			jbInit();
-
-			// Dynamic Init
-			asiTemplate = loadASITemplate(M_AttributeSetInstance_ID);
-			if (asiTemplate == null)
-			{
-				dispose();
-				return;
-			}
 
 			// Init all UI editors and fields based on ASI template
 			initAttributes();
@@ -214,58 +198,10 @@ public class VPAttributeDialog extends CDialog
 		}
 		catch (Exception ex)
 		{
-			clientUI.error(m_WindowNo, ex);
 			dispose();
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
-	}	// VPAttributeDialog
-
-	private final IVPAttributeContext attributeContext;
-	/**
-	 * VPAttributeDialog's context.
-	 * NOTE: this is not the parent window No
-	 */
-	private final int m_WindowNo;
-	private MAttributeSetInstance asiTemplate;
-	private MAttributeSetInstance asiEdited = null;
-	private int m_M_Locator_ID;
-	private final List<MAttribute> m_attributes = new ArrayList<>();
-	private final int m_M_Product_ID;
-	private final int m_AD_Column_ID;
-	/** Enter Product Attributes */
-	private final boolean m_productWindow;
-	/** Change */
-	// private boolean m_changed = false;
-
-	/** Row Counter */
-	private int m_row = 0;
-	/** List of Editors */
-	private Map<Integer, CEditor> attributeId2editor = new HashMap<>();
-	/** Length of Instance value (40) */
-	private static final int INSTANCE_VALUE_LENGTH = 40;
-
-	private CCheckBox cbNewEdit = new CCheckBox();
-	private CButton bSelectExistingASI = new CButton(Images.getImageIcon2("PAttribute16"));
-	// Lot
-	private VString fieldLotString = new VString("Lot", false, false, true, 20, 20, null, null);
-	private CComboBox<KeyNamePair> fieldLot = null;
-	private CButton bLot = new CButton(msgBL.getMsg(Env.getCtx(), "New"));
-	// Lot Popup
-	JPopupMenu popupMenu = new JPopupMenu();
-	private CMenuItem mZoom;
-	// Ser No
-	private VString fieldSerNo = new VString("SerNo", false, false, true, 20, 20, null, null);
-	private CButton bSerNo = new CButton(msgBL.getMsg(Env.getCtx(), "New"));
-	// Date
-	private final VDate fieldGuaranteeDate = new VDate("GuaranteeDate", false, false, true, DisplayType.Date, msgBL.translate(Env.getCtx(), "GuaranteeDate"));
-	/** True if the ASI's GuaranteeDate field is displayed and we need to handle it (load/save). */
-	private boolean fieldGuaranteeDateDisplayed = false;
-	//
-	private CTextField fieldDescription = new CTextField(20);
-	//
-	private BorderLayout mainLayout = new BorderLayout();
-	private CPanel centerPanel = new CPanel();
-	private ALayout centerLayout = new ALayout(5, 5, true);
-	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+	}
 
 	/**
 	 * Layout
@@ -274,10 +210,12 @@ public class VPAttributeDialog extends CDialog
 	 */
 	private void jbInit() throws Exception
 	{
-		this.getContentPane().setLayout(mainLayout);
+		final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+		
+		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(centerPanel, BorderLayout.CENTER);
 		this.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
-		centerPanel.setLayout(centerLayout);
+		centerPanel.setLayout(new ALayout(5, 5, true));
 		//
 		confirmPanel.setActionListener(this);
 	}	// jbInit
@@ -287,106 +225,45 @@ public class VPAttributeDialog extends CDialog
 		return Env.getCtx();
 	}
 
+	private MAttributeSet getM_AttributeSet()
+	{
+		return _attributeSet;
+	}
+
+	private boolean isASITemplateNew()
+	{
+		final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+		return asiTemplate == null || asiTemplate.getM_AttributeSetInstance_ID() <= 0;
+	}
+
+	private MAttributeSetInstance getASITemplate()
+	{
+		return _asiTemplate;
+	}
+
+	private MAttributeInstance getAITemplate(final MAttribute attribute)
+	{
+		final MAttributeSetInstance asiTemplate = getASITemplate();
+		if (asiTemplate == null)
+		{
+			return null;
+		}
+		return attribute.getMAttributeInstance(asiTemplate.getM_AttributeSetInstance_ID());
+	}
+
 	private int getM_Product_ID()
 	{
-		return m_M_Product_ID;
-	}
-
-	private boolean isProductWindow()
-	{
-		return m_productWindow;
-	}
-
-	private boolean isProcessParameter()
-	{
-		return m_AD_Column_ID <= 0;
-	}
-
-	private boolean isPureProductASI()
-	{
-		final boolean isPureProductASI = !isProductWindow()
-				&& (getM_Product_ID() > 0);
-		return isPureProductASI;
+		return _productId;
 	}
 
 	private boolean isAllowSelectExistingASI()
 	{
-		final boolean allowSelectExistingASI = isPureProductASI() && getM_Product_ID() > 0;
-		return allowSelectExistingASI;
+		return _allowSelectExistingASI;
 	}
 
-	/**
-	 * Loads the ASI template to be used.
-	 *
-	 * @param fromAttributeSetInstanceId
-	 * @return <ul>
-	 *         <li>ASI template
-	 *         <li> <code>null</code> if this is not a valid settings and we need to dispose the dialog
-	 *         </ul>
-	 * @throws AdempiereException if something failed
-	 */
-	private final MAttributeSetInstance loadASITemplate(final int fromAttributeSetInstanceId)
+	private int getCallerColumnId()
 	{
-		final Properties ctx = getCtx();
-		final int productId = getM_Product_ID();
-		final boolean isPureProductASI = isPureProductASI();
-
-		//
-		// If there is not product specified
-		// and we need a pure product ASI (i.e. not the ASI that we configure on product level)
-		// => this dialog does not make sense and we need to dispose it ASAP
-		// TODO: in future we shall do this checking BEFORE we reach this point
-		if (productId <= 0 && isPureProductASI)
-		{
-			return null;
-		}
-
-		final MAttributeSetInstance asiTemplate;
-
-		//
-		// Load/Create the ASI
-		// Get the M_AttributeSet.
-		MAttributeSet as = null;
-		if (productId > 0)
-		{
-			// Get/Create the ASI
-			asiTemplate = MAttributeSetInstance.get(ctx, fromAttributeSetInstanceId, productId);
-			if (asiTemplate == null)
-			{
-				throw new AdempiereException("@NotFound@ @M_AttributeSetInstance_ID@ (@M_Product_ID@=" + productId + ")");
-			}
-			Env.setContext(ctx, m_WindowNo, "M_AttributeSet_ID", asiTemplate.getM_AttributeSet_ID());
-
-			// Get Attribute Set
-			as = asiTemplate.getMAttributeSet();
-		}
-		else
-		{
-			final int M_AttributeSet_ID = attributeContext.getM_AttributeSet_ID();
-			asiTemplate = new MAttributeSetInstance(ctx, 0, M_AttributeSet_ID, ITrx.TRXNAME_None); // new ASI
-			as = asiTemplate.getMAttributeSet();
-			if (as == null && M_AttributeSet_ID == 0)
-			{
-				// FIXME: workaround to deal with M_AttributeSet_ID=0 which is an existing record
-				as = queryBL.createQueryBuilder(I_M_AttributeSet.class, ctx, ITrx.TRXNAME_None)
-						.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, 0)
-						.create()
-						.firstOnlyNotNull(MAttributeSet.class);
-				asiTemplate.setMAttributeSet(as);
-			}
-		}
-		// Product has no Attribute Set
-		if (as == null)
-		{
-			throw new AdempiereException("@PAttributeNoAttributeSet@");
-		}
-		// Product has no Instance Attributes
-		if (isPureProductASI && !as.isInstanceAttribute())
-		{
-			throw new AdempiereException("@PAttributeNoInstanceAttribute@");
-		}
-
-		return asiTemplate;
+		return _callerColumnId;
 	}
 
 	/**
@@ -395,79 +272,38 @@ public class VPAttributeDialog extends CDialog
 	private final void initAttributes()
 	{
 		final Properties ctx = getCtx();
-		final boolean isProductWindow = isProductWindow();
-		final boolean isProcessParameter = isProcessParameter();
-		final boolean isPureProductASI = isPureProductASI();
 		final boolean allowSelectExistingASI = isAllowSelectExistingASI();
-		final MAttributeSet as = asiTemplate.getMAttributeSet();
-		Check.assumeNotNull(as, "attribute set not null");
-		final boolean isASITemplateNew = asiTemplate.getM_AttributeSetInstance_ID() <= 0;
+
+		final MAttributeSet attributeSet = getM_AttributeSet();
 
 		//
 		// Show Select existing ASI (if allowed)
 		if (allowSelectExistingASI)
 		{
-			// New/Edit - Selection
-			if (isASITemplateNew)		// new ASI
-				cbNewEdit.setText(msgBL.getMsg(ctx, "NewRecord"));
-			else
-				cbNewEdit.setText(msgBL.getMsg(ctx, "EditRecord"));
-			cbNewEdit.addActionListener(this);
-			centerPanel.add(cbNewEdit, new ALayoutConstraint(m_row++, 0));
+			// Select existing ASI button
 			bSelectExistingASI.setText(msgBL.getMsg(ctx, "SelectExisting"));
 			bSelectExistingASI.addActionListener(this);
-			centerPanel.add(bSelectExistingASI, null);
-		}
-
-		//
-		// Fetch M_Attributes
-		final List<MAttribute> attributes;
-		if (isProductWindow)
-		{
-			attributes = Arrays.asList(as.getMAttributes(false)); // non-instance attributes
-		}
-		else if (isPureProductASI)
-		{
-			// Regular product's attribute set instance attributes
-			attributes = Arrays.asList(as.getMAttributes(true)); // all instance attributes
-		}
-		else if (isProcessParameter)
-		{
-			final IQueryBuilder<MAttribute> attributesQueryBuilder = queryBL
-					.createQueryBuilder(MAttribute.class, ctx, ITrx.TRXNAME_None)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient();
-			attributesQueryBuilder.orderBy()
-					.addColumn(I_M_Attribute.COLUMNNAME_Name)
-					.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID);
-			attributes = attributesQueryBuilder
-					.create()
-					.list(MAttribute.class);
-		}
-		else
-		{
-			attributes = Collections.emptyList();
+			centerPanel.add(bSelectExistingASI, new ALayoutConstraint(m_row++, 1));
 		}
 
 		//
 		// Create attributes UI editors
-		for (final MAttribute attribute : attributes)
+		for (final MAttribute attribute : getAvailableAttributes())
 		{
-			if (!attributeExcludeBL.isExcludedAttribute(attribute, as, m_AD_Column_ID, attributeContext.isSOTrx()))
-			{
-				addAttributeLine(attribute);
-			}
+			addAttributeLine(attribute);
 		}
 
 		//
 		// Lot
-		if (isPureProductASI && as.isLot())
+		if (isLotEnabled)
 		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+
 			CLabel label = new CLabel(msgBL.translate(ctx, "Lot"));
 			label.setLabelFor(fieldLotString);
 			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
 			centerPanel.add(fieldLotString, null);
-			fieldLotString.setText(asiTemplate.getLot());
+			fieldLotString.setText(asiTemplate == null ? null : asiTemplate.getLot());
 			// M_Lot_ID
 			// int AD_Column_ID = 9771; // M_AttributeSetInstance.M_Lot_ID
 			// fieldLot = new VLookup ("M_Lot_ID", false,false, true,
@@ -475,14 +311,14 @@ public class VPAttributeDialog extends CDialog
 			final String sql = "SELECT M_Lot_ID, Name "
 					+ "FROM M_Lot l "
 					+ "WHERE EXISTS (SELECT M_Product_ID FROM M_Product p "
-					+ "WHERE p.M_AttributeSet_ID=" + asiTemplate.getM_AttributeSet_ID()
+					+ "WHERE p.M_AttributeSet_ID=" + attributeSet.getM_AttributeSet_ID()
 					+ " AND p.M_Product_ID=l.M_Product_ID)";
 			fieldLot = new CComboBox<>(DB.getKeyNamePairs(sql, true));
 			label = new CLabel(msgBL.translate(ctx, "M_Lot_ID"));
 			label.setLabelFor(fieldLot);
 			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
 			centerPanel.add(fieldLot, null);
-			if (asiTemplate.getM_Lot_ID() > 0)
+			if (asiTemplate != null && asiTemplate.getM_Lot_ID() > 0)
 			{
 				for (int i = 1; i < fieldLot.getItemCount(); i++)
 				{
@@ -497,18 +333,26 @@ public class VPAttributeDialog extends CDialog
 			}
 			fieldLot.addActionListener(this);
 			// New Lot Button
-			if (asiTemplate.getMAttributeSet().getM_LotCtl_ID() > 0)
+			if (attributeSet.getM_LotCtl_ID() > 0)
 			{
-				if (Env.getUserRolePermissions().isTableAccess(MLot.Table_ID, false)
-						&& Env.getUserRolePermissions().isTableAccess(MLotCtl.Table_ID, false)
-						&& !asiTemplate.isExcludeLot(m_AD_Column_ID, attributeContext.isSOTrx()))
+				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, false)
+						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, false)
+						&& !attributeSet.isExcludeLot(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bLot, null);
 					bLot.addActionListener(this);
 				}
 			}
 			// Popup
-			fieldLot.addMouseListener(new VPAttributeDialog_mouseAdapter(this));    // popup
+			fieldLot.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseClicked(MouseEvent e)
+				{
+					if (SwingUtilities.isRightMouseButton(e))
+						popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+				}
+			});
 			mZoom = new CMenuItem(msgBL.getMsg(ctx, "Zoom"), Images.getImageIcon2("Zoom16"));
 			mZoom.addActionListener(this);
 			popupMenu.add(mZoom);
@@ -516,18 +360,20 @@ public class VPAttributeDialog extends CDialog
 
 		//
 		// SerNo
-		if (isPureProductASI && as.isSerNo())
+		if (isSerNoEnabled)
 		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+
 			CLabel label = new CLabel(msgBL.translate(ctx, "SerNo"));
 			label.setLabelFor(fieldSerNo);
-			fieldSerNo.setText(asiTemplate.getSerNo());
+			fieldSerNo.setText(asiTemplate == null ? null : asiTemplate.getSerNo());
 			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
 			centerPanel.add(fieldSerNo, null);
 			// New SerNo Button
-			if (asiTemplate.getMAttributeSet().getM_SerNoCtl_ID() != 0)
+			if (attributeSet.getM_SerNoCtl_ID() > 0)
 			{
-				if (Env.getUserRolePermissions().isTableAccess(MSerNoCtl.Table_ID, false)
-						&& !asiTemplate.isExcludeSerNo(m_AD_Column_ID, attributeContext.isSOTrx()))
+				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, false)
+						&& !attributeSet.isExcludeSerNo(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bSerNo, null);
 					bSerNo.addActionListener(this);
@@ -537,34 +383,31 @@ public class VPAttributeDialog extends CDialog
 
 		//
 		// GuaranteeDate.
-		// We are displaying it if we deal with a pure product ASI (i.e. user is not editing the ASI from product window),
-		// and if:
-		// * the attribute set requires a GuaranteeDate
-		// * or if the ASI has a GuaranteeDate already set
-		if (isPureProductASI && (as.isGuaranteeDate() || asiTemplate.getGuaranteeDate() != null))
+		if (isGuaranteeDateEnabled)
 		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+			Date guaranteeDate = asiTemplate == null ? null : asiTemplate.getGuaranteeDate();
+
 			CLabel label = new CLabel(msgBL.translate(ctx, "GuaranteeDate"));
 			label.setLabelFor(fieldGuaranteeDate);
-			if (isASITemplateNew)
+			if (isASITemplateNew())
 			{
-				Date guaranteeDate = asiTemplate.getGuaranteeDate();
 				if (guaranteeDate == null)
 				{
 					guaranteeDate = attributesBL.calculateBestBeforeDate(ctx,
-							m_M_Product_ID, // product
+							getM_Product_ID(), // product
 							attributeContext.getC_BPartner_ID(), // vendor bpartner
 							Env.getDate(ctx) // dateReceipt
-							);
+					);
 				}
 				fieldGuaranteeDate.setValue(guaranteeDate);
 			}
 			else
 			{
-				fieldGuaranteeDate.setValue(asiTemplate.getGuaranteeDate());
+				fieldGuaranteeDate.setValue(guaranteeDate);
 			}
 			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
 			centerPanel.add(fieldGuaranteeDate, null);
-			fieldGuaranteeDateDisplayed = true;
 		}	// GuaranteeDate
 
 		// Make sure we have at least something to edit or something to select,
@@ -578,16 +421,17 @@ public class VPAttributeDialog extends CDialog
 		// New/Edit Window
 		if (allowSelectExistingASI)
 		{
-			cbNewEdit.setSelected(isASITemplateNew);
-			cmd_newEdit();
+			setReadWrite(true);
 		}
 
 		//
 		// Attrribute Set Instance Description
 		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+
 			final CLabel labelDescription = new CLabel(msgBL.translate(ctx, "Description"));
 			labelDescription.setLabelFor(fieldDescription);
-			fieldDescription.setText(asiTemplate.getDescription());
+			fieldDescription.setText(asiTemplate == null ? null : asiTemplate.getDescription());
 			fieldDescription.setEditable(false);
 			centerPanel.add(labelDescription, new ALayoutConstraint(m_row++, 0));
 			centerPanel.add(fieldDescription, null);
@@ -601,6 +445,11 @@ public class VPAttributeDialog extends CDialog
 		}
 	}	// initAttribute
 
+	private List<MAttribute> getAvailableAttributes()
+	{
+		return _availableAttributes;
+	}
+
 	/**
 	 * Add Attribute Line
 	 *
@@ -610,15 +459,9 @@ public class VPAttributeDialog extends CDialog
 	 */
 	private void addAttributeLine(final MAttribute attribute)
 	{
-		final boolean product = m_productWindow;
 		final boolean readOnly = false;
 
-		log.debug(attribute + ", Product=" + product + ", R/O=" + readOnly);
 		CLabel label = new CLabel(attribute.getName());
-		if (product)
-		{
-			label.setFont(new Font(label.getFont().getFontName(), Font.BOLD, label.getFont().getSize()));
-		}
 		if (attribute.getDescription() != null)
 		{
 			label.setToolTipText(attribute.getDescription());
@@ -626,9 +469,8 @@ public class VPAttributeDialog extends CDialog
 
 		centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
 		//
-		final int attributeSetInstanceId = asiTemplate.getM_AttributeSetInstance_ID();
 		final int attributeId = attribute.getM_Attribute_ID();
-		final MAttributeInstance instance = attribute.getMAttributeInstance(attributeSetInstanceId);
+		final MAttributeInstance instance = getAITemplate(attribute);
 		if (MAttribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
 		{
 			InterfaceWrapperHelper.setDynAttribute(attribute, Env.DYNATTR_WindowNo, attributeContext.getWindowNo());
@@ -740,8 +582,8 @@ public class VPAttributeDialog extends CDialog
 		}
 
 		//
-		// Add our attribute to the list of attributes
-		m_attributes.add(attribute);
+		// Add our attribute to the list of editing attributes
+		editorAttributes.add(attribute);
 	}	// addAttributeLine
 
 	private Boolean getSOTrx()
@@ -758,13 +600,10 @@ public class VPAttributeDialog extends CDialog
 	private final void setResultAndDispose(final MAttributeSetInstance asi, int M_Locator_ID)
 	{
 		this.asiEdited = asi;
-		this.m_M_Locator_ID = M_Locator_ID;
+		this._locatorId = M_Locator_ID;
 		dispose();
 	}
 
-	/**
-	 * dispose
-	 */
 	@Override
 	public void dispose()
 	{
@@ -787,17 +626,12 @@ public class VPAttributeDialog extends CDialog
 		super.dispose();
 	}	// dispose
 
-	/**
-	 * ActionListener
-	 *
-	 * @param e event
-	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent event)
 	{
 		try
 		{
-			actionPerformed0(e);
+			actionPerformed0(event);
 		}
 		catch (Exception ex)
 		{
@@ -805,39 +639,32 @@ public class VPAttributeDialog extends CDialog
 		}
 	}
 
-	private final void actionPerformed0(ActionEvent e) throws Exception
+	private final void actionPerformed0(final ActionEvent event) throws Exception
 	{
 		// Select Instance
-		if (e.getSource() == bSelectExistingASI)
+		if (event.getSource() == bSelectExistingASI)
 		{
 			cmd_select();
 			return;
 		}
-		// New/Edit
-		else if (e.getSource() == cbNewEdit)
-		{
-			cmd_newEdit();
-		}
 		// Select Lot from existing
-		else if (e.getSource() == fieldLot)
+		else if (event.getSource() == fieldLot)
 		{
 			final KeyNamePair pp = fieldLot.getSelectedItem();
-			if (pp != null && pp.getKey() != -1)
+			if (pp != null && pp.getKey() > 0)
 			{
 				fieldLotString.setText(pp.getName());
 				fieldLotString.setEditable(false);
-				asiTemplate.setM_Lot_ID(pp.getKey());
 			}
 			else
 			{
 				fieldLotString.setEditable(true);
-				asiTemplate.setM_Lot_ID(0);
 			}
 		}
 		// Create New Lot
-		else if (e.getSource() == bLot)
+		else if (event.getSource() == bLot)
 		{
-			KeyNamePair pp = asiTemplate.createLot(m_M_Product_ID);
+			KeyNamePair pp = getM_AttributeSet().createLot(getM_Product_ID());
 			if (pp != null)
 			{
 				fieldLot.addItem(pp);
@@ -845,13 +672,14 @@ public class VPAttributeDialog extends CDialog
 			}
 		}
 		// Create New SerNo
-		else if (e.getSource() == bSerNo)
+		else if (event.getSource() == bSerNo)
 		{
-			fieldSerNo.setText(asiTemplate.getSerNo(true));
+			final String serNo = getM_AttributeSet().createSerNo();
+			fieldSerNo.setText(serNo);
 		}
 
 		// OK
-		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
+		else if (event.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			final MAttributeSetInstance asi = saveSelection();
 			final int M_Locator_ID = -1; // N/A
@@ -859,19 +687,19 @@ public class VPAttributeDialog extends CDialog
 			return;
 		}
 		// Cancel
-		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
+		else if (event.getActionCommand().equals(ConfirmPanel.A_CANCEL))
 		{
 			final int M_Locator_ID = -1; // N/A
 			setResultAndDispose(null, M_Locator_ID);
 		}
 		// Zoom M_Lot
-		else if (e.getSource() == mZoom)
+		else if (event.getSource() == mZoom)
 		{
 			cmd_zoom();
 		}
 		else
 		{
-			log.error("Unknown event: {}", e);
+			log.warn("Unknown event: {}", event);
 		}
 	}	// actionPerformed
 
@@ -897,7 +725,7 @@ public class VPAttributeDialog extends CDialog
 
 		// teo_sarca [ 1564520 ] Inventory Move: can't select existing attributes
 		int M_Locator_ID = 0;
-		if (m_AD_Column_ID == 8551) // TODO: hardcoded: M_MovementLine[324].M_AttributeSetInstance_ID[8551]
+		if (getCallerColumnId() == 8551) // TODO: hardcoded: M_MovementLine[324].M_AttributeSetInstance_ID[8551]
 		{
 			M_Locator_ID = attributeContext.getM_Locator_ID();
 		}
@@ -912,7 +740,7 @@ public class VPAttributeDialog extends CDialog
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, m_M_Product_ID);
+			pstmt.setInt(1, getM_Product_ID());
 			pstmt.setInt(2, M_Locator_ID <= 0 ? M_Warehouse_ID : M_Locator_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
@@ -935,7 +763,7 @@ public class VPAttributeDialog extends CDialog
 		//
 		// Open ASI selection window and wait for result
 		final int bpartnerId = attributeContext.getC_BPartner_ID();
-		final PAttributeInstance pai = new PAttributeInstance(this, title, M_Warehouse_ID, M_Locator_ID, m_M_Product_ID, bpartnerId);
+		final PAttributeInstance pai = new PAttributeInstance(this, title, M_Warehouse_ID, M_Locator_ID, getM_Product_ID(), bpartnerId);
 		final MAttributeSetInstance selectedASI = pai.getM_AttributeSetInstance();
 		if (selectedASI == null)
 		{
@@ -947,28 +775,35 @@ public class VPAttributeDialog extends CDialog
 	}	// cmd_select
 
 	/**
-	 * Update which fields status (read-only/read-write) based on New ASI/Edit ASI checkbox.
+	 * Update which fields status (read-only/read-write).
 	 */
-	private final void cmd_newEdit()
+	private final void setReadWrite(final boolean rw)
 	{
-		final boolean rw = cbNewEdit.isSelected();
-		log.info("R/W=" + rw + " " + asiTemplate);
-
 		// Lot
-		final boolean isNewLot = asiTemplate == null || asiTemplate.getM_Lot_ID() <= 0;
-		fieldLotString.setEditable(rw && isNewLot);
-		if (fieldLot != null)
+		if (isLotEnabled)
 		{
-			fieldLot.setReadWrite(rw);
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+			final boolean isNewLot = asiTemplate == null || asiTemplate.getM_Lot_ID() <= 0;
+			fieldLotString.setEditable(rw && isNewLot);
+			if (fieldLot != null)
+			{
+				fieldLot.setReadWrite(rw);
+			}
+			bLot.setReadWrite(rw);
 		}
-		bLot.setReadWrite(rw);
 
 		// Serial No
-		fieldSerNo.setReadWrite(rw);
-		bSerNo.setReadWrite(rw);
+		if (isSerNoEnabled)
+		{
+			fieldSerNo.setReadWrite(rw);
+			bSerNo.setReadWrite(rw);
+		}
 
 		// Guarantee Date
-		fieldGuaranteeDate.setReadWrite(rw);
+		if (isGuaranteeDateEnabled)
+		{
+			fieldGuaranteeDate.setReadWrite(rw);
+		}
 
 		// Attribute Editors
 		for (final CEditor editor : attributeId2editor.values())
@@ -987,7 +822,7 @@ public class VPAttributeDialog extends CDialog
 		if (pp != null)
 			M_Lot_ID = pp.getKey();
 		MQuery zoomQuery = new MQuery("M_Lot");
-		zoomQuery.addRestriction("M_Lot_ID", MQuery.EQUAL, M_Lot_ID);
+		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1035,55 +870,83 @@ public class VPAttributeDialog extends CDialog
 	{
 		log.info("");
 
-		final MAttributeSet as = asiTemplate.getMAttributeSet();
-		Check.assumeNotNull(as, "as not null");
+		final MAttributeSet attributeSet = getM_AttributeSet();
+		final MAttributeSetInstance asiTemplate2 = getASITemplate();
 
 		// Create a new ASI which is copying the existing one
-		final MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(),
-				0,
-				ITrx.TRXNAME_ThreadInherited);
-		InterfaceWrapperHelper.copyValues(asiTemplate, asi, false); // honorIsCalculated=false => copy everything
-		asi.setM_AttributeSet(as); // make sure we have the right AttributeSet model set
+		final MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		if (asiTemplate2 != null)
+		{
+			InterfaceWrapperHelper.copyValues(asiTemplate2, asi, false); // honorIsCalculated=false => copy everything
+		}
+		asi.setM_AttributeSet(attributeSet); // make sure we have the right AttributeSet model set
 
 		//
 		boolean changed = false;
 		final Set<String> mandatory = new LinkedHashSet<>();
 
+		//
 		// Lot
-		if (!m_productWindow && as.isLot())
+		if (isLotEnabled)
 		{
-			String text = fieldLotString.getText();
-			asi.setLot(text);
-			if (as.isLotMandatory() && (text == null || text.length() == 0))
+			final String text = fieldLotString.getText();
+			if (attributeSet.isLotMandatory() && Check.isEmpty(text, true))
 			{
 				mandatory.add(msgBL.translate(getCtx(), "Lot"));
 			}
-			changed = true;
-		}	// Lot
+			else
+			{
+				asi.setLot(text);
+				final KeyNamePair pp = fieldLot.getSelectedItem();
+				final int lotId = pp == null ? -1 : pp.getKey();
+				asi.setM_Lot_ID(lotId);
+				changed = true;
+			}
+		}
+		else
+		{
+			asi.setLot(null);
+			asi.setM_Lot(null);
+		}
 
+		//
 		// Serial No
-		if (!m_productWindow && as.isSerNo())
+		if (isSerNoEnabled)
 		{
 			final String serNo = fieldSerNo.getText();
-			asi.setSerNo(serNo);
-			if (as.isSerNoMandatory() && Check.isEmpty(serNo, true))
+			if (attributeSet.isSerNoMandatory() && Check.isEmpty(serNo, true))
 			{
 				mandatory.add(msgBL.translate(getCtx(), "SerNo"));
 			}
-			changed = true;
-		}	// SerNo
+			else
+			{
+				asi.setSerNo(serNo);
+				changed = true;
+			}
+		}
+		else
+		{
+			asi.setSerNo(null);
+		}
 
 		//
 		// Guarantee Date (if required)
-		if (fieldGuaranteeDateDisplayed)
+		if (isGuaranteeDateEnabled)
 		{
 			final Timestamp guaranteeDate = fieldGuaranteeDate.getValue();
-			asi.setGuaranteeDate(guaranteeDate);
-			if (as.isGuaranteeDate() && as.isGuaranteeDateMandatory() && guaranteeDate == null)
+			if (attributeSet.isGuaranteeDate() && attributeSet.isGuaranteeDateMandatory() && guaranteeDate == null)
 			{
 				mandatory.add(msgBL.translate(getCtx(), I_M_AttributeSetInstance.COLUMNNAME_GuaranteeDate));
 			}
-			changed = true;
+			else
+			{
+				asi.setGuaranteeDate(guaranteeDate);
+				changed = true;
+			}
+		}
+		else
+		{
+			asi.setGuaranteeDate(null);
 		}
 
 		//
@@ -1097,7 +960,7 @@ public class VPAttributeDialog extends CDialog
 
 		//
 		// Save Instance Attributes
-		for (final MAttribute attribute : m_attributes)
+		for (final MAttribute attribute : editorAttributes)
 		{
 			final CEditor editor = attributeId2editor.get(attribute.getM_Attribute_ID());
 
@@ -1136,7 +999,7 @@ public class VPAttributeDialog extends CDialog
 			{
 				final VString editorString = (VString)editor;
 				final String value = editorString.getText();
-				if (attribute.isMandatory() && Check.isEmpty(value, false))
+				if (attribute.isMandatory() && Check.isEmpty(value, true))
 				{
 					mandatory.add(attribute.getName());
 				}
@@ -1155,7 +1018,7 @@ public class VPAttributeDialog extends CDialog
 		// Save Model
 		if (changed)
 		{
-			asi.setMAttributeSet(as); // NOTE: this is workaround for the case when M_AttributeSet_ID=0
+			asi.setMAttributeSet(attributeSet); // NOTE: this is workaround for the case when M_AttributeSet_ID=0
 			attributeSetInstanceBL.setDescription(asi);
 			InterfaceWrapperHelper.save(asi);
 		}
@@ -1190,7 +1053,7 @@ public class VPAttributeDialog extends CDialog
 	 */
 	public int getM_Locator_ID()
 	{
-		return m_M_Locator_ID;
+		return _locatorId;
 	}
 
 	/**

@@ -79,7 +79,7 @@ public class HUPackageDAO implements IHUPackageDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Package.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
+				.addInArrayOrAllFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
 				.create()
 				.list(I_M_Package.class);
 	}

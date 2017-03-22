@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-13T17:56:09 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="34" bottomMargin="20" resourceBundle="de/metas/reports/financial/report" uuid="11df06f6-e9a4-49ba-8a97-bd1f787e3c39">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.4641000000000006"/>
 	<property name="ireport.x" value="10"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -67,23 +71,23 @@
 		case when l.postal_add is null then '' else l.postal_add end || ' ' ||
 		case when l.city is null then '' else l.city end
 	) as org_postal_row,
-	(SELECT ad_org_parm.name FROM ad_org ad_org_parm WHERE ad_org_parm.ad_org_id in (null, $P{Org_ID})) AS parm_org_name,
-	(SELECT pr.name FROM pa_report pr WHERE pi.record_id = pr.pa_report_id) AS report_name,
-	(SELECT per.name FROM c_period per WHERE  per.c_period_id in (null, $P{C_Period_ID}) LIMIT 1) AS parm_period_name,
-	(SELECT bp.name FROM c_bpartner bp WHERE bp.c_bpartner_id in (null, $P{C_BPartner_ID}) LIMIT 1) AS parm_bpartner_name,
-	(SELECT pro.name FROM m_product pro WHERE pro.m_product_id in (null, $P{M_Product_ID}) LIMIT 1) AS parm_product_name,
-	(SELECT hier.name FROM pa_hierarchy hier WHERE hier.pa_hierarchy_id in (null, $P{PA_Hierarchy_ID}) LIMIT 1) AS parm_hierarchy_name
+	(SELECT ad_org_parm.name FROM ad_org ad_org_parm WHERE ad_org_parm.ad_org_id in (null, $P{Org_ID}) and ad_org_parm.isActive = 'Y') AS parm_org_name,
+	(SELECT pr.name FROM pa_report pr WHERE pi.record_id = pr.pa_report_id AND pr.isActive = 'Y') AS report_name,
+	(SELECT per.name FROM c_period per WHERE  per.c_period_id in (null, $P{C_Period_ID}) AND per.isActive = 'Y' LIMIT 1) AS parm_period_name,
+	(SELECT bp.name FROM c_bpartner bp WHERE bp.c_bpartner_id in (null, $P{C_BPartner_ID}) AND bp.isActive = 'Y' LIMIT 1) AS parm_bpartner_name,
+	(SELECT pro.name FROM m_product pro WHERE pro.m_product_id in (null, $P{M_Product_ID}) AND pro.isActive = 'Y' LIMIT 1) AS parm_product_name,
+	(SELECT hier.name FROM pa_hierarchy hier WHERE hier.pa_hierarchy_id in (null, $P{PA_Hierarchy_ID}) AND hier.isActive = 'Y' LIMIT 1) AS parm_hierarchy_name
 FROM
 	ad_org o
-	LEFT OUTER JOIN AD_OrgInfo oi ON o.AD_Org_ID = oi.AD_Org_ID
-	LEFT OUTER JOIN C_BPartner bp ON o.AD_Org_ID = bp.AD_OrgBP_ID
-	LEFT OUTER JOIN C_BPartner_Location bpl ON bp.C_BPartner_ID = bpl.C_BPartner_ID
-	LEFT OUTER JOIN C_Location l ON bpl.C_Location_ID = l.C_Location_ID
-	LEFT OUTER JOIN C_Country c ON l.C_Country_ID = c.C_Country_ID
-	LEFT OUTER JOIN AD_PInstance pi ON pi.ad_pinstance_id = $P{T_Report_AD_PInstance_ID}
-	LEFT OUTER JOIN pa_report pr ON pi.record_id = pr.pa_report_id
+	LEFT OUTER JOIN AD_OrgInfo oi ON o.AD_Org_ID = oi.AD_Org_ID AND oi.isActive = 'Y' 
+	LEFT OUTER JOIN C_BPartner bp ON o.AD_Org_ID = bp.AD_OrgBP_ID AND bp.isActive = 'Y' 
+	LEFT OUTER JOIN C_BPartner_Location bpl ON bp.C_BPartner_ID = bpl.C_BPartner_ID AND bpl.isActive = 'Y' 
+	LEFT OUTER JOIN C_Location l ON bpl.C_Location_ID = l.C_Location_ID AND l.isActive = 'Y' 
+	LEFT OUTER JOIN C_Country c ON l.C_Country_ID = c.C_Country_ID AND c.isActive = 'Y' 
+	LEFT OUTER JOIN AD_PInstance pi ON pi.ad_pinstance_id = $P{T_Report_AD_PInstance_ID} AND pi.isActive = 'Y' 
+	LEFT OUTER JOIN pa_report pr ON pi.record_id = pr.pa_report_id AND pr.isActive = 'Y' 
 WHERE
-	o.ad_org_id = $P{ad_org_id}
+	o.ad_org_id = $P{ad_org_id} AND o.isActive = 'Y' 
 ORDER BY
 	isBillToDefault desc,
 	isBillto desc
@@ -114,7 +118,7 @@ LIMIT
 	<background>
 		<band height="58" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="497d934a-d937-44c4-bf6c-2614ce08acce" key="textField-29" x="76" y="5" width="622" height="46" forecolor="#E3E3E3"/>
+				<reportElement key="textField-29" x="76" y="5" width="622" height="46" forecolor="#E3E3E3" uuid="497d934a-d937-44c4-bf6c-2614ce08acce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -122,7 +126,7 @@ LIMIT
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="36" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique" />
+					<font fontName="SansSerif" size="36" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.financial.watermark}]]></textFieldExpression>
 			</textField>
@@ -135,7 +139,7 @@ LIMIT
 		<band height="65" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<image scaleImage="RetainShape">
-				<reportElement uuid="66d268e4-8ce9-4292-9f85-30acec80ecca" key="image-1" x="0" y="1" width="49" height="39"/>
+				<reportElement key="image-1" x="0" y="1" width="49" height="39" uuid="66d268e4-8ce9-4292-9f85-30acec80ecca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -145,10 +149,10 @@ LIMIT
 				<imageExpression><![CDATA["de/metas/generics/logo.png"]]></imageExpression>
 			</image>
 			<line>
-				<reportElement uuid="5078be5a-1b29-42f2-aeac-6fbabdcc9074" key="line-1" x="0" y="63" width="780" height="1"/>
+				<reportElement key="line-1" x="0" y="63" width="780" height="1" uuid="5078be5a-1b29-42f2-aeac-6fbabdcc9074"/>
 			</line>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="0d8a55b4-d7e2-451d-ac35-1ebc7dcefce9" key="textField-44" x="69" y="22" width="80" height="13"/>
+				<reportElement key="textField-44" x="69" y="22" width="80" height="13" uuid="0d8a55b4-d7e2-451d-ac35-1ebc7dcefce9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -161,7 +165,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$R{report.org} + ":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e2a05f55-e62a-4090-bbcb-2b314277da73" key="textField-45" x="154" y="22" width="189" height="13"/>
+				<reportElement key="textField-45" x="154" y="22" width="189" height="13" uuid="e2a05f55-e62a-4090-bbcb-2b314277da73"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -174,7 +178,7 @@ LIMIT
 				<textFieldExpression><![CDATA[( $P{Org_ID}.equals("") ? "" : $F{parm_org_name} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e5aae5f7-fa6f-4e2c-902b-d76a898aea04" key="textField-46" x="262" y="1" width="245" height="18"/>
+				<reportElement key="textField-46" x="262" y="1" width="245" height="18" uuid="e5aae5f7-fa6f-4e2c-902b-d76a898aea04"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -187,7 +191,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$F{report_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="2bca9537-9be6-46ea-aa3a-d79619433ee7" key="textField-47" x="69" y="34" width="80" height="13"/>
+				<reportElement key="textField-47" x="69" y="34" width="80" height="13" uuid="2bca9537-9be6-46ea-aa3a-d79619433ee7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -200,7 +204,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$R{report.period} + ":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="de5c6e81-aeaa-466a-8eed-c8cf7779a567" key="textField-48" x="154" y="34" width="189" height="13"/>
+				<reportElement key="textField-48" x="154" y="34" width="189" height="13" uuid="de5c6e81-aeaa-466a-8eed-c8cf7779a567"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -213,7 +217,7 @@ LIMIT
 				<textFieldExpression><![CDATA[( $P{C_Period_ID}.equals("") ? "" : $F{parm_period_name} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="5a283581-d197-47f4-bdeb-ae0d48d2cb7c" key="textField-49" x="69" y="46" width="80" height="13"/>
+				<reportElement key="textField-49" x="69" y="46" width="80" height="13" uuid="5a283581-d197-47f4-bdeb-ae0d48d2cb7c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -226,7 +230,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$R{report.businesspartner} + ":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="4fbe94e1-2c50-4073-b8df-dfa1dba9f281" key="textField-50" x="154" y="46" width="189" height="13"/>
+				<reportElement key="textField-50" x="154" y="46" width="189" height="13" uuid="4fbe94e1-2c50-4073-b8df-dfa1dba9f281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -239,7 +243,7 @@ LIMIT
 				<textFieldExpression><![CDATA[( $P{C_BPartner_ID}.equals("") ? "" : $F{parm_bpartner_name} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="84dca71c-5155-41d8-9d96-99e383329acb" key="textField-51" x="422" y="22" width="80" height="13"/>
+				<reportElement key="textField-51" x="422" y="22" width="80" height="13" uuid="84dca71c-5155-41d8-9d96-99e383329acb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -252,7 +256,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$R{report.product} + ":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="bb03a59f-1c96-4a12-8b02-6065e950877e" key="textField-52" x="507" y="22" width="189" height="13"/>
+				<reportElement key="textField-52" x="507" y="22" width="189" height="13" uuid="bb03a59f-1c96-4a12-8b02-6065e950877e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -265,7 +269,7 @@ LIMIT
 				<textFieldExpression><![CDATA[( $P{M_Product_ID}.equals("") ? "" : $F{parm_product_name} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="eca49535-9d34-4a0a-89d2-8272af46623b" key="textField-53" x="422" y="34" width="80" height="13"/>
+				<reportElement key="textField-53" x="422" y="34" width="80" height="13" uuid="eca49535-9d34-4a0a-89d2-8272af46623b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -278,7 +282,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$R{report.hierarchy} + ":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="b2ae53f4-cf83-4761-8839-c3cfa5ffcdd6" key="textField-54" x="507" y="34" width="189" height="13"/>
+				<reportElement key="textField-54" x="507" y="34" width="189" height="13" uuid="b2ae53f4-cf83-4761-8839-c3cfa5ffcdd6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -291,7 +295,7 @@ LIMIT
 				<textFieldExpression><![CDATA[( $P{PA_Hierarchy_ID}.equals("") ? "" : $F{parm_hierarchy_name} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="4b33fc2f-75a1-425c-be16-adacafe0e93e" key="textField-55" x="422" y="46" width="80" height="13"/>
+				<reportElement key="textField-55" x="422" y="46" width="80" height="13" uuid="4b33fc2f-75a1-425c-be16-adacafe0e93e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -304,7 +308,7 @@ LIMIT
 				<textFieldExpression><![CDATA[$R{report.updatebalances} + ":"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="90ade0f0-a9df-4117-ae8c-6c8b5522c814" key="textField-56" x="507" y="46" width="189" height="13"/>
+				<reportElement key="textField-56" x="507" y="46" width="189" height="13" uuid="90ade0f0-a9df-4117-ae8c-6c8b5522c814"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -324,7 +328,7 @@ LIMIT
 	<detail>
 		<band height="88" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement uuid="285947e0-9292-43cd-900d-ff82a2f984c5" key="subreport-1" x="0" y="1" width="781" height="85"/>
+				<reportElement key="subreport-1" x="0" y="1" width="781" height="85" uuid="285947e0-9292-43cd-900d-ff82a2f984c5"/>
 				<subreportParameter name="REPORT_LOCALE">
 					<subreportParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -366,10 +370,10 @@ LIMIT
 	<pageFooter>
 		<band height="28" splitType="Stretch">
 			<line>
-				<reportElement uuid="47e56c97-e6d3-4e87-9d32-6cb3981308f1" key="line" x="1" y="3" width="780" height="1"/>
+				<reportElement key="line" x="1" y="3" width="780" height="1" uuid="47e56c97-e6d3-4e87-9d32-6cb3981308f1"/>
 			</line>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="7c355ba8-1b0b-4cdd-b9a5-a842b60dd86b" key="textField" x="1" y="4" width="99" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField" x="1" y="4" width="99" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7c355ba8-1b0b-4cdd-b9a5-a842b60dd86b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -382,7 +386,7 @@ LIMIT
 				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="f86c275a-4413-45da-8de0-099aa8ccc32b" key="textField-30" x="598" y="4" width="170" height="12" forecolor="#000000"/>
+				<reportElement key="textField-30" x="598" y="4" width="170" height="12" forecolor="#000000" uuid="f86c275a-4413-45da-8de0-099aa8ccc32b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -395,7 +399,7 @@ LIMIT
 				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von"]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement uuid="1e49ce28-ec9f-4acd-93d7-b54d9b52df03" key="textField-31" mode="Transparent" x="767" y="4" width="14" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-31" mode="Transparent" x="767" y="4" width="14" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1e49ce28-ec9f-4acd-93d7-b54d9b52df03"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -408,7 +412,7 @@ LIMIT
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="39ea4ea5-3fd4-4d70-9f0c-85c905fa9310" key="textField" x="189" y="3" width="373" height="18"/>
+				<reportElement key="textField" x="189" y="3" width="373" height="18" uuid="39ea4ea5-3fd4-4d70-9f0c-85c905fa9310"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -25,6 +25,9 @@ package org.compiere.grid.ed.menu;
 
 import java.util.Properties;
 
+import javax.swing.SwingUtilities;
+
+import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.ui.editor.IZoomableEditor;
 import org.adempiere.util.Check;
@@ -35,6 +38,7 @@ import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -105,6 +109,20 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 	@Override
 	public void run()
 	{
+		try
+		{
+			run0();
+		}
+		catch (final NoDataFoundHandlerRetryRequestException r)
+		{
+			// gh #986: there was a problem with missing data, but it was solved. 
+			// Now we are asked to retry.
+			SwingUtilities.invokeLater(() -> run0());
+		}
+	}
+
+	private void run0()
+	{
 		final VEditor editor = getEditor();
 		if (editor instanceof IZoomableEditor)
 		{
@@ -157,13 +175,13 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 
 			if (!Check.isEmpty(keyColumnName, true))
 			{
-				zoomQuery.addRestriction(keyColumnName, MQuery.EQUAL, value);
+				zoomQuery.addRestriction(keyColumnName, Operator.EQUAL, value);
 				zoomQuery.setZoomColumnName(keyColumnName);
 				zoomQuery.setZoomTableName(keyTableName);
 			}
 			else
 			{
-				zoomQuery.addRestriction(columnName, MQuery.EQUAL, value);
+				zoomQuery.addRestriction(columnName, Operator.EQUAL, value);
 				if (columnName.indexOf(".") > 0)
 				{
 					zoomQuery.setZoomColumnName(columnName.substring(columnName.indexOf(".") + 1));
@@ -182,9 +200,9 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 		}
 
 		int AD_Window_ID = lookup.getZoom(zoomQuery);
-		//
+
 		log.info(columnName + " - AD_Window_ID=" + AD_Window_ID + " - Query=" + zoomQuery + " - Value=" + value);
-		//
+
 		zoom(lookup.getWindowNo(), AD_Window_ID, zoomQuery);
 	}
 

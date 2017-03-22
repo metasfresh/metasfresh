@@ -24,7 +24,7 @@ package org.adempiere.server.rpl.trx.spi;
 
 
 import org.adempiere.server.rpl.trx.api.IReplicationIssueSolverParams;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 
 /**
  * This implementation does nothing with the given {@link IReplicationIssueAware}.
@@ -38,7 +38,7 @@ public class NoOpIssueSolver<T extends IReplicationIssueAware> implements IRepli
 	@Override
 	public void solveIssues(final IReplicationIssueAware recordWithIssues, final IReplicationIssueSolverParams params)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("NoOpIssueSolver is called with IReplicationIssueAware={}", recordWithIssues);
+		Loggables.get().addLog("NoOpIssueSolver is called with IReplicationIssueAware={}", recordWithIssues);
 		// nothing to change; we just want to clear the record for further processing.
 	}
 

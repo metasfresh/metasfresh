@@ -21,7 +21,10 @@ import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-public class MigrationMerge extends SvrProcess {
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class MigrationMerge extends JavaProcess {
 
 	private I_AD_Migration migrationFrom;
 	private I_AD_Migration migrationTo;
@@ -54,7 +57,7 @@ public class MigrationMerge extends SvrProcess {
 		
 		int fromId = 0, toId = 0;
 		
-		ProcessInfoParameter[] params = getParameter();
+		ProcessInfoParameter[] params = getParametersAsArray();
 		for ( ProcessInfoParameter p : params)
 		{
 			String para = p.getParameterName();

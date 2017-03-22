@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,7 +61,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	private final Class<T> modelClass;
 	private final String tableName;
 	private final ICompositeQueryFilter<T> filters;
-	private POJOInSelectionQueryFilter<T> filter_onlySelection = null;
+	private POJOInSelectionQueryFilter<T> filter_inSelection = null;
+	private POJOInSelectionQueryFilter<T> filter_notInSelection = null;
 	private IQueryOrderBy orderBy;
 	private Map<String, Object> options = null;
 	private int limit = NO_LIMIT;
@@ -72,10 +73,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Deprecated
 	public POJOQuery(final Class<T> modelClass)
 	{
-		this(Env.getCtx(), modelClass, ITrx.TRXNAME_None);
+		this(Env.getCtx(), modelClass, null, ITrx.TRXNAME_None);
 	}
 
-	public POJOQuery(final Properties ctx, final Class<T> modelClass, final String trxName)
+	public POJOQuery(final Properties ctx, final Class<T> modelClass, final String tablename, final String trxName)
 	{
 		super();
 
@@ -84,12 +85,19 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		this.ctx = ctx;
 		this.trxName = trxName;
 
-		// make sure early if modelClass is valid
-		this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
-
 		final IQueryBL factory = Services.get(IQueryBL.class);
 
-		filters = factory.createCompositeQueryFilter(modelClass);
+		if (Check.isEmpty(tablename, true))
+		{
+			// make sure early if modelClass is valid
+			this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
+			filters = factory.createCompositeQueryFilter(modelClass);
+		}
+		else
+		{
+			this.tableName = tablename;
+			filters = factory.createCompositeQueryFilter(tableName);
+		}
 	}
 
 	@Override
@@ -209,23 +217,9 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> List<ET> list() throws DBException
+	public List<T> list() throws DBException
 	{
-		final List<T> result = list(modelClass);
-		if (result == null || result.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		final List<ET> resultCasted = new ArrayList<ET>(result.size());
-		for (final T model : result)
-		{
-			@SuppressWarnings("unchecked")
-			final ET modelCasted = (ET)model;
-			resultCasted.add(modelCasted);
-		}
-
-		return resultCasted;
+		return list(modelClass);
 	}
 
 	@Override
@@ -471,7 +465,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-
 	@Override
 	public POJOQuery<T> setOptions(final Map<String, Object> options)
 	{
@@ -492,7 +485,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-
 	@Override
 	public <OT> OT getOption(final String name)
 	{
@@ -511,20 +503,43 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public POJOQuery<T> setOnlySelection(final int AD_PInstance_ID)
 	{
 		// If Only selection filter has not changed then do nothing
-		if (filter_onlySelection != null && filter_onlySelection.getSelectionId() == AD_PInstance_ID)
+		if (filter_inSelection != null && filter_inSelection.getSelectionId() == AD_PInstance_ID)
 		{
 			return this;
 		}
 
-		if (filter_onlySelection != null)
+		if (filter_inSelection != null)
 		{
-			removeFilter(filter_onlySelection);
+			removeFilter(filter_inSelection);
 		}
 
 		if (AD_PInstance_ID > 0)
 		{
-			filter_onlySelection = new POJOInSelectionQueryFilter<T>(AD_PInstance_ID);
-			addFilter(filter_onlySelection);
+			filter_inSelection = POJOInSelectionQueryFilter.inSelection(AD_PInstance_ID);
+			addFilter(filter_inSelection);
+		}
+
+		return this;
+	}
+	
+	@Override
+	public POJOQuery<T> setNotInSelection(final int AD_PInstance_ID)
+	{
+		// If Only selection filter has not changed then do nothing
+		if (filter_notInSelection != null && filter_notInSelection.getSelectionId() == AD_PInstance_ID)
+		{
+			return this;
+		}
+
+		if (filter_notInSelection != null)
+		{
+			removeFilter(filter_notInSelection);
+		}
+
+		if (AD_PInstance_ID > 0)
+		{
+			filter_notInSelection = POJOInSelectionQueryFilter.notInSelection(AD_PInstance_ID);
+			addFilter(filter_notInSelection);
 		}
 
 		return this;
@@ -563,8 +578,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 
 			Check.assume(BigDecimal.class.equals(returnType)
-					|| Integer.class.equals(returnType)
-					, "Return type shall be {}, {} and not {}", BigDecimal.class, Integer.class, returnType);
+					|| Integer.class.equals(returnType), "Return type shall be {}, {} and not {}", BigDecimal.class, Integer.class, returnType);
 
 			// Setup initial result
 			result = null;
@@ -783,7 +797,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return new ArrayList<>(result);
 	}
-	
+
 	@Override
 	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
@@ -794,15 +808,15 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		for (final T record : records)
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
-			
+
 			@SuppressWarnings("unchecked")
 			final AT value = (AT)valueObj;
-			
-			if(result.contains(value))
+
+			if (result.contains(value))
 			{
 				continue;
 			}
-			
+
 			result.add(value);
 		}
 
@@ -822,7 +836,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 	/* package */ List<SqlQueryUnion<T>> getUnions()
 	{
-		if(unions == null)
+		if (unions == null)
 		{
 			return ImmutableList.of();
 		}
@@ -845,9 +859,15 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	protected <ToModelType> int executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
+	protected <ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
+		
+		if(queryInserter.isCreateSelectionOfInsertedRows())
+		{
+			throw new UnsupportedOperationException("CreateSelectionOfInsertedRows not supported for "+queryInserter);
+		}
+		final int insertSelectionId = -1;
 
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
@@ -886,6 +906,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			countInsert++;
 		}
 
-		return countInsert;
+		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

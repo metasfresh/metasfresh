@@ -1,7 +1,6 @@
 package de.metas.procurement.base.event.process;
 
-import org.compiere.process.SvrProcess;
-
+import de.metas.process.JavaProcess;
 import de.metas.procurement.base.event.impl.PMMQtyReportEventsProcessor;
 
 /*
@@ -26,7 +25,7 @@ import de.metas.procurement.base.event.impl.PMMQtyReportEventsProcessor;
  * #L%
  */
 
-public class PMM_QtyReport_Event_ProcessAllNow extends SvrProcess
+public class PMM_QtyReport_Event_ProcessAllNow extends JavaProcess
 {
 
 	@Override

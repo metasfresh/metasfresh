@@ -170,7 +170,7 @@ class PricingContext implements IEditablePricingContext
 	{
 		if (product == null && getM_Product_ID() > 0)
 		{
-			product = InterfaceWrapperHelper.create(getCtx(), getM_Product_ID(), I_M_Product.class, getTrxName());
+			product = InterfaceWrapperHelper.create(getCtx(), getM_Product_ID(), I_M_Product.class, ITrx.TRXNAME_None);
 		}
 		return product;
 	}

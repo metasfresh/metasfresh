@@ -28,6 +28,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Invoice Aging Report.
  *	Based on RV_Aging.
@@ -38,7 +41,7 @@ import org.compiere.util.TimeUtil;
  *  @see https://sourceforge.net/tracker2/?func=detail&aid=2655587&group_id=176962&atid=879332 
  *  @version $Id: Aging.java,v 1.5 2006/10/07 00:58:44 jjanke Exp $
  */
-public class Aging extends SvrProcess
+public class Aging extends JavaProcess
 {
 	/** The date to calculate the days due from			*/
 	private Timestamp	p_StatementDate = null;
@@ -59,7 +62,7 @@ public class Aging extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

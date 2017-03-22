@@ -13,16 +13,16 @@ package de.metas.payment.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import java.util.List;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,15 +47,20 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	}
 
 	@Override
-	public I_C_BP_BankAccount getC_BP_BankAccountOrNull()
+	public List<org.compiere.model.I_C_BP_BankAccount> getC_BP_BankAccounts()
 	{
 		final IPaymentString paymentString = getPaymentString();
 
 		final String postAccountNo = paymentString.getPostAccountNo();
 		final String innerAccountNo = paymentString.getInnerAccountNo();
 
-		final I_C_BP_BankAccount bankAccount = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccountOrNull(postAccountNo, innerAccountNo);
-		return bankAccount;
+		final IESRBPBankAccountDAO esrbpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+
+		final List<org.compiere.model.I_C_BP_BankAccount> bankAccounts = InterfaceWrapperHelper.createList(
+				esrbpBankAccountDAO.retrieveESRBPBankAccounts(postAccountNo, innerAccountNo),
+				org.compiere.model.I_C_BP_BankAccount.class);
+
+		return bankAccounts;
 	}
 
 	@Override
@@ -76,7 +81,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		// bpBankAccount.setC_Bank_ID(C_Bank_ID); // introduce a standard ESR-Dummy-Bank, or leave it empty
 
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(contextProvider.getCtx(), "CHF"); // CHF, because it's ESR
-		bpBankAccount.setC_Currency(currency); 
+		bpBankAccount.setC_Currency(currency);
 		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR string
 		bpBankAccount.setIsACH(true);
 		bpBankAccount.setA_Name(bpBankAccount.getC_BPartner().getName());

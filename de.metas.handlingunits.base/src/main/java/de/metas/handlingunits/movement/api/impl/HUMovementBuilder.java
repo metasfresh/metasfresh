@@ -13,15 +13,14 @@ package de.metas.handlingunits.movement.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -47,6 +46,8 @@ import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -112,7 +113,7 @@ public class HUMovementBuilder
 
 	public HUMovementBuilder setContextInitial(final Properties ctx)
 	{
-		_contextInitial = new PlainContextAware(ctx);
+		_contextInitial = PlainContextAware.newOutOfTrxAllowThreadInherited(ctx);
 		return this;
 	}
 
@@ -235,7 +236,8 @@ public class HUMovementBuilder
 	}
 
 	/**
-	 * Create and process the movement
+	 * Create and process the movement. Note that this BL only creates lines for the goods within the HUs, 
+	 * but there is a model interceptor that creates the packing material lines was soon as the M_Movement is prepared.
 	 *
 	 * @return movement
 	 */
@@ -245,7 +247,6 @@ public class HUMovementBuilder
 		huTrxBL.createHUContextProcessorExecutor(contextInitial)
 				.run(new IHUContextProcessor()
 				{
-
 					@Override
 					public IMutableAllocationResult process(final IHUContext huContext)
 					{
@@ -268,7 +269,8 @@ public class HUMovementBuilder
 		return movement;
 	}
 
-	private void createMovement0()
+	@VisibleForTesting
+	/* package */ void createMovement0()
 	{
 		//
 		// Get the HUs to move

@@ -19,8 +19,6 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.compiere.model.MBPartner;
@@ -33,6 +31,10 @@ import org.compiere.model.MPayment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Create Dunning Run Entries/Lines
@@ -42,7 +44,7 @@ import org.compiere.util.Env;
  *  
  *  FR 2872010 - Dunning Run for a complete Dunning (not just level) - Developer: Carlos Ruiz - globalqss - Sponsor: Metas
  */
-public class DunningRunCreate extends SvrProcess
+public class DunningRunCreate extends JavaProcess
 {
 	private boolean 	p_IncludeInDispute = false;
 	private boolean		p_OnlySOTrx = false;
@@ -62,7 +64,7 @@ public class DunningRunCreate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -286,7 +288,7 @@ public class DunningRunCreate extends SvrProcess
 		catch (Exception e)
 		{
 			log.error("addInvoices", e);
-			getProcessInfo().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
+			getResult().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
 		}
 		finally
 		{
@@ -321,10 +323,11 @@ public class DunningRunCreate extends SvrProcess
 		} 
 		catch (BPartnerNoAddressException e)
 		{
-			String msg = "@Skip@ @C_Invoice_ID@ " + MInvoice.get(getCtx(), C_Invoice_ID).getDocumentInfo()
+			final String msg = "@Skip@ @C_Invoice_ID@ " + MInvoice.get(getCtx(), C_Invoice_ID).getDocumentInfo()
 				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
-			getProcessInfo().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, msg);
+			final ProcessExecutionResult processResult = getResult();
+			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
 			return false;
 		}
 		
@@ -414,7 +417,8 @@ public class DunningRunCreate extends SvrProcess
 		catch (Exception e)
 		{
 			log.error(sql, e);
-			getProcessInfo().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
+			final ProcessExecutionResult result = getResult();
+			result.addLog(result.getAD_PInstance_ID(), null, null, e.getLocalizedMessage());
 		}
 		finally
 		{
@@ -444,7 +448,8 @@ public class DunningRunCreate extends SvrProcess
 			String msg = "@Skip@ @C_Payment_ID@ " + payment.getDocumentInfo()
 				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
-			getProcessInfo().addLog(getProcessInfo().getAD_PInstance_ID(), null, null, msg);
+			final ProcessExecutionResult processResult = getResult();
+			processResult.addLog(processResult.getAD_PInstance_ID(), null, null, msg);
 			return false;
 		}
 		if (entry.get_ID() == 0)

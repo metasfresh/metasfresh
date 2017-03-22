@@ -257,6 +257,29 @@ public interface I_C_Queue_WorkPackage
     public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
+	 * Set Batch Enqueued Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBatchEnqueuedCount (int BatchEnqueuedCount);
+
+	/**
+	 * Get Batch Enqueued Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBatchEnqueuedCount();
+
+    /** Column definition for BatchEnqueuedCount */
+    public static final org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_BatchEnqueuedCount = new org.adempiere.model.ModelColumn<I_C_Queue_WorkPackage, Object>(I_C_Queue_WorkPackage.class, "BatchEnqueuedCount", null);
+    /** Column name BatchEnqueuedCount */
+    public static final String COLUMNNAME_BatchEnqueuedCount = "BatchEnqueuedCount";
+
+	/**
 	 * Set Async Batch.
 	 *
 	 * <br>Type: TableDir

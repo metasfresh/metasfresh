@@ -1,6 +1,7 @@
 package org.adempiere.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -32,11 +34,11 @@ import com.google.common.collect.ImmutableSet;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,12 +55,7 @@ public final class GuavaCollectors
 	 */
 	public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList()
 	{
-		return Collector.of(
-				ImmutableList.Builder::new // supplier
-				, ImmutableList.Builder::add // accumulator
-				, (l, r) -> l.addAll(r.build()) // combiner
-				, ImmutableList.Builder<T>::build // finisher
-		);
+		return ImmutableList.toImmutableList();
 	}
 
 	/**
@@ -78,6 +75,20 @@ public final class GuavaCollectors
 		};
 		final Function<LinkedHashSet<T>, ImmutableList<T>> finisher = ImmutableList::copyOf;
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	/**
+	 * Collect a stream of elements into an {@link ImmutableList}.
+	 * 
+	 * Duplicates will be automatically discarded.
+	 *
+	 * @param keyFunction key function for identifying duplicates
+	 */
+	public static <T, K> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates(final Function<T, K> keyFunction)
+	{
+		final BiConsumer<K, T> duplicatesConsumer = (key, duplicate) -> {
+		};
+		return toImmutableListExcludingDuplicates(keyFunction, duplicatesConsumer);
 	}
 
 	/**
@@ -130,13 +141,7 @@ public final class GuavaCollectors
 	 */
 	public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet()
 	{
-		return Collector.of(
-				ImmutableSet.Builder::new // supplier
-				, ImmutableSet.Builder::add // accumulator
-				, (l, r) -> l.addAll(r.build()) // combiner
-				, ImmutableSet.Builder<T>::build // finisher
-				, Collector.Characteristics.UNORDERED // characteristics
-		);
+		return ImmutableSet.toImmutableSet();
 	}
 
 	/**
@@ -188,33 +193,87 @@ public final class GuavaCollectors
 		final Function<List<T>, String> finisher = joiner::join;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
-	
-	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
+
+	public static <K, V> Map.Entry<K, V> entry(final K key, final V value)
 	{
-		final Supplier<ImmutableMap.Builder<K, V>> supplier = ImmutableMap.Builder::new;
-		final BiConsumer<ImmutableMap.Builder<K, V>, Entry<K,V>> accumulator = (builder, entry) -> builder.put(entry);
-		final BinaryOperator<ImmutableMap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
-		final Function<ImmutableMap.Builder<K, V>, ImmutableMap<K, V>> finisher = (builder) -> builder.build();
-		return Collector.of(supplier, accumulator, combiner, finisher);
+		return new Map.Entry<K, V>()
+		{
+			@Override
+			public String toString()
+			{
+				return MoreObjects.toStringHelper("entry")
+						.add("key", key)
+						.add("value", value)
+						.toString();
+			}
+
+			@Override
+			public K getKey()
+			{
+				return key;
+			}
+
+			@Override
+			public V getValue()
+			{
+				return value;
+			}
+
+			@Override
+			public V setValue(final V value)
+			{
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
+	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
+	{
+		return ImmutableMap.<Map.Entry<K, V>, K, V> toImmutableMap(e -> e.getKey(), e -> e.getValue());
+	}
 
+	/**
+	 * Collects to {@link ImmutableMap}.
+	 *
+	 * If duplicate key was found, the last provided item will be used.
+	 *
+	 * @param keyMapper
+	 * @return immutable map collector
+	 */
 	public static <K, V> Collector<V, ?, ImmutableMap<K, V>> toImmutableMapByKey(final Function<? super V, ? extends K> keyMapper)
 	{
-		final Supplier<ImmutableMap.Builder<K, V>> supplier = ImmutableMap.Builder::new;
-		final BiConsumer<ImmutableMap.Builder<K, V>, V> accumulator = (builder, item) -> builder.put(keyMapper.apply(item), item);
-		final BinaryOperator<ImmutableMap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
-		final Function<ImmutableMap.Builder<K, V>, ImmutableMap<K, V>> finisher = (builder) -> builder.build();
-		return Collector.of(supplier, accumulator, combiner, finisher);
+		return ImmutableMap.toImmutableMap(keyMapper, value -> value, (valuePrev, valueNow) -> valueNow);
+	}
+
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toMap(final Supplier<Map<K, V>> mapSupplier)
+	{
+		final BiConsumer<Map<K, V>, Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
+		final BinaryOperator<Map<K, V>> combiner = (map1, map2) -> {
+			map1.putAll(map2);
+			return map1;
+		};
+		final Function<Map<K, V>, Map<K, V>> finisher = (map) -> map;
+		return Collector.of(mapSupplier, accumulator, combiner, finisher);
+	}
+
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toHashMap()
+	{
+		return toMap(HashMap::new);
+	}
+
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toLinkedHashMap()
+	{
+		return toMap(LinkedHashMap::new);
 	}
 
 	public static <K, V> Collector<V, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap(final Function<? super V, ? extends K> keyMapper)
 	{
-		final Supplier<ImmutableListMultimap.Builder<K, V>> supplier = ImmutableListMultimap.Builder::new;
-		final BiConsumer<ImmutableListMultimap.Builder<K, V>, V> accumulator = (builder, item) -> builder.put(keyMapper.apply(item), item);
-		final BinaryOperator<ImmutableListMultimap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
-		final Function<ImmutableListMultimap.Builder<K, V>, ImmutableListMultimap<K, V>> finisher = (builder) -> builder.build();
-		return Collector.of(supplier, accumulator, combiner, finisher);
+		return ImmutableListMultimap.toImmutableListMultimap(keyMapper, value -> value);
+	}
+
+	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap()
+	{
+		return ImmutableListMultimap.<Map.Entry<K, V>, K, V> toImmutableListMultimap(e -> e.getKey(), e -> e.getValue());
 	}
 
 	private GuavaCollectors()

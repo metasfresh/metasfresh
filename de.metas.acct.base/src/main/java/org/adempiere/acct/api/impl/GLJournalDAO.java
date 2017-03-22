@@ -70,7 +70,7 @@ public class GLJournalDAO implements IGLJournalDAO
 		queryBuilder
 				.addEqualsFilter(I_GL_Journal.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_GL_Journal.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed); // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed); // DocStatus in ('CO', 'CL')
 
 		// Exclude the entries that don't have either Credit or Debit amounts. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_GL_Journal> nonZeroFilter = queryBL.createCompositeQueryFilter(I_GL_Journal.class).setJoinOr()

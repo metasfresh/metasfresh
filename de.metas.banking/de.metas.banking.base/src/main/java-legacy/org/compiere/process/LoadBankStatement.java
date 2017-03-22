@@ -22,6 +22,9 @@ import java.util.Properties;
 import org.compiere.model.MBankStatementLoader;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Process for loading Bank Statements into I_BankStatement
@@ -29,7 +32,7 @@ import org.compiere.util.Env;
  *	@author Maarten Klinker, Eldir Tomassen
  *	@version $Id: LoadBankStatement.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class LoadBankStatement extends SvrProcess
+public class LoadBankStatement extends JavaProcess
 {
 	public LoadBankStatement()
 	{
@@ -63,7 +66,7 @@ public class LoadBankStatement extends SvrProcess
 	{
 		log.info("");
 		m_ctx = Env.getCtx();
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

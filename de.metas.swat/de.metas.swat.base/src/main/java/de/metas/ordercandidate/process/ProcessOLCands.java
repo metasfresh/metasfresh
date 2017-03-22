@@ -4,8 +4,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -13,6 +11,8 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.Param;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.process.JavaProcess;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
@@ -22,9 +22,10 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ProcessOLCands extends SvrProcess
+public class ProcessOLCands extends JavaProcess
 {
-	@Param(mandatory = true, parameterName = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID)
+	public static final String PARAM_C_OLCandProcessor_ID = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID;
+	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)
 	private int olCandProcessorId;
 
 	@Override
@@ -32,7 +33,10 @@ public class ProcessOLCands extends SvrProcess
 	{
 		// Display process logs only if the process failed.
 		// NOTE: we do that because this process is called from window Gear and user shall only see the status line, and no popup shall be displayed.
-		setShowProcessLogs(ShowProcessLogs.OnError);
+		
+		// gh #755 new note: this process is run manually from gear only rarely. So an (admin-) user who runs this should see what went on.
+		// particularly if there were problems (and this process would still return "OK" in that case).
+		setShowProcessLogs(ShowProcessLogs.Always);
 	}
 
 	@Override

@@ -12,13 +12,13 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.process.Param;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -49,7 +49,7 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/213
  */
-public class X_MRP_ProductInfo_Detail_MV_Update_Records extends SvrProcess
+public class X_MRP_ProductInfo_Detail_MV_Update_Records extends JavaProcess
 {
 	public static final String DB_FUNCTION_X_MRP_PRODUCT_INFO_DETAIL_INSERT_FALLBACK = "X_MRP_ProductInfo_Detail_Insert_Fallback";
 
@@ -98,7 +98,9 @@ public class X_MRP_ProductInfo_Detail_MV_Update_Records extends SvrProcess
 					public void process(final I_X_MRP_ProductInfo_Detail_MV item) throws Exception
 					{
 						final IMRPProductInfoBL mrpProductInfoBL = Services.get(IMRPProductInfoBL.class);
-						mrpProductInfoBL.updateItems(new PlainContextAware(getCtx(), getTrxName()), Collections.singletonList(item), null);
+						mrpProductInfoBL.updateItems(
+								PlainContextAware.newWithTrxName(getCtx(), getTrxName()), 
+								Collections.singletonList(item));
 						counter++;
 					}
 

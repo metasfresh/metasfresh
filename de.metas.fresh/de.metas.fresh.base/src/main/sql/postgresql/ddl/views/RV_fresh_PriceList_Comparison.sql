@@ -1,10 +1,11 @@
+--DROP VIEW IF EXISTS rv_fresh_pricelist 
 
 --DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
 CREATE OR REPLACE VIEW RV_fresh_PriceList_Comparison AS 
 
-SELECT
-	-- Mandatory Columns
+
+SELECT 
 	pp.AD_Org_ID, pp.AD_Client_ID,
 	pp.Created, pp.CreatedBy,
 	pp.Updated, pp.UpdatedBy,
@@ -17,7 +18,7 @@ SELECT
 	p.Value,
 	p.Name AS ProductName,
 	pp.IsSeasonFixedPrice,
-	ip.Name AS ItemProductName,
+	hupip.Name AS ItemProductName,
 	pm.Name AS PackingMaterialName,
 	ROUND( COALESCE( ppa.PriceStd, pp.PriceStd ), 2 ) AS PriceStd,
 	ROUND( COALESCE( ppa2.PriceStd, pp2.PriceStd ), 2 ) AS AltPriceStd,
@@ -33,76 +34,84 @@ SELECT
 	
 	-- Additional internal infos to be used
 	pp.M_ProductPrice_ID,
-	ppa.M_ProductPrice_Attribute_ID,
-	ip.M_HU_PI_Item_Product_ID,
+	ppa.m_attributesetinstance_ID,
+	bp_ip.M_HU_PI_Item_Product_ID as M_HU_PI_Item_Product_ID,
 	uom.X12DE355 as UOM_X12DE355,
-	ip.QtyCUsPerTU
-FROM
-	/** Get all BPartner and Product combinations. 
-	  * IMPORTANT: Never use the query without BPartner Filter active
-	  */
-	M_Product p 
-	INNER JOIN C_BPartner bp ON true
+	hupip.Qty as QtyCUsPerTU
 	
-	/** For every BPartner-Product combination, find out if there is a packing instruction limited to the BPartner */
-	LEFT OUTER JOIN (
-	
-		SELECT	ip.M_Product_ID, ip.C_BPartner_ID, COALESCE( Bool_OR( ip.hasPartner ), False ) AS hasSpecificBP
-		FROM	/** All currently active and valid Packing instructions */
-			((SELECT * FROM Report.Valid_PI_Item_Product_V)) ip 
-		GROUP BY ip.M_Product_ID, ip.C_BPartner_ID
-		
-	) spi ON bp.C_BPartner_ID = spi.C_BPartner_ID AND p.M_Product_ID = spi.M_Product_ID
-	
-	/** 
-	  * We now know if there are packing instructions limited to the BPartner/product-combination. If so,
+FROM M_ProductPrice pp
+
+INNER JOIN M_Product p ON pp.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+INNER JOIN C_BPartner bp ON TRUE
+INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+INNER JOIN C_UOM uom ON pp.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+
+
+	/* 
+	  * We know if there are packing instructions limited to the BPartner/product-combination. If so,
 	  * we will use only those. If not, we will use only the non limited ones
 	  */
-	LEFT OUTER JOIN 
-		((
-			SELECT * FROM Report.Valid_PI_Item_Product_V /* WHERE isInfiniteCapacity = 'N' task 09045/09788: we can also export PiiPs with infinite capacity */
-		)) ip
-			ON ip.M_Product_ID = p.M_Product_ID 
-			AND ( ( COALESCE(spi.hasSpecificBP, False ) AND ip.C_BPartner_ID = bp.C_BPartner_ID ) 
-			OR ( NOT COALESCE(spi.hasSpecificBP, False ) AND ip.C_BPartner_ID IS NULL ) )
-	LEFT OUTER JOIN m_hu_pi_item it ON ip.M_HU_PI_Item_ID = it.M_HU_PI_Item_ID
-	LEFT OUTER JOIN m_hu_pi_item pmit ON it.m_hu_pi_version_id = pmit.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT
-	LEFT OUTER JOIN m_hu_packingmaterial pm ON pmit.m_hu_packingmaterial_id = pm.m_hu_packingmaterial_id
+LEFT OUTER JOIN LATERAL
+	( 
+		SELECT vip.M_HU_PI_Item_Product_ID, vip.hasPartner
+		FROM Report.Valid_PI_Item_Product_V vip
+		/* WHERE isInfiniteCapacity = 'N' task 09045/09788: we can also export PiiPs with infinite capacity */
+		WHERE  p.M_Product_ID = vip.M_Product_ID
+				
+				AND CASE WHEN 
+				EXISTS (select 0 from Report.Valid_PI_Item_Product_V v where p.M_Product_ID = v.M_Product_ID AND v.hasPartner is true and bp.C_BPartner_ID = v.C_BPartner_ID)
+				THEN vip.C_BPartner_ID = bp.C_BPartner_ID else vip.C_BPartner_ID IS NULL END
+	) bp_ip ON TRUE
 	
-	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-	/** Getting the product price for all price list versions and all products */
-	INNER JOIN M_ProductPrice pp ON p.M_Product_ID = pp.M_Product_ID AND pp.IsActive = 'Y'
-	INNER JOIN C_UOM uom ON pp.C_UOM_ID = uom.C_UOM_ID
-	/** Attribute Prices */
-	LEFT OUTER JOIN 
-		(
-			SELECT M_ProductPrice_ID, M_ProductPrice_Attribute_ID, PriceStd, IsActive, M_HU_PI_Item_Product_ID, Attributes, Signature FROM report.fresh_AttributePrice			
-			/** Add a line without an actual attribute price. Reason: The attribute prices overwrite the regular prices but if there are 
-			  * attribute prices we still need to display the regular prices. therefore we also join a line, that will not overwrite the 
-			  * regular price.*/
-			UNION SELECT M_ProductPrice_ID, NULL, NULL, 'Y', NULL, NULL, NULL FROM M_ProductPrice
-		) ppa 
-			ON pp.M_ProductPrice_ID = ppa.M_ProductPrice_ID 
-			AND (ppa.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID OR ppa.M_HU_PI_Item_Product_ID IS NULL)
-	/**
-	  * Get Comparison Prices
-	  */
-	LEFT OUTER JOIN M_PriceList_Version plv ON pp.M_PriceList_Version_ID = plv.M_PriceList_Version_ID
-	/** Get all PriceList_Versions of the PriceList (we need all available PriceList_Version_IDs for outside filtering)
-	  * limited to the same PriceList because the Parameter validation rule is enforcing this */
-	LEFT OUTER JOIN M_PriceList_Version plv2 ON plv.M_PriceList_ID = plv2.M_PriceList_ID AND plv.IsActive = 'Y'
-	LEFT OUTER JOIN M_ProductPrice pp2 ON p.M_Product_ID = pp2.M_Product_ID AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID
-	/** Joining attribute prices */
-	LEFT OUTER JOIN report.fresh_AttributePrice ppa2 ON pp2.M_ProductPrice_ID = ppa2.M_ProductPrice_ID
-			/** we have to make sure that only prices with the same attributes and packing instructions are compared. Note: 
+LEFT OUTER JOIN LATERAL
+	(
+		SELECT  M_ProductPrice_ID, M_Attributesetinstance_ID, PriceStd, IsActive, M_HU_PI_Item_Product_ID, Attributes, Signature
+		FROM report.fresh_AttributePrice ppa
+		WHERE ppa.isActive = 'Y' AND ppa.M_ProductPrice_ID = pp.M_ProductPrice_ID AND (ppa.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa.m_hu_pi_item_product_id IS NULL)
+	) ppa on true
+
+LEFT OUTER JOIN m_hu_pi_item_product hupip ON bp_ip.m_hu_pi_item_product_ID = hupip.m_hu_pi_item_product_id and hupip.isActive ='Y'		
+LEFT OUTER JOIN m_hu_pi_item it ON hupip.M_HU_PI_Item_ID = it.M_HU_PI_Item_ID AND it.isActive = 'Y'
+LEFT OUTER JOIN m_hu_pi_item pmit ON it.m_hu_pi_version_id = pmit.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
+LEFT OUTER JOIN m_hu_packingmaterial pm ON pmit.m_hu_packingmaterial_id = pm.m_hu_packingmaterial_id AND pm.isActive = 'Y'
+
+
+INNER JOIN M_PriceList_Version plv ON pp.M_PriceList_Version_ID = plv.M_PriceList_Version_ID AND plv.IsActive = 'Y'
+	/*
+	 Get Comparison Prices
+	*/
+	
+	/* Get all PriceList_Versions of the PriceList (we need all available PriceList_Version_IDs for outside filtering)
+	 limited to the same PriceList because the Parameter validation rule is enforcing this */
+LEFT JOIN M_PriceList_Version plv2 ON plv.M_PriceList_ID = plv2.M_PriceList_ID AND plv2.IsActive = 'Y'
+LEFT JOIN M_ProductPrice pp2 ON p.M_Product_ID = pp2.M_Product_ID AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID AND pp2.IsActive = 'Y'
+								AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR (pp2.m_hu_pi_item_product_ID is null and pp.m_hu_pi_item_product_ID is null))
+								AND pp2.isAttributeDependant = pp.isAttributeDependant
+								--avoid comparing different prices in same pricelist
+								AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
+											
+	/* Joining attribute prices */
+LEFT JOIN report.fresh_AttributePrice ppa2 ON pp2.M_ProductPrice_ID = ppa2.M_ProductPrice_ID
+			/* we have to make sure that only prices with the same attributes and packing instructions are compared. Note: 
 			 * - If there is an Existing Attribute Price but no signature related columns are filled the signature will be ''
 			 * - If there are no Attribute Prices the signature will be null
 			 * This is important, because otherwise an empty attribute price will be compared to the regular price AND the alternate attribute price */
-			AND ppa.signature = ppa2.signature
-;
+			AND (ppa.signature = ppa2.signature ) AND ppa2.IsActive = 'Y'
+			AND (ppa.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa.m_hu_pi_item_product_id IS NULL)
+			
 
+WHERE pp.isActive = 'Y'
+
+		AND (pp.M_Attributesetinstance_ID = ppa.M_Attributesetinstance_ID OR pp.M_Attributesetinstance_ID is null)
+		AND (pp.M_HU_PI_Item_Product_ID = bp_ip.M_HU_PI_Item_Product_ID OR  pp.M_HU_PI_Item_Product_ID is null)
+		
+		AND  (case when plv2.M_PriceList_Version_ID = plv.M_PriceList_Version_ID THEN  ppa.signature=ppa2.signature ELSE true end)
+
+
+;
 
 COMMENT ON VIEW RV_fresh_PriceList_Comparison
   IS '06042 Preisliste Drucken Preisänderung (100373416918)
 Refactored in Tasks 07833 and 07915
 A view for a report that displays the same data as RV_fresh_PriceList but imroved to be able to filter by two Price list versions, to be able to compare them';
+

@@ -24,8 +24,6 @@ package org.adempiere.bpartner.service.impl;
 
 
 import static org.junit.Assert.assertSame;
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -33,6 +31,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.interfaces.I_C_BPartner;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class BPartnerBLTests
 {
@@ -106,9 +106,10 @@ public class BPartnerBLTests
 	private void partnerAllowsConsolidateInOut(final boolean partnerAllowsConsolidateInOut)
 	{
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				partner.isAllowConsolidateInOut();
+				minTimes = 0;
 				result = partnerAllowsConsolidateInOut;
 		}};
 		// @formatter:on
@@ -117,9 +118,10 @@ public class BPartnerBLTests
 	private void sysConfig_AllowConsolidateInOut_ReturnsTrue(final boolean sysConfigReturnsTrue)
 	{
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				sysConfigBL.getBooleanValue(BPartnerBL.SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override, false);
+				minTimes = 0;
 				result = sysConfigReturnsTrue;
 		}};
 		// @formatter:on

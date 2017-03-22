@@ -340,7 +340,7 @@ public interface I_AD_Process
 	/**
 	 * Set Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -349,7 +349,7 @@ public interface I_AD_Process
 	/**
 	 * Get Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -511,6 +511,31 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
 
 	/**
+	 * Set Allow one instance only.
+	 * At the same time allow to run only one instance of this process
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsOneInstanceOnly (boolean IsOneInstanceOnly);
+
+	/**
+	 * Get Allow one instance only.
+	 * At the same time allow to run only one instance of this process
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isOneInstanceOnly();
+
+    /** Column definition for IsOneInstanceOnly */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_IsOneInstanceOnly = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "IsOneInstanceOnly", null);
+    /** Column name IsOneInstanceOnly */
+    public static final String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
+
+	/**
 	 * Set Bericht.
 	 * Indicates a Report record
 	 *
@@ -632,6 +657,31 @@ public interface I_AD_Process
     public static final String COLUMNNAME_JasperReport_Tabular = "JasperReport_Tabular";
 
 	/**
+	 * Set Wait Timeout.
+	 * If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLockWaitTimeout (int LockWaitTimeout);
+
+	/**
+	 * Get Wait Timeout.
+	 * If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLockWaitTimeout();
+
+    /** Column definition for LockWaitTimeout */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_LockWaitTimeout = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "LockWaitTimeout", null);
+    /** Column name LockWaitTimeout */
+    public static final String COLUMNNAME_LockWaitTimeout = "LockWaitTimeout";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -732,54 +782,52 @@ public interface I_AD_Process
     public static final String COLUMNNAME_ShowHelp = "ShowHelp";
 
 	/**
-	 * Set Statistic Count.
-	 * Internal statistics how often the entity was used
+	 * Set SQLStatement.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStatistic_Count (int Statistic_Count);
+	public void setSQLStatement (java.lang.String SQLStatement);
 
 	/**
-	 * Get Statistic Count.
-	 * Internal statistics how often the entity was used
+	 * Get SQLStatement.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getStatistic_Count();
+	public java.lang.String getSQLStatement();
 
-    /** Column definition for Statistic_Count */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Statistic_Count = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Statistic_Count", null);
-    /** Column name Statistic_Count */
-    public static final String COLUMNNAME_Statistic_Count = "Statistic_Count";
+    /** Column definition for SQLStatement */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_SQLStatement = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "SQLStatement", null);
+    /** Column name SQLStatement */
+    public static final String COLUMNNAME_SQLStatement = "SQLStatement";
 
 	/**
-	 * Set Statistic Seconds.
-	 * Internal statistics how many seconds a process took
+	 * Set Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStatistic_Seconds (int Statistic_Seconds);
+	public void setType (java.lang.String Type);
 
 	/**
-	 * Get Statistic Seconds.
-	 * Internal statistics how many seconds a process took
+	 * Get Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getStatistic_Seconds();
+	public java.lang.String getType();
 
-    /** Column definition for Statistic_Seconds */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Statistic_Seconds = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Statistic_Seconds", null);
-    /** Column name Statistic_Seconds */
-    public static final String COLUMNNAME_Statistic_Seconds = "Statistic_Seconds";
+    /** Column definition for Type */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Type", null);
+    /** Column name Type */
+    public static final String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Aktualisiert.

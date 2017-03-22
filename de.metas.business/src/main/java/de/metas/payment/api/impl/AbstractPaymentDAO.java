@@ -85,7 +85,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_C_Payment.COLUMN_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)  // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)  // DocStatus in ('CO', 'CL')
 				;
 
 		// Only the documents created after the given start time

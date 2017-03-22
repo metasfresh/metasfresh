@@ -24,6 +24,7 @@ package de.metas.handlingunits.attribute.storage;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 
 /**
- * Defines a Attribute Storage pool
+ * Defines a Attribute Storage pool. Use e.g. {@link IAttributeStorageFactory#getAttributeStorage(Object)} do get an instance.
  *
  * @author tsa
  *
@@ -237,6 +238,12 @@ public interface IAttributeStorage extends IAttributeSet
 	@Override
 	BigDecimal getValueAsBigDecimal(I_M_Attribute attribute);
 
+	@Override
+	Date getValueAsDate(I_M_Attribute attribute);
+
+	@Override
+	String getValueAsString(I_M_Attribute attribute);
+
 	/**
 	 * @param attribute
 	 * @return name of given attribute current value (aka. valueName)
@@ -266,7 +273,7 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Method called by API when a child storage was added (e.g. a child HU was included to the HU that owns this storage).
 	 *
-	 * NOTE: don't call it directly, the API will.
+	 * NOTE: don't call it directly, the API will make the call, e.g. if a child HU was added to aparent HU.
 	 *
 	 * @param childAttributeStorage
 	 */
@@ -285,7 +292,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * Push up attributes: force propagating attributes from this storage to its parent's storages. Propagates all <code>this</code> storage's attribute values using
 	 * {@link X_M_HU_PI_Attribute#PROPAGATIONTYPE_BottomUp}.
 	 *
-	 * NOTE: don't call it directly. It's called by API only
+	 * NOTE: don't call it directly. It's called by API ({@link #onChildAttributeStorageAdded(IAttributeStorage)}) only
 	 */
 	void pushUp();
 
@@ -311,6 +318,14 @@ public interface IAttributeStorage extends IAttributeSet
 	 * If changes will be saved or not depends on implementation.
 	 */
 	void saveChangesIfNeeded();
+
+	/**
+	 * Enables/Disables automatic saving when an attribute value is changed
+	 * 
+	 * @param saveOnChange
+	 * @throws UnsupportedOperationException in case the operation is not supported
+	 */
+	void setSaveOnChange(final boolean saveOnChange);
 
 	IAttributeStorageFactory getHUAttributeStorageFactory();
 
@@ -355,5 +370,13 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @throws HUException if any storage is disposed
 	 */
 	boolean assertNotDisposedTree();
+
+	/**
+	 * @return warehouse on which this attribute storage sits (e.g. in case of a HU, it's the HU's warehouse).
+	 */
+	default int getM_Warehouse_ID()
+	{
+		return -1;
+	}
 
 }

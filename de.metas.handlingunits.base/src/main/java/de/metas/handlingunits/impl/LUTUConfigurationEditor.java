@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.util.function.Function;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,7 +28,6 @@ package de.metas.handlingunits.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -86,14 +87,14 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 	}
 
 	@Override
-	public ILUTUConfigurationEditor edit(final Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor)
+	public ILUTUConfigurationEditor edit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor)
 	{
 		assertEditing();
 
 		Check.assumeNotNull(lutuConfigurationEditor, "lutuConfigurationEditor not null");
 
 		final I_M_HU_LUTU_Configuration lutuConfigurationEditing = getEditingLUTUConfiguration();
-		final I_M_HU_LUTU_Configuration lutuConfigurationEditingNew = lutuConfigurationEditor.convert(lutuConfigurationEditing);
+		final I_M_HU_LUTU_Configuration lutuConfigurationEditingNew = lutuConfigurationEditor.apply(lutuConfigurationEditing);
 		setEditingLUTUConfiguration(lutuConfigurationEditingNew);
 
 		return this;

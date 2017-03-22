@@ -28,28 +28,31 @@
 ***********************************************************************/
 package org.adempiere.process;
 
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.MColumn;
 import org.compiere.model.MField;
-import org.compiere.model.MProcess;
-import org.compiere.model.MProcessPara;
 import org.compiere.model.MTab;
 import org.compiere.model.X_ASP_Field;
 import org.compiere.model.X_ASP_Process;
 import org.compiere.model.X_ASP_Process_Para;
 import org.compiere.model.X_ASP_Tab;
 import org.compiere.model.X_ASP_Workflow;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.wf.MWorkflow;
+
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Generate ASP fields for a window
  *	
  *  @author Carlos Ruiz
  */
-public class ASPGenerateFields extends SvrProcess
+public class ASPGenerateFields extends JavaProcess
 {
 	private String  p_ASP_Status;
 	private int p_ASP_Level_ID;	
@@ -64,9 +67,10 @@ public class ASPGenerateFields extends SvrProcess
 	/**
 	 * 	Prepare
 	 */
+	@Override
 	protected void prepare ()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -84,6 +88,7 @@ public class ASPGenerateFields extends SvrProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("ASP_Status=" + p_ASP_Status 
@@ -131,7 +136,7 @@ public class ASPGenerateFields extends SvrProcess
 
 	private void generateProcess(int p_AD_Process_ID) {
 		// Add Process and Parameters
-		MProcess process = new MProcess(getCtx(), p_AD_Process_ID, get_TrxName());
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(getCtx(), p_AD_Process_ID);
 		int asp_process_id = DB.getSQLValueEx(get_TrxName(),
 				"SELECT COUNT(*) FROM ASP_Process WHERE ASP_Level_ID = ? AND AD_Process_ID = ?",
 				p_ASP_Level_ID, process.getAD_Process_ID());
@@ -149,7 +154,8 @@ public class ASPGenerateFields extends SvrProcess
 			aspProcess = new X_ASP_Process(getCtx(), asp_process_id, get_TrxName());
 		}
 		// parameters
-		for (MProcessPara processpara : process.getParameters()) {
+		for (final I_AD_Process_Para processpara : Services.get(IADProcessDAO.class).retrieveProcessParameters(process))
+		{
 			if (DB.getSQLValueEx(
 					get_TrxName(),
 					"SELECT COUNT(*) FROM ASP_Process_Para WHERE ASP_Process_ID = ? AND AD_Process_Para_ID = ?",

@@ -41,9 +41,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
@@ -54,13 +51,16 @@ import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Contains basic utility BL needed to create processes which send mails for given selection.
  *
  * @author al
  */
-public abstract class AbstractSendDocumentsForSelection extends SvrProcess
+public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
@@ -78,7 +78,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 	{
 		//
 		// Init parameters first
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -40,11 +38,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.MPInstance;
-import org.compiere.model.MProcess;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
@@ -58,6 +55,9 @@ import de.metas.letters.model.I_T_Letter_Spool;
 import de.metas.letters.model.LetterDocumentLocationAdapter;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.spi.ILetterProducer;
+import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfo;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {
@@ -167,23 +167,22 @@ public final class TextTemplateBL implements ITextTemplateBL
 	}
 
 	@Override
-	public byte[] createPDF(I_C_Letter letter)
+	public byte[] createPDF(final I_C_Letter letter)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
-		// final int clientId = Env.getAD_Client_ID(ctx);
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(getJasperProcess_ID(letter))
+				// .setRecord(recordRef) // no record
+				.setReportLanguage(Env.getLanguage(ctx))
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
+		Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(jasperProcessInfo);
 
-		final int jasperProcessId = getJasperProcess_ID(letter);
-		final MProcess process = MProcess.get(ctx, jasperProcessId);
-		final MPInstance pinstance = new MPInstance(ctx, process.getAD_Process_ID(), 0, 0); // recordId=0
-		pinstance.saveEx();
-
-		createLetterSpoolRecord(pinstance.getAD_PInstance_ID(), letter);
+		createLetterSpoolRecord(jasperProcessInfo.getAD_PInstance_ID(), letter);
 
 		final JRClient jrClient = JRClient.get();
-		final byte[] pdf = jrClient.report(pinstance.getAD_Process_ID(),
-				pinstance.getAD_PInstance_ID(),
-				Env.getLanguage(ctx),
-				OutputType.PDF);
+		final byte[] pdf = jrClient.report(jasperProcessInfo);
 
 		return pdf;
 	}

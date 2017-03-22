@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,6 +50,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.persistence.po.INoDataFoundHandler;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -66,7 +69,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -91,6 +93,7 @@ import org.w3c.dom.Element;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -316,8 +319,6 @@ public abstract class PO
 	 * Compared to {@link #m_createNew} this flag will be never ever reset so can always know if this PO was created now.
 	 */
 	private boolean m_wasJustCreated = false;
-	/** Attachment with entries */
-	private MAttachment m_attachment = null;
 	/** Deleted ID */
 	private int m_idOld = 0;
 	/** Custom Columns */
@@ -653,6 +654,14 @@ public abstract class PO
 	{
 		return get_Value(columnName);
 	}   // get_ValueE
+	
+	@Override
+	public <T> T get_ValueAsObject(String variableName)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)get_Value(variableName);
+		return value;
+	}
 
 	/**
 	 * Get Column Value
@@ -795,14 +804,15 @@ public abstract class PO
 			return false;
 		}
 
-		if (m_newValues[index] == null)
-			return false;
 		// metas: begin: If column was explicitly marked as changed we consider it changed
 		if (markedChangedColumns != null && markedChangedColumns.contains(index))
 		{
 			return true;
 		}
 		// metas: end
+
+		if (m_newValues[index] == null)
+			return false;
 
 		// metas: normalize null values before comparing them (04219)
 		Object newValue = m_newValues[index];
@@ -983,14 +993,14 @@ public abstract class PO
 			// metas-ts 02973 only show this message (and clutter the log) if old and new value differ
 			// NOTE: when comparing we need to take the old value (the one which is in database) and NOT the previously set (via set_ValueNoCheck for example).
 			final Object oldValue = get_ValueOld(index);
-			if (Check.equals(oldValue, value))
+			if (Objects.equals(oldValue, value))
 			{
 				// Value did not changed.
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
 				// ...but we can do a quick look-ahead and see if that's the case
-				if (Check.equals(m_newValues[index], value))
+				if (Objects.equals(m_newValues[index], value))
 				{
 					return true;
 				}
@@ -1685,7 +1695,7 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName);
+			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
 		}
 		finally
 		{
@@ -1693,8 +1703,14 @@ public abstract class PO
 			m_loadingLock.unlock();
 		}
 	}
-
-	private final boolean load0(final String trxName)
+	
+	/**
+	 * Do the actual loading.
+	 * 
+	 * @param trxName
+	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry. 
+	 */
+	private final boolean load0(final String trxName, final boolean isRetry)
 	{
 		m_trxName = trxName;
 		boolean success = true;
@@ -1720,6 +1736,17 @@ public abstract class PO
 			}
 			else
 			{
+				if (!isRetry)
+				{
+					// gh #986 see if any noDataFoundHandler can do something and, if so, retry *once*
+					if (NoDataFoundHandlers.get()
+							.invokeHandlers(get_TableName(),
+									m_IDs,
+									InterfaceWrapperHelper.getContextAware(this)))
+					{
+						return load0(trxName, true); // this is the retry, so isRetry=true this time
+					}
+				}
 				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
 				m_IDs = new Object[] { I_ZERO };
 				success = false;
@@ -2993,7 +3020,7 @@ public abstract class PO
 		}
 		if (s_docWFMgr != null)
 		{
-			s_docWFMgr.process(this, p_info.getAD_Table_ID());
+			s_docWFMgr.process(this);
 		}
 	}
 
@@ -3142,8 +3169,8 @@ public abstract class PO
 			// Update Document No
 			if (columnName.equals("DocumentNo"))
 			{
-				String strValue = (String)value;
-				if (strValue.startsWith("<") && strValue.endsWith(">"))
+				String documentNo = (String)value;
+				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
@@ -3156,7 +3183,7 @@ public abstract class PO
 						final int docTypeId = get_ValueAsInt(docTypeIndex);
 						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 					}
@@ -3164,7 +3191,7 @@ public abstract class PO
 					{
 						value = documentNoFactory.forTableName(p_info.getTableName(), getAD_Client_ID(), getAD_Org_ID())
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
@@ -3349,7 +3376,7 @@ public abstract class PO
 			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
 			if (idNew <= 0)
 			{
-				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ")");
+				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
 				// log.error(ex.getLocalizedMessage(), ex);
 				// return false;
 				throw ex;
@@ -3410,21 +3437,21 @@ public abstract class PO
 			if (index != -1 && p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value != null && value.startsWith("<") && value.endsWith(">"))
+				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
 					value = null;
-				if (value == null || value.length() == 0)
+				if (value == null || value.isEmpty())
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
-					int dt = p_info.getColumnIndex("C_DocTypeTarget_ID");
-					if (dt == -1)
+					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
+					if (docTypeIndex == -1)
 					{
-						dt = p_info.getColumnIndex("C_DocType_ID");
+						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
-					if (dt != -1) 		// get based on Doc Type (might return null)
+					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(dt), false) // useDefiniteSequence=false
+						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 					}
@@ -3432,7 +3459,7 @@ public abstract class PO
 					{
 						value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
@@ -3455,12 +3482,17 @@ public abstract class PO
 			else if (p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value == null || value.length() == 0)
+				if(IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
+				{
+					value = null;
+				}
+				
+				if (value == null || value.isEmpty())
 				{
 					// metas: using AD_Org_ID as additional parameter
 					value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 							.setTrxName(m_trxName)
-							.setPO(this)
+							.setDocumentModel(this)
 							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
 							.build();
 					set_ValueNoCheck(index, value);
@@ -3952,8 +3984,6 @@ public abstract class PO
 		// Delete Cascade AD_Table_ID/Record_ID (Attachments, ..)
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
 
-		MRelation.deleteForPO(this); // metas-ts us197
-
 		//
 		// The Delete Statement
 		final StringBuilder sql = new StringBuilder("DELETE FROM ") // jz why no FROM??
@@ -3981,7 +4011,6 @@ public abstract class PO
 
 			// Housekeeping
 			m_IDs[0] = I_ZERO;
-			m_attachment = null;
 
 			if (log.isDebugEnabled())
 				log.debug("[" + m_trxName + "] - complete");
@@ -4437,118 +4466,6 @@ public abstract class PO
 	{
 		return m_trxName;
 	}	// getTrx
-
-	/**************************************************************************
-	 * Get Attachments.
-	 * An attachment may have multiple entries
-	 *
-	 * @return Attachment or null
-	 */
-	public final MAttachment getAttachment()
-	{
-		return getAttachment(false);
-	}	// getAttachment
-
-	/**
-	 * Get Attachments
-	 *
-	 * @param requery requery
-	 * @return Attachment or null
-	 */
-	public final MAttachment getAttachment(boolean requery)
-	{
-		// Make sure the attachment is for current PO ID
-		if (m_attachment != null && m_attachment.getRecord_ID() != get_ID())
-		{
-			m_attachment = null;
-		}
-
-		if (m_attachment == null || requery)
-		{
-			m_attachment = MAttachment.get(getCtx(), p_info.getAD_Table_ID(), get_ID());
-		}
-		return m_attachment;
-	}	// getAttachment
-
-	/**
-	 * Create/return Attachment for PO.
-	 * If not exist, create new
-	 *
-	 * @return attachment
-	 */
-	public final MAttachment createAttachment()
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			m_attachment = new MAttachment(getCtx(), p_info.getAD_Table_ID(), get_ID(), ITrx.TRXNAME_None);
-		return m_attachment;
-	}	// createAttachment
-
-	/**
-	 * Do we have a Attachment of type
-	 *
-	 * @param extension extension e.g. .pdf
-	 * @return true if there is a attachment of type
-	 */
-	public final boolean isAttachment(String extension)
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			return false;
-		for (int i = 0; i < m_attachment.getEntryCount(); i++)
-		{
-			if (m_attachment.getEntryName(i).endsWith(extension))
-			{
-				if (log.isDebugEnabled())
-					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
-				return true;
-			}
-		}
-		return false;
-	}	// isAttachment
-
-	/**
-	 * Get Attachment Data of type
-	 *
-	 * @param extension extension e.g. .pdf
-	 * @return data or null
-	 */
-	public final byte[] getAttachmentData(String extension)
-	{
-		getAttachment(false);
-		if (m_attachment == null)
-			return null;
-		for (int i = 0; i < m_attachment.getEntryCount(); i++)
-		{
-			if (m_attachment.getEntryName(i).endsWith(extension))
-			{
-				if (log.isDebugEnabled())
-					log.debug("#" + i + ": " + m_attachment.getEntryName(i));
-				return m_attachment.getEntryData(i);
-			}
-		}
-		return null;
-	}	// getAttachmentData
-
-	/**
-	 * Do we have a PDF Attachment
-	 *
-	 * @return true if there is a PDF attachment
-	 */
-	public boolean isPdfAttachment()
-	{
-		return isAttachment(".pdf");
-	}	// isPdfAttachment
-
-	/**
-	 * Get PDF Attachment Data
-	 *
-	 * @return data or null
-	 */
-	public byte[] getPdfAttachment()
-	{
-		return getAttachmentData(".pdf");
-	}	// getPDFAttachment
 
 	/**************************************************************************
 	 * Dump Record
@@ -5092,7 +5009,7 @@ public abstract class PO
 		return m_translations;
 	}
 
-	private POInfoModelTranslationMap m_translations = null;
+	private IModelTranslationMap m_translations = null;
 
 	public final POInfo getPOInfo()
 	{
@@ -5104,7 +5021,9 @@ public abstract class PO
 	private POCacheLocal get_POCacheLocal(String columnName, String refTableName)
 	{
 		if (m_poCacheLocals == null)
-			m_poCacheLocals = new HashMap<String, POCacheLocal>();
+		{
+			m_poCacheLocals = new HashMap<>();
+		}
 
 		POCacheLocal poCache = m_poCacheLocals.get(columnName);
 		if (poCache != null && !refTableName.equals(poCache.getTableName()))
@@ -5121,14 +5040,20 @@ public abstract class PO
 		return poCache;
 	}
 
-	public final <T> T get_ValueAsPO(String columnName, Class<T> refClass)
+	public final <T> T get_ValueAsPO(final String columnName, final Class<T> refClass)
 	{
 		final String refTableName = InterfaceWrapperHelper.getTableName(refClass);
 		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
 		return poCache == null ? null : poCache.get(refClass);
 	}
 
-	public final <T> void set_ValueFromPO(String columnName, Class<T> refClass, Object obj)
+	public final Object get_ValueAsPO(final String columnName, final String refTableName)
+	{
+		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
+		return poCache == null ? null : poCache.get();
+	}
+
+	public final <T> void set_ValueFromPO(final String columnName, final Class<T> refClass, final Object obj)
 	{
 		final String refTableName = InterfaceWrapperHelper.getTableName(refClass);
 		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
@@ -5330,7 +5255,6 @@ public abstract class PO
 		poCopy.p_ctx = this.p_ctx;
 		poCopy.m_trxName = this.m_trxName;
 		poCopy.isAssignedID = this.isAssignedID;
-		poCopy.m_attachment = null;
 		poCopy.m_createNew = this.m_createNew;
 		poCopy.m_wasJustCreated = this.m_wasJustCreated;
 		poCopy.m_idOld = this.m_idOld;

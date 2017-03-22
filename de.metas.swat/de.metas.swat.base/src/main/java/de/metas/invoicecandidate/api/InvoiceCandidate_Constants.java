@@ -44,5 +44,10 @@ public class InvoiceCandidate_Constants
 	 * @see de.metas.impex.api.IInputDataSourceDAO#retrieveInputDataSource(java.util.Properties, String, boolean, String)
 	 */
 	public static final String DATA_DESTINATION_INTERNAL_NAME = "DEST." + ENTITY_TYPE;
+	
+	/**
+	 * Internal Name for invoice candidate asycn batch
+	 */
+	public static final String C_Async_Batch_InternalName_InvoiceCandidate = "InvoiceCandidate";
 
 }

@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
 RETURNS TABLE 
 (
@@ -11,7 +11,10 @@ RETURNS TABLE
 	StdPrecision numeric(10,0),
 	QualityDiscountPercent numeric,
 	QualityNote character varying, 
-	isInDispute character(1)
+	isInDispute character(1),
+	Description Character Varying,
+	bp_product_no character varying(30),
+	bp_product_name character varying(100)
 )
 AS
 $$
@@ -26,7 +29,11 @@ SELECT
 	StdPrecision,
 	QualityDiscountPercent,
 	QualityNote,
-	isInDispute
+	isInDispute,
+	iol.Description,
+	bp_product_no,
+	bp_product_name
+
 FROM
 	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
 	-- (Otherwise we'd have to copy the attributes-sub-select in the group by clause. Hint: That would suck)
@@ -47,11 +54,15 @@ FROM
 		CASE WHEN iol.isInDispute = 'N' THEN null ELSE
 			(
 				SELECT rs.QualityNote FROM M_ReceiptSchedule rs
-				WHERE EXISTS ( SELECT 0 FROM M_ReceiptSchedule_Alloc rsa
-					WHERE rsa.m_receiptschedule_id=rs.m_receiptschedule_id AND rs.C_OrderLine_ID = ic.C_OrderLine_ID
+				WHERE rs.isActive = 'Y' AND EXISTS ( SELECT 0 FROM M_ReceiptSchedule_Alloc rsa
+					WHERE rsa.m_receiptschedule_id=rs.m_receiptschedule_id AND rs.C_OrderLine_ID = ic.C_OrderLine_ID AND rsa.isActive = 'Y'
 			)
 		) END AS QualityNote,
-		iol.isInDispute
+		iol.isInDispute,
+		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description,
+		-- in case there is no C_BPartner_Product, fallback to the default ones
+		COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
+		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
 	FROM
 		-- All In Outs linked to the order
 		(
@@ -60,11 +71,11 @@ FROM
 		FROM
 			-- All In Out Lines directly linked to the order
 			M_InOutLine iol
-			INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
-			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
+			INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
+			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
 		WHERE
 			ol.C_Order_ID = $1
-			AND io.DocStatus IN ('CO','CL')
+			AND io.DocStatus IN ('CO','CL') AND iol.isActive = 'Y'
 		) io
 		--
 		/*
@@ -72,28 +83,32 @@ FROM
 		 * sub select because not all in out lines are linked to the order (e.g Packing material). NOTE: Due to the
 		 * process we assume, that all lines of one inout belong to only one order
 		 */
-		INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID
+		INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
+		LEFT OUTER JOIN C_BPartner bp			ON io.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 		-- Product and its translation
-		INNER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
-		LEFT OUTER JOIN M_Product_Trl pt 		ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
-		INNER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+		INNER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+		LEFT OUTER JOIN M_Product_Trl pt 		ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
+		INNER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+		
+		LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 		-- Unit of measurement & its translation
-		INNER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
-		LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2
+		INNER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+		LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
 		-- Packing Instruction
 		LEFT OUTER JOIN
 		(
 			SELECT 	String_Agg( DISTINCT pifb.name, E'\n' ORDER BY pifb.name ) AS name,
 				iol.M_InOutLine_ID
 			FROM	M_InOutLine iol
-				INNER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) ))
+				INNER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) )) AND asgn.isActive = 'Y'
 					AND asgn.Record_ID = iol.M_InOutLine_ID
-				INNER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
+				INNER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID --
 				INNER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
-			WHERE	pifb.name != 'VirtualPI'
+			WHERE	pifb.name != 'VirtualPI' AND iol.isActive = 'Y'
 				AND  EXISTS (Select 1 from  M_InOutLine iol2 
-						INNER JOIN C_OrderLine ol ON iol2.C_OrderLine_ID = ol.C_OrderLine_ID 
-					WHERE	ol.C_Order_ID = $1 and iol.M_InOut_ID = iol2.M_InOut_ID)
+						INNER JOIN C_OrderLine ol ON iol2.C_OrderLine_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
+					WHERE	ol.C_Order_ID = $1 and iol.M_InOut_ID = iol2.M_InOut_ID and iol2.isActive = 'Y')
 			GROUP BY M_InOutLine_ID
 		) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 		-- Attributes
@@ -108,8 +123,8 @@ FROM
 					SELECT 	String_agg ( att.ai_value, ', ' ORDER BY att.M_AttributeSetInstance_ID, length(att.ai_value), att.ai_value) AS Attributes,
 						att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID
 					FROM 	Report.fresh_Attributes att
-					INNER JOIN M_InOutLine iol ON att.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID
-					INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
+					INNER JOIN M_InOutLine iol ON att.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
+					INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID and ol.isActive = 'Y'
 					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), MHD, M_Material_Tracking_ID
 						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', '1000021', 'M_Material_Tracking_ID')
 						/* currently those flags are set to be correct for purchase invoices. we need something
@@ -121,10 +136,10 @@ FROM
 		) a ON iol.M_AttributeSetInstance_ID = a.M_AttributeSetInstance_ID AND iol.M_InOutLine_ID = a.M_InOutLine_ID
 
 		-- Quality (is taken from Invoice candidates because there the quality is already aggregated)
-		LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID
-		LEFT OUTER JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID
+		LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
+		LEFT OUTER JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 	WHERE
-		pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+		pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
 	) iol
 GROUP BY
 	Attributes,
@@ -134,7 +149,10 @@ GROUP BY
 	QualityDiscountPercent,
 	QualityNote,
 	isInDispute,
-	StdPrecision
+	StdPrecision,
+	Description,
+	bp_product_no,
+	bp_product_name
 ORDER BY
 	Name, MIN(M_InOutLine_ID)
 

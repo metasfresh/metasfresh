@@ -43,6 +43,16 @@ public final class KeyNamePair extends NamePair
 		}
 		return new KeyNamePair(key, name);
 	}
+	
+	public static final KeyNamePair of(final int key)
+	{
+		if(key < 0)
+		{
+			return EMPTY;
+		}
+		return new KeyNamePair(key, "<" + key + ">");
+	}
+	
 	private static final long serialVersionUID = 6347385376010388473L;
 	
 	public static final KeyNamePair EMPTY = new KeyNamePair(-1, "");

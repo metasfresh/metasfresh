@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_logo" pageWidth="320" pageHeight="60" orientation="Landscape" columnWidth="320" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-11T13:51:48 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_logo" pageWidth="320" pageHeight="60" orientation="Landscape" columnWidth="320" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="74d069da-08a1-4c34-9de7-a864c2cde39c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="AD_ORG_ID" class="java.lang.String"/>
+	<parameter name="AD_ORG_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 
@@ -30,10 +33,10 @@
 	END AS postal
 FROM
 	ad_org o
-	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id
-	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id
+	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id AND oi.isActive = 'Y'
+	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id AND l.isActive = 'Y'
 WHERE
-	o.ad_org_id = $P{AD_ORG_ID}
+	o.ad_org_id = $P{AD_ORG_ID} AND o.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="orgname" class="java.lang.String">
@@ -54,7 +57,7 @@ WHERE
 	<title>
 		<band height="60" splitType="Stretch">
 			<image scaleImage="RetainShape">
-				<reportElement key="image-1" mode="Opaque" x="0" y="7" width="107" height="39"/>
+				<reportElement key="image-1" mode="Opaque" x="0" y="7" width="107" height="39" uuid="845b221f-f294-4795-8149-1cab33e78da0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -64,21 +67,20 @@ WHERE
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
-				<imageExpression class="java.lang.String"><![CDATA["M:/Dokumente/Logos/AdempiereLogo.png"]]></imageExpression>
+				<imageExpression><![CDATA["M:/Dokumente/Logos/AdempiereLogo.png"]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="109" y="7" width="211" height="13"/>
+				<reportElement key="textField-1" x="109" y="7" width="211" height="13" uuid="3c0851f2-60f4-4a4f-bb91-0c35fd201d4a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{orgname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-2" x="109" y="20" width="211" height="12"/>
+				<reportElement key="textField-2" x="109" y="20" width="211" height="12" uuid="4fff7105-9164-4e29-a9f2-85943b7a8a04"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -88,10 +90,10 @@ WHERE
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{address1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{address1}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-3" x="109" y="32" width="211" height="12"/>
+				<reportElement key="textField-3" x="109" y="32" width="211" height="12" uuid="5913929b-8a3a-427f-a137-35ce4f01f0fb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -101,7 +103,7 @@ WHERE
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{postal} + $F{city}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{postal} + $F{city}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

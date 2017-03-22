@@ -19,13 +19,16 @@ package org.compiere.process;
 
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * Title:	Set Current Format as Default
  *	
  *  @author Carlos Ruiz (globalqss)
  *  @version $Id: AD_PrintPaper_Default.java,v 1.0 2005/09/14 22:29:00 globalqss Exp $
  */
-public class AD_PrintPaper_Default extends SvrProcess
+public class AD_PrintPaper_Default extends JavaProcess
 {
 
 	/** The Client						*/
@@ -38,7 +41,7 @@ public class AD_PrintPaper_Default extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

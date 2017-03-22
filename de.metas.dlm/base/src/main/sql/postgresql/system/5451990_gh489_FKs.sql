@@ -1,0 +1,17 @@
+﻿
+ALTER TABLE DLM_Partition_Config_Line DROP CONSTRAINT IF EXISTS DLMReferencingTable_DLMPartiti;
+ALTER TABLE DLM_Partition_Config_Reference DROP CONSTRAINT IF EXISTS DLMReferencingColumn_DLMPartit;
+ALTER TABLE DLM_Partition_Config_Reference DROP CONSTRAINT IF EXISTS DLMReferencedTablePartitionCon;
+ALTER TABLE DLM_Partition_Config_Line DROP CONSTRAINT IF EXISTS DLMPartitionConfig_DLMPartitio;
+ALTER TABLE DLM_Partition_Config_Reference DROP CONSTRAINT IF EXISTS DLMPartitionConfigLine_DLMPart;
+ALTER TABLE DLM_Partition DROP CONSTRAINT IF EXISTS DLMPartitionConfig_DLMPartitio;
+ALTER TABLE DLM_Partition_Config_Reference DROP CONSTRAINT IF EXISTS DLMReferencedTable_DLMPartitio;
+
+
+ALTER TABLE DLM_Partition_Config_Line ADD CONSTRAINT DLMReferencingTable_DLMPartiti FOREIGN KEY (DLM_Referencing_Table_ID) REFERENCES AD_Table DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE DLM_Partition_Config_Reference ADD CONSTRAINT DLMReferencingColumn_DLMPartit FOREIGN KEY (DLM_Referencing_Column_ID) REFERENCES AD_Column DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE DLM_Partition_Config_Reference ADD CONSTRAINT DLMReferencedTablePartitionCon FOREIGN KEY (DLM_Referenced_Table_Partition_Config_Line_ID) REFERENCES DLM_Partition_Config_Line DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE DLM_Partition_Config_Line ADD CONSTRAINT DLMPartitionConfig_DLMPartitio FOREIGN KEY (DLM_Partition_Config_ID) REFERENCES DLM_Partition_Config DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE DLM_Partition_Config_Reference ADD CONSTRAINT DLMPartitionConfigLine_DLMPart FOREIGN KEY (DLM_Partition_Config_Line_ID) REFERENCES DLM_Partition_Config_Line DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE DLM_Partition ADD CONSTRAINT DLMPartitionConfig_DLMPartitio FOREIGN KEY (DLM_Partition_Config_ID) REFERENCES DLM_Partition_Config DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE DLM_Partition_Config_Reference ADD CONSTRAINT DLMReferencedTable_DLMPartitio FOREIGN KEY (DLM_Referenced_Table_ID) REFERENCES AD_Table DEFERRABLE INITIALLY DEFERRED;

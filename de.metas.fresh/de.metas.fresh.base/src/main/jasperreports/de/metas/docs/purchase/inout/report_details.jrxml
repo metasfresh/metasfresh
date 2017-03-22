@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-12-19T19:11:31 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -13,8 +17,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[
-SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P{c_order_id} , $P{ad_language} );]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P{c_order_id} , $P{ad_language} );]]>
 	</queryString>
 	<field name="attributes" class="java.lang.String"/>
 	<field name="name" class="java.lang.String"/>
@@ -26,6 +29,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 	<field name="qualitydiscountpercent" class="java.math.BigDecimal"/>
 	<field name="qualitynote" class="java.lang.String"/>
 	<field name="isindispute" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
 	<variable name="qtyToInvoice" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -36,56 +40,56 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 	<pageHeader>
 		<band height="24" splitType="Stretch">
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6" key="textField-19" x="499" y="11" width="70" height="12" forecolor="#000000"/>
+				<reportElement key="textField-19" x="499" y="11" width="70" height="12" forecolor="#000000" uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityNote}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="bcf49517-5066-429e-a6dc-64c97a459ab0" key="textField-20" x="399" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="399" y="0" width="40" height="12" forecolor="#000000" uuid="bcf49517-5066-429e-a6dc-64c97a459ab0"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5" key="textField-13" x="228" y="0" width="39" height="12" forecolor="#000000"/>
+				<reportElement key="textField-13" x="228" y="0" width="39" height="12" forecolor="#000000" uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="4a06f254-2d43-4b5a-8875-443684dfe832" key="textField-20" x="421" y="0" width="74" height="23" forecolor="#000000"/>
+				<reportElement key="textField-20" x="421" y="0" width="74" height="23" forecolor="#000000" uuid="4a06f254-2d43-4b5a-8875-443684dfe832"/>
 				<textElement textAlignment="Right" markup="styled">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="b040ea3d-0c64-4095-aa4b-a1769c19620e" key="textField-19" x="350" y="0" width="47" height="12" forecolor="#000000"/>
+				<reportElement key="textField-19" x="350" y="0" width="47" height="12" forecolor="#000000" uuid="b040ea3d-0c64-4095-aa4b-a1769c19620e"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27" key="textField-17" x="269" y="0" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-17" x="269" y="0" width="80" height="12" forecolor="#000000" uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9" key="textField-16" x="36" y="0" width="130" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="36" y="0" width="130" height="12" forecolor="#000000" uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c" key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000"/>
+				<reportElement key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000" uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -99,7 +103,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01" key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000"/>
+				<reportElement key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -112,7 +116,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1" key="textField-31" mode="Transparent" x="269" y="0" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-31" mode="Transparent" x="269" y="0" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -125,7 +129,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{huname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="499" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-33" mode="Transparent" x="499" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -138,7 +142,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{isindispute}.equals("Y")? $F{qualitynote} : $R{qtytoinvoice}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="399" y="0" width="34" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="399" y="0" width="34" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -151,7 +155,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.##" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="447" y="0" width="48" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="447" y="0" width="48" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<printWhenExpression><![CDATA[new Boolean( $F{isindispute}.equals( "Y" ) )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -166,7 +170,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{qualitydiscountpercent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="36" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="36" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -179,7 +183,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="228" y="0" width="39" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="228" y="0" width="39" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="0">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -192,7 +196,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 3 )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -207,7 +211,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 2 )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -222,7 +226,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-33" mode="Transparent" x="350" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() != 2 && $F{stdprecision}.intValue() != 3 )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -235,6 +239,23 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean( !$F{description}.isEmpty() && $R{showdescription}.equals("Y"))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="36" y="0" width="533" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="e10d8c4b-cca8-41a3-ade5-2aca11f5ba0f"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description} + "\n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

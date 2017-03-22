@@ -1,5 +1,7 @@
 package org.compiere.report;
 
+import de.metas.process.ProcessInfo;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -26,8 +28,6 @@ package org.compiere.report;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporter;
 import net.sf.jasperreports.engine.JasperPrint;
-
-import org.compiere.process.ProcessInfo;
 
 /**
  * 

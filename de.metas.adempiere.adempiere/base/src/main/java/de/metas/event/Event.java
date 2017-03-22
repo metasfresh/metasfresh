@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,9 +35,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -55,6 +55,8 @@ public final class Event
 		return new Builder();
 	}
 
+	private static final String PROPERTY_Record = "record";
+
 	private final String id;
 	private final String summary;
 	private final String detailPlain;
@@ -65,8 +67,7 @@ public final class Event
 	//
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 	//
-	@ToStringBuilder(skip = true)
-	private Integer _hashcode;
+	private transient Integer _hashcode;
 
 	private Event(final Builder builder)
 	{
@@ -84,9 +85,9 @@ public final class Event
 		detailADMessage = builder.getDetailADMessage();
 		senderId = builder.senderId;
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
-		
+
 		final ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
-		for (Map.Entry<String, Object> e : builder.getProperties().entrySet())
+		for (final Map.Entry<String, Object> e : builder.getProperties().entrySet())
 		{
 			// skip nulls
 			if (e.getValue() == null)
@@ -101,7 +102,16 @@ public final class Event
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("id", id)
+				.add("summary", summary)
+				.add("detailPlain", detailPlain)
+				.add("detailADMessage", detailADMessage)
+				.add("senderId", senderId)
+				.add("recipientUserIds", isAllRecipients() ? "ALL" : recipientUserIds)
+				.add("properties", properties.isEmpty() ? null : properties)
+				.toString();
 	}
 
 	@Override
@@ -123,7 +133,7 @@ public final class Event
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -179,7 +189,7 @@ public final class Event
 
 	public boolean isLocalEvent()
 	{
-		return Check.equals(EventBusConstants.getSenderId(), senderId);
+		return Objects.equals(EventBusConstants.getSenderId(), senderId);
 	}
 
 	public Set<Integer> getRecipientUserIds()
@@ -189,13 +199,21 @@ public final class Event
 
 	public final boolean hasRecipient(final int userId)
 	{
-		// If no recipients were specified, consider that this event is for anybody
-		if (recipientUserIds.isEmpty())
+		if (isAllRecipients())
 		{
 			return true;
 		}
 
 		return recipientUserIds.contains(userId);
+	}
+
+	/**
+	 * @return true if this event is for all users
+	 */
+	public boolean isAllRecipients()
+	{
+		// If no recipients were specified, consider that this event is for anybody
+		return recipientUserIds.isEmpty();
 	}
 
 	public <T> T getProperty(final String name)
@@ -211,9 +229,21 @@ public final class Event
 	}
 
 	/**
+	 * @return record or null
+	 * @see #getProperty(String)
+	 * @see Builder#setRecord(ITableRecordReference)
+	 */
+	public ITableRecordReference getRecord()
+	{
+		final ITableRecordReference record = getProperty(PROPERTY_Record);
+		return record;
+	}
+
+	/**
 	 *
 	 * @param eventBusId
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>true if event was successfully marked
 	 *         <li>false if event was already received by given event bus ID
 	 *         </ul>
@@ -247,7 +277,7 @@ public final class Event
 		private String detailADMessage;
 		private String senderId = EventBusConstants.getSenderId();
 		private final Set<Integer> recipientUserIds = new HashSet<>();
-		private Map<String, Object> properties = Maps.newLinkedHashMap();
+		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 
 		private Builder()
 		{
@@ -272,7 +302,7 @@ public final class Event
 			return this;
 		}
 
-		public Builder setDetailPlain(String detailPlain)
+		public Builder setDetailPlain(final String detailPlain)
 		{
 			this.detailPlain = detailPlain;
 			return this;
@@ -280,7 +310,7 @@ public final class Event
 
 		private String getDetailPlain()
 		{
-			return this.detailPlain;
+			return detailPlain;
 		}
 
 		/**
@@ -310,7 +340,7 @@ public final class Event
 				}
 			}
 
-			this.detailADMessage = adMessage;
+			detailADMessage = adMessage;
 			return this;
 		}
 
@@ -400,6 +430,16 @@ public final class Event
 		public Builder putProperty(final String name, final ITableRecordReference value)
 		{
 			properties.put(name, value);
+			return this;
+		}
+
+		/**
+		 * @see #putProperty(String, ITableRecordReference)
+		 * @see Event#PROPERTY_Record
+		 */
+		public Builder setRecord(final ITableRecordReference record)
+		{
+			putProperty(Event.PROPERTY_Record, record);
 			return this;
 		}
 

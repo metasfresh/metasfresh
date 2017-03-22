@@ -33,7 +33,7 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
@@ -72,7 +72,7 @@ public class PPOrderQualityCalculator
 
 	public void update(final IMaterialTrackingDocuments documents)
 	{
-		modelsToBeSaved = new ArrayList<Object>();
+		modelsToBeSaved = new ArrayList<>();
 
 		//
 		// Iterate quality orders and update their quality related fields
@@ -84,7 +84,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			ILoggable.THREADLOCAL.getLoggable().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
+			Loggables.get().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
 
 			//
 			// Update QM_QtyDeliveredPercOfRaw

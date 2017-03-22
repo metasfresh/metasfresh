@@ -49,10 +49,7 @@ public abstract class AbstractModelInterceptor implements IModelInterceptor, IUs
 	 * @param engine
 	 * @param client
 	 */
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
-	{
-		// nothing on this level
-	}
+	protected abstract void onInit(final IModelValidationEngine engine, final I_AD_Client client);
 
 	@Override
 	public final int getAD_Client_ID()

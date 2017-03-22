@@ -409,7 +409,7 @@ public class Doc_BankStatement extends Doc
 						.setC_Currency_ID(lineRef.getC_Currency_ID())
 						.setAD_Org_ID(bankOrgId > 0 ? bankOrgId : line.getPaymentOrg_ID(lineRef.getC_Payment())) // bank org, payment org
 						.setC_BPartner_ID_IfValid(
-								Util.coalesceInt(lineRef.getC_BPartner_ID(), C_BPartner_ID)) // if the lineref has a C_BPartner, then use it
+								Util.firstGreaterThanZero(lineRef.getC_BPartner_ID(), C_BPartner_ID)) // if the lineref has a C_BPartner, then use it
 						.buildAndAdd();
 			}
 		}

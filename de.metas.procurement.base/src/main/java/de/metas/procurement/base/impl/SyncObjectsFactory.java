@@ -440,7 +440,7 @@ public class SyncObjectsFactory
 
 	public List<SyncProduct> createAllSyncProducts()
 	{
-		final List<I_PMM_Product> allPmmProducts = pmmProductDAO.retrieveAllPMMProductsValidOnDateQuery(date)
+		final List<I_PMM_Product> allPmmProducts = pmmProductDAO.retrievePMMProductsValidOnDateQuery(date)
 				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, null) // Not bound to a particular partner (i.e. C_BPartner_ID is null)
 				//
 				.orderBy()

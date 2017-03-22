@@ -49,6 +49,7 @@ import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Session;
@@ -60,11 +61,12 @@ import org.compiere.model.MSession;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class MigrationLogger implements IMigrationLogger
 {
@@ -105,6 +107,7 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_PACKAGE_IMP_DETAIL",
 				"AD_PACKAGE_IMP_INST",
 				"AD_PACKAGE_IMP_PROC",
+				I_AD_Process_Stats.Table_Name.toUpperCase(),
 				"AD_PINSTANCE",
 				"AD_PINSTANCE_LOG",
 				"AD_PINSTANCE_PARA",
@@ -623,7 +626,7 @@ public class MigrationLogger implements IMigrationLogger
 	protected IMigrationLoggerContext getSessionMigrationLoggerContext(final I_AD_Session session)
 	{
 		final String key = getClass().getCanonicalName();
-		IMigrationLoggerContext mctx = (IMigrationLoggerContext)InterfaceWrapperHelper.getDynAttribute(session, key);
+		IMigrationLoggerContext mctx = InterfaceWrapperHelper.getDynAttribute(session, key);
 		if (mctx == null)
 		{
 			mctx = new SessionMigrationLoggerContext();

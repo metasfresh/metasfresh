@@ -34,15 +34,14 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.document.engine.IDocActionBL;
 
-public final class OrderCreateNewFromProposal extends SvrProcess 
+public final class OrderCreateNewFromProposal extends JavaProcess 
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 
@@ -139,7 +138,7 @@ public final class OrderCreateNewFromProposal extends SvrProcess
 					"This process may be started for proposals only");
 		}
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

@@ -398,12 +398,13 @@ public class MMovement extends X_M_Movement implements DocAction
 			{
 				//Ignore the Material Policy when is Reverse Correction
 				if(!isReversal())
+				{
 					checkMaterialPolicy(line);
+				}
 
 				if (line.getM_AttributeSetInstance_ID() == 0)
 				{
-					MMovementLineMA mas[] = MMovementLineMA.get(getCtx(),
-							line.getM_MovementLine_ID(), get_TrxName());
+					MMovementLineMA mas[] = MMovementLineMA.get(getCtx(), line.getM_MovementLine_ID(), get_TrxName());
 					for (int j = 0; j < mas.length; j++)
 					{
 						MMovementLineMA ma = mas[j];
@@ -414,7 +415,7 @@ public class MMovement extends X_M_Movement implements DocAction
 								line.getM_Locator_ID(),
 								line.getM_Product_ID(),
 								ma.getM_AttributeSetInstance_ID(), 0,
-								ma.getMovementQty().negate(), Env.ZERO ,  Env.ZERO , get_TrxName()))
+								ma.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
 							return DocAction.STATUS_Invalid;
@@ -422,7 +423,7 @@ public class MMovement extends X_M_Movement implements DocAction
 
 						int M_AttributeSetInstanceTo_ID = line.getM_AttributeSetInstanceTo_ID();
 						//only can be same asi if locator is different
-						if (M_AttributeSetInstanceTo_ID == 0 && line.getM_Locator_ID() != line.getM_LocatorTo_ID())
+						if (M_AttributeSetInstanceTo_ID <= 0 && line.getM_Locator_ID() != line.getM_LocatorTo_ID())
 						{
 							M_AttributeSetInstanceTo_ID = ma.getM_AttributeSetInstance_ID();
 						}
@@ -431,17 +432,26 @@ public class MMovement extends X_M_Movement implements DocAction
 								line.getM_LocatorTo_ID(),
 								line.getM_Product_ID(),
 								M_AttributeSetInstanceTo_ID, 0,
-								ma.getMovementQty(), Env.ZERO ,  Env.ZERO , get_TrxName()))
+								ma.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
 							return DocAction.STATUS_Invalid;
 						}
 
 						//
-						trxFrom = new MTransaction (getCtx(), line.getAD_Org_ID(),
+						trxFrom = new MTransaction (getCtx(),
+								line.getAD_Org_ID(),
 								MTransaction.MOVEMENTTYPE_MovementFrom,
-								line.getM_Locator_ID(), line.getM_Product_ID(), ma.getM_AttributeSetInstance_ID(),
-								ma.getMovementQty().negate(), getMovementDate(), get_TrxName());
+								line.getM_Locator_ID(),
+								line.getM_Product_ID(),
+
+								// #gh489: M_Storage is a legacy and currently doesn't really work.
+								// In this case, its use of M_AttributeSetInstance_ID (which is forwarded from storage to 'ma') introduces a coupling between random documents.
+								// this coupling is a big problem, so we don't forward the ASI-ID to the M_Transaction
+								0, // ma.getM_AttributeSetInstance_ID(),
+								ma.getMovementQty().negate(),
+								getMovementDate(),
+								get_TrxName());
 						trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
 						if (!trxFrom.save())
 						{
@@ -449,10 +459,18 @@ public class MMovement extends X_M_Movement implements DocAction
 							return DocAction.STATUS_Invalid;
 						}
 						//
-						MTransaction trxTo = new MTransaction (getCtx(), line.getAD_Org_ID(),
+						final MTransaction trxTo = new MTransaction (getCtx(),
+								line.getAD_Org_ID(),
 								MTransaction.MOVEMENTTYPE_MovementTo,
-								line.getM_LocatorTo_ID(), line.getM_Product_ID(), M_AttributeSetInstanceTo_ID,
-								ma.getMovementQty(), getMovementDate(), get_TrxName());
+								line.getM_LocatorTo_ID(),
+								line.getM_Product_ID(),
+
+								// #gh489: see the comment about 'trxFrom'
+								0, // M_AttributeSetInstanceTo_ID,
+								ma.getMovementQty(),
+								getMovementDate(),
+								get_TrxName());
+
 						trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
 						if (!trxTo.save())
 						{
@@ -470,7 +488,7 @@ public class MMovement extends X_M_Movement implements DocAction
 							line.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), 0,
-							line.getMovementQty().negate(), Env.ZERO ,  Env.ZERO , get_TrxName()))
+							line.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
 						return DocAction.STATUS_Invalid;
@@ -481,17 +499,22 @@ public class MMovement extends X_M_Movement implements DocAction
 							line.getM_LocatorTo_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), 0,
-							line.getMovementQty(), Env.ZERO ,  Env.ZERO , get_TrxName()))
+							line.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
 						return DocAction.STATUS_Invalid;
 					}
 
 					//
-					trxFrom = new MTransaction (getCtx(), line.getAD_Org_ID(),
+					trxFrom = new MTransaction (getCtx(),
+							line.getAD_Org_ID(),
 							MTransaction.MOVEMENTTYPE_MovementFrom,
-							line.getM_Locator_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-							line.getMovementQty().negate(), getMovementDate(), get_TrxName());
+							line.getM_Locator_ID(),
+							line.getM_Product_ID(),
+							line.getM_AttributeSetInstance_ID(),
+							line.getMovementQty().negate(),
+							getMovementDate(),
+							get_TrxName());
 					trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
 					if (!trxFrom.save())
 					{
@@ -499,10 +522,15 @@ public class MMovement extends X_M_Movement implements DocAction
 						return DocAction.STATUS_Invalid;
 					}
 					//
-					MTransaction trxTo = new MTransaction (getCtx(), line.getAD_Org_ID(),
+					MTransaction trxTo = new MTransaction (getCtx(),
+							line.getAD_Org_ID(),
 							MTransaction.MOVEMENTTYPE_MovementTo,
-							line.getM_LocatorTo_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstanceTo_ID(),
-							line.getMovementQty(), getMovementDate(), get_TrxName());
+							line.getM_LocatorTo_ID(),
+							line.getM_Product_ID(),
+							line.getM_AttributeSetInstanceTo_ID(),
+							line.getMovementQty(),
+							getMovementDate(),
+							get_TrxName());
 					trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
 					if (!trxTo.save())
 					{
@@ -542,7 +570,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
@@ -554,66 +582,27 @@ public class MMovement extends X_M_Movement implements DocAction
 	 * 	Check Material Policy
 	 * 	Sets line ASI
 	 */
-	private void checkMaterialPolicy(MMovementLine line)
+	private void checkMaterialPolicy(final MMovementLine line)
 	{
-		int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
+		final int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
 		if (no > 0)
-			log.info("Deleted old #" + no);
+			log.info("Deleted old #{}", no);
 
-		boolean needSave = false;
-
-		//	Attribute Set Instance
+		//	Attribute Set Instance: generate a new ASI if not already set
 		if (line.getM_AttributeSetInstance_ID() == 0)
 		{
-			MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
-			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-			MStorage[] storages = MStorage.getWarehouse(getCtx(), 0, line.getM_Product_ID(), 0,
-					null, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
+			// NOTE: don't try to check M_Stoarge records and fetch ASIs to allocate on because:
+			// * it's totally performance killer (see task 1161)
+			// * we already applied the same approach on M_InOut (see task 09939)
+			// * we are going to remove M_AttributeSetInstance_ID from M_Storage anyways
 
-			BigDecimal qtyToDeliver = line.getMovementQty();
-
-			for (MStorage storage: storages)
-			{
-				if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
-				{
-					MMovementLineMA ma = new MMovementLineMA (line,
-							storage.getM_AttributeSetInstance_ID(),
-							qtyToDeliver);
-					ma.saveEx();
-					qtyToDeliver = Env.ZERO;
-					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
-				}
-				else
-				{
-					MMovementLineMA ma = new MMovementLineMA (line,
-								storage.getM_AttributeSetInstance_ID(),
-								storage.getQtyOnHand());
-					ma.saveEx();
-					qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
-				}
-				if (qtyToDeliver.signum() == 0)
-					break;
-			}
-
-			//	No AttributeSetInstance found for remainder
-			if (qtyToDeliver.signum() != 0)
-			{
-				//deliver using new asi
-				MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-				int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
-				MMovementLineMA ma = new MMovementLineMA (line, M_AttributeSetInstance_ID , qtyToDeliver);
-				ma.saveEx();
-				log.debug("##: " + ma);
-			}
-		}	//	attributeSetInstance
-
-		if (needSave)
-		{
-			line.saveEx();
+			final MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
+			final MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
+			line.setM_AttributeSetInstance(asi);
+			InterfaceWrapperHelper.save(line);
 		}
 	}	//	checkMaterialPolicy
-
+	
 	/**
 	 * 	Void Document.
 	 * 	@return true if success
@@ -648,9 +637,9 @@ public class MMovement extends X_M_Movement implements DocAction
 			{
 				MMovementLine line = lines[i];
 				BigDecimal old = line.getMovementQty();
-				if (old.compareTo(Env.ZERO) != 0)
+				if (old.compareTo(BigDecimal.ZERO) != 0)
 				{
-					line.setMovementQty(Env.ZERO);
+					line.setMovementQty(BigDecimal.ZERO);
 					line.addDescription("Void (" + old + ")");
 					line.save(get_TrxName());
 				}
@@ -739,9 +728,9 @@ public class MMovement extends X_M_Movement implements DocAction
 			rLine.setReversalLine_ID(oLine.getM_MovementLine_ID());
 			//
 			rLine.setMovementQty(rLine.getMovementQty().negate());
-			rLine.setTargetQty(Env.ZERO);
-			rLine.setScrappedQty(Env.ZERO);
-			rLine.setConfirmedQty(Env.ZERO);
+			rLine.setTargetQty(BigDecimal.ZERO);
+			rLine.setScrappedQty(BigDecimal.ZERO);
+			rLine.setConfirmedQty(BigDecimal.ZERO);
 			rLine.setProcessed(false);
 			if (!rLine.save())
 			{

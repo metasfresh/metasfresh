@@ -1,42 +1,16 @@
 package org.compiere.report.email.service.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.model.I_AD_PInstance_Para;
+import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MUser;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.email.service.IEmailParameters;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 /**
  * Returns generic email parameters for a process that contains a
@@ -45,7 +19,8 @@ import de.metas.letters.model.MADBoilerPlate;
  * @author ts
  * 
  */
-public final class BPartnerEmailParams implements IEmailParameters {
+public final class BPartnerEmailParams implements IEmailParameters
+{
 
 	private static final Logger logger = LogManager.getLogger(BPartnerEmailParams.class);
 
@@ -58,7 +33,7 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	private final String title;
 	private final String to;
 
-	public BPartnerEmailParams(final ProcessInfo pi, final List<I_AD_PInstance_Para> params)
+	public BPartnerEmailParams(final ProcessInfo pi, final IParams params)
 	{
 		to = updateTo(params);
 
@@ -70,43 +45,34 @@ public final class BPartnerEmailParams implements IEmailParameters {
 		from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 	}
 
-	private String updateTo(final List<I_AD_PInstance_Para> params)
+	private String updateTo(final IParams params)
 	{
-		int bPartnerId = -1;
 		String toTmp = "";
 
+		if (!params.hasParameter(I_C_BPartner.COLUMNNAME_C_BPartner_ID))
+		{
+			throw new IllegalArgumentException("Process instance doesn't contain a business partner as parameter");
+		}
+
 		// find the C_BPartner_ID parameter
-		for (I_AD_PInstance_Para param : params) {
-			if (I_C_BPartner.COLUMNNAME_C_BPartner_ID.equals(param
-					.getParameterName())) {
-
-				BigDecimal paramVal = param.getP_Number();
-				if (paramVal != null) {
-					bPartnerId = paramVal.intValue();
-					break;
-				}
-			}
+		final int bpartnerId = params.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+		if (bpartnerId <= 0)
+		{
+			logger.info("Process parameter " + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " didn't contain a value");
 		}
-		if (bPartnerId == -1) {
-			throw new IllegalArgumentException(
-					"Process instance doesn't contain a business partner as parameter");
-		}
-		if (bPartnerId == 0) {
-			logger.info("Process parameter "
-					+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-					+ " didn't contain a value");
-		} else {
-
-			final int userId = MBPartner.getDefaultContactId(bPartnerId);
-			if (userId > 0) {
+		else
+		{
+			final int userId = MBPartner.getDefaultContactId(bpartnerId);
+			if (userId > 0)
+			{
 				final MUser contanct = MUser.get(Env.getCtx(), userId);
 
-				if (contanct.getEMail() == null
-						|| "".equals(contanct.getEMail())) {
-
-					logger.info("Default contact " + contanct
-							+ " doesn't have an email address");
-				} else {
+				if (contanct.getEMail() == null || "".equals(contanct.getEMail()))
+				{
+					logger.info("Default contact " + contanct + " doesn't have an email address");
+				}
+				else
+				{
 					toTmp = contanct.getEMail();
 				}
 			}
@@ -120,7 +86,8 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	 * @return the title of the process
 	 */
 	@Override
-	public String getAttachmentPrefix(final String defaultValue) {
+	public String getAttachmentPrefix(final String defaultValue)
+	{
 		return attachmentPrefix;
 	}
 
@@ -128,7 +95,8 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	 * @return <code>null</code>
 	 */
 	@Override
-	public MADBoilerPlate getDefaultTextPreset() {
+	public MADBoilerPlate getDefaultTextPreset()
+	{
 		return DEFAULT_TEXT_PRESET;
 	}
 
@@ -136,12 +104,14 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	 * @return the title of the process
 	 */
 	@Override
-	public String getExportFilePrefix() {
+	public String getExportFilePrefix()
+	{
 		return exportFilePrefix;
 	}
 
 	@Override
-	public MUser getFrom() {
+	public MUser getFrom()
+	{
 		return from;
 	}
 
@@ -149,7 +119,8 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	 * @return <code>null</code>
 	 */
 	@Override
-	public String getMessage() {
+	public String getMessage()
+	{
 		return MESSAGE;
 	}
 
@@ -157,7 +128,8 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	 * @return the title of the process
 	 */
 	@Override
-	public String getSubject() {
+	public String getSubject()
+	{
 		return subject;
 	}
 
@@ -165,12 +137,14 @@ public final class BPartnerEmailParams implements IEmailParameters {
 	 * @return the title of the process
 	 */
 	@Override
-	public String getTitle() {
+	public String getTitle()
+	{
 		return title;
 	}
 
 	@Override
-	public String getTo() {
+	public String getTo()
+	{
 		return to;
 	}
 

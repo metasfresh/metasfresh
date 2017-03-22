@@ -64,7 +64,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 	protected void createSnapshotsByParentIds(final Set<Integer> huItemIds)
 	{
 		query(I_M_HU_Item_Storage.class)
-				.addInArrayFilter(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID, huItemIds)
+				.addInArrayOrAllFilter(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID, huItemIds)
 				.create()
 				.insertDirectlyInto(I_M_HU_Item_Storage_Snapshot.class)
 				.mapCommonColumns()

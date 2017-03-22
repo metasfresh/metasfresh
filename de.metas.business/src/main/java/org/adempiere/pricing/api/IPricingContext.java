@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.model.IContextAware;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -38,7 +39,7 @@ import org.compiere.model.I_M_Product;
  * @author tsa
  *
  */
-public interface IPricingContext
+public interface IPricingContext extends IContextAware
 {
 	int getM_Product_ID();
 
@@ -96,8 +97,10 @@ public interface IPricingContext
 	/**
 	 * @return context; never return null
 	 */
+	@Override
 	Properties getCtx();
 
+	@Override
 	String getTrxName();
 
 	/**

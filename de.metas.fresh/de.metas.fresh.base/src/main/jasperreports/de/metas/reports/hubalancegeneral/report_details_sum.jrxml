@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T10:21:27 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalance/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.332536901048674"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -24,12 +28,21 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="IsRefundableConditions" class="java.lang.String"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	*
 FROM
 	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Recap(
-		$P{M_Material_Balance_Config_ID}, $P{C_BPartner_ID},  $P{C_BP_Group_ID}, $P{M_Product_ID}, $P{IsRefundableConditions},$P{StartDate}, $P{EndDate}, now()::date
+		$P{M_Material_Balance_Config_ID}, 
+		$P{C_BPartner_ID},  
+		$P{C_BP_Group_ID}, 
+		$P{M_Product_ID}, 
+		$P{IsRefundableConditions},
+		$P{StartDate}, 
+		$P{EndDate}, 
+		now()::date,
+		$P{AD_Org_ID}
 	)
 	order by name;]]>
 	</queryString>
@@ -38,6 +51,7 @@ FROM
 	<field name="incoming" class="java.math.BigDecimal"/>
 	<field name="carryincoming" class="java.math.BigDecimal"/>
 	<field name="carryoutgoing" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -51,7 +65,7 @@ FROM
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement uuid="613a4095-25a8-4f37-888f-4a997ea9d115" key="textField-16" x="37" y="0" width="99" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="99" height="12" forecolor="#000000" uuid="613a4095-25a8-4f37-888f-4a997ea9d115"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -62,14 +76,14 @@ FROM
 	<detail>
 		<band height="25">
 			<textField>
-				<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="247" y="0" width="126" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="247" y="0" width="126" height="12" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0;-#,##0" isBlankWhenNull="true">
-				<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000" uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2">
 					<printWhenExpression><![CDATA[$F{carryincoming}
     .add($F{incoming})
     .subtract(
@@ -90,7 +104,7 @@ FROM
     )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000" uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645">
 					<printWhenExpression><![CDATA[$F{carryoutgoing}
     .add($F{outgoing})
     .subtract(

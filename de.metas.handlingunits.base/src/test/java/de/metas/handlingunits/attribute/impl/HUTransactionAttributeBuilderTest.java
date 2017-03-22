@@ -25,10 +25,6 @@ package de.metas.handlingunits.attribute.impl;
 
 import java.util.Collections;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-import mockit.Verifications;
-
 import org.compiere.model.I_M_Attribute;
 import org.junit.Test;
 
@@ -37,6 +33,9 @@ import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
 
 public class HUTransactionAttributeBuilderTest extends AbstractHUTest
 {
@@ -94,7 +93,7 @@ public class HUTransactionAttributeBuilderTest extends AbstractHUTest
 	private void createExpectations(final boolean targetHasAttribute, final boolean transferable)
 	{
 		// @formatter:off
-		new NonStrictExpectations() {{
+		new Expectations() {{
 			request.getAttributesFrom();
 			result = attributesFrom;
 
@@ -105,12 +104,14 @@ public class HUTransactionAttributeBuilderTest extends AbstractHUTest
 			result = Collections.singletonList(attribute);
 
 			attributesFrom.retrieveTransferStrategy(attribute);
+			minTimes = 0;
 			result = transferStrategy;
 
 			attributesTo.hasAttribute(attribute);
 			result = targetHasAttribute;
 
 			transferStrategy.isTransferable(request, attribute);
+			minTimes = 0;
 			result = transferable;
 		}};
 		// @formatter:on
@@ -119,7 +120,8 @@ public class HUTransactionAttributeBuilderTest extends AbstractHUTest
 	private void createVerifications(final int noOfTimesTransferCalled)
 	{
 		// @formatter:off
-		new Verifications()	{{
+		new Verifications()	
+		{{
 			transferStrategy.transferAttribute(request, attribute); times = noOfTimesTransferCalled;
 		}};
 		// @formatter:on

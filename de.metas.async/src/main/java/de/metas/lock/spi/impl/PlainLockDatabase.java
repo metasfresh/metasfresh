@@ -311,7 +311,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		// NOTE: below comes a fucked up, not optimum implementation shit which shall do the work for testing
 
-		final POJOInSelectionQueryFilter<Object> filter = new POJOInSelectionQueryFilter<>(adPInstanceId);
+		final POJOInSelectionQueryFilter<Object> filter = POJOInSelectionQueryFilter.inSelection(adPInstanceId);
 
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 		final List<ITableRecordReference> records = new ArrayList<>();

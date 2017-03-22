@@ -22,7 +22,6 @@ package org.eevolution.mrp.spi.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -77,12 +76,10 @@ import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -133,7 +130,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		log.info(tableName + " Timing: " + timing);
+		log.debug("onDocumentChange: {}, Timing: {}", tableName, timing);
 
 		if (model instanceof I_M_InOut && timing == DocTimingType.BEFORE_COMPLETE)
 		{
@@ -395,9 +392,9 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				productPlanning = Services.get(IProductPlanningDAO.class)
 						.find(ctx,
 								ol.getAD_Org_ID(),
-								0, // warehouse
-								0, // plant
-								ol.getM_Product_ID(), // product
+								0,   // warehouse
+								0,   // plant
+								ol.getM_Product_ID(),   // product
 								ITrx.TRXNAME_None);
 				if (productPlanning != null)
 				{
@@ -448,7 +445,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 					productPlanning.setAD_Workflow(workflow);
 					productPlanning.setM_Warehouse(warehouse);
 					productPlanning.setS_Resource(plant);
-					
+
 					int asiIdToUse = ol.getM_AttributeSetInstance_ID();
 					if (asiIdToUse > 0)
 					{

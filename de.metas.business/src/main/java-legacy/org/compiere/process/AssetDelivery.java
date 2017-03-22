@@ -34,6 +34,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Deliver Assets Electronically
@@ -42,7 +44,7 @@ import de.metas.email.IMailTextBuilder;
  * 	@version 	$Id: AssetDelivery.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  * 	@author 	Michael Judd BF [ 2736995 ] - toURL() in java.io.File has been deprecated
  */
-public class AssetDelivery extends SvrProcess
+public class AssetDelivery extends JavaProcess
 {
 	private MClient		m_client = null;
 
@@ -63,7 +65,7 @@ public class AssetDelivery extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -58,9 +58,6 @@ import org.compiere.model.MEXPFormat;
 import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_ReplicationTable;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
@@ -68,28 +65,34 @@ import ch.qos.logback.classic.Level;
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.util.CanonicalXSDGenerator;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  * 
  */
-public class GenerateCanonicalXSD extends SvrProcess
+public class GenerateCanonicalXSD extends JavaProcess
 {
+	private static final String PARAM_Target_Directory = "Target_Directory";
 	private String p_Target_Directory = null;
+	
+	private static final String PARAM_EntityType = "EntityType";
 	private String p_EntityType = null;
 	private boolean p_FilterBy_AD_Client_ID = true;
 
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParameters())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 				;
-			else if ("Target_Directory".equals(name))
+			else if (PARAM_Target_Directory.equals(name))
 				p_Target_Directory = (String)para.getParameter();
-			else if ("EntityType".equals(name))
+			else if (PARAM_EntityType.equals(name))
 				p_EntityType = (String)para.getParameter();
 		}
 	}
@@ -98,15 +101,15 @@ public class GenerateCanonicalXSD extends SvrProcess
 	protected String doIt() throws Exception
 	{
 		if (p_Target_Directory == null)
-			throw new FillMandatoryException("Target_Directory");
+			throw new FillMandatoryException(PARAM_Target_Directory);
 		if (p_EntityType == null)
-			throw new FillMandatoryException("EntityType");
+			throw new FillMandatoryException(PARAM_EntityType);
 
 		final IQueryBuilder<I_EXP_Format> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EXP_Format.class, this);
 
 		if (p_FilterBy_AD_Client_ID)
 		{
-			queryBuilder.addInArrayFilter(I_EXP_Format.COLUMNNAME_AD_Client_ID, 0, getAD_Client_ID());
+			queryBuilder.addInArrayOrAllFilter(I_EXP_Format.COLUMNNAME_AD_Client_ID, 0, getAD_Client_ID());
 		}
 		if (p_EntityType != null)
 		{
@@ -294,7 +297,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 			throw new AdempiereException("Please set the OutputFolder");
 		}
 
-		final String entityType = System.getProperty("EntityType");
+		final String entityType = System.getProperty(PARAM_EntityType);
 		if (Check.isEmpty(entityType, true))
 		{
 			throw new AdempiereException("Please set the EntityType");
@@ -304,18 +307,20 @@ public class GenerateCanonicalXSD extends SvrProcess
 
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
-		final ProcessInfo pi = new ProcessInfo("GenerateCanonicalXSD", -1, 0, 0);
-		pi.setParameter(new ProcessInfoParameter[] {
-				new ProcessInfoParameter("Target_Directory", outputFolder, null, null, null),
-				new ProcessInfoParameter("EntityType", entityType, null, null, null),
-		});
-		pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setTitle("GenerateCanonicalXSD")
+				.setAD_Process_ID(-1) // N/A
+				.setClassname(GenerateCanonicalXSD.class.getName())
+				.addParameter(PARAM_Target_Directory, outputFolder)
+				.addParameter(PARAM_EntityType, entityType)
+				.build();
 
 		final GenerateCanonicalXSD process = new GenerateCanonicalXSD();
 		process.p_FilterBy_AD_Client_ID = false;
 
 		LogManager.setLevel(Level.INFO);
-		process.startProcess(Env.getCtx(), pi, ITrx.TRX_None);
+		process.startProcess(pi, ITrx.TRX_None);
 
 		//
 		// CanonicalXSDGenerator.validateXML(new File("d:/tmp/C_BPartner.xml"), proc.getSchemaFile());

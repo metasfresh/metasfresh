@@ -13,27 +13,29 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
+import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /**
- * Downstream HU Iterator
+ * Downstream HU Iterator. Iterates a HU hierarchy starting a the given root.
+ * <p>
+ * Use the {@link HUIterator} constructor to get yours.
  *
  * NOTE:
  * <ul>
@@ -72,21 +74,21 @@ public interface IHUIterator
 	 */
 	IHUContext getHUContext();
 
-	void setHUContext(IHUContext huContext);
+	IHUIterator setHUContext(IHUContext huContext);
 
 	Properties getCtx();
 
-	void setCtx(Properties ctx);
+	IHUIterator setCtx(Properties ctx);
 
 	Date getDate();
 
-	void setDate(final Date date);
+	IHUIterator setDate(final Date date);
 
 	void setStorageFactory(final IHUStorageFactory storageFactory);
 
 	IHUStorageFactory getStorageFactoryToUse();
 
-	void setListener(final IHUIteratorListener listener);
+	IHUIterator setListener(final IHUIteratorListener listener);
 
 	/**
 	 * Gets current depth.

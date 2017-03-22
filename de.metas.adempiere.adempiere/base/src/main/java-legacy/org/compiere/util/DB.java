@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -61,17 +58,18 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
+import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  * General Database Interface
@@ -211,80 +209,6 @@ public final class DB
 		system.setIsJustMigrated(false);
 		return system.save();
 	}	// afterMigration
-
-	/**
-	 * Update Mail Settings for System Client and System User
-	 */
-	public static void updateMail()
-	{
-		// Get Property File
-		String envName = Ini.getAdempiereHome();
-		if (envName == null)
-			return;
-		envName += File.separator + "AdempiereEnv.properties";
-		File envFile = new File(envName);
-		if (!envFile.exists())
-			return;
-
-		Properties env = new Properties();
-		try
-		{
-			FileInputStream in = new FileInputStream(envFile);
-			env.load(in);
-			in.close();
-		}
-		catch (Exception e)
-		{
-			return;
-		}
-		String updated = env.getProperty("ADEMPIERE_MAIL_UPDATED");
-		if (updated != null && updated.equals("Y"))
-			return;
-
-		// See org.compiere.install.ConfigurationData
-		String server = env.getProperty("ADEMPIERE_MAIL_SERVER");
-		if (server == null || server.length() == 0)
-			return;
-		String adminEMail = env.getProperty("ADEMPIERE_ADMIN_EMAIL");
-		if (adminEMail == null || adminEMail.length() == 0)
-			return;
-		String mailUser = env.getProperty("ADEMPIERE_MAIL_USER");
-		if (mailUser == null || mailUser.length() == 0)
-			return;
-		String mailPassword = env.getProperty("ADEMPIERE_MAIL_PASSWORD");
-		// if (mailPassword == null || mailPassword.length() == 0)
-		// return;
-		//
-		StringBuffer sql = new StringBuffer("UPDATE AD_Client SET")
-				.append(" SMTPHost=").append(DB.TO_STRING(server))
-				.append(", RequestEMail=").append(DB.TO_STRING(adminEMail))
-				.append(", RequestUser=").append(DB.TO_STRING(mailUser))
-				.append(", RequestUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(", IsSMTPAuthorization='Y' WHERE AD_Client_ID=0");
-		int no = DB.executeUpdate(sql.toString(), null);
-		log.debug("Client #" + no);
-		//
-		sql = new StringBuffer("UPDATE AD_User SET ")
-				.append(" EMail=").append(DB.TO_STRING(adminEMail))
-				.append(", EMailUser=").append(DB.TO_STRING(mailUser))
-				.append(", EMailUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(" WHERE AD_User_ID IN (0,100)");
-		no = DB.executeUpdate(sql.toString(), null);
-		log.debug("User #" + no);
-		//
-		try
-		{
-			env.setProperty("ADEMPIERE_MAIL_UPDATED", "Y");
-			FileOutputStream out = new FileOutputStream(envFile);
-			env.store(out, "");
-			out.flush();
-			out.close();
-		}
-		catch (Exception e)
-		{
-		}
-
-	}	// updateMail
 
 	/**************************************************************************
 	 * Set connection.
@@ -695,17 +619,6 @@ public final class DB
 // @formatter:on
 
 	/**************************************************************************
-	 * Prepare Forward Read Only Call
-	 *
-	 * @param SQL sql
-	 * @return Callable Statement
-	 */
-	public static CallableStatement prepareCall(String sql)
-	{
-		return prepareCall(sql, ResultSet.CONCUR_UPDATABLE, null);
-	}
-
-	/**************************************************************************
 	 * Prepare Call
 	 *
 	 * @param SQL sql
@@ -1021,7 +934,7 @@ public final class DB
 		}
 		catch (final Exception ex)
 		{
-			Exception sqlException = DBException.getSQLException(ex);
+			Exception sqlException = DBException.extractSQLExceptionOrNull(ex);
 			// metas-2009_0021_AP1_CR061: teo_sarca: begin
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
@@ -1343,7 +1256,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return retValue;
 	}
@@ -1429,7 +1342,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error("Error while executing: {}", sql, DBException.getSQLException(e));
+			log.error("Error while executing: {}", sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return retValue;
 	}
@@ -1515,7 +1428,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return null;
 	}
@@ -1600,7 +1513,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return null;
 	}
@@ -1674,7 +1587,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		finally
 		{
@@ -1691,78 +1604,91 @@ public final class DB
 	/**
 	 * Is Sales Order Trx. Assumes Sales Order. Queries IsSOTrx of table with where clause
 	 *
-	 * @param TableName table
+	 * @param tableName table
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static boolean isSOTrx(String TableName, String whereClause)
+	public static boolean isSOTrx(final String tableName, final String whereClause)
 	{
-		if (TableName == null || TableName.length() == 0)
+		final boolean defaultIsSOTrx = true;
+		
+		if(Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
-			return true;
+			return defaultIsSOTrx;
 		}
-		if (whereClause == null || whereClause.length() == 0)
+		
+		if(Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
-			return true;
+			return defaultIsSOTrx;
 		}
+		
 		//
-		boolean isSOTrx = true;
-		String sql = "SELECT IsSOTrx FROM " + TableName
-				+ " WHERE " + whereClause;
+		// Extract the SQL to select the IsSOTrx column
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String sqlSelectIsSOTrx;
+		// Case: tableName has the "IsSOTrx" column
+		if(poInfo != null && poInfo.isPhysicalColumn("IsSOTrx"))
+		{
+			sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
+		}
+		// Case: tableName does NOT have the "IsSOTrx" column but ends with "Line", so we will check the parent table.
+		else if (tableName.endsWith("Line"))
+		{
+			final String parentTableName = tableName.substring(0, tableName.indexOf("Line"));
+			final POInfo parentPOInfo = POInfo.getPOInfo(parentTableName);
+			if (parentPOInfo != null && parentPOInfo.isPhysicalColumn("IsSOTrx"))
+			{
+				// metas: use IN instead of EXISTS as the subquery should be highly selective
+				sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + parentTableName
+						+ " h WHERE h." + parentTableName + "_ID IN (SELECT l." + parentTableName + "_ID FROM " + tableName
+						+ " l WHERE " + whereClause + ")";
+			}
+			else
+			{
+				sqlSelectIsSOTrx = null;
+			}
+		}
+		// Fallback: no IsSOTrx
+		else
+		{
+			return defaultIsSOTrx;
+		}
+		
+		//
+		// Fetch IsSOTrx value if possible
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sqlSelectIsSOTrx, ITrx.TRXNAME_None);
+			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
-				isSOTrx = "Y".equals(rs.getString(1));
-		}
-		catch (Exception e)
-		{
-			if (TableName.endsWith("Line"))
 			{
-				String hdr = TableName.substring(0, TableName.indexOf("Line"));
-				// metas: use IN instead of EXISTS as the subquery should be highly selective
-				sql = "SELECT IsSOTrx FROM " + hdr
-						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + TableName
-						+ " l WHERE " + whereClause + ")";
-				PreparedStatement pstmt2 = null;
-				ResultSet rs2 = null;
-				try
-				{
-					pstmt2 = DB.prepareStatement(sql, null);
-					rs2 = pstmt2.executeQuery();
-					if (rs2.next())
-						isSOTrx = "Y".equals(rs2.getString(1));
-				}
-				catch (Exception ee)
-				{
-					ee = DBException.getSQLException(ee);
-					log.trace("Error while checking isSOTrx (SQL: {})", sql, ee);
-				}
-				finally
-				{
-					close(rs2, pstmt2);
-					rs = null;
-					pstmt = null;
-				}
+				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
+				return isSOTrx;
 			}
 			else
 			{
-				log.trace("Table {} has no IsSOTrx column", TableName, e);
+				log.trace("No records were found to fetch the IsSOTrx from SQL: {}", sqlSelectIsSOTrx);
+				return defaultIsSOTrx;
 			}
+		}
+		catch (final Exception ex)
+		{
+			final SQLException sqlEx = DBException.extractSQLExceptionOrNull(ex);
+			log.trace("Error while checking isSOTrx (SQL: {})", sqlSelectIsSOTrx, sqlEx);
+			
+			return defaultIsSOTrx;
 		}
 		finally
 		{
-			close(rs);
-			close(pstmt);
+			close(rs, pstmt);
 			rs = null;
 			pstmt = null;
 		}
-		return isSOTrx;
 	}	// isSOTrx
 
 	/**************************************************************************
@@ -2003,6 +1929,22 @@ public final class DB
 	{
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
+	}
+	
+	/**
+	 * @param comment
+	 * @return SQL multiline comment 
+	 */
+	public static final String TO_COMMENT(final String comment)
+	{
+		if (Check.isEmpty(comment, true))
+		{
+			return "";
+		}
+		
+		return "/* "
+				+ comment.replace("/*", " ").replace("*/", " ")
+				+" */";
 	}
 
 	/**
@@ -2270,7 +2212,7 @@ public final class DB
 	 */
 	public static int createT_Selection(Iterable<Integer> selection, String trxName)
 	{
-		final int adPInstanceId = getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
 		createT_Selection(adPInstanceId, selection, trxName);
 		return adPInstanceId;
 	}
@@ -2430,6 +2372,7 @@ public final class DB
 			{
 				sql.append(TO_DATE(TimeUtil.asTimestamp((Date)paramIn)));
 			}
+			else
 			{
 				sql.append(TO_STRING(paramIn.toString()));
 			}

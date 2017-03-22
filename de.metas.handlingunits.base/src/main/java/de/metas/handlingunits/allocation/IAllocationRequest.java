@@ -87,7 +87,7 @@ public interface IAllocationRequest
 
 	/**
 	 *
-	 * @return true if we shall allocate the qty even if the destination is already full
+	 * @return <code>true</code> if we shall allocate the qty even if the destination is already full
 	 */
 	boolean isForceQtyAllocation();
 }

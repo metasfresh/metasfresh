@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.Immutable;
 import javax.mail.internet.MimeUtility;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -1007,7 +1008,7 @@ public class Util
 	 */
 	public static ArrayKey mkKey(final Object... input)
 	{
-		return new ArrayKey(input);
+		return ArrayKey.of(input);
 	}
 
 	/**
@@ -1015,7 +1016,7 @@ public class Util
 	 */
 	public static ArrayKeyBuilder mkKey()
 	{
-		return new ArrayKeyBuilder();
+		return ArrayKey.builder();
 	}
 
 	/**
@@ -1027,8 +1028,19 @@ public class Util
 	 * @author ts
 	 *
 	 */
+	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
+		public static final ArrayKey of(final Object...input)
+		{
+			return new ArrayKey(input);
+		}
+		
+		public static final ArrayKeyBuilder builder()
+		{
+			return new ArrayKeyBuilder();
+		}
+		
 		private final Object[] array;
 		private String _stringBuilt = null;
 
@@ -1425,12 +1437,12 @@ public class Util
 	}
 
 	/**
-	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greter than 0.
+	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
 	 *
 	 * @param values
-	 * @return
+	 * @return first greater than zero value or zero
 	 */
-	public static final int coalesceInt(int... values)
+	public static final int firstGreaterThanZero(int... values)
 	{
 		if (values == null || values.length == 0)
 		{
@@ -1445,6 +1457,28 @@ public class Util
 		}
 		return 0;
 	}
+
+	/**
+	 * @see #firstGreaterThanZero(int...)
+	 */
+	public static final int firstGreaterThanZero(final int value)
+	{
+		return value > 0 ? value : 0;
+	}
+	
+	public static final int firstGreaterThanZero(final int value1, final int value2)
+	{
+		if(value1 > 0)
+		{
+			return value1;
+		}
+		if(value2 > 0)
+		{
+			return value2;
+		}
+		return 0;
+	}
+
 
 	public static String replaceNonDigitCharsWithZero(String stringToModify)
 	{

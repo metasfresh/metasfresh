@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-17T10:05:47 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="39e92b5e-fc7e-4200-84d5-4f7d227bd7cf">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.3579476910000046"/>
 	<property name="ireport.x" value="248"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -18,7 +22,7 @@
 	<queryString>
 		<![CDATA[SELECT
 	COALESCE((
-		SELECT Value || ' ' || Name FROM C_BPartner WHERE $P{C_BPartner_ID} = C_BPartner_ID
+		SELECT Value || ' ' || Name FROM C_BPartner WHERE $P{C_BPartner_ID} = C_BPartner_ID AND isActive = 'Y'
 	), 'Alle') as BPartner
 ;]]>
 	</queryString>
@@ -29,7 +33,7 @@
 	<title>
 		<band height="72" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="7b4fea54-bf7e-4172-aa32-ef6c791f3ded" key="textField-1" x="200" y="4" width="194" height="19"/>
+				<reportElement key="textField-1" x="200" y="4" width="194" height="19" uuid="7b4fea54-bf7e-4172-aa32-ef6c791f3ded"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -42,7 +46,7 @@
 				<textFieldExpression><![CDATA[$R{Headline}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="289" y="43" width="167" height="12"/>
+				<reportElement key="textField-4" x="289" y="43" width="167" height="12" uuid="0b0321d5-002e-4666-8af9-ab827c840dec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -55,7 +59,7 @@
 				<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9" key="textField-5" x="200" y="43" width="90" height="12"/>
+				<reportElement key="textField-5" x="200" y="43" width="90" height="12" uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -68,7 +72,7 @@
 				<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="309" y="31" width="50" height="12"/>
+				<reportElement key="textField-4" x="309" y="31" width="50" height="12" uuid="0b0321d5-002e-4666-8af9-ab827c840dec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -81,21 +85,21 @@
 				<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="739e1610-e93f-426a-b55b-47fdc1bfc127" key="textField-5" x="289" y="31" width="21" height="12"/>
+				<reportElement key="textField-5" x="289" y="31" width="21" height="12" uuid="739e1610-e93f-426a-b55b-47fdc1bfc127"/>
 				<textElement markup="none">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Von]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="914a1f36-afa9-4d75-82cd-e65f98b99879" key="textField-5" x="359" y="31" width="21" height="12"/>
+				<reportElement key="textField-5" x="359" y="31" width="21" height="12" uuid="914a1f36-afa9-4d75-82cd-e65f98b99879"/>
 				<textElement markup="none">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Bis]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="380" y="31" width="50" height="12"/>
+				<reportElement key="textField-4" x="380" y="31" width="50" height="12" uuid="0b0321d5-002e-4666-8af9-ab827c840dec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -108,14 +112,14 @@
 				<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="dd5c33b7-be56-44e8-83d8-8493274d0eb9" key="textField-5" x="200" y="31" width="90" height="12"/>
+				<reportElement key="textField-5" x="200" y="31" width="90" height="12" uuid="dd5c33b7-be56-44e8-83d8-8493274d0eb9"/>
 				<textElement markup="none">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Timeframe}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9" key="textField-5" x="200" y="56" width="90" height="12"/>
+				<reportElement key="textField-5" x="200" y="56" width="90" height="12" uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -128,7 +132,7 @@
 				<textFieldExpression><![CDATA[$R{IsSOTrx}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="0b0321d5-002e-4666-8af9-ab827c840dec" key="textField-4" x="289" y="56" width="167" height="12"/>
+				<reportElement key="textField-4" x="289" y="56" width="167" height="12" uuid="0b0321d5-002e-4666-8af9-ab827c840dec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

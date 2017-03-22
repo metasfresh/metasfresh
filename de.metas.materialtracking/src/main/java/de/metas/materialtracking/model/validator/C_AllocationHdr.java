@@ -10,14 +10,14 @@ package de.metas.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -80,6 +81,10 @@ public class C_AllocationHdr extends MaterialTrackableDocumentByASIInterceptor<I
 		throw new IllegalStateException("shall not be called");
 	}
 
+	/**
+	 * Loads and returns the material tracking of the invoice referenced by the given {@code documentLine}, if there is any. If there is none, it returns {@code null}.
+	 * Analog to {@link C_Invoice#isEligibleForMaterialTracking(I_C_Invoice)}, if the invoice is a sales invoice or if it is reversed, then we don't bother trying to get its material tracking and directly return {@code null}.
+	 */
 	@Override
 	protected I_M_Material_Tracking getMaterialTrackingFromDocumentLineASI(final I_C_AllocationLine documentLine)
 	{
@@ -90,6 +95,17 @@ public class C_AllocationHdr extends MaterialTrackableDocumentByASIInterceptor<I
 
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final I_C_Invoice invoice = documentLine.getC_Invoice();
+
+		// please keep in sync with the isEligible method mentioned in the javadoc.
+		if (Services.get(IInvoiceBL.class).isReversal(invoice))
+		{
+			return null;
+		}
+		if (invoice.isSOTrx())
+		{
+			return null;
+		}
+
 		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(invoice);
 		return materialTracking;
 	}

@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,7 +50,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.split.impl.LUTUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -70,7 +69,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final ILUTUProducerAllocationDestination luProducerDestination = new LUTUProducerDestination();
+		final LUTUProducerDestination luProducerDestination = new LUTUProducerDestination();
 		luProducerDestination.setM_HU_LUTU_Configuration(lutuConfiguration);
 
 		//
@@ -80,6 +79,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final boolean qtyLUInfinite = lutuConfiguration.isInfiniteQtyLU();
 		final int qtyTU = lutuConfiguration.getQtyTU().intValueExact();
 		final boolean qtyTUInfinite = lutuConfiguration.isInfiniteQtyTU();
+
 		if (!handlingUnitsBL.isNoPI(luPIItem))
 		{
 			final I_M_HU_PI luPI = luPIItem.getM_HU_PI_Version().getM_HU_PI();
@@ -169,7 +169,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final String threadTrxName = trxManager.getThreadInheritedTrxName();
 		if (trxManager.isNull(threadTrxName))
 		{
-			contextProvider = new PlainContextAware(ctx, ITrx.TRXNAME_None);
+			contextProvider = PlainContextAware.newOutOfTrxAllowThreadInherited(ctx);
 		}
 		else
 		{

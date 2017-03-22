@@ -53,16 +53,19 @@ public interface IMRPProductInfoBL extends ISingletonService
 	 * <li>there are multiple records for the same selector (i.e. multiple {@link I_X_MRP_ProductInfo_Detail_MV}s with the same date, product and ASIKey), check if there is a "real" one with <code>IsFallBack='N'</code>.<br>
 	 * If yes, update it and skip over <code>IsFallBack='N'</code>-records that come later. If no, the copy the first fallback-one, create a "real"-one from it and update that real-one's <code>QtyOnHand</code>. Again, skip any further fallback-ones.<br>
 	 * For the "skipping" to work, it is important to have the correct {@link IMRPProductInfoSelector#equals(Object)} implementation.
-	 * <li>About the actual <code>QtyOnHand</code> update: if teh current <code>item</code>'s model is an <code>M_InOutLine</code>, and QtyOnHand is not <code>null</code>, then just add or subtract the <code>M_InOutLine</code>'s <code>MovementQty</code>.<br>
+	 * <li>About the actual <code>QtyOnHand</code> update: if the current <code>item</code>'s model is an <code>M_InOutLine</code>, and QtyOnHand is not <code>null</code>, then just add or subtract the <code>M_InOutLine</code>'s <code>MovementQty</code>.<br>
 	 * Otherwise, fire up the storage engine to compute the <code>QtyOnHand</code> value from scratch.
 	 * </ul>
 	 *
-	 *
 	 * @param ctxProvider
 	 * @param items objects that can be turned into {@link IMRPProductInfoSelector}s by the {@link IMRPProductInfoSelectorFactory}.
-	 * @param params if not <code>null</code>, then the params will be passed on to the {@link IMRPProductInfoSelectorFactory}
 	 *
 	 */
-	void updateItems(IContextAware ctxProvider, List<Object> items, IParams params);
+	void updateItems(IContextAware ctxProvider, List<Object> items);
+	
+	/**
+	 * Similar to {@link #updateItems(IContextAware, IParams)}, but works with an {@link IParams} instance that can be turned into {@link IMRPProductInfoSelector}s by the {@link IMRPProductInfoSelectorFactory}.
+	 */
+	void updateItems(IContextAware ctxProvider, IParams params);
 
 }

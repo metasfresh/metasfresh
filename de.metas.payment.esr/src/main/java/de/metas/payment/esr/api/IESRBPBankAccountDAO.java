@@ -13,20 +13,20 @@ package de.metas.payment.esr.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
@@ -39,11 +39,15 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	 * @return account(s) if exist, throw exception otherwise. If there is more than one ESR account, then the one with IsDefaultESR='Y' is returned first.
 	 */
 	public List<I_C_BP_BankAccount> fetchOrgEsrAccounts(I_AD_Org org);
-	
+
 	/**
+	 * Retrieve matching ESR bank accounts. Note that the given {@code postAccountNo} and {@code innerAccountNo} are <b>not</b> guaranteed to be unique.<br>
+	 * A simple example of non-unique parameters would be two {@link I_C_BPartner}s that are tightly coupled in the real world and have the same bank account.
+	 * 
+	 * 
 	 * @param postAccountNo
 	 * @param innerAccountNo
-	 * @return {@link I_C_BP_BankAccount} (unique) corresponding to the ESR accountNo and inner-bank accountNo or <code>null</code> if none was found
+	 * @return {@link I_C_BP_BankAccount}s corresponding to the ESR accountNo and inner-bank accountNo or an empty list if none was found.
 	 */
-	I_C_BP_BankAccount retrieveESRBPBankAccountOrNull(String postAccountNo, String innerAccountNo);
+	List<I_C_BP_BankAccount> retrieveESRBPBankAccounts(String postAccountNo, String innerAccountNo);
 }

@@ -25,7 +25,7 @@ package org.adempiere.ad.dao.housekeeping.spi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.compiere.util.DB;
 
 /**
@@ -38,17 +38,17 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 {
 
 	@Override
-	public void executeTask(ILoggable loggable)
+	public void executeTask()
 	{
-		truncateTable(loggable, "T_Selection");
-		truncateTable(loggable, "T_Selection2");
-		truncateTable(loggable, "T_Query_Selection"); // used in GuaranteedPOBufferedIterator
+		truncateTable("T_Selection");
+		truncateTable("T_Selection2");
+		truncateTable("T_Query_Selection"); // used in GuaranteedPOBufferedIterator
 	}
 
-	private void truncateTable(ILoggable loggable, final String tableName)
+	private void truncateTable(final String tableName)
 	{
 		final int no = DB.executeUpdateEx("DELETE FROM " + tableName, ITrx.TRXNAME_NoneNotNull);
-		loggable.addLog("Deleted " + no + " '" + tableName + "' records");
+		Loggables.get().addLog("Deleted " + no + " '" + tableName + "' records");
 	}
 
 }

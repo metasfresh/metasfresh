@@ -71,13 +71,6 @@ public interface IHUKey extends ITerminalKey, IDisposable
 	 */
 	List<IHUKey> getChildrenNoLoad();
 
-	// /**
-	// * Gets unfiltered children. If they were not loaded, this method will load them first.
-	// *
-	// * @return filtered children
-	// */
-	// List<IHUKey> getChildrenUnfiltered();
-
 	/**
 	 * @return <code>true</code> if has at least one child
 	 */
@@ -141,7 +134,7 @@ public interface IHUKey extends ITerminalKey, IDisposable
 	boolean isGrouping();
 
 	/**
-	 * @return true if this is a virtual handling unit (but NOT strictly a pure virtual one)
+	 * @return {@code true} if this is a virtual handling unit (but NOT strictly a pure virtual one). However, return {@code false} if this is an aggregate HU!
 	 */
 	boolean isVirtualPI();
 

@@ -5,7 +5,7 @@ package org.adempiere.process;
 
 import java.util.Properties;
 
-import org.compiere.process.ProcessInfo;
+import de.metas.process.ProcessInfo;
 
 /**
  * All processes that are importing data should implement this interface.
@@ -42,7 +42,7 @@ public interface ImportProcess
 	/**
 	 * Get Process Info
 	 * @return Process Info
-	 * @see org.compiere.process.SvrProcess#getProcessInfo()
+	 * @see de.metas.process.JavaProcess#getProcessInfo()
 	 */
 	public ProcessInfo getProcessInfo();
 }

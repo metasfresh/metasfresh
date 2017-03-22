@@ -33,6 +33,7 @@ import org.compiere.grid.ed.VNumber;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
@@ -366,7 +367,7 @@ public class InfoOrder extends Info
 		if (C_Order_ID == null)
 			return;
 		MQuery query = new MQuery("C_Order");
-		query.addRestriction("C_Order_ID", MQuery.EQUAL, C_Order_ID);
+		query.addRestriction("C_Order_ID", Operator.EQUAL, C_Order_ID);
 		query.setRecordCount(1);
 		int AD_WindowNo = getAD_Window_ID("C_Order", fIsSOTrx.isSelected());
 		zoom (AD_WindowNo, query);

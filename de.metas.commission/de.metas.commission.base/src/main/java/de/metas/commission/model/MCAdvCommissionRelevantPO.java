@@ -30,23 +30,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Ref_Table;
-import org.compiere.model.MReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheIgnore;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -170,13 +172,6 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 		return null;
 	}
 
-	/**
-	 * Very similar to {@link org.adempiere.model.MRelationType#whereClauseMatches}, but doesn't parse the where clause.
-	 * 
-	 * @param po
-	 * @param where
-	 * @return
-	 */
 	boolean whereClauseMatches(final Object model)
 	{
 		final String where = getSQLWhere();
@@ -220,15 +215,14 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 
 	public String getTableName()
 	{
-
-		return MReference.retrieveRefTable(getCtx(), getAD_Reference_ID(),
-				get_TrxName()).getAD_Table().getTableName();
+		final ITableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(getAD_Reference_ID());
+		return tableRefInfo.getTableName();
 	}
 
 	public String getSQLWhere()
 	{
-		return MReference.retrieveRefTable(getCtx(), getAD_Reference_ID(),
-				get_TrxName()).getWhereClause();
+		final ITableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(getAD_Reference_ID());
+		return tableRefInfo.getWhereClause();
 	}
 
 	@Override

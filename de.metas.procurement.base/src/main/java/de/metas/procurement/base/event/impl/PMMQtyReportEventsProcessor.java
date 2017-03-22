@@ -5,7 +5,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
@@ -70,11 +70,6 @@ public class PMMQtyReportEventsProcessor
 				.setProcessor(itemProcessor)
 				.process(events);
 
-		getLoggable().addLog(itemProcessor.getProcessSummary());
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
+		Loggables.get().addLog(itemProcessor.getProcessSummary());
 	}
 }

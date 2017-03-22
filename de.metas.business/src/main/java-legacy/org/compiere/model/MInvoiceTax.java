@@ -21,42 +21,40 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
  * Invoice Tax Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MInvoiceTax.java,v 1.5 2006/10/06 00:42:24 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <li>FR [ 2214883 ] Remove SQL code and Replace for Query
  */
 public class MInvoiceTax extends X_C_InvoiceTax
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5560880305482497098L;
 
 	/**
 	 * Get Tax Line for Invoice Line
-	 * 
+	 *
 	 * @param line invoice line
 	 * @param precision currency precision
 	 * @param oldTax if true old tax is returned
@@ -128,25 +126,24 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**************************************************************************
 	 * Persistency Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param ignored ignored
 	 * @param trxName transaction
 	 */
-	public MInvoiceTax(Properties ctx, int ignored, String trxName)
+	public MInvoiceTax(Properties ctx, int id, String trxName)
 	{
-		super(ctx, 0, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-Key");
-		setTaxAmt(Env.ZERO);
-		setTaxBaseAmt(Env.ZERO);
+		super(ctx, id, trxName);
+
+		setTaxAmt(BigDecimal.ZERO);
+		setTaxBaseAmt(BigDecimal.ZERO);
 		setIsTaxIncluded(false);
 	}	// MInvoiceTax
 
 	/**
 	 * Load Constructor.
 	 * Set Precision and TaxIncluded for tax calculations!
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -163,7 +160,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**
 	 * Get Precision
-	 * 
+	 *
 	 * @return Returns the precision or 2
 	 */
 	private int getPrecision()
@@ -175,7 +172,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**
 	 * Set Precision
-	 * 
+	 *
 	 * @param precision The precision to set.
 	 */
 	protected void setPrecision(int precision)
@@ -185,7 +182,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**
 	 * Get Tax
-	 * 
+	 *
 	 * @return tax
 	 */
 	protected MTax getTax()
@@ -197,9 +194,9 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**************************************************************************
 	 * Calculate/Set Tax Base Amt from Invoice Lines.
-	 * 
+	 *
 	 * If there were no invoice lines found for this tax, this record will be inactivated. In this way, the caller method can know about this and it can decide if this record will be deleted.
-	 * 
+	 *
 	 * @return true if tax calculated
 	 */
 	public boolean calculateTaxFromLines()
@@ -306,9 +303,10 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MInvoiceTax[");

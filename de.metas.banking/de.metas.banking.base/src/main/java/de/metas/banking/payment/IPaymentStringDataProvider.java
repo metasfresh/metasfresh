@@ -1,5 +1,10 @@
 package de.metas.banking.payment;
 
+import java.util.List;
+
+import org.adempiere.model.IContextAware;
+import org.compiere.model.I_C_BP_BankAccount;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -23,9 +28,7 @@ package de.metas.banking.payment;
  */
 
 
-import org.adempiere.model.IContextAware;
 
-import de.metas.interfaces.I_C_BP_BankAccount;
 
 /**
  * Interface used to retrieve information from an {@link IPaymentString}.
@@ -36,7 +39,10 @@ public interface IPaymentStringDataProvider
 {
 	IPaymentString getPaymentString();
 
-	I_C_BP_BankAccount getC_BP_BankAccountOrNull();
+	/**
+	 * @return bank accounts that match this instance.
+	 */
+	List<I_C_BP_BankAccount> getC_BP_BankAccounts();
 
 	/**
 	 * Create and save a new C_BP_BankAccount based on the data contained in this provider.

@@ -33,11 +33,11 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Product;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
 import org.compiere.model.X_I_Product;
@@ -54,10 +54,7 @@ import de.metas.adempiere.model.I_M_Product;
  */
 public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 {
-	public static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
-
-	// services
-	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
 	@Override
 	public Class<I_I_Product> getImportModelClass()
@@ -617,13 +614,11 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 
 		//
 		// Get/Create Product Price record
-		I_M_ProductPrice pp = priceListDAO.retrieveProductPriceOrNull(getCtx(), priceListVersionId, productId, ITrx.TRXNAME_ThreadInherited);
-		if (pp == null)
-		{
-			pp = InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited);
-		}
-		pp.setM_PriceList_Version_ID(priceListVersionId);	// FK
-		pp.setM_Product_ID(productId);						// FK
+		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(getCtx(), priceListVersionId, I_M_PriceList_Version.class, ITrx.TRXNAME_ThreadInherited);
+		final I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, productId)
+				.orElseGet(() -> InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited));
+		pp.setM_PriceList_Version(plv);	// FK
+		pp.setM_Product_ID(productId); // FK
 		pp.setPriceLimit(PriceLimit);
 		pp.setPriceList(PriceList);
 		pp.setPriceStd(PriceStd);

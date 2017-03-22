@@ -1,12 +1,10 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -23,6 +21,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -34,6 +33,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -42,6 +42,7 @@
 			<!-- required for unit test mode, AITHelper etc -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 			<exclusions>
@@ -62,6 +63,7 @@
 			<!-- NOTE: required for MockedAdempiereImportProcessor -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 
 			<exclusions>
@@ -97,7 +99,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -287,7 +289,9 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${metasfresh-dependency.version}</version>
+				<!-- version ranges don't work here, see http://stackoverflow.com/questions/20969586/using-scope-import-with-version-ranges -->
+				<!-- version>${metasfresh-dependency.version}</version -->
+				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

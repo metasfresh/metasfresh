@@ -31,6 +31,11 @@ import org.compiere.model.I_AD_Language;
 public interface ILanguageDAO extends ISingletonService
 {
 	List<I_AD_Language> retrieveAvailableLanguages(Properties ctx, int clientId);
+	
+	/**
+	 * @param ctx
+	 * @return all available AD_Languages, having the base language as first item
+	 */
 	List<String> retrieveAvailableAD_LanguagesForMatching(Properties ctx);
 
 	/**

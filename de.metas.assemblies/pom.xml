@@ -4,12 +4,13 @@
 	<parent>
 		<artifactId>de.metas.reactor</artifactId>
 		<groupId>de.metas.reactor</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.reactor/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.assemblies</groupId>
 	<artifactId>de.metas.assemblies</artifactId>
+	<version>1.0.0</version>
 
 	<description>Shared assembly descriptors for metas projects</description>
 

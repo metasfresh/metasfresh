@@ -3,6 +3,8 @@ package de.metas.handlingunits.impl;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -254,9 +256,12 @@ public class HUPIItemProductDAOTest
 		InterfaceWrapperHelper.save(packingMaterial);
 
 		final I_M_HU_PI_Item packingMaterialPiItem = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		packingMaterialPiItem.setM_HU_PI_Version(materialPiItem.getM_HU_PI_Version());
+		
 		packingMaterialPiItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		packingMaterialPiItem.setM_HU_PackingMaterial(packingMaterial);
-		packingMaterialPiItem.setM_HU_PI_Version(materialPiItem.getM_HU_PI_Version());
+		packingMaterialPiItem.setQty(BigDecimal.ONE);
+		
 		InterfaceWrapperHelper.save(packingMaterialPiItem);
 	}
 

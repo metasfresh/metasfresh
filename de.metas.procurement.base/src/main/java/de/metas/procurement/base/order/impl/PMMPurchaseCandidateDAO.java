@@ -80,7 +80,7 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 		Check.assumeNotNull(pmmSegment, "pmmSegment not null");
 		Check.assumeNotNull(day, "day not null");
 
-		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
+		final PlainContextAware context = PlainContextAware.newWithThreadInheritedTrx();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_PurchaseCandidate.class, context)
 				.addOnlyActiveRecordsFilter()

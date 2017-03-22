@@ -18,6 +18,8 @@ package org.compiere.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MOrder;
 import org.compiere.util.AdempiereSystemError;
@@ -28,7 +30,7 @@ import org.compiere.util.AdempiereSystemError;
  *  @author Jorg Janke
  *  @version $Id: OrderOpen.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class OrderOpen extends SvrProcess
+public class OrderOpen extends JavaProcess
 {
 	/**	The Order				*/
 	private int		p_C_Order_ID = 0;
@@ -38,7 +40,7 @@ public class OrderOpen extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

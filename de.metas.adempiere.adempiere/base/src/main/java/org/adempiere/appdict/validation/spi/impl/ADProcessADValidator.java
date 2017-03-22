@@ -28,7 +28,8 @@ import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Process;
-import org.compiere.process.ProcessCall;
+
+import de.metas.process.IProcess;
 
 public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 {
@@ -49,7 +50,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 			return;
 		}
 
-		validateJavaClassname(process.getClassname(), ProcessCall.class);
+		validateJavaClassname(process.getClassname(), IProcess.class);
 	}
 
 	@Override

@@ -26,7 +26,8 @@ package de.metas.handlingunits.receiptschedule.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.junit.Assert;
+
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 import de.metas.handlingunits.expectations.HUAssignmentExpectation;
@@ -47,7 +48,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 				materialItemProductTomato_430,
 				receiptSchedule.getQtyOrdered(), // Qty
 				weightGrossPaloxe);
-		Assert.assertEquals("Invalid amount of paloxes created", 10, paloxes.size());
+		assertEquals("Invalid amount of paloxes created", 10, paloxes.size());
 
 		initReceiptScheduleAllocations(paloxes);
 
@@ -60,7 +61,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		//
 		// Get old HU allocations
 		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
-		Assert.assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
+		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		final boolean deleteOldTUAllocations = true;
 		recreateAllocationsForTopLevelTUs(paloxes, deleteOldTUAllocations);
@@ -68,7 +69,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		//
 		// Get new HU allocations
 		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
-		Assert.assertEquals("Invalid amount of New HU Allocations", 10, newHUAllocations.size());
+		assertEquals("Invalid amount of New HU Allocations", 10, newHUAllocations.size());
 	}
 
 	@Test
@@ -78,7 +79,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 				materialItemProductTomato_430,
 				receiptSchedule.getQtyOrdered(), // Qty
 				weightGrossPaloxe);
-		Assert.assertEquals("Invalid amount of paloxes created", 10, paloxes.size());
+		assertEquals("Invalid amount of paloxes created", 10, paloxes.size());
 
 		initReceiptScheduleAllocations(paloxes);
 
@@ -91,7 +92,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		//
 		// Get old HU allocations
 		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
-		Assert.assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
+		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		final boolean deleteOldTUAllocations = false; // do not delete old TU allocations and allocate again
 		recreateAllocationsForTopLevelTUs(paloxes, deleteOldTUAllocations);
@@ -99,7 +100,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		//
 		// Get new HU allocations
 		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
-		Assert.assertEquals("Invalid amount of New HU Allocations", 10 + 10, newHUAllocations.size());
+		assertEquals("Invalid amount of New HU Allocations", 10 + 10, newHUAllocations.size());
 	}
 
 	@Test
@@ -109,7 +110,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 				materialItemProductTomato_430,
 				receiptSchedule.getQtyOrdered(), // Qty
 				weightGrossPaloxe);
-		Assert.assertEquals("Invalid amount of paloxes created", 10, paloxes.size());
+		assertEquals("Invalid amount of paloxes created", 10, paloxes.size());
 
 		initReceiptScheduleAllocations(paloxes);
 
@@ -123,7 +124,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		//
 		// Get old HU allocations (before split)
 		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
-		Assert.assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
+		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		//
 		// TODO: do we need this?
@@ -149,10 +150,10 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 		//
 		// Get new HU allocations (after split)
 		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
-		Assert.assertEquals("Invalid amount of New HU Allocations", 16, newHUAllocations.size());
+		assertEquals("Invalid amount of New HU Allocations", 16, newHUAllocations.size());
 
 		//
-		// Assume RSAs have preciselly those HU_QtyAllocated values
+		// Assume RSAs have precisely those HU_QtyAllocated values
 		final Integer[] huQtyAllocationExpectations = new Integer[] {
 				// Before Split: 10x430items
 				430, // 1
@@ -173,7 +174,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 				-10,// deallocation
 				10				// allocation
 		};
-		Assert.assertEquals("Invalid number of RSAs after split", huQtyAllocationExpectations.length, newHUAllocations.size());
+		assertEquals("Invalid number of RSAs after split", huQtyAllocationExpectations.length, newHUAllocations.size());
 		for (int i = 0; i < newHUAllocations.size(); i++)
 		{
 			final int qtyAllocatedExpected = huQtyAllocationExpectations[i];
@@ -183,7 +184,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 			//
 			// Check between expectations and allocated qty
-			Assert.assertEquals("Invalid HU-allocated Qty on position " + i, qtyAllocatedExpected, qtyAllocated);
+			assertEquals("Invalid HU-allocated Qty on position " + i, qtyAllocatedExpected, qtyAllocated);
 
 			// final I_M_HU luHU = alloc.getM_LU_HU();
 			// final I_M_HU tuHU = alloc.getM_TU_HU();

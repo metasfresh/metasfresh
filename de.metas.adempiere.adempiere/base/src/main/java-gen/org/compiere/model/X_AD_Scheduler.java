@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_AD_Scheduler extends org.compiere.model.PO implements I_AD_Schedu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -35522251L;
+	private static final long serialVersionUID = -1861109657L;
 
     /** Standard Constructor */
     public X_AD_Scheduler (Properties ctx, int AD_Scheduler_ID, String trxName)
@@ -39,6 +23,8 @@ public class X_AD_Scheduler extends org.compiere.model.PO implements I_AD_Schedu
       /** if (AD_Scheduler_ID == 0)
         {
 			setAD_Scheduler_ID (0);
+			setEntityType (null);
+// 'de.metas.swat'
 			setKeepLogDays (0);
 // 7
 			setName (null);
@@ -274,6 +260,31 @@ public class X_AD_Scheduler extends org.compiere.model.PO implements I_AD_Schedu
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
+	public static final int ENTITYTYPE_AD_Reference_ID=389;
+	/** Set Entitäts-Art.
+		@param EntityType 
+		Dictionary Entity Type; Determines ownership and synchronization
+	  */
+	@Override
+	public void setEntityType (java.lang.String EntityType)
+	{
+
+		set_Value (COLUMNNAME_EntityType, EntityType);
+	}
+
+	/** Get Entitäts-Art.
+		@return Dictionary Entity Type; Determines ownership and synchronization
+	  */
+	@Override
+	public java.lang.String getEntityType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
 	}
 
 	/** Set Häufigkeit.

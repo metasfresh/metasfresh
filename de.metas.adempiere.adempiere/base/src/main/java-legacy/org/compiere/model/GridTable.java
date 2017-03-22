@@ -3461,8 +3461,9 @@ public class GridTable extends AbstractTableModel
 			StringBuilder info = new StringBuilder("Rows=");
 			info.append(rows);
 			if (rows == 0)
+			{
 				info.append(" - ").append(m_SQL_Count);
-						
+			}					
 			//postgresql need trx to use cursor based resultset
 			String trxName = m_virtual ? Trx.createTrxName("Loader") : null;
 			trx  = trxName != null ? Trx.get(trxName, true) : null;

@@ -21,8 +21,6 @@ import java.awt.print.Pageable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.print.DocFlavor;
 import javax.print.PrintService;
@@ -40,10 +38,15 @@ import javax.print.attribute.standard.OrientationRequested;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_AD_PrintForm;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Print Utilities
@@ -487,7 +490,7 @@ public class PrintUtil
 
 	//	TODO: MPrintForm	
 	//	MPrintForm form = new MPrintForm(); 
-		int AD_PrintForm_ID = DB.getNextID (AD_Client_ID, "AD_PrintForm", null);
+		int AD_PrintForm_ID = DB.getNextID (AD_Client_ID, I_AD_PrintForm.Table_Name, ITrx.TRXNAME_None);
 		String sql = "INSERT INTO AD_PrintForm(AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_PrintForm_ID,"
 			+ "Name,Order_PrintFormat_ID,Invoice_PrintFormat_ID,Remittance_PrintFormat_ID,Shipment_PrintFormat_ID)"
 			//

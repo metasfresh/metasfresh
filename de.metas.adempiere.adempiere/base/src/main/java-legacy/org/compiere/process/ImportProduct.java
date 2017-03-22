@@ -9,7 +9,7 @@ import de.metas.adempiere.model.I_M_Product;
  *
  * @author tsa
  */
-public class ImportProduct extends ImportSvrProcess<I_I_Product>
+public class ImportProduct extends AbstractImportJavaProcess<I_I_Product>
 {
 	public ImportProduct()
 	{

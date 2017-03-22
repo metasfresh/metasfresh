@@ -46,7 +46,7 @@ public class MigrationLoader
 	public void load(Properties ctx)
 	{
 		scanClasspath();
-		scanAdempiereHome();
+		scanMetasfreshHome();
 	}
 
 	private void scanClasspath()
@@ -64,9 +64,9 @@ public class MigrationLoader
 
 	}
 
-	private void scanAdempiereHome()
+	private void scanMetasfreshHome()
 	{
-		final File home = new File(Adempiere.getAdempiereHome() + File.separator + "migration");
+		final File home = new File(Adempiere.getMetasfreshHome() + File.separator + "migration");
 		if (!home.exists() && !home.isDirectory())
 		{
 			logger.warn("No migration directory found (" + home + ")");

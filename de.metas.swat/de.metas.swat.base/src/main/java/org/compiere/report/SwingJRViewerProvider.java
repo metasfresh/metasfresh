@@ -1,5 +1,18 @@
 package org.compiere.report;
 
+import java.io.File;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.compiere.print.JRReportViewerProvider;
+
+import com.google.common.io.Files;
+
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.adempiere.report.jasper.client.JRClientUtil;
+import de.metas.process.ProcessInfo;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -22,27 +35,30 @@ package org.compiere.report;
  * #L%
  */
 
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.process.ProcessInfo;
-
-import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.report.jasper.client.JRClientUtil;
-
-public class SwingJRViewerProvider implements JRViewerProvider
+public class SwingJRViewerProvider implements JRReportViewerProvider
 {
 	@Override
-	public void openViewer(final byte[] data, final OutputType type, final String title, final ProcessInfo pi) throws JRException
+	public void openViewer(final byte[] data, final OutputType type, final ProcessInfo pi) throws Exception
 	{
-		if (type != OutputType.JasperPrint)
+		if (type == OutputType.JasperPrint)
 		{
-			throw new IllegalArgumentException("type is not " + OutputType.JasperPrint);
+			openViewer_JasperPrint(data, pi);
 		}
+		else
+		{
+			final File file = File.createTempFile("report_", "." + type.getFileExtension());
+			Files.write(data, file);
+			Services.get(IClientUI.class).showURL(file.toURI().toString());
+		}
+	}
+
+	public void openViewer_JasperPrint(final byte[] data, final ProcessInfo pi) throws JRException
+	{
 		final JasperPrint jasperPrint = JRClientUtil.toJasperPrint(data);
-		
+
 		//
 		// If the jasper report has no pages, display this error right now and do nothing.
 		// Else, the original JRViewer component will display the error several times which is very annoying for the user.
@@ -52,9 +68,8 @@ public class SwingJRViewerProvider implements JRViewerProvider
 		{
 			throw new AdempiereException("@NoPages@");
 		}
-		
-		JasperReportViewerFrame jasperViewer = new JasperReportViewerFrame(jasperPrint, title, pi);
 
+		final JasperReportViewerFrame jasperViewer = new JasperReportViewerFrame(jasperPrint, pi.getTitle(), pi);
 		jasperViewer.setExtendedState(jasperViewer.getExtendedState() | javax.swing.JFrame.MAXIMIZED_BOTH);
 		jasperViewer.setVisible(true);
 	}

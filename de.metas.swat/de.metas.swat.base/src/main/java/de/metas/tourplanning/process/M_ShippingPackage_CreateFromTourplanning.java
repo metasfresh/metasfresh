@@ -28,21 +28,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -51,7 +52,7 @@ import de.metas.tourplanning.api.IDeliveryDayDAO;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
 
-public class M_ShippingPackage_CreateFromTourplanning extends SvrProcess implements ISvrProcessPrecondition
+public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implements IProcessPrecondition
 {
 	//
 	// Services
@@ -69,11 +70,11 @@ public class M_ShippingPackage_CreateFromTourplanning extends SvrProcess impleme
 	private I_M_Shipper shipper;
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		// task 06058: if the document is processed, we not allowed to run this process
-		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.create(gridTab, I_M_ShipperTransportation.class);
-		return !shipperTransportation.isProcessed();
+		final I_M_ShipperTransportation shipperTransportation = context.getSelectedModel(I_M_ShipperTransportation.class);
+		return ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed());
 	}
 
 	@Override
@@ -84,7 +85,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends SvrProcess impleme
 			p_M_ShipperTransportation_ID = getRecord_ID();
 		}
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

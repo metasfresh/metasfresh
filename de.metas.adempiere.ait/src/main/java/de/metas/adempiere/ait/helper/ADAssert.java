@@ -37,12 +37,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADMessageDAO;
-import org.adempiere.misc.service.IProcessPA;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Color;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_ModelValidator;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_C_DocType;
@@ -58,15 +59,14 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_ModelValidator;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.document.IDocumentPA;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 
 /**
  * Contains assertions relating to the ADempeire application dictionary
@@ -426,17 +426,16 @@ public class ADAssert
 	public static void assertProcessExists(
 			final Properties ctx,
 			final String value,
-			final Class<? extends SvrProcess> processClass,
+			final Class<? extends JavaProcess> processClass,
 			final String trxName)
 	{
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		final I_AD_Process process = processPA.retrieveProcess(ctx, value, trxName);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retriveProcessByValue(ctx, value);
 		if (process == null)
 		{
 			fail("Found no process with class '" + processClass.getName() + "'");
 		}
 
-		assertFalse(process + " has empty Classname", Util.isEmpty(process.getClassname()));
+		assertFalse(process + " has empty Classname", Check.isEmpty(process.getClassname()));
 		assertThat(process + " has wrong Classname", process.getClassname(), equalTo(processClass.getName()));
 	}
 
@@ -447,10 +446,9 @@ public class ADAssert
 	 * @param trxName
 	 */
 	public static void assertProcessExists(
-			final Class<? extends SvrProcess> processClass, final String trxName)
+			final Class<? extends JavaProcess> processClass, final String trxName)
 	{
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		if (processPA.retrieveProcessId(processClass, trxName) <= 0)
+		if (Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(Env.getCtx(), processClass) <= 0)
 		{
 			fail("Found no process with class '" + processClass.getName() + "'");
 		}
@@ -582,8 +580,7 @@ public class ADAssert
 			final String processValue,
 			final String trxName)
 	{
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		final I_AD_Process process = processPA.retrieveProcess(ctx, processValue, trxName);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retriveProcessByValue(ctx, processValue);
 
 		if (process == null)
 		{

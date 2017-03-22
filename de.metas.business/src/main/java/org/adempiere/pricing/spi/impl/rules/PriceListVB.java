@@ -13,15 +13,14 @@ package org.adempiere.pricing.spi.impl.rules;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -33,8 +32,14 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
+/**
+ * <b>IMPORTANT: </b> this rule might find an active product price that is not in the most recent price list version of the respective price list.
+ * This enables "sparse" price list versions that only contain changed prices, but please make sure it's what you want.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PriceListVB extends AbstractPriceListBasedRule
 {
 	@Override
@@ -108,19 +113,19 @@ public class PriceListVB extends AbstractPriceListBasedRule
 					// Prices
 					m_PriceStd = rs.getBigDecimal(1);
 					if (rs.wasNull())
-						m_PriceStd = Env.ZERO;
+						m_PriceStd = BigDecimal.ZERO;
 					m_PriceList = rs.getBigDecimal(2);
 					if (rs.wasNull())
-						m_PriceList = Env.ZERO;
+						m_PriceList = BigDecimal.ZERO;
 					m_PriceLimit = rs.getBigDecimal(3);
 					if (rs.wasNull())
-						m_PriceLimit = Env.ZERO;
+						m_PriceLimit = BigDecimal.ZERO;
 					//
 					m_C_UOM_ID = rs.getInt(4);
 					m_C_Currency_ID = rs.getInt(6);
 					m_M_Product_Category_ID = rs.getInt(7);
 					m_enforcePriceLimit = "Y".equals(rs.getString(8));
-					ppUOMId = rs.getInt(9); 
+					ppUOMId = rs.getInt(9);
 					//
 					log.debug("M_PriceList_ID=" + m_M_PriceList_ID + "(" + plDate + ")" + " - " + m_PriceStd);
 					m_calculated = true;

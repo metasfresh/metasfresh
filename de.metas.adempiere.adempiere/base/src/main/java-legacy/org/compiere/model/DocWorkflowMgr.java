@@ -31,6 +31,6 @@ public interface DocWorkflowMgr
 	 *	@param AD_Table_ID table
 	 *	@return true if WF started
 	 */
-	public boolean process (PO document, int AD_Table_ID);
+	public boolean process (PO document);
 	
 }	//	DocWorkflowMgr

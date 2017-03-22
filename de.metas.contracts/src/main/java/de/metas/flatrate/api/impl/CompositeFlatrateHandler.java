@@ -22,11 +22,11 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,7 +43,7 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 		{
 			return handler;
 		}
-		
+
 		if (handler instanceof CompositeFlatrateHandler)
 		{
 			final CompositeFlatrateHandler handlerComposite = (CompositeFlatrateHandler)handler;
@@ -58,7 +58,7 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 			return handlerComposite;
 		}
 	}
-	
+
 	private final CopyOnWriteArrayList<IFlatrateHandler> handlers = new CopyOnWriteArrayList<>();
 
 	@Override
@@ -78,9 +78,12 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 	@Override
 	public void beforeFlatrateTermReactivate(final I_C_Flatrate_Term term)
 	{
-		for (final IFlatrateHandler handler : handlers)
-		{
-			handler.beforeFlatrateTermReactivate(term);
-		}
+		handlers.forEach(h -> h.beforeFlatrateTermReactivate(term));
+	}
+
+	@Override
+	public void afterExtendFlatrateTermCreated(I_C_Flatrate_Term oldTerm, I_C_Flatrate_Term newTerm)
+	{
+		handlers.forEach(h -> h.afterExtendFlatrateTermCreated(oldTerm, newTerm));
 	}
 }

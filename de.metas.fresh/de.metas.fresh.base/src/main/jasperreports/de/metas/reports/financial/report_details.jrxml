@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-13T17:49:23 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0eb178eb-2214-44dc-bd0f-76705750460e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.3310000000000013"/>
 	<property name="ireport.x" value="88"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -69,16 +73,16 @@
 	coalesce(rl.levelno,3) + CASE WHEN r.levelno < 0 THEN r.levelno*-1 ELSE r.levelno END as levelno
 FROM
 	t_report r
-	LEFT JOIN ad_pinstance pi 	ON r.ad_pinstance_id 	= pi.ad_pinstance_id
-	LEFT JOIN pa_report pr 		ON pi.record_id 	= pr.pa_report_id
-	LEFT JOIN pa_reportsource prs 	ON r.pa_reportline_id 	= prs.pa_reportline_id AND prs.c_elementvalue_id IS NOT NULL
-	LEFT JOIN c_elementvalue e 	ON prs.c_elementvalue_id = e.c_elementvalue_id
+	LEFT JOIN ad_pinstance pi 	ON r.ad_pinstance_id 	= pi.ad_pinstance_id AND pi.isActive = 'Y'
+	LEFT JOIN pa_report pr 		ON pi.record_id 	= pr.pa_report_id AND pr.isActive = 'Y'
+	LEFT JOIN pa_reportsource prs 	ON r.pa_reportline_id 	= prs.pa_reportline_id AND prs.c_elementvalue_id IS NOT NULL AND prs.isActive = 'Y'
+	LEFT JOIN c_elementvalue e 	ON prs.c_elementvalue_id = e.c_elementvalue_id AND e.isActive = 'Y'
 	-- parent
-	LEFT JOIN ad_treenode tn 	ON tn.ad_tree_id = 1000000 and e.c_elementvalue_id = tn.node_id
-	LEFT JOIN c_elementvalue et 	ON tn.parent_id = et.c_elementvalue_id
-	JOIN pa_reportline rl		ON r.pa_reportline_id = rl.pa_reportline_id
+	LEFT JOIN ad_treenode tn 	ON tn.ad_tree_id = 1000000 and e.c_elementvalue_id = tn.node_id AND tn.isActive = 'Y'
+	LEFT JOIN c_elementvalue et 	ON tn.parent_id = et.c_elementvalue_id AND et.isActive = 'Y'
+	JOIN pa_reportline rl		ON r.pa_reportline_id = rl.pa_reportline_id AND rl.isActive = 'Y'
 WHERE
-	r.ad_pinstance_id = $P{T_Report_AD_PInstance_ID}
+	r.ad_pinstance_id = $P{T_Report_AD_PInstance_ID} 
 ORDER BY
 	r.seqno, r.pa_reportline_id,
 	-- If Details should be shown first, order by level desc
@@ -147,7 +151,7 @@ ORDER BY
 			<band height="14" splitType="Stretch">
 				<printWhenExpression><![CDATA[new Boolean($F{levelno}.intValue()==1)]]></printWhenExpression>
 				<textField pattern="" isBlankWhenNull="false">
-					<reportElement uuid="faade64e-367e-4fd1-89e4-ab1958fbad73" key="textField-3" x="0" y="0" width="40" height="13" forecolor="#000000"/>
+					<reportElement key="textField-3" x="0" y="0" width="40" height="13" forecolor="#000000" uuid="faade64e-367e-4fd1-89e4-ab1958fbad73"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -155,12 +159,12 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField pattern="" isBlankWhenNull="true">
-					<reportElement uuid="a8a1ea76-04f6-42f4-8f5b-2e0e04fb8f11" key="textField-2" x="40" y="0" width="220" height="13" forecolor="#000000"/>
+					<reportElement key="textField-2" x="40" y="0" width="220" height="13" forecolor="#000000" uuid="a8a1ea76-04f6-42f4-8f5b-2e0e04fb8f11"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -168,7 +172,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false" pdfFontName="Helvetica-Bold" />
+						<font size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 				</textField>
@@ -184,7 +188,7 @@ ORDER BY
 			<band height="22" splitType="Stretch">
 				<printWhenExpression><![CDATA[new Boolean($F{levelno}.intValue() == 2)]]></printWhenExpression>
 				<textField pattern="" isBlankWhenNull="false">
-					<reportElement uuid="19dc1182-4e95-4150-ae22-85b7c2514197" key="textField" x="1" y="10" width="40" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="1" y="10" width="40" height="11" forecolor="#000000" uuid="19dc1182-4e95-4150-ae22-85b7c2514197"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -197,7 +201,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-					<reportElement uuid="67d53ce0-db4b-45ae-be64-a3c420ff0f23" key="textField" x="41" y="10" width="220" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="41" y="10" width="220" height="11" forecolor="#000000" uuid="67d53ce0-db4b-45ae-be64-a3c420ff0f23"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +214,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement uuid="6a3b7616-1625-4df4-8d0f-2f5d0477ffce" key="line-1" x="0" y="21" width="260" height="1">
+					<reportElement key="line-1" x="0" y="21" width="260" height="1" uuid="6a3b7616-1625-4df4-8d0f-2f5d0477ffce">
 						<printWhenExpression><![CDATA[$F{levelno}.intValue() == 2 ? new Boolean (true): new Boolean (false)]]></printWhenExpression>
 					</reportElement>
 				</line>
@@ -226,12 +230,12 @@ ORDER BY
 			<band height="12" splitType="Stretch">
 				<printWhenExpression><![CDATA[new Boolean($F{levelno}.intValue() == 3)]]></printWhenExpression>
 				<rectangle>
-					<reportElement uuid="8b7396ee-4a02-404c-a7c5-16875c0d29ac" key="rectangle-2" x="0" y="1" width="782" height="11" forecolor="#FFFFFF" backcolor="#FFFFCC">
+					<reportElement key="rectangle-2" x="0" y="1" width="782" height="11" forecolor="#FFFFFF" backcolor="#FFFFCC" uuid="8b7396ee-4a02-404c-a7c5-16875c0d29ac">
 						<printWhenExpression><![CDATA[$V{Ebene_2_COUNT}.intValue() % 2 == 0 ? new Boolean(true) : new Boolean(false)]]></printWhenExpression>
 					</reportElement>
 				</rectangle>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="e83fe910-96be-440b-b224-5412d734c547" key="textField" x="260" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="260" y="1" width="65" height="11" forecolor="#000000" uuid="e83fe910-96be-440b-b224-5412d734c547"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -239,12 +243,12 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false" pdfFontName="Helvetica-Bold" />
+						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col_0}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="4d8242b7-6058-4c06-9493-4b987da97441" key="textField" x="390" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="390" y="1" width="65" height="11" forecolor="#000000" uuid="4d8242b7-6058-4c06-9493-4b987da97441"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -252,12 +256,12 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false" pdfFontName="Helvetica-Bold" />
+						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col_2}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="9686ab04-6842-4f88-af23-a7af0ca5a5af" key="textField" x="325" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="325" y="1" width="65" height="11" forecolor="#000000" uuid="9686ab04-6842-4f88-af23-a7af0ca5a5af"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -265,12 +269,12 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false" pdfFontName="Helvetica-Bold" />
+						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col_1}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="c722f5a9-4c2b-46d7-8400-cb2677e30ba0" key="textField" x="455" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="455" y="1" width="65" height="11" forecolor="#000000" uuid="c722f5a9-4c2b-46d7-8400-cb2677e30ba0"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -283,7 +287,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{col_3}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="bcd867e3-d5b3-49fb-8d16-1c4628a4b460" key="textField" x="520" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="520" y="1" width="65" height="11" forecolor="#000000" uuid="bcd867e3-d5b3-49fb-8d16-1c4628a4b460"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -296,7 +300,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{col_4}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="f7b3451c-53ad-43a9-8af8-a8559f60a578" key="textField" x="585" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="585" y="1" width="65" height="11" forecolor="#000000" uuid="f7b3451c-53ad-43a9-8af8-a8559f60a578"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -309,7 +313,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{col_5}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="38054c32-6fc6-4ee0-b123-73847e79058b" key="textField" x="650" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField" x="650" y="1" width="65" height="11" forecolor="#000000" uuid="38054c32-6fc6-4ee0-b123-73847e79058b"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -322,7 +326,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{col_6}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="27d235e4-868f-4ee6-a08a-af4afad28a41" key="textField-1" x="715" y="1" width="65" height="11" forecolor="#000000"/>
+					<reportElement key="textField-1" x="715" y="1" width="65" height="11" forecolor="#000000" uuid="27d235e4-868f-4ee6-a08a-af4afad28a41"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -335,7 +339,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{col_7}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-					<reportElement uuid="24f425db-5b84-431a-ac23-5a7e0cf18437" key="textField-6" x="41" y="1" width="220" height="11" forecolor="#000000"/>
+					<reportElement key="textField-6" x="41" y="1" width="220" height="11" forecolor="#000000" uuid="24f425db-5b84-431a-ac23-5a7e0cf18437"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -348,7 +352,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="" isBlankWhenNull="false">
-					<reportElement uuid="5d6aaa78-cf75-44a5-876e-8d5bed3f09b8" key="textField-7" x="1" y="1" width="40" height="11" forecolor="#000000"/>
+					<reportElement key="textField-7" x="1" y="1" width="40" height="11" forecolor="#000000" uuid="5d6aaa78-cf75-44a5-876e-8d5bed3f09b8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -361,32 +365,32 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement uuid="55b2b765-96fe-488d-9840-d3e3dbd13542" key="line-2" x="260" y="11" width="65" height="1">
+					<reportElement key="line-2" x="260" y="11" width="65" height="1" uuid="55b2b765-96fe-488d-9840-d3e3dbd13542">
 						<printWhenExpression><![CDATA[new Boolean ($P{DetailsSourceFirst}.equals("N") && $F{col_0}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 				</line>
 				<line>
-					<reportElement uuid="7fdfacd4-ae4d-469d-8a59-cd5770be9b15" key="line-3" x="260" y="1" width="65" height="1">
+					<reportElement key="line-3" x="260" y="1" width="65" height="1" uuid="7fdfacd4-ae4d-469d-8a59-cd5770be9b15">
 						<printWhenExpression><![CDATA[new Boolean ($P{DetailsSourceFirst}.equals("Y") && $F{col_0}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 				</line>
 				<line>
-					<reportElement uuid="56493461-cd7a-4d34-8f97-e8336db2fcd2" key="line-4" x="325" y="1" width="65" height="1">
+					<reportElement key="line-4" x="325" y="1" width="65" height="1" uuid="56493461-cd7a-4d34-8f97-e8336db2fcd2">
 						<printWhenExpression><![CDATA[new Boolean ($P{DetailsSourceFirst}.equals("Y") && $F{col_1}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 				</line>
 				<line>
-					<reportElement uuid="f554875b-9600-4079-9019-35ce4b3c077a" key="line-5" x="325" y="11" width="65" height="1">
+					<reportElement key="line-5" x="325" y="11" width="65" height="1" uuid="f554875b-9600-4079-9019-35ce4b3c077a">
 						<printWhenExpression><![CDATA[new Boolean ($P{DetailsSourceFirst}.equals("N") && $F{col_1}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 				</line>
 				<line>
-					<reportElement uuid="866cdd6c-4ab9-49e8-b2d1-fc700d512461" key="line-6" x="390" y="1" width="65" height="1">
+					<reportElement key="line-6" x="390" y="1" width="65" height="1" uuid="866cdd6c-4ab9-49e8-b2d1-fc700d512461">
 						<printWhenExpression><![CDATA[new Boolean ($P{DetailsSourceFirst}.equals("Y") && $F{col_2}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 				</line>
 				<line>
-					<reportElement uuid="d47f0d63-32cd-4ac8-8883-86b9f41d3251" key="line-7" x="390" y="11" width="65" height="1">
+					<reportElement key="line-7" x="390" y="11" width="65" height="1" uuid="d47f0d63-32cd-4ac8-8883-86b9f41d3251">
 						<printWhenExpression><![CDATA[new Boolean ($P{DetailsSourceFirst}.equals("N") && $F{col_2}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 				</line>
@@ -408,7 +412,7 @@ ORDER BY
 	<columnHeader>
 		<band height="15" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement uuid="4e0eddb4-59f2-4524-a0c7-aedc0d5acb4c" key="subreport-1" x="0" y="0" width="781" height="14"/>
+				<reportElement key="subreport-1" x="0" y="0" width="781" height="14" uuid="4e0eddb4-59f2-4524-a0c7-aedc0d5acb4c"/>
 				<subreportParameter name="pa_reportcolumnset_id">
 					<subreportParameterExpression><![CDATA[$F{pa_reportcolumnset_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -421,12 +425,12 @@ ORDER BY
 		<band height="13" splitType="Stretch">
 			<printWhenExpression><![CDATA[$F{levelno}.intValue() > 3 ? new Boolean(true) : new Boolean (false)]]></printWhenExpression>
 			<rectangle>
-				<reportElement uuid="29e2c4ff-1590-44ae-abe9-3b6cb9d8446e" key="rectangle-1" x="0" y="1" width="782" height="12" forecolor="#FFFFFF" backcolor="#FFFFCC">
+				<reportElement key="rectangle-1" x="0" y="1" width="782" height="12" forecolor="#FFFFFF" backcolor="#FFFFCC" uuid="29e2c4ff-1590-44ae-abe9-3b6cb9d8446e">
 					<printWhenExpression><![CDATA[new Boolean($V{Ebene_2_COUNT}.intValue() + $V{Ebene_3_COUNT}.intValue()% 2 == 0)]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="b03db673-6b1d-4e84-8f69-a1772a815a51" key="textField-4" x="66" y="1" width="194" height="11" forecolor="#000000"/>
+				<reportElement key="textField-4" x="66" y="1" width="194" height="11" forecolor="#000000" uuid="b03db673-6b1d-4e84-8f69-a1772a815a51"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -439,7 +443,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="7a66f2c6-83b3-4662-98f8-32ca7d15b62d" key="textField-5" x="26" y="1" width="39" height="11" forecolor="#000000"/>
+				<reportElement key="textField-5" x="26" y="1" width="39" height="11" forecolor="#000000" uuid="7a66f2c6-83b3-4662-98f8-32ca7d15b62d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -452,7 +456,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="7a6eb2a4-8838-408f-8a57-f30ed7bb67e8" key="textField-8" x="260" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-8" x="260" y="1" width="65" height="11" forecolor="#000000" uuid="7a6eb2a4-8838-408f-8a57-f30ed7bb67e8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -465,7 +469,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_0}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="e9bf0752-12e4-49ec-bfb7-1d686ca07fe5" key="textField-9" x="325" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-9" x="325" y="1" width="65" height="11" forecolor="#000000" uuid="e9bf0752-12e4-49ec-bfb7-1d686ca07fe5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -478,7 +482,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="a5f165f3-8be9-4c0a-b755-3f93ed9d4bca" key="textField-10" x="390" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-10" x="390" y="1" width="65" height="11" forecolor="#000000" uuid="a5f165f3-8be9-4c0a-b755-3f93ed9d4bca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -491,7 +495,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="01d659aa-e41d-42a9-b7ff-7096aa2b98b8" key="textField-11" x="455" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-11" x="455" y="1" width="65" height="11" forecolor="#000000" uuid="01d659aa-e41d-42a9-b7ff-7096aa2b98b8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -504,7 +508,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_3}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="932476a2-7085-4451-94ba-3d146e870ba8" key="textField-12" x="520" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-12" x="520" y="1" width="65" height="11" forecolor="#000000" uuid="932476a2-7085-4451-94ba-3d146e870ba8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -517,7 +521,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_4}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="32bfcff5-b6ed-489a-baf0-108fb2d9cf34" key="textField-13" x="585" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-13" x="585" y="1" width="65" height="11" forecolor="#000000" uuid="32bfcff5-b6ed-489a-baf0-108fb2d9cf34"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -530,7 +534,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_5}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="1f546bef-03c1-4701-980f-a7c5dcabfa74" key="textField-14" x="650" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-14" x="650" y="1" width="65" height="11" forecolor="#000000" uuid="1f546bef-03c1-4701-980f-a7c5dcabfa74"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -543,7 +547,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{col_6}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="1cb552ee-1f2e-4e1e-8af0-de8fb5498d15" key="textField-15" x="715" y="1" width="65" height="11" forecolor="#000000"/>
+				<reportElement key="textField-15" x="715" y="1" width="65" height="11" forecolor="#000000" uuid="1cb552ee-1f2e-4e1e-8af0-de8fb5498d15"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -29,6 +29,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.process.JavaProcess;
+
 /**
  * 
  * Process to apply a single migration step
@@ -37,7 +39,7 @@ import org.adempiere.util.Services;
  * @author Teo Sarca
  * 
  */
-public class MigrationStepApply extends SvrProcess
+public class MigrationStepApply extends JavaProcess
 {
 
 	private I_AD_MigrationStep migrationStep;

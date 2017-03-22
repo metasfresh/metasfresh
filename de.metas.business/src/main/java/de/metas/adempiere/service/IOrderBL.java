@@ -13,7 +13,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 
 import de.metas.order.IOrderPA;
 
@@ -163,10 +162,6 @@ public interface IOrderBL extends ISingletonService
 	 * @param bp business partner
 	 */
 	void setBPartner(I_C_Order order, I_C_BPartner bp);
-
-	void setOrder(I_C_OrderLine orderLine, I_C_Order order, String trxName);
-
-	void setProduct(I_C_OrderLine orderLine, I_M_Product product);
 
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner

@@ -57,8 +57,8 @@ import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.process.C_FlatrateTerm_Extend;
-import de.metas.flatrate.process.C_FlatrateTerm_Prepare_Closing;
+import de.metas.flatrate.process.C_Flatrate_Term_Extend;
+import de.metas.flatrate.process.C_Flatrate_Term_Prepare_Closing;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import test.integration.contracts.ContractsHelper;
 import test.integration.contracts.ContractsTestConfig;
@@ -400,7 +400,7 @@ public class FlatFeeScenario
 		final MPeriod closingPeriod = MPeriod.findByCalendar(driver.getCtx(), term.getEndDate(), fc.getC_Flatrate_Transition().getC_Calendar_Contract_ID(), driver.getTrxName());
 
 		helper.mkProcessHelper()
-				.setProcessClass(C_FlatrateTerm_Prepare_Closing.class)
+				.setProcessClass(C_Flatrate_Term_Prepare_Closing.class)
 				.setPO(term)
 				.setParameter(I_C_Period.COLUMNNAME_C_Period_ID, closingPeriod.getC_Period_ID())
 				.run();
@@ -476,7 +476,7 @@ public class FlatFeeScenario
 		final I_C_Flatrate_Term term = termAndOrder.term;
 
 		helper.mkProcessHelper()
-				.setProcessClass(C_FlatrateTerm_Extend.class)
+				.setProcessClass(C_Flatrate_Term_Extend.class)
 				.setPO(term)
 				.setParameter(I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, "Y")
 				.run();

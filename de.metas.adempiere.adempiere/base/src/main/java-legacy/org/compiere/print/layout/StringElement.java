@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -218,6 +219,7 @@ public class StringElement extends PrintElement
 	 *  of the originally calculated size and need to align the field.
 	 * 	@param ctx context
 	 */
+	@Override
 	public void translate(Properties ctx)
 	{
 		if (m_originalString == null)
@@ -245,6 +247,7 @@ public class StringElement extends PrintElement
 	 * 	Set p_width & p_height
 	 * 	@return Size
 	 */
+	@Override
 	protected boolean calculateSize()
 	{
 		if (p_sizeCalculated)
@@ -365,6 +368,7 @@ public class StringElement extends PrintElement
 	 *  @param pageNo page number (ignored)
 	 * 	@return if found query or null
 	 */
+	@Override
 	public MQuery getDrillDown (Point relativePoint, int pageNo)
 	{
 		if (m_ID != null && getBounds().contains(relativePoint))
@@ -377,7 +381,7 @@ public class StringElement extends PrintElement
 				code = new Integer(((KeyNamePair)m_ID).getKey());
 			//
 			MQuery query = new MQuery(tableName);
-			query.addRestriction(columnName, MQuery.EQUAL, code);
+			query.addRestriction(columnName, Operator.EQUAL, code);
 			return query;
 		}
 		return null;
@@ -389,6 +393,7 @@ public class StringElement extends PrintElement
 	 *  @param pageNo page number (ignored)
 	 * 	@return null - not implemented
 	 */
+	@Override
 	public MQuery getDrillAcross (Point relativePoint, int pageNo)
 	{
 	//	log.debug( "StringElement.getDrillAcross");
@@ -407,6 +412,7 @@ public class StringElement extends PrintElement
 	 *  @param ctx print context
 	 *  @param isView true if online view (IDs are links)
 	 */
+	@Override
 	public void paint (Graphics2D g2D, int pageNo, Point2D pageStart, Properties ctx, boolean isView)
 	{
 	//	log.trace( "StringElement.paint", "<" + m_originalString + "> " + p_pageLocation.x + "/" + p_pageLocation.y
@@ -597,6 +603,7 @@ public class StringElement extends PrintElement
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("StringElement[");

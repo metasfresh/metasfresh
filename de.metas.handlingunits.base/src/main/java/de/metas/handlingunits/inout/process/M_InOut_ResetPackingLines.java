@@ -1,42 +1,20 @@
 package de.metas.handlingunits.inout.process;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.SvrProcess;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Deletes and Recreates an inout's packing material lines. Supposed to be called via gear.
  *
  */
-public class M_InOut_ResetPackingLines extends SvrProcess implements ISvrProcessPrecondition
+public class M_InOut_ResetPackingLines extends JavaProcess implements IProcessPrecondition
 {
 
 	@Override
@@ -58,15 +36,15 @@ public class M_InOut_ResetPackingLines extends SvrProcess implements ISvrProcess
 	 * Returns <code>true</code> for unprocessed shipments only.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (!I_M_InOut.Table_Name.equals(gridTab.get_TableName()))
+		if (!I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final I_M_InOut inout = InterfaceWrapperHelper.create(gridTab, I_M_InOut.class);
-		return inout.isSOTrx() && !inout.isProcessed();
+		final I_M_InOut inout = context.getSelectedModel(I_M_InOut.class);
+		return ProcessPreconditionsResolution.acceptIf(inout.isSOTrx() && !inout.isProcessed());
 	}
 
 }

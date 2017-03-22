@@ -31,20 +31,20 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class EMailConfigTest extends SvrProcess
+public class EMailConfigTest extends JavaProcess
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IMailBL mailBL = Services.get(IMailBL.class);
@@ -73,7 +73,7 @@ public class EMailConfigTest extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

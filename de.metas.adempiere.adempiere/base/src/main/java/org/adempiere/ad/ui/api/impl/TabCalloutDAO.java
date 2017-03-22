@@ -50,7 +50,7 @@ public class TabCalloutDAO implements ITabCalloutDAO
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Tab_Callout.COLUMNNAME_SeqNo);
 
-		return queryBuilder.create().list();
+		return queryBuilder.create().list(I_AD_Tab_Callout.class);
 	}
 
 }

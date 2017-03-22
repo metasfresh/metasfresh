@@ -29,7 +29,8 @@ import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Sort migration steps by Created
@@ -37,7 +38,7 @@ import org.compiere.process.SvrProcess;
  * @author Teo Sarca
  * 
  */
-public class MigrationSortSteps extends SvrProcess
+public class MigrationSortSteps extends JavaProcess
 {
 	private I_AD_Migration migration;
 

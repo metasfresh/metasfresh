@@ -178,10 +178,33 @@ public interface I_M_HU_Item_Snapshot
     public static final String COLUMNNAME_M_HU_Item_ID = "M_HU_Item_ID";
 
 	/**
+	 * Set Handling Units (snapshot).
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_Item_Snapshot_ID (int M_HU_Item_Snapshot_ID);
+
+	/**
+	 * Get Handling Units (snapshot).
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_Item_Snapshot_ID();
+
+    /** Column definition for M_HU_Item_Snapshot_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Item_Snapshot, Object> COLUMN_M_HU_Item_Snapshot_ID = new org.adempiere.model.ModelColumn<I_M_HU_Item_Snapshot, Object>(I_M_HU_Item_Snapshot.class, "M_HU_Item_Snapshot_ID", null);
+    /** Column name M_HU_Item_Snapshot_ID */
+    public static final String COLUMNNAME_M_HU_Item_Snapshot_ID = "M_HU_Item_Snapshot_ID";
+
+	/**
 	 * Set Packvorschrift Position.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_PI_Item_ID (int M_HU_PI_Item_ID);
@@ -190,7 +213,7 @@ public interface I_M_HU_Item_Snapshot
 	 * Get Packvorschrift Position.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_PI_Item_ID();

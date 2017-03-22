@@ -25,7 +25,7 @@ package de.metas.commission.interfaces;
 
 import java.math.BigDecimal;
 
-public interface I_M_ProductPrice extends de.metas.adempiere.model.I_M_ProductPrice
+public interface I_M_ProductPrice extends org.compiere.model.I_M_ProductPrice
 {
 
 	public static final String COLUMNNAME_CommissionPoints = "CommissionPoints";

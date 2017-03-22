@@ -48,9 +48,10 @@ import org.compiere.model.X_A_Asset_Addition;
 import org.compiere.model.X_A_Asset_Group_Acct;
 import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Create Asset from FA GL Process
@@ -58,7 +59,7 @@ import org.compiere.util.DB;
  *  @author Rob Klein
  *  @version  $Id: CreateGLAsset.java,v 1.0 $
  */
-public class CreateGLAsset extends SvrProcess
+public class CreateGLAsset extends JavaProcess
 {
 
 	private int p_client = 0;	
@@ -69,7 +70,7 @@ public class CreateGLAsset extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

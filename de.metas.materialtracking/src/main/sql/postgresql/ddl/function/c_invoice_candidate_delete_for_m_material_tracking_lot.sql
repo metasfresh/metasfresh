@@ -89,3 +89,16 @@ $BODY$
   LANGUAGE sql VOLATILE
   COST 100;
 
+COMMENT ON FUNCTION "de.metas.materialtracking".c_invoice_candidate_delete_for_m_material_tracking_lot(character varying) IS 
+'Deletes (not-yet-invoiced) C_Invoice_Candidates for a given Lot.
+Note: ICs that already have an C_Invoice_Line_Alloc record are skipped.
+
+/* this delete is to prepare ICs with reversed invoices..
+DELETE FROM C_Invoice_Line_Alloc WHERE C_invoice_candidate_ID IN
+(
+select C_Invoice_Candidate_ID 
+FROM C_Invoice_Candidate ic
+	JOIN m_material_tracking mt on mt.m_material_tracking_ID=ic.m_material_tracking_ID
+where trim(mt.Lot)=''9898989898'' AND COALESCE(ic.Processed_Override, ic.Processed)=''N''
+);*/
+';

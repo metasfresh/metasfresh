@@ -199,6 +199,12 @@ public class EmptiesShipReceivePanel extends AbstractLTCUPanel<EmptiesShipReceiv
 			return;
 		}
 
+		if(fBPartner.getValue() != model.getBPartner())
+		{
+			// #643: In case the partner was changed, the order will no longer be the one from the selected receipt schedule
+			model.setOrder(null);
+		}
+		
 		model.setBPartner(fBPartner.getValue());
 		model.setBpartnerReturnType(fBPartnerReturnType.getValue());
 		model.setDate(fDate.getValue());

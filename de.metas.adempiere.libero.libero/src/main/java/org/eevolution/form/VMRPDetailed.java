@@ -121,13 +121,13 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLot;
 import org.compiere.model.MProduct;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MUOM;
 import org.compiere.model.MWarehouse;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -151,7 +151,9 @@ import org.eevolution.mrp.api.IMRPNoteBL;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.logging.LogManager;
 
 /**
@@ -164,7 +166,7 @@ import de.metas.logging.LogManager;
  */
 public class VMRPDetailed
 		extends CPanel
-		implements FormPanel2, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, ASyncProcess
+		implements FormPanel2, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, IProcessExecutionListener
 {
 	// Services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -300,7 +302,6 @@ public class VMRPDetailed
 
 	/** Worker */
 	private Worker m_worker = null;
-	private boolean _uiLocked = false;
 
 	/** Static Layout */
 	private final CPanel southPanel = new CPanel();
@@ -1090,12 +1091,6 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public void executeASync(final org.compiere.process.ProcessInfo processInfo)
-	{
-		// nothing
-	}
-
-	@Override
 	public void stateChanged(final ChangeEvent e)
 	{
 		// nothing
@@ -1108,25 +1103,17 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public boolean isUILocked()
-	{
-		return _uiLocked;
-	}
-
-	@Override
-	public void lockUI(final org.compiere.process.ProcessInfo processInfo)
+	public void lockUI(final de.metas.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		confirmPanel.getRefreshButton().setEnabled(false);
-		_uiLocked = true;
 	}
 
 	@Override
-	public void unlockUI(final org.compiere.process.ProcessInfo processInfo)
+	public void unlockUI(final de.metas.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getDefaultCursor());
 		confirmPanel.getRefreshButton().setEnabled(true);
-		_uiLocked = false;
 	}
 
 	@Override
@@ -1618,33 +1605,33 @@ public class VMRPDetailed
 		{
 			query = new MQuery(I_C_Order.Table_Name);
 			query.setForceSOTrx(false);
-			query.addRestriction(I_C_Order.COLUMNNAME_C_Order_ID, MQuery.EQUAL, mrp.getC_Order_ID());
+			query.addRestriction(I_C_Order.COLUMNNAME_C_Order_ID, Operator.EQUAL, mrp.getC_Order_ID());
 		}
 		else if (X_PP_MRP.ORDERTYPE_SalesOrder.equals(ordertype))
 		{
 			query = new MQuery(I_C_Order.Table_Name);
 			query.setForceSOTrx(true);
-			query.addRestriction(I_C_Order.COLUMNNAME_C_Order_ID, MQuery.EQUAL, mrp.getC_Order_ID());
+			query.addRestriction(I_C_Order.COLUMNNAME_C_Order_ID, Operator.EQUAL, mrp.getC_Order_ID());
 		}
 		else if (X_PP_MRP.ORDERTYPE_ManufacturingOrder.equals(ordertype))
 		{
 			query = new MQuery(I_PP_Order.Table_Name);
-			query.addRestriction(I_PP_Order.COLUMNNAME_PP_Order_ID, MQuery.EQUAL, mrp.getPP_Order_ID());
+			query.addRestriction(I_PP_Order.COLUMNNAME_PP_Order_ID, Operator.EQUAL, mrp.getPP_Order_ID());
 		}
 		else if (X_PP_MRP.ORDERTYPE_MaterialRequisition.equals(ordertype))
 		{
 			query = new MQuery(I_M_Requisition.Table_Name);
-			query.addRestriction(I_M_Requisition.COLUMNNAME_M_Requisition_ID, MQuery.EQUAL, mrp.getM_Requisition_ID());
+			query.addRestriction(I_M_Requisition.COLUMNNAME_M_Requisition_ID, Operator.EQUAL, mrp.getM_Requisition_ID());
 		}
 		else if (X_PP_MRP.ORDERTYPE_Forecast.equals(ordertype))
 		{
 			query = new MQuery(I_M_Forecast.Table_Name);
-			query.addRestriction(I_M_Forecast.COLUMNNAME_M_Forecast_ID, MQuery.EQUAL, mrp.getM_Forecast_ID());
+			query.addRestriction(I_M_Forecast.COLUMNNAME_M_Forecast_ID, Operator.EQUAL, mrp.getM_Forecast_ID());
 		}
 		else if (X_PP_MRP.ORDERTYPE_DistributionOrder.equals(ordertype))
 		{
 			query = new MQuery(I_DD_Order.Table_Name);
-			query.addRestriction(I_DD_Order.COLUMNNAME_DD_Order_ID, MQuery.EQUAL, mrp.getDD_Order_ID());
+			query.addRestriction(I_DD_Order.COLUMNNAME_DD_Order_ID, Operator.EQUAL, mrp.getDD_Order_ID());
 		}
 		else
 		{

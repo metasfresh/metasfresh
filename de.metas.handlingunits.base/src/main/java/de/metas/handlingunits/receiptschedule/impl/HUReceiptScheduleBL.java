@@ -3,6 +3,8 @@
  */
 package de.metas.handlingunits.receiptschedule.impl;
 
+import java.awt.image.BufferedImage;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -43,14 +45,14 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TrxRunnable;
 
@@ -70,6 +72,7 @@ import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -89,6 +92,40 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
+	
+	@Override
+	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(receiptSchedule.getC_OrderLine(), I_C_OrderLine.class);
+		if (ol == null)
+		{
+			return null;
+		}
+		
+		final BigDecimal qtyTU = ol.getQtyEnteredTU();
+		return qtyTU;
+	}
+	
+	@Override
+	public BigDecimal getQtyOrderedTUOrZero(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrNull(receiptSchedule);
+		if(qtyOrderedTU == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return qtyOrderedTU;
+	}
+
+	@Override
+	public BigDecimal getQtyToMoveTU(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);
+		final BigDecimal qtyMovedTU = receiptSchedule.getQtyMovedTU();
+		final BigDecimal qtyToMoveTU = qtyOrderedTU.subtract(qtyMovedTU);
+		return qtyToMoveTU;
+	}
+
 
 	@Override
 	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx, 
@@ -235,20 +272,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		final IMutable<InOutGenerateResult> retValue = new Mutable<>();
-		trxManager.run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final InOutGenerateResult inoutGenerateResult = processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts);
-				retValue.setValue(inoutGenerateResult);
-			}
-		});
 
-		return retValue.getValue();
+		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts));
+		return inoutGenerateResult;
 	}
 
 	/**
@@ -260,21 +287,36 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * @param receiptSchedules
 	 * @param selectedHUs
 	 * @param storeReceipts
-	 * @return inout generate result
+	 * 
+	 * @return inout generated result
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
+	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, 
+			final List<I_M_ReceiptSchedule> receiptSchedules, 
+			final Set<I_M_HU> selectedHUs, 
+			final boolean storeReceipts)
 	{
 		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
 		// assertNoTrxOrIneheritedtrx(receiptSchedules);
 		// assertNoTrxOrIneheritedtrx(selectedHUs);
 
 		//
+		// Validate selectedHUs.
 		// Get M_HU_IDs from selectedHUs
-		final Set<Integer> selectedHUIds = new HashSet<Integer>(selectedHUs.size());
+		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
 		for (final I_M_HU hu : selectedHUs)
 		{
+			if(!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			{
+				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
+			}
+			
 			final int huId = hu.getM_HU_ID();
 			selectedHUIds.add(huId);
+		}
+		//
+		if(selectedHUIds.isEmpty())
+		{
+			throw new HUException("@NoSelection@ @M_HU_ID@");
 		}
 
 		//
@@ -333,7 +375,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		for (final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
 		{
 			Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
-			final I_C_OrderLine orderLine = receiptSchedule.getC_OrderLine();
+			final org.compiere.model.I_C_OrderLine orderLine = receiptSchedule.getC_OrderLine();
 			Check.assumeNotNull(orderLine, "orderLine not null");
 
 			final BigDecimal receiptSchedule_priceActual = orderLine.getPriceActual();
@@ -388,4 +430,28 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final Set<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules = Collections.singleton(receiptSchedule);
 		return setInitialAttributeValueDefaults(request, receiptSchedules);
 	}
+
+	@Override
+	public void attachPhoto(final I_M_ReceiptSchedule receiptSchedule, final String filename, final BufferedImage image)
+	{
+		final byte[] imagePDFBytes = org.adempiere.pdf.Document.toPDFBytes(image);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
+		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
+
+		final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
+		final I_AD_Archive archive = archiveStorage.newArchive(ctx, trxName);
+
+		final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
+		final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
+		archive.setAD_Table_ID(tableID);
+		archive.setRecord_ID(recordID);
+		archive.setC_BPartner_ID(receiptSchedule.getC_BPartner_ID());
+		archive.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
+		archive.setName(filename);
+		archive.setIsReport(false);
+		archiveStorage.setBinaryData(archive, imagePDFBytes);
+		InterfaceWrapperHelper.save(archive);
+	}
+	
 }

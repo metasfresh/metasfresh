@@ -1,5 +1,7 @@
 package org.adempiere.util.lang;
 
+import java.util.function.Function;
+
 /*
  * #%L
  * de.metas.util
@@ -44,4 +46,15 @@ public interface IMutable<T> extends IReference<T>
 	 * @param value
 	 */
 	void setValue(T value);
+	
+	/**
+	 * @param remappingFunction function which takes the current value as input and which shall return the new value
+	 */
+	default T compute(final Function<T, T> remappingFunction)
+	{
+		final T value = getValue();
+		final T valueNew = remappingFunction.apply(value);
+		setValue(valueNew);
+		return valueNew;
+	}
 }

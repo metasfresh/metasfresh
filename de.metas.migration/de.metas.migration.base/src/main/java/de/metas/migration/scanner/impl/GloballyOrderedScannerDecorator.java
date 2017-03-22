@@ -2,10 +2,12 @@ package de.metas.migration.scanner.impl;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 
@@ -57,7 +59,9 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 		@Override
 		public Iterator<IScript> get()
 		{
-			final SortedSet<IScript> lexiagraphicallySortedScripts = new TreeSet<IScript>(new Comparator<IScript>()
+			final List<IScript> lexiagraphicallySortedScripts = new ArrayList<>();
+			
+			Comparator<IScript> c = new Comparator<IScript>()
 			{
 				@Override
 				public int compare(final IScript o1, final IScript o2)
@@ -74,7 +78,7 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 							.append(System.identityHashCode(o1), System.identityHashCode(o2))
 							.toComparison();
 				}
-			});
+			};
 
 			while (getInternalScanner().hasNext())
 			{
@@ -82,6 +86,9 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 				lexiagraphicallySortedScripts.add(next);
 			}
 
+			// note that we used to have a TreeSet here, but some times some scripts were not applied.
+			// I replaced the TreeSet with this list and pay the cost of the extra ordering step to rule out the possibility that some items are not added to the treeSet because the comparator considers them to be equal
+			Collections.sort(lexiagraphicallySortedScripts, c);			
 			//dumpTofile(lexiagraphicallySortedScripts);
 
 			return lexiagraphicallySortedScripts.iterator();

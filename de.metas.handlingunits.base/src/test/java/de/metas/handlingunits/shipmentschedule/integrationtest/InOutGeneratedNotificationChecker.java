@@ -34,7 +34,7 @@ import org.junit.Assert;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
-import de.metas.inout.event.InOutGeneratedEventBus;
+import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 
 /**
@@ -48,7 +48,7 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 	public static final InOutGeneratedNotificationChecker createAnSubscribe()
 	{
 		final InOutGeneratedNotificationChecker notificationsChecker = new InOutGeneratedNotificationChecker();
-		InOutGeneratedEventBus.newInstance().subscribe(notificationsChecker);
+		InOutProcessedEventBus.newInstance().subscribe(notificationsChecker);
 
 		return notificationsChecker;
 	}
@@ -63,7 +63,7 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		final ITableRecordReference inoutRecord = event.getProperty(InOutGeneratedEventBus.EVENT_PROPERTY_InOutRecord);
+		final ITableRecordReference inoutRecord = event.getRecord();
 		final int inoutId = inoutRecord.getRecord_ID();
 
 		notifiedInOutIds.add(inoutId);

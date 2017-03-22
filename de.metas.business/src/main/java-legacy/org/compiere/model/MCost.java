@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -40,12 +38,14 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
@@ -59,7 +59,7 @@ import de.metas.product.IProductBL;
  *
  *  @author Red1
  *  	<li>FR: [ 2214883 ] Remove SQL code and Replace for Query - red1 (only non-join query)
- *  
+ *
  *  @author Teo Sarca
  *  	<li>BF [ 2847648 ] Manufacture & shipment cost errors
  *  		https://sourceforge.net/tracker/?func=detail&aid=2847648&group_id=176962&atid=934929
@@ -92,7 +92,7 @@ public class MCost extends X_M_Cost
 		boolean zeroCostsOK, String trxName)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		
+
 		final String CostingLevel = productBL.getCostingLevel(product, as);
 		if (MAcctSchema.COSTINGLEVEL_Client.equals(CostingLevel))
 		{
@@ -226,14 +226,14 @@ public class MCost extends X_M_Cost
 		{
 			if (zeroCostsOK)
 				return Env.ZERO;
-			
+
 			// Case: we are using StandardCosting and user explicitelly set the M_Cost.CurrentCostPrice to ZERO.
 			// We shall respect that.
 			if (MCostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod) && count > 0)
 			{
 				return Env.ZERO;
 			}
-			
+
 			materialCostEach = getSeedCosts(product, M_ASI_ID,
 				as, Org_ID, costingMethod, C_OrderLine_ID,
 				trxName);
@@ -643,11 +643,11 @@ public class MCost extends X_M_Cost
 
 	/**
 	 * Create costing for client.
-	 * 
+	 *
 	 * NOTE:
 	 * <ul>
 	 * <li>this method assumes you are running out of transaction and it will always handle the transaction
-	 * <li>it will never throw exception but it errors will be logged 
+	 * <li>it will never throw exception but it errors will be logged
 	 * </ul>
 	 *
 	 * @param client client
@@ -661,7 +661,7 @@ public class MCost extends X_M_Cost
 		{
 			return;
 		}
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
 		final MAcctSchema[] acctSchemas = MAcctSchema.getClientAcctSchema(ctx, client.getAD_Client_ID());
 
@@ -692,11 +692,11 @@ public class MCost extends X_M_Cost
 				})
 				.process(products);
 	}
-	
+
 	private static final Iterator<I_M_Product> retrieveProductsWithNotProcessedCostDetails(final I_AD_Client client)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
-		
+
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostDetail.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_CostDetail.COLUMN_Processed, false) // not processed cost details
@@ -711,7 +711,7 @@ public class MCost extends X_M_Cost
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.iterate(I_M_Product.class);
 	}
-	
+
 	/**
 	 * 	Create standard Costing records for Product
 	 *	@param product product
@@ -722,7 +722,7 @@ public class MCost extends X_M_Cost
 			s_log.info(product.getName());
 			final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 			final String trxName = InterfaceWrapperHelper.getTrxName(product);
-			
+
 
 			//	Cost Elements
 			Collection <MCostElement> ces = MCostElement.getCostElementsWithCostingMethods(product);
@@ -738,7 +738,7 @@ public class MCost extends X_M_Cost
 					continue;
 				}
 				final String cl =  Services.get(IProductBL.class).getCostingLevel(product, as);
-				
+
 				//	Create Std Costing
 				if (MAcctSchema.COSTINGLEVEL_Client.equals(cl))
 				{
@@ -810,7 +810,7 @@ public class MCost extends X_M_Cost
 					continue;
 				}
 				final String cl =  Services.get(IProductBL.class).getCostingLevel(product, as);
-				
+
 				//	Create Std Costing
 				if (MAcctSchema.COSTINGLEVEL_Client.equals(cl))
 				{
@@ -858,7 +858,7 @@ public class MCost extends X_M_Cost
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		
+
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
 			+ " i.C_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID, t.M_Transaction_ID "
 			+ "FROM M_Transaction t"
@@ -954,7 +954,7 @@ public class MCost extends X_M_Cost
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		
+
 		String sql = "SELECT t.MovementQty, mp.Qty, ol.QtyOrdered, ol.PriceCost, ol.PriceActual,"	//	1..5
 			+ " o.C_Currency_ID, o.DateAcct, o.C_ConversionType_ID,"	//	6..8
 			+ " o.AD_Client_ID, o.AD_Org_ID, t.M_Transaction_ID "		//	9..11
@@ -1053,7 +1053,7 @@ public class MCost extends X_M_Cost
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		
+
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
 			+ " i.C_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID, t.M_Transaction_ID "
 			+ "FROM M_Transaction t"
@@ -1094,7 +1094,7 @@ public class MCost extends X_M_Cost
 				{
 					if (fifo.size() > 0)
 					{
-						QtyCost pp = (QtyCost)fifo.get(0);
+						QtyCost pp = fifo.get(0);
 						pp.Qty = pp.Qty.add(movementQty);
 						BigDecimal remainder = pp.Qty;
 						if (remainder.signum() == 0)
@@ -1111,7 +1111,7 @@ public class MCost extends X_M_Cost
 								else
 								{
 									fifo.remove(0);
-									pp = (QtyCost)fifo.get(0);
+									pp = fifo.get(0);
 									pp.Qty = pp.Qty.add(movementQty);
 									remainder = pp.Qty;
 								}
@@ -1141,7 +1141,7 @@ public class MCost extends X_M_Cost
 				boolean used = false;
 				if (fifo.size() == 1)
 				{
-					QtyCost pp = (QtyCost)fifo.get(0);
+					QtyCost pp = fifo.get(0);
 					if (pp.Qty.signum() < 0)
 					{
 						pp.Qty = pp.Qty.add(movementQty);
@@ -1175,7 +1175,7 @@ public class MCost extends X_M_Cost
 		{
 			return null;
 		}
-		QtyCost pp = (QtyCost)fifo.get(0);
+		QtyCost pp = fifo.get(0);
 		s_log.trace(product.getName() + " = " + pp.Cost);
 		return pp.Cost;
 	}	//	calculateFiFo
@@ -1193,7 +1193,7 @@ public class MCost extends X_M_Cost
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		
+
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
 			+ " i.C_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID, t.M_Transaction_ID "
 			+ "FROM M_Transaction t"
@@ -1235,7 +1235,7 @@ public class MCost extends X_M_Cost
 				{
 					if (lifo.size() > 0)
 					{
-						QtyCost pp = (QtyCost)lifo.get(lifo.size()-1);
+						QtyCost pp = lifo.get(lifo.size()-1);
 						pp.Qty = pp.Qty.add(movementQty);
 						BigDecimal remainder = pp.Qty;
 						if (remainder.signum() == 0)
@@ -1252,7 +1252,7 @@ public class MCost extends X_M_Cost
 								else
 								{
 									lifo.remove(lifo.size()-1);
-									pp = (QtyCost)lifo.get(lifo.size()-1);
+									pp = lifo.get(lifo.size()-1);
 									pp.Qty = pp.Qty.add(movementQty);
 									remainder = pp.Qty;
 								}
@@ -1297,7 +1297,7 @@ public class MCost extends X_M_Cost
 		{
 			return null;
 		}
-		QtyCost pp = (QtyCost)lifo.get(lifo.size()-1);
+		QtyCost pp = lifo.get(lifo.size()-1);
 		s_log.trace(product.getName() + " = " + pp.Cost);
 		return pp.Cost;
 	}	//	calculateLiFo
@@ -1351,7 +1351,7 @@ public class MCost extends X_M_Cost
 		I_C_AcctSchema as, int AD_Org_ID, int M_CostElement_ID, String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		
+
 		MCost cost = null;
 		//FR: [ 2214883 ] Remove SQL code and Replace for Query - red1
 		String whereClause = "AD_Client_ID=? AND AD_Org_ID=?"
@@ -1417,13 +1417,13 @@ public class MCost extends X_M_Cost
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
-	 *	@param ignored multi-key
+	 *	@param id multi-key
 	 *	@param trxName trx
 	 */
-	public MCost (Properties ctx, int ignored, String trxName)
+	public MCost (Properties ctx, int id, String trxName)
 	{
-		super (ctx, ignored, trxName);
-		if (ignored == 0)
+		super (ctx, id, trxName);
+		if (id == 0)
 		{
 		//	setC_AcctSchema_ID (0);
 		//	setM_CostElement_ID (0);
@@ -1431,14 +1431,12 @@ public class MCost extends X_M_Cost
 		//	setM_Product_ID (0);
 			setM_AttributeSetInstance_ID(0);
 			//
-			setCurrentCostPrice (Env.ZERO);
-			setFutureCostPrice (Env.ZERO);
-			setCurrentQty (Env.ZERO);
-			setCumulatedAmt (Env.ZERO);
-			setCumulatedQty (Env.ZERO);
+			setCurrentCostPrice (BigDecimal.ZERO);
+			setFutureCostPrice (BigDecimal.ZERO);
+			setCurrentQty (BigDecimal.ZERO);
+			setCumulatedAmt (BigDecimal.ZERO);
+			setCumulatedQty (BigDecimal.ZERO);
 		}
-		else
-			throw new IllegalArgumentException("Multi-Key");
 	}	//	MCost
 
 	/**

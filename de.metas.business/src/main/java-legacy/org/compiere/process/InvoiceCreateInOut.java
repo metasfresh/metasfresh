@@ -19,6 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -38,7 +40,7 @@ import org.compiere.util.Env;
  * @author Teo Sarca, www.arhipac.ro
  * 			<li>FR [ 1895317 ] InvoiceCreateInOut: you can create many receipts
  */
-public class InvoiceCreateInOut extends SvrProcess
+public class InvoiceCreateInOut extends JavaProcess
 {
 	public static final String PARAM_M_Warehouse_ID = MInOut.COLUMNNAME_M_Warehouse_ID;
 	
@@ -54,7 +56,7 @@ public class InvoiceCreateInOut extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

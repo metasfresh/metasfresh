@@ -28,7 +28,8 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
-import org.compiere.process.ProcessInfo;
+
+import de.metas.process.ProcessInfo;
 
 /**
  * Archive related business logic

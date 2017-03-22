@@ -422,7 +422,7 @@ class SwingEventNotifierFrame extends JFrame
 		String summaryTrl = event.getSummary();
 		if (!Check.isEmpty(summaryTrl, true))
 		{
-			summaryTrl = new EventHtmlMessageFormat()
+			summaryTrl = EventHtmlMessageFormat.newInstance()
 					.setArguments(event.getProperties())
 					.format(summaryTrl);
 		}
@@ -447,9 +447,7 @@ class SwingEventNotifierFrame extends JFrame
 			if (!Check.isEmpty(detailADMessage, true))
 			{
 				final String detailTrl = msgBL.getMsg(getCtx(), detailADMessage);
-				final String detailTrlParsed = new EventHtmlMessageFormat()
-						.setLeftBrace("{").setRightBrace("}")
-						.setThrowExceptionIfKeyWasNotFound(false)
+				final String detailTrlParsed = EventHtmlMessageFormat.newInstance()
 						.setArguments(event.getProperties())
 						.format(detailTrl);
 				if (!Check.isEmpty(detailTrlParsed, true))

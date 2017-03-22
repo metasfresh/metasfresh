@@ -1,5 +1,9 @@
 package org.adempiere.ad.modelvalidator;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,61 +26,49 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
-
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.ModelValidator;
 import org.compiere.process.DocAction;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public enum DocTimingType
 {
-	/** Called before document is prepared */
-	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE),
-	/** Called before document is void */
-	BEFORE_VOID(ModelValidator.TIMING_BEFORE_VOID),
-	/** Called before document is close */
-	BEFORE_CLOSE(ModelValidator.TIMING_BEFORE_CLOSE),
-	/** Called before document is reactivate */
-	BEFORE_REACTIVATE(ModelValidator.TIMING_BEFORE_REACTIVATE),
-	/** Called before document is reversecorrect */
-	BEFORE_REVERSECORRECT(ModelValidator.TIMING_BEFORE_REVERSECORRECT),
-	/** Called before document is reverseaccrual */
-	BEFORE_REVERSEACCRUAL(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL),
-	/** Called before document is completed */
-	BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE),
-	/** Called after document is prepared */
-	AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE),
-	/** Called after document is completed */
-	AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE),
-	/** Called after document is void */
-	AFTER_VOID(ModelValidator.TIMING_AFTER_VOID),
-	/** Called after document is closed */
-	AFTER_CLOSE(ModelValidator.TIMING_AFTER_CLOSE),
-	/** Called after document is reactivated */
-	AFTER_REACTIVATE(ModelValidator.TIMING_AFTER_REACTIVATE),
-	/** Called after document is reversecorrect */
-	AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT),
-	/** Called after document is reverseaccrual */
-	AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL),
-	/** Called after document is un-posted */
-	AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST),
-	/** Called before document is posted */
-	BEFORE_POST(ModelValidator.TIMING_BEFORE_POST),
-	/** Called after document is posted */
-	AFTER_POST(ModelValidator.TIMING_AFTER_POST),
-	/** Called before document is un-closed */
-	BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE),
-	/** Called after document is un-closed */
-	AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE)
+	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE, DocAction.ACTION_Prepare, BeforeAfterType.Before) //
+	, AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE, DocAction.ACTION_Prepare, BeforeAfterType.After) //
+	, BEFORE_VOID(ModelValidator.TIMING_BEFORE_VOID, DocAction.ACTION_Void, BeforeAfterType.Before) //
+	, AFTER_VOID(ModelValidator.TIMING_AFTER_VOID, DocAction.ACTION_Void, BeforeAfterType.After) //
+	, BEFORE_CLOSE(ModelValidator.TIMING_BEFORE_CLOSE, DocAction.ACTION_Close, BeforeAfterType.Before) //
+	, AFTER_CLOSE(ModelValidator.TIMING_AFTER_CLOSE, DocAction.ACTION_Close, BeforeAfterType.After) //
+	, BEFORE_REACTIVATE(ModelValidator.TIMING_BEFORE_REACTIVATE, DocAction.ACTION_ReActivate, BeforeAfterType.Before) //
+	, AFTER_REACTIVATE(ModelValidator.TIMING_AFTER_REACTIVATE, DocAction.ACTION_ReActivate, BeforeAfterType.After) //
+	, BEFORE_REVERSECORRECT(ModelValidator.TIMING_BEFORE_REVERSECORRECT, DocAction.ACTION_Reverse_Correct, BeforeAfterType.Before) //
+	, AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT, DocAction.ACTION_Reverse_Correct, BeforeAfterType.After) //
+	, BEFORE_REVERSEACCRUAL(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, DocAction.ACTION_Reverse_Accrual, BeforeAfterType.Before) //
+	, AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL, DocAction.ACTION_Reverse_Accrual, BeforeAfterType.After) //
+	, BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE, DocAction.ACTION_Complete, BeforeAfterType.Before) //
+	, AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE, DocAction.ACTION_Complete, BeforeAfterType.After) //
+	, AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, DocAction.ACTION_UnPost, BeforeAfterType.After) //
+	, BEFORE_POST(ModelValidator.TIMING_BEFORE_POST, DocAction.ACTION_Post, BeforeAfterType.Before) //
+	, AFTER_POST(ModelValidator.TIMING_AFTER_POST, DocAction.ACTION_Post, BeforeAfterType.After) //
+	, BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE, DocAction.ACTION_UnClose, BeforeAfterType.Before) //
+	, AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE, DocAction.ACTION_UnClose, BeforeAfterType.After) //
 	;
-
-	private final int timing;
 
 	//
 	// Implementation
 	//
-	DocTimingType(final int timing)
+
+	private final int timing;
+	private final String docAction;
+	private final BeforeAfterType beforeAfter;
+
+	DocTimingType(final int timing, final String docAction, final BeforeAfterType beforeAfter)
 	{
 		this.timing = timing;
+		this.docAction = docAction;
+		this.beforeAfter = beforeAfter;
 	}
 
 	public final int getTiming()
@@ -84,79 +76,65 @@ public enum DocTimingType
 		return timing;
 	}
 
+	public String getDocAction()
+	{
+		return docAction;
+	}
+
+	public boolean isDocAction(final String docAction)
+	{
+		return Objects.equals(this.docAction, docAction);
+	}
+
+	@VisibleForTesting
+	BeforeAfterType getBeforeAfter()
+	{
+		return beforeAfter;
+	}
+
+	public boolean isBefore()
+	{
+		return beforeAfter == BeforeAfterType.Before;
+	}
+
+	public boolean isAfter()
+	{
+		return beforeAfter == BeforeAfterType.After;
+	}
+
+	private boolean matches(final String docAction, final BeforeAfterType beforeAfter)
+	{
+		return isDocAction(docAction) && this.beforeAfter == beforeAfter;
+	}
+
 	public static final DocTimingType valueOf(final int timing)
 	{
-		final DocTimingType[] values = values();
-		for (final DocTimingType value : values)
+		final DocTimingType value = timingInt2type.get(timing);
+		if (value == null)
 		{
-			if (timing == value.getTiming())
-			{
-				return value;
-			}
+			throw new IllegalArgumentException("No enum constant found for timing=" + timing + " in " + values());
 		}
-
-		throw new IllegalArgumentException("No enum constant found for timing=" + timing + " in " + values);
+		return value;
 	}
+
+	private static final Map<Integer, DocTimingType> timingInt2type = Stream.of(values()).collect(GuavaCollectors.toImmutableMapByKey(DocTimingType::getTiming));
 
 	public static final DocTimingType forAction(final String docAction, final BeforeAfterType beforeAfterType)
 	{
 		Check.assumeNotEmpty(docAction, "docAction not null");
-
 		Check.assumeNotNull(beforeAfterType, "beforeAfterType not null");
-		final boolean before;
-		if (beforeAfterType == BeforeAfterType.Before)
+
+		// NOTE: no need to use an indexed map because this method is not used very often
+
+		for (final DocTimingType timing : values())
 		{
-			before = true;
-		}
-		else if (beforeAfterType == BeforeAfterType.After)
-		{
-			before = false;
-		}
-		else
-		{
-			throw new IllegalArgumentException("Unknown Before/After type: " + beforeAfterType);
+			if (timing.matches(docAction, beforeAfterType))
+			{
+				return timing;
+			}
 		}
 
-		if (DocAction.ACTION_Complete.equals(docAction))
-		{
-			return before ? BEFORE_COMPLETE : AFTER_COMPLETE;
-		}
-		else if (DocAction.ACTION_Prepare.equals(docAction))
-		{
-			return before ? BEFORE_PREPARE : AFTER_PREPARE;
-		}
-		else if (DocAction.ACTION_Close.equals(docAction))
-		{
-			return before ? BEFORE_CLOSE : AFTER_CLOSE;
-		}
-		else if (DocAction.ACTION_ReActivate.equals(docAction))
-		{
-			return before ? BEFORE_REACTIVATE : AFTER_REACTIVATE;
-		}
-		else if (DocAction.ACTION_Reverse_Correct.equals(docAction))
-		{
-			return before ? BEFORE_REVERSECORRECT : AFTER_REVERSECORRECT;
-		}
-		else if (DocAction.ACTION_Reverse_Accrual.equals(docAction))
-		{
-			return before ? BEFORE_REVERSEACCRUAL : AFTER_REVERSEACCRUAL;
-		}
-		else if (DocAction.ACTION_Void.equals(docAction))
-		{
-			return before ? BEFORE_VOID : AFTER_VOID;
-		}
-		else if (DocAction.ACTION_UnClose.equals(docAction))
-		{
-			return before ? BEFORE_UNCLOSE : AFTER_UNCLOSE;
-		}
-		else if (DocAction.ACTION_Post.equals(docAction))
-		{
-			return before ? BEFORE_POST : AFTER_POST;
-		}
-		else
-		{
-			throw new IllegalArgumentException("Unknown DocAction: " + docAction);
-		}
+		throw new IllegalArgumentException("Unknown DocAction: " + docAction + ", " + beforeAfterType);
 	}
 
 }

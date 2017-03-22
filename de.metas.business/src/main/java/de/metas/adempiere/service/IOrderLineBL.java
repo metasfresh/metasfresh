@@ -25,7 +25,6 @@ package de.metas.adempiere.service;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -125,8 +124,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * @see org.adempiere.util.Check#assume(boolean, String, Object...)
 	 */
 	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
-
-	IPricingContext createPricingContext(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(I_C_OrderLine orderLine);
 

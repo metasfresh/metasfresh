@@ -1,5 +1,7 @@
 package org.adempiere.ad.callout.api.impl;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -63,7 +65,12 @@ public class CalloutExecutorTest
 	@Test
 	public void test_NoCallouts()
 	{
-		newExecutor().execute(field);
+		final ICalloutExecutor calloutExecutor = newExecutor();
+		
+		// We expect the NullCalloutExecutor
+		Assert.assertSame(NullCalloutExecutor.instance, calloutExecutor);
+		
+		calloutExecutor.execute(field); // shall do nothing
 	}
 
 	@Test
@@ -72,7 +79,7 @@ public class CalloutExecutorTest
 		final MockedCallout callout1 = createAndRegisterMockedCallout(field);
 		callout1.setOnExecuteFailException(() -> new CalloutInitException("test"));
 
-		final CalloutExecutor calloutExecutor = newExecutor();
+		final ICalloutExecutor calloutExecutor = newExecutor();
 
 		//
 		// First run
@@ -94,7 +101,7 @@ public class CalloutExecutorTest
 		final MockedCallout callout1 = createAndRegisterMockedCallout(field)
 				.setOnExecuteFailException(() -> new CalloutExecutionException("test"));
 
-		final CalloutExecutor calloutExecutor = newExecutor();
+		final ICalloutExecutor calloutExecutor = newExecutor();
 
 		//
 		// First run
@@ -118,7 +125,7 @@ public class CalloutExecutorTest
 				.setOnExecuteFailException(() -> new RuntimeException("test"));
 		final MockedCallout callout3 = createAndRegisterMockedCallout(field);
 
-		final CalloutExecutor calloutExecutor = newExecutor();
+		final ICalloutExecutor calloutExecutor = newExecutor();
 		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
 
 		Assert.assertTrue("Callout1 shall be called again", callout1.isCalled());
@@ -126,7 +133,7 @@ public class CalloutExecutorTest
 		Assert.assertFalse("Callout3 shall be called again", callout3.isCalled());
 	}
 
-	private CalloutExecutor newExecutor()
+	private ICalloutExecutor newExecutor()
 	{
 		return CalloutExecutor.builder()
 				.setTableName(field.getTableName())
@@ -141,7 +148,7 @@ public class CalloutExecutorTest
 		return callout;
 	}
 
-	private <T extends Exception> T assertExceptionOnExecute(final CalloutExecutor calloutExecutor, final ICalloutField field, Class<T> expectedExceptionClass)
+	private <T extends Exception> T assertExceptionOnExecute(final ICalloutExecutor calloutExecutor, final ICalloutField field, Class<T> expectedExceptionClass)
 	{
 		Exception exception = null;
 		try
@@ -173,7 +180,7 @@ public class CalloutExecutorTest
 		return exceptionCasted;
 	}
 
-	private void assertCalloutExceptionIsFilled(final CalloutException exception, final CalloutExecutor calloutExecutor, final ICalloutField field)
+	private void assertCalloutExceptionIsFilled(final CalloutException exception, final ICalloutExecutor calloutExecutor, final ICalloutField field)
 	{
 		Assert.assertSame("Invalid executor for " + exception, calloutExecutor, exception.getCalloutExecutor());
 		Assert.assertSame("Invalid field for " + exception, field, exception.getCalloutField());

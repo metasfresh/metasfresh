@@ -55,7 +55,7 @@ public class EventHtmlMessageFormatTest
 				.setDetailADMessage("Lieferung {0} für Partner {1}&{2} wurde erstellt.", inoutRecord, "12345", "PartnerName")
 				.build();
 
-		final String summaryFormatted = new EventHtmlMessageFormat()
+		final String summaryFormatted = EventHtmlMessageFormat.newInstance()
 				.setArguments(event.getProperties())
 				.format(event.getDetailADMessage());
 

@@ -4,11 +4,11 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_R_MailText;
-import org.compiere.process.SvrProcess;
 
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.Param;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class R_MailText_Test extends SvrProcess
+public class R_MailText_Test extends JavaProcess
 {
 	// services
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);

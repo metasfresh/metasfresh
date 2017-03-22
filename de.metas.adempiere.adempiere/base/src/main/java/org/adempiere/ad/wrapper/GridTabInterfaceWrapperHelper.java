@@ -11,6 +11,7 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -220,6 +221,12 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 
 		return false;
 	}
+	
+	@Override
+	public boolean isNull(final Object model, final String columnName)
+	{
+		return GridTabWrapper.isNull(model, columnName);
+	}
 
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
@@ -249,5 +256,11 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 		}
 
 		return wrapper.getPO();
+	}
+	
+	@Override
+	public Evaluatee getEvaluatee(Object model)
+	{
+		return GridTabWrapper.getGridTab(model);
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -220,6 +221,15 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
+	public String getValueAsString(final I_M_Attribute attribute)
+	{
+		throw new AttributeNotFoundException(attribute, this);
+	}
+
+	/**
+	 * @throws AttributeNotFoundException
+	 */
+	@Override
 	public BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
@@ -230,6 +240,15 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 */
 	@Override
 	public int getValueAsInt(final I_M_Attribute attribute)
+	{
+		throw new AttributeNotFoundException(attribute, this);
+	}
+
+	/**
+	 * @throws AttributeNotFoundException
+	 */
+	@Override
+	public Date getValueAsDate(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
@@ -310,6 +329,14 @@ public final class NullAttributeStorage implements IAttributeStorage
 	public void saveChangesIfNeeded()
 	{
 		// nothing
+		// NOTE: not throwing UnsupportedOperationException because this storage contains no attributes so it will never have something to change
+	}
+
+	@Override
+	public void setSaveOnChange(final boolean saveOnChange)
+	{
+		// nothing
+		// NOTE: not throwing UnsupportedOperationException because this storage contains no attributes so it will never have something to change
 	}
 
 	/**

@@ -29,12 +29,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_Org;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class C_Invoice_UpdateAutomaticDunningGrace extends SvrProcess
+public class C_Invoice_UpdateAutomaticDunningGrace extends JavaProcess
 {
 	private static final String PARAM_AD_Org_ID = "AD_Org_ID";
 
@@ -43,7 +43,7 @@ public class C_Invoice_UpdateAutomaticDunningGrace extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameterName() == null)

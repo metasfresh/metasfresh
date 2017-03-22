@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- * 	Adempiere Security Interface.
- * 	To enable your own class, you need to set the property ADEMPIERE_SECURE 
+ * 	Metasfresh Security Interface.
+ * 	To enable your own class, you need to set the property METASFRESH_SECURE
  * 	when starting the client or server.
  *  The setting for the default class would be:
- *  -DADEMPIERE_SECURE=org.compiere.util.Secure
+ *  -DMETASFRESH_SECURE=org.compiere.util.Secure
  *	
  *  @author Jorg Janke
  *  @version $Id: SecureInterface.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
@@ -32,9 +32,9 @@ import java.sql.Timestamp;
 public interface SecureInterface
 {
 	/** Class Name implementing SecureInterface	*/
-	public static final String	ADEMPIERE_SECURE = "ADEMPIERE_SECURE";
+	public static final String	METASFRESH_SECURE = "METASFRESH_SECURE";
 	/** Default Class Name implementing SecureInterface	*/
-	public static final String	ADEMPIERE_SECURE_DEFAULT = "org.compiere.util.Secure";
+	public static final String	METASFRESH_SECURE_DEFAULT = "org.compiere.util.Secure";
 
 	
 	/** Clear Text Indicator xyz	*/

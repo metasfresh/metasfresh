@@ -8,7 +8,7 @@ import org.compiere.model.I_I_BPartner;
  * 
  * @author tsa
  */
-public class ImportBPartner extends ImportSvrProcess<I_I_BPartner>
+public class ImportBPartner extends AbstractImportJavaProcess<I_I_BPartner>
 {
 
 	public ImportBPartner()

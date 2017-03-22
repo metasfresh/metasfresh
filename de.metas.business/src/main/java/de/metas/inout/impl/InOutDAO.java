@@ -135,7 +135,7 @@ public class InOutDAO implements IInOutDAO
 		// + " AND iol.AD_Client_ID=?";
 
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus,
+				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
 						DocAction.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
 						// anymore, because they are already in a shipper-transportation
 						DocAction.STATUS_InProgress,

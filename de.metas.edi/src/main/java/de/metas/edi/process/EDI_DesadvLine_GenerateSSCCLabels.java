@@ -24,13 +24,13 @@ package de.metas.edi.process;
 
 
 import org.adempiere.util.Check;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates as many {@link I_EDI_DesadvLine_SSCC} records as asked and then print them
@@ -38,7 +38,7 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
  * @author tsa
  * @task 08910
  */
-public class EDI_DesadvLine_GenerateSSCCLabels extends SvrProcess
+public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 {
 	//
 	// Parameters
@@ -53,7 +53,7 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter param : getParameter())
+		for (final ProcessInfoParameter param : getParametersAsArray())
 		{
 			final String parameterName = param.getParameterName();
 			if (PARAM_Counter.equals(parameterName))

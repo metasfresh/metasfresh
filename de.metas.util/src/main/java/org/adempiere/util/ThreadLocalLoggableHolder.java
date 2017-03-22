@@ -1,10 +1,6 @@
 package org.adempiere.util;
 
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.logging.LogbackLoggable;
-import org.slf4j.Logger;
-
-import ch.qos.logback.classic.Level;
 
 /*
  * #%L
@@ -44,7 +40,7 @@ public final class ThreadLocalLoggableHolder
 	 * @param loggable
 	 * @return
 	 */
-	public IAutoCloseable temporarySetLoggable(final ILoggable loggable)
+	/* package */ IAutoCloseable temporarySetLoggable(final ILoggable loggable)
 	{
 		Check.assumeNotNull(loggable, "loggable not null");
 		final ILoggable loggableOld = loggableRef.get();
@@ -62,7 +58,6 @@ public final class ThreadLocalLoggableHolder
 					return;
 				}
 				closed = true;
-
 				loggableRef.set(loggableOld);
 			}
 
@@ -72,30 +67,22 @@ public final class ThreadLocalLoggableHolder
 	/**
 	 * @return current thread's {@link ILoggable} instance or the {@link NullLoggable}. Never returns <code>null</code>
 	 */
-	public ILoggable getLoggable()
+	/* package */ ILoggable getLoggable()
 	{
-		return getLoggableOr(ILoggable.NULL);
+		return getLoggableOr(Loggables.getNullLoggable());
 	}
 
 	/** @return current thread's {@link ILoggable} instance or <code>defaultLoggable</code> if there was no thread level {@link ILoggable} */
-	public ILoggable getLoggableOr(final ILoggable defaultLoggable)
+	/* package */ ILoggable getLoggableOr(final ILoggable defaultLoggable)
 	{
 		final ILoggable loggable = loggableRef.get();
 		return loggable != null ? loggable : defaultLoggable;
 	}
 
-	/** @return current thread's {@link ILoggable} instance or a loggable which is forwarding to given logger instance if there was no thread level {@link ILoggable} */
-	public ILoggable getLoggableOrLogger(final Logger logger, final Level logLevel)
-	{
-		final ILoggable loggable = loggableRef.get();
-		if (loggable != null)
-		{
-			return loggable;
-		}
-
-		return new LogbackLoggable(logger, logLevel);
-	}
-
+	/**
+	 * Holds the {@link ILoggable} instance of current thread
+	 *
+	 */
 	public static final transient ThreadLocalLoggableHolder instance = new ThreadLocalLoggableHolder();
 
 	private final ThreadLocal<ILoggable> loggableRef = new ThreadLocal<>();

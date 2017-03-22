@@ -1,20 +1,21 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ]                  *
- *              Teo Sarca, www.arhipac.ro                                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
+ *
+ * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ] *
+ *              Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -37,6 +38,7 @@ import javax.swing.event.EventListenerList;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
+import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,6 +46,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
+import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -51,6 +55,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.TableInfoVO;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
@@ -64,6 +69,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -85,6 +91,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IProcessPreconditionsContext;
 
 /**
  * Tab Model.
@@ -100,7 +107,7 @@ import de.metas.logging.MetasfreshLastError;
  *      - dataChanged (from MTable)
  *          - setCurrentRow
  *              - Update all Field Values
- * 
+ *
  *      - setValue
  *          - Update Field Value
  *          - Callout
@@ -109,14 +116,24 @@ import de.metas.logging.MetasfreshLastError;
  * @author Jorg Janke
  * @version $Id: GridTab.java,v 1.10 2006/10/02 05:18:39 jjanke Exp $
  *
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1742159 ] Editable number field for inactive record <li>BF [ 1968598 ] Callout is not called if tab is processed <li>BF [ 2104022 ]
- *         GridTab.processCallout: throws NPE if callout returns null <li>FR [ 2846871 ] Add method org.compiere.model.GridTab.getIncludedTabs
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <li>BF [ 1742159 ] Editable number field for inactive record
+ *         <li>BF [ 1968598 ] Callout is not called if tab is processed
+ *         <li>BF [ 2104022 ]
+ *         GridTab.processCallout: throws NPE if callout returns null
+ *         <li>FR [ 2846871 ] Add method org.compiere.model.GridTab.getIncludedTabs
  *         https://sourceforge.net/tracker/?func=detail&aid=2846871&group_id=176962&atid=879335
- * @author Teo Sarca, teo.sarca@gmail.com <li>BF [ 2873323 ] ABP: Do not concatenate strings in SQL queries https://sourceforge.net/tracker/?func=detail&aid=2873323&group_id=176962&atid=879332 <li>BF
- *         [ 2874109 ] Tab ORDER BY clause is not supporting context variables https://sourceforge.net/tracker/?func=detail&aid=2874109&group_id=176962&atid=879332 <li>BF [ 2905287 ] GridTab query is
+ * @author Teo Sarca, teo.sarca@gmail.com
+ *         <li>BF [ 2873323 ] ABP: Do not concatenate strings in SQL queries https://sourceforge.net/tracker/?func=detail&aid=2873323&group_id=176962&atid=879332
+ *         <li>BF
+ *         [ 2874109 ] Tab ORDER BY clause is not supporting context variables https://sourceforge.net/tracker/?func=detail&aid=2874109&group_id=176962&atid=879332
+ *         <li>BF [ 2905287 ] GridTab query is
  *         not build correctly https://sourceforge.net/tracker/?func=detail&aid=2905287&group_id=176962&atid=879332
- * @author Victor Perez , e-Evolution.SC <li>FR [1877902] Implement JSR 223 Scripting APIs to Callout <li>BF [ 2910358 ] Error in context when a field is found in different tabs.
- *         https://sourceforge.net/tracker/?func=detail&aid=2910358&group_id=176962&atid=879332 <li>BF [ 2910368 ] Error in context when IsActive field is found in different
+ * @author Victor Perez , e-Evolution.SC
+ *         <li>FR [1877902] Implement JSR 223 Scripting APIs to Callout
+ *         <li>BF [ 2910358 ] Error in context when a field is found in different tabs.
+ *         https://sourceforge.net/tracker/?func=detail&aid=2910358&group_id=176962&atid=879332
+ *         <li>BF [ 2910368 ] Error in context when IsActive field is found in different
  *         https://sourceforge.net/tracker/?func=detail&aid=2910368&group_id=176962&atid=879332
  * @author Carlos Ruiz, qss FR [1877902]
  * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
@@ -132,14 +149,14 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 */
 	private static final long serialVersionUID = 7198494041906579986L;
-	
+
 	public static final GridTab fromCalloutRecordOrNull(final ICalloutRecord calloutRecord)
 	{
-		if(calloutRecord instanceof GridTab)
+		if (calloutRecord instanceof GridTab)
 		{
 			return (GridTab)calloutRecord;
 		}
-		
+
 		log.warn("Cannot extract {} from {}. Returning null", GridTab.class, calloutRecord);
 		return null;
 	}
@@ -179,7 +196,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		m_window = w;
 		m_vo = vo;
 		this.attachmentsMap = new AttachmentsMap(vo.AD_Table_ID);
-		
+
 		//
 		// Create MTable
 		m_mTable = new GridTable(m_vo.getCtx(), m_vo.getAD_Table_ID(), m_vo.getTableName(), m_vo.getWindowNo(), m_vo.getTabNo(), true, virtual);
@@ -209,7 +226,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	private String m_parentColumnName = "";
 	private String m_extendedWhere;
 	/** Attachments */
-	private final AttachmentsMap attachmentsMap; 
+	private final AttachmentsMap attachmentsMap;
 	/** Chats */
 	private HashMap<Integer, Integer> m_Chats = null;
 	/** Locks */
@@ -234,10 +251,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/** Order By Array if SortNo 1..3 */
 	private String[] m_OrderBys = new String[3];
 	/** List of Key Parents */
-	private ArrayList<String> m_parents = new ArrayList<String>(2);
+	private ArrayList<String> m_parents = new ArrayList<>(2);
 
 	/** Map of ColumnName of source field (key) and the dependant field (value) */
-	private MultiMap<String, GridField> m_depOnField = new MultiMap<String, GridField>();
+	private MultiMap<String, GridField> m_depOnField = new MultiMap<>();
 
 	/** Async Loader */
 	private Loader m_loader = null;
@@ -276,7 +293,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	// 04513
 	public static final String CTX_RowLoading = CTX_Prefix + "RowLoading";
-	
+
 	/**************************************************************************
 	 * Tab loader for Tabs > 0
 	 */
@@ -330,7 +347,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Initialize Tab with record from AD_Tab_v.
-	 * 
+	 *
 	 * If this tab was already initialized, this method does nothing and returns true.
 	 *
 	 * @param async true if the tab shall be initialized asynchronously (in another thread)
@@ -408,12 +425,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		//
 		m_depOnField.clear();
 		m_depOnField = null;
-		
+
 		if (attachmentsMap != null)
 		{
 			attachmentsMap.reset();
 		}
-		
+
 		if (m_Chats != null)
 		{
 			m_Chats.clear();
@@ -421,7 +438,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		m_Chats = null;
 		//
 		m_vo.clearFields();
-		
+
 		m_vo = null;
 		if (m_loader != null)
 		{
@@ -521,7 +538,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					m_depOnField.put(columnName, null);
 				}
 			}
-		}   // for all fields
+		}     // for all fields
 
 		if (!m_mTable.getTableName().equals(I_AD_PInstance_Log.Table_Name))
 		{ // globalqss, bug 1662433
@@ -569,7 +586,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public ArrayList<String> getDependentOn()
 	{
-		final ArrayList<String> list = new ArrayList<String>();
+		final ArrayList<String> list = new ArrayList<>();
 		// Display
 		Evaluator.parseDepends(list, m_vo.getDisplayLogic()); // metas: 03093
 		//
@@ -606,7 +623,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		// Make sure this tab was initialized
 		initTab(false); // not async
-		
+
 		return m_mTable;
 	}   // getTableModel
 
@@ -622,7 +639,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return null;
 		}
 		//
-		/** @todo Load Image */
+		/**
+		 * @todo Load Image
+		 */
 		return null;
 	}   // getIcon
 
@@ -862,7 +881,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					}
 				}
 			}
-		}	// isDetail
+		}  	// isDetail
 
 		m_extendedWhere = where.toString();
 		// metas: begin - 01880
@@ -945,9 +964,26 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			final int maxRowsActual = getMaxQueryRecordsActual(maxRows);
 			m_mTable.setSelectWhereClause(where.toString(), m_vo.getDefaultWhereClause(), m_vo.onlyCurrentRows && !isDetail(), onlyCurrentDays);
 			m_mTable.open(maxRowsActual);
+			
+			// gh #986: find out if this is a "failed" zoom operation
+			if (m_query != null 
+					&& !Check.isEmpty(m_query.getZoomTableName()) 
+					&& !Check.isEmpty(m_query.getZoomColumnName())
+					&& m_mTable.getRowCount() < 1)
+			{
+				// gh #986: see if something can be done about the missing record. If so, request a retry. 
+				if (NoDataFoundHandlers.get().invokeHandlers(
+						m_query.getZoomTableName(), 
+						new Object[] { m_query.getZoomValue() }, 
+						PlainContextAware.newOutOfTrx(getCtx())))
+				{
+					// Since I don't know how to do the retry in here, I throw an exception and the retry will be handled somewhere else in the stack.
+					throw new NoDataFoundHandlerRetryRequestException();
+				}
+			}
 		}
 
-		if (keyNo != m_mTable.getKeyID(m_currentRow)) // something changed
+		if (keyNo != m_mTable.getKeyID(m_currentRow))   // something changed
 		{
 			final int size = getRowCount();
 			for (int i = 0; i < size; i++)
@@ -1071,10 +1107,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			finally
 			{
 				DB.close(rs, pstmt);
-				rs = null; pstmt = null;
+				rs = null;
+				pstmt = null;
 			}
 		}
-		
+
 		// Reference Column found
 		if (refColName != null)
 		{
@@ -1091,7 +1128,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		String tableName = null;
 		final String tabKeyColumn = getKeyColumnName();
 		// Column=SalesRep_ID, Key=AD_User_ID, Query=SalesRep_ID=101
-		
+
 		{
 			final String sql = "SELECT t.TableName "
 					+ "FROM AD_Column c"
@@ -1120,7 +1157,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			finally
 			{
 				DB.close(rs, pstmt);
-				rs = null; pstmt = null;
+				rs = null;
+				pstmt = null;
 			}
 		}
 
@@ -1164,13 +1202,15 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		final boolean retainCurrentRowIfAny = true; // default, backward compatibility
 		dataRefreshAll(retainCurrentRowIfAny);
 	}
-	
+
 	public void dataRefreshAll(final boolean retainCurrentRowIfAny)
 	{
 		log.debug("dataRefreshAll: {}", this);
-		/** @todo does not work with alpha key */
+		/**
+		 * @todo does not work with alpha key
+		 */
 		final int keyNo = m_mTable.getKeyID(m_currentRow);
-		
+
 		// metas: c.ghita@metas.ro : US1207 : start
 		if (retainCurrentRowIfAny && m_currentRow >= 0)
 		{
@@ -1185,7 +1225,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			}
 		}
 		// metas: c.ghita@metas.ro : US1207 : end
-		
+
 		if (!getTableModel().isCopyWithDetails())
 		{
 			m_mTable.dataRefreshAll();
@@ -1193,7 +1233,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// Should use RowID - not working for tables with multiple keys
 		if (keyNo != -1)
 		{
-			if (keyNo != m_mTable.getKeyID(m_currentRow))   // something changed
+			if (keyNo != m_mTable.getKeyID(m_currentRow))     // something changed
 			{
 				final int size = getRowCount();
 				for (int i = 0; i < size; i++)
@@ -1294,7 +1334,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				refreshParents();
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: begin
-			if (retValue && MIndexTable.isAnyIndexedValueChanged(ctx, this, newRecord)) // metas: cg: task 03475
+			if (retValue && MIndexTable.isAnyIndexedValueChanged(ctx, this, newRecord))   // metas: cg: task 03475
 			{
 				dataRefreshAll();
 			}
@@ -1326,7 +1366,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			MetasfreshLastError.saveError(log, "CurrentRecordModified", msg, false);
 			return true;
 		}
-		if (isDetail() && m_vo.IsCheckParentsChanged) // 01962: check parents only if flag is active
+		if (isDetail() && m_vo.IsCheckParentsChanged)   // 01962: check parents only if flag is active
 		{
 			// get parent tab
 			// the parent tab is the first tab above with level = this_tab_level-1
@@ -1648,7 +1688,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		m_keyColumnName = keyColumnName;
 		final Properties ctx = getCtx();
 		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_KeyColumnName, keyColumnName);
-		
+
 		attachmentsMap.setKeyColumnName(keyColumnName);
 	}
 
@@ -2333,7 +2373,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				rs = null;
 				pstmt = null;
 			}
-		}   // loadOrderInfo
+		}     // loadOrderInfo
 
 		// Set the Phone Format on BPartnerLocation based on Country
 		if (m_vo.TableName.equals("C_BPartner_Location"))
@@ -2441,7 +2481,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			if (m_Chats == null)
 			{
-				m_Chats = new HashMap<Integer, Integer>();
+				m_Chats = new HashMap<>();
 			}
 			else
 			{
@@ -2538,7 +2578,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			if (m_Lock == null)
 			{
-				m_Lock = new ArrayList<Integer>();
+				m_Lock = new ArrayList<>();
 			}
 			else
 			{
@@ -2690,7 +2730,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	private void updateDataStatusEventProperties(final DataStatusEvent e)
 	{
 		final String keyColumnName = getKeyColumnName();
-		
+
 		e.Created = (Timestamp)getValue("Created");
 		e.CreatedBy = (Integer)getValue("CreatedBy");
 		e.Updated = (Timestamp)getValue("Updated");
@@ -2778,11 +2818,17 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		return gridTable.getKeyID(m_currentRow);
 	}   // getRecord_ID
-	
+
 	@Override
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(this, modelClass);
+	}
+
+	@Override
+	public <T> T getModelBeforeChanges(final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.createOld(this, modelClass);
 	}
 
 	/**
@@ -2919,18 +2965,18 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			// Update Field Values
 			final int size = m_mTable.getColumnCount();
 			final boolean isInserting = m_mTable.isInserting();
-			
+
 			for (int i = 0; i < size; i++)
 			{
 				final GridField mField = m_mTable.getField(i);
-				
+
 				// We need to delay all events because,
 				// first we need to set all values and update the context
 				// and then fire the events which propagate the value to UI component
 				// and it will also trigger context based validations.
 				// NOTE: if we are not doing this, when validating, it could happen to have an INCONSISTENT context (some values are set, some are not).
 				mField.delayEvents();
-				
+
 				// get Value from Table
 				if (m_currentRow >= 0)
 				{
@@ -2952,14 +2998,14 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					mField.setValueToNull(updateContext);
 				}
 			}
-			
+
 			//
 			// Release all blocked GridField events
 			for (int i = 0; i < size; i++)
 			{
 				final GridField gridField = m_mTable.getField(i);
 				gridField.releaseDelayedEvents();
-				
+
 				//
 				// Validate value if needed
 				if (m_currentRow >= 0 && isInserting)
@@ -2989,7 +3035,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			if (m_DataStatusEvent == null)
 			{
 				m_DataStatusEvent = new DataStatusEvent(this, getRowCount(),
-						isInserting,		// changed
+						isInserting,  		// changed
 						Env.isAutoCommit(Env.getCtx(), m_vo.WindowNo), isInserting);
 			}
 			//
@@ -3008,22 +3054,22 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			Env.setContext(Env.getCtx(), getWindowNo(), getTabNo(), CTX_RowLoading, null);
 		}
 	}   // setCurrentRow
-	
+
 	public void setCurrentRowByRecord(final ITableRecordReference record)
 	{
 		if (record == null)
 		{
 			return;
 		}
-		
+
 		if (!getTableName().equals(record.getTableName()))
 		{
 			log.warn("Cannot select current row by record because table name is not compatible (GridTab:{}, Record:{})", this, record);
 			return;
 		}
-		
+
 		final int recordId = record.getRecord_ID();
-		
+
 		final int rowCount = m_mTable.getRowCount();
 		for (int rowNo = 0; rowNo < rowCount; rowNo++)
 		{
@@ -3034,7 +3080,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				return;
 			}
 		}
-		
+
 		log.info("Cannot select current row by record because the record ID was not found (GridTab:{}, Record:{})", this, record);
 	}
 
@@ -3298,9 +3344,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					log.debug(columnName + " changed - " + dependentField.getColumnName() + " set to " + valueNew);
 					// invalidate current selection
 					setValue(dependentField, valueNew);
-				} // metas
+				}   // metas
 			}
-		}   // for all dependent fields
+		}     // for all dependent fields
 	}   // processDependencies
 
 	/**************************************************************************
@@ -3321,13 +3367,15 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			calloutExecutor.execute(field);
 		}
+		catch(final CalloutException e)
+		{
+			final String errmsg = AdempiereException.extractMessage(e);
+			log.warn("Failed executing callout on {}. \n Error message: {} \n CalloutInstance: {}", field, errmsg, e.getCalloutInstance(), e);
+			return errmsg;
+		}
 		catch (final Exception e)
 		{
-			String errmsg = e.getLocalizedMessage();
-			if (Check.isEmpty(errmsg, true))
-			{
-				errmsg = e.toString();
-			}
+			final String errmsg = AdempiereException.extractMessage(e);
 
 			log.warn(errmsg, e);
 			return errmsg;
@@ -3525,7 +3573,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	public final void switchRows(final int from, int to, final int sortColumn, final boolean ascending)
 	{
 		log.debug("Row index={}->{}, sortColumn={}, ascending={}", from, to, sortColumn, ascending);
-		
+
 		// nothing to do
 		if (from == to)
 		{
@@ -3628,7 +3676,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public List<GridTab> getIncludedTabs()
 	{
-		final List<GridTab> list = new ArrayList<GridTab>(1);
+		final List<GridTab> list = new ArrayList<>(1);
 		for (final GridField field : getFields())
 		{
 			if (field.getIncluded_Tab_ID() > 0)
@@ -3682,7 +3730,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	// metas
 	public List<Integer> getKeyIDs()
 	{
-		final List<Integer> ids = new ArrayList<Integer>();
+		final List<Integer> ids = new ArrayList<>();
 		final GridTable gridTable = getTableModel();
 		final int currentRow = getCurrentRow();
 
@@ -3835,12 +3883,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		return m_vo;
 	}
-	
+
 	public final int getMaxQueryRecords()
 	{
 		return m_vo.getMaxQueryRecords();
 	}
-	
+
 	private final int getMaxQueryRecordsActual(final GridTabMaxRows maxQueryRecords)
 	{
 		return GridTabMaxRowsRestrictionChecker.builder()
@@ -3978,13 +4026,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				if (queryColumn.endsWith("_ID"))
 				{
-					query.addRestriction(queryColumn, MQuery.EQUAL,
+					query.addRestriction(queryColumn, Operator.EQUAL,
 							new Integer(Env.getContextAsInt(ctx, getWindowNo(), queryColumn)),
 							infoName, infoDisplay);
 				}
 				else
 				{
-					query.addRestriction(queryColumn, MQuery.EQUAL,
+					query.addRestriction(queryColumn, Operator.EQUAL,
 							Env.getContext(ctx, getWindowNo(), queryColumn),
 							infoName, infoDisplay);
 				}
@@ -4014,9 +4062,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/** Copy mode when {@link GridTab#dataNew(boolean)} is invoked */
 	public static enum DataNewCopyMode
 	{
-		NoCopy,
-		Copy,
-		CopyWithDetails;
+		NoCopy, Copy, CopyWithDetails;
 
 		public static boolean isCopy(final DataNewCopyMode copyMode)
 		{
@@ -4038,9 +4084,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Returns if we are in record copying mode.
-	 * 
+	 *
 	 * NOTE: this information is available while we are in {@link #dataNew(DataNewCopyMode)} method.
-	 * 
+	 *
 	 * @return true if we are in copy record mode (i.e. {@link #dataNew(DataNewCopyMode)} was called with copy with/without details
 	 */
 	public boolean isDataNewCopy()
@@ -4050,7 +4096,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Sets currently active copying mode when {@link #dataNew(DataNewCopyMode)}.
-	 * 
+	 *
 	 * @param dataNewCopyMode
 	 */
 	private final void setDataNewCopyMode(final DataNewCopyMode dataNewCopyMode)
@@ -4094,7 +4140,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		final int tabNo = getTabNo();
 		final String keyPrefix = Env.createContextName(windowNo, tabNo, "");
 		final String keyPrefixToExclude = Env.createContextName(windowNo, tabNo, CTX_Prefix);
-		
+
 		Env.removeContextMatching(ctx, new Predicate<Object>()
 		{
 			@Override
@@ -4105,7 +4151,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					// shall not happen
 					return false;
 				}
-				
+
 				final String name = key.toString();
 
 				// Skip special tab context variables
@@ -4119,7 +4165,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				{
 					return false;
 				}
-				
+
 				return true; // remove it
 			}
 		});
@@ -4156,7 +4202,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Creates a {@link IQueryBuilder} which will return exactly the rows that we have in this {@link GridTab}.
-	 * 
+	 *
 	 * FIXME: no ORDER BY is enforced
 	 *
 	 * @param modelClass
@@ -4170,7 +4216,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				.filter(gridTabFilter);
 		return queryBuilder;
 	}
-	
+
 	/**
 	 * Creates a {@link IQueryFilter} which will return exactly the rows that we have in this {@link GridTab}.
 	 *
@@ -4181,9 +4227,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		Check.assume(tableName.equals(getTableName()), "{}'s table is not compatible with {}'s table", modelClass, this);
-		
+
 		final String sqlWhereClause = getMTable().getSelectWhereClauseFinal();
-		
+
 		// If there is no SQL where clause, it means that the GridTab query was not initialized,
 		// so user sees to records,
 		// so this is what we also need to return => no records
@@ -4191,18 +4237,18 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return ConstantQueryFilter.of(false);
 		}
-		
+
 		final IQueryFilter<T> gridTabFilter = new TypedSqlQueryFilter<>(sqlWhereClause);
 		return gridTabFilter;
 	}
 	// metas: end
-	
+
 	private static final class AttachmentsMap
 	{
 		private static final transient Logger logger = LogManager.getLogger(AttachmentsMap.class);
-		
+
 		private static final int BUFFER_SIZE = 100;
-		
+
 		private final int adTableId;
 		private volatile boolean canHaveAttachments = false;
 		private Map<Integer, Integer> recordId2attachementId = null;
@@ -4214,17 +4260,17 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			this.adTableId = adTableId;
 			reset();
 		}
-		
+
 		public void setKeyColumnName(final String keyColumnName)
 		{
 			this.canHaveAttachments = keyColumnName != null && keyColumnName.endsWith("_ID");
 		}
-		
+
 		public boolean canHaveAttachment()
 		{
 			return canHaveAttachments;
 		}
-		
+
 		public synchronized void reset()
 		{
 			if (recordId2attachementId != null)
@@ -4234,24 +4280,29 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			}
 			partiallyLoaded = true;
 		}
-		
+
 		public synchronized void reset(final int recordId)
 		{
 			if (recordId2attachementId == null)
 			{
 				return;
 			}
-			
-			final Integer attachmentId = recordId2attachementId.remove(recordId);
-			if(attachmentId == null)
-			{
-				return;
-			}
-			
+
+			// clean cache
+			recordId2attachementId.remove(recordId);
+
+			// #578 commented out because it was preventing the attachment from being put in the map when loaded.
+
+			// if(attachmentId == null)
+			// {
+			// return;
+			// }
+
+			// load the attachment
 			final boolean forceLoadIfNotExists = true;
 			getAD_Attachment_ID(recordId, forceLoadIfNotExists); // reload it
 		}
-		
+
 		/**
 		 * Get AD_Attachment_ID for given Record_ID.
 		 *
@@ -4262,22 +4313,22 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			final boolean forceLoadIfNotExists = false;
 			return getAD_Attachment_ID(recordId, forceLoadIfNotExists);
 		}
-		
+
 		private final synchronized int getAD_Attachment_ID(final int recordId, final boolean forceLoadIfNotExists)
 		{
 			if (recordId < 0)
 			{
 				return 0;
 			}
-			
+
 			final Map<Integer, Integer> recordId2attachmentId = getMap();
-			
+
 			final Integer attachmentIdExisting = recordId2attachmentId.get(recordId);
 			if (attachmentIdExisting != null)
 			{
 				return attachmentIdExisting > 0 ? attachmentIdExisting : 0;
 			}
-			
+
 			if (partiallyLoaded || forceLoadIfNotExists)
 			{
 				final String sql = "SELECT AD_Attachment_ID FROM AD_Attachment WHERE AD_Table_ID=? AND Record_ID=?";
@@ -4289,29 +4340,28 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				recordId2attachmentId.put(recordId, attachmentId); // cache it even if the AD_Attachment_ID was not found
 				return attachmentId;
 			}
-			
+
 			return 0;
 		}
-		
+
 		public final boolean hasAttachment(final int recordId)
 		{
 			final int attachmentId = getAD_Attachment_ID(recordId);
 			return attachmentId > 0;
 		}
 
-		
 		private final Map<Integer, Integer> getMap()
 		{
 			if (!canHaveAttachment())
 			{
 				return ImmutableMap.of();
 			}
-			
+
 			if (this.recordId2attachementId != null)
 			{
 				return this.recordId2attachementId;
 			}
-			
+
 			final Map<Integer, Integer> recordId2attachementId = new HashMap<>(BUFFER_SIZE);
 			boolean partiallyLoaded = false;
 
@@ -4333,7 +4383,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 						partiallyLoaded = true;
 						break;
 					}
-					
+
 					final int attachmentId = rs.getInt(1);
 					final int recordId = rs.getInt(2);
 					recordId2attachementId.put(recordId, attachmentId);
@@ -4349,11 +4399,65 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				DB.close(rs, pstmt);
 			}
-			
+
 			this.recordId2attachementId = recordId2attachementId;
 			this.partiallyLoaded = partiallyLoaded;
-			
+
 			return recordId2attachementId;
+		}
+
+	}
+	
+	
+	//
+	//
+	//
+	
+	public IProcessPreconditionsContext toPreconditionsContext()
+	{
+		return new GridTabAsPreconditionsContext(this);
+	}
+	
+	private static final class GridTabAsPreconditionsContext implements IProcessPreconditionsContext
+	{
+		private final GridTab gridTab;
+
+		private GridTabAsPreconditionsContext(final GridTab gridTab)
+		{
+			this.gridTab = gridTab;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this).addValue(gridTab).toString();
+		}
+
+		@Override
+		public String getTableName()
+		{
+			return gridTab.getTableName();
+		}
+
+		@Override
+		public <T> T getSelectedModel(final Class<T> modelClass)
+		{
+			return gridTab.getModel(modelClass);
+		}
+		
+		@Override
+		public <T> List<T> getSelectedModels(final Class<T> modelClass)
+		{
+			// backward compatibility
+			final T model = getSelectedModel(modelClass);
+			return ImmutableList.of(model);
+		}
+		
+		@Override
+		public int getSelectionSize()
+		{
+			// backward compatibility
+			return 1;
 		}
 
 	}

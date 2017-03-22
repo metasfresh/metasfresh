@@ -36,6 +36,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MInvoice;
+import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
@@ -107,6 +108,12 @@ public interface IInvoiceBL extends ISingletonService
 
 	String getSummary(I_C_Invoice invoice);
 
+	default boolean isVendorInvoice(final String docBaseType)
+	{
+		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
+				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
+	}
+	
 	/**
 	 * @param invoice
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)

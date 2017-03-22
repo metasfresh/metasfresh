@@ -10,6 +10,8 @@ public interface ICalloutProvider
 {
 	/** A {@link ICalloutProvider} which supplies no callouts */
 	ICalloutProvider NULL = NullCalloutProvider.instance;
+	
+	String ANY_TABLE = "_AnyTable";
 
 	TableCalloutsMap getCallouts(final Properties ctx, final String tableName);
 }

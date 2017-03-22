@@ -27,12 +27,12 @@ package org.eevolution.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,14 +46,13 @@ import java.util.List;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MCostElement;
 import org.compiere.model.MCostType;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
@@ -64,18 +63,21 @@ import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
- * Roll-UP Bill of Material 
- *	
+ * Roll-UP Bill of Material
+ *
  * @author victor.perez@e-evolution.com, e-Evolution, S.C.
  * @version $Id: RollupBillOfMaterial.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  */
 @SuppressWarnings("deprecation") // hide those to not polute our Warnings
-public class RollupBillOfMaterial extends SvrProcess
+public class RollupBillOfMaterial extends JavaProcess
 {
-	/* Organization 		*/ 
+	/* Organization 		*/
 	private int		 		p_AD_Org_ID = 0;
 	/* Account Schema 		*/
 	private int				p_C_AcctSchema_ID = 0;
@@ -96,7 +98,7 @@ public class RollupBillOfMaterial extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 
@@ -104,13 +106,13 @@ public class RollupBillOfMaterial extends SvrProcess
 				;
 			else if (name.equals(MCostElement.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
-			else if (name.equals(MAcctSchema.COLUMNNAME_C_AcctSchema_ID))  
+			else if (name.equals(MAcctSchema.COLUMNNAME_C_AcctSchema_ID))
 				p_C_AcctSchema_ID = para.getParameterAsInt();
 			else if (name.equals(MCostType.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
 			else if (name.equals(MCostElement.COLUMNNAME_CostingMethod))
-				p_ConstingMethod=(String)para.getParameter();	
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))   
+				p_ConstingMethod=(String)para.getParameter();
+			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
 			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID))
 				p_M_Product_Category_ID = para.getParameterAsInt();
@@ -125,9 +127,9 @@ public class RollupBillOfMaterial extends SvrProcess
 	 * 	Generate Calculate Cost
 	 *	@return info
 	 *	@throws Exception
-	 */   
+	 */
 	@Override
-	protected String doIt() throws Exception                
+	protected String doIt() throws Exception
 	{
 		resetCostsLLForLLC0();
 		//
@@ -141,7 +143,7 @@ public class RollupBillOfMaterial extends SvrProcess
 						0, // M_Warehouse_ID
 						0, // S_Resource_ID
 						product.getM_Product_ID(),
-						get_TrxName());                 
+						get_TrxName());
 
 				int PP_Product_BOM_ID = 0;
 				if (pp != null)
@@ -162,25 +164,25 @@ public class RollupBillOfMaterial extends SvrProcess
 					createNotice(product, "@NotFound@ @PP_Product_BOM_ID@");
 				}
 				rollup(product, bom);
-			} // for each Products 
+			} // for each Products
 		} // for each LLC
 		return "@OK@";
 	}
-	
+
 	protected void rollup(MProduct product, MPPProductBOM bom)
 	{
-		for (MCostElement element : getCostElements())
-		{						
-			for (MCost cost : getCosts(product, element.get_ID()))
-			{        
+		for (I_M_CostElement element : getCostElements())
+		{
+			for (MCost cost : getCosts(product, element.getM_CostElement_ID()))
+			{
 				log.info("Calculate Lower Cost for: "+ bom);
-				BigDecimal price = getCurrentCostPriceLL(bom, element);     
+				BigDecimal price = getCurrentCostPriceLL(bom, element);
 				log.info(element.getName() + " Cost Low Level:" + price);
 				cost.setCurrentCostPriceLL(price);
 				updateCoProductCosts(bom, cost);
 				cost.saveEx();
-			} // for each Costs 
-		} // for Elements	
+			} // for each Costs
+		} // for Elements
 	}
 
 	/**
@@ -194,7 +196,7 @@ public class RollupBillOfMaterial extends SvrProcess
 		// Skip if not BOM found
 		if (bom == null)
 			return;
-		
+
 		BigDecimal costPriceTotal = Env.ZERO;
 		for (MPPProductBOMLine bomline : bom.getLines())
 		{
@@ -239,7 +241,7 @@ public class RollupBillOfMaterial extends SvrProcess
 	 * @param element MCostElement
 	 * @return Cost Price Lower Level
 	 */
-	private BigDecimal getCurrentCostPriceLL(MPPProductBOM bom, MCostElement element)
+	private BigDecimal getCurrentCostPriceLL(MPPProductBOM bom, I_M_CostElement element)
 	{
 		log.info("Element: "+ element);
 		BigDecimal costPriceLL = Env.ZERO;
@@ -260,17 +262,17 @@ public class RollupBillOfMaterial extends SvrProcess
 			}
 			//
 			MProduct component = MProduct.get(getCtx(), bomline.getM_Product_ID());
-			// get the rate for this resource     
-			for (MCost cost : getCosts(component, element.get_ID()))
-			{                 
+			// get the rate for this resource
+			for (MCost cost : getCosts(component, element.getM_CostElement_ID()))
+			{
 				BigDecimal qty = bomline.getQty(true);
-				
+
 				// ByProducts
 				if (bomline.isByProduct())
 				{
 					cost.setCurrentCostPriceLL(Env.ZERO);
 				}
-				
+
 				BigDecimal costPrice = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
 				BigDecimal componentCost = costPrice.multiply(qty);
 				costPriceLL = costPriceLL.add(componentCost);
@@ -282,7 +284,7 @@ public class RollupBillOfMaterial extends SvrProcess
 						+ " => Total Cost Element: " +  costPriceLL);
 			} // for each cost
 		} // for each BOM line
-		return costPriceLL;     
+		return costPriceLL;
 	}
 
 	private Collection<MCost> getCosts(MProduct product, int M_CostElement_ID)
@@ -300,15 +302,15 @@ public class RollupBillOfMaterial extends SvrProcess
 		;
 		params.add(getAD_Client_ID());
 		params.add(lowLevel);
-		
+
 		whereClause.append(" AND ").append(MProduct.COLUMNNAME_IsBOM).append("=?");
 		params.add(true);
 
 		if (p_M_Product_ID > 0)
-		{  
+		{
 			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
-		}		
+		}
 		else if (p_M_Product_Category_ID > 0)
 		{
 			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_Category_ID).append("=?");
@@ -324,9 +326,9 @@ public class RollupBillOfMaterial extends SvrProcess
 		.setParameters(params)
 		.list();
 	}
-	
+
 	/**
-	 * Reset LowLevel Costs for products with LowLevel=0 (items) 
+	 * Reset LowLevel Costs for products with LowLevel=0 (items)
 	 */
 	private void resetCostsLLForLLC0()
 	{
@@ -336,10 +338,10 @@ public class RollupBillOfMaterial extends SvrProcess
 		params.add(getAD_Client_ID());
 		params.add(0);
 		if (p_M_Product_ID > 0)
-		{  
+		{
 			productWhereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
-		}		
+		}
 		else if (p_M_Product_Category_ID > 0)
 		{
 			productWhereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_Category_ID).append("=?");
@@ -352,9 +354,9 @@ public class RollupBillOfMaterial extends SvrProcess
 		int no = DB.executeUpdateEx(sql, params.toArray(), get_TrxName());
 		log.info("Updated #"+no);
 	}
-	
-	private Collection<MCostElement> m_costElements = null; 
-	private Collection<MCostElement> getCostElements()
+
+	private Collection<I_M_CostElement> m_costElements = null;
+	private Collection<I_M_CostElement> getCostElements()
 	{
 		if (m_costElements == null)
 		{

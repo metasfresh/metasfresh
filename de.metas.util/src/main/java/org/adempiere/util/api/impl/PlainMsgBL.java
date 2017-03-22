@@ -10,23 +10,25 @@ package org.adempiere.util.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Arrays;
 import java.util.Properties;
 
 import org.adempiere.util.api.IMsgBL;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 public class PlainMsgBL implements IMsgBL
 {
@@ -37,19 +39,19 @@ public class PlainMsgBL implements IMsgBL
 	}
 
 	@Override
-	public String getMsg(Properties ctx, String adMessage)
+	public String getMsg(final Properties ctx, final String adMessage)
 	{
 		return adMessage;
 	}
 
 	@Override
-	public String getMsg(Properties ctx, String adMessage, boolean text)
+	public String getMsg(final Properties ctx, final String adMessage, final boolean text)
 	{
 		return adMessage + "_" + (text ? "Text" : "Tooltip");
 	}
 
 	@Override
-	public String getMsg(Properties ctx, String adMessage, Object[] params)
+	public String getMsg(final Properties ctx, final String adMessage, final Object[] params)
 	{
 		return adMessage + "_" + Arrays.toString(params);
 	}
@@ -67,8 +69,20 @@ public class PlainMsgBL implements IMsgBL
 	}
 
 	@Override
-	public String translate(Properties ctx, String text, boolean isSOTrx)
+	public String translate(final Properties ctx, final String text, final boolean isSOTrx)
 	{
 		return text;
+	}
+
+	@Override
+	public ITranslatableString translatable(final String text)
+	{
+		return ImmutableTranslatableString.constant(text);
+	}
+
+	@Override
+	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
+	{
+		return ImmutableTranslatableString.constant(adMessage);
 	}
 }

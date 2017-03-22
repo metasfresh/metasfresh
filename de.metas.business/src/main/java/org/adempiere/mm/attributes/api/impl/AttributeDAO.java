@@ -13,21 +13,19 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -53,6 +51,8 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
@@ -90,7 +90,7 @@ public class AttributeDAO implements IAttributeDAO
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
 		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
-		return new ArrayList<I_M_AttributeValue>(map.values());
+		return new ArrayList<>(map.values());
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// search by Value
 		final I_M_AttributeValue avDirect = map.get(value);
-		
+
 		if (avDirect != null)
 		{
 			return avDirect;
@@ -138,7 +138,7 @@ public class AttributeDAO implements IAttributeDAO
 		// NOTE:
 		// * atm we assume if we have a validation rule, we are dealing with high volume lists
 		// * in future, maybe we could add a flag for that (or something)
-		// * atm, the only case/example that we have is the "Karoten ID" from 
+		// * atm, the only case/example that we have is the "Karoten ID" from
 		return attribute.getAD_Val_Rule_ID() > 0;
 	}
 
@@ -276,17 +276,17 @@ public class AttributeDAO implements IAttributeDAO
 
 		if (list.isEmpty())
 		{
-			return Collections.emptyMap();
+			return ImmutableMap.of();
 		}
 
-		final Map<String, I_M_AttributeValue> value2attributeValues = new LinkedHashMap<String, I_M_AttributeValue>(list.size());
+		final ImmutableMap.Builder<String, I_M_AttributeValue> value2attributeValues = ImmutableMap.builder();
 		for (final I_M_AttributeValue av : list)
 		{
 			final String value = av.getValue();
 			value2attributeValues.put(value, av);
 		}
 
-		return Collections.unmodifiableMap(value2attributeValues);
+		return value2attributeValues.build();
 	}
 
 	@Override
@@ -385,10 +385,22 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_AttributeSetInstance copy(final I_M_AttributeSetInstance asi)
 	{
+		final int overrideM_AttributeSet_ID = -1;
+		return copy(asi, overrideM_AttributeSet_ID);
+	}
+
+	@Override
+	public I_M_AttributeSetInstance copy(final I_M_AttributeSetInstance asi, final int overrideM_AttributeSet_ID)
+	{
 		Check.assumeNotNull(asi, "asi not null");
 
 		final I_M_AttributeSetInstance asiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class, asi);
 		InterfaceWrapperHelper.copyValues(asi, asiNew, true); // honorIsCalculated=true
+		if(overrideM_AttributeSet_ID > 0)
+		{
+			asiNew.setM_AttributeSet_ID(overrideM_AttributeSet_ID);
+		}
+		
 		InterfaceWrapperHelper.save(asiNew);
 
 		for (final I_M_AttributeInstance ai : retrieveAttributeInstances(asi))

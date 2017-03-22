@@ -44,6 +44,10 @@ CREATE TYPE "de.metas.handlingunits".HUAttributes AS
   --
   , isQualityInspection_Attribute_ID numeric(10)
   , isQualityInspection_Value character varying(255)
+  
+  , QualityInspectionCycle_Attribute_id numeric(10)
+  , QualityInspectionCycle_Value character varying(255)
+  , QualityInspectionCycle_Name character varying(60)
 );
 
 create or replace function "de.metas.handlingunits".getHUAttributes(p_M_HU_ID numeric, p_FillPurchaseDocInfo boolean default false)
@@ -127,6 +131,12 @@ begin
 		elsif (v_hua.AttributeCode = 'IsQualityInspection') then
 			v_result.isQualityInspection_Attribute_ID = v_hua.M_Attribute_ID;
 			v_result.isQualityInspection_Value = v_hua.Value;
+		--
+		-- QualityInspectionCycle
+		elsif (v_hua.AttributeCode = 'QualityInspectionCycle') then
+			v_result.QualityInspectionCycle_Attribute_id = v_hua.M_Attribute_ID;
+			v_result.QualityInspectionCycle_Value = v_hua.Value;
+			v_result.QualityInspectionCycle_Name = v_hua.ValueName;
 		end if;
 	end loop;
 	

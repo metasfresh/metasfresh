@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.propagation.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
@@ -118,6 +119,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 		// Check which of our child attributes are aware of propagation and build a list with them
 		final List<IAttributeStorage> childrenAttributeSets = new ArrayList<IAttributeStorage>(childrenAttributeSetsAll.size());
 		final List<IHUAttributePropagator> childrenAttributeSetPropagators = new ArrayList<IHUAttributePropagator>(childrenAttributeSetsAll.size());
+		
 		for (final IAttributeStorage childAttributeSet : childrenAttributeSetsAll)
 		{
 			IHUAttributePropagator childPropagator = propagationContext.getPropagator();
@@ -176,7 +178,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 			if (childAttributeSet.hasAttribute(attribute))
 			{
 				final Object valueSet = childAttributeSet.getValue(attribute);
-				if (Check.equals(valueSet, result.getSplitValue()))
+				if (Objects.equals(valueSet, result.getSplitValue()))
 				{
 					remainingValue = result.getRemainingValue();
 				}

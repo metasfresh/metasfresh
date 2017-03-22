@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -91,5 +92,10 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 
 	void updateAllocationLUForTU(I_M_HU tuHU);
 
+	/**
+	 * 
+	 * @param vhu may not be {@code null} and has to be a virtual HU according to {@link IHandlingUnitsBL#isVirtual(I_M_HU)}
+	 * @return
+	 */
 	I_M_ReceiptSchedule retrieveReceiptScheduleForVHU(I_M_HU vhu);
 }

@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.junit.Assert;
@@ -383,8 +381,10 @@ public class HUIteratorTest extends AbstractHUTest
 
 	private I_M_HU createHU(final String name, final I_M_HU_PI huPI, final I_M_HU parent)
 	{
+		final IHUContext huContext = helper.getHUContext();
+		
 		//
-		// Search on which parent item to link to
+		// Search or create the parent item to link to
 		I_M_HU_Item parentItemToUse = null;
 		if (parent != null)
 		{
@@ -400,18 +400,18 @@ public class HUIteratorTest extends AbstractHUTest
 
 			if (parentItemToUse == null)
 			{
-				throw new AdempiereException("No HU Item line was found in " + parent);
+				final I_M_HU_PI_Item piItemForTU = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(parent, huPI, huContext);
+				parentItemToUse = handlingUnitsDAO.createHUItem(parent, piItemForTU);
 			}
 		}
 
-		final IHUContext huContext = helper.getHUContext();
 		final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext);
 		huBuilder.setM_HU_Item_Parent(parentItemToUse);
 		huBuilder.setC_BPartner(null); // no BP available in our test
 		final I_M_HU hu = huBuilder.create(huPI);
-
+		
 		POJOWrapper.setInstanceName(hu, name);
-
+		
 		return hu;
 	}
 }

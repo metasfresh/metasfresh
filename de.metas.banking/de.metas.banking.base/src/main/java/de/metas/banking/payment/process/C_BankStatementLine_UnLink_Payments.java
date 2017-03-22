@@ -7,12 +7,12 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import de.metas.document.engine.IDocActionBL;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_BankStatementLine_UnLink_Payments extends SvrProcess
+public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 {
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);

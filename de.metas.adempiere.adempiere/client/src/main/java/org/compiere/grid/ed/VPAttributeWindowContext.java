@@ -97,12 +97,6 @@ import org.compiere.util.Env;
 	}
 
 	@Override
-	public int getM_ProductBOM_ID()
-	{
-		return getContextAsInt("M_ProductBOM_ID");
-	}
-
-	@Override
 	public boolean isSOTrx()
 	{
 		return Env.isSOTrx(ctx, windowNo);
@@ -112,12 +106,6 @@ import org.compiere.util.Env;
 	public Boolean getSOTrx()
 	{
 		return Env.getSOTrxOrNull(ctx, windowNo);
-	}
-
-	@Override
-	public int getM_AttributeSet_ID()
-	{
-		return getContextAsInt("M_AttributeSet_ID");
 	}
 
 	@Override

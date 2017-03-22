@@ -77,6 +77,7 @@ public class MTree extends MTree_Base
 		m_editable = false;
 		m_allNodes = true;
 		m_clientTree = true;
+		_adLanguage = null; 
 		_userRolePermissions = null;
 	}   // MTree
 
@@ -86,6 +87,7 @@ public class MTree extends MTree_Base
 		m_editable = builder.isEditable();
 		m_allNodes = builder.isAllNodes();
 		m_clientTree = builder.isClientTree();
+		_adLanguage = builder.getAD_Language();
 		_userRolePermissions = builder.getUserRolePermissions();
 		reload();
 	}   // MTree
@@ -94,6 +96,7 @@ public class MTree extends MTree_Base
 	private final boolean m_editable;
 	private final boolean m_allNodes;
 	private final boolean m_clientTree;
+	private final String _adLanguage;
 	private final IUserRolePermissions _userRolePermissions;
 
 	/** Root Node */
@@ -119,7 +122,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultAD_Tree_ID(final int AD_Client_ID, final String keyColumnName)
 	{
-		s_log.info(keyColumnName);
+		s_log.trace("Getting default AD_Tree_ID for AD_Client_ID={}, keyColumnName={}", AD_Client_ID, keyColumnName);
 		if (keyColumnName == null || keyColumnName.length() == 0)
 		{
 			return 0;
@@ -139,7 +142,7 @@ public class MTree extends MTree_Base
 		//
 		if (TreeType == null)
 		{
-			s_log.error("Could not map " + keyColumnName);
+			s_log.error("Could not map {}", keyColumnName);
 			return 0;
 		}
 
@@ -181,7 +184,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultByTableName(final int AD_Client_ID, final String tableName)
 	{
-		s_log.trace("TableName=" + tableName);
+		s_log.trace("TableName={}", tableName);
 		if (tableName == null)
 		{
 			return 0;
@@ -230,7 +233,7 @@ public class MTree extends MTree_Base
 			sql.append(" AND tn.IsActive='Y'");
 		}
 		sql.append(" ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
-		log.trace(sql.toString());
+		log.trace("sql: {}", sql);
 
 		// The Node Loop
 		PreparedStatement pstmt = null;
@@ -271,7 +274,7 @@ public class MTree extends MTree_Base
 		}
 		catch (final SQLException e)
 		{
-			log.error(sql.toString(), e);
+			log.error("", e);
 			m_nodeRowSet = null;
 			m_nodeIdMap = null;
 		}
@@ -312,7 +315,7 @@ public class MTree extends MTree_Base
 		// Nodes w/o parent
 		if (!m_buffer.isEmpty())
 		{
-			log.error("Nodes w/o parent - adding to root - " + m_buffer);
+			log.error("Nodes w/o parent - adding to root - {}", m_buffer);
 			for (int i = 0; i < m_buffer.size(); i++)
 			{
 				final MTreeNode node = m_buffer.get(i);
@@ -327,7 +330,7 @@ public class MTree extends MTree_Base
 			}
 			if (!m_buffer.isEmpty())
 			{
-				log.error("Still nodes in Buffer - " + m_buffer);
+				log.error("Still nodes in Buffer - {}", m_buffer);
 			}
 		}    	// nodes w/o parents
 
@@ -337,9 +340,9 @@ public class MTree extends MTree_Base
 			trimTree();
 		}
 		// diagPrintTree();
-		if (LogManager.isLevelFinest() || m_root.getChildCount() == 0)
+		if (log.isDebugEnabled() || m_root.getChildCount() == 0)
 		{
-			log.debug("ChildCount=" + m_root.getChildCount());
+			log.debug("ChildCount={}", m_root.getChildCount());
 		}
 	}   // loadNodes
 
@@ -405,10 +408,9 @@ public class MTree extends MTree_Base
 				{
 					newNode.add(node);
 				}
-				catch (final Exception e)
+				catch (final Exception ex)
 				{
-					log.error("Adding " + node.getName()
-							+ " to " + newNode.getName() + ": " + e.getMessage());
+					log.error("Failed adding {} to {}", node.getName(), newNode.getName(), ex);
 				}
 				m_buffer.remove(i);
 				i--;
@@ -696,6 +698,15 @@ public class MTree extends MTree_Base
 	{
 		return m_clientTree;
 	}
+	
+	public final String getAD_Language()
+	{
+		if(_adLanguage == null)
+		{
+			return Env.getAD_Language(getCtx());
+		}
+		return _adLanguage;
+	}
 
 	private void reload()
 	{
@@ -708,7 +719,7 @@ public class MTree extends MTree_Base
 		{
 			AD_User_ID = getUserRolePermissions().getAD_User_ID();
 		}
-		log.info("AD_User_ID={}", AD_User_ID);
+		log.trace("Reloaded tree for AD_User_ID={}", AD_User_ID);
 		loadNodes(AD_User_ID);
 	}
 
@@ -729,6 +740,7 @@ public class MTree extends MTree_Base
 		private boolean clientTree;
 		private boolean allNodes = false;
 		private String trxName = ITrx.TRXNAME_None;
+		private String adLanguage = null;
 		private IUserRolePermissions userRolePermissions;
 
 		private Builder()
@@ -835,6 +847,21 @@ public class MTree extends MTree_Base
 		public boolean isAllNodes()
 		{
 			return allNodes;
+		}
+		
+		public Builder setLanguage(final String adLanguage)
+		{
+			this.adLanguage = adLanguage;
+			return this;
+		}
+		
+		private String getAD_Language()
+		{
+			if(adLanguage == null)
+			{
+				return Env.getAD_Language(getCtx());
+			}
+			return adLanguage;
 		}
 	}
 }   // MTree

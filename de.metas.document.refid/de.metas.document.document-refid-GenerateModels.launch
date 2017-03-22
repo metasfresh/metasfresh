@@ -15,5 +15,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${workspace_loc:de.metas.document.document-refid}/src/main/java-gen/de/metas/document/refid/model/&#13;&#10;de.metas.document.refid.model&#13;&#10;'de.metas.document.refid'"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="fresh_ad_it"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:de.metas.endcustomer.mf15}/metasfresh.properties"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-dist}/metasfresh.properties"/>
 </launchConfiguration>

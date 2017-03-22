@@ -23,14 +23,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -40,7 +40,7 @@ import org.compiere.util.Env;
  * 
  * Based on org.compiere.process.InvoiceGenerate
  */
-public class InvoiceGenerateRMA extends SvrProcess
+public class InvoiceGenerateRMA extends JavaProcess
 {
     /** Manual Selection        */
     private boolean     p_Selection = false;
@@ -58,7 +58,7 @@ public class InvoiceGenerateRMA extends SvrProcess
     protected void prepare()
     {
         
-        ProcessInfoParameter[] para = getParameter();
+        ProcessInfoParameter[] para = getParametersAsArray();
         for (int i = 0; i < para.length; i++)
         {
             String name = para[i].getParameterName();

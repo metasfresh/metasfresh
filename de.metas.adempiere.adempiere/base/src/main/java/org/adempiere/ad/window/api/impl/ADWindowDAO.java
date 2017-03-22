@@ -15,11 +15,11 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,24 +53,30 @@ public class ADWindowDAO implements IADWindowDAO
 	public String retrieveWindowName(final int adWindowId)
 	{
 		final Properties ctx = Env.getCtx();
-		final I_AD_Window window = retrieveWindow(ctx, adWindowId); // using a simple DB call would be faster, but this way it's less coupled and after all we have caching
-		return window.getName();
+		return retrieveWindowNameCached(ctx, adWindowId);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	public I_AD_Window retrieveWindow(
+	public String retrieveWindowNameCached(
 			@CacheCtx final Properties ctx,
 			final int adWindowId)
 	{
+		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
+		
 		final I_AD_Window window = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Window.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
 				.firstOnly(I_AD_Window.class);
-
-		return window;
+		
+		if(window == null)
+		{
+			return null;
+		}
+		
+		final I_AD_Window windowTrl = InterfaceWrapperHelper.translate(window, I_AD_Window.class);
+		return window.getName();
 	}
 
 	@Override
@@ -274,4 +280,15 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.save(uiElement);
 	}
 
+	@Override
+	public I_AD_Tab retrieveFirstTab(final I_AD_Window window)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Tab.class, window)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, window.getAD_Window_ID())
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
+				.create()
+				.firstOnly(I_AD_Tab.class);
+	}
 }

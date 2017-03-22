@@ -1,0 +1,6 @@
+
+-- 16.11.2016 18:41
+-- URL zum Konzept
+UPDATE AD_Table SET AD_Window_ID=540231,Updated=TO_TIMESTAMP('2016-11-16 18:41:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540620
+;
+

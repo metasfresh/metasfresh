@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-14T14:16:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.593742460100013"/>
 	<property name="ireport.x" value="343"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -24,19 +28,21 @@
 FROM
 	C_OrderLine ol
 	INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
-	INNER JOIN C_BPartner_Location bpl ON ol.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID
+	INNER JOIN C_BPartner_Location bpl ON ol.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
 	INNER JOIN
 	(
 		SELECT MIN(PickingSlot) as PickingSlot, C_BPartner_Location_ID
 		FROM M_PickingSlot
+		WHERE isActive = 'Y'
 		GROUP BY C_BPartner_Location_ID
 	) ps ON bpl.C_BPartner_Location_ID = ps.C_BPartner_Location_ID
-	INNER JOIN M_Product p ON ol.M_Product_ID = p.M_product_ID
+	INNER JOIN M_Product p ON ol.M_Product_ID = p.M_product_ID AND p.isActive = 'Y'
 WHERE
 	o.DatePromised::date = $P{DatePromised}::date
 	AND ($P{dateNullCheck} = 'Y' OR $P{DateOrdered}::date = o.DateOrdered )
 	AND ($P{C_BPartner_ID} = 0 OR $P{C_BPartner_ID} = o.C_BPartner_ID )
 	AND o.DocStatus IN ('CO', 'CL') AND o.isActive = 'Y'
+	AND ol.isActive = 'Y'
 GROUP BY
 	p.name, p.upc, pickingslot, bpl.gln, bpl.name
 ORDER BY
@@ -58,42 +64,42 @@ ORDER BY
 	<pageHeader>
 		<band height="13" splitType="Stretch">
 			<staticText>
-				<reportElement uuid="522095b6-8b2d-433e-81d5-ec18245387ed" x="0" y="0" width="158" height="13"/>
+				<reportElement x="0" y="0" width="158" height="13" uuid="522095b6-8b2d-433e-81d5-ec18245387ed"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[ARTBEZ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="5427291e-89be-4e15-a4dd-b15a913420ca" x="339" y="0" width="60" height="13"/>
+				<reportElement x="339" y="0" width="60" height="13" uuid="5427291e-89be-4e15-a4dd-b15a913420ca"/>
 				<textElement textAlignment="Center" markup="none">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Shop-4stellig]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="aeb737f5-4103-44f2-862e-e1fd2a66c6bb" x="159" y="0" width="41" height="13"/>
+				<reportElement x="159" y="0" width="41" height="13" uuid="aeb737f5-4103-44f2-862e-e1fd2a66c6bb"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Menge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="a9e93955-aa39-4d97-bdde-1a39cad09494" x="200" y="0" width="75" height="13"/>
+				<reportElement x="200" y="0" width="75" height="13" uuid="a9e93955-aa39-4d97-bdde-1a39cad09494"/>
 				<textElement markup="none">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[EANCU]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="efd5ca02-2369-4455-a460-ff4d400e7707" x="275" y="0" width="64" height="13"/>
+				<reportElement x="275" y="0" width="64" height="13" uuid="efd5ca02-2369-4455-a460-ff4d400e7707"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Gestell-Nr.:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="87e44212-9db3-4e95-8018-68b8c063c3ee" x="401" y="0" width="152" height="13"/>
+				<reportElement x="401" y="0" width="152" height="13" uuid="87e44212-9db3-4e95-8018-68b8c063c3ee"/>
 				<textElement markup="none">
 					<font size="9"/>
 				</textElement>
@@ -107,42 +113,42 @@ ORDER BY
 	<detail>
 		<band height="13" splitType="Stretch">
 			<textField>
-				<reportElement uuid="2e3f9094-1e41-46e5-b1a8-e3d64b33a52b" x="0" y="0" width="158" height="13"/>
+				<reportElement x="0" y="0" width="158" height="13" uuid="2e3f9094-1e41-46e5-b1a8-e3d64b33a52b"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3e4babb9-badf-41e4-bc0e-31ba8cc44217" x="159" y="0" width="41" height="13"/>
+				<reportElement x="159" y="0" width="41" height="13" uuid="3e4babb9-badf-41e4-bc0e-31ba8cc44217"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="afc29e99-8dfc-4702-b829-203c59e3d55e" x="200" y="0" width="75" height="13"/>
+				<reportElement x="200" y="0" width="75" height="13" uuid="afc29e99-8dfc-4702-b829-203c59e3d55e"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{upc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0776d627-641e-4056-b333-798fe67ba673" x="275" y="0" width="64" height="13"/>
+				<reportElement x="275" y="0" width="64" height="13" uuid="0776d627-641e-4056-b333-798fe67ba673"/>
 				<textElement textAlignment="Center">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold" />
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pickingslot}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0add1fb1-10be-4214-b32e-13dd86a07e54" x="339" y="0" width="60" height="13"/>
+				<reportElement x="339" y="0" width="60" height="13" uuid="0add1fb1-10be-4214-b32e-13dd86a07e54"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gln}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="cb9fe877-e846-4354-aae0-15d951de318d" x="401" y="0" width="152" height="13"/>
+				<reportElement x="401" y="0" width="152" height="13" uuid="cb9fe877-e846-4354-aae0-15d951de318d"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-02-08T14:26:46 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="226" pageHeight="136" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -16,70 +20,8 @@
 		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	tu.created::date,
-	tu.value,
-	av_adr.name AS AdR,
-	COALESCE ( tua_ori.origin, '') || COALESCE ( av_adr.name, '') AS Attributes,
-	tua_gew.valuenumber as weight,
-	p.name
-FROM
-	M_HU tu
-	/** Get Product */
-	INNER JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID
-	INNER JOIN M_Product p ON tus.M_Product_ID = p.M_Product_ID
-
-	/** Get AdR Attribute */
-	LEFT OUTER JOIN M_HU_Attribute tua_adr ON tu.M_HU_ID = tua_adr.M_HU_ID
-		AND tua_adr.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = '1000015')) --AdR
-	LEFT OUTER JOIN M_AttributeValue av_adr ON tua_adr.value = av_adr.Value AND tua_adr.M_Attribute_ID = av_adr.M_Attribute_ID
-		AND av_adr.name NOT ILIKE '%keine%leer%' -- AdR = "Keine/Leer" means "no AdR" and shall not be displayed
-	/** Get weight Attibute */
-	LEFT OUTER JOIN M_HU_Attribute tua_gew ON tu.M_HU_ID = tua_gew.M_HU_ID
-		AND tua_gew.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'WeightNet')) -- Gewicht Netto
-	/** Get Product Origin */
-	LEFT OUTER JOIN (
-		SELECT
-			M_HU_ID,
-			String_agg( Product_Origin, ', ' ORDER BY Product_Origin ) AS Origin
-		FROM
-			(
-				SELECT DISTINCT
-					tu.M_HU_ID,
-					TRIM( substring( p.name, 1, 4 ) || ' ' || COALESCE( substring( av.name, 1, 3 ), '' ) ) AS Product_Origin
-				FROM
-					M_HU tu
-					LEFT OUTER JOIN M_HU_Item lui ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID
-					LEFT OUTER JOIN M_HU lu ON lu.M_HU_ID = lui.M_HU_ID
-					LEFT OUTER JOIN M_HU_PI_Version piv ON piv.M_HU_PI_Version_ID=lu.M_HU_PI_Version_ID
-					LEFT OUTER JOIN M_HU thu ON thu.M_HU_ID = COALESCE (lu.M_HU_ID, tu.M_HU_ID)
-					/** Get component HUs and their "Herkunft" attribute */
-					INNER JOIN M_HU_Assignment hf_a ON hf_a.M_HU_ID = thu.M_HU_ID
-						AND hf_a.AD_Table_ID = ((SELECT get_table_id( 'PP_Order' )))
-					INNER JOIN PP_Order mo ON hf_a.Record_ID = mo.PP_Order_ID
-					LEFT OUTER JOIN PP_Order_BOM mob ON mo.PP_Order_ID = mob.PP_Order_ID
-					LEFT OUTER JOIN PP_Order_BOMLine mobl ON mob.PP_Order_BOM_ID = mobl.PP_Order_BOM_ID
-						AND componentType IN ('CO', 'VA')
-					-- This join does not work currently, because the HU Assignments are not created but there is a workaround
-					/*LEFT OUTER JOIN M_HU_Assignment bom_a ON mobl.PP_Order_BOMLine_ID = bom_a.Record_ID
-						AND bom_a.AD_Table_ID = ((SELECT get_table_id( 'PP_Order_BOMLine' )))*/
-					-- Workaround start
-					LEFT OUTER JOIN M_HU_Trx_Line hutl ON mobl.PP_Order_BOMLine_ID = hutl.Record_ID
-						AND hutl.AD_Table_ID = ((SELECT get_table_id( 'PP_Order_BOMLine' )))
-					LEFT OUTER JOIN M_HU_Trx_Line bom_a ON hutl.Parent_HU_Trx_line_ID = bom_a.M_HU_Trx_line_ID
-					-- Workaround end
-					LEFT OUTER JOIN M_HU c_hu ON bom_a.M_HU_ID = c_hu.M_HU_ID
-					LEFT OUTER JOIN M_HU_Storage c_hus ON c_hu.M_HU_ID = c_hus.M_HU_ID
-					LEFT OUTER JOIN M_Product p ON c_hus.M_Product_ID = p.M_Product_ID
-					LEFT OUTER JOIN M_HU_Attribute c_hua ON c_hu.M_HU_ID = c_hua.M_HU_ID
-						AND c_hua.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = '1000001')) --Herkunft
-					LEFT OUTER JOIN M_AttributeValue av ON c_hua.value = av.Value AND c_hua.M_Attribute_ID = av.M_Attribute_ID
-			) a
-		GROUP BY
-			M_HU_ID
-	) tua_ori ON tu.M_HU_ID = tua_ori.M_HU_ID
-WHERE
-	tu.M_HU_ID = $P{M_HU_ID}
+		<![CDATA[SELECT * FROM report.intermediate_product_label($P{M_HU_ID})
+ORDER BY value
 ;]]>
 	</queryString>
 	<field name="created" class="java.sql.Date"/>
@@ -88,18 +30,18 @@ WHERE
 	<field name="attributes" class="java.lang.String"/>
 	<field name="weight" class="java.math.BigDecimal"/>
 	<field name="name" class="java.lang.String"/>
-	<title>
-		<band height="124" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
+	<detail>
+		<band height="124">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement uuid="0ed57ae5-5609-48ed-bcb5-00f7552cb3c9" x="23" y="7" width="92" height="11"/>
+				<reportElement x="23" y="7" width="92" height="11" uuid="0ed57ae5-5609-48ed-bcb5-00f7552cb3c9"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Produktionsdatum]]></text>
 			</staticText>
 			<image scaleImage="FillFrame" hAlign="Center">
-				<reportElement uuid="d04727b7-1619-46f2-8623-f9f5d1c8ac73" x="57" y="18" width="150" height="30">
+				<reportElement x="57" y="18" width="150" height="30" uuid="d04727b7-1619-46f2-8623-f9f5d1c8ac73">
 					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
 				</reportElement>
 				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
@@ -107,68 +49,68 @@ $F{value} +
 "&Format=CODE_128&Width=300&Height=60" )]]></imageExpression>
 			</image>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement uuid="aa2f9d6c-354d-460b-8b09-0cbf84de7142" x="114" y="7" width="93" height="11"/>
+				<reportElement x="114" y="7" width="93" height="11" uuid="aa2f9d6c-354d-460b-8b09-0cbf84de7142"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{created}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c" x="23" y="17" width="38" height="11"/>
+				<reportElement x="23" y="17" width="38" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[HU-Nr.]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="40678aa3-48b0-4931-85a7-ad01df324e6c" x="57" y="47" width="150" height="15"/>
+				<reportElement x="57" y="47" width="150" height="15" uuid="40678aa3-48b0-4931-85a7-ad01df324e6c"/>
 				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
 					<font size="11" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c" x="24" y="61" width="54" height="11"/>
+				<reportElement x="24" y="61" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="161366fe-7402-440e-aa7e-167586bc37e1" x="78" y="61" width="129" height="11"/>
+				<reportElement x="78" y="61" width="129" height="11" uuid="161366fe-7402-440e-aa7e-167586bc37e1"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="bffd078e-9054-4b11-8deb-c738df080432" x="78" y="71" width="129" height="34"/>
+				<reportElement x="78" y="71" width="129" height="34" uuid="bffd078e-9054-4b11-8deb-c738df080432"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c" x="24" y="71" width="54" height="11"/>
+				<reportElement x="24" y="71" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Merkmale]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="22681de0-3133-4b81-9de4-ca722ec8a182" x="78" y="104" width="129" height="11"/>
+				<reportElement x="78" y="104" width="129" height="11" uuid="22681de0-3133-4b81-9de4-ca722ec8a182"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight} + " kg"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c" x="24" y="104" width="54" height="11"/>
+				<reportElement x="24" y="104" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Gewicht]]></text>
 			</staticText>
 		</band>
-	</title>
+	</detail>
 </jasperReport>

@@ -717,28 +717,18 @@ public class SwingTerminalFactory implements ITerminalFactory
 	}
 
 	@Override
-	public ITerminalDialog createModalDialog(final IComponent parent, final String title, final IComponent content)
-	{
-		final boolean maintainOwnContextReferences = true; // the default
-		return createModalDialog(parent, title, content, maintainOwnContextReferences);
-	}
-
-	@Override
 	public ITerminalDialog createModalDialog(
 			final IComponent parent,
 			final String title,
-			final IComponent content,
-			final boolean maintainOwnContextReferences)
+			final IComponent content)
 	{
-		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content, maintainOwnContextReferences);
+		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content);
 		dialog.setTitle(title);
 
-		if (!maintainOwnContextReferences)
-		{
-			// only register if it does not maintain its own references, because otherwise, we would add 'dialog' to its own contextReferences which it just created in its constructor.
-			// that would lead to a stack overflow on dispose. Also check out the SwingTerminalDialog constructor for details.
-			addToDisposableComponents(dialog);
-		}
+		// only register if it does not maintain its own references, because otherwise, we would add 'dialog' to its own contextReferences which it just created in its constructor.
+		// that would lead to a stack overflow on dispose. Also check out the SwingTerminalDialog constructor for details.
+		addToDisposableComponents(dialog);
+
 		return dialog;
 	}
 

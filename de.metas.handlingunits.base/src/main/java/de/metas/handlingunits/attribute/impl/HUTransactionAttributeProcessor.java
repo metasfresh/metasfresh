@@ -233,7 +233,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 		// final String refObjTrxName = InterfaceWrapperHelper.getTrxName(referencedObject);
 		// final String huTrxAttrTrxName = InterfaceWrapperHelper.getTrxName(huTrxAttribute);
 
-		// Check.errorUnless(Check.equals(refObjTrxName, huTrxAttrTrxName),
+		// Check.errorUnless(Objects.equals(refObjTrxName, huTrxAttrTrxName),
 		// "The two objects have different trxNames: 'referencedObject'=>{}, 'huTrxAttribute'=>{}",
 		// refObjTrxName, huTrxAttrTrxName);
 	}

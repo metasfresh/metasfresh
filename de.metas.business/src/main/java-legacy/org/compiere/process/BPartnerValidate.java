@@ -34,6 +34,9 @@ import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Msg;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * Validate Business Partner
  * 
@@ -41,7 +44,7 @@ import org.compiere.util.Msg;
  * @version $Id: BPartnerValidate.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  *          FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
  */
-public class BPartnerValidate extends SvrProcess
+public class BPartnerValidate extends JavaProcess
 {
 	/** BPartner ID */
 	int p_C_BPartner_ID = 0;
@@ -55,7 +58,7 @@ public class BPartnerValidate extends SvrProcess
 	protected void prepare()
 	{
 		p_C_BPartner_ID = getRecord_ID();
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

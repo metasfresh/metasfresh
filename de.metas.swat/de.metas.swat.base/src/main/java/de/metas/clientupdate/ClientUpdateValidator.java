@@ -55,7 +55,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	/**
 	 * The "raw" unsubstituted version string from /de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties
 	 */
-	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_NUMBER}";
+	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_VERSION}";
 
 	public static final String PROP_adempiereJNLP = "adempiereJNLP";
 
@@ -141,7 +141,8 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 		final String clientVersion = Adempiere.getImplementationVersion();
 		Check.assumeNotNull(clientVersion, "Adempiere.getImplementationVersion() is not null");
 		if (clientVersion.endsWith(CLIENT_VERSION_UNPROCESSED)
-				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
+				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD)
+				|| clientVersion.endsWith(Adempiere.CLIENT_BRANCH_LOCAL_BUILD))
 		{
 			log.info("Adempiere ImplementationVersion=" + clientVersion + "! Not checking against DB");
 			return;

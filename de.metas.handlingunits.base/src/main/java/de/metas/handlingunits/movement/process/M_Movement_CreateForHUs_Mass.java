@@ -34,7 +34,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.SvrProcess;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.JavaProcess;
 
 /**
  * Move selected HUs to to {@link IHUMovementBL#getDirectMove_Warehouse(java.util.Properties, boolean)}.
@@ -50,7 +50,7 @@ import de.metas.process.RunOutOfTrx;
  * @author tsa
  *
  */
-public class M_Movement_CreateForHUs_Mass extends SvrProcess
+public class M_Movement_CreateForHUs_Mass extends JavaProcess
 {
 	// services
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
@@ -144,7 +144,7 @@ public class M_Movement_CreateForHUs_Mass extends SvrProcess
 
 		try
 		{
-			final IContextAware context = PlainContextAware.createUsingOutOfTransaction(getCtx());
+			final IContextAware context = PlainContextAware.newOutOfTrx(getCtx());
 			final HUMovementBuilder movementBuilder = new HUMovementBuilder()
 					.setContextInitial(context)
 					.setWarehouseFrom(hu.getM_Locator().getM_Warehouse())

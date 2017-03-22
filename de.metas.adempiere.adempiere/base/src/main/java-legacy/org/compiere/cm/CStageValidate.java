@@ -17,8 +17,9 @@
 package org.compiere.cm;
 
 import org.compiere.model.MCStage;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Validate Container Stage
@@ -26,7 +27,7 @@ import org.compiere.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: CStageValidate.java,v 1.3 2006/07/30 00:51:06 jjanke Exp $
  */
-public class CStageValidate extends SvrProcess
+public class CStageValidate extends JavaProcess
 {
 	private int 	p_CM_CStage_ID = 0;
 	
@@ -35,7 +36,7 @@ public class CStageValidate extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

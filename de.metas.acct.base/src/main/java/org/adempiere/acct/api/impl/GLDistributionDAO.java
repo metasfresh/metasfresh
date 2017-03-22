@@ -51,7 +51,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_GL_Distribution.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyContextClientOrSystem()
-				.addInArrayFilter(I_GL_Distribution.COLUMN_Account_ID, null, elementValueId) // for given element value or without an element value
+				.addInArrayOrAllFilter(I_GL_Distribution.COLUMN_Account_ID, null, elementValueId) // for given element value or without an element value
 				//
 				.orderBy()
 				.addColumn(I_GL_Distribution.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last) // first, return those for our AD_Client_ID

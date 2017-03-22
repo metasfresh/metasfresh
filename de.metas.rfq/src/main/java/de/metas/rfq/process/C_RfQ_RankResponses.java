@@ -1,8 +1,8 @@
 package de.metas.rfq.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponseRankingStrategy;
 import de.metas.rfq.model.I_C_RfQ;
@@ -34,7 +34,7 @@ import de.metas.rfq.model.I_C_RfQ;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQ_RankResponses extends SvrProcess
+public class C_RfQ_RankResponses extends JavaProcess
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);

@@ -31,7 +31,8 @@ import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Singleton with generic methods for deferred processing of POs
@@ -66,6 +67,6 @@ public interface IProcessingService extends ISingletonService
 	 * @see ModelValidationEngine#fireModelChange(org.compiere.model.PO, int)
 	 * @see ModelValidator#TYPE_SUBSEQUENT
 	 */
-	void process(MADProcessablePO processablePO, SvrProcess parent);
+	void process(MADProcessablePO processablePO, JavaProcess parent);
 
 }

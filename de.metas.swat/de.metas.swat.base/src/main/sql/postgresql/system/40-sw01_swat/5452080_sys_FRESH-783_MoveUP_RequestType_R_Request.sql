@@ -1,0 +1,24 @@
+
+-- 20.10.2016 17:23
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNo=25, SeqNoGrid=25,Updated=TO_TIMESTAMP('2016-10-20 17:23:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5860
+;
+
+-- 20.10.2016 18:03
+-- URL zum Konzept
+UPDATE AD_Field SET AD_FieldGroup_ID=NULL,Updated=TO_TIMESTAMP('2016-10-20 18:03:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5858
+;
+
+-- 20.10.2016 18:03
+-- URL zum Konzept
+UPDATE AD_Field SET AD_FieldGroup_ID=NULL,Updated=TO_TIMESTAMP('2016-10-20 18:03:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5860
+;
+
+
+
+
+-- 20.10.2016 18:21
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNo=25, SeqNoGrid=25,Updated=TO_TIMESTAMP('2016-10-20 18:21:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5858
+;
+

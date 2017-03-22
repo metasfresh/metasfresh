@@ -21,8 +21,9 @@ import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -32,7 +33,7 @@ import org.compiere.process.SvrProcess;
  * @author Teo Sarca
  * 
  */
-public class MigrationMergeToFrom extends SvrProcess
+public class MigrationMergeToFrom extends JavaProcess
 {
 	private I_AD_Migration migrationFrom;
 	private I_AD_Migration migrationTo;
@@ -43,7 +44,7 @@ public class MigrationMergeToFrom extends SvrProcess
 	{
 		int migrationId = -1;
 		boolean isMergeTo = false;
-		for (ProcessInfoParameter p : getParameter())
+		for (ProcessInfoParameter p : getParametersAsArray())
 		{
 			String para = p.getParameterName();
 			if (para == null)

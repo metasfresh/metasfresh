@@ -73,13 +73,19 @@ import org.compiere.util.Trx;
 			else
 			{
 				if (vo.getResultSetConcurrency() == ResultSet.CONCUR_UPDATABLE)
+				{
 					m_conn = DB.getConnectionRW();
+				}
 				else
+				{
 					m_conn = DB.getConnectionRO();
+				}
 				conn = m_conn;
 			}
 			if (conn == null)
+			{
 				throw new DBNoConnectionException();
+			}
 			p_stmt = createStatement(conn, vo);
 		}
 		catch (SQLException e)

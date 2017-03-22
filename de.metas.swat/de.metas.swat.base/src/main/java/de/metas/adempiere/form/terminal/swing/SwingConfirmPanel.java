@@ -171,6 +171,8 @@ public class SwingConfirmPanel extends ConfirmPanel
 	@Override
 	public String toString()
 	{
-		return "SwingConfirmPanel [panel=" + panel + ", buttonsActionListener=" + buttonsActionListener + ", buttonSize=" + buttonSize + "]";
+		return "SwingConfirmPanel [panel=" + panel 
+				+ ", buttonsActionListener=" + buttonsActionListener
+				+ ", buttonSize=" + buttonSize + "]";
 	}
 }

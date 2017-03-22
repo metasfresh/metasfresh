@@ -16,6 +16,7 @@ WHERE true
 	AND ic.QTyToInvoice_Override IS NOT NULL 
 	AND ic.QTyToInvoice!=QTyToInvoice_Override
 	AND NOT EXISTS (select 1 from C_Invoice_Candidate_Recompute r where r.C_Invoice_Candidate_ID=ic.C_Invoice_Candidate_ID)
+	AND ic.SchedulerResult!='Auftrag hat zur Zeit den Status In Verarbeitung.'
 ;
 COMMENT ON VIEW de_metas_invoicecandidate.c_invoice_candidate_wrong_qtytoinvoice_v IS 
 'Selects ICs that have QtyToInvoice!=QtyToInvoice_Override and that have a processed order line, were last updated more than 10 minutes ago and are currently not flagged as invalid.';

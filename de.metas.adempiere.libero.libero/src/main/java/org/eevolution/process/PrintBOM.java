@@ -47,12 +47,11 @@ import java.util.Properties;
 import javax.sql.RowSet;
 
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -60,6 +59,8 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.X_T_BOMLine;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Multi-Level BOM & Formula Detail
@@ -68,7 +69,7 @@ import de.metas.logging.MetasfreshLastError;
  * @version $Id: PrintBOM.java,v 1.2 2005/04/19 12:54:30 srama Exp $
  * 
  */
-public class PrintBOM extends SvrProcess
+public class PrintBOM extends JavaProcess
 {
 	private static final Properties ctx = Env.getCtx();
 	private int p_M_Product_ID = 0;
@@ -84,7 +85,7 @@ public class PrintBOM extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{
@@ -162,7 +163,7 @@ public class PrintBOM extends SvrProcess
 		pf.setTranslationLanguage(language);
 		// query
 		MQuery query = MQuery.get(getCtx(), AD_PInstance_ID, X_RV_PP_Product_BOMLine_Table_Name);
-		query.addRestriction("AD_PInstance_ID", MQuery.EQUAL, AD_PInstance_ID);
+		query.addRestriction("AD_PInstance_ID", Operator.EQUAL, AD_PInstance_ID);
 
 		PrintInfo info = new PrintInfo(X_RV_PP_Product_BOMLine_Table_Name, 
 				X_RV_PP_Product_BOMLine_Table_ID, getRecord_ID());

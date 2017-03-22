@@ -34,8 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
@@ -157,7 +155,7 @@ public class DD_OrderLine
 		// QtyCU must remain the same
 		if (packingAware.getM_HU_PI_Item_Product_ID() <= 0)
 		{
-			packingAware.setQtyPacks(Env.ZERO);
+			packingAware.setQtyPacks(BigDecimal.ZERO);
 
 			return;
 		}
@@ -165,7 +163,7 @@ public class DD_OrderLine
 		// if there is no QtyTU set yet, it will be initially set to 1
 		if (packingAware.getQtyPacks().signum() <= 0)
 		{
-			packingAware.setQtyPacks(Env.ONE);
+			packingAware.setQtyPacks(BigDecimal.ONE);
 		}
 
 		// if the M_HU_PI_Item_Product was changed and the QtyTU was already set, change the CU accordingly

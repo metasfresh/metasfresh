@@ -6,6 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -75,7 +76,7 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 	public void publish(final RfQResponsePublisherRequest request)
 	{
 		Check.assumeNotNull(request, "request not null");
-		
+
 		for (final IRfQResponsePublisher publisher : publishers)
 		{
 			try
@@ -93,13 +94,13 @@ final class CompositeRfQResponsePublisher implements IRfQResponsePublisher
 
 	private void onSuccess(final IRfQResponsePublisher publisher, final RfQResponsePublisherRequest request)
 	{
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		final ILoggable loggable = Loggables.get();
 		loggable.addLog("OK - " + publisher.getDisplayName() + ": " + request.getSummary());
 	}
 
 	private void onException(final IRfQResponsePublisher publisher, final RfQResponsePublisherRequest request, final Exception ex)
 	{
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		final ILoggable loggable = Loggables.get();
 		loggable.addLog("@Error@ - " + publisher.getDisplayName() + ": " + ex.getMessage());
 
 		logger.warn("Publishing failed: publisher={}, request={}", publisher, request, ex);

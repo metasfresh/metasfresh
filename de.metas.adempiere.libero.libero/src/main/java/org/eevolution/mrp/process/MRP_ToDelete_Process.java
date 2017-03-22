@@ -24,9 +24,10 @@ package org.eevolution.mrp.process;
 
 
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.mrp.api.IMRPDocumentDeleteService;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Delete all documents which were flagged to be deleted
@@ -34,13 +35,13 @@ import org.eevolution.mrp.api.IMRPDocumentDeleteService;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08470_speed_up_MRP_cleanup_%28100715712605%29
  */
-public class MRP_ToDelete_Process extends SvrProcess
+public class MRP_ToDelete_Process extends JavaProcess
 {
 	private int p_DeleteLimit = -1;
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

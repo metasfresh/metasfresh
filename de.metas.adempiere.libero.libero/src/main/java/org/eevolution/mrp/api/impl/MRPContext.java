@@ -10,18 +10,17 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -43,6 +42,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.mrp.api.IMutableMRPContext;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /* package */final class MRPContext implements IMutableMRPContext
@@ -75,7 +75,7 @@ import de.metas.logging.LogManager;
 
 	private BigDecimal qtyProjectOnHand = BigDecimal.ZERO;
 
-	/* package */MRPContext()
+	/* package */ MRPContext()
 	{
 		super();
 	}
@@ -175,6 +175,15 @@ import de.metas.logging.LogManager;
 	public String getTrxName()
 	{
 		return trxName;
+	}
+
+	/**
+	 * Returns <code>false</code> because we are going to work a lot on MRP, so we should do it currectly from the start.
+	 */
+	@Override
+	public boolean isAllowThreadInherited()
+	{
+		return false;
 	}
 
 	@Override
@@ -482,4 +491,5 @@ import de.metas.logging.LogManager;
 	{
 		this.allowCleanup = allowCleanup;
 	}
+
 }

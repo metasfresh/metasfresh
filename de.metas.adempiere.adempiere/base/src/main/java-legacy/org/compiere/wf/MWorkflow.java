@@ -24,7 +24,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -32,15 +36,15 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MMenu;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_Workflow;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 
 /**
  *	WorkFlow Model
@@ -663,75 +667,46 @@ public class MWorkflow extends X_AD_Workflow
 	/**************************************************************************
 	 * 	Start Workflow.
 	 * 	@param pi Process Info (Record_ID)
-	 *  @deprecated
 	 *	@return process
 	 */
-	@Deprecated
-	public MWFProcess start (ProcessInfo pi)
+	public MWFProcess start (final ProcessInfo pi)
 	{
-		return start(pi, null);
-	}
-	
-	/**************************************************************************
-	 * 	Start Workflow.
-	 * 	@param pi Process Info (Record_ID)
-	 *	@return process
-	 */
-	public MWFProcess start (final ProcessInfo pi, final String trxName)
-	{
-		MWFProcess retValue = null;
-		String localTrxName = null;
-		Trx localTrx = null;
-		if (trxName == null)
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(ITrx.TRXNAME_ThreadInherited, new TrxCallable<MWFProcess>()
 		{
-			localTrxName = Trx.createTrxName("WFP", false);
-		}
-		try
-		{
-			DB.saveConstraints();
-			if(localTrxName != null)
+			@Override
+			public MWFProcess call() throws Exception
 			{
-				DB.getConstraints().addAllowedTrxNamePrefix(localTrxName);
-				localTrx = Trx.get(localTrxName, true);
+				final MWFProcess wfProcess = new MWFProcess(MWorkflow.this, pi, ITrx.TRXNAME_ThreadInherited);
+				InterfaceWrapperHelper.save(wfProcess);
+				pi.getResult().setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "Processing"));
+				wfProcess.startWork();
+				
+				return wfProcess;
 			}
-			retValue = new MWFProcess (this, pi, trxName != null ? trxName : localTrx.getTrxName());
-			retValue.save();
-			pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "Processing"));
-			retValue.startWork();
-			if (localTrx != null)
-				localTrx.commit(true);
-		}
-		catch (Exception e)
-		{
-			if (localTrx != null)
-				localTrx.rollback();
-			log.error(e.getLocalizedMessage(), e);
-			
-			pi.setThrowable(e); // 03152
-			pi.setSummary(e.getMessage(), true);
-			retValue = null;
-		}
-		finally 
-		{
-			DB.restoreConstraints();
-			
-			if (localTrx != null)
-				localTrx.close();
-		}
-		return retValue;
-	}	//	MWFProcess
+
+			@Override
+			public boolean doCatch(Throwable ex) throws Throwable
+			{
+				log.error("Failed starting workflow {} for {}", MWorkflow.this, pi, ex);
+				final ProcessExecutionResult result = pi.getResult();
+				result.markAsError(ex);
+				return ROLLBACK;
+			}
+		});
+	}
 
 	/**
 	 * 	Start Workflow and Wait for completion.
 	 * 	@param pi process info with Record_ID record for the workflow
 	 *	@return process
 	 */
-	public MWFProcess startWait (ProcessInfo pi)
+	public MWFProcess startWait (final ProcessInfo pi)
 	{
 		final int SLEEP = 500;		//	1/2 sec
 		final int MAXLOOPS = 30;	//	15 sec	
 		//
-		MWFProcess process = start(pi, pi.getTransactionName());
+		final MWFProcess process = start(pi);
 		if (process == null)
 			return null;
 		Thread.yield();
@@ -742,8 +717,9 @@ public class MWorkflow extends X_AD_Workflow
 			if (loops > MAXLOOPS)
 			{
 				log.warn("startWait: Timeout after {} seconds", ((SLEEP*MAXLOOPS)/1000));
-				pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "ProcessRunning"));
-				pi.setIsTimeout(true);
+				final ProcessExecutionResult result = pi.getResult();
+				result.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "ProcessRunning"));
+				result.setTimeout(true);
 				return process;
 			}
 		//	System.out.println("--------------- " + loops + ": " + state);
@@ -755,8 +731,8 @@ public class MWorkflow extends X_AD_Workflow
 			catch (InterruptedException e)
 			{
 				log.error("startWait: interrupted", e);
-				pi.setThrowable(e); // 03152
-				pi.setSummary("Interrupted");
+				final ProcessExecutionResult result = pi.getResult();
+				result.markAsError("Interrupted", e);
 				return process;
 			}
 			Thread.yield();
@@ -765,7 +741,16 @@ public class MWorkflow extends X_AD_Workflow
 		String summary = process.getProcessMsg();
 		if (summary == null || summary.trim().length() == 0)
 			summary = state.toString();
-		pi.setSummary(summary, state.isTerminated() || state.isAborted());
+		
+		final ProcessExecutionResult result = pi.getResult();
+		if (state.isTerminated() || state.isAborted())
+		{
+			result.markAsError(summary);
+		}
+		else
+		{
+			result.markAsSuccess(summary);
+		}
 		log.debug("startWait done: {}", summary);
 		return process;
 	}	//	startWait

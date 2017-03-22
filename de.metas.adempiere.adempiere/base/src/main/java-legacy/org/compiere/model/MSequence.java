@@ -589,7 +589,7 @@ public class MSequence extends X_AD_Sequence
 					+ "\b Response: " + response;
 			throw new AdempiereException(errmsg, e);
 		}
-		s_log.info("getNextID_HTTP - " + TableName + "=" + response + "(" + retValue + ")");
+		s_log.info("getNextID_HTTP - {}={} ({})", TableName, response, retValue);
 
 		return retValue;
 	}

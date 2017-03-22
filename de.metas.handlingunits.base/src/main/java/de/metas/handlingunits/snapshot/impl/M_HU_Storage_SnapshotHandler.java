@@ -46,7 +46,7 @@ class M_HU_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Storag
 		Check.assumeNotEmpty(huIds, "huIds not empty");
 
 		query(I_M_HU_Storage.class)
-				.addInArrayFilter(I_M_HU_Storage.COLUMN_M_HU_ID, huIds)
+				.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_HU_ID, huIds)
 				.create()
 				.insertDirectlyInto(I_M_HU_Storage_Snapshot.class)
 				.mapCommonColumns()

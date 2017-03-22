@@ -37,11 +37,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfo;
+import de.metas.process.JavaProcess;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -56,7 +55,7 @@ import de.metas.edi.model.I_EDI_Document_Extension;
  *
  * @author al
  */
-public class EDIExportDocOutboundLog extends SvrProcess
+public class EDIExportDocOutboundLog extends JavaProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
@@ -132,7 +131,7 @@ public class EDIExportDocOutboundLog extends SvrProcess
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
-				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
+				.addInArrayOrAllFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
 						I_C_Invoice.Table_ID
 				// , I_M_InOut.Table_ID
 				) // currently only export Invoices; InOuts are aggregated into EDI_Desadv records and exported as such

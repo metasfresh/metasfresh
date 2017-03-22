@@ -367,11 +367,10 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	{
 		final LUTUConfigurationEditorPanel lutuPanel = new LUTUConfigurationEditorPanel(lutuConfigurationModel);
 
-		// we already have our own terminal context ref that was created when 'lutuConfigurationModel' was created
-		final boolean maintainOwnContextReferences = false;
+		// we already have our own terminal context ref that was created when 'lutuConfigurationModel' was created in ReceiptScheduleHUSelectModel.doProcessSelectedLines()
 
 		final ITerminalDialog editorDialog = getTerminalFactory()
-				.createModalDialog(ReceiptScheduleHUSelectPanel.this, "Quantity to use", lutuPanel, maintainOwnContextReferences); // TODO ts: Hardcoded ?!?
+				.createModalDialog(ReceiptScheduleHUSelectPanel.this, "Quantity to use", lutuPanel); // TODO ts: Hardcoded ?!?
 
 		// Activate editor dialog and wait until user closes the window
 		editorDialog.activate();
@@ -393,20 +392,29 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final ITerminalFactory terminalFactory = getTerminalFactory();
 
 		final ReceiptScheduleHUSelectModel model = getModel();
-		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected
-		try (final ITerminalContextReferences refs = terminalContext.newReferences())
+		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected			
+		
+		// #643 The POReference, partner and location will be taken from the selected receipt schedule
+		final I_M_ReceiptSchedule selectedReceiptSchedule = model.getSelectedReceiptSchedule();
+
+
+		try (
+
+		final ITerminalContextReferences refs = terminalContext.newReferences())
+
 		{
-			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId);
+			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(
+					terminalContext, 
+					warehouseId, 
+					selectedReceiptSchedule);
 			final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
 
-			// we created a references instance in this try-with-resources block
-			final boolean maintainOwnContextReferences = false;
-
 			final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);
-			final ITerminalDialog dialog = terminalFactory.createModalDialog(this, title, emptiesShipReceivePanel, maintainOwnContextReferences);
+			final ITerminalDialog dialog = terminalFactory.createModalDialog(this, title, emptiesShipReceivePanel);
 
 			dialog.activate();
 		}
+
 	}
 
 	/**
@@ -429,12 +437,9 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 			final ReceiptCorrectHUEditorModel receiptCorrectModel = new ReceiptCorrectHUEditorModel(getTerminalContext());
 			receiptCorrectModel.loadFromReceiptSchedule(receiptSchedule);
 
-			// we created a references instance in this try-with-resources block
-			final boolean maintainOwnContextReferences = false;
-
 			// Create Receipt Correct Panel and display it to user
 			final ReceiptCorrectHUEditorPanel receiptCorrectPanel = new ReceiptCorrectHUEditorPanel(receiptCorrectModel);
-			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, btnCorrectReceivedHU.getText(), receiptCorrectPanel, maintainOwnContextReferences);
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, btnCorrectReceivedHU.getText(), receiptCorrectPanel);
 			editorDialog.setSize(getTerminalContext().getScreenResolution());
 
 			// Activate editor dialog and wait until user closes the window

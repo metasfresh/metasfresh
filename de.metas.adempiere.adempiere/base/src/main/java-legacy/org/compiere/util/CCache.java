@@ -25,12 +25,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
@@ -65,6 +65,17 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 				, maxSize // initialCapacity // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
 				, expireAfterMinutes //
 				, CacheMapType.LRU //
+		);
+	}
+	
+	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
+	{
+		final String tableName = extractTableNameForCacheName(cacheName);
+		return new CCache<>(cacheName //
+				, tableName //
+				, initialCapacity
+				, expireAfterMinutes //
+				, CacheMapType.HashMap //
 		);
 	}
 
@@ -205,6 +216,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	private final int initialCapacity;
 	/** Expire after minutes */
 	private final int expireMinutes;
+	public static final int EXPIREMINUTES_Never = 0;
 	/** Just reset */
 	private boolean m_justReset = true;
 
@@ -485,6 +497,24 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	}
 
 	/**
+     * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
+     * 
+	 * @param key
+	 * @param exceptionSupplier
+	 * @return value; not null
+	 * @throws E
+	 */
+	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<E> exceptionSupplier) throws E
+	{
+		final V value = get(key);
+		if(value == null)
+		{
+			throw exceptionSupplier.get();
+		}
+		return value;
+	}
+
+	/**
 	 * Put value
 	 *
 	 * @param key key
@@ -572,7 +602,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			@Override
 			public int reset(final String tableNameToReset, final Object key)
 			{
-				if (tableName != null && !Check.equals(tableName, tableNameToReset))
+				if (tableName != null && !Objects.equals(tableName, tableNameToReset))
 				{
 					return 0;
 				}

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-14T09:24:37 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalancegeneral/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.7715610000000017"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -19,9 +23,9 @@
 	<queryString>
 		<![CDATA[SELECT
 	 now(),
-	(select name from C_BPartner where C_BPartner_ID = $P{C_BPartner_ID}) as bpartner,
-	(select name from C_BP_Group where C_BP_Group_ID = $P{C_BP_Group_ID}) as bpgroup,
-	(select name from M_Product where M_Product_ID = $P{M_Product_ID}) as product
+	(select name from C_BPartner where C_BPartner_ID = $P{C_BPartner_ID} AND isActive = 'Y') as bpartner,
+	(select name from C_BP_Group where C_BP_Group_ID = $P{C_BP_Group_ID} AND isActive = 'Y') as bpgroup,
+	(select name from M_Product where M_Product_ID = $P{M_Product_ID} AND isActive = 'Y') as product
 
 ;]]>
 	</queryString>
@@ -39,7 +43,7 @@
 	<title>
 		<band height="118" splitType="Stretch">
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="20" width="134" height="13"/>
+				<reportElement key="textField-10" x="169" y="20" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -52,21 +56,21 @@
 				<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="6ef315de-f03f-4dd2-8d05-6e72b3ce1b5e" key="textField-11" x="37" y="20" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="20" width="133" height="13" uuid="6ef315de-f03f-4dd2-8d05-6e72b3ce1b5e"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="7cf154c3-4c1c-4d44-ab9c-fb3c56ba6c35" key="textField-6" x="37" y="0" width="266" height="18" forecolor="#000000"/>
+				<reportElement key="textField-6" x="37" y="0" width="266" height="18" forecolor="#000000" uuid="7cf154c3-4c1c-4d44-ab9c-fb3c56ba6c35"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{hubalance}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576" key="textField-3" x="423" y="32" width="91" height="13"/>
+				<reportElement key="textField-3" x="423" y="32" width="91" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -79,14 +83,14 @@
 				<textFieldExpression><![CDATA[$F{now}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b0cec862-9647-4feb-a0f4-7db9fc0c21c1" key="textField-5" x="363" y="32" width="89" height="13"/>
+				<reportElement key="textField-5" x="363" y="32" width="89" height="13" uuid="b0cec862-9647-4feb-a0f4-7db9fc0c21c1"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="32" width="134" height="13"/>
+				<reportElement key="textField-10" x="169" y="32" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -99,21 +103,21 @@
 				<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="32" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="32" width="133" height="13" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="45" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="45" width="133" height="13" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="45" width="134" height="13"/>
+				<reportElement key="textField-10" x="169" y="45" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -126,14 +130,14 @@
 				<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="58" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="58" width="133" height="13" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpgroup}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="58" width="134" height="13"/>
+				<reportElement key="textField-10" x="169" y="58" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -146,14 +150,14 @@
 				<textFieldExpression><![CDATA[$F{bpgroup}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="71" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="71" width="133" height="13" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="170" y="71" width="133" height="13"/>
+				<reportElement key="textField-10" x="170" y="71" width="133" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -166,14 +170,14 @@
 				<textFieldExpression><![CDATA[$F{product}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="84" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="84" width="133" height="13" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{isrefundableconditions}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="84" width="134" height="13"/>
+				<reportElement key="textField-10" x="169" y="84" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -186,14 +190,14 @@
 				<textFieldExpression><![CDATA[$P{IsRefundableConditions}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db" key="textField-11" x="37" y="97" width="133" height="13"/>
+				<reportElement key="textField-11" x="37" y="97" width="133" height="13" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{showdetails}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75" key="textField-10" x="169" y="97" width="134" height="13"/>
+				<reportElement key="textField-10" x="169" y="97" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -194,7 +194,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 
 				// check if invoice
 				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(esrReferenceNumberDocument.getAD_Table_ID());
-				if (I_C_Invoice.Table_Name.equals(tableName))
+				if (I_C_Invoice.Table_Name.equalsIgnoreCase(tableName))
 				{
 					importLine.setC_ReferenceNo(esrReferenceNumberDocument.getC_ReferenceNo());
 
