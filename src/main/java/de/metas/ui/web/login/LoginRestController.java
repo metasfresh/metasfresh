@@ -6,10 +6,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.adempiere.ad.api.ILanguageBL;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MSession;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
@@ -27,7 +28,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.base.session.UserPreference;
@@ -94,7 +94,7 @@ public class LoginRestController
 		userSession.assertNotLoggedIn();
 
 		final Login loginService = getLoginService();
-		final MSession session = createMSession(loginService);
+		startMFSession(loginService);
 
 		try
 		{
@@ -117,8 +117,8 @@ public class LoginRestController
 		catch (final Exception ex)
 		{
 			userSession.setLoggedIn(false);
-			destroySession(loginService, session);
-			throw Throwables.propagate(ex);
+			destroyMFSession(loginService);
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
@@ -159,7 +159,7 @@ public class LoginRestController
 		return jsonRoles.build();
 	}
 
-	private static MSession createMSession(final Login loginService)
+	private static MFSession startMFSession(final Login loginService)
 	{
 		final HttpServletRequest httpRequest = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 		final HttpSession httpSess = httpRequest.getSession();
@@ -181,33 +181,21 @@ public class LoginRestController
 		}
 
 		final LoginContext ctx = loginService.getCtx();
-		final MSession sessionPO = MSession.get(ctx.getSessionContext(), remoteAddr, remoteHost, webSessionId);
-
-		// Set HostKey
-		// FIXME: commented out because this one is not working when running over websockets (i.e. HttpServletResponse does not exists)
-		// see https://dev.vaadin.com/ticket/11808
-		// @formatter:off
-//		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
-//		HttpCookieHostKeyStorage.createUpdateHostKey();
-//		final String hostKey = hostKeyBL.getHostKey();
-//		session.setHostKey(hostKey);
-//		InterfaceWrapperHelper.save(session);
-		// @formatter:on
+		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx.getSessionContext());
+		session.setRemote_Addr(remoteAddr, remoteHost);
+		session.setWebSessionId(webSessionId);
 
 		// Update Login helper
 		loginService.setRemoteAddr(remoteAddr);
 		loginService.setRemoteHost(remoteHost);
 		loginService.setWebSession(webSessionId);
 
-		return sessionPO;
+		return session;
 	}
 
-	private static void destroySession(final Login loginService, final MSession session)
+	private static void destroyMFSession(final Login loginService)
 	{
-		if (session != null)
-		{
-			session.logout();
-		}
+		Services.get(ISessionBL.class).logoutCurrentSession();
 
 		if (loginService != null)
 		{
@@ -327,8 +315,7 @@ public class LoginRestController
 		userSession.assertLoggedIn();
 
 		final Login loginService = getLoginService();
-		final MSession session = MSession.get(userSession.getCtx(), false);
-		destroySession(loginService, session);
+		destroyMFSession(loginService);
 	}
 
 	@Component
