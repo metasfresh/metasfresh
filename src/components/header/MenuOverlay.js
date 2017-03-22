@@ -186,7 +186,7 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
         const {path} = this.state;
-        const {handleMenuOverlay} = this.props;
+        const {handleMenuOverlay, openModal} = this.props;
         return (
              <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
@@ -209,6 +209,7 @@ class MenuOverlay extends Component {
                             parent={node}
                             back={e => this.handleClickBack(e)}
                             handleMenuOverlay={handleMenuOverlay}
+                            openModal={openModal}
                             {...item}
                         />
                     )}

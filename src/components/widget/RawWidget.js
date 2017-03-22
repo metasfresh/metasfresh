@@ -138,14 +138,30 @@ class RawWidget extends Component {
             onHide, handleBackdropLock, subentity, subentityId, tabIndex,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled, caption, viewId
+            entity, onShow, disabled, caption, viewId, inputValue
         } = this.props;
 
         const {isEdited} = this.state;
 
+        // check if it's value from MasterWidget or not
+        // (to stabilize parsing changes in masterWidget due to problems with jumping cursor
+        const widgetValue = inputValue ? inputValue : widgetData[0].value;
+
         // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
         const widgetField = filterWidget ?
             fields[0].parameterName : fields[0].field;
+
+        const widgetProperties = {
+            ref: c => this.rawWidget = c,
+            className: 'input-field js-input-field',
+            value: widgetValue,
+            placeholder: fields[0].emptyText,
+            disabled: widgetData[0].readonly || disabled,
+            onFocus: this.handleFocus,
+            tabIndex: fullScreen ? -1 : tabIndex,
+            onChange: e => handleChange && handleChange(widgetField, e.target.value),
+            onBlur: e => this.handleBlur(widgetField, e.target.value, id)
+        }
 
         switch(widgetType){
             case 'Date':
@@ -319,16 +335,8 @@ class RawWidget extends Component {
                         }
                     >
                         <input
+                            {...widgetProperties}
                             type="text"
-                            ref={c => this.rawWidget = c}
-                            className="input-field js-input-field"
-                            value={widgetData[0].value}
-                            placeholder={fields[0].emptyText}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
@@ -340,15 +348,7 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
-                            ref={c => this.rawWidget = c}
-                            className="input-field js-input-field"
-                            value={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            placeholder={fields[0].emptyText}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
+                            {...widgetProperties}
                         />
                     </div>
                 )
@@ -359,17 +359,10 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -380,15 +373,8 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
-                            value={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(fields[0].field, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -399,17 +385,10 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -420,17 +399,10 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
@@ -441,15 +413,8 @@ class RawWidget extends Component {
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
-                            ref={c => this.rawWidget = c}
+                            {...widgetProperties}
                             type="number"
-                            className="input-field js-input-field"
-                            value={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={fullScreen ? -1 : tabIndex}
                         />
                     </div>
                 )
