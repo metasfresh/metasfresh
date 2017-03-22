@@ -39,9 +39,9 @@ class LoginForm extends Component {
     handleOnChange = (e) => {
         e.preventDefault();
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             err: ''
-        }))
+        })
     }
 
     handleSuccess = () => {
@@ -118,15 +118,18 @@ class LoginForm extends Component {
     }
 
     handleRoleSelect = (option) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             role: option
-        }));
+        });
     }
 
     render() {
         const {roleSelect, roles, err, role, pending} = this.state;
         return (
-            <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
+            <div 
+                className="login-form panel panel-spaced-lg panel-shadowed panel-primary" 
+                onKeyPress={this.handleKeyPress}
+            >
                 <div className="text-xs-center">
                     <img src={logo} className="header-logo mt-2 mb-2" />
                 </div>
@@ -138,6 +141,8 @@ class LoginForm extends Component {
                             onSelect={option => this.handleRoleSelect(option)}
                             selected={role}
                             disabled={pending}
+                            autofocus={true}
+                            doNotOpenOnFocus={true}
                         />
                     </div>:
                     <div>

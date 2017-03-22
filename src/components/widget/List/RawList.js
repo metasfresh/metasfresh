@@ -12,6 +12,12 @@ class RawList extends Component {
             dropdownList: []
         }
     }
+    
+    componentDidMount = () => {
+        const {autofocus} = this.props;
+        
+        (this.dropdown && autofocus) && this.dropdown.focus();
+    }
 
     componentDidUpdate = prevProps => {
         const { list, mandatory } = this.props;
@@ -99,11 +105,11 @@ class RawList extends Component {
 
     handleFocus = (e) => {
         e.preventDefault();
-        const {onFocus} = this.props;
+        const {onFocus, doNotOpenOnFocus} = this.props;
 
         onFocus && onFocus();
 
-        this.setState({
+        !doNotOpenOnFocus && this.setState({
             isOpen: true
         })
     }
@@ -135,7 +141,13 @@ class RawList extends Component {
     }
 
     navigate = (up) => {
-        const {selected, dropdownList} = this.state;
+        const {selected, dropdownList, isOpen} = this.state;        
+
+        if(!isOpen){
+            this.setState({
+                isOpen: true
+            })
+        }
 
         let selectedIndex = null;
 
@@ -149,6 +161,9 @@ class RawList extends Component {
 
         this.setState({
             selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
+        },()=>{
+            //TODO: ITEMS ARE NOT CHANGED
+            console.log(selected)
         })
 
     }
@@ -167,7 +182,7 @@ class RawList extends Component {
                 break;
             case 'Enter':
                 e.preventDefault();
-                this.handleSelect(selected)
+                this.handleSelect(selected);
                 break;
             case 'Escape':
                 e.preventDefault();
