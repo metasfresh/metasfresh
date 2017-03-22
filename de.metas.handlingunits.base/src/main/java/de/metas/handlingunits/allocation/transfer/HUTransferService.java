@@ -482,7 +482,7 @@ public class HUTransferService
 					},
 					localHuContext -> {
 						final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
-						updateAllocation(newParentLU, tuToAttach, null, null, true, localHuContext);
+						updateAllocation(newParentLU, tuToAttach, null, null, false, localHuContext);
 					});
 		});
 	}
@@ -581,6 +581,17 @@ public class HUTransferService
 			final Consumer<IHUContext> afterParentChange)
 	{
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		
+		final int parentItemId = parentItem == null ? 0 : parentItem.getM_HU_Item_ID();
+		if(childHU.getM_HU_Item_Parent_ID() == parentItemId)
+		{
+			// Nothing to do. Note that IHUTrxBL.setParentHU() won't do anything either. 
+			// But by returning even before we call it, we avoid applying 'beforeParentChange' and 'afterParentChange'.
+			// That way, we avoid one useless -1/+1 pair of allocations
+			return;
+		}
+
 		huTrxBL.createHUContextProcessorExecutor(huContext)
 				.run(new IHUContextProcessor()
 				{
@@ -588,7 +599,7 @@ public class HUTransferService
 					public IMutableAllocationResult process(final IHUContext localHuContext)
 					{
 						Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
-						Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
+						trxManager.assertTrxNotNull(localHuContext);
 
 						beforeParentChange.accept(localHuContext);
 
