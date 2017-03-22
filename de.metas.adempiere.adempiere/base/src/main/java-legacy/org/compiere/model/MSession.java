@@ -18,10 +18,10 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
@@ -35,6 +35,7 @@ import org.compiere.util.Ini;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.hostkey.api.IHostKeyBL;
 
 /**
  *	Session Model.
@@ -68,7 +69,8 @@ public class MSession extends X_AD_Session
 		// Create New
 		if (session == null && createNew)
 		{
-			session = new MSession (ctx, ITrx.TRXNAME_None);	//	local session
+			session = new MSession(ctx);
+
 			if (session.save())
 			{
 				session.updateContext(true); // force=true
@@ -82,7 +84,8 @@ public class MSession extends X_AD_Session
 	// t.schoeneberg@metas.de, task 03132: extracting code, adding public method to load/chache an AD_Session by AD_Session_ID
 	public static MSession get(Properties ctx, int AD_Session_ID)
 	{
-		return get(ctx, AD_Session_ID, false);
+		final boolean updateCtx = false;
+		return get(ctx, AD_Session_ID, updateCtx);
 	}
 
 	private static MSession get(Properties ctx, int AD_Session_ID, boolean updateCtx)
@@ -103,7 +106,7 @@ public class MSession extends X_AD_Session
 				// no session found for given AD_Session_ID, a warning shall be already logged
 				return null;
 			}
-			s_sessions.put(AD_Session_ID, session);
+			s_sessions.put(session.getAD_Session_ID(), session);
 		}
 
 		// Update context
@@ -131,10 +134,10 @@ public class MSession extends X_AD_Session
 		MSession session = get(ctx, AD_Session_ID, false);
 		if (session == null)
 		{
-			session = new MSession (ctx, Remote_Addr, Remote_Host, WebSession, ITrx.TRXNAME_None);	//	remote session
+			session = new MSession(ctx, Remote_Addr, Remote_Host, WebSession, ITrx.TRXNAME_None);
 			session.save();
 			session.updateContext(true); // force=true
-			s_sessions.put(AD_Session_ID, session);
+			s_sessions.put(session.getAD_Session_ID(), session);
 		}
 		return session;
 	}	//	get
@@ -155,7 +158,7 @@ public class MSession extends X_AD_Session
 		{
 			return null;
 		}
-		if (!Check.equals(session.get_TrxName(), ITrx.TRXNAME_None))
+		if (!Objects.equals(session.get_TrxName(), ITrx.TRXNAME_None))
 		{
 			// Invalid transaction
 			return null;
@@ -224,15 +227,15 @@ public class MSession extends X_AD_Session
 	private MSession (Properties ctx, String Remote_Addr, String Remote_Host, String webSessionId, String trxName)
 	{
 		this (ctx, 0, trxName);
+		
+		initSessionInfo();
+		
 		if (Remote_Addr != null)
 			setRemote_Addr(Remote_Addr);
 		if (Remote_Host != null)
 			setRemote_Host(Remote_Host);
 		if (webSessionId != null)
 			setWebSession(webSessionId);
-		setDescription(Adempiere.getMainVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
-		setAD_Role_ID(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Role_ID));
-		setLoginDate(Env.getContextAsDate(ctx, Env.CTXNAME_Date));
 	}	//	MSession
 
 	/**
@@ -240,21 +243,30 @@ public class MSession extends X_AD_Session
 	 *	@param ctx context
 	 *	@param trxName transaction
 	 */
-	public MSession(Properties ctx, String trxName)
+	private MSession(final Properties ctx)
 	{
-		this(ctx, 0, trxName);
+		this(ctx, 0, ITrx.TRXNAME_None);
+		
+		initSessionInfo();
 
 		final IHostIdentifier localHost = NetUtils.getLocalHost();
 		setRemote_Addr(localHost.getIP());
 		setRemote_Host(localHost.getHostName());
 
-		setDescription(Adempiere.getMainVersion() + "_"
-				+ Adempiere.getDateVersion() + " "
-				+ Adempiere.getImplementationVersion());
-		setAD_Role_ID(Env.getContextAsInt(ctx, "#AD_Role_ID"));
-		setLoginDate(Env.getContextAsDate(ctx, "#Date"));
-
 	}	// MSession
+	
+	private void initSessionInfo()
+	{
+		final Properties ctx = getCtx();
+		
+		setDescription(Adempiere.getMainVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
+		setAD_Role_ID(Env.getAD_Role_ID(ctx));
+		setLoginDate(Env.getDate(ctx));
+		
+		// Session's HostKey
+		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
+		setHostKey(hostKeyBL.getCreateHostKey());
+	}
 
 	/**
 	 * 	String Representation
@@ -283,7 +295,7 @@ public class MSession extends X_AD_Session
 			}
 		}
 		// metas: if is in a transaction, this info is also valuable
-		if (!Check.equals(get_TrxName(), ITrx.TRXNAME_None))
+		if (!Objects.equals(get_TrxName(), ITrx.TRXNAME_None))
 		{
 			sb.append(",trxName=" + get_TrxName());
 		}
