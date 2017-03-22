@@ -120,13 +120,12 @@ class Lookup extends Component {
                 }
             }
         });
-
     }
 
     getAllDropdowns = () => {
         const {
             dispatch, windowType, dataId, select, tabId, rowId, entity, subentity,
-            subentityId, defaultValue
+            subentityId, defaultValue, closeTableField
         } = this.props;
 
         const {
@@ -168,8 +167,7 @@ class Lookup extends Component {
                 });
             });
         }else{
-
-            this.handleBlur();
+            this.handleBlur(closeTableField);
         }
     }
 
@@ -301,7 +299,12 @@ class Lookup extends Component {
     }
 
     handleKeyDown = (e) => {
+        const {listenOnKeys, listenOnKeysFalse} = this.props;
         const {selected, list, query} = this.state;
+
+        //need for prevent fire event onKeyDown 'Enter' from TableItem
+        listenOnKeys && listenOnKeysFalse && listenOnKeysFalse();
+
         switch(e.key){
             case 'ArrowDown':
                 e.preventDefault();
@@ -321,7 +324,6 @@ class Lookup extends Component {
                     this.handleAddNew(query);
                 }else if(selected != null){
                     this.handleSelect(list[selected]);
-
                 }
                 break;
             case 'Escape':

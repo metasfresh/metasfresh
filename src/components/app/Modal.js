@@ -117,6 +117,16 @@ class Modal extends Component {
 
     handleClose = () => {
         const {
+            modalSaveStatus
+        } = this.props;
+
+        if(modalSaveStatus || window.confirm('Do you really want to leave?')){
+            this.closeModal();
+        }
+    }
+
+    closeModal = () => {
+        const {
             dispatch, closeCallback, dataId, windowType, relativeType,
             relativeDataId, triggerField
         } = this.props;

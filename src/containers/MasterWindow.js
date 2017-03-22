@@ -26,6 +26,45 @@ class MasterWindow extends Component {
         }
     }
 
+    componentDidMount(){
+        const {master} = this.props;
+        const isDocumentNotSaved = !master.saveStatus.saved;
+
+        if(isDocumentNotSaved){
+            window.addEventListener('beforeunload', this.confirm);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const {master} = this.props;
+        const isDocumentNotSaved = !master.saveStatus.saved;
+        const isDocumentSaved = master.saveStatus.saved;
+
+        if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
+            window.addEventListener('beforeunload', this.confirm)
+        }
+        if (!prevProps.master.saveStatus.saved && isDocumentSaved) {
+            window.removeEventListener('beforeunload', this.confirm)
+        }
+    }
+
+    componentWillUnmount() {
+        const { master } = this.props;
+        const isDocumentNotSaved = !master.saveStatus.saved;
+
+        if(isDocumentNotSaved){
+            const result = window.confirm('Do you really want to leave?');
+            window.removeEventListener('beforeunload', this.confirm);
+            if(!result){
+                this.context.router.goBack();
+            }
+        }
+    }
+
+    confirm = (e) => {
+        e.returnValue = '';
+    }
+
     closeModalCallback = (isNew) => {
         if(isNew){
             this.setState({
@@ -147,9 +186,10 @@ class MasterWindow extends Component {
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
-                        isDocumentNotSaved={
-                            (modal.saveStatus && !modal.saveStatus.saved) &&
-                            (modal.validStatus && !modal.validStatus.initialValue)
+                        modalSaveStatus={modal.saveStatus ? modal.saveStatus.saved : true}
+                        isDocumentNotSaved={modal.saveStatus ?
+                            !modal.saveStatus.saved &&
+                            !modal.validStatus.initialValue : false
                         }
                      />
                  }
@@ -234,6 +274,10 @@ function mapStateToProps(state) {
         rawModal,
         indicator
     }
+}
+
+MasterWindow.contextTypes = {
+    router: React.PropTypes.object.isRequired
 }
 
 MasterWindow = connect(mapStateToProps)(MasterWindow)
