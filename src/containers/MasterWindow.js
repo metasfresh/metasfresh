@@ -79,7 +79,7 @@ class MasterWindow extends Component {
     render() {
         const {
             master, modal, breadcrumb, references, actions, attachments,
-            rawModal, selected, indicator
+            rawModal, selected, indicator, params
         } = this.props;
 
         const {newRow, modalTitle} = this.state;
@@ -114,7 +114,7 @@ class MasterWindow extends Component {
                 docNoData = {docNoData}
                 docSummaryData = {docSummaryData}
                 dataId={dataId}
-                windowType={type}
+                windowType={params.windowType}
                 breadcrumb={breadcrumb}
                 references={references}
                 actions={actions}
@@ -147,6 +147,10 @@ class MasterWindow extends Component {
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
+                        isDocumentNotSaved={
+                            (modal.saveStatus && !modal.saveStatus.saved) &&
+                            (modal.validStatus && !modal.validStatus.initialValue)
+                        }
                      />
                  }
                  {rawModal.visible &&

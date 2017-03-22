@@ -56,7 +56,7 @@ class Window extends Component {
                 {tabs.map((elem)=> {
                     const {
                         tabid, caption, elements, emptyResultText,
-                        emptyResultHint, queryOnActivate
+                        emptyResultHint, queryOnActivate, supportQuickInput
                     } = elem;
                     return (
                         <Table
@@ -73,6 +73,7 @@ class Window extends Component {
                             newRow={newRow}
                             tabIndex={this.tabIndex.tabs}
                             queryOnActivate={queryOnActivate}
+                            supportQuickInput={supportQuickInput}
                         />
                     )
                 })}

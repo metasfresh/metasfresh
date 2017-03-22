@@ -331,6 +331,9 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
             } else {
                 //Existing master document
                 return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
+                .catch(() => {
+                    dispatch(push('/window/'+ windowType));
+                });
             }
         }
     }
@@ -495,7 +498,6 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                 throw new Error('close_modal');
             }else{
                 dispatch(initDataSuccess(preparedData, 'modal'));
-
                 dispatch(initLayout('process', processType)).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid

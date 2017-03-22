@@ -227,7 +227,7 @@ class Modal extends Component {
 
     render() {
         const {
-            data, modalTitle, modalType
+            data, modalTitle, modalType, isDocumentNotSaved
         } = this.props;
 
         const {
@@ -275,7 +275,7 @@ class Modal extends Component {
                             }
                         </div>
                     </div>
-                    <Indicator />
+                    <Indicator {...{isDocumentNotSaved}}/>
                     <div
                         className={
                             `panel-modal-content js-panel-modal-content
