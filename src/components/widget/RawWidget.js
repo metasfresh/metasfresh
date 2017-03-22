@@ -138,7 +138,8 @@ class RawWidget extends Component {
             onHide, handleBackdropLock, subentity, subentityId, tabIndex,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled, caption, viewId, inputValue
+            entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
+            listenOnKeysFalse, closeTableField
         } = this.props;
 
         const {isEdited} = this.state;
@@ -297,6 +298,9 @@ class RawWidget extends Component {
                         validStatus={widgetData[0].validStatus}
                         newRecordCaption={fields[0].newRecordCaption}
                         newRecordWindowId={fields[0].newRecordWindowId}
+                        listenOnKeys={listenOnKeys}
+                        listenOnKeysFalse={listenOnKeysFalse}
+                        closeTableField={closeTableField}
                     />
                 )
             case 'List':
