@@ -302,6 +302,7 @@ class Lookup extends Component {
         const {listenOnKeys, listenOnKeysFalse} = this.props;
         const {selected, list, query} = this.state;
 
+        //need for prevent fire event onKeyDown 'Enter' from TableItem
         listenOnKeys && listenOnKeysFalse && listenOnKeysFalse();
 
         switch(e.key){
