@@ -29,13 +29,13 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.MSession;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.logging.LogManager;
 import de.metas.printing.Printing_Constants;
@@ -86,11 +86,10 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 			final String hostKey = Services.get(IHostKeyBL.class).getCreateHostKey();
 
 			final Properties ctx = Env.getCtx();
-			final MSession sessionPO = MSession.get(ctx, false);
-			final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
+			final MSession session = MSession.get(ctx, false);
 			session.setHostKey(hostKey);
 			InterfaceWrapperHelper.save(session);
-			sessionPO.updateContext(false);
+			session.updateContext(false);
 
 			//
 			// Create/Start the printing client thread *if* we do not use another client's config
@@ -115,7 +114,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void beforeLogout(final org.compiere.model.I_AD_Session session)
+	public void beforeLogout(final I_AD_Session session)
 	{
 		// make sure printing client is stopped BEFORE logout, when session is still active and database accessible
 		final IPrintingClientDelegate printingClient = Services.get(IPrintingClientDelegate.class);
@@ -123,7 +122,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void afterLogout(final org.compiere.model.I_AD_Session session)
+	public void afterLogout(final I_AD_Session session)
 	{
 		// reset, because for another user/role, the client startup might be OK
 		clientStartupIssue = null;

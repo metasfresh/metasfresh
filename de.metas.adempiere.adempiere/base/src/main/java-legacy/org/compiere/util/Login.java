@@ -47,6 +47,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
@@ -58,7 +59,6 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
@@ -385,18 +385,17 @@ public class Login
 	{
 		final LoginContext ctx = getCtx();
 
-		MSession sessionPO;
+		I_AD_Session session;
 		final String remoteAddr = getRemoteAddr();
 		if (remoteAddr != null)
 		{
-			sessionPO = MSession.get(ctx.getSessionContext(), remoteAddr, getRemoteHost(), getWebSession());
+			session = MSession.get(ctx.getSessionContext(), remoteAddr, getRemoteHost(), getWebSession());
 		}
 		else
 		{
-			sessionPO = MSession.get(ctx.getSessionContext(), true);
+			session = MSession.get(ctx.getSessionContext(), true);
 		}
 
-		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
 		return session;
 	}
 

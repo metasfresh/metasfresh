@@ -36,6 +36,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.MSession;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
@@ -43,7 +44,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -463,7 +463,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 	@Override
 	public I_AD_Session retrieveCurrentSession(final Properties ctx)
 	{
-		return InterfaceWrapperHelper.create(MSession.get(ctx, false), I_AD_Session.class); // createNew=false
+		return MSession.get(ctx, false); // createNew=false
 	}
 
 	@Override

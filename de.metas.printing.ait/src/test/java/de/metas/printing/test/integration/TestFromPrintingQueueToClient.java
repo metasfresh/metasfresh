@@ -29,11 +29,11 @@ import java.util.UUID;
 
 import org.adempiere.util.Check;
 import org.apache.commons.io.IOUtils;
+import org.compiere.model.I_AD_Session;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.camel.test.SwitchResponder;
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.client.AbstractPrintingClientResponder;

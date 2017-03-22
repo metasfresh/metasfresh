@@ -32,13 +32,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.MSession;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.printing.model.I_AD_User_Login;
 
@@ -168,7 +168,7 @@ public class AD_User_Login
 
 		//
 		// Update newly create AD_Session
-		final I_AD_Session session = InterfaceWrapperHelper.create(MSession.get(ctx, adSessionId), I_AD_Session.class);
+		final I_AD_Session session = MSession.get(ctx, adSessionId);
 		Check.assumeNotNull(session, "session not null");
 		session.setHostKey(hostKey);
 		InterfaceWrapperHelper.save(session);

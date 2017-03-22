@@ -42,9 +42,9 @@ import org.adempiere.util.comparator.ComparatorChain;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_Session;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingQueueQuery;
