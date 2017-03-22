@@ -38,9 +38,9 @@ import de.metas.ui.web.base.util.IHttpSessionProvider;
 
 /**
  * Configures HostKey for webui
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
+ * @task https://github.com/metasfresh/metasfresh-webui-api/issues/264
  */
 @Configuration
 public class HostKeyConfig
