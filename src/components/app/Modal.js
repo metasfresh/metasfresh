@@ -120,13 +120,7 @@ class Modal extends Component {
             modalSaveStatus
         } = this.props;
 
-        if(!modalSaveStatus){
-            const result = window.confirm('Do you really want to leave?');
-
-            if(result){
-               this.closeModal();
-            }
-        } else {
+        if(modalSaveStatus || window.confirm('Do you really want to leave?')){
             this.closeModal();
         }
     }
