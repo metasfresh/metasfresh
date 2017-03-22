@@ -28,12 +28,12 @@ import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Session;
-import org.compiere.model.MSession;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -168,10 +168,10 @@ public class AD_User_Login
 
 		//
 		// Update newly create AD_Session
-		final I_AD_Session session = MSession.get(ctx, adSessionId);
+		final MFSession session = Services.get(ISessionBL.class).getSessionById(ctx, adSessionId);
 		Check.assumeNotNull(session, "session not null");
 		session.setHostKey(hostKey);
-		InterfaceWrapperHelper.save(session);
+		session.updateContext(loginCtx);
 
 		//
 		// Update the login request
