@@ -112,7 +112,12 @@ export class DraggableWidget extends Component {
                 (isDragging ? ' dragging' : '') +
                 ((idMaximized !== false) && !isMaximize ? ' hidden-xs-up' : '')
             } >
-                <div className="draggable-widget-header">
+                <div
+                    className="draggable-widget-header"
+                    onDoubleClick={isMaximize ?
+                        () => {this.minimizeWidget(); showWidgets() } :
+                        () => {this.maximizeWidget(); hideWidgets(index)}}
+                >
                     {text}
                     <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}/>
                     {toggleWidgetMenu &&
