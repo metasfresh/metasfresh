@@ -54,9 +54,8 @@ class MasterWindow extends Component {
 
         if(isDocumentNotSaved){
             const result = window.confirm('Do you really want to leave?');
-
+            window.removeEventListener('beforeunload', this.confirm);
             if(!result){
-                window.removeEventListener('beforeunload', this.confirm)
                 this.context.router.goBack();
             }
         }
