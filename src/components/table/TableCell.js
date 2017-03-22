@@ -87,7 +87,8 @@ class TableCell extends Component {
     render() {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
-            onKeyDown, readonly, updatedRow, tabIndex, entity
+            onKeyDown, readonly, updatedRow, tabIndex, entity, listenOnKeys,
+            listenOnKeysFalse, closeTableField
         } = this.props;
 
         return (
@@ -127,6 +128,9 @@ class TableCell extends Component {
                             noLabel={true}
                             gridAlign={item.gridAlign}
                             handleBackdropLock={this.handleBackdropLock}
+                            listenOnKeys={listenOnKeys}
+                            listenOnKeysFalse={listenOnKeysFalse}
+                            closeTableField={closeTableField}
                         />
                     :
                        <div className="cell-text-wrapper">

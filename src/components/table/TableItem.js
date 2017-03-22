@@ -12,7 +12,8 @@ class TableItem extends Component {
         this.state = {
             edited: '',
             activeCell: '',
-            updatedRow: false
+            updatedRow: false,
+            listenOnKeys: true
         };
     }
 
@@ -60,17 +61,36 @@ class TableItem extends Component {
         }
     }
 
-    handleKey = (e, property) => {
-        const { changeListenOnTrue } = this.props;
-        const { edited, activeCell} = this.state;
+    listenOnKeysTrue = () => {
+        this.setState({
+            listenOnKeys: true
+        });
+    }
 
-        if(e.key === 'Enter' && !edited) {
-            this.handleEditProperty(e, property, true);
-        } else if (e.key === 'Enter' && edited) {
-            this.handleEditProperty(e);
-            changeListenOnTrue();
-            activeCell && activeCell.focus();
+    listenOnKeysFalse = () => {
+        this.setState({
+            listenOnKeys: false
+        });
+    }
+
+    handleKey = (e, property) => {
+        const { edited, listenOnKeys} = this.state;
+        if(listenOnKeys){
+            if(e.key === 'Enter' && !edited) {
+                this.handleEditProperty(e, property, true);
+            } else if (e.key === 'Enter' && edited) {
+                this.closeTableField(e);
+            }
         }
+    }
+
+    closeTableField = (e) => {
+        const { changeListenOnTrue } = this.props;
+        const {activeCell} = this.state;
+        this.handleEditProperty(e);
+        this.listenOnKeysTrue();
+        changeListenOnTrue();
+        activeCell && activeCell.focus();
     }
 
     renderCells = (cols, cells) => {
@@ -80,7 +100,7 @@ class TableItem extends Component {
         } = this.props;
 
         const {
-            edited, updatedRow
+            edited, updatedRow, listenOnKeys
         } = this.state;
 
         // Iterate over layout settings
@@ -107,6 +127,9 @@ class TableItem extends Component {
                     updatedRow={updatedRow || newRow}
                     updateRow={this.updateRow}
                     tabIndex={tabIndex}
+                    listenOnKeys={listenOnKeys}
+                    listenOnKeysFalse={this.listenOnKeysFalse}
+                    closeTableField={(e) => this.closeTableField(e)}
                 />
             )
         })
