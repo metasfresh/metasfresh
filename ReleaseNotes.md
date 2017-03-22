@@ -12,19 +12,22 @@ Here come the actual release notes:
 
 # metasfresh 5.2 (2017-12)
 
-**upcoming**
+**this week's release candidate**
 
 ## Features
 
 * metasfresh-webui-api
   * [#252](https://github.com/metasfresh/metasfresh-webui-api/issues/252) Provide to frontend: tab allow create new and delete as they change
+  * [#264](https://github.com/metasfresh/metasfresh-webui-api/issues/264) Support different printers for same user and different login locations
 
 * metasfresh
   * [#1145](https://github.com/metasfresh/metasfresh/issues/1145) Refactor adempiereJasper servlets and implement them with @RestController
   * [#1146](https://github.com/metasfresh/metasfresh/issues/1146) Change "sent by" in Request Notifications
   * [#1152](https://github.com/metasfresh/metasfresh/issues/1152) Support address sequence configuration in multi org environment
   * [#1165](https://github.com/metasfresh/metasfresh/issues/1165) QtyDelivered not set back correctly after reactivating and voiding a material receipt
-
+  * [#1177](https://github.com/metasfresh/metasfresh/issues/1177) Qties in Material Receipt not correct after several splitting and transforming in HU Editor
+  * [#1184](https://github.com/metasfresh/metasfresh/issues/1184) Price is found for C_OlCand despite it was deactivated
+  
 ## Fixes
 * metasfresh
 * metasfresh-webui-api
@@ -32,8 +35,6 @@ Here come the actual release notes:
   * [#259](https://github.com/metasfresh/metasfresh-webui-api/issues/259) New Warehouse is not saveable
   
 # metasfresh 5.1 (2017-11)
-
-**this week's release candidate**
 
 ## Features
 * metasfresh-backend
