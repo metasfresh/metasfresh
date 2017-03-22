@@ -30,6 +30,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -282,6 +283,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PriceList.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PriceList_Version.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice.Table_Name);
+
+		// gh #1184: also propagate pricing rule changes to other hosts
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_PricingRule.Table_Name);
 
 		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);
