@@ -53,7 +53,6 @@ export class DraggableWidget extends Component {
         this.state = {
             toggleWidgetMenu: false,
             isMaximize: false,
-            refresh: false,
             height: 400
         };
     }
@@ -97,19 +96,6 @@ export class DraggableWidget extends Component {
         })
     }
 
-    handleRefresh = () => {
-        this.setState({
-            refresh: true,
-            forceChartReRender: true
-        }, () => {
-            this.setState({
-                refresh: false,
-                toggleWidgetMenu: false,
-                forceChartReRender: false
-            })
-        });
-    }
-
     render() {
         const {
             text, isDragging, connectDragSource, connectDropTarget,
@@ -137,7 +123,6 @@ export class DraggableWidget extends Component {
                                 <span onClick={() => {this.maximizeWidget(); hideWidgets(index)} }>Maximize</span>
                             }
 
-                            <span onClick={this.handleRefresh}>Refresh</span>
                         </div>
                     }
                 </div>
