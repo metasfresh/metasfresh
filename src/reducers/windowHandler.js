@@ -19,7 +19,8 @@ const initialState = {
         viewDocumentIds: null,
         triggerField: null,
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        includedTabsInfo: {}
     },
     rawModal: {
         visible: false,
@@ -31,7 +32,8 @@ const initialState = {
         data: [],
         rowData: {},
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        includedTabsInfo: {}
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -103,7 +105,11 @@ export default function windowHandler(state = initialState, action) {
                     layout: {},
                     rowData: {},
                     saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
+                    validStatus: action.validStatus,
+                    includedTabsInfo: action.includedTabsInfo && action.includedTabsInfo.reduce((acc, cur) => {
+                        acc[cur.tabid] = cur;
+                        return acc;
+                    }, {})
                 })
         })
 
@@ -185,6 +191,16 @@ export default function windowHandler(state = initialState, action) {
                 })
             })
 
+        case types.UPDATE_DATA_INCLUDED_TABS_INFO:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    includedTabsInfo: action.includedTabsInfo && action.includedTabsInfo.reduce((acc, cur) => {
+                        acc[cur.tabid] = cur;
+                        return acc;
+                    }, {})
+                })
+            })
+
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
@@ -194,7 +210,11 @@ export default function windowHandler(state = initialState, action) {
                             item
                     ),
                     saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
+                    validStatus: action.validStatus,
+                    includedTabsInfo: action.includedTabsInfo && action.includedTabsInfo.reduce((acc, cur) => {
+                        acc[cur.tabid] = cur;
+                        return acc;
+                    }, {})
                 })
         })
 

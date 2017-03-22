@@ -42,7 +42,7 @@ class Window extends Component {
 
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
-        const {data, rowData, newRow} = this.props;
+        const {data, rowData, newRow, tabsInfo} = this.props;
         const {fullScreen} = this.state;
         const dataId = findRowByPropName(data, 'ID').value;
 
@@ -53,7 +53,7 @@ class Window extends Component {
                 fullScreen={fullScreen}
                 windowType={type}
             >
-                {tabs.map((elem)=> {
+                {tabs.map(elem => {
                     const {
                         tabid, caption, elements, emptyResultText,
                         emptyResultHint, queryOnActivate, supportQuickInput
@@ -74,6 +74,7 @@ class Window extends Component {
                             tabIndex={this.tabIndex.tabs}
                             queryOnActivate={queryOnActivate}
                             supportQuickInput={supportQuickInput}
+                            tabInfo={tabsInfo && tabsInfo[tabid]}
                         />
                     )
                 })}
