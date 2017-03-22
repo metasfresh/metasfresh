@@ -25,8 +25,6 @@ package de.metas.printing.api.impl;
 
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,12 +33,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.MSession;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Session;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintJobLinesAggregator;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintPackageCtx;
