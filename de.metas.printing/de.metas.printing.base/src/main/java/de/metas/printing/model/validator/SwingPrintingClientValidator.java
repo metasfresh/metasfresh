@@ -26,11 +26,9 @@ package de.metas.printing.model.validator;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.MSession;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -39,7 +37,6 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.hostkey.api.IHostKeyBL;
-import de.metas.hostkey.spi.impl.SwingHostKeyStorage;
 import de.metas.logging.LogManager;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingDAO;
@@ -69,21 +66,6 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
-	{
-		if (!isAvailable())
-		{
-			return;
-		}
-
-		// TODO: i think we needed to run it only if Ini.isClient
-		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-
-		final SwingHostKeyStorage hostkeyStorage = new SwingHostKeyStorage();
-		hostKeyBL.setHostKeyStorage(hostkeyStorage);
-	}
-
-	@Override
 	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		if (!isAvailable())
@@ -101,7 +83,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 		{
 			//
 			// Config AD_Session
-			final String hostKey = Services.get(IHostKeyBL.class).getHostKey();
+			final String hostKey = Services.get(IHostKeyBL.class).getCreateHostKey();
 
 			final Properties ctx = Env.getCtx();
 			final MSession sessionPO = MSession.get(ctx, false);
