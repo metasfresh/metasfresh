@@ -18,6 +18,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 --------------------
 
 -- Migrate
+/*
 drop table if exists M_ProductPrice_IsDefault_ToUpdate;
 create temporary table M_ProductPrice_IsDefault_ToUpdate as
 select
@@ -32,7 +33,7 @@ create index on M_ProductPrice_IsDefault_ToUpdate(M_ProductPrice_ID);
 
 -- Check it
 select * from M_ProductPrice_IsDefault_ToUpdate;
-
+*/
 --
 -- Update
 /*
