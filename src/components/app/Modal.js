@@ -123,7 +123,7 @@ class Modal extends Component {
         if(modalType === 'process') {
             return this.closeModal();
         }
-            
+
         if(modalSaveStatus || window.confirm('Do you really want to leave?')){
             this.closeModal();
         }
