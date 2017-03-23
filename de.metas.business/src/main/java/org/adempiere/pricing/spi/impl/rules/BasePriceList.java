@@ -89,6 +89,7 @@ public class BasePriceList extends AbstractPriceListBasedRule
 		boolean m_enforcePriceLimit = false;
 		boolean m_isTaxIncluded = false;
 		int m_C_TaxCategory_ID = -1; // metas
+		int m_M_PriceList_Version_ID = -1;
 		int ppUOMId = -1;
 
 		//
@@ -100,10 +101,11 @@ public class BasePriceList extends AbstractPriceListBasedRule
 				+ " p.C_UOM_ID,pv.ValidFrom,pl.C_Currency_ID,p.M_Product_Category_ID,"	// 4..7
 				+ " pl.EnforcePriceLimit, pl.IsTaxIncluded "	// 8..9
 				+ " , pp.C_TaxCategory_ID " // metas
-				+ ", pp.C_UOM_ID " // 11
+				+ " , pp.C_UOM_ID " // 11
+				+ " , pv.M_PriceList_Version_ID"
 				+ " FROM M_Product p"
 				+ " INNER JOIN M_ProductPrice pp ON (p.M_Product_ID=pp.M_Product_ID)"
-				+ " INNER JOIN  M_PriceList_Version pv ON (pp.M_PriceList_Version_ID=pv.M_PriceList_Version_ID)"
+				+ " INNER JOIN M_PriceList_Version pv ON (pp.M_PriceList_Version_ID=pv.M_PriceList_Version_ID)"
 				+ " INNER JOIN M_Pricelist bpl ON (pv.M_PriceList_ID=bpl.M_PriceList_ID)"
 				+ " INNER JOIN M_Pricelist pl ON (bpl.M_PriceList_ID=pl.BasePriceList_ID) "
 				+ "WHERE pv.IsActive='Y'"
@@ -150,6 +152,8 @@ public class BasePriceList extends AbstractPriceListBasedRule
 					m_enforcePriceLimit = "Y".equals(rs.getString(8));
 					m_isTaxIncluded = "Y".equals(rs.getString(9));
 					m_C_TaxCategory_ID = rs.getInt("C_TaxCategory_ID");
+					m_M_PriceList_Version_ID = rs.getInt("M_PriceList_Version_ID");
+					
 					//
 					log.debug("M_PriceList_ID=" + m_M_PriceList_ID
 							+ "(" + plDate + ")" + " - " + m_PriceStd);
@@ -186,7 +190,7 @@ public class BasePriceList extends AbstractPriceListBasedRule
 		result.setM_Product_Category_ID(m_M_Product_Category_ID);
 		result.setEnforcePriceLimit(m_enforcePriceLimit);
 		result.setTaxIncluded(m_isTaxIncluded);
-		// result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID);
+		result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID); // tell 'em which PLV-ID we used in the end
 		result.setC_TaxCategory_ID(m_C_TaxCategory_ID);
 		result.setCalculated(true);
 
