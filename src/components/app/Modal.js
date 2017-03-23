@@ -117,10 +117,10 @@ class Modal extends Component {
 
     handleClose = () => {
         const {
-            modalSaveStatus
+            modalSaveStatus, modalType
         } = this.props;
 
-        if(modalSaveStatus || window.confirm('Do you really want to leave?')){
+        if(modalSaveStatus || modalType != 'process' && window.confirm('Do you really want to leave?')){
             this.closeModal();
         }
     }
