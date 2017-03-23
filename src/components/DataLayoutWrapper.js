@@ -20,10 +20,18 @@ class DataLayoutWrapper extends Component {
         }
     }
 
+    componentDidMount = () => {
+        this.mounted = true;
+    }
+
+    componentWillUnmount = () => {
+        this.mounted = false;
+    }
+
     handleChange = (field, value) => {
         const {data} = this.state;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             data: data.map(item => {
                 if(item.field === field){
                     return Object.assign({}, item, {
@@ -33,7 +41,7 @@ class DataLayoutWrapper extends Component {
                     return item;
                 }
             })
-        }))
+        })
     }
 
     handlePatch = (prop, value, cb) => {
@@ -44,7 +52,7 @@ class DataLayoutWrapper extends Component {
             entity, windowType, dataId, null, null, prop, value, null, null, null, viewId
         )).then(response => {
             response.data[0] && response.data[0].fields.map(item => {
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     data: this.state.data.map(field => {
                         if(field.field === item.field){
                             return Object.assign({}, field, item);
@@ -52,7 +60,7 @@ class DataLayoutWrapper extends Component {
                             return field;
                         }
                     })
-                }));
+                });
             })
         });
 
@@ -60,7 +68,7 @@ class DataLayoutWrapper extends Component {
     }
 
     setData = (data, dataId, cb) => {
-        this.setState({
+        this.mounted && this.setState({
             data: parseToDisplay(data),
             dataId: dataId
         }, () => {
@@ -69,7 +77,7 @@ class DataLayoutWrapper extends Component {
     }
 
     setLayout = (layout, cb) => {
-        this.setState({
+        this.mounted && this.setState({
             layout: layout
         }, () => {
             cb && cb();
