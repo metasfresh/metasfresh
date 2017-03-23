@@ -126,9 +126,9 @@ class LoginForm extends Component {
     render() {
         const {roleSelect, roles, err, role, pending} = this.state;
         return (
-            <div 
-                className="login-form panel panel-spaced-lg panel-shadowed panel-primary" 
-                onKeyPress={this.handleKeyPress}
+            <div
+                className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
+                onKeyDown={this.handleKeyPress}
             >
                 <div className="text-xs-center">
                     <img src={logo} className="header-logo mt-2 mb-2" />

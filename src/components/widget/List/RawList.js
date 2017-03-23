@@ -6,16 +6,18 @@ class RawList extends Component {
     constructor(props) {
         super(props);
 
+        const {list} = this.props;
+
         this.state = {
             selected: props.selected || 0,
             isOpen: false,
-            dropdownList: []
+            dropdownList: list || []
         }
     }
-    
+
     componentDidMount = () => {
         const {autofocus} = this.props;
-        
+
         (this.dropdown && autofocus) && this.dropdown.focus();
     }
 
@@ -94,12 +96,27 @@ class RawList extends Component {
     }
 
     handleBlur = () => {
-        const { selected } = this.props;
+        const { selected, doNotOpenOnFocus } = this.props;
 
-        this.dropdown.blur();
+        !doNotOpenOnFocus && this.dropdown.blur();
         this.setState({
             isOpen: false,
             selected: selected || 0
+        })
+    }
+
+    /*
+     * Alternative method to open dropdown, in case of disabled opening
+     * on focus.
+     */
+    handleClick = (e) => {
+        e.preventDefault();
+        const {onFocus, doNotOpenOnFocus} = this.props;
+
+        onFocus && onFocus();
+
+        doNotOpenOnFocus && this.setState({
+            isOpen: true
         })
     }
 
@@ -141,7 +158,7 @@ class RawList extends Component {
     }
 
     navigate = (up) => {
-        const {selected, dropdownList, isOpen} = this.state;        
+        const {selected, dropdownList, isOpen} = this.state;
 
         if(!isOpen){
             this.setState({
@@ -161,15 +178,12 @@ class RawList extends Component {
 
         this.setState({
             selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
-        },()=>{
-            //TODO: ITEMS ARE NOT CHANGED
-            console.log(selected)
         })
 
     }
 
     handleKeyDown = (e) => {
-        const {selected} = this.state;
+        const {selected, isOpen} = this.state;
 
         switch(e.key){
             case 'ArrowDown':
@@ -182,6 +196,9 @@ class RawList extends Component {
                 break;
             case 'Enter':
                 e.preventDefault();
+                if(isOpen){
+                    e.stopPropagation();
+                }
                 this.handleSelect(selected);
                 break;
             case 'Escape':
@@ -276,6 +293,7 @@ class RawList extends Component {
                 onFocus={!readonly && this.handleFocus}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
+                onClick={!readonly && this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 className={
                     'input-dropdown-container ' +
