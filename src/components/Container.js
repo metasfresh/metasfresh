@@ -14,7 +14,7 @@ class Container extends Component {
             docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
             dataId, windowType, breadcrumb, references, actions, showSidelist,
             siteName, connectionError, noMargin, entity, children, query, attachments,
-            showIndicator, isDocumentNotSaved
+            showIndicator, isDocumentNotSaved, dontShowNotifications
         } = this.props;
 
         return (
@@ -39,7 +39,7 @@ class Container extends Component {
                     isDocumentNotSaved={isDocumentNotSaved}
                 />
                 {connectionError && <ErrorScreen />}
-                <NotificationHandler />
+                {!dontShowNotifications && <NotificationHandler />}
                 <div
                     className={
                         'header-sticky-distance js-unselect ' +

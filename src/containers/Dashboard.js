@@ -13,6 +13,7 @@ export class Dashboard extends Component {
             <Container
                 siteName = "Dashboard"
                 noMargin = {true}
+                dontShowNotifications = {true}
             >
                 <div className="container-fluid dashboard-wrapper">
                     <DraggableWrapper dashboard={this.props.location.pathname} />

@@ -223,7 +223,8 @@ export function getTargetIndicatorsDashboard() {
 }
 
 export function getKPIData(id) {
-    return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+'/data');
+    // return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+'/data');
+    return () => axios.get('http://w101.metasfresh.com:8081/rest/api/window/143/1004656/1/NEW');
 }
 
 export function getTargetIndicatorsData(id) {
