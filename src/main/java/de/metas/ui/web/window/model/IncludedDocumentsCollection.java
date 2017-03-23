@@ -319,7 +319,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 
 		final DocumentId documentId = document.getDocumentId();
 		_documents.put(documentId, document);
-		
+
 		updateAndGetAllowCreateNewDocument();
 
 		return document;
@@ -365,6 +365,14 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 
 	private LogicExpressionResult computeAllowCreateNewDocument()
 	{
+		// Quickly check if the allowCreateNew logic it's constant and it's false.
+		// In that case we can return right away.
+		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
+		if (allowCreateNewLogic.isConstantFalse())
+		{
+			return LogicExpressionResult.ofConstantExpression(allowCreateNewLogic);
+		}
+
 		if (parentDocument.isProcessed())
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
@@ -380,19 +388,36 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 			return LogicExpressionResult.namedConstant("ParentDocumentNew", false);
 		}
 
-		if (hasNewDocuments())
+		//
+		// Check all included documents and don't allow creating new documents if:
+		// * if there is a new included document
+		// * if one of the included documents were not already saved
 		{
-			return LogicExpressionResult.namedConstant("A new document already exists", false);
+			final LogicExpressionResult allowCreateNew = getInnerDocumentsNoLoad()
+					.stream()
+					.map(includedDocument -> {
+						if (includedDocument.isNew())
+						{
+							return LogicExpressionResult.namedConstant("A new document already exists", false);
+						}
+						else if (includedDocument.getSaveStatus().isNotSaved())
+						{
+							return LogicExpressionResult.namedConstant("Unsaved row found", false);
+						}
+						return null;
+					})
+					.filter(result -> result != null)
+					.findFirst().orElse(null);
+			if (allowCreateNew != null && allowCreateNew.isFalse())
+			{
+				return allowCreateNew;
+			}
 		}
 
-		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
+		//
+		// Evaluate the allowCreateNew logic expression
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		return allowCreateNew;
-	}
-
-	private final boolean hasNewDocuments()
-	{
-		return getInnerDocumentsNoLoad().stream().anyMatch(document -> document.isNew());
 	}
 
 	private void assertDeleteDocumentAllowed(final Document document)
@@ -432,6 +457,14 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 
 	private LogicExpressionResult computeAllowDeleteDocument()
 	{
+		// Quickly check if the allowDelete logic it's constant and it's false.
+		// In that case we can return right away.
+		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
+		if (allowDeleteLogic.isConstantFalse())
+		{
+			return LogicExpressionResult.ofConstantExpression(allowDeleteLogic);
+		}
+
 		if (parentDocument.isProcessed())
 		{
 			return LOGICRESULT_FALSE_ParentDocumentProcessed;
@@ -442,7 +475,6 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 			return LogicExpressionResult.namedConstant("ParentDocumentNotActive", false);
 		}
 
-		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
 		final LogicExpressionResult allowDelete = allowDeleteLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		return allowDelete;
 	}

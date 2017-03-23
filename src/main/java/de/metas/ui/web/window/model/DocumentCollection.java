@@ -40,6 +40,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import groovy.transform.Immutable;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -292,21 +293,21 @@ public class DocumentCollection
 		rootDocuments.cleanUp();
 	}
 
-	private void commitRootDocument(final Document document)
+	private void commitRootDocument(@NonNull final Document rootDocument)
 	{
-		final boolean wasNew = document.isNew();
-
-		//
-		// Make sure all included detail (tab) statuses are up2date.
-		document.updateIncludedDetailsStatus();
+		Preconditions.checkState(rootDocument.isRootDocument(), "{} is not a root document", rootDocument);
 		
+		final boolean wasNew = rootDocument.isNew();
+
 		//
 		// Try saving it if possible
-		document.saveIfValidAndHasChanges();
-
+		rootDocument.saveIfValidAndHasChanges();
+		
 		//
-		// Get the root document
-		final Document rootDocument = document.getRootDocument();
+		// Make sure all included detail (tab) statuses are up2date.
+		// IMPORTANT: we have to do this after saving because some of the logics depends on if they are any new included documents or not 
+		rootDocument.updateIncludedDetailsStatus();
+
 
 		//
 		// Add the saved and changed document back to index
@@ -320,12 +321,12 @@ public class DocumentCollection
 		if (wasNew)
 		{
 			logger.debug("Checking if we collected all events for the new document");
-			final Set<String> collectedFieldNames = Execution.getCurrentDocumentChangesCollector().collectFrom(document, ()->"new document, initially missed");
+			final Set<String> collectedFieldNames = Execution.getCurrentDocumentChangesCollector().collectFrom(rootDocument, ()->"new document, initially missed");
 			if (!collectedFieldNames.isEmpty())
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
 						+ "\n Missed (but collected now) field names were: {}" //
-						+ "\n Document path: {}", collectedFieldNames, document.getDocumentPath());
+						+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
 			}
 		}
 

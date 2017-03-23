@@ -826,6 +826,11 @@ public final class Document
 
 		return parent;
 	}
+	
+	public boolean isRootDocument()
+	{
+		return getParentDocument() == null;
+	}
 
 	private Collection<IDocumentField> getFields()
 	{
