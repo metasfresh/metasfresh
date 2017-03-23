@@ -28,8 +28,8 @@ package org.adempiere.ad.migration.logger;
 
 import java.util.Set;
 
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Session;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
@@ -52,14 +52,14 @@ public interface IMigrationLogger extends ISingletonService
 	void logMigration(IMigrationLoggerContext migrationCtx, PO po, POInfo info, String event);
 
 	/**
-	 * Create migration step using the current {@link I_AD_Session} for the specified {@link PO}
+	 * Create migration step using the current session for the specified {@link PO}
 	 * 
 	 * @param session
 	 * @param po
 	 * @param info
 	 * @param event
 	 */
-	void logMigration(I_AD_Session session, PO po, POInfo info, String event);
+	void logMigration(MFSession session, PO po, POInfo info, String event);
 
 	/**
 	 * Create a raw SQL migration step for the specified {@link PO}

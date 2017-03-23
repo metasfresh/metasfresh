@@ -1,5 +1,7 @@
 package org.adempiere.ad.security;
 
+import org.adempiere.ad.session.MFSession;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -46,12 +48,12 @@ public interface IUserLoginListener
 	 * 
 	 * @param session
 	 */
-	void beforeLogout(final org.compiere.model.I_AD_Session session);
+	void beforeLogout(final MFSession session);
 
 	/**
 	 * Called after Logout (note, at this moment session is closed)
 	 * 
 	 * @param session
 	 */
-	void afterLogout(final org.compiere.model.I_AD_Session session);
+	void afterLogout(final MFSession session);
 }

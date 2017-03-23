@@ -29,12 +29,13 @@ import java.util.Properties;
 
 import javax.swing.JFrame;
 
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AKeyboardFocusManager;
 import org.compiere.apps.ALogin;
-import org.compiere.model.MSession;
 import org.compiere.swing.CFrame;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -85,7 +86,7 @@ public class PosApplication {
 		//
 		if (!Adempiere.startupEnvironment(true)) // Load Environment
 			System.exit(1);
-		MSession.get (Env.getCtx(), true);		//	Start Session
+		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(Env.getCtx());		//	Start Session
 
 		int m_WindowNo = Env.createWindowNo(frame);
 

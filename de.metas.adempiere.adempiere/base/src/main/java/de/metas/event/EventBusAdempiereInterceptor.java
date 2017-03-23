@@ -24,8 +24,8 @@ package de.metas.event;
 
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Session;
 import org.compiere.util.Ini;
 
 /**
@@ -53,7 +53,7 @@ public final class EventBusAdempiereInterceptor extends AbstractModuleIntercepto
 	}
 
 	@Override
-	public void beforeLogout(final I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		if (Ini.isClient())
 		{
