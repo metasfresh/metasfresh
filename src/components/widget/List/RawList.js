@@ -6,11 +6,19 @@ class RawList extends Component {
     constructor(props) {
         super(props);
 
+        const {list} = this.props;
+
         this.state = {
             selected: props.selected || 0,
             isOpen: false,
-            dropdownList: []
+            dropdownList: list || []
         }
+    }
+
+    componentDidMount = () => {
+        const {autofocus} = this.props;
+
+        (this.dropdown && autofocus) && this.dropdown.focus();
     }
 
     componentDidUpdate = prevProps => {
@@ -88,22 +96,37 @@ class RawList extends Component {
     }
 
     handleBlur = () => {
-        const { selected } = this.props;
+        const { selected, doNotOpenOnFocus } = this.props;
 
-        this.dropdown.blur();
+        !doNotOpenOnFocus && this.dropdown.blur();
         this.setState({
             isOpen: false,
             selected: selected || 0
         })
     }
 
-    handleFocus = (e) => {
+    /*
+     * Alternative method to open dropdown, in case of disabled opening
+     * on focus.
+     */
+    handleClick = (e) => {
         e.preventDefault();
-        const {onFocus} = this.props;
+        const {onFocus, doNotOpenOnFocus} = this.props;
 
         onFocus && onFocus();
 
-        this.setState({
+        doNotOpenOnFocus && this.setState({
+            isOpen: true
+        })
+    }
+
+    handleFocus = (e) => {
+        e.preventDefault();
+        const {onFocus, doNotOpenOnFocus} = this.props;
+
+        onFocus && onFocus();
+
+        !doNotOpenOnFocus && this.setState({
             isOpen: true
         })
     }
@@ -135,7 +158,13 @@ class RawList extends Component {
     }
 
     navigate = (up) => {
-        const {selected, dropdownList} = this.state;
+        const {selected, dropdownList, isOpen} = this.state;
+
+        if(!isOpen){
+            this.setState({
+                isOpen: true
+            })
+        }
 
         let selectedIndex = null;
 
@@ -154,7 +183,7 @@ class RawList extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {selected} = this.state;
+        const {selected, isOpen} = this.state;
 
         switch(e.key){
             case 'ArrowDown':
@@ -167,7 +196,10 @@ class RawList extends Component {
                 break;
             case 'Enter':
                 e.preventDefault();
-                this.handleSelect(selected)
+                if(isOpen){
+                    e.stopPropagation();
+                }
+                this.handleSelect(selected);
                 break;
             case 'Escape':
                 e.preventDefault();
@@ -261,6 +293,7 @@ class RawList extends Component {
                 onFocus={!readonly && this.handleFocus}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
+                onClick={!readonly && this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 className={
                     'input-dropdown-container ' +
