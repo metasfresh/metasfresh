@@ -34,7 +34,7 @@ class Device extends Component {
 
     componentWillUnmount() {
         this.mounted = false;
-        (this.sockClient && this.sockClient.connected) && 
+        (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
     }
 

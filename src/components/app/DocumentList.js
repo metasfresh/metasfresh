@@ -131,9 +131,9 @@ class DocumentList extends Component {
     }
 
     connectWS = (viewId) => {
-        (this.sockClient && this.sockClient.connected) && 
+        (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
-        
+
         this.sock = new SockJs(config.WS_URL);
         this.sockClient = Stomp.Stomp.over(this.sock);
         this.sockClient.debug = null;
@@ -170,7 +170,7 @@ class DocumentList extends Component {
     }
 
     disconnectWS = () => {
-        (this.sockClient && this.sockClient.connected) && 
+        (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
     }
 

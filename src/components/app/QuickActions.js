@@ -31,11 +31,11 @@ class QuickActions extends Component {
             this.fetchActions();
         }
     }
-    
+
     componentDidMount = () => {
         this.mounted = true;
     }
-    
+
     componentWillUnmount = () => {
         this.mounted = false;
     }
