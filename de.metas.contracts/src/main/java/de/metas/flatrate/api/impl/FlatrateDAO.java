@@ -365,7 +365,10 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final boolean onlyNonSim)
 	{
-		return retrieveEntries(null, flatrateTerm, date, dataEntryType, null, onlyNonSim);
+		final I_C_Flatrate_Conditions fc = null;
+		final I_C_UOM uom = null;
+
+		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uom, onlyNonSim);
 	}
 
 	@Override
