@@ -41,6 +41,7 @@
 .table td,
 .table th {
     padding: .50rem .75rem;
+    height: 42px;
 }
 
 .table td {
@@ -51,7 +52,6 @@
     padding-top: 0;
     padding-bottom: 0;
     vertical-align: middle;
-    height: 2.6rem;
 }
 
 .table td span {
@@ -311,7 +311,7 @@ th {
 
 /* INDENT SIGN ================ */
 
-$indent-height: 37px;
+$indent-height: 42px;
 $indent-height-mid: 18px;
 $indent-signs-offset: 6px;
 
