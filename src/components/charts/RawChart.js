@@ -33,6 +33,7 @@ class RawChart extends Component {
             .then(response => {
                 return response.data.datasets[0].values
             })
+            .catch(()=>{});
     }
 
     fetchData(){
@@ -66,6 +67,15 @@ class RawChart extends Component {
                 intervalId: null
             })
         }
+    }
+
+    renderError() {
+        return(
+            <div className="error-load-data">
+                <h6 className="error-load-text">Error loading data...</h6>
+                <div className="error-loading"></div>
+            </div>
+        );
     }
 
     renderChart() {
@@ -117,7 +127,12 @@ class RawChart extends Component {
 
     render(){
         const {chartData} = this.state;
-        return chartData.length > 0 && this.renderChart();
+
+        if(chartData){
+            return chartData.length > 0 && this.renderChart();
+        } else {
+            return this.renderError();
+        }
     }
 }
 
