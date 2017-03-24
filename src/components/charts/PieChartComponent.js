@@ -44,10 +44,7 @@ class PieChartComponent extends Component {
 
         if(responsive) {
             wrapperWidth = document.getElementsByClassName(chartClass+'-wrapper')[0].offsetWidth;
-            if(wrapperWidth<height){
-                chartWidth = wrapperWidth;
-            }
-
+            chartWidth = wrapperWidth;
         }
         const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
         const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
