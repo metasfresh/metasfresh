@@ -505,7 +505,6 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 });
-
             }
         })
     }

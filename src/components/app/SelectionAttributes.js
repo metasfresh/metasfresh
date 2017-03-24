@@ -30,16 +30,16 @@ class SelectionAttributes extends Component {
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
             (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
         ){
-                DLWrapperSetData([], null, () => {
-                    DLWrapperSetLayout([], () => {
-                        if(selected && selected.length === 1){
-                            if(selected[0] == 0){
-                                return;
-                            }
-                            this.fetchActions();
+            DLWrapperSetData([], null, () => {
+                DLWrapperSetLayout([], () => {
+                    if(selected && selected.length === 1){
+                        if(selected[0] == 0){
+                            return;
                         }
-                    })
+                        this.fetchActions();
+                    }
                 })
+            })
         }
     }
 

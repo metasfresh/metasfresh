@@ -34,11 +34,11 @@ class Modal extends Component {
             pending: false,
             waitingFetch: false
         }
-
-        this.init();
     }
 
     componentDidMount() {
+        this.init();
+
         // Dirty solution, but use only if you need to
         // there is no way to affect body
         // because body is out of react app range
