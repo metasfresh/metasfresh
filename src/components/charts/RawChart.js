@@ -33,7 +33,7 @@ class RawChart extends Component {
             .then(response => {
                 return response.data.datasets[0].values
             })
-            .catch(error => {});
+            .catch(()=>{});
     }
 
     fetchData(){
@@ -72,8 +72,8 @@ class RawChart extends Component {
     renderError() {
         return(
             <div className="error-load-data">
-                <h5>Error loading data...</h5>
-                <div className="loader"></div>
+                <h6 className="error-load-text">Error loading data...</h6>
+                <div className="error-loading"></div>
             </div>
         );
     }

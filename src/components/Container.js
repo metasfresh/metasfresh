@@ -39,7 +39,7 @@ class Container extends Component {
                     isDocumentNotSaved={isDocumentNotSaved}
                 />
                 {connectionError && <ErrorScreen />}
-                {!dontShowNotifications && <NotificationHandler />}
+                <NotificationHandler dontShowNotifications={dontShowNotifications} />
                 <div
                     className={
                         'header-sticky-distance js-unselect ' +
