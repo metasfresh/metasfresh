@@ -51,7 +51,8 @@ class DataLayoutWrapper extends Component {
         dispatch(patchRequest(
             entity, windowType, dataId, null, null, prop, value, null, null, null, viewId
         )).then(response => {
-            response.data[0] && response.data[0].fields.map(item => {
+            const preparedData = parseToDisplay(response.data[0].fields);
+            preparedData && preparedData.map(item => {
                 this.setState({
                     data: this.state.data.map(field => {
                         if(field.field === item.field){
@@ -68,8 +69,9 @@ class DataLayoutWrapper extends Component {
     }
 
     setData = (data, dataId, cb) => {
+        const preparedData = parseToDisplay(data);
         this.mounted && this.setState({
-            data: parseToDisplay(data),
+            data: preparedData,
             dataId: dataId
         }, () => {
             cb && cb();
