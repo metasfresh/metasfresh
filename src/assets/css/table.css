@@ -3,11 +3,6 @@
     margin-bottom: 0;
 }
 
-.table *::selection {
-    background-color: transparent;
-    color: $brand-font-color;
-}
-
 .table tbody+tbody {
     border-top: 0;
 }
