@@ -34,26 +34,26 @@ $loader: #808080;
         border-left-color: $loader-bcg;
         border-right-color: $loader-bcg;
         border-top-color: $loader-bcg;  
-  }
+    }
 
     25% {
         border-right-color: $loader;
         border-left-color: $loader-bcg;
         border-top-color: $loader-bcg;
         border-bottom-color: $loader-bcg;
-  }
+    }
 
     50% {
         border-top-color: $loader;
         border-left-color: $loader-bcg;
         border-right-color: $loader-bcg;
         border-bottom-color: $loader-bcg;
-  }
+    }
 
     75% {
         border-left-color: $loader;
         border-right-color: $loader-bcg;
         border-top-color: $loader-bcg;
         border-bottom-color: $loader-bcg;
-  }
+    }
 }
