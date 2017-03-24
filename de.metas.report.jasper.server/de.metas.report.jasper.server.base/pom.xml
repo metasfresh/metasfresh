@@ -18,36 +18,11 @@
 			<artifactId>jasperreports</artifactId>
 		</dependency>
 
-		<!-- 
-		Adding spring-core to avoid:
-java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.core.io.Resource
-        at org.jboss.mx.loading.LoadMgr3.beginLoadTask(LoadMgr3.java:212)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClassImpl(RepositoryClassLoader.java:521)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClass(RepositoryClassLoader.java:415)
-        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
-        at java.lang.Class.forName0(Native Method)
-        at java.lang.Class.forName(Class.java:270)
-        at net.sf.jasperreports.engine.util.JRClassLoader.loadClassForRealName(JRClassLoader.java:157)
-		 -->
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- 
-		Adding spring-beans to avoid:
-java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.beans.factory.ListableBeanFactory
-        at org.jboss.mx.loading.LoadMgr3.beginLoadTask(LoadMgr3.java:212)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClassImpl(RepositoryClassLoader.java:521)
-        at org.jboss.mx.loading.RepositoryClassLoader.loadClass(RepositoryClassLoader.java:415)
-        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
-        at java.lang.Class.forName0(Native Method)
-        at java.lang.Class.forName(Class.java:270)
-        at net.sf.jasperreports.engine.util.JRClassLoader.loadClassForRealName(JRClassLoader.java:157)
-		-->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-		</dependency>
+		
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -65,12 +40,6 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 			<version>3.1</version>
 		</dependency>
 		-->
-		
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>

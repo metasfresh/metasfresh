@@ -58,6 +58,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.ISessionDAO;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -2546,7 +2547,7 @@ public abstract class PO
 
 		//
 		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
-		final I_AD_Session session = get_Session();
+		final MFSession session = get_Session();
 		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
 		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
 
@@ -2690,7 +2691,7 @@ public abstract class PO
 		{
 			return;
 		}
-		final I_AD_Session session = get_Session();
+		final MFSession session = get_Session();
 		if (session == null)
 		{
 			return;
@@ -5131,7 +5132,7 @@ public abstract class PO
 	 * @return session or null
 	 */
 	// metas
-	private final I_AD_Session get_Session()
+	private final MFSession get_Session()
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{
@@ -5139,7 +5140,7 @@ public abstract class PO
 			return null;
 		}
 
-		final MSession session = MSession.get(getCtx(), false);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
 		if (session == null)
 		{
 			log.debug("No Session found");

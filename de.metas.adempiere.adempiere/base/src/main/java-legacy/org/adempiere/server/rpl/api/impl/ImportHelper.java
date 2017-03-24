@@ -47,6 +47,8 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -87,7 +89,6 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReplicationStrategy;
-import org.compiere.model.MSession;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -1680,20 +1681,20 @@ public class ImportHelper implements IImportHelper
 			s_log.debug("Skip because there is not AD_Session_ID");
 			return;
 		}
-		final MSession session = MSession.get(ctx, adSessionId);
+		final MFSession session = Services.get(ISessionBL.class).getSessionById(ctx, adSessionId);
 		if (session == null)
 		{
 			s_log.info("Skip because no session found for ID: {}", adSessionId);
 			return;
 		}
-		if (session.isProcessed())
+		if (session.isDestroyed())
 		{
 			s_log.info("Skip because session is already processed: {}", session);
 			return;
 		}
 
 		// Update context from session
-		session.updateContext(true); // force=true
+		session.updateContext(ctx);
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, session.getAD_Client_ID(), false);
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Session_ID, adSessionId, false);
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Role_ID, session.getAD_Role_ID(), true);

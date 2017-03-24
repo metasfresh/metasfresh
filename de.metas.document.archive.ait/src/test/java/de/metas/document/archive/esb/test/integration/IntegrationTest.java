@@ -39,6 +39,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.test.JMSServer;
 import org.apache.camel.spring.SpringCamelContext;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Session;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.junit.After;
@@ -50,7 +51,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.document.archive.esb.test.util.ArchiveImportHelper;
 import de.metas.document.archive.esb.test.util.MockedAdempiereImportProcessor;
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;

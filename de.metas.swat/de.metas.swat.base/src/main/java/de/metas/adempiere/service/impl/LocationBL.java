@@ -27,11 +27,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
@@ -45,6 +47,7 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.dpd.model.I_DPD_Route;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 
 public class LocationBL implements ILocationBL
@@ -656,25 +659,43 @@ public class LocationBL implements ILocationBL
 	{
 		final String bPartnerBlock = null;
 		final String userBlock = null;
-		return mkAddress(location, bPartnerBlock, userBlock);
+		final I_C_BPartner bPartner = null;
+		return mkAddress(location, bPartner, bPartnerBlock, userBlock);
 	}
 	
 	@Override
-	public String mkAddress(final I_C_Location location, String bPartnerBlock, String userBlock)
+	public String mkAddress(final I_C_Location location, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
 	{
 		final Properties ctx = Env.getCtx();
 
 		final I_C_Country countryLocal = Services.get(ICountryDAO.class).getDefault(ctx);
 		final boolean isLocalAddress = location.getC_Country_ID() == countryLocal.getC_Country_ID();
 
-		final String addr = mkAddress(location, isLocalAddress, bPartnerBlock, userBlock);
+		final String addr = mkAddress(location, isLocalAddress, bPartner, bPartnerBlock, userBlock);
 		return addr;
 	}
 
-	public String mkAddress(I_C_Location location, boolean isLocalAddress, String bPartnerBlock, String userBlock)
+	public String mkAddress(I_C_Location location, boolean isLocalAddress, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
 	{
-		final de.metas.adempiere.model.I_C_Location locationEx = InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_Location.class);
-		return new AddressBuilder().buildAddressString(locationEx, isLocalAddress, bPartnerBlock, userBlock);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+		final String adLanguage;
+		final int orgId;
+		if (bPartner == null)
+		{
+			adLanguage = Services.get(ICountryDAO.class).getDefault(Env.getCtx()).getAD_Language();
+			orgId = Env.getAD_Org_ID(ctx);
+		}
+		else
+		{
+			adLanguage = bPartner.getAD_Language();
+			orgId = bPartner.getAD_Org_ID();
+		}
+		
+		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, orgId, I_AD_Org.class, ITrx.TRXNAME_None);
+		final de.metas.adempiere.model.I_C_Location loc = InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_Location.class);
+		return new AddressBuilder(org)
+				.setLanguage(adLanguage)
+				.buildAddressString(loc, isLocalAddress, bPartnerBlock, userBlock);
 	}
 
 	@Override

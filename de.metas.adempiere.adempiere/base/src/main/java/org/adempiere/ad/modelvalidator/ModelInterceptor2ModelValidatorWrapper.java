@@ -24,8 +24,8 @@ package org.adempiere.ad.modelvalidator;
 
 
 import org.adempiere.ad.security.IUserLoginListener;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.util.Check;
-import org.compiere.model.I_AD_Session;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -147,7 +147,7 @@ public final class ModelInterceptor2ModelValidatorWrapper implements ModelValida
 	}
 
 	@Override
-	public void beforeLogout(final I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		if (userLoginListener != null)
 		{
@@ -156,7 +156,7 @@ public final class ModelInterceptor2ModelValidatorWrapper implements ModelValida
 	}
 
 	@Override
-	public void afterLogout(final I_AD_Session session)
+	public void afterLogout(final MFSession session)
 	{
 		if (userLoginListener != null)
 		{

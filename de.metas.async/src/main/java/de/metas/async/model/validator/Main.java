@@ -26,6 +26,7 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilder;
 import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
@@ -34,7 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Session;
 import org.compiere.util.Ini;
 
 import de.metas.async.api.IAsyncBatchListeners;
@@ -136,7 +136,7 @@ public class Main extends AbstractModuleInterceptor
 	 * Destroy all queueud processors on user logout.
 	 */
 	@Override
-	public void beforeLogout(final I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		if (!Ini.isClient())
 		{

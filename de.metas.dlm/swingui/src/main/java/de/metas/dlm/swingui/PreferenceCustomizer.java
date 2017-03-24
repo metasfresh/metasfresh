@@ -98,6 +98,10 @@ public class PreferenceCustomizer
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+		// note that this this is no typo; the entry for "live" shall have the "test" value because the DLM engine might temporarily 
+		// change the level of individual records from live (i.e. 1) to test (i.e. 2), 
+		// but those records with level "test" shall not be hidden from the user.
+		// Also see the constants' javadocs for more details.
 		final ValueNamePair live = ValueNamePair.of(Integer.toString(IMigratorService.DLM_Level_TEST),
 				msgBL.translate(Env.getCtx(), IMigratorService.MSG_DLM_Level_LIVE));
 

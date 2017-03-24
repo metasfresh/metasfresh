@@ -189,6 +189,13 @@ public class ProductPriceQuery
 		return retrieveDefault(strictDefault, I_M_ProductPrice.class);
 	}
 
+	/**
+	 * 
+	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
+	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
+	 * @param type
+	 * @return
+	 */
 	public <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, final Class<T> type)
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
@@ -375,7 +382,7 @@ public class ProductPriceQuery
 		_attributePricing_asiToMatch = asi;
 		return this;
 	}
-	
+
 	public ProductPriceQuery dontMatchAttributes()
 	{
 		_attributePricing = null;
@@ -572,7 +579,7 @@ public class ProductPriceQuery
 		private static boolean isAttributeInstanceMatching(final I_M_AttributeInstance expected, final I_M_AttributeInstance actual)
 		{
 			final int expectedAttributeValueId = Util.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
-			
+
 			final int actualAttributeValueId;
 			if (actual == null)
 			{

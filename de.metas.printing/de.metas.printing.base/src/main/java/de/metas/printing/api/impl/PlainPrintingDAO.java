@@ -33,6 +33,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.POJOQuery;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,7 +46,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -433,11 +434,17 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_Session retrieveCurrentSession(final Properties ctx)
+	public MFSession retrieveCurrentSession(final Properties ctx)
 	{
-		final int sessionId = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
-		Check.assume(sessionId > 0, "No session found in context");
-		return lookupMap.lookup(I_AD_Session.class, sessionId);
+		return Services.get(ISessionBL.class).getCurrentSession(ctx);
+//		final int sessionId = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
+//		Check.assume(sessionId > 0, "No session found in context");
+//		final I_AD_Session sessionPO = lookupMap.lookup(I_AD_Session.class, sessionId);
+//		if(sessionPO == null)
+//		{
+//			return null;
+//		}
+//		return new MFSession(sessionPO);
 	}
 
 	@Override

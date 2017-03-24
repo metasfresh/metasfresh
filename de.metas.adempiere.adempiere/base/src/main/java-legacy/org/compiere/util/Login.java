@@ -32,6 +32,8 @@ import org.adempiere.acct.api.exception.AccountingException;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.OrgResource;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -41,7 +43,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -51,14 +52,12 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MSession;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
@@ -231,12 +230,8 @@ public class Login
 		//
 		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
 		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
-		final I_AD_Session session = startSession();
-		if (!username.equals(session.getLoginUsername()))
-		{
-			session.setLoginUsername(username);
-			InterfaceWrapperHelper.save(session);
-		}
+		final MFSession session = startSession();
+		session.setLoginUsername(username);
 
 		final Set<KeyNamePair> roles = new LinkedHashSet<>();
 		//
@@ -282,7 +277,7 @@ public class Login
 			// metas: us902: Update logged in user if not equal.
 			// Because we are creating the session before we know which user will be logged, initially
 			// the AD_Session.CreatedBy is zero.
-			MSession.setAD_User_ID_AndSave(session, user.getAD_User_ID());
+			session.setAD_User_ID(user.getAD_User_ID());
 			// metas: us902: end
 
 			final boolean isAccountLocked = user.isAccountLocked();
@@ -381,31 +376,25 @@ public class Login
 		}
 	}
 
-	private I_AD_Session startSession()
+	private MFSession startSession()
 	{
 		final LoginContext ctx = getCtx();
 
-		MSession sessionPO;
+		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx.getSessionContext());
 		final String remoteAddr = getRemoteAddr();
 		if (remoteAddr != null)
 		{
-			sessionPO = MSession.get(ctx.getSessionContext(), remoteAddr, getRemoteHost(), getWebSession());
-		}
-		else
-		{
-			sessionPO = MSession.get(ctx.getSessionContext(), true);
+			session.setRemote_Addr(remoteAddr, getRemoteHost());
+			session.setWebSessionId(getWebSession());
 		}
 
-		final I_AD_Session session = InterfaceWrapperHelper.create(sessionPO, I_AD_Session.class);
 		return session;
 	}
 
-	private void destroySessionOnLoginIncorrect(final I_AD_Session session)
+	private void destroySessionOnLoginIncorrect(final MFSession session)
 	{
-		session.setIsLoginIncorrect(true);
-
-		final MSession sessionPO = LegacyAdapters.convertToPO(session);
-		sessionPO.logout();
+		session.setLoginIncorrect();
+		Services.get(ISessionBL.class).logoutCurrentSession();
 
 		getCtx().resetAD_Session_ID();
 	}
@@ -611,18 +600,11 @@ public class Login
 
 		//
 		// Update AD_Session
-		final MSession session = MSession.get(ctx.getSessionContext(), false);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx.getSessionContext());
 		if (session != null)
 		{
-			session.set_ValueNoCheck(I_AD_Session.COLUMNNAME_AD_Client_ID, AD_Client_ID); // Force AD_Client_ID update
-			session.setAD_Org_ID(AD_Org_ID);
-			session.setAD_Role_ID(AD_Role_ID);
-			session.setAD_User_ID(AD_User_ID);
-			session.setLoginDate(ctx.getLoginDate());
-			if (session.save())
-			{
-				session.updateContext(true);
-			}
+			session.setLoginInfo(AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID, ctx.getLoginDate());
+			session.updateContext(ctx.getSessionContext());
 		}
 		else
 		{

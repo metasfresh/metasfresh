@@ -39,6 +39,7 @@ import org.adempiere.ad.modelvalidator.ModelInterceptorInitException;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.IUserLoginListener;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -542,7 +543,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return listeners;
 	}
 
-	public void fireBeforeLogout(final I_AD_Session session)
+	public void fireBeforeLogout(final MFSession session)
 	{
 		final int adClientId = session.getAD_Client_ID();
 		final List<IUserLoginListener> listeners = getUserLoginListener(adClientId);
@@ -559,7 +560,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	public void fireAfterLogout(final I_AD_Session session)
+	public void fireAfterLogout(final MFSession session)
 	{
 		final int adClientId = session.getAD_Client_ID();
 		final List<IUserLoginListener> listeners = getUserLoginListener(adClientId);
