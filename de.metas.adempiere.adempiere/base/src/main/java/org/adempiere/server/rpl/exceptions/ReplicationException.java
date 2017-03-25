@@ -49,7 +49,7 @@ public class ReplicationException extends AdempiereException
 	@Override
 	public ReplicationException setParameter(final String parameterName, final Object value)
 	{
-		setParameter(parameterName, value);
+		super.setParameter(parameterName, value);
 		return this;
 	}
 
