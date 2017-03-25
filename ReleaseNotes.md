@@ -54,15 +54,23 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/451) Bug in Sales Order Line, Add new
-    * 
+    * Fixed an issue in the "add new" functionality of Sales Order Line.
   * [#474](https://github.com/metasfresh/metasfresh-webui-frontend/issues/474) Editing in the middle of a text field makes the cursor jump to the end
+    * This change fixes a user experience issue that let the curson jump to the end when the user tried to edit in the middle of a text.
   * [#502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/502) Lookup field layout issue when it has red border
+    * Adjusting the layout of red bordered lookup elements, now aboiding that existing icons overlap the border.
   * [#526](https://github.com/metasfresh/metasfresh-webui-frontend/issues/526) Running a process from menu does not work
+    * Fixing a Bug that prevented to run processes called from navigation menu.
   * [#539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/539) Confirm autocomplete Field entry in grid functionality
+    * Now it is possible for the user to select and confirm autocomplete entries in the grid view of included tabs.
   * [#545](https://github.com/metasfresh/metasfresh-webui-frontend/issues/545) View's windowId is not matching the expected one
+    * This is fixing a Bug which mixed up the viewID's when navigating fast via browser forth and back through the screens.
   * [#547](https://github.com/metasfresh/metasfresh-webui-frontend/issues/547) Menu's first element is hidden behind on mobile 
+    * Fixing an issue in mobile responsive navigation design. Now also showing the first link on mobile size resolution.
   * [#550](https://github.com/metasfresh/metasfresh-webui-frontend/issues/550) Clicking on grid view breadcrumb item does not work
+    * Bugfix for the breadcrumb navigaion on griwd view items.
   * [#558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/558) Respect saveStatus in connected modal
+    * Fixing a Bug to repect the saveStatus also in connected modal overlays.
 
 * metasfresh-webui-api
   * [#256](https://github.com/metasfresh/metasfresh-webui-api/issues/256) Cannot create a new BPartner contact
