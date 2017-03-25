@@ -149,7 +149,7 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("widgetType")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JSONLayoutWidgetType widgetType;
+	private JSONLayoutWidgetType widgetType;
 
 	@JsonProperty("value")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -231,6 +231,12 @@ public final class JSONDocumentField implements Serializable
 	{
 		value = JSONNullValue.wrapIfNull(jsonValue);
 		valueReason = reason;
+		return this;
+	}
+	
+	public JSONDocumentField setWidgetType(final JSONLayoutWidgetType widgetType)
+	{
+		this.widgetType = widgetType;
 		return this;
 	}
 

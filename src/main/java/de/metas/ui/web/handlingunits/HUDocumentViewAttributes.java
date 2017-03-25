@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
@@ -158,10 +159,13 @@ import lombok.NonNull;
 	{
 		final String fieldName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
 		final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
+		final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
 				.setDisplayed(true)
 				.setMandatory(false)
-				.setReadonly(isReadonly(fieldName));
+				.setReadonly(isReadonly(fieldName))
+				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType))
+				;
 	}
 
 	private boolean isReadonly(final String attributeName)
