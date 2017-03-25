@@ -1,29 +1,5 @@
 package org.compiere.acct;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -56,7 +32,6 @@ public final class PostingException extends AdempiereException
 	private String _detailMessage;
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
-	private final Map<String, Object> parameters = new LinkedHashMap<>();
 
 	public PostingException(final Doc document)
 	{
@@ -135,6 +110,7 @@ public final class PostingException extends AdempiereException
 		message.append("\n Preserve Posted status: ").append(isPreserveDocumentPostedStatus());
 
 		// Other parameters
+		final Map<String, Object> parameters = getParameters();
 		for (final Map.Entry<String, Object> param : parameters.entrySet())
 		{
 			final String parameterName = param.getKey();
@@ -315,10 +291,10 @@ public final class PostingException extends AdempiereException
 		return _logLevel;
 	}
 
+	@Override
 	public PostingException setParameter(final String parameterName, Object parameterValue)
 	{
-		parameters.put(parameterName, parameterValue);
-		resetMessageBuilt();
+		super.setParameter(parameterName, parameterValue);
 		return this;
 	}
 }
