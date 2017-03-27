@@ -50,11 +50,12 @@ class MasterWindow extends Component {
 
     componentWillUnmount() {
         const { master } = this.props;
-        const isDocumentNotSaved = !master.saveStatus.saved;
+        const isDocumentNotSaved = !master.saveStatus.saved && master.saveStatus.saved !== undefined;
+        window.removeEventListener('beforeunload', this.confirm);
 
         if(isDocumentNotSaved){
             const result = window.confirm('Do you really want to leave?');
-            window.removeEventListener('beforeunload', this.confirm);
+
             if(!result){
                 this.context.router.goBack();
             }
@@ -186,7 +187,7 @@ class MasterWindow extends Component {
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
-                        modalSaveStatus={modal.saveStatus ? modal.saveStatus.saved : true}
+                        modalSaveStatus={modal.saveStatus.saved !== undefined ? modal.saveStatus.saved : true}
                         isDocumentNotSaved={modal.saveStatus ?
                             !modal.saveStatus.saved &&
                             !modal.validStatus.initialValue : false
