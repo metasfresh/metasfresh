@@ -14,6 +14,9 @@ Here come the actual release notes:
 
 **this week's release candidate**
 
+## Features
+* metasfresh-backend
+  * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
 
 # metasfresh 5.2 (2017-12)
 
