@@ -7,6 +7,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -42,8 +43,11 @@ import de.metas.process.JavaProcess;
 
 public abstract class C_Flatrate_Term_Create extends JavaProcess
 {
+
 	// services
 	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+	private static String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
 
 	private Timestamp startDate;
 	private Timestamp endDate;
@@ -122,24 +126,45 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	{
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final boolean completeIt = true;
-		final I_C_Flatrate_Term term = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, completeIt);
-		if (term == null)
+
+		final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, false);
+
+		if (newTerm == null)
 		{
 			return null;
 		}
 
 		if (product != null)
 		{
-			term.setM_Product_ID(product.getM_Product_ID());
+			newTerm.setM_Product_ID(product.getM_Product_ID());
 		}
 
 		if (endDate != null)
 		{
-			term.setEndDate(endDate);
+			newTerm.setEndDate(endDate);
 		}
 
-		InterfaceWrapperHelper.save(term);
-		return term;
+		InterfaceWrapperHelper.save(newTerm);
+
+		// task #1169
+		// in case the term to be created will overlap with other term regarding time period and product
+		// the user must be announced about this and the new term shall not be completed
+		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(newTerm);
+
+		if (hasOverlappingTerms)
+		{
+			addLog(Services.get(IMsgBL.class).getMsg(
+					InterfaceWrapperHelper.getCtx(newTerm),
+					MSG_HasOverlapping_Term,
+					new Object[] { newTerm.getC_Flatrate_Term_ID(), newTerm.getBill_BPartner().getValue() }));
+		}
+
+		if (completeIt && !hasOverlappingTerms)
+		{
+			flatrateBL.complete(newTerm);
+		}
+
+		return newTerm;
 	}
 
 	/**
