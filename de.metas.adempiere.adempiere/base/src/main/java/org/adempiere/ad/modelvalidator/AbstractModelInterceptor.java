@@ -24,6 +24,7 @@ package org.adempiere.ad.modelvalidator;
 
 
 import org.adempiere.ad.security.IUserLoginListener;
+import org.adempiere.ad.session.MFSession;
 import org.compiere.model.I_AD_Client;
 
 /**
@@ -65,13 +66,13 @@ public abstract class AbstractModelInterceptor implements IModelInterceptor, IUs
 	}
 
 	@Override
-	public void beforeLogout(final org.compiere.model.I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		// nothing
 	}
 
 	@Override
-	public void afterLogout(final org.compiere.model.I_AD_Session session)
+	public void afterLogout(final MFSession session)
 	{
 		// nothing
 	}

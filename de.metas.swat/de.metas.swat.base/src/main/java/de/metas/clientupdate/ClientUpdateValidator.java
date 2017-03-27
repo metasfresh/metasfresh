@@ -31,12 +31,12 @@ import java.text.MessageFormat;
 import javax.swing.JOptionPane;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Session;
 import org.compiere.model.MSystem;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -196,7 +196,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void beforeLogout(I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		if (checker == null)
 		{

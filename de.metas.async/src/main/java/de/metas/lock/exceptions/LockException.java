@@ -24,8 +24,6 @@ package de.metas.lock.exceptions;
 
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -52,8 +50,6 @@ public abstract class LockException extends AdempiereException
 	private String sql;
 	private Object[] sqlParams;
 	private ITableRecordReference record;
-
-	private Map<String, Object> parameters = null;
 
 	public LockException(final String message)
 	{
@@ -86,13 +82,7 @@ public abstract class LockException extends AdempiereException
 			message.append("\n SQL Params: ").append(Arrays.asList(sqlParams));
 		}
 
-		if (parameters != null)
-		{
-			for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
-			{
-				message.append("\n ").append(paramName2Value.getKey()).append(": ").append(paramName2Value.getValue());
-			}
-		}
+		message.append(buildParametersString());
 
 		return message.toString();
 	}
@@ -114,17 +104,11 @@ public abstract class LockException extends AdempiereException
 		return this;
 	}
 
+	@Override
 	@OverridingMethodsMustInvokeSuper
 	public LockException setParameter(final String name, final Object value)
 	{
-		if (parameters == null)
-		{
-			parameters = new LinkedHashMap<>();
-		}
-
-		parameters.put(name, value);
-		resetMessageBuilt();
-
+		super.setParameter(name, value);
 		return this;
 	}
 }

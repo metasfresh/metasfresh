@@ -598,7 +598,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		// Qtys
 		ppOrderBL.setQty(order, qtyToSupply);
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
-		order.setYield(Env.ZERO);
+		order.setYield(BigDecimal.ZERO);
 
 		order.setScheduleType(X_PP_MRP.TYPEMRP_Demand);
 		order.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);

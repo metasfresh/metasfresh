@@ -51,6 +51,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
@@ -63,7 +64,6 @@ import org.junit.rules.TestName;
 import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
 import de.metas.document.archive.api.IDocOutboundDAO;
