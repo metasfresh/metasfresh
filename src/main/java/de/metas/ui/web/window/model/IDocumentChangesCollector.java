@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
@@ -22,18 +22,27 @@ import de.metas.ui.web.window.descriptor.DetailId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public interface IDocumentChangesCollector
 {
-	Map<DocumentPath, DocumentChanges> getDocumentChangesByPath();
+	/**
+	 * Mark the changes of given document path as primary changes.
+	 * 
+	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
+	 * 
+	 * @param documentPath
+	 */
+	void setPrimaryChange(DocumentPath documentPath);
+
+	Stream<DocumentChanges> streamOrderedDocumentChanges();
 
 	void collectValueChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
@@ -63,7 +72,11 @@ public interface IDocumentChangesCollector
 
 	void collectDocumentSaveStatusChanged(DocumentPath documentPath, DocumentSaveStatus documentSaveStatus);
 
-	void collectStaleDetailId(DocumentPath documentPath, DetailId detailId);
+	void collectStaleDetailId(DocumentPath rootDocumentPath, DetailId detailId);
+
+	void collectAllowNew(DocumentPath rootDocumentPath, DetailId detailId, final LogicExpressionResult allowNew);
+
+	void collectAllowDelete(DocumentPath rootDocumentPath, DetailId detailId, final LogicExpressionResult allowDelete);
 
 	void collectEvent(IDocumentFieldChangedEvent event);
 

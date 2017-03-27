@@ -3,22 +3,27 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.view.IDocumentView;
@@ -32,6 +37,7 @@ import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -74,31 +80,47 @@ public final class JSONDocument implements Serializable
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
-		final List<JSONDocumentField> jsonFields = new ArrayList<>();
+		//
+		// Fields
+		{
+			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
-		// Add pseudo "ID" field first
-		jsonFields.add(0, JSONDocumentField.idField(document.getDocumentIdAsJson()));
+			// Add pseudo "ID" field first
+			jsonFields.add(0, JSONDocumentField.idField(document.getDocumentIdAsJson()));
 
-		// Append the other fields
-		document.getFieldViews()
-				.stream()
-				.filter(jsonOpts.documentFieldFilter())
-				.map(JSONDocumentField::ofDocumentField)
-				.forEach(jsonFields::add);
+			// Append the other fields
+			document.getFieldViews()
+					.stream()
+					.filter(jsonOpts.documentFieldFilter())
+					.map(JSONDocumentField::ofDocumentField)
+					.forEach(jsonFields::add);
 
-		jsonDocument.setFields(jsonFields);
+			jsonDocument.setFields(jsonFields);
+		}
 
+		//
+		// Valid Status
 		final DocumentValidStatus documentValidStatus = document.getValidStatus();
 		if (documentValidStatus != null)
 		{
 			jsonDocument.setValidStatus(documentValidStatus);
 		}
 
+		//
+		// Save Status
 		final DocumentSaveStatus documentSaveStatus = document.getSaveStatus();
 		if (documentSaveStatus != null)
 		{
 			jsonDocument.setSaveStatus(documentSaveStatus);
 		}
+
+		//
+		// Included tabs info
+		document.getIncludedDocumentsCollections()
+				.stream()
+				.map(JSONIncludedTabInfo::new)
+				.forEach(jsonDocument::setIncludedTabInfo);
+		jsonDocument.updateStaleTabIds();
 
 		//
 		// Set debugging info
@@ -126,27 +148,13 @@ public final class JSONDocument implements Serializable
 
 	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONOptions jsonOpts)
 	{
-		final Collection<DocumentChanges> documentChangedEventList = documentChangesCollector.getDocumentChangesByPath().values();
-		if (documentChangedEventList.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<JSONDocument> jsonDocuments = new ArrayList<>(documentChangedEventList.size());
-		for (final DocumentChanges documentChangedEvents : documentChangedEventList)
-		{
-			final JSONDocument jsonDocument = ofEvent(documentChangedEvents, jsonOpts);
-			if (jsonDocument == null)
-			{
-				continue;
-			}
-			jsonDocuments.add(jsonDocument);
-		}
-
-		return jsonDocuments;
+		return documentChangesCollector.streamOrderedDocumentChanges()
+				.map(documentChanges -> ofEventOrNull(documentChanges, jsonOpts))
+				.filter(jsonDocument -> jsonDocument != null)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)
+	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)
 	{
 		if (documentChangedEvents.isEmpty())
 		{
@@ -157,21 +165,23 @@ public final class JSONDocument implements Serializable
 
 		//
 		// Fields
-		final List<JSONDocumentField> jsonFields = new ArrayList<>();
-		documentChangedEvents.getFieldChangesList()
-				.stream()
-				.filter(jsonOpts.documentFieldChangeFilter())
-				.forEach((field) -> {
-					// Add the pseudo-field "ID" first
-					if (field.isKey())
-					{
-						jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
-					}
+		{
+			final List<JSONDocumentField> jsonFields = new ArrayList<>();
+			documentChangedEvents.getFieldChangesList()
+					.stream()
+					.filter(jsonOpts.documentFieldChangeFilter())
+					.forEach((field) -> {
+						// Add the pseudo-field "ID" first
+						if (field.isKey())
+						{
+							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
+						}
 
-					// Append the other fields
-					jsonFields.add(JSONDocumentField.ofDocumentFieldChangedEvent(field));
-				});
-		jsonDocument.setFields(jsonFields);
+						// Append the other fields
+						jsonFields.add(JSONDocumentField.ofDocumentFieldChangedEvent(field));
+					});
+			jsonDocument.setFields(jsonFields);
+		}
 
 		//
 		// Valid status
@@ -190,8 +200,12 @@ public final class JSONDocument implements Serializable
 		}
 
 		//
-		// Stale tabs
-		jsonDocument.setStaleTabIds(DetailId.toJson(documentChangedEvents.getStaleDetailIds()));
+		// Included tabs info
+		documentChangedEvents.getIncludedDetailInfos()
+				.stream()
+				.map(JSONIncludedTabInfo::new)
+				.forEach(jsonDocument::setIncludedTabInfo);
+		jsonDocument.updateStaleTabIds();
 
 		return jsonDocument;
 	}
@@ -231,7 +245,7 @@ public final class JSONDocument implements Serializable
 
 			//
 			// Document view record specific attributes
-			if(documentView.isProcessed())
+			if (documentView.isProcessed())
 			{
 				jsonDocument.putOtherProperty("processed", true);
 			}
@@ -239,7 +253,7 @@ public final class JSONDocument implements Serializable
 			{
 				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);
 			}
-			if(documentView.getType() != null)
+			if (documentView.getType() != null)
 			{
 				jsonDocument.putOtherProperty("type", documentView.getType().getName());
 			}
@@ -282,20 +296,26 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentSaveStatus saveStatus;
 
-	@JsonProperty("staleTabIds")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Set<String> staleTabIds;
-
-	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
-
 	@JsonProperty("fields")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
 	private Map<String, JSONDocumentField> fieldsByName;
 
+	@JsonProperty("includedTabsInfo")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
+	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
+
+	@JsonProperty("staleTabIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Deprecated
+	private Set<String> staleTabIds;
+
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<JSONDocument> includedDocuments;
+
+	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	public JSONDocument(final DocumentPath documentPath)
 	{
@@ -335,7 +355,7 @@ public final class JSONDocument implements Serializable
 			, @JsonProperty("valid-status") final String validStatus //
 			, @JsonProperty("save-status") final String saveStatus //
 			, @JsonProperty("fields") final List<JSONDocumentField> fields //
-	)
+			)
 	{
 		super();
 		this.id = id;
@@ -371,22 +391,12 @@ public final class JSONDocument implements Serializable
 
 	private void setSaveStatus(final DocumentSaveStatus documentSaveStatus)
 	{
-		this.saveStatus = documentSaveStatus;
+		saveStatus = documentSaveStatus;
 	}
-	
+
 	public DocumentSaveStatus getSaveStatus()
 	{
 		return saveStatus;
-	}
-
-	private void setStaleTabIds(final Set<String> staleTabIds)
-	{
-		this.staleTabIds = staleTabIds;
-	}
-
-	public Set<String> getStaleTabIds()
-	{
-		return staleTabIds;
 	}
 
 	@JsonAnyGetter
@@ -418,8 +428,135 @@ public final class JSONDocument implements Serializable
 		return fieldsByName == null ? 0 : fieldsByName.size();
 	}
 
+	private void setIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
+	{
+		if (includedTabsInfo == null)
+		{
+			includedTabsInfo = new HashMap<>();
+		}
+		includedTabsInfo.put(tabInfo.tabid, tabInfo);
+	}
+
+	@Deprecated
+	private final void updateStaleTabIds()
+	{
+		if (includedTabsInfo == null || includedTabsInfo.isEmpty())
+		{
+			staleTabIds = ImmutableSet.of();
+		}
+		else
+		{
+			staleTabIds = includedTabsInfo.values().stream()
+					.filter(JSONIncludedTabInfo::isStale)
+					.map(JSONIncludedTabInfo::getTabid)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
 	private void setIncludedDocuments(final List<JSONDocument> includedDocuments)
 	{
 		this.includedDocuments = includedDocuments;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	private static final class JSONIncludedTabInfo
+	{
+		@JsonProperty("tabid")
+		private final String tabid;
+
+		@JsonProperty("stale")
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		private final Boolean stale;
+
+		@JsonProperty("allowCreateNew")
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		private final Boolean allowCreateNew;
+		@JsonProperty("allowCreateNewReason")
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		private final String allowCreateNewReason;
+
+		@JsonProperty("allowDelete")
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		private final Boolean allowDelete;
+		@JsonProperty("allowDeleteReason")
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		private final String allowDeleteReason;
+
+		private JSONIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
+		{
+			tabid = DetailId.toJson(includedDocumentsCollection.getDetailId());
+
+			final boolean stale = includedDocumentsCollection.isStale();
+			this.stale = stale ? Boolean.TRUE : null;
+
+			final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
+			if (allowCreateNew != null)
+			{
+				this.allowCreateNew = allowCreateNew.booleanValue();
+				allowCreateNewReason = allowCreateNew.getName();
+			}
+			else
+			{
+				this.allowCreateNew = null;
+				allowCreateNewReason = null;
+			}
+
+			final LogicExpressionResult allowDelete = includedDocumentsCollection.getAllowDeleteDocument();
+			if (allowDelete != null)
+			{
+				this.allowDelete = allowDelete.booleanValue();
+				allowDeleteReason = allowDelete.getName();
+			}
+			else
+			{
+				this.allowDelete = null;
+				allowDeleteReason = null;
+			}
+		}
+
+		private JSONIncludedTabInfo(final DocumentChanges.IncludedDetailInfo includedDetailInfo)
+		{
+			tabid = DetailId.toJson(includedDetailInfo.getDetailId());
+
+			final boolean stale = includedDetailInfo.isStale();
+			this.stale = stale ? Boolean.TRUE : null;
+
+			final LogicExpressionResult allowCreateNew = includedDetailInfo.getAllowNew();
+			if (allowCreateNew != null)
+			{
+				this.allowCreateNew = allowCreateNew.booleanValue();
+				allowCreateNewReason = allowCreateNew.getName();
+			}
+			else
+			{
+				this.allowCreateNew = null;
+				allowCreateNewReason = null;
+			}
+
+			final LogicExpressionResult allowDelete = includedDetailInfo.getAllowDelete();
+			if (allowDelete != null)
+			{
+				this.allowDelete = allowDelete.booleanValue();
+				allowDeleteReason = allowDelete.getName();
+			}
+			else
+			{
+				this.allowDelete = null;
+				allowDeleteReason = null;
+			}
+
+		}
+
+		public String getTabid()
+		{
+			return tabid;
+		}
+
+		public boolean isStale()
+		{
+			final Boolean stale = this.stale;
+			return stale != null && stale.booleanValue();
+		}
+
 	}
 }

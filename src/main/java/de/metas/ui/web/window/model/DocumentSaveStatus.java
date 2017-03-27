@@ -142,7 +142,12 @@ public final class DocumentSaveStatus
 	{
 		return !hasChangesToBeSaved && !error;
 	}
-
+	
+	public boolean isNotSaved()
+	{
+		return !isSaved();
+	}
+	
 	public boolean hasChangesToBeSaved()
 	{
 		return hasChangesToBeSaved;

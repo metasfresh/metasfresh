@@ -308,12 +308,29 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				idAquired = true;
 				return id;
 			}
-			else
+
+			final Object idObj = getValue(idField);
+			if(idObj == null)
 			{
-				final int idInt = (int)getValue(idField);
+				throw new NullPointerException("Null id");
+			}
+			else if(idObj instanceof Number)
+			{
+				final int idInt = ((Number)idObj).intValue();
 				id = DocumentId.of(idInt);
 				idAquired = true;
 				return id;
+			}
+			else if (idObj instanceof IntegerLookupValue)
+			{
+				final int idInt = ((IntegerLookupValue)idObj).getIdAsInt();
+				id = DocumentId.of(idInt);
+				idAquired = true;
+				return id;
+			}
+			else
+			{
+				throw new IllegalStateException("Cannot convert id value '" + idObj + "' (" + idObj.getClass() + ") to DocumentId");
 			}
 		}
 

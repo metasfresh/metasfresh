@@ -58,9 +58,10 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 @Component
 @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
-@SuppressWarnings("serial")
 public class UserSession implements InitializingBean, Serializable
 {
+	private static final long serialVersionUID = -1478300848154458479L;
+
 	/**
 	 * Gets current {@link UserSession} if any
 	 * 

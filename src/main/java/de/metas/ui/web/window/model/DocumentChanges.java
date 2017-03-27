@@ -1,10 +1,11 @@
 package de.metas.ui.web.window.model;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -47,10 +48,12 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 public final class DocumentChanges
 {
 	private final DocumentPath documentPath;
+	private boolean primaryChange;
 	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
 	private DocumentValidStatus documentValidStatus = null;
 	private DocumentSaveStatus documentSaveStatus = null;
-	private final Set<DetailId> staleDetailIds = new HashSet<>();
+
+	private Map<DetailId, IncludedDetailInfo> includedDetailInfos = new HashMap<>();
 
 	/* package */ DocumentChanges(final DocumentPath documentPath)
 	{
@@ -72,8 +75,23 @@ public final class DocumentChanges
 				.omitNullValues()
 				.add("documentPath", documentPath)
 				.add("fields", fieldChangesByName.isEmpty() ? null : fieldChangesByName)
-				.add("staleDetailIds", staleDetailIds.isEmpty() ? null : staleDetailIds)
+				.add("includedDetailInfos", includedDetailInfos.isEmpty() ? null : includedDetailInfos)
 				.toString();
+	}
+	
+	/**
+	 * Mark this documents changes as primary changes.
+	 * 
+	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
+	 */
+	public void setPrimaryChange()
+	{
+		this.primaryChange = true;
+	}
+	
+	public boolean isPrimaryChange()
+	{
+		return primaryChange;
 	}
 
 	public Set<String> getFieldNames()
@@ -86,7 +104,7 @@ public final class DocumentChanges
 		return fieldChangesByName.isEmpty()
 				&& documentValidStatus == null
 				&& documentSaveStatus == null
-				&& staleDetailIds.isEmpty();
+				&& includedDetailInfos.isEmpty();
 	}
 
 	private DocumentFieldChange fieldChangesOf(final IDocumentFieldView documentField)
@@ -144,6 +162,11 @@ public final class DocumentChanges
 
 	/* package */void collectFrom(final DocumentChanges fromDocumentChanges)
 	{
+		if(fromDocumentChanges.isPrimaryChange())
+		{
+			setPrimaryChange();
+		}
+		
 		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
 			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField(),
@@ -160,6 +183,10 @@ public final class DocumentChanges
 		{
 			collectDocumentSaveStatusChanged(fromDocumentChanges.documentSaveStatus);
 		}
+
+		fromDocumentChanges.includedDetailInfos.values()
+				.stream()
+				.forEach(fromIncludedDetailInfo -> includedDetailInfo(fromIncludedDetailInfo.getDetailId()).collectFrom(fromIncludedDetailInfo));
 	}
 
 	/* package */Set<String> collectFrom(final Document document, final ReasonSupplier reason)
@@ -261,20 +288,21 @@ public final class DocumentChanges
 		return documentSaveStatus;
 	}
 
-	/* package */void collectStaleDetailId(final DetailId detailId)
+	public List<IncludedDetailInfo> getIncludedDetailInfos()
+	{
+		return ImmutableList.copyOf(includedDetailInfos.values());
+	}
+
+	/* package */ final IncludedDetailInfo includedDetailInfo(final DetailId detailId)
 	{
 		Check.assumeNotNull(detailId, "Parameter detailId is not null");
-		staleDetailIds.add(detailId);
+		return includedDetailInfos.computeIfAbsent(detailId, IncludedDetailInfo::new);
 	}
 
-	public Set<DetailId> getStaleDetailIds()
+	/* package */final Optional<IncludedDetailInfo> includedDetailInfoIfExists(final DetailId detailId)
 	{
-		return ImmutableSet.copyOf(staleDetailIds);
-	}
-
-	public boolean isDetailIdStaled(final DetailId detailId)
-	{
-		return staleDetailIds.contains(detailId);
+		Check.assumeNotNull(detailId, "Parameter detailId is not null");
+		return Optional.ofNullable(includedDetailInfos.get(detailId));
 	}
 
 	/* package */void collectEvent(final IDocumentFieldChangedEvent event)
@@ -287,4 +315,70 @@ public final class DocumentChanges
 				.mergeFrom(event);
 	}
 
+	public static final class IncludedDetailInfo
+	{
+		private final DetailId detailId;
+		private boolean stale = false;
+		private LogicExpressionResult allowNew;
+		private LogicExpressionResult allowDelete;
+
+		private IncludedDetailInfo(final DetailId detailId)
+		{
+			this.detailId = detailId;
+		}
+
+		public DetailId getDetailId()
+		{
+			return detailId;
+		}
+
+		IncludedDetailInfo setStale()
+		{
+			this.stale = true;
+			return this;
+		}
+
+		public boolean isStale()
+		{
+			return stale;
+		}
+
+		public LogicExpressionResult getAllowNew()
+		{
+			return allowNew;
+		}
+
+		IncludedDetailInfo setAllowNew(final LogicExpressionResult allowNew)
+		{
+			this.allowNew = allowNew;
+			return this;
+		}
+
+		public LogicExpressionResult getAllowDelete()
+		{
+			return allowDelete;
+		}
+
+		IncludedDetailInfo setAllowDelete(final LogicExpressionResult allowDelete)
+		{
+			this.allowDelete = allowDelete;
+			return this;
+		}
+
+		private void collectFrom(final IncludedDetailInfo from)
+		{
+			if (from.stale)
+			{
+				this.stale = from.stale;
+			}
+			if (from.allowNew != null)
+			{
+				this.allowNew = from.allowNew;
+			}
+			if (from.allowDelete != null)
+			{
+				this.allowDelete = from.allowDelete;
+			}
+		}
+	}
 }

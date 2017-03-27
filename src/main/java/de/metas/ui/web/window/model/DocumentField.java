@@ -292,6 +292,13 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 				return valueBDCorrected;
 			}
 		}
+		else if(valueConv instanceof String)
+		{
+			if (((String)valueConv).isEmpty())
+			{
+				return null;
+			}
+		}
 
 		return valueConv;
 	}

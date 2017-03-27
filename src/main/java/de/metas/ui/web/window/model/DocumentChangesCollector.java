@@ -1,11 +1,13 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 
@@ -13,6 +15,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.model.DocumentChanges.IncludedDetailInfo;
 
 /*
  * #%L
@@ -58,10 +61,22 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 				.toString();
 	}
 
+	@Override
+	public void setPrimaryChange(DocumentPath documentPath)
+	{
+		documentChanges(documentPath).setPrimaryChange();
+	}
+
 	private DocumentChanges documentChanges(final IDocumentFieldView documentField)
 	{
 		final DocumentPath documentPath = documentField.getDocumentPath();
 		return documentChanges(documentPath);
+	}
+
+	private DocumentChanges rootDocumentChanges(final DocumentPath rootDocumentPath)
+	{
+		Check.assume(rootDocumentPath.isRootDocument(), "{} is root document path", rootDocumentPath);
+		return documentChanges(rootDocumentPath);
 	}
 
 	private DocumentChanges documentChanges(final DocumentPath documentPath)
@@ -69,19 +84,19 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		return documentChangesByPath.computeIfAbsent(documentPath, DocumentChanges::new);
 	}
 
-	private DocumentChanges documentChangesIfExists(final DocumentPath documentPath)
+	private Optional<DocumentChanges> documentChangesIfExists(final DocumentPath documentPath)
 	{
-		return documentChangesByPath.get(documentPath);
+		return Optional.ofNullable(documentChangesByPath.get(documentPath));
 	}
 
 	@Override
-	public Map<DocumentPath, DocumentChanges> getDocumentChangesByPath()
+	public Stream<DocumentChanges> streamOrderedDocumentChanges()
 	{
-		return documentChangesByPath.entrySet().stream()
+		return documentChangesByPath.values().stream()
 				// skip document changes which are staled because it might be those were recorded before the detailId was marked as stale
-				.filter(e -> !isStaleDocumentChanges(e.getValue()))
-				//
-				.collect(GuavaCollectors.toImmutableMap());
+				.filter(documentChanges -> !isStaleDocumentChanges(documentChanges))
+				.sorted(Comparator.comparing(documentChanges -> documentChanges.isPrimaryChange() ? 0 : 1)) // make sure primary changes are returned first (exacted by frontend)
+		;
 	}
 
 	@Override
@@ -163,14 +178,14 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	@Override
 	public void collectFrom(final IDocumentChangesCollector fromCollector)
 	{
-		for (final Map.Entry<DocumentPath, DocumentChanges> e : fromCollector.getDocumentChangesByPath().entrySet())
-		{
-			final DocumentPath documentPath = e.getKey();
-			final DocumentChanges from = e.getValue();
+		fromCollector.streamOrderedDocumentChanges()
+				.forEach(this::collectFrom);
+	}
 
-			final DocumentChanges to = documentChanges(documentPath);
-			to.collectFrom(from);
-		}
+	private void collectFrom(final DocumentChanges fromDocumentChanges)
+	{
+		final DocumentPath documentPath = fromDocumentChanges.getDocumentPath();
+		documentChanges(documentPath).collectFrom(fromDocumentChanges);
 	}
 
 	@Override
@@ -205,11 +220,25 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	@Override
 	public void collectStaleDetailId(final DocumentPath rootDocumentPath, final DetailId detailId)
 	{
-		Check.assume(rootDocumentPath.isRootDocument(), "{} is root document path", rootDocumentPath);
-		Check.assumeNotNull(detailId, "Parameter detailId is not null");
+		rootDocumentChanges(rootDocumentPath)
+				.includedDetailInfo(detailId)
+				.setStale();
+	}
 
-		documentChanges(rootDocumentPath)
-				.collectStaleDetailId(detailId);
+	@Override
+	public void collectAllowNew(final DocumentPath rootDocumentPath, final DetailId detailId, final LogicExpressionResult allowNew)
+	{
+		rootDocumentChanges(rootDocumentPath)
+				.includedDetailInfo(detailId)
+				.setAllowNew(allowNew);
+	}
+
+	@Override
+	public void collectAllowDelete(final DocumentPath rootDocumentPath, final DetailId detailId, final LogicExpressionResult allowDelete)
+	{
+		rootDocumentChanges(rootDocumentPath)
+				.includedDetailInfo(detailId)
+				.setAllowDelete(allowDelete);
 	}
 
 	private boolean isStaleDocumentChanges(final DocumentChanges documentChanges)
@@ -221,19 +250,12 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		}
 
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
-		final DocumentChanges rootDocumentChanges = documentChangesIfExists(rootDocumentPath);
-		if (rootDocumentChanges == null)
-		{
-			return false;
-		}
-
 		final DetailId detailId = documentPath.getDetailId();
-		if (rootDocumentChanges.isDetailIdStaled(detailId))
-		{
-			return true;
-		}
 
-		return false;
+		return documentChangesIfExists(rootDocumentPath)
+				.flatMap(rootDocumentChanges -> rootDocumentChanges.includedDetailInfoIfExists(detailId))
+				.map(IncludedDetailInfo::isStale)
+				.orElse(false);
 	}
 
 	@Override

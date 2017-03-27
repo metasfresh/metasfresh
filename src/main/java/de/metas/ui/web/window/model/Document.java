@@ -826,6 +826,11 @@ public final class Document
 
 		return parent;
 	}
+	
+	public boolean isRootDocument()
+	{
+		return getParentDocument() == null;
+	}
 
 	private Collection<IDocumentField> getFields()
 	{
@@ -956,14 +961,14 @@ public final class Document
 		// }
 
 		_valid = valid;
-		
+
 		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
-		
+
 		if (!valid.isValid())
 		{
 			onValidStatusChanged.onInvalidStatus(this, valid);
 		}
-		
+
 		return valid;
 	}
 
@@ -1316,6 +1321,11 @@ public final class Document
 		return includedDocumentsForDetailId;
 	}
 
+	public Collection<IIncludedDocumentsCollection> getIncludedDocumentsCollections()
+	{
+		return includedDocuments.values();
+	}
+
 	/* package */ Document createIncludedDocument(final DetailId detailId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
@@ -1345,6 +1355,23 @@ public final class Document
 		if (parentDocument != null)
 		{
 			return parentDocument.isProcessed();
+		}
+
+		return false;
+	}
+
+	/* package */ boolean isActive()
+	{
+		final IDocumentFieldView isActiveField = getFieldOrNull(WindowConstants.FIELDNAME_IsActive);
+		if (isActiveField != null)
+		{
+			return isActiveField.getValueAsBoolean();
+		}
+
+		final Document parentDocument = getParentDocument();
+		if (parentDocument != null)
+		{
+			return parentDocument.isActive();
 		}
 
 		return false;
@@ -1434,7 +1461,7 @@ public final class Document
 	{
 		public static final OnValidStatusChanged DO_NOTHING = (document, invalidStatus) -> {
 		};
-		
+
 		public static final OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus) -> {
 			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus));
 		};
@@ -1452,6 +1479,7 @@ public final class Document
 
 	/**
 	 * Checks document's valid status, sets it and returns it.
+	 * 
 	 * @param onValidStatusChanged callback to be called when the valid state of this document or of any of it's included documents was changed
 	 */
 	/* package */ final DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
@@ -1552,6 +1580,11 @@ public final class Document
 
 	}
 
+	/* package */void updateIncludedDetailsStatus()
+	{
+		includedDocuments.values().forEach(IIncludedDocumentsCollection::updateStatusFromParent);
+	}
+
 	public DocumentSaveStatus saveIfValidAndHasChanges()
 	{
 		//
@@ -1583,7 +1616,7 @@ public final class Document
 		}
 		catch (final Exception saveEx)
 		{
-			// NOTE: usually if we do the right checkings we shall not get to this
+			// NOTE: usually if we do the right checks we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
 			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
