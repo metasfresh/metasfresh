@@ -55,7 +55,7 @@ class SelectionAttributes extends Component {
                 return dispatch(getData(entity, windowType, viewId, selected[0]));
             }).then(response => {
                 DLWrapperSetData(response.data.fields, response.data.id);
-            });
+            }).catch(() => {});
     }
 
     moveToDevice = (e) => {

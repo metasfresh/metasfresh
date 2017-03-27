@@ -601,7 +601,7 @@ class Table extends Component {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
-            queryLimitHit
+            queryLimitHit, supportQuickInput
         } = this.props;
 
         const {
@@ -641,6 +641,7 @@ class Table extends Component {
                                 tabIndex={tabIndex}
                                 isBatchEntry={isBatchEntry}
                                 handleBatchEntryToggle={this.handleBatchEntryToggle}
+                                supportQuickInput={supportQuickInput}
                             />
                         </div>
                     </div>}

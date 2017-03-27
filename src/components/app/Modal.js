@@ -117,6 +117,20 @@ class Modal extends Component {
 
     handleClose = () => {
         const {
+            modalSaveStatus, modalType
+        } = this.props;
+
+        if(modalType === 'process') {
+            return this.closeModal();
+        }
+
+        if(modalSaveStatus || window.confirm('Do you really want to leave?')){
+            this.closeModal();
+        }
+    }
+
+    closeModal = () => {
+        const {
             dispatch, closeCallback, dataId, windowType, relativeType,
             relativeDataId, triggerField
         } = this.props;
@@ -227,7 +241,7 @@ class Modal extends Component {
 
     render() {
         const {
-            data, modalTitle, modalType
+            data, modalTitle, modalType, isDocumentNotSaved
         } = this.props;
 
         const {
@@ -275,7 +289,7 @@ class Modal extends Component {
                             }
                         </div>
                     </div>
-                    <Indicator />
+                    <Indicator {...{isDocumentNotSaved}}/>
                     <div
                         className={
                             `panel-modal-content js-panel-modal-content

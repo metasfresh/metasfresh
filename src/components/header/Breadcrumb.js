@@ -26,9 +26,23 @@ class Breadcrumb extends Component {
         })
     }
 
+    handleClick = (e, menu) => {
+        const {
+            handleMenuOverlay, windowType, dataId
+        } = this.props;
+
+        if(menu && menu.children && menu.children.elementId) {
+            (windowType && dataId) && this.linkToPage(windowType);
+        } else {
+            handleMenuOverlay(e, menu.nodeId);
+        }
+
+        this.toggleTooltip(false);
+    }
+
     renderBtn = (menu, index) => {
         const {
-            handleMenuOverlay, menuOverlay, windowType, siteName, openModal
+            handleMenuOverlay, menuOverlay, siteName, openModal
         } = this.props;
 
         return (<div key={index}>
@@ -40,13 +54,7 @@ class Breadcrumb extends Component {
                         (menuOverlay === menu.nodeId ? 'header-item-open ' : '') +
                         (!index ? 'header-item-container-static ': '')
                     }
-                    onClick={ !(menu && menu.children && menu.children.elementId) ?
-                        e => {handleMenuOverlay(e, menu.nodeId), this.toggleTooltip(false)} :
-                        (windowType ?
-                            () => {this.linkToPage(windowType), this.toggleTooltip(false)} :
-                            () => this.toggleTooltip(false)
-                        )
-                    }
+                    onClick={(e) => this.handleClick(e, menu)}
                     onMouseEnter={index ? '' : () => this.toggleTooltip(true)}
                     onMouseLeave={() => this.toggleTooltip(false)}
                 >

@@ -15,8 +15,16 @@ class MasterWidget extends Component {
 
         this.state = {
             updated: false,
-            edited: false
+            edited: false,
+            data: ''
         }
+    }
+
+    componentDidMount() {
+        const {widgetData} = this.props;
+        this.setState({
+            data: widgetData[0].value
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -95,19 +103,17 @@ class MasterWidget extends Component {
         const dateParse = ['Date', 'DateTime', 'Time'];
 
         this.setState({
-            edited: true
-        }, () => {
+            edited: true,
+            data: val
+        }, ()=> {
             if (
                 dateParse.indexOf(widgetType) === -1 &&
                 !this.validatePrecision(val)
             ){ return; }
-
             if(rowId === 'NEW'){
                 currRowId = relativeDocId;
             }
-
             dispatch(updateProperty(property, val, tabId, currRowId, isModal));
-
         });
     }
 
@@ -150,10 +156,11 @@ class MasterWidget extends Component {
             caption, widgetType, fields, windowType, type, noLabel, widgetData,
             dataId, rowId, tabId, icon, gridAlign, isModal, entity,
             handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus,
-            fullScreen, disabled, buttonProcessId
+            fullScreen, disabled, buttonProcessId, listenOnKeys,
+            listenOnKeysFalse, closeTableField
         } = this.props;
 
-        const {updated} = this.state;
+        const {updated, data} = this.state;
 
         return (
             <RawWidget
@@ -183,6 +190,10 @@ class MasterWidget extends Component {
                 fullScreen={fullScreen}
                 disabled={disabled}
                 buttonProcessId={buttonProcessId}
+                listenOnKeys={listenOnKeys}
+                listenOnKeysFalse={listenOnKeysFalse}
+                closeTableField={closeTableField}
+                inputValue={data}
             />
         )
     }

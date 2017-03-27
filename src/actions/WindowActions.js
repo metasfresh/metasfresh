@@ -331,6 +331,9 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
             } else {
                 //Existing master document
                 return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
+                .catch(() => {
+                    dispatch(push('/window/'+ windowType));
+                });
             }
         }
     }
@@ -386,9 +389,9 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         let staleTabIds = [];
         data.map(item => {
             // Merging staleTabIds
-            item.staleTabIds && item.staleTabIds.map(item => {
-                if(staleTabIds.indexOf(item) === -1){
-                    staleTabIds.push(item);
+            item.includedTabsInfo && item.includedTabsInfo.map(tabInfo => {
+                if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
+                    staleTabIds.push(tabInfo.tabid);
                 }
             })
 
@@ -495,7 +498,6 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                 throw new Error('close_modal');
             }else{
                 dispatch(initDataSuccess(preparedData, 'modal'));
-
                 dispatch(initLayout('process', processType)).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid

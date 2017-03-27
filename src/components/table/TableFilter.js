@@ -22,7 +22,7 @@ class TableFilter extends Component {
     render() {
         const {
             openModal, toggleFullScreen, fullScreen, docType, docId, tabId,
-            isBatchEntry, handleBatchEntryToggle
+            isBatchEntry, handleBatchEntryToggle, supportQuickInput
         } = this.props;
 
         const {
@@ -40,7 +40,7 @@ class TableFilter extends Component {
                         >
                             Add new
                         </button>}
-                        {!fullScreen && <button
+                        {(supportQuickInput && !fullScreen) && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
                             onClick={handleBatchEntryToggle}
                             onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT)}
