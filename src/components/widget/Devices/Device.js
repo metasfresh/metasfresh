@@ -14,7 +14,7 @@ class Device extends Component {
 
     componentDidMount() {
         const {device} = this.props;
-
+        this.mounted = true;
         this.sock = new SockJs(config.WS_URL);
         this.sockClient = Stomp.Stomp.over(this.sock);
 
@@ -24,7 +24,7 @@ class Device extends Component {
                 if(!this.state.valueChangeStopper){
                     const body = JSON.parse(msg.body);
 
-                    this.setState({
+                    this.mounted && this.setState({
                         value: body.value
                     });
                 }
@@ -33,7 +33,9 @@ class Device extends Component {
     }
 
     componentWillUnmount() {
-        this.sockClient.disconnect();
+        this.mounted = false;
+        (this.sockClient && this.sockClient.connected) &&
+            this.sockClient.disconnect();
     }
 
     handleClick = () => {

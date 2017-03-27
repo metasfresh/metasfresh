@@ -389,9 +389,9 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         let staleTabIds = [];
         data.map(item => {
             // Merging staleTabIds
-            item.staleTabIds && item.staleTabIds.map(item => {
-                if(staleTabIds.indexOf(item) === -1){
-                    staleTabIds.push(item);
+            item.includedTabsInfo && item.includedTabsInfo.map(tabInfo => {
+                if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
+                    staleTabIds.push(tabInfo.tabid);
                 }
             })
 
@@ -505,7 +505,6 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 });
-
             }
         })
     }

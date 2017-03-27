@@ -138,13 +138,15 @@ class RawWidget extends Component {
             onHide, handleBackdropLock, subentity, subentityId, tabIndex,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled, caption, viewId, inputValue
+            entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
+            listenOnKeysFalse, closeTableField
         } = this.props;
 
         const {isEdited} = this.state;
 
         // check if it's value from MasterWidget or not
-        // (to stabilize parsing changes in masterWidget due to problems with jumping cursor
+        // (to stabilize parsing changes in masterWidget due to problems with
+        // jumping cursor
         const widgetValue = inputValue ? inputValue : widgetData[0].value;
 
         // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
@@ -297,6 +299,9 @@ class RawWidget extends Component {
                         validStatus={widgetData[0].validStatus}
                         newRecordCaption={fields[0].newRecordCaption}
                         newRecordWindowId={fields[0].newRecordWindowId}
+                        listenOnKeys={listenOnKeys}
+                        listenOnKeysFalse={listenOnKeysFalse}
+                        closeTableField={closeTableField}
                     />
                 )
             case 'List':

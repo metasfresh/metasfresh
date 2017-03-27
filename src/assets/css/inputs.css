@@ -454,6 +454,11 @@ input:checked + .input-slider:before {
     background-color: $brand-danger-light-color !important;
 }
 
+.input-error.input-primary .input-icon,
+.input-error.input-primary .meta-icon-preview {
+    background: none !important;
+}
+
 .input-error.input-secondary,
 .input-error.input-secondary * {
     border-color: $brand-danger-color !important;

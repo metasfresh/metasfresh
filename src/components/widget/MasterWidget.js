@@ -156,7 +156,8 @@ class MasterWidget extends Component {
             caption, widgetType, fields, windowType, type, noLabel, widgetData,
             dataId, rowId, tabId, icon, gridAlign, isModal, entity,
             handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus,
-            fullScreen, disabled, buttonProcessId
+            fullScreen, disabled, buttonProcessId, listenOnKeys,
+            listenOnKeysFalse, closeTableField
         } = this.props;
 
         const {updated, data} = this.state;
@@ -189,6 +190,9 @@ class MasterWidget extends Component {
                 fullScreen={fullScreen}
                 disabled={disabled}
                 buttonProcessId={buttonProcessId}
+                listenOnKeys={listenOnKeys}
+                listenOnKeysFalse={listenOnKeysFalse}
+                closeTableField={closeTableField}
                 inputValue={data}
             />
         )
