@@ -206,7 +206,7 @@ class RawWidget extends Component {
                                         widgetData[0].readonly || disabled,
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
-                                value={widgetData[0].value}
+                                value={widgetValue}
                                 onChange={(date) =>
                                     handleChange(widgetField, date)}
                                 patch={(date) => this.handlePatch(
@@ -262,7 +262,7 @@ class RawWidget extends Component {
                                     disabled: widgetData[0].readonly || disabled,
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
-                                value={widgetData[0].value}
+                                value={widgetValue}
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => this.handlePatch(widgetField,
                                     date ? Moment(date).format(DATE_FORMAT) : null
@@ -286,7 +286,7 @@ class RawWidget extends Component {
                                 disabled: widgetData[0].readonly || disabled,
                                 tabIndex: fullScreen ? -1 : tabIndex
                             }}
-                            value={widgetData[0].value}
+                            value={widgetValue}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField,
                                 date ? Moment(date).format(DATE_FORMAT) : null
@@ -319,7 +319,7 @@ class RawWidget extends Component {
                         filterWidget={filterWidget}
                         filterId={filterId}
                         parameterName={fields[0].parameterName}
-                        selected={widgetData[0].value}
+                        selected={widgetValue}
                         tabId={tabId}
                         rowId={rowId}
                         tabIndex={fullScreen ? -1 : tabIndex}
