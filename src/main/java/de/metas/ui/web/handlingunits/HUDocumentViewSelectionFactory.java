@@ -126,7 +126,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		final int adWindowId = jsonRequest.getAD_Window_ID();
 
 		//
-		// Referencing path and tableName (i.e. from where are we coming)
+		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
 		final Set<DocumentPath> referencingDocumentPaths = jsonRequest.getReferencingDocumentPaths();
 		final String referencingTableName;
 		if (!referencingDocumentPaths.isEmpty())
