@@ -28,7 +28,6 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 public class ReplicationHelper
