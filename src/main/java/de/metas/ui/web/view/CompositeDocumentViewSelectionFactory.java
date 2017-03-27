@@ -1,19 +1,18 @@
 package de.metas.ui.web.view;
 
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Preconditions;
 
-import de.metas.ui.web.handlingunits.HUDocumentViewSelectionFactory;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -32,39 +31,38 @@ import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Service
 @Primary
-public class CompositeDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
+public class CompositeDocumentViewSelectionFactory
 {
-	private Map<ArrayKey, IDocumentViewSelectionFactory> factories = ImmutableMap.of();
+	private static final transient Logger logger = LogManager.getLogger(CompositeDocumentViewSelectionFactory.class);
 
+	private final ConcurrentHashMap<ArrayKey, IDocumentViewSelectionFactory> factories = new ConcurrentHashMap<>();
 	@Autowired
 	private SqlDocumentViewSelectionFactory defaultFactory;
+
 	@Autowired
-	private HUDocumentViewSelectionFactory huViewFactory;
-
-	public CompositeDocumentViewSelectionFactory()
+	public CompositeDocumentViewSelectionFactory(final ApplicationContext context)
 	{
-		super();
+		//
+		// Discover context factories
+		for (final Object factoryObj : context.getBeansWithAnnotation(AutoRegistrableDocumentViewSelectionFactory.class).values())
+		{
+			final IDocumentViewSelectionFactory factory = (IDocumentViewSelectionFactory)factoryObj;
+			final AutoRegistrableDocumentViewSelectionFactory annotation = factoryObj.getClass().getAnnotation(AutoRegistrableDocumentViewSelectionFactory.class);
+			registerFactory(annotation.windowId(), annotation.viewType(), factory);
+		}
 	}
 
-	@PostConstruct
-	private void init()
-	{
-		factories = ImmutableMap.<ArrayKey, IDocumentViewSelectionFactory> builder()
-				.put(mkKey(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.grid), huViewFactory)
-				.build();
-	}
-	
 	@Override
 	public String toString()
 	{
@@ -74,35 +72,40 @@ public class CompositeDocumentViewSelectionFactory implements IDocumentViewSelec
 				.toString();
 	}
 
+	public void registerFactory(final int windowId, final JSONViewDataType viewType, final IDocumentViewSelectionFactory factory)
+	{
+		Preconditions.checkNotNull(factory, "factory is null");
+		factories.put(mkKey(windowId, viewType), factory);
+		logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewType);
+	}
+
 	private final IDocumentViewSelectionFactory getFactory(final int adWindowId, final JSONViewDataType viewType)
 	{
 		IDocumentViewSelectionFactory factory = factories.get(mkKey(adWindowId, viewType));
-		if(factory != null)
+		if (factory != null)
 		{
 			return factory;
 		}
-		
+
 		factory = factories.get(mkKey(adWindowId, null));
-		if(factory != null)
+		if (factory != null)
 		{
 			return factory;
 		}
-		
+
 		return defaultFactory;
 	}
 
 	private static final ArrayKey mkKey(final int adWindowId, final JSONViewDataType viewType)
 	{
-		return ArrayKey.of((adWindowId <= 0 ? 0 : adWindowId), viewType);
+		return ArrayKey.of(adWindowId <= 0 ? 0 : adWindowId, viewType);
 	}
 
-	@Override
 	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
 	{
 		return getFactory(adWindowId, viewDataType).getViewLayout(adWindowId, viewDataType, jsonOpts);
 	}
 
-	@Override
 	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
 	{
 		final int adWindowId = jsonRequest.getAD_Window_ID();
