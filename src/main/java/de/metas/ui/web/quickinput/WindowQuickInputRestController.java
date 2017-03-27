@@ -265,6 +265,8 @@ public class WindowQuickInputRestController
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
 			forQuickInputWritable(quickInputPath, quickInput -> {
 				quickInput.processValueChanges(events);
+				
+				Execution.getCurrentDocumentChangesCollector().setPrimaryChange(quickInput.getDocumentPath());
 				return null; // void
 			});
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
