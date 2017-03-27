@@ -54,7 +54,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorsFactory;
 
-	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 100, 0);
+	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
 
 	@Override
 	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType_NOTUSED, final JSONOptions jsonOpts)
