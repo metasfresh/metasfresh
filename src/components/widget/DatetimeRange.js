@@ -55,7 +55,9 @@ class DatetimeRange extends Component {
             ]
         }
         const {startDate, endDate} = this.state;
-        const {onShow, onHide, mandatory, validStatus} = this.props;
+        const {onShow, onHide, mandatory, validStatus, timePicker} = this.props;
+
+        const format = timePicker ? 'L LT' : 'L';
 
         return (
             <DateRangePicker
@@ -71,7 +73,8 @@ class DatetimeRange extends Component {
                     'monthNames': Moment.months()
                 }}
                 autoApply={false}
-                timePicker={false}
+                timePicker={timePicker}
+                timePicker24Hour={true}
             >
                 <button className={
                     'btn btn-block text-xs-left btn-meta-outline-secondary ' +
@@ -82,8 +85,8 @@ class DatetimeRange extends Component {
                         'input-error ' : '')
                 }>
                     {!!startDate && !!endDate ?
-                        ' ' + Moment(startDate).format('L') +
-                        ' - ' + Moment(endDate).format('L') :
+                        ' ' + Moment(startDate).format(format) +
+                        ' - ' + Moment(endDate).format(format) :
                         ' All dates available'
                     }
                     <i className="meta-icon-calendar input-icon-right"/>

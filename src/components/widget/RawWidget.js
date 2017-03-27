@@ -223,28 +223,57 @@ class RawWidget extends Component {
                     )
                 }
             case 'DateTime':
-                return (
-                    <div className={this.getClassnames(true)}>
-                        <DatePicker
-                            ref={c => this.rawWidget = c}
-                            timeFormat={true}
-                            dateFormat={true}
-                            inputProps={{
-                                placeholder: fields[0].emptyText,
-                                disabled: widgetData[0].readonly || disabled,
-                                tabIndex: fullScreen ? -1 : tabIndex
-                            }}
+                if(range){
+                    // Watch out! The datetimerange widget as exception,
+                    // is non-controlled input! For further usage, needs
+                    // upgrade.
+                    return (
+                        <DatetimeRange
+                            onChange={(value, valueTo) =>
+                                this.handlePatch(widgetField,
+                                    value ?
+                                        Moment(value).format(DATE_FORMAT) :
+                                        null,
+                                    null,
+                                    valueTo ?
+                                        Moment(valueTo).format(DATE_FORMAT) :
+                                        null
+                                )
+                            }
+                            mandatory={widgetData[0].mandatory}
+                            validStatus={widgetData[0].validStatus}
+                            onShow={onShow}
+                            onHide={onHide}
                             value={widgetData[0].value}
-                            onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField,
-                                date ? Moment(date).format(DATE_FORMAT) : null
-                            )}
+                            valueTo={widgetData[0].valueTo}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            handleBackdropLock={handleBackdropLock}
-                        />
-                        <i className="meta-icon-calendar input-icon-right"></i>
-                    </div>
-                )
+                            timePicker={true}
+                         />
+                    )
+                }else{
+                    return (
+                        <div className={this.getClassnames(true)}>
+                            <DatePicker
+                                ref={c => this.rawWidget = c}
+                                timeFormat={true}
+                                dateFormat={true}
+                                inputProps={{
+                                    placeholder: fields[0].emptyText,
+                                    disabled: widgetData[0].readonly || disabled,
+                                    tabIndex: fullScreen ? -1 : tabIndex
+                                }}
+                                value={widgetData[0].value}
+                                onChange={(date) => handleChange(widgetField, date)}
+                                patch={(date) => this.handlePatch(widgetField,
+                                    date ? Moment(date).format(DATE_FORMAT) : null
+                                )}
+                                tabIndex={fullScreen ? -1 : tabIndex}
+                                handleBackdropLock={handleBackdropLock}
+                            />
+                            <i className="meta-icon-calendar input-icon-right"></i>
+                        </div>
+                    )
+                }
             case 'Time':
                 return (
                     <div className={this.getClassnames(true)}>
