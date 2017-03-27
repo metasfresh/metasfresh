@@ -1,7 +1,5 @@
 package org.compiere.acct;
 
-import java.util.Map;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_AcctSchema;
@@ -110,13 +108,7 @@ public final class PostingException extends AdempiereException
 		message.append("\n Preserve Posted status: ").append(isPreserveDocumentPostedStatus());
 
 		// Other parameters
-		final Map<String, Object> parameters = getParameters();
-		for (final Map.Entry<String, Object> param : parameters.entrySet())
-		{
-			final String parameterName = param.getKey();
-			final Object parameterValue = param.getValue();
-			message.append("\n ").append(parameterName).append(": ").append(parameterValue);
-		}
+		message.append(buildParametersString());
 
 		return message.toString();
 	}

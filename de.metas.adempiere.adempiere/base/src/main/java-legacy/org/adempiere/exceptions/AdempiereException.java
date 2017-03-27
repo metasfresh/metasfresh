@@ -163,7 +163,7 @@ public class AdempiereException extends RuntimeException
 	private String _messageBuilt = null;
 
 	private Integer adIssueId = null;
-	
+
 	private Map<String, Object> parameters = null;
 
 	/**
@@ -426,7 +426,7 @@ public class AdempiereException extends RuntimeException
 		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
 	}
-	
+
 	@OverridingMethodsMustInvokeSuper
 	public AdempiereException setParameter(final String name, final Object value)
 	{
@@ -440,13 +440,47 @@ public class AdempiereException extends RuntimeException
 
 		return this;
 	}
-	
+
 	public final Map<String, Object> getParameters()
 	{
-		if(parameters == null)
+		if (parameters == null)
 		{
 			return ImmutableMap.of();
 		}
 		return ImmutableMap.copyOf(parameters);
+	}
+
+	/**
+	 * Utility method that can be used by both external callers and subclasses'
+	 * {@link AdempiereException#buildMessage()} or
+	 * {@link #getMessage()} methods to create a string from this instance's parameters.
+	 * 
+	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere, 
+	 * but instead add another method that can take a format string as parameter.
+	 * 
+	 * @return an empty sting if this instance has no parameters or otherwise something like
+	 * 
+	 *         <pre>
+	 * Additional parameters:
+	 * name1: value1
+	 * name2: value2
+	 *         </pre>
+	 */
+	public final String buildParametersString()
+	{
+		final Map<String, Object> parameters = getParameters();
+		if (parameters.isEmpty())
+		{
+			return "";
+		}
+
+		final StringBuilder message = new StringBuilder();
+		message.append("Additional parameters:");
+		for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
+		{
+			message.append("\n ").append(paramName2Value.getKey()).append(": ").append(paramName2Value.getValue());
+		}
+
+		return message.toString();
 	}
 }

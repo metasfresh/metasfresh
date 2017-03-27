@@ -1,8 +1,7 @@
 package org.adempiere.server.rpl.exceptions;
 
-import java.util.Map;
-
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 
@@ -47,42 +46,17 @@ public class ReplicationException extends AdempiereException
 	}
 
 	@Override
-	public ReplicationException setParameter(final String parameterName, final Object value)
-	{
-		super.setParameter(parameterName, value);
-		return this;
-	}
-
-	public ReplicationException addParameter(final String parameterName, final Object value)
-	{
-		return setParameter(parameterName, value);
-	}
-
-	@Override
 	protected String buildMessage()
 	{
-		final StringBuilder sbParams = new StringBuilder();
-		for (final Map.Entry<String, Object> e : getParameters().entrySet())
-		{
-			final String name = Services.get(IMsgBL.class).translate(getCtx(), e.getKey());
-			final Object value = e.getValue();
-
-			if (sbParams.length() > 0)
-			{
-				sbParams.append(", ");
-			}
-
-			sbParams.append(name).append(':').append(value);
-		}
-
 		final StringBuilder sb = new StringBuilder();
-
 		sb.append(Services.get(IMsgBL.class).translate(getCtx(), adMessage));
-		if (sbParams.length() > 0)
+		
+		final String sbParams = buildParametersString();
+		if (!Check.isEmpty(sbParams, true))
 		{
 			sb.append(" (").append(sbParams).append(")");
 		}
-		
+
 		if (cause != null)
 		{
 			sb.append(" ").append(cause.getLocalizedMessage());
