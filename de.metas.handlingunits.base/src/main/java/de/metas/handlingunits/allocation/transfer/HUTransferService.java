@@ -339,14 +339,14 @@ public class HUTransferService
 			setParent(newChildCU,
 					tuMaterialItem.get(0),
 
-					// before the childHU's parent item is set,
+					// before the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(sourceCuHU);
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
 						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
 						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
 					},
 
-					// after the childHU's parent item is set,
+					// after the newChildCU's parent item is set,
 					localHuContext -> {
 						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
 						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
