@@ -18,6 +18,7 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
   * [#1202](https://github.com/metasfresh/metasfresh/issues/1202) Clean up ReplicationException
+  * [#1203](https://github.com/metasfresh/metasfresh/issues/1203) Rounding of weights after split in HU Editors is not working correctly
   
 # metasfresh 5.2 (2017-12)
 
