@@ -47,6 +47,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.apps.graph.PAPanel;
@@ -68,7 +69,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.SwingViewerProvider;
@@ -84,12 +84,10 @@ import org.compiere.util.Language;
 import org.compiere.util.Splash;
 import org.compiere.wf.IADWorkflowBL;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -131,7 +129,7 @@ public final class AMenu extends CFrame
 		{
 			System.exit(1);
 		}
-		MSession.get(m_ctx, true);		// Start Session
+		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(m_ctx);		// Start Session
 
 		// Preparation
 		treePanel = new VTreePanel(m_WindowNo, true, false);	// !editable & hasBar

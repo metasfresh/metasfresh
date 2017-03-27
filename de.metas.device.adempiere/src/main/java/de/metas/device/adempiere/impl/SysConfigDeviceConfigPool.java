@@ -175,7 +175,7 @@ import de.metas.logging.LogManager;
 				.setAssignedAttributeCodes(assignedAttributeCodes)
 				.setParameterValueSupplier(this::getDeviceParamValue)
 				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames)
-				.setAssignedWarehouseId(getDeviceWarehouseId(deviceName))
+				.setAssignedWarehouseIds(getDeviceWarehouseIds(deviceName))
 				.build();
 	}
 
@@ -240,13 +240,27 @@ import de.metas.logging.LogManager;
 
 	/**
 	 * @param deviceName
-	 * @return actual M_Warehouse_ID or -1
+	 * @return M_Warehouse_IDs
 	 */
-	private int getDeviceWarehouseId(final String deviceName)
+	private Set<Integer> getDeviceWarehouseIds(final String deviceName)
 	{
-		final String sysconfigName = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
-		final int warehouseId = sysConfigBL.getIntValue(sysconfigName, -1, adClientId, adOrgId);
-		return warehouseId > 0 ? warehouseId : -1;
+		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
+		return sysConfigBL.getValuesForPrefix(sysconfigPrefix, adClientId, adOrgId)
+				.values()
+				.stream()
+				.map(warehouseIdStr -> {
+					try
+					{
+						return Integer.parseInt(warehouseIdStr);
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Failed parsing {} for {}*", warehouseIdStr, sysconfigPrefix, ex);
+						return null;
+					}
+				})
+				.filter(warehouseId -> warehouseId != null)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**

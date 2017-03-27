@@ -56,6 +56,8 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	I_M_ReceiptSchedule_Alloc retrieveRsaForRs(I_M_ReceiptSchedule receiptSchedule, I_M_InOutLine receiptLine);
 
+	List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOut(I_M_InOut receipt);
+
 	List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLine(org.compiere.model.I_M_InOutLine line);
 
 	<T extends I_M_ReceiptSchedule_Alloc> IQueryBuilder<T> createRsaForRsQueryBuilder(I_M_ReceiptSchedule rs, Class<T> receiptScheduleAllocClass, String trxName);

@@ -52,7 +52,7 @@ public final class DeviceConfig
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-	private final int assignedWarehouseId;
+	private final Set<Integer> assignedWarehouseIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
@@ -62,7 +62,7 @@ public final class DeviceConfig
 		deviceClassname = builder.getDeviceClassname();
 		parameterValueSupplier = builder.getParameterValueSupplier();
 		requestClassnamesSupplier = builder.getRequestClassnamesSupplier();
-		assignedWarehouseId = builder.getAssignedWareouseId();
+		assignedWarehouseIds = builder.getAssignedWareouseIds();
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public final class DeviceConfig
 				.add("deviceName", deviceName)
 				.add("assignedAttributeCodes", assignedAttributeCodes)
 				.add("deviceClassname", deviceClassname)
-				.add("assignedWarehouseId", assignedWarehouseId)
+				.add("assignedWarehouseId", assignedWarehouseIds)
 				.toString();
 	}
 
@@ -106,10 +106,10 @@ public final class DeviceConfig
 		return requestClassnamesSupplier.getDeviceRequestClassnames(deviceName, attributeCode);
 	}
 
-	/** @return warehouse ID where this device is available or -1 if available for all warehouses */
-	public int getAssignedWarehouseId()
+	/** @return warehouse IDs where this device is available; empty means that it's available to any warehouse */
+	public Set<Integer> getAssignedWarehouseIds()
 	{
-		return assignedWarehouseId;
+		return assignedWarehouseIds;
 	}
 
 	public static final class Builder
@@ -119,7 +119,7 @@ public final class DeviceConfig
 		private String deviceClassname;
 		private IDeviceParameterValueSupplier parameterValueSupplier;
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-		private int assignedWareouseId = -1;
+		private Set<Integer> assignedWareouseIds = null;
 
 		private Builder(final String deviceName)
 		{
@@ -198,15 +198,15 @@ public final class DeviceConfig
 			return requestClassnamesSupplier;
 		}
 
-		public DeviceConfig.Builder setAssignedWarehouseId(final int assignedWareouseId)
+		public DeviceConfig.Builder setAssignedWarehouseIds(final Set<Integer> assignedWareouseIds)
 		{
-			this.assignedWareouseId = assignedWareouseId;
+			this.assignedWareouseIds = assignedWareouseIds;
 			return this;
 		}
 
-		private int getAssignedWareouseId()
+		private Set<Integer> getAssignedWareouseIds()
 		{
-			return assignedWareouseId > 0 ? assignedWareouseId : -1;
+			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
 		}
 	}
 

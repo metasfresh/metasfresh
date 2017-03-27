@@ -1,6 +1,5 @@
 package de.metas.handlingunits.allocation.transfer;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -10,12 +9,8 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +21,6 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -35,17 +28,10 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
-import de.metas.handlingunits.document.IHUDocument;
-import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.interfaces.I_M_Warehouse;
 
 /*
@@ -78,14 +64,10 @@ public class HUTransferServiceTests
 	@DataPoints("isOwnPackingMaterials")
 	public static boolean[] isOwnPackingMaterials = { true, false };
 
-	@DataPoints("isAggregateCU")
-	public static boolean[] isAggregateCU = { true, false };
-
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
-	private IHUDocumentFactoryService huDocumentFactoryService;
 
 	@Before
 	public void init()
@@ -93,7 +75,6 @@ public class HUTransferServiceTests
 		data = new LUTUProducerDestinationTestSupport();
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	}
 
 	/**
@@ -112,35 +93,7 @@ public class HUTransferServiceTests
 		assertThat(newCUs.size(), is(0));
 	}
 
-	private I_M_ReceiptSchedule create_receiptSchedule_for_realCUWithTU(final I_M_HU cu, final String cuQtyStr)
-	{
-		final List<IHUProductStorage> storages = data.helper.getHUContext().getHUStorageFactory().getStorage(cu).getProductStorages();
-		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
 
-		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
-		receiptSchedule.setM_Product(storages.get(0).getM_Product());
-		receiptSchedule.setC_UOM(storages.get(0).getC_UOM());
-		InterfaceWrapperHelper.save(receiptSchedule);
-
-		final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class);
-		receiptScheduleAlloc.setM_ReceiptSchedule(receiptSchedule);
-
-		receiptScheduleAlloc.setVHU(cu);
-		final I_M_HU tu = handlingUnitsDAO.retrieveParent(cu);
-		receiptScheduleAlloc.setM_TU_HU(tu);
-		receiptScheduleAlloc.setHU_QtyAllocated(new BigDecimal(cuQtyStr));
-		InterfaceWrapperHelper.save(receiptScheduleAlloc);
-
-		final I_M_HU_Assignment huAssignment = InterfaceWrapperHelper.newInstance(I_M_HU_Assignment.class);
-		huAssignment.setM_HU(tu == null ? cu : tu);
-
-		final TableRecordReference rsTableRef = TableRecordReference.of(receiptSchedule);
-		huAssignment.setAD_Table_ID(rsTableRef.getAD_Table_ID());
-		huAssignment.setRecord_ID(rsTableRef.getRecord_ID());
-		InterfaceWrapperHelper.save(huAssignment);
-
-		return receiptSchedule;
-	};
 
 	/**
 	 * Tests {@link HUTransferService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
@@ -150,7 +103,6 @@ public class HUTransferServiceTests
 	public void testCU_To_NewCU_MaxValueParent()
 	{
 		final I_M_HU cuToSplit = mkRealCUWithTUToSplit("3");
-		create_receiptSchedule_for_realCUWithTU(cuToSplit, "3");
 		final I_M_HU parentTU = cuToSplit.getM_HU_Item_Parent().getM_HU();
 
 		// invoke the method under test
@@ -653,14 +605,6 @@ public class HUTransferServiceTests
 		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
 		final I_M_HU tuToSplit = handlingUnitsDAO.retrieveParent(cuHU);
 
-		final I_M_ReceiptSchedule rs1 = create_receiptSchedule_for_realCUWithTU(cuHU, "20");
-		final TableRecordReference rs1TableRef = TableRecordReference.of(rs1);
-		{ // verify that cuHU and rs1 are properly linked
-			final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
-			assertThat(rs1HuDocument.size(), is(1));
-			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cuHU.getM_HU_ID() || hu.getM_HU_ID() == tuToSplit.getM_HU_ID()), is(true));
-		}
-
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
 		// invoke the method under test
@@ -695,7 +639,6 @@ public class HUTransferServiceTests
 	{
 		// prepare the existing TU
 		final I_M_HU cuHU = mkRealCUWithTUToSplit("20");
-		create_receiptSchedule_for_realCUWithTU(cuHU, "20");
 
 		final I_M_HU tuToSplit = cuHU.getM_HU_Item_Parent().getM_HU();
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
@@ -843,28 +786,13 @@ public class HUTransferServiceTests
 		final I_M_HU cu1 = mkRealCUWithTUToSplit("2");
 		final I_M_HU existingTU = handlingUnitsDAO.retrieveParent(cu1);
 
-		final I_M_ReceiptSchedule rs1 = create_receiptSchedule_for_realCUWithTU(cu1, "2");
-		final TableRecordReference rs1TableRef = TableRecordReference.of(rs1);
-		{ // verify that cuHU and rs1 are properly linked
-			final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
-			assertThat(rs1HuDocument.size(), is(1));
-			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
-		}
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
-		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_realCUWithTU(cu2, "3");
-		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
-		{ // verify that secondCU and rs2 are properly linked
-			final List<IHUDocument> rs2HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs2TableRef.getTableName(), rs2TableRef.getRecord_ID());
-			assertThat(rs2HuDocument.size(), is(1));
-			assertThat(rs2HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
-		}
 
 		// invoke the method under test.
 		HUTransferService.get(data.helper.getHUContext())
-				.withReferencedObjects(ImmutableList.of(rs1TableRef, rs2TableRef))
 				.cuToExistingTU(cu2, new BigDecimal("1.6"), existingTU);
 
 		// secondCU is still there, with the remaining 1.4kg
@@ -879,46 +807,6 @@ public class HUTransferServiceTests
 		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("1.600")));
 		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
 		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("1.600")));
-
-		// verify that the receipt M_ReceiptSchedule_Allocs are also OK
-		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
-		{
-			// verify cu1 that was effectively unchanged
-			final I_M_ReceiptSchedule receiptScheduleForCU1 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu1);
-			assertThat(receiptScheduleForCU1, notNullValue());
-			assertThat(receiptScheduleForCU1.getM_ReceiptSchedule_ID(), is(rs1.getM_ReceiptSchedule_ID()));
-
-			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
-			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
-			assertThat(rsas1ForCu1.size(), is(1));
-			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("2")));
-		}
-		{
-			// // verify c2 which got 1.6 kg of salad chopped off
-			final I_M_ReceiptSchedule receiptScheduleForCU2 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu2);
-			assertThat(receiptScheduleForCU2, notNullValue());
-			assertThat(receiptScheduleForCU2.getM_ReceiptSchedule_ID(), is(rs2.getM_ReceiptSchedule_ID()));
-
-			// TODO this doesn't work and i'm unsure why it doesen't work, but also how it should work..cu2 is split be HULoader, so there is alot going on with hu-transaction stuff.
-			// final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU2, data.helper.getHUContext().getTrxName());
-			// final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == cu2.getM_HU_ID()).collect(Collectors.toList());
-			// assertThat(rsas2ForCu2.size(), is(1));
-			// assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("1.6")));
-		}
-		{
-			final List<I_M_HU> siblingsOfCu1 = handlingUnitsDAO.retrieveIncludedHUs(existingTU).stream().filter(hu -> hu.getM_HU_ID() != cu1.getM_HU_ID()).collect(Collectors.toList());
-			assertThat(siblingsOfCu1.size(), is(1));
-			final I_M_HU newlySplitOffCU = siblingsOfCu1.get(0);
-			// verify the new cu that was split off cu2 and is now below existingTU
-			final I_M_ReceiptSchedule receiptScheduleForCU2_2 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(newlySplitOffCU);
-			assertThat(receiptScheduleForCU2_2, notNullValue());
-			assertThat(receiptScheduleForCU2_2.getM_ReceiptSchedule_ID(), is(rs2.getM_ReceiptSchedule_ID()));
-
-			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU2_2, data.helper.getHUContext().getTrxName());
-			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == newlySplitOffCU.getM_HU_ID()).collect(Collectors.toList());
-			assertThat(rsas2ForCu2.size(), is(1));
-			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("1.6")));
-		}
 	}
 
 	/**
@@ -931,30 +819,15 @@ public class HUTransferServiceTests
 
 		final I_M_HU cu1 = mkRealCUWithTUToSplit("5");
 		final I_M_HU tuWithMixedCUs = handlingUnitsDAO.retrieveParent(cu1);
-		final I_M_ReceiptSchedule rs1 = create_receiptSchedule_for_realCUWithTU(cu1, "5");
-		final TableRecordReference rs1TableRef = TableRecordReference.of(rs1);
-		{ // verify that cu1 and rs1 are properly linked
-			final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
-			assertThat(rs1HuDocument.size(), is(1));
-			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == tuWithMixedCUs.getM_HU_ID()), is(true));
-		}
+
+		// create a standalone-CU
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 
-		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_realCUWithTU(cu2, "4");
-		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
-		{ // verify that rs2 and cu2 are properly linked
-			final List<IHUDocument> rs2HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs2TableRef.getTableName(), rs2TableRef.getRecord_ID());
-			assertThat(rs2HuDocument.size(), is(1));
-			assertThat(rs2HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID()), is(true));
-		}
 
 		HUTransferService.get(data.helper.getHUContext())
-				.withReferencedObjects(ImmutableList.of(
-						rs1TableRef,
-						TableRecordReference.of(rs2)))
 				.cuToExistingTU(cu2, four, tuWithMixedCUs);
 
 		// data.helper.commitAndDumpHU(tuWithMixedCUs);
@@ -967,29 +840,6 @@ public class HUTransferServiceTests
 
 		assertThat(tuWithMixedCUsXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "])", is("1")));
 		assertThat(tuWithMixedCUsXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
-
-		// verify that the receipt M_ReceiptSchedule_Allocs are also OK
-		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
-		{
-			final I_M_ReceiptSchedule receiptScheduleForCU1 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu1);
-			assertThat(receiptScheduleForCU1, notNullValue());
-			assertThat(receiptScheduleForCU1.getM_ReceiptSchedule_ID(), is(rs1.getM_ReceiptSchedule_ID()));
-
-			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
-			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
-			assertThat(rsas1ForCu1.size(), is(1));
-			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("5")));
-		}
-		{
-			final I_M_ReceiptSchedule receiptScheduleForCU2 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu2);
-			assertThat(receiptScheduleForCU2, notNullValue());
-			assertThat(receiptScheduleForCU2.getM_ReceiptSchedule_ID(), is(rs2.getM_ReceiptSchedule_ID()));
-
-			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU2, data.helper.getHUContext().getTrxName());
-			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu2.getM_HU_ID()).collect(Collectors.toList());
-			assertThat(rsas2ForCu2.size(), is(1));
-			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(four));
-		}
 	}
 
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
@@ -1024,6 +874,12 @@ public class HUTransferServiceTests
 		return cuToSplit;
 	}
 
+	/**
+	 * Creates an LU with PI {@link LUTUProducerDestinationTestSupport#piLU} and an aggregate TU with PI {@link LUTUProducerDestinationTestSupport#piTU_IFCO}.
+	 * 
+	 * @param strCuQty
+	 * @return
+	 */
 	private I_M_HU mkAggregateCUToSplit(final String strCuQty)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();

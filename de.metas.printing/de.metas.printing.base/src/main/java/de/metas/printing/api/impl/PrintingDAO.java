@@ -30,20 +30,20 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.MSession;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -461,9 +461,9 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_Session retrieveCurrentSession(final Properties ctx)
+	public MFSession retrieveCurrentSession(final Properties ctx)
 	{
-		return InterfaceWrapperHelper.create(MSession.get(ctx, false), I_AD_Session.class); // createNew=false
+		return Services.get(ISessionBL.class).getCurrentSession(ctx);
 	}
 
 	@Override

@@ -26,9 +26,9 @@ package org.adempiere.ad.modelvalidator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.security.IUserLoginListener;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Session;
 
 public class CompositeModelInterceptor implements IModelInterceptor, IUserLoginListener
 {
@@ -106,7 +106,7 @@ public class CompositeModelInterceptor implements IModelInterceptor, IUserLoginL
 	}
 
 	@Override
-	public void beforeLogout(final I_AD_Session session)
+	public void beforeLogout(final MFSession session)
 	{
 		for (final IUserLoginListener listener : userLoginListeners)
 		{
@@ -115,7 +115,7 @@ public class CompositeModelInterceptor implements IModelInterceptor, IUserLoginL
 	}
 
 	@Override
-	public void afterLogout(final I_AD_Session session)
+	public void afterLogout(final MFSession session)
 	{
 		for (final IUserLoginListener listener : userLoginListeners)
 		{

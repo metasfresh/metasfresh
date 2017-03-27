@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
@@ -31,9 +33,7 @@ import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MLdapProcessor;
 import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
-import org.compiere.model.MSession;
 import org.compiere.model.X_AD_Scheduler;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflowProcessor;
 import org.slf4j.Logger;
@@ -103,20 +103,9 @@ public final class AdempiereServerMgr
 		log.info("Starting environment");
 
 		// Set Session
-		MSession session = MSession.get(getCtx(), true);
-		session.setWebSession("Server");
-
-		DB.saveConstraints();
-		try
-		{
-			DB.getConstraints().addAllowedTrxNamePrefix("POSave");
-			session.save();
-		}
-		finally
-		{
-			DB.restoreConstraints();
-		}
-		//
+		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(getCtx());
+		session.setWebSessionId("Server");
+		
 		return true;
 	}	// startEnvironment
 
