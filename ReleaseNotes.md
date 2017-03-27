@@ -17,7 +17,8 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
-
+  * [#1202](https://github.com/metasfresh/metasfresh/issues/1202) Clean up ReplicationException
+  
 # metasfresh 5.2 (2017-12)
 
 ## Features
