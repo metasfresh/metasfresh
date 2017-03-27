@@ -35,6 +35,10 @@ class MasterWidget extends Component {
             JSON.stringify(widgetData[0].value) !==
             JSON.stringify(nextProps.widgetData[0].value)
         ){
+            this.setState({
+                data: nextProps.widgetData[0].value
+            });
+
             if(!edited) {
                 this.setState({
                         updated: true
