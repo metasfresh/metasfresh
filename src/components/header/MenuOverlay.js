@@ -112,8 +112,11 @@ class MenuOverlay extends Component {
     }
 
     handleRedirect = (elementId) => {
-        const {dispatch} = this.props;
+        const {dispatch, windowType} = this.props;
         this.handleClickOutside();
+        if(windowType == elementId){
+            return;
+        }
         dispatch(push('/window/' + elementId));
     }
 
