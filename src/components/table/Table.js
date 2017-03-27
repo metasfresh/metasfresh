@@ -514,23 +514,26 @@ class Table extends Component {
         e.preventDefault();
         e.persist();
         
-        
-        
         const header = cols
             .map(col => col.caption)
             .join();
             
         const selectedRows = selected.map(id => rows[id].fields);
         const content = selectedRows.map(row => 
-            cols.map(col => 
-                getItemsByProperty(row, 'field', col.fields[0].field)[0].value
-            )
+            cols.map(col => {
+                const {value} = getItemsByProperty(row, 'field', col.fields[0].field)[0];
+                
+                if(typeof value === 'object' && value !== null){
+                    return value[Object.keys(value)[0]];
+                }else{
+                    return value;
+                }
+            })
         )
         
-        console.log(
-            header + '\n' + 
-            content.join()
-        );
+        const toCopy = header + '\n' + content.join();
+        
+        return toCopy;
     }
 
     handleKey = (e) => {
