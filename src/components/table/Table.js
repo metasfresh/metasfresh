@@ -7,7 +7,8 @@ import {
     openModal,
     selectTableItems,
     deleteLocal,
-    mapIncluded
+    mapIncluded,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
@@ -506,6 +507,31 @@ class Table extends Component {
             });
         });
     }
+    
+    handleCopy = (e) => {
+        const {cols} = this.props;
+        const {rows, selected} = this.state;
+        e.preventDefault();
+        e.persist();
+        
+        
+        
+        const header = cols
+            .map(col => col.caption)
+            .join();
+            
+        const selectedRows = selected.map(id => rows[id].fields);
+        const content = selectedRows.map(row => 
+            cols.map(col => 
+                getItemsByProperty(row, 'field', col.fields[0].field)[0].value
+            )
+        )
+        
+        console.log(
+            header + '\n' + 
+            content.join()
+        );
+    }
 
     handleKey = (e) => {
         const {readonly, mainTable} = this.props;
@@ -666,6 +692,7 @@ class Table extends Component {
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
                             ref={c => this.table = c}
+                            onCopy={this.handleCopy}
                         >
                             <thead>
                                 <TableHeader
