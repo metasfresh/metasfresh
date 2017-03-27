@@ -25,6 +25,7 @@ package org.eevolution.mrp.spi.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
@@ -258,9 +259,9 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 			}
 
 			//
-			// Trigger only if follwing order fields were changed: DocStatus, C_BPartner_ID
+			// Trigger only if following order fields were changed: DocStatus, C_BPartner_ID
 			final I_C_Order orderOld = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
-			if (!Check.equals(orderOld.getDocStatus(), docStatus)
+			if (!Objects.equals(orderOld.getDocStatus(), docStatus)
 					|| orderOld.getC_BPartner_ID() != order.getC_BPartner_ID())
 			{
 				final List<I_PP_MRP> list = mrpDAO.retrieveMRPRecords(order);
