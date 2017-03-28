@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 **this week's release candidate**
 
+## Important Changes
+* user credentials of "SuperUser" are renamed to metasfresh
+  * [#1199](https://github.com/metasfresh/metasfresh/issues/1199)
+  
 ## Features
 * metasfresh-backend
   * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
