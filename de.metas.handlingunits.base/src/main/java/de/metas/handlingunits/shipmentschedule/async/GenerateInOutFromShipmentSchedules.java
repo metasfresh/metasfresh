@@ -43,6 +43,7 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
@@ -71,6 +72,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
@@ -331,20 +333,59 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	}
 
 	/**
-	 * 
+	 *
 	 * @param schedule
-	 * @return records that are returned by {@link IShipmentScheduleAllocDAO#retrieveAllQtyPickedRecords(de.metas.inoutcandidate.model.I_M_ShipmentSchedule, Class)} and either reference no HUs or reference active (i.e. non-destroyed) HUs.
+	 * @return records that do not have an {@link I_M_InOutLine} assigned to them and that also have
+	 *         <ul>
+	 *         <li>either no HU assigned to them, or</li>
+	 *         <li>non-destroyed HUs assigned</li>
+	 *         </ul>
+	 * 
+	 *         Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
+	 * 
 	 * @task https://github.com/metasfresh/metasfresh/issues/759
+	 * @task https://github.com/metasfresh/metasfresh/issues/1174
 	 */
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final I_M_ShipmentSchedule schedule)
 	{
-		return shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
+		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
-				// for each HU-column, *if* a HU is referenced, then it shall be active.
-				.filter(r -> (r.getVHU_ID() <= 0 || r.getVHU().isActive())
-						&& (r.getM_TU_HU_ID() <= 0 || r.getM_TU_HU().isActive())
-						&& (r.getM_LU_HU_ID() <= 0 || r.getM_LU_HU().isActive()))
+				.filter(r -> isPickedOrShippedOrNoHU(r))
 				.collect(Collectors.toList());
+
+		return unshippedHUs;
+	}
+
+	/**
+	 * Returns {@code true} if there is either no HU assigned to the given {@code schedQtyPicked} or if that HU is either picked or shipped.
+	 * If you don't see what it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
+	 * 
+	 * @param schedQtyPicked
+	 * @return
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1174
+	 */
+	private boolean isPickedOrShippedOrNoHU(final I_M_ShipmentSchedule_QtyPicked schedQtyPicked)
+	{
+		final I_M_HU huToVerify;
+		if (schedQtyPicked.getVHU_ID() >= 0)
+		{
+			huToVerify = schedQtyPicked.getVHU();
+		}
+		else if (schedQtyPicked.getM_TU_HU_ID() >= 0)
+		{
+			huToVerify = schedQtyPicked.getM_TU_HU();
+		}
+		else if (schedQtyPicked.getM_LU_HU_ID() >= 0)
+		{
+			huToVerify = schedQtyPicked.getM_LU_HU();
+		}
+		else
+		{
+			return true;
+		}
+
+		return X_M_HU.HUSTATUS_Picked.equals(huToVerify.getHUStatus()) || X_M_HU.HUSTATUS_Shipped.equals(huToVerify.getHUStatus());
 	}
 
 	/**
