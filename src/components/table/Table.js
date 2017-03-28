@@ -45,7 +45,8 @@ class Table extends Component {
             },
             promptOpen: false,
             isBatchEntry: false,
-            rows: []
+            rows: [],
+            pendingInit: true
         }
     }
 
@@ -95,6 +96,10 @@ class Table extends Component {
     getIndentData = (selectFirst) => {
         const {rowData, tabid, indentSupported} = this.props;
 
+        if(!(rowData[1] && Object.keys(rowData[1]).length)){
+            return;
+        }
+
         if(indentSupported){
             let rowsData = [];
 
@@ -103,7 +108,8 @@ class Table extends Component {
             })
 
             this.setState({
-                rows: rowsData
+                rows: rowsData,
+                pendingInit: !!Object.keys(rowsData)
             }, () => {
                 if(selectFirst){
                     this.selectOneProduct(this.state.rows[0].id);
@@ -113,7 +119,8 @@ class Table extends Component {
             })
         } else {
             this.setState({
-                rows: rowData[tabid]
+                rows: rowData[tabid],
+                pendingInit: !!Object.keys(rowData[tabid])
             });
         }
     }
@@ -625,6 +632,11 @@ class Table extends Component {
 
     renderEmptyInfo = (data, tabId) => {
         const {emptyText, emptyHint} = this.props;
+        const {pendingInit} = this.state;
+
+        if(pendingInit){
+            return false;
+        }
 
         if(
             (data && data[tabId] && Object.keys(data[tabId]).length === 0) ||
