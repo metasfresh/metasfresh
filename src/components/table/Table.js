@@ -7,7 +7,8 @@ import {
     openModal,
     selectTableItems,
     deleteLocal,
-    mapIncluded
+    mapIncluded,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
@@ -507,6 +508,52 @@ class Table extends Component {
         });
     }
 
+    getSelectedRows = () => {
+        const {rows, selected} = this.state;
+        const {keyProperty} = this.props;
+        const keyProp = keyProperty ? keyProperty : 'rowId';
+
+        let selectedRows = [];
+        Object.keys(rows).map(id => {
+            if(selected.indexOf(rows[id][keyProp]) > -1){
+                selectedRows.push(rows[id].fields);
+            }
+        });
+
+        return selectedRows;
+    }
+
+    handleCopy = (e) => {
+        const {cols} = this.props;
+        e.preventDefault();
+
+        // Prepare table headers
+        const header = cols
+            .map(col => col.caption)
+            .join();
+
+        // Prepare selected rows
+        const selectedRows = this.getSelectedRows();
+
+        // Prepare values of selectedRows to display
+        const content = selectedRows.map(row =>
+            cols.map(col => {
+                const field = getItemsByProperty(row, 'field', col.fields[0].field)[0];
+                const value = field ? field.value : '';
+
+                if(typeof value === 'object' && value !== null){
+                    return value[Object.keys(value)[0]];
+                }else{
+                    return value;
+                }
+            })
+        )
+
+        // Push together to clipboard
+        const toCopy = header + '\n' + content.join('\n');
+        e.clipboardData.setData('text/plain', toCopy);
+    }
+
     handleKey = (e) => {
         const {readonly, mainTable} = this.props;
         const {listenOnKeys} = this.state;
@@ -666,6 +713,7 @@ class Table extends Component {
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
                             ref={c => this.table = c}
+                            onCopy={this.handleCopy}
                         >
                             <thead>
                                 <TableHeader
