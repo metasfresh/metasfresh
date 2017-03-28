@@ -234,7 +234,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Determines if the handling unit is a loading unit (type {@link X_M_HU_PI_Version#HU_UNITTYPE_LoadLogistiqueUnit} )
 	 *
-	 * @param hu
+	 * @param hu maybe be {@code null}. In that case, {@code false} is returned.
 	 * @return true if loading unit (LU)
 	 */
 	boolean isLoadingUnit(I_M_HU hu);

@@ -61,6 +61,13 @@ public class HUReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 
 		return Collections.emptyList();
 	}
+	
+	@Override
+	public void updateReceiptSchedules(Object model)
+	{
+		// Does nothing because "updateFromOrderline" updates only if the receipt schedule was newly created anyways.
+		// This method is supposed to update existing receipt schedules, so there is nothing to do for this case.
+	}
 
 	/**
 	 * Copy HU relevant informations from Order Line to given <code>receiptSchedule</code>.

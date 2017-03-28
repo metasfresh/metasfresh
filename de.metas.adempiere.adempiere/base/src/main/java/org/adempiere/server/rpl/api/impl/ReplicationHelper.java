@@ -24,10 +24,10 @@ package org.adempiere.server.rpl.api.impl;
 
 
 import java.sql.Timestamp;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 public class ReplicationHelper
@@ -52,7 +52,7 @@ public class ReplicationHelper
 		{
 			final Integer valueInt = (Integer)value;
 			final Integer valueOldInt = Env.containsKey(ctx, name) ? Env.getContextAsInt(ctx, name) : null;
-			if (Check.equals(valueInt, valueOldInt))
+			if (Objects.equals(valueInt, valueOldInt))
 			{
 				// nothing to do
 				return;
@@ -64,16 +64,16 @@ public class ReplicationHelper
 			else
 			{
 				throw new ReplicationException(MSG_XMLInvalidContext)
-						.addParameter("AttributeName", name)
-						.addParameter("Value", valueInt)
-						.addParameter("ValueOld", valueOldInt);
+						.setParameter("AttributeName", name)
+						.setParameter("Value", valueInt)
+						.setParameter("ValueOld", valueOldInt);
 			}
 		}
 		else if (value instanceof Timestamp)
 		{
 			final Timestamp valueTS = (Timestamp)value;
 			final Timestamp valueOldTS = Env.containsKey(ctx, name) ? Env.getContextAsDate(ctx, name) : null;
-			if (Check.equals(valueTS, valueOldTS))
+			if (Objects.equals(valueTS, valueOldTS))
 			{
 				// nothing to do
 				return;
@@ -85,16 +85,16 @@ public class ReplicationHelper
 			else
 			{
 				throw new ReplicationException(MSG_XMLInvalidContext)
-						.addParameter("AttributeName", name)
-						.addParameter("Value", valueTS)
-						.addParameter("ValueOld", valueOldTS);
+						.setParameter("AttributeName", name)
+						.setParameter("Value", valueTS)
+						.setParameter("ValueOld", valueOldTS);
 			}
 		}
 		else
 		{
 			final String valueStr = value == null ? null : value.toString();
 			final String valueOldStr = Env.containsKey(ctx, name) ? Env.getContext(ctx, name) : null;
-			if (Check.equals(valueStr, valueOldStr))
+			if (Objects.equals(valueStr, valueOldStr))
 			{
 				// nothing to do
 				return;
@@ -106,9 +106,9 @@ public class ReplicationHelper
 			else
 			{
 				throw new ReplicationException(MSG_XMLInvalidContext)
-						.addParameter("AttributeName", name)
-						.addParameter("Value", valueStr)
-						.addParameter("ValueOld", valueOldStr);
+						.setParameter("AttributeName", name)
+						.setParameter("Value", valueStr)
+						.setParameter("ValueOld", valueOldStr);
 			}
 		}
 	}

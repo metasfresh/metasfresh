@@ -28,12 +28,12 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 
-import de.metas.adempiere.model.I_AD_Session;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -86,7 +86,7 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	void runWithTrxName(String trxName, Runnable runnable);
 
-	I_AD_Session retrieveCurrentSession(final Properties ctx);
+	MFSession retrieveCurrentSession(final Properties ctx);
 
 	/**
 	 * 

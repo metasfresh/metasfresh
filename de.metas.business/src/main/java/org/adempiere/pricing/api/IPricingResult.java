@@ -126,14 +126,14 @@ public interface IPricingResult
 	void setM_DiscountSchema_ID(int m_DiscountSchema_ID);
 
 	/**
-	 * @return the price relevant attributes. Never return <code>null</code>.
+	 * @return the price relevant attributes. Never return {@code null}.
 	 */
 	List<IPricingAttribute> getPricingAttributes();
 
 	/**
 	 * Adds given {@link IPricingAttribute}s to this result.
 	 * 
-	 * @param pricingAttributesToAdd pricing attributes or empty or null.
+	 * @param pricingAttributesToAdd pricing attributes or empty or {@code null}.
 	 */
 	void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd);
 

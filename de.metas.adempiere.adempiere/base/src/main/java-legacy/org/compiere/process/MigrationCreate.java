@@ -22,15 +22,16 @@ import java.util.List;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MSession;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class MigrationCreate extends JavaProcess
 {
@@ -95,7 +96,7 @@ public class MigrationCreate extends JavaProcess
 			pos = table.createQuery(where, get_TrxName()).list();
 		}
 
-		final MSession session = MSession.get(getCtx(), false);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
 		final POInfo info = POInfo.getPOInfo(getCtx(), tableId, get_TrxName());
 		for (PO po : pos)
 		{

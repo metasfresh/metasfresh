@@ -415,7 +415,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			if (embeddedKeyColumns == null || embeddedKeyColumns.length != 1)
 			{
 				throw new ReplicationException("Embedded table shall have one and only one primary key")
-						.addParameter("AD_Table_ID", embeddedTable);
+						.setParameter("AD_Table_ID", embeddedTable);
 			}
 			embeddedTableName = embeddedTable.getTableName();
 			embeddedKeyColumnName = embeddedKeyColumns[0];
@@ -429,7 +429,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			if (embeddedKeyColumns == null || embeddedKeyColumns.length != 1)
 			{
 				throw new ReplicationException("Embedded table shall have one and only one primary key")
-						.addParameter("AD_Table_ID", embeddedTable);
+						.setParameter("AD_Table_ID", embeddedTable);
 			}
 			embeddedKeyColumnName = embeddedKeyColumns[0];
 		}

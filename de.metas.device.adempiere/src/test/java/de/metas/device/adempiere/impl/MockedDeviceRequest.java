@@ -1,10 +1,16 @@
-package de.metas.adempiere.model;
+package de.metas.device.adempiere.impl;
+
+import java.math.BigDecimal;
+
+import de.metas.device.adempiere.impl.MockedDeviceRequest.Response;
+import de.metas.device.api.IDeviceRequest;
+import de.metas.device.api.ISingleValueResponse;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.device.adempiere
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +28,21 @@ package de.metas.adempiere.model;
  * #L%
  */
 
-
-public interface I_AD_Session extends org.compiere.model.I_AD_Session
+public class MockedDeviceRequest implements IDeviceRequest<Response>
 {
-	public static final String COLUMNNAME_IsLoginIncorect = "IsLoginIncorrect";
+	public static final class Response implements ISingleValueResponse<BigDecimal>
+	{
+		@Override
+		public BigDecimal getSingleValue()
+		{
+			return BigDecimal.ZERO;
+		}
+		
+	}
+
 	@Override
-	public boolean isLoginIncorrect();
-	@Override
-	public void setIsLoginIncorrect(boolean isLoginIncorrect);
-	
-	public static final String COLUMNNAME_LoginUsername = "LoginUsername";
-	public String getLoginUsername();
-	public void setLoginUsername(String LoginUsername);
-	
-	public static final String COLUMNNAME_HostKey = "HostKey";
-	public String getHostKey();
-	public void setHostKey(String HostKey);
+	public Class<Response> getResponseClass()
+	{
+		return Response.class;
+	}
 }

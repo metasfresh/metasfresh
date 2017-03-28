@@ -13,11 +13,11 @@ package org.adempiere.pricing.spi.impl.rules;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,15 +35,25 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 
+/**
+ * This rule only applies if the give {@link IPricingContext} does not contain a price list version.
+ * It looks for an active {@link I_M_ProductPrice} in the pricing context's price list.
+ * <p>
+ * <b>IMPORTANT: </b> this rule might find an active product price that is not in the most recent price list version of the respective price list.
+ * This enables "sparse" price list versions that only contain changed prices, but please make sure it's what you want.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PriceList extends AbstractPriceListBasedRule
 {
 
 	/**
 	 * Returns <code>false</code> if the given <code>pricingContext</code> has a a <code>M_PriceList_Version_ID</code> set.<br>
-	 * In this case we don't want apply this rule, because it would return a product price from <b>any</b> pricelist (and not the most recent one!) with a fitting price date.
+	 * In this case we don't want apply this rule, because it would return a product price from <b>any</b> price list version (and not the most recent one!) with a fitting price date.
 	 */
 	@Override
-	public boolean applies(IPricingContext pricingCtx, IPricingResult result)
+	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		if (pricingCtx.getM_PriceList_Version_ID() > 0)
 		{
@@ -64,7 +74,9 @@ public class PriceList extends AbstractPriceListBasedRule
 		final int m_M_PriceList_ID = pricingCtx.getM_PriceList_ID();
 		Timestamp m_PriceDate = pricingCtx.getPriceDate();
 		if (m_PriceDate == null)
+		{
 			m_PriceDate = SystemTime.asTimestamp();
+		}
 		//
 		int m_M_PriceList_Version_ID = -1;
 		int m_C_TaxCategory_ID = -1; // metas;
@@ -76,7 +88,7 @@ public class PriceList extends AbstractPriceListBasedRule
 		int m_C_Currency_ID = -1;
 		int m_M_Product_Category_ID = -1;
 		boolean m_enforcePriceLimit = false;
-		boolean m_isTaxIncluded = false;
+		final boolean m_isTaxIncluded = false;
 		int ppUOMId = -1;
 
 		// Get Prices for Price List
@@ -107,7 +119,7 @@ public class PriceList extends AbstractPriceListBasedRule
 			rs = pstmt.executeQuery();
 			while (!m_calculated && rs.next())
 			{
-				Timestamp plDate = rs.getTimestamp(5);
+				final Timestamp plDate = rs.getTimestamp(5);
 				// we have the price list
 				// if order date is after or equal PriceList validFrom
 				if (plDate == null || !m_PriceDate.before(plDate))
@@ -115,13 +127,19 @@ public class PriceList extends AbstractPriceListBasedRule
 					// Prices
 					m_PriceStd = rs.getBigDecimal(1);
 					if (rs.wasNull())
+					{
 						m_PriceStd = BigDecimal.ZERO;
+					}
 					m_PriceList = rs.getBigDecimal(2);
 					if (rs.wasNull())
+					{
 						m_PriceList = BigDecimal.ZERO;
+					}
 					m_PriceLimit = rs.getBigDecimal(3);
 					if (rs.wasNull())
+					{
 						m_PriceLimit = BigDecimal.ZERO;
+					}
 					//
 					m_C_UOM_ID = rs.getInt(4);
 					m_C_Currency_ID = rs.getInt(6);
@@ -138,7 +156,7 @@ public class PriceList extends AbstractPriceListBasedRule
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}

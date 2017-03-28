@@ -62,6 +62,7 @@ public class BasePriceListVB extends AbstractVendorBreakRule
 		boolean m_enforcePriceLimit = false;
 		boolean m_isTaxIncluded = false;
 		int ppUOMId = -1;
+		int m_M_PriceList_Version_ID = -1;
 
 		//
 		//
@@ -74,7 +75,8 @@ public class BasePriceListVB extends AbstractVendorBreakRule
 				+ " pp.PriceLimit,"	// 3
 				+ " p.C_UOM_ID,pv.ValidFrom,pl.C_Currency_ID,p.M_Product_Category_ID,"	// 4..7
 				+ " pl.EnforcePriceLimit, pl.IsTaxIncluded, "	// 8..9
-				+ " pp.C_UOM_ID" // 10
+				+ " pp.C_UOM_ID, " // 10
+				+ " pv.M_PriceList_Version_ID"
 				+ "FROM M_Product p"
 				+ " INNER JOIN M_ProductPriceVendorBreak pp ON (p.M_Product_ID=pp.M_Product_ID)"
 				+ " INNER JOIN  M_PriceList_Version pv ON (pp.M_PriceList_Version_ID=pv.M_PriceList_Version_ID)"
@@ -120,6 +122,9 @@ public class BasePriceListVB extends AbstractVendorBreakRule
 					m_M_Product_Category_ID = rs.getInt(7);
 					m_enforcePriceLimit = "Y".equals(rs.getString(8));
 					m_isTaxIncluded = "Y".equals(rs.getString(9));
+					
+					m_M_PriceList_Version_ID = rs.getInt("M_PriceList_Version_ID");
+					
 					//
 					ppUOMId = rs.getInt(10);
 					log.debug("M_PriceList_ID=" + m_M_PriceList_ID
@@ -157,7 +162,7 @@ public class BasePriceListVB extends AbstractVendorBreakRule
 		result.setM_Product_Category_ID(m_M_Product_Category_ID);
 		result.setEnforcePriceLimit(m_enforcePriceLimit);
 		result.setTaxIncluded(m_isTaxIncluded);
-		// result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID);
+		result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID);
 		result.setCalculated(true);
 		result.setDisallowDiscount(true);
 		

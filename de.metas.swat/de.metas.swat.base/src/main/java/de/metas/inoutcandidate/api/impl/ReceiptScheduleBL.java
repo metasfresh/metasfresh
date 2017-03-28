@@ -29,9 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -370,11 +369,11 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			final IInOutProducer producer,
 			final Iterator<I_M_ReceiptSchedule> receiptSchedules)
 	{
-		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
-		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, null);
-		final ITrxItemProcessorExecutor<I_M_ReceiptSchedule, InOutGenerateResult> executor = executorService.createExecutor(processorCtx, producer);
-
-		executor.execute(receiptSchedules);
+		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
+				.setContext(ctx)
+				.setProcessor(producer)
+				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)
+				.process(receiptSchedules);
 	}
 
 	@Override

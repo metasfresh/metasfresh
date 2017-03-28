@@ -41,6 +41,7 @@ import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.model.IWindowNoAware;
@@ -55,7 +56,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MSession;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -140,9 +140,7 @@ public final class Env
 		if (DB.isConnected())
 		{
 			// End Session
-			MSession session = MSession.get(Env.getCtx(), false);	// finish
-			if (session != null)
-				session.logout();
+			Services.get(ISessionBL.class).logoutCurrentSession();
 		}
 		//
 		reset(true);	// final cache reset
@@ -164,9 +162,7 @@ public final class Env
 	public static void logout()
 	{
 		// End Session
-		MSession session = MSession.get(getCtx(), false);	// finish
-		if (session != null)
-			session.logout();
+		Services.get(ISessionBL.class).logoutCurrentSession();
 		//
 		reset(true);	// final cache reset
 	}

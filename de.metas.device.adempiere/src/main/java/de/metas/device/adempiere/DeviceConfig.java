@@ -22,21 +22,21 @@ import de.metas.device.api.IDevice;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * {@link IDevice} configuration.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -52,6 +52,7 @@ public final class DeviceConfig
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
+	private final Set<Integer> assignedWarehouseIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
@@ -61,6 +62,7 @@ public final class DeviceConfig
 		deviceClassname = builder.getDeviceClassname();
 		parameterValueSupplier = builder.getParameterValueSupplier();
 		requestClassnamesSupplier = builder.getRequestClassnamesSupplier();
+		assignedWarehouseIds = builder.getAssignedWareouseIds();
 	}
 
 	@Override
@@ -70,6 +72,7 @@ public final class DeviceConfig
 				.add("deviceName", deviceName)
 				.add("assignedAttributeCodes", assignedAttributeCodes)
 				.add("deviceClassname", deviceClassname)
+				.add("assignedWarehouseId", assignedWarehouseIds)
 				.toString();
 	}
 
@@ -103,6 +106,12 @@ public final class DeviceConfig
 		return requestClassnamesSupplier.getDeviceRequestClassnames(deviceName, attributeCode);
 	}
 
+	/** @return warehouse IDs where this device is available; empty means that it's available to any warehouse */
+	public Set<Integer> getAssignedWarehouseIds()
+	{
+		return assignedWarehouseIds;
+	}
+
 	public static final class Builder
 	{
 		private final String deviceName;
@@ -110,6 +119,7 @@ public final class DeviceConfig
 		private String deviceClassname;
 		private IDeviceParameterValueSupplier parameterValueSupplier;
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
+		private Set<Integer> assignedWareouseIds = null;
 
 		private Builder(final String deviceName)
 		{
@@ -186,6 +196,17 @@ public final class DeviceConfig
 		{
 			Check.assumeNotNull(requestClassnamesSupplier, "Parameter requestClassnamesSupplier is not null");
 			return requestClassnamesSupplier;
+		}
+
+		public DeviceConfig.Builder setAssignedWarehouseIds(final Set<Integer> assignedWareouseIds)
+		{
+			this.assignedWareouseIds = assignedWareouseIds;
+			return this;
+		}
+
+		private Set<Integer> getAssignedWareouseIds()
+		{
+			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
 		}
 	}
 

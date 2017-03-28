@@ -229,13 +229,13 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * @see #getAdditionalInputMethods(int)
 	 *
 	 */
-	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute)
+	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute, final int warehouseId)
 	{
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
 				.getAttributeDeviceAccessors(attribute.getValue())
 				.consumeWarningMessageIfAny(warningMessage -> Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, warningMessage))
-				.stream()
+				.stream(warehouseId)
 				.map(DeviceAccessorAsInputMethod::new)
 				.collect(GuavaCollectors.toImmutableList());
 	}
@@ -384,9 +384,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		final String attributeValueType = attributeValue.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final org.adempiere.mm.attributes.model.I_M_Attribute attributeEx = InterfaceWrapperHelper.create(attribute, org.adempiere.mm.attributes.model.I_M_Attribute.class);
-			final BigDecimal valueMin = getValueMin(attributeEx);
-			final BigDecimal valueMax = getValueMax(attributeEx);
+			final BigDecimal valueMin = getValueMin(attribute);
+			final BigDecimal valueMax = getValueMax(attribute);
 
 			//
 			// Case: valueMin and valueMax could not be null but both empty
@@ -431,9 +430,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		return getIndexedAttributeStorage().getAdditionalInputMethods(propertyName);
 	}
 
-	private BigDecimal getValueMin(final org.adempiere.mm.attributes.model.I_M_Attribute attribute)
+	private static BigDecimal getValueMin(final I_M_Attribute attribute)
 	{
-		if (InterfaceWrapperHelper.isNull(attribute, org.adempiere.mm.attributes.model.I_M_Attribute.COLUMNNAME_ValueMin))
+		if (InterfaceWrapperHelper.isNull(attribute, I_M_Attribute.COLUMNNAME_ValueMin))
 		{
 			return null;
 		}
@@ -443,9 +442,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		}
 	}
 
-	private BigDecimal getValueMax(final org.adempiere.mm.attributes.model.I_M_Attribute attribute)
+	private static BigDecimal getValueMax(final I_M_Attribute attribute)
 	{
-		if (InterfaceWrapperHelper.isNull(attribute, org.adempiere.mm.attributes.model.I_M_Attribute.COLUMNNAME_ValueMax))
+		if (InterfaceWrapperHelper.isNull(attribute, I_M_Attribute.COLUMNNAME_ValueMax))
 		{
 			return null;
 		}
@@ -559,9 +558,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			super();
 
+			final int warehouseId = attributeStorage.getM_Warehouse_ID();
+			
 			final List<String> propertyNames = new ArrayList<>();
 			final Map<String, I_M_Attribute> propertyName2attribute = new HashMap<>();
 			final HashMap<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction = new HashMap<>(); // task 04966
+			
 
 			for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
 			{
@@ -578,7 +580,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 				propertyName2attribute.put(propertyName, attribute);
 
 				// task 04966
-				final List<IInputMethod<?>> inputMethods = mkAdditionalInputMethods(attribute);
+				final List<IInputMethod<?>> inputMethods = mkAdditionalInputMethods(attribute, warehouseId);
 				propertyName2AdditionalInputAction.put(propertyName, ImmutableList.copyOf(inputMethods));
 			}
 

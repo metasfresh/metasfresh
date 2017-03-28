@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *                      *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us * *
  *****************************************************************************/
 package org.compiere.report;
 
@@ -72,27 +72,25 @@ public class ReportStarter implements IProcess
 		// Create report and print it directly
 		if (!reportPrintingInfo.isPrintPreview())
 		{
-			// task 08283: direct print can be done in background; no need to let the user wait for this
-			Services.get(ITaskExecutorService.class).submit(new Runnable()
+			if (reportPrintingInfo.isForceSync())
 			{
-				@Override
-				public void run()
-				{
-					try
-					{
-						log.info("Doing direct print without preview: {}", reportPrintingInfo);
-						startProcessDirectPrint(reportPrintingInfo);
-					}
-					catch (final Exception e)
-					{
-						final ProcessExecutionResult result = pi.getResult();
-						result.markAsError(e);
-						Services.get(IADPInstanceDAO.class).unlockAndSaveResult(pi.getCtx(), result);
-						Services.get(IClientUI.class).warn(pi.getWindowNo(), e);
-					}
-				}
-			},
-					ReportStarter.class.getSimpleName());
+				// gh #1160 if the caller want ou to execute synchronously, then do just that
+				startProcess0(pi, reportPrintingInfo);
+			}
+			else
+			{
+				// task 08283: direct print can be done in background; no need to let the user wait for this
+				Services.get(ITaskExecutorService.class).submit(
+						new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								startProcess0(pi, reportPrintingInfo);
+							}
+						},
+						ReportStarter.class.getSimpleName());
+			}
 		}
 		//
 		// Create report and preview
@@ -197,6 +195,7 @@ public class ReportStarter implements IProcess
 		final ReportPrintingInfo info = new ReportPrintingInfo();
 		info.setProcessInfo(pi);
 		info.setPrintPreview(pi.isPrintPreview());
+		info.setForceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
 
 		//
 		// Determine the ReportingSystem type based on report template file extension
@@ -233,6 +232,22 @@ public class ReportStarter implements IProcess
 		}
 	}
 
+	private void startProcess0(final ProcessInfo pi, final ReportPrintingInfo reportPrintingInfo)
+	{
+		try
+		{
+			log.info("Doing direct print without preview: {}", reportPrintingInfo);
+			startProcessDirectPrint(reportPrintingInfo);
+		}
+		catch (final Exception e)
+		{
+			final ProcessExecutionResult result = pi.getResult();
+			result.markAsError(e);
+			Services.get(IADPInstanceDAO.class).unlockAndSaveResult(pi.getCtx(), result);
+			Services.get(IClientUI.class).warn(pi.getWindowNo(), e);
+		}
+	}
+
 	private static enum ReportingSystemType
 	{
 		Jasper, Excel,
@@ -243,6 +258,9 @@ public class ReportStarter implements IProcess
 		private ProcessInfo processInfo;
 		private ReportingSystemType reportingSystemType;
 		private boolean printPreview;
+
+		private boolean forceSync = false;
+
 		private JRReportViewerProvider reportViewerProvider;
 
 		@Override
@@ -252,6 +270,7 @@ public class ReportStarter implements IProcess
 					.omitNullValues()
 					.add("reportingSystemType", reportingSystemType)
 					.add("printPreview", printPreview)
+					.add("forceSync", forceSync)
 					.add("processInfo", processInfo)
 					.add("reportViewerProvider", reportViewerProvider)
 					.toString();
@@ -285,6 +304,19 @@ public class ReportStarter implements IProcess
 		public boolean isPrintPreview()
 		{
 			return printPreview;
+		}
+
+		/**
+		 * Even if {@link #isPrintPreview()} is {@code false}, we do <b>not</b> print in a background thread, if this is false.
+		 */
+		public boolean isForceSync()
+		{
+			return forceSync;
+		}
+
+		public void setForceSync(boolean forceSync)
+		{
+			this.forceSync = forceSync;
 		}
 	}
 }

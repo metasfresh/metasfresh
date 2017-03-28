@@ -10,44 +10,156 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.2 (2017-12)
-
-** upcoming **
-
-# metasfresh 5.1 (2017-11)
+# metasfresh 5.3 (2017-13)
 
 **this week's release candidate**
+
+## Important Changes
+* user credentials of "SuperUser" are renamed to metasfresh
+  * [#1199](https://github.com/metasfresh/metasfresh/issues/1199)
+  
+## Features
+* metasfresh-backend
+  * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
+  * [#1202](https://github.com/metasfresh/metasfresh/issues/1202) Clean up ReplicationException
+  * [#1203](https://github.com/metasfresh/metasfresh/issues/1203) Rounding of weights after split in HU Editors is not working correctly
+  
+# metasfresh 5.2 (2017-12)
+
+## Features
+* metasfresh-webui-frontend
+  * [#453](https://github.com/metasfresh/metasfresh-webui-frontend/issues/453) Closing modal or window with unsaved changes
+    * Providing a better usability when changing the window or modal overlay with unsaved changes.
+  * [#461](https://github.com/metasfresh/metasfresh-webui-frontend/issues/461) If tab layout's "supportQuickInput" is false then don't show the "Batch entry" button
+    * The batch entry buttrons for quick input are now not shown when the layout provided by rest-api does not support that.
+  * [#462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/462) If document was not found forward to documents view
+    * The User Nterface now automatically forwards to documents view in the case that a document is not found.
+  * [#484](https://github.com/metasfresh/metasfresh-webui-frontend/issues/484) Login Screen 2nd Window usability
+    * Improving the usability of the login screen so that the user can navigate, edit and confirm with keyboard completely without mouse usage.
+  * [#491](https://github.com/metasfresh/metasfresh-webui-frontend/issues/491) Line height "jump" when editing mode
+    * Improving the behavior of grid view so the lines height dows not change depending of its content.
+  * [#532](https://github.com/metasfresh/metasfresh-webui-frontend/issues/532) KPI: Remove the Refresh option
+    * Removing the refresh button from KPI because this is not needed anymore since D3JS implementation.
+  * [#533](https://github.com/metasfresh/metasfresh-webui-frontend/issues/533) KPI: maximize/restore when double clicking on title bar
+    * Improved usability on dashboard. When the user double clicks on the titlebar, then the KPI widget maximizes/ minimizes automatically.
+  * [#540](https://github.com/metasfresh/metasfresh-webui-frontend/issues/540) Don't use deprecated staleTabIds
+    * Improving the behavior of included tab and staled information.
+
+* metasfresh-webui-api
+  * [#252](https://github.com/metasfresh/metasfresh-webui-api/issues/252) Provide to frontend: tab allow create new and delete as they change
+    * New functionalities to tab rows deleting/ adding functions. These shall only be shown in user interface if the api provides the  possibilities.
+  * [#264](https://github.com/metasfresh/metasfresh-webui-api/issues/264) Support different printers for same user and different login locations
+    * Additional api improvements to allow different printers for the same users with different login locations.
+
+* metasfresh-backend
+  * [#1145](https://github.com/metasfresh/metasfresh/issues/1145) Refactor adempiereJasper servlets and implement them with @RestController
+    * Complete refactoring of adempiereJasper servlets so that they now can work together with the Rest API Controller.
+  * [#1146](https://github.com/metasfresh/metasfresh/issues/1146) Change "sent by" in Request Notifications
+    * New information in Requests, now keeping the infomration about the notification sender.
+  * [#1152](https://github.com/metasfresh/metasfresh/issues/1152) Support address sequence configuration in multi org environment
+    * Improvement of the country location sequence configuration in multi organisational environments.
+  * [#1178](https://github.com/metasfresh/metasfresh/issues/1178) Warehouse Window in WebUI Layout
+    * New Window in Web User Interface to allow the creation and maintenance of Warehouses.
+
+## Fixes
+
+* metasfresh-webui-frontend
+  * [#451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/451) Bug in Sales Order Line, Add new
+    * Fixed an issue in the "add new" functionality of Sales Order Line.
+  * [#474](https://github.com/metasfresh/metasfresh-webui-frontend/issues/474) Editing in the middle of a text field makes the cursor jump to the end
+    * This change fixes a user experience issue that let the curson jump to the end when the user tried to edit in the middle of a text.
+  * [#502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/502) Lookup field layout issue when it has red border
+    * Adjusting the layout of red bordered lookup elements, now aboiding that existing icons overlap the border.
+  * [#526](https://github.com/metasfresh/metasfresh-webui-frontend/issues/526) Running a process from menu does not work
+    * Fixing a Bug that prevented to run processes called from navigation menu.
+  * [#539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/539) Confirm autocomplete Field entry in grid functionality
+    * Now it is possible for the user to select and confirm autocomplete entries in the grid view of included tabs.
+  * [#545](https://github.com/metasfresh/metasfresh-webui-frontend/issues/545) View's windowId is not matching the expected one
+    * This is fixing a Bug which mixed up the viewID's when navigating fast via browser forth and back through the screens.
+  * [#547](https://github.com/metasfresh/metasfresh-webui-frontend/issues/547) Menu's first element is hidden behind on mobile 
+    * Fixing an issue in mobile responsive navigation design. Now also showing the first link on mobile size resolution.
+  * [#550](https://github.com/metasfresh/metasfresh-webui-frontend/issues/550) Clicking on grid view breadcrumb item does not work
+    * Bugfix for the breadcrumb navigaion on griwd view items.
+  * [#558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/558) Respect saveStatus in connected modal
+    * Fixing a Bug to repect the saveStatus also in connected modal overlays.
+
+* metasfresh-webui-api
+  * [#256](https://github.com/metasfresh/metasfresh-webui-api/issues/256) Cannot create a new BPartner contact
+    * Bugfix for the creation of a business partner contact in Web UI.
+  * [#259](https://github.com/metasfresh/metasfresh-webui-api/issues/259) New Warehouse is not saveable
+    * Bugfix for the creation of a new warehouses in Web UI.
+  * [#260](https://github.com/metasfresh/metasfresh-webui-api/issues/260) cannot create receipt with multiple TU on LU
+    * Fix for the Material Receipt that did not properly generate receipt lines whan receiving Handling Units with Transprot Units on Load Units.
+  * [#263](https://github.com/metasfresh/metasfresh-webui-api/issues/263) Bug in Warehouse window: Auftragsübersicht (intern) NPE
+    * Eliminated the reason for the Null Pointer Exception in Warehouse Window for the Sales Order Overview.
+
+* metasfresh-backend
+  * [#473](https://github.com/metasfresh/metasfresh/issues/473) Adjust ESR layout for E-Druck
+    * Adjusted the Layout of the swiss ESR bill for electronic exchange.
+  * [#1165](https://github.com/metasfresh/metasfresh/issues/1165) QtyDelivered not set back correctly after reactivating and voiding a material receipt
+    * Now correctly resetting the Qty delivered when reactivating or voiding a material receipt.
+  * [#1177](https://github.com/metasfresh/metasfresh/issues/1177) Qties in Material Receipt not correct after several splitting and transforming in HU Editor
+    * Handling Unit Transforming is now delivering the correct results after splitting and merging via the new Handling Unit editor and Handling Unit compression.
+  * [#1184](https://github.com/metasfresh/metasfresh/issues/1184) Price is found for C_OlCand despite it was deactivated
+    * Although the price was deactivated in Product Price it was used in Order Line Candidates. This is now fixed.
+  * [#1192](https://github.com/metasfresh/metasfresh/issues/1192) Pricing: IsDefault was not properly migrated
+    * Fixing a Bug with the product price migration after price refactoring.
+  
+# metasfresh 5.1 (2017-11)
 
 ## Features
 * metasfresh-backend
   * [#1102](https://github.com/metasfresh/metasfresh/issues/1102) Field Price List Version as search Field
+    * Adjusted the Fieldtype for PriceListVersion. Ist now a search field (before a direct Table drop-down). This allows the user now to do a fulltext search and autocomplete and the usage of wildcards.
+  * [#1122](https://github.com/metasfresh/metasfresh/issues/1122) Reporting SQL for Products and vendor/ customer
+    * New Reporting for Customer and Vendor delivered quantities for a specified Time range.
   * [#1124](https://github.com/metasfresh/metasfresh/issues/1124) metasfresh App Server start takes considerably longer
+    * Improvement of Startup time for the metasfresh App server.
   * [#1134](https://github.com/metasfresh/metasfresh/issues/1134) Show Order ID in main window of Empties Receive
+    * Add a new Field in Empties receive to show the Document No. of the Sales Order.
   * [#1142](https://github.com/metasfresh/metasfresh/issues/1142) Improve migration scripts handling
-  * [#1160](https://github.com/metasfresh/metasfresh/issues/1160) Material receipt label is printed for each TU on an LU
+    * Adjustment of the Migration Scripts handling. Now saving the migration scripts in a dedicated folder called migration_scripts instead of tmp folder.
   * [#1161](https://github.com/metasfresh/metasfresh/issues/1161) Picking Terminal add Packing Material to Picking Slot takes too long
-  * [#1162](https://github.com/metasfresh/metasfresh/issues/1162) Split from non-aggregate HUs can lead to wrong TU quantities
-  
-* metasfresh-webui
+    * Large Performance Improvement of Picking processing duration when adding Packing Material to a picking Slot. This solution improves the overall performance of the picking workflow.
+    
+* metasfresh-webui-api
   * [#244](https://github.com/metasfresh/metasfresh-webui-api/issues/244) KPIs: Introduce TimeRange ending offset
+    * Extended functionalitie for KPI definition. Now allowing to set an offet that is used for a ofsetted timerange dataset used for comparison in bar charts.
   * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
+    * Extended Functionality to mark rows as saved, allowing the front-end save indicator to react on that.
   
 * metasfresh-webui-frontend
+  * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
+    * Integration of D3JS into the webui frontend. D3JS is used for the generation of Barchart and Piechart KPI on the metasfresh Dashboard.
+  * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
+    * Implementation of the Number Indicator/ comparator widget for the Target KPI in Dashboard.
   * [#459](https://github.com/metasfresh/metasfresh-webui-frontend/issues/459) If quick input fails then don't show the quick input fields
+    * Improvement of User Experience. Not showing Quick Input Fields only if these are configured in the application dictionary.
   
 ## Fixes
 * metasfresh-backend
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
+    * Fixed a Bug that showes to many prices on printed Partner Pricelists.
   * [#1153](https://github.com/metasfresh/metasfresh/issues/1153) Pricing wrong w/ more than 1 Packing Instruction
+    * Fixed a bug that did not wlloe to define and use prices for product prices withe more than one packing instruction.
+  * [#1160](https://github.com/metasfresh/metasfresh/issues/1160) Material receipt label is printed for each TU on an LU
+    * Bug Fix for the automatic Label Printing in Material Receipt Process. Now only the defined amount of copies are printed.
+  * [#1162](https://github.com/metasfresh/metasfresh/issues/1162) Split from non-aggregate HUs can lead to wrong TU quantities
+    * Bug Fix for the Split action in Handling Unit Editor.
+  * [#1171](https://github.com/metasfresh/metasfresh/issues/1171) Inactive BPartner is not shown in open items report
+    * Fix for the Open Items report. Now also showing Open Items for decativated Business Partners.
+  * [#1172](https://github.com/metasfresh/metasfresh/issues/1172) Show only those weighing machines which are available for HU's warehouse
+    * Filtering the shown weighing devices to thiose that are valid for the given Warehouse in HU Storage.
 
 * metasfresh-webui-api
   * [#179](https://github.com/metasfresh/metasfresh-webui-api/issues/179) Cleanup metasfresh-webui repository
+    * Housekeeping task to cleanup the metasfresh-webui repository, getting rid of discontinued stuff.
   * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
+    * Fixes a Bug that allowed to propoagate Attribute Values on a whole Handling Unit just through moving a low level HU into the Handling Unit.
   
 * metasfresh-webui-frontend
-  * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
-  * [#444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/444) KPI Number Indicator w/ comparator
   * [#524](https://github.com/metasfresh/metasfresh-webui-frontend/issues/524) Location Editor cannot read property bug
+    * Fixing a Bug that broke the functionality of the Location Editor.
 
 # metasfresh 5.0 (2017-10)
 
