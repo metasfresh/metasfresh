@@ -107,8 +107,9 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrievePickedAndDeliveredRecordsQuery(final I_M_ShipmentSchedule shipmentSchedule)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, shipmentSchedule)
 				.filter(createPickedAndDeliveredFilter(shipmentSchedule))
 				.addOnlyActiveRecordsFilter();

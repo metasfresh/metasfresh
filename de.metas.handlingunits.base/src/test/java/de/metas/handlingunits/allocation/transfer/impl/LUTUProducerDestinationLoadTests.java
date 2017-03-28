@@ -31,6 +31,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,10 +45,15 @@ import org.w3c.dom.Node;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
 import de.metas.interfaces.I_M_Warehouse;
 
 /**
@@ -145,7 +152,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
-		
+
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 		assertThat(createdHuXML, not(hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI']/Storage")));
@@ -156,7 +163,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
-		
+
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI'])", is("1")));
@@ -495,8 +502,65 @@ public class LUTUProducerDestinationLoadTests
 
 			HUAssert.assertAllStoragesAreValid();
 		}
+	}
 
-		// TraceUtils.dump(huPalets);
-		// TraceUtils.dumpTransactions();
+	/**
+	 * Verifies that the loader will not try to create an aggregate HU for the case of a CU that shall be put right onto an LU.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1194
+	 */
+	@Test
+	public void testLoadCUonLU()
+	{
+		final I_M_Warehouse wh = data.helper.createWarehouse("testWarehouse");
+		final I_M_Locator l = data.helper.createLocator("testLocator", wh);
+
+		final I_C_BPartner bpartner = data.helper.createBPartner("testPartner");
+		final I_C_BPartner_Location bpLocation = data.helper.createBPartnerLocation(bpartner);
+
+		final I_M_HU_PI_Item piLU_Item_Virtual = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.helper.huDefVirtual, BigDecimal.ONE);
+
+		final I_M_HU_LUTU_Configuration lutuConfiguration = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class);
+		lutuConfiguration.setM_LU_HU_PI(data.piLU);
+		lutuConfiguration.setM_LU_HU_PI_Item(piLU_Item_Virtual);
+		lutuConfiguration.setIsInfiniteQtyLU(false);
+		lutuConfiguration.setQtyLU(BigDecimal.ONE);
+		lutuConfiguration.setM_TU_HU_PI(data.helper.huDefVirtual);
+		lutuConfiguration.setIsInfiniteQtyTU(false);
+		lutuConfiguration.setQtyTU(BigDecimal.ONE);
+		lutuConfiguration.setM_Product(data.helper.pSalad); // differs from real world
+		lutuConfiguration.setC_UOM(data.helper.uomEach);
+		lutuConfiguration.setIsInfiniteQtyCU(false);
+		lutuConfiguration.setQtyCU(new BigDecimal("252"));
+		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
+		lutuConfiguration.setM_Locator(l);
+		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_Location(bpLocation);
+		InterfaceWrapperHelper.save(lutuConfiguration);
+
+		final ILUTUProducerAllocationDestination lutuProducer = Services.get(ILUTUConfigurationFactory.class).createLUTUProducerAllocationDestination(lutuConfiguration);
+
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), data.helper.uomEach);
+
+		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
+		assertThat(createdLUs.size(), is(1));
+		final I_M_HU createdLU = createdLUs.get(0);
+
+		// data.helper.commitAndDumpHU(createdLU);
+
+		final Node createdLuXML = HUXmlConverter.toXml(createdLU);
+
+		// the aggregate HU that is not really used in this case. It has no storage, and its PM item has a quantity of zero
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bpLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(l.getM_Locator_ID())))); // verify that the locator is propagated
+
+		// the "real" virtual PI
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bpLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(l.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item/@ItemType)", is("MI")));
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Ea']/@Qty)", is("252")));
+
 	}
 }
