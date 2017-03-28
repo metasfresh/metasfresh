@@ -96,10 +96,6 @@ class Table extends Component {
     getIndentData = (selectFirst) => {
         const {rowData, tabid, indentSupported} = this.props;
 
-        if(!(rowData[1] && Object.keys(rowData[1]).length)){
-            return;
-        }
-
         if(indentSupported){
             let rowsData = [];
 
@@ -109,7 +105,7 @@ class Table extends Component {
 
             this.setState({
                 rows: rowsData,
-                pendingInit: !!Object.keys(rowsData)
+                pendingInit: !rowsData
             }, () => {
                 if(selectFirst){
                     this.selectOneProduct(this.state.rows[0].id);
@@ -120,7 +116,7 @@ class Table extends Component {
         } else {
             this.setState({
                 rows: rowData[tabid],
-                pendingInit: !!Object.keys(rowData[tabid])
+                pendingInit: !rowData[tabid]
             });
         }
     }
