@@ -49,6 +49,7 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
+import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -518,7 +519,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		//
 		// Create TU Keys
-		final Map<String, ILUTUCUKey> tuKeys = new LinkedHashMap<String, ILUTUCUKey>(availableHUPIItemProducts.size());
+		final Map<String, ILUTUCUKey> tuKeys = new LinkedHashMap<String, ILUTUCUKey>();
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : availableHUPIItemProducts)
 		{
 			final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
@@ -533,6 +534,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		//
 		// Add the virtual PI to TU Keys
+		// gh #1194: ... don't add them if lutuConfiguration is already about a virtual PI to start with
+		if (lutuConfiguration.getM_HU_PI_Item_Product().getM_HU_PI_Item_ID() != HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID)
 		{
 			final ILUTUCUKey tuKey = createVirtualPITUKey(lutuConfiguration);
 			final String tuKeyId = tuKey.getId();
