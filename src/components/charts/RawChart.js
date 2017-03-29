@@ -113,8 +113,8 @@ class RawChart extends Component {
                         groupBy={groupBy}
                         height={height}
                         colors = {[
-                            '#89d729', '#9aafbd', '#7688c9', '#c1ea8e', 
-                            '#c9d5dc', '#aab5e0', '#6aad18', '#298216', 
+                            '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
+                            '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
                             '#32520d', '#605a7f'
                         ]}
                     />

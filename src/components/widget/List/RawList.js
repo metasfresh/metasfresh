@@ -338,7 +338,7 @@ class RawList extends Component {
                             readOnly
                             tabIndex={-1}
                             placeholder={defaultValue}
-                            value={selected ? 
+                            value={selected ?
                                 selected[Object.keys(selected)[0]] : ''}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}

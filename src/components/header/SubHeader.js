@@ -51,8 +51,8 @@ class Subheader extends Component {
 
         if(windowType){
             if(selected.length === 1 || dataId){
-                const id = dataId ? 
-                    dataId : 
+                const id = dataId ?
+                    dataId :
                     (selectedWindowType == windowType ? selected[0]: null);
 
                 if(!id){
@@ -83,7 +83,7 @@ class Subheader extends Component {
             }
 
             dispatch(actionsRequest(
-                entity, windowType, dataId ? dataId : query && query.viewId, 
+                entity, windowType, dataId ? dataId : query && query.viewId,
                 (selectedWindowType === windowType ? selected: []))
             ).then((response) => {
                 dispatch(setActions(response.data.actions));
@@ -94,7 +94,7 @@ class Subheader extends Component {
     handleAttachmentClick = (id) => {
         const {dispatch, windowType, dataId, selected} = this.props;
         dispatch(openFile(
-            'window', windowType, dataId ? dataId : selected[0], 'attachments', 
+            'window', windowType, dataId ? dataId : selected[0], 'attachments',
             id
         ));
     }
@@ -210,37 +210,42 @@ class Subheader extends Component {
              return active;
         }
     }
-    
+
     renderNavColumn = () => {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
-            handleDelete, handleClone
+            handleDelete, handleClone, docNo, redirect
         } = this.props;
-        
+
         const docLinks = dataId && [
-            <div 
-                className="subheader-item js-subheader-item" 
-                tabIndex={0} 
-                onClick={() => {openModal(windowType, 'window', 'Advanced edit', true); closeSubheader();}}
+            <div
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
+                onClick={() => {
+                    openModal(windowType, 'window', 'Advanced edit', true);
+                    closeSubheader();
+                }}
             >
-                <i className="meta-icon-edit" /> Advanced Edit 
+                <i className="meta-icon-edit" /> Advanced Edit
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}
                 </span>
             </div>,
-            <div 
-                className="subheader-item js-subheader-item" 
+            <div
+                className="subheader-item js-subheader-item"
                 tabIndex={0}
-                onClick={() => {handlePrint(windowType, dataId, docNo); closeSubheader()}}
+                onClick={() => {
+                    handlePrint(windowType, dataId, docNo); closeSubheader()
+                }}
             >
-                <i className="meta-icon-print" /> Print 
+                <i className="meta-icon-print" /> Print
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}
                 </span>
             </div>,
-            <div 
-                className="subheader-item js-subheader-item" 
-                tabIndex={0} 
+            <div
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
                 onClick={() => handleClone(windowType, dataId)}
             >
                 <i className="meta-icon-duplicate" /> Clone
@@ -256,30 +261,30 @@ class Subheader extends Component {
                 </span>
             </div>
         ]
-        
+
         return (
-            <div 
-                className="subheader-column js-subheader-column" 
+            <div
+                className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
                 <div className="js-spacer"/>
-                
-                {windowType && <div 
+
+                {windowType && <div
                     className="subheader-item js-subheader-item"
                     tabIndex={0}
                     onClick={() => { redirect(
                         '/window/'+ windowType + '/new'
                     ); closeSubheader()}
                 }>
-                    <i className="meta-icon-report-1" /> New 
+                    <i className="meta-icon-report-1" /> New
                     <span className="tooltip-inline">
                         {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
                     </span>
                 </div>}
                 {docLinks}
-                <div 
-                    className="subheader-item js-subheader-item" 
-                    tabIndex={0} 
+                <div
+                    className="subheader-item js-subheader-item"
+                    tabIndex={0}
                     onClick={()=> redirect('/logout')}
                 >
                     <i className="meta-icon-logout" /> Log out
@@ -287,14 +292,14 @@ class Subheader extends Component {
             </div>
         )
     }
-    
+
     renderActionsColumn = () => {
         const {
             openModal, closeSubheader, actions
         } = this.props;
         return (
             <div
-                className="subheader-column js-subheader-column" 
+                className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
                 <div className="subheader-header">Actions</div>
@@ -313,7 +318,7 @@ class Subheader extends Component {
                     >
                         {item.caption}
                     </div>
-                ) : 
+                ) :
                     <div className="subheader-item subheader-item-disabled">
                         There is no actions
                     </div>
@@ -321,17 +326,17 @@ class Subheader extends Component {
             </div>
         )
     }
-    
+
     renderRefColumn = () => {
         const {references, closeSubheader} = this.props;
         return (
-            <div 
+            <div
                 className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
                 <div className="subheader-header">Referenced documents</div>
                 <div className="subheader-break" />
-                { references && !!references.length ? 
+                { references && !!references.length ?
                     references.map((item, key) =>
                         <div
                             className="subheader-item js-subheader-item"
@@ -355,25 +360,25 @@ class Subheader extends Component {
     renderAttColumn = () => {
         const {attachments} = this.props;
         const {attachmentHovered} = this.state;
-        
+
         return (
-            <div 
+            <div
                 className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
                 <div className="subheader-header">Attachments</div>
                 <div className="subheader-break " />
-                {(attachments && attachments.length) ? 
+                {(attachments && attachments.length) ?
                     attachments.map((item, key) =>
                         <div
                             className="subheader-item subheader-item-ellipsis js-subheader-item"
                             key={key}
                             tabIndex={0}
-                            onMouseEnter={() => 
+                            onMouseEnter={() =>
                                 this.toggleAttachmentDelete(item.id)}
-                            onMouseLeave={() => 
+                            onMouseLeave={() =>
                                 this.toggleAttachmentDelete(null)}
-                            onClick={() => 
+                            onClick={() =>
                                 this.handleAttachmentClick(item.id)}
                         >
                             {item.name}
@@ -385,7 +390,7 @@ class Subheader extends Component {
                                 {attachmentHovered === item.id &&
                                     <div
                                         className="subheader-additional-box"
-                                        onClick={(e) => 
+                                        onClick={(e) =>
                                             this.handleAttachmentDelete(
                                                 e, item.id
                                             )
@@ -396,8 +401,8 @@ class Subheader extends Component {
                                 }
                             </ReactCSSTransitionGroup>
                         </div>
-                    ) : 
-                        <div 
+                    ) :
+                        <div
                             className="subheader-item subheader-item-disabled"
                         >There is no attachment</div>
                 }
@@ -406,12 +411,6 @@ class Subheader extends Component {
     }
 
     render() {
-        const {
-            windowType, references, actions, dataId, docNo, openModal, 
-            handlePrint, handleDelete, redirect, handleClone, closeSubheader, 
-            attachments
-        } = this.props;
-
         return (
             <div
                 className="subheader-container overlay-shadow subheader-open js-not-unselect"

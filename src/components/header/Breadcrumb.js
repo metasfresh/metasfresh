@@ -49,11 +49,11 @@ class Breadcrumb extends Component {
             {index ? <span className="divider">/</span> : null}
             <div className="header-btn tooltip-parent">
                 <div
-                    title={(index && menu.children.captionBreadcrumb) ? 
+                    title={(index && menu.children.captionBreadcrumb) ?
                         menu.children.captionBreadcrumb : ''
                     }
                     className={'header-item-container pointer ' +
-                        (menuOverlay === menu.nodeId ? 
+                        (menuOverlay === menu.nodeId ?
                             'header-item-open ' : '') +
                         (!index ? 'header-item-container-static ': '')
                     }
@@ -62,8 +62,8 @@ class Breadcrumb extends Component {
                     onMouseLeave={() => this.toggleTooltip(false)}
                 >
                     <span className="header-item icon-sm">
-                        {index ? 
-                            menu.children.captionBreadcrumb : 
+                        {index ?
+                            menu.children.captionBreadcrumb :
                             <i className="meta-icon-menu" />
                         }
                     </span>
@@ -123,10 +123,10 @@ class Breadcrumb extends Component {
                         />
                 </div>}
 
-                    {docSummaryData && <div 
+                    {docSummaryData && <div
                         className="hidden-xs-down header-breadcrumb-line"
                     >
-                        <span 
+                        <span
                             className="header-breadcrumb-sitename"
                         >
                             {docSummaryData.value}
@@ -137,7 +137,7 @@ class Breadcrumb extends Component {
 
                     {siteName &&
                         <div>
-                            <span 
+                            <span
                                 className="header-item icon-sm"
                             >{siteName}</span>
                         </div>

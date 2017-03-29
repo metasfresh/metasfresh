@@ -86,7 +86,7 @@ class MenuOverlayItem extends Component {
     }
 
     handleGroupUp() {
-        const previousGroup = 
+        const previousGroup =
             document.activeElement.parentElement.previousSibling;
         const headerLink = document.getElementsByClassName('js-menu-header')[0];
         if (previousGroup) {
@@ -107,7 +107,7 @@ class MenuOverlayItem extends Component {
             document.activeElement.nextSibling.focus();
         } else {
             if (document.activeElement.parentElement.nextSibling) {
-                const listChildren = 
+                const listChildren =
                     document.activeElement.parentElement.nextSibling.childNodes;
                 if(listChildren.length == 1){
                     listChildren[0].focus();
@@ -157,31 +157,31 @@ class MenuOverlayItem extends Component {
             }
 
             { query &&
-                <span 
-                    className={children ? '' : (type === 'group' ? 
+                <span
+                    className={children ? '' : (type === 'group' ?
                         'query-clickable-group' : 'query-clickable-link')
                     }
-                    onClick={ children ? '' : 
+                    onClick={ children ? '' :
                         e => this.clickedItem(e, elementId, nodeId, type)
                     }
                 >
                     {children ? children.map(
                         (item, id) =>
                             <span key={id} className="query-results" >
-                                <span 
+                                <span
                                     className="query-caption"
                                 >
                                     {id === 0 ? caption + ' / ': '/'}
                                 </span>
-                                <span 
-                                    title={item.caption} 
-                                    className={type === 'group' ? 
-                                        'query-clickable-group' : 
+                                <span
+                                    title={item.caption}
+                                    className={type === 'group' ?
+                                        'query-clickable-group' :
                                         'query-clickable-link'
                                     }
                                     onClick={
                                         e => this.clickedItem(
-                                            e, item.elementId, item.nodeId, 
+                                            e, item.elementId, item.nodeId,
                                             item.type
                                         )
                                     }

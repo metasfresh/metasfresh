@@ -25,13 +25,15 @@ class RawModal extends Component {
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
-        modalContent && modalContent.addEventListener('scroll', this.handleScroll);
+        modalContent &&
+            modalContent.addEventListener('scroll', this.handleScroll);
     }
 
     componentWillUnmount() {
         const modalContent = document.querySelector('.js-panel-modal-content');
 
-        modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
+        modalContent &&
+            modalContent.removeEventListener('scroll', this.handleScroll);
     }
 
     handleScroll = (event) => {

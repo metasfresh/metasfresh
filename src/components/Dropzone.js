@@ -51,7 +51,7 @@ class DropzoneWrapper extends Component {
                 disableClick={true}
                 onDragEnter={() => this.handleDragStart()}
                 onDragLeave={() => this.handleDragEnd()}
-                onDrop={(accepted, rejected) => 
+                onDrop={(accepted, rejected) =>
                     this.handleDropFile(accepted, rejected)
                 }
             >

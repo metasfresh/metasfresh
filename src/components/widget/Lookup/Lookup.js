@@ -133,9 +133,9 @@ class Lookup extends Component {
         const {
             propertiesCopy
         } = this.state;
-        
+
         // need to have property which has no default value
-        let propertiesArray = []; 
+        let propertiesArray = [];
 
         // call for more properties
         if(propertiesCopy.length > 0){

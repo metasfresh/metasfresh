@@ -49,7 +49,7 @@ class DataLayoutWrapper extends Component {
         const {dataId} = this.state;
 
         dispatch(patchRequest(
-            entity, windowType, dataId, null, null, prop, value, null, null, 
+            entity, windowType, dataId, null, null, prop, value, null, null,
             null, viewId
         )).then(response => {
             const preparedData = parseToDisplay(response.data[0].fields);

@@ -19,8 +19,8 @@ class MenuOverlayContainer extends Component {
 
     render() {
         const {
-            children, elementId, caption, type, handleClickOnFolder, 
-            handleRedirect, handleNewRedirect, handlePath, printChildren, deep, 
+            children, elementId, caption, type, handleClickOnFolder,
+            handleRedirect, handleNewRedirect, handlePath, printChildren, deep,
             back, handleMenuOverlay, openModal
         } = this.props;
 
@@ -29,14 +29,14 @@ class MenuOverlayContainer extends Component {
                 tabIndex={0}
                 className={
                     'menu-overlay-node-container ' +
-                    (deep ? 'menu-overlay-node-spaced ' : 
+                    (deep ? 'menu-overlay-node-spaced ' :
                         'menu-overlay-expanded-link-spaced')
                 }>
                 {type === 'group' &&
                     <span
                         className={
                             'menu-overlay-header ' +
-                            (!printChildren ? 
+                            (!printChildren ?
                                 'menu-overlay-header-spaced ' : ' ') +
                             (!deep ? 'menu-overlay-header-main' : ' ')
                         }

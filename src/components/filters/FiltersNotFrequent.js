@@ -47,9 +47,9 @@ class FiltersNotFrequent extends Component {
 
         const {isOpenDropdown, openFilterId} = this.state;
 
-        const openFilter = 
+        const openFilter =
             getItemsByProperty(data, 'filterId', openFilterId)[0];
-        const activeFilter = active && 
+        const activeFilter = active &&
             getItemsByProperty(data, 'filterId', active.filterId)[0];
         const isActive = !!activeFilter;
 
@@ -58,7 +58,7 @@ class FiltersNotFrequent extends Component {
                 <button
                     onClick={() => this.toggleDropdown(true)}
                     className={
-                        'btn btn-filter btn-meta-outline-secondary ' + 
+                        'btn btn-filter btn-meta-outline-secondary ' +
                         'btn-distance btn-sm' +
                         (isOpenDropdown ? ' btn-select': '') +
                         (isActive ? ' btn-active' : '')
@@ -87,10 +87,10 @@ class FiltersNotFrequent extends Component {
                             <FiltersItem
                                 windowType={windowType}
                                 data={openFilter || activeFilter}
-                                closeFilterMenu={() => 
+                                closeFilterMenu={() =>
                                     this.toggleDropdown(false)
                                 }
-                                returnBackToDropdown={() => 
+                                returnBackToDropdown={() =>
                                     this.toggleFilter(null)
                                 }
                                 clearFilters={clearFilters}

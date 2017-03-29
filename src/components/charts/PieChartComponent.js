@@ -13,12 +13,12 @@ class PieChartComponent extends Component {
             .range(colors);
 
         const dimensions = this.setDimensions();
-        
+
         this.drawChart(
             dimensions.wrapperWidth, dimensions.width, dimensions.height,
             dimensions.pie, dimensions.arc, data, color, dimensions.radius
         );
-        
+
         if(responsive){
             this.addResponsive(data, color);
         }
@@ -31,7 +31,7 @@ class PieChartComponent extends Component {
 
     componentDidUpdate() {
         const {data, colors, chartClass} = this.props;
-        const chartWrapp = 
+        const chartWrapp =
             document.getElementsByClassName(chartClass + '-wrapper')[0];
         const color = d3.scaleOrdinal()
             .range(colors);
@@ -50,13 +50,14 @@ class PieChartComponent extends Component {
         let chartHeight = height;
 
         if(responsive) {
-            wrapperWidth = 
+            wrapperWidth =
                 document.getElementsByClassName(chartClass + '-wrapper')[0]
                     .offsetWidth;
             chartWidth = wrapperWidth;
         }
         const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
-        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
+        const arc =
+            d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
         const pie = d3.pie()
             .sort(null)
             .value( d => d[fields[0].fieldName]);
@@ -83,7 +84,7 @@ class PieChartComponent extends Component {
             .attr('height', height)
             .append('g')
             .attr('class', 'chart')
-            .attr('transform', 
+            .attr('transform',
                 'translate(' + wrapperWidth / 2 + ',' + 0.66*height + ')'
             );
 
@@ -150,7 +151,7 @@ class PieChartComponent extends Component {
 
     addResponsive = (data, color) => {
         const {chartClass} = this.props;
-        const chartWrap = 
+        const chartWrap =
             document.getElementsByClassName(chartClass+'-wrapper')[0];
 
         d3.select(window)
@@ -158,7 +159,7 @@ class PieChartComponent extends Component {
                 this.clearChart();
                 const dimensions = this.setDimensions(chartWrap.offsetWidth);
                 this.drawChart(
-                    dimensions.wrapperWidth, dimensions.width, 
+                    dimensions.wrapperWidth, dimensions.width,
                     dimensions.height, dimensions.pie, dimensions.arc, data,
                     color
                 );

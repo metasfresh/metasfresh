@@ -639,7 +639,7 @@ class RawWidget extends Component {
 
     render() {
         const {
-            caption, fields, type, noLabel, widgetData, rowId, isModal, 
+            caption, fields, type, noLabel, widgetData, rowId, isModal,
             handlePatch, widgetType
         } = this.props;
 

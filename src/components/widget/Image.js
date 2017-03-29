@@ -157,7 +157,7 @@ class Image extends Component{
 
     renderVideoPreview(){
         const {isLoading} = this.state;
-        return <div 
+        return <div
             className={'camera-preview' + (isLoading ? ' loading' : '')}
             >
                 <video ref={c => this.camera = c} />
@@ -221,7 +221,7 @@ class Image extends Component{
             <div className="col-sm-4 form-control-label image-source-options">
                 <div className="row">
                     <div className="col-sm-12">
-                        <label 
+                        <label
                             className="btn btn-meta-outline-secondary btn-sm"
                         >
                             <input

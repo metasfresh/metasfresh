@@ -28,7 +28,7 @@ class Inbox extends Component {
             switch(item.target.targetType){
                 case 'window':
                     dispatch(push(
-                        '/window/' + item.target.documentType + '/' + 
+                        '/window/' + item.target.documentType + '/' +
                         item.target.documentId
                     ));
                     break;
@@ -56,7 +56,7 @@ class Inbox extends Component {
 
     componentDidUpdate() {
         const {open} = this.props;
-        const inboxWrapper = 
+        const inboxWrapper =
             document.getElementsByClassName('js-inbox-wrapper')[0];
         if(inboxWrapper && open){
             inboxWrapper.focus();
@@ -88,9 +88,9 @@ class Inbox extends Component {
     render() {
         const {open, inbox, all, close} = this.props;
         return (
-            <div 
-                className="js-inbox-wrapper" 
-                onKeyDown={(e) => this.handleKeyDown(e)} 
+            <div
+                className="js-inbox-wrapper"
+                onKeyDown={(e) => this.handleKeyDown(e)}
                 tabIndex={0}
             >
                 {(all || open) && <div className={

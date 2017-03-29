@@ -5,7 +5,7 @@ import {
     dropdownRequest
 } from '../../actions/GenericActions';
 
-import DocumentStatusContextShortcuts 
+import DocumentStatusContextShortcuts
     from '../shortcuts/DocumentStatusContextShortcuts';
 
 class ActionButton extends Component {
@@ -53,7 +53,7 @@ class ActionButton extends Component {
         const next = up ? selected + 1 : selected - 1;
 
         this.setState({
-            selected: (next >= 0 && next <= list.values.length) ? 
+            selected: (next >= 0 && next <= list.values.length) ?
                 next : selected
         });
     }
@@ -98,7 +98,7 @@ class ActionButton extends Component {
     getStatusClassName = (abrev) => {
         const {data} = this.props;
 
-        if((data.action.value !== undefined) && 
+        if((data.action.value !== undefined) &&
             Object.keys(data.action.value)[0] !== abrev){
             return '';
         }
@@ -142,9 +142,10 @@ class ActionButton extends Component {
 
     render() {
         const {data} = this.props;
-        const abrev = (data.status.value !== undefined) ? 
+        const abrev = (data.status.value !== undefined) ?
             Object.keys(data.status.value)[0] : null;
-        const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
+        const value = (abrev !== null || undefined) ?
+            data.status.value[abrev] : null;
         const { list } = this.state;
 
         return (
@@ -157,12 +158,12 @@ class ActionButton extends Component {
                 onFocus={this.handleDropdownFocus}
             >
                 <div className={'tag tag-' + this.getStatusContext(abrev)}>
-                    {value} 
+                    {value}
                 </div>
                 <i
                     className={
-                        'meta-icon-chevron-1 meta-icon-' + 
-                        this.getStatusContext(abrev)} 
+                        'meta-icon-chevron-1 meta-icon-' +
+                        this.getStatusContext(abrev)}
                 />
                 <ul className="dropdown-status-list">
                     {this.renderStatusList(list)}

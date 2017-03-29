@@ -59,7 +59,7 @@ class TableFilter extends Component {
                                         keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT
                                     }
                                     action={
-                                        isBatchEntry ? 
+                                        isBatchEntry ?
                                             'Close batch entry' : 'Batch entry'
                                     }
                                     type={''}

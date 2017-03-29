@@ -11,7 +11,7 @@ class Container extends Component {
 
     render() {
         const {
-            docActionElem, docStatusData, docNoElement, docNoData, 
+            docActionElem, docStatusData, docNoElement, docNoData,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved,
@@ -40,7 +40,7 @@ class Container extends Component {
                     isDocumentNotSaved={isDocumentNotSaved}
                 />
                 {connectionError && <ErrorScreen />}
-                <NotificationHandler 
+                <NotificationHandler
                     dontShowNotifications={dontShowNotifications}
                 />
                 <div

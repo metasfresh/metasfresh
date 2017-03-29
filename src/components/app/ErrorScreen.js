@@ -8,7 +8,10 @@ class ErrorScreen extends Component {
         return (
             <div className="screen-freeze">
                 <h3>Connection lost.</h3>
-                <p>There are some connection issues. Check connection and try to refresh the page.</p>
+                <p>
+                    There are some connection issues.
+                    Check connection and try to refresh the page.
+                </p>
             </div>
         )
     }

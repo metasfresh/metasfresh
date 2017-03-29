@@ -27,7 +27,7 @@ export const getVerticalDimensions = (
 
     return ({
         ...applyingMargin,
-        height: (height || boxSize.height) - 
+        height: (height || boxSize.height) -
             (applyingMargin.top + applyingMargin.bottom)
     });
 };

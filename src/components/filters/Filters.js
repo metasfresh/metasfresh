@@ -43,7 +43,7 @@ class Filters extends Component {
             notValidFields: !valid
         }, () => {
             if (valid){
-                const parsedFilter = filter.parameters ? 
+                const parsedFilter = filter.parameters ?
                     Object.assign({}, filter, {
                         parameters: this.parseToPatch(filter.parameters)
                     }) : filter;
