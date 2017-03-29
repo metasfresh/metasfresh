@@ -329,6 +329,13 @@
     max-height: calc(100vh - 80px);
 }
 
+@media screen and (max-width: $breakpoint) {
+    .menu-overlay-body {
+        min-height: 200px;
+        max-height: calc(100vh - 100px);
+    }
+}
+
 .menu-overlay-root-body {
     display: flex;
 }
