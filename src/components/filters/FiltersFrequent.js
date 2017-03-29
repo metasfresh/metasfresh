@@ -36,19 +36,27 @@ class FiltersFrequent extends Component {
         return (
             <div className="filter-wrapper">
                 {data.map((item, index) => {
-                    const isActive = active && (active.filterId == item.filterId);
+                    const isActive = 
+                        active && (active.filterId == item.filterId);
                     return (
                         <div className="filter-wrapper" key={index}>
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
                                 className={
-                                    'btn btn-filter btn-meta-outline-secondary btn-distance btn-sm ' +
-                                    (openFilterId === index ? 'btn-select ': '') +
+                                    'btn btn-filter ' + 
+                                    'btn-meta-outline-secondary btn-distance ' +
+                                    'btn-sm ' +
+                                    (openFilterId === index ? 
+                                        'btn-select ': ''
+                                    ) +
                                     (isActive ? 'btn-active ': '')
                                 }
                             >
                                 <i className="meta-icon-preview" />
-                                { isActive ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
+                                { isActive ? 
+                                    'Filter: ' + item.caption : 
+                                    'Filter by ' + item.caption
+                                }
                             </button>
 
                             {openFilterId === index &&

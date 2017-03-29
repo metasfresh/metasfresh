@@ -97,7 +97,9 @@ class FiltersItem extends Component {
     }
 
     handleClear = () => {
-        const {clearFilters, closeFilterMenu, returnBackToDropdown} = this.props;
+        const {
+            clearFilters, closeFilterMenu, returnBackToDropdown
+        } = this.props;
 
         clearFilters();
         closeFilterMenu();

@@ -8,7 +8,8 @@ const size = {
 };
 
 export const drawLegend = (svg, fields, horizontal, rangeZ) => {
-    const width = horizontal.width + horizontal.left + horizontal.right - 2 * size.offset;
+    const width = 
+        horizontal.width + horizontal.left + horizontal.right - 2 * size.offset;
 
     const legend = drawContainer(svg, fields, width);
     drawRects(legend, rangeZ);
@@ -31,7 +32,10 @@ const drawContainer = (svg, fields, width) => {
 
     return legend.attr(
         'transform',
-        (d, i) => 'translate(' + i * (width / legend.size()) + ', ' + size.offset + ')'
+        (d, i) =>
+            'translate(' + 
+            i * (width / legend.size()) + 
+            ', ' + size.offset + ')'
     );
 };
 
@@ -62,7 +66,9 @@ const drawTexts = (legend, width) => {
         .attr('dy', '0.32em')
         .text(d => d.caption + (d.unit ? (' [' + d.unit + ']') : ''))
         .each(function(){
-            addEllipsis(this, (width / legend.size()) - (size.offset + size.width))
+            addEllipsis(this, 
+                (width / legend.size()) - (size.offset + size.width)
+            )
         });
 };
 
