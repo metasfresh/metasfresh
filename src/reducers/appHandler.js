@@ -41,11 +41,12 @@ export default function appHandler(state = initialState, action) {
 
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: Object.keys(state.notifications).reduce((res, key) => {
-                    if(key !== action.key) {
-                        res[key] = state.notifications[key];
-                    }
-                    return res;
+                notifications: Object.keys(state.notifications)
+                    .reduce((res, key) => {
+                        if(key !== action.key) {
+                            res[key] = state.notifications[key];
+                        }
+                        return res;
                 }, {})
             });
 

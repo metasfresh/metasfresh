@@ -48,8 +48,10 @@ class RawList extends Component {
         const {listScrollWrap, items} = this.refs;
 
         const listElementHeight = this.optionElement.offsetHeight;
-        const listVisibleElements = Math.floor(listScrollWrap.offsetHeight / listElementHeight);
-        const shouldListScrollUpdate = listVisibleElements <= items.childNodes.length;
+        const listVisibleElements =
+            Math.floor(listScrollWrap.offsetHeight / listElementHeight);
+        const shouldListScrollUpdate =
+            listVisibleElements <= items.childNodes.length;
 
         if (!shouldListScrollUpdate){
             return;
@@ -60,7 +62,9 @@ class RawList extends Component {
         const visibleMax = visibleMin + listVisibleElements * listElementHeight;
 
         //not visible from down
-        const scrollFromUp = listElementHeight * (selectedIndex - listVisibleElements);
+        const scrollFromUp =
+            listElementHeight * (selectedIndex - listVisibleElements);
+
         if (
             (selectedIndex + 1) * listElementHeight > visibleMax &&
             listScrollWrap.scrollTop !== scrollFromUp
@@ -86,7 +90,9 @@ class RawList extends Component {
             return 0;
         }
 
-        const baseIndex = list.findIndex(item => Object.keys(item)[0] === Object.keys(selected)[0]);
+        const baseIndex = list.findIndex(item =>
+            Object.keys(item)[0] === Object.keys(selected)[0]
+        );
 
         if (!mandatory){
             return baseIndex + 1;
@@ -177,7 +183,8 @@ class RawList extends Component {
         const next = up ? selectedIndex + 1 : selectedIndex - 1;
 
         this.setState({
-            selected: (next >= 0 && next <= dropdownList.length-1) ? dropdownList[next] : selected
+            selected: (next >= 0 && next <= dropdownList.length-1) ?
+                dropdownList[next] : selected
         })
 
     }
@@ -261,7 +268,9 @@ class RawList extends Component {
                 onClick={() => this.handleSelect(option)}
                 ref={option => this.optionElement = option}
             >
-                <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
+                <p className="input-dropdown-item-title">
+                    {label ? label : option[Object.keys(option)[0]]}
+                </p>
             </div>
         )
     }
@@ -322,13 +331,15 @@ class RawList extends Component {
                         <input
                             type="text"
                             className={
-                                'input-field js-input-field font-weight-semibold ' +
+                                'input-field js-input-field ' +
+                                'font-weight-semibold ' +
                                 (disabled ? 'input-disabled ' : '')
                             }
                             readOnly
                             tabIndex={-1}
                             placeholder={defaultValue}
-                            value={selected ? selected[Object.keys(selected)[0]] : ''}
+                            value={selected ? 
+                                selected[Object.keys(selected)[0]] : ''}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             disabled={readonly || disabled}
@@ -338,7 +349,10 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                {isOpen && <div className="input-dropdown-list" ref="listScrollWrap">
+                {isOpen && <div
+                    className="input-dropdown-list"
+                    ref="listScrollWrap"
+                >
                     {(list.length === 0 && loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available

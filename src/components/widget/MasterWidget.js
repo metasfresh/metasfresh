@@ -76,12 +76,14 @@ class MasterWidget extends Component {
         }
 
         if(widgetType !== 'Button'){
-            dispatch(updateProperty(property, value, tabId, currRowId, isModal));
+            dispatch(updateProperty(
+                property, value, tabId, currRowId, isModal)
+            );
         }
 
         ret = dispatch(patch(
-            entity, windowType, dataId, tabId, currRowId, property, value, isModal,
-            isAdvanced
+            entity, windowType, dataId, tabId, currRowId, property, value,
+            isModal, isAdvanced
         ));
 
         //callback

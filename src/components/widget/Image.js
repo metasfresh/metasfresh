@@ -137,7 +137,9 @@ class Image extends Component{
                         this.camera.play();
                     };
 
-                    this.camera.addEventListener('click', () => this.takeSnapshot());
+                    this.camera.addEventListener('click',
+                        () => this.takeSnapshot()
+                    );
                     this.setState({
                         stream: stream
                     });
@@ -155,7 +157,9 @@ class Image extends Component{
 
     renderVideoPreview(){
         const {isLoading} = this.state;
-        return <div className={'camera-preview' + (isLoading ? ' loading' : '')}>
+        return <div 
+            className={'camera-preview' + (isLoading ? ' loading' : '')}
+            >
                 <video ref={c => this.camera = c} />
                 {isLoading && <div className="preview-loader"></div>}
             </div>
@@ -170,11 +174,17 @@ class Image extends Component{
     renderUsingCameraControls(){
         return <div>
             <div className="col-sm-12">
-                <div className="btn btn-meta-outline-secondary btn-sm btn-distance-3" onClick={() => this.takeSnapshot()}>
+                <div
+                    className="btn btn-meta-outline-secondary btn-sm btn-distance-3"
+                    onClick={() => this.takeSnapshot()}
+                >
                     <i className="meta-icon-photo"/>
                     Capture
                 </div>
-                <div className="btn btn-meta-outline-secondary btn-sm" onClick={() => this.stopUsingCamera()}>
+                <div
+                    className="btn btn-meta-outline-secondary btn-sm"
+                    onClick={() => this.stopUsingCamera()}
+                >
                     <i className="meta-icon-close-alt"/>
                     Cancel
                 </div>
@@ -184,7 +194,10 @@ class Image extends Component{
 
     renderRegularCameraControl(){
         return <div className="col-sm-12">
-            <div className="btn btn-meta-outline-secondary btn-sm" onClick={() => this.handleCamera()}>
+            <div
+                className="btn btn-meta-outline-secondary btn-sm"
+                onClick={() => this.handleCamera()}
+            >
                 <i className="meta-icon-photo"/>
                 Take from camera
             </div>
@@ -197,7 +210,10 @@ class Image extends Component{
 
         return <div className="row">
             <div className="col-sm-4 form-control-label">
-                {imageSrc ? this.renderImagePreview(imageSrc) : this.renderImagePlaceholder(fields[0].emptyText) }
+                {imageSrc ?
+                    this.renderImagePreview(imageSrc) :
+                    this.renderImagePlaceholder(fields[0].emptyText)
+                }
             </div>
 
             {usingCamera && this.renderVideoPreview()}
@@ -205,8 +221,15 @@ class Image extends Component{
             <div className="col-sm-4 form-control-label image-source-options">
                 <div className="row">
                     <div className="col-sm-12">
-                        <label className="btn btn-meta-outline-secondary btn-sm">
-                            <input className="input" type="file" onChange={(e) => this.handleUploadFile(e)} ref={c => this.imageInput = c} />
+                        <label 
+                            className="btn btn-meta-outline-secondary btn-sm"
+                        >
+                            <input
+                                className="input"
+                                type="file"
+                                onChange={(e) => this.handleUploadFile(e)}
+                                ref={c => this.imageInput = c}
+                            />
                             <div className="text-content">
                                 <i className="meta-icon-upload" />
                                 Upload a photo
@@ -215,7 +238,10 @@ class Image extends Component{
                     </div>
                     {
                         this.isCameraAvailable() &&
-                        (usingCamera ? this.renderUsingCameraControls() : this.renderRegularCameraControl())
+                        (usingCamera ?
+                            this.renderUsingCameraControls() :
+                            this.renderRegularCameraControl()
+                        )
                     }
                 </div>
             </div>

@@ -48,7 +48,9 @@ class Attributes extends Component {
     handlePatch = (prop, value, id, cb) => {
         const {dispatch, attributeType} = this.props;
 
-        dispatch(patchRequest(attributeType, null, id, null, null, prop, value)).then(response => {
+        dispatch(patchRequest(
+            attributeType, null, id, null, null, prop, value)
+        ).then(response => {
             response.data[0].fields.map(item => {
                 this.setState(prevState => ({
                     data: prevState.data && prevState.data.map(field => {
@@ -65,7 +67,8 @@ class Attributes extends Component {
 
     handleInit = () => {
         const {
-            dispatch, docType, dataId, tabId, rowId, fieldName, attributeType, widgetData
+            dispatch, docType, dataId, tabId, rowId, fieldName, attributeType,
+            widgetData
         } = this.props;
         const tmpId = Object.keys(widgetData.value)[0];
 
@@ -166,7 +169,8 @@ class Attributes extends Component {
                     tabIndex={tabIndex}
                     onClick={() => this.handleToggle(true)}
                     className={
-                        'btn btn-block tag tag-lg tag-block tag-secondary pointer ' +
+                        'btn btn-block tag tag-lg tag-block tag-secondary ' +
+                        'pointer ' +
                         (dropdown ? 'tag-disabled ' : '') +
                         (readonly ? 'tag-disabled disabled ' : '')
                     }

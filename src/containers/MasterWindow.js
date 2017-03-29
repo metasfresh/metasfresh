@@ -50,7 +50,8 @@ class MasterWindow extends Component {
 
     componentWillUnmount() {
         const { master } = this.props;
-        const isDocumentNotSaved = !master.saveStatus.saved && master.saveStatus.saved !== undefined;
+        const isDocumentNotSaved =
+            !master.saveStatus.saved && master.saveStatus.saved !== undefined;
         window.removeEventListener('beforeunload', this.confirm);
 
         if(isDocumentNotSaved){
@@ -101,7 +102,8 @@ class MasterWindow extends Component {
     handleRejectDropped(droppedFiles){
         const { dispatch } = this.props;
 
-        const dropped = droppedFiles instanceof Array ? droppedFiles[0] : droppedFiles;
+        const dropped = droppedFiles instanceof Array ?
+            droppedFiles[0] : droppedFiles;
 
         dispatch(addNotification(
             'Attachment', 'Dropped item [' +
@@ -187,7 +189,10 @@ class MasterWindow extends Component {
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
-                        modalSaveStatus={modal.saveStatus.saved !== undefined ? modal.saveStatus.saved : true}
+                        modalSaveStatus={
+                            modal.saveStatus.saved !== undefined ?
+                                modal.saveStatus.saved : true
+                        }
                         isDocumentNotSaved={modal.saveStatus ?
                             !modal.saveStatus.saved &&
                             !modal.validStatus.initialValue : false
@@ -215,7 +220,9 @@ class MasterWindow extends Component {
                     isModal={false}
                     newRow={newRow}
                     handleDropFile={accepted => this.handleDropFile(accepted)}
-                    handleRejectDropped={rejected => this.handleRejectDropped(rejected)}
+                    handleRejectDropped={
+                        rejected => this.handleRejectDropped(rejected)
+                    }
                 />
             </Container>
         );
