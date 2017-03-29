@@ -27,7 +27,8 @@ class QuickActionsDropdown extends Component {
                     <div
                         className={
                             'quick-actions-item ' +
-                            (action.disabled ? 'quick-actions-item-disabled ' : '')}
+                            (action.disabled ?
+                                'quick-actions-item-disabled ' : '')}
                         key={index}
                         onClick={() => handleClick(action)}
                     >

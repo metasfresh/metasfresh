@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
+import PaginationContextShortcuts from
+    '../shortcuts/PaginationContextShortcuts';
 
 class TablePagination extends Component {
     constructor(props){
@@ -87,14 +88,21 @@ class TablePagination extends Component {
         const {handleChangePage, deselect} = this.props;
         const {firstDotsState, value} = this.state;
         pagination.push(
-            <li className="page-item" key={1} onClick={() => {handleChangePage(1); deselect()} }>
+            <li
+                className="page-item"
+                key={1}
+                onClick={() => {handleChangePage(1); deselect()} }
+            >
                 <a className="page-link">{1}</a>
             </li>
         );
         pagination.push(
             <li className="page-item page-dots" key={0}>
                 { firstDotsState && this.renderGoToPage(pages, value) }
-                <a className="page-link" onClick={() => this.handleFirstDotsState()}>{'...'}</a>
+                <a
+                    className="page-link"
+                    onClick={() => this.handleFirstDotsState()}
+                >{'...'}</a>
             </li>
         );
     }
@@ -106,11 +114,18 @@ class TablePagination extends Component {
         pagination.push(
             <li className="page-item page-dots" key={99990}>
                 { secondDotsState && this.renderGoToPage(pages, value) }
-                <a className="page-link" onClick={() => this.handleSecondDotsState()}>{'...'}</a>
+                <a
+                    className="page-link"
+                    onClick={() => this.handleSecondDotsState()}
+                >{'...'}</a>
             </li>
         );
         pagination.push(
-            <li className="page-item" key={9999} onClick={() => {handleChangePage(pages); deselect()} }>
+            <li
+                className="page-item"
+                key={9999}
+                onClick={() => {handleChangePage(pages); deselect()} }
+            >
                 <a className="page-link">{pages}</a>
             </li>
         );
@@ -167,8 +182,16 @@ class TablePagination extends Component {
             <div className="pagination-wrapper">
                 <div className="pagination-row">
                     <div className="hidden-sm-down">
-                        <div>{selected.length > 0 ? selected.length + ' items selected' : 'No items selected'}</div>
-                        <div className="pagination-link pointer" onClick={handleSelectAll}>Select all on this page</div>
+                        <div>{selected.length > 0 ? selected.length +
+                                 ' items selected' : 'No items selected'
+                             }
+                         </div>
+                        <div
+                            className="pagination-link pointer"
+                            onClick={handleSelectAll}
+                        >
+                            Select all on this page
+                        </div>
                     </div>
 
                     <div className="items-row-2 pagination-part">
@@ -176,7 +199,8 @@ class TablePagination extends Component {
                             <div>
                                 Total items {size}
                                 {queryLimitHit &&
-                                    <span className="text-danger"> (limited)</span>
+                                    <span className="text-danger"> (limited)
+                                    </span>
                                 }
                             </div>
                         </div>
@@ -184,7 +208,13 @@ class TablePagination extends Component {
                             <nav>
                                 <ul className="pagination pointer">
                                     <li className="page-item">
-                                        <a className="page-link" onClick={() => { handleChangePage('down'); deselect()} }>
+                                        <a
+                                            className="page-link"
+                                            onClick={() => {
+                                                handleChangePage('down');
+                                                deselect()}
+                                            }
+                                        >
                                             <span>&laquo;</span>
                                         </a>
                                     </li>
@@ -192,7 +222,13 @@ class TablePagination extends Component {
                                     {pagination}
 
                                     <li className="page-item ">
-                                        <a className="page-link" onClick={() => {handleChangePage('up'); deselect()} }>
+                                        <a
+                                            className="page-link"
+                                            onClick={() => {
+                                                handleChangePage('up');
+                                                deselect()}
+                                            }
+                                        >
                                             <span>&raquo;</span>
                                         </a>
                                     </li>
@@ -204,7 +240,9 @@ class TablePagination extends Component {
 
                 <PaginationContextShortcuts
                     handleFirstPage={() => handleChangePage(1)}
-                    handleLastPage={() => handleChangePage(size ? Math.ceil(size / pageLength) : 0)}
+                    handleLastPage={() => handleChangePage(
+                        size ? Math.ceil(size / pageLength) : 0)
+                    }
                     handleNextPage={() => handleChangePage('up')}
                     handlePrevPage={() => handleChangePage('down')}
                 />

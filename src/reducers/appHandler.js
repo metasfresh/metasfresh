@@ -41,11 +41,12 @@ export default function appHandler(state = initialState, action) {
 
         case types.DELETE_NOTIFICATION:
             return Object.assign({}, state, {
-                notifications: Object.keys(state.notifications).reduce((res, key) => {
-                    if(key !== action.key) {
-                        res[key] = state.notifications[key];
-                    }
-                    return res;
+                notifications: Object.keys(state.notifications)
+                    .reduce((res, key) => {
+                        if(key !== action.key) {
+                            res[key] = state.notifications[key];
+                        }
+                        return res;
                 }, {})
             });
 
@@ -67,11 +68,12 @@ export default function appHandler(state = initialState, action) {
         case types.UPDATE_NOTIFICATION:
             return update(state, {
                 inbox: {
-                    notifications: { $set: state.inbox.notifications.map(item =>
-                                    item.id === action.notification.id ?
-                                        Object.assign({}, item, action.notification) :
-                                        item
-                                )},
+                    notifications: { $set:
+                        state.inbox.notifications.map(item =>
+                            item.id === action.notification.id ?
+                                Object.assign({}, item, action.notification) :
+                                item
+                    )},
                     unreadCount: {$set: action.unreadCount}
                 }
             })

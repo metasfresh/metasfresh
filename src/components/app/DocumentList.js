@@ -234,9 +234,9 @@ class DocumentList extends Component {
 
         const {page, sort, filters} = this.state;
 
-        dispatch(
-            createViewRequest(windowType, type, this.pageLength, filters, refType, refId)
-        ).then(response => {
+        dispatch(createViewRequest(
+            windowType, type, this.pageLength, filters, refType, refId
+        )).then(response => {
             this.setState({
                 data: response.data,
                 viewId: response.data.viewId
@@ -255,9 +255,9 @@ class DocumentList extends Component {
             sortingQuery && updateUri('sort', sortingQuery);
         }
 
-        return dispatch(
-            browseViewRequest(id, page, this.pageLength, sortingQuery, windowType)
-        ).then(response => {
+        return dispatch(browseViewRequest(
+            id, page, this.pageLength, sortingQuery, windowType
+        )).then(response => {
 
             this.setState(Object.assign({}, {
                 data: response.data,
@@ -281,7 +281,8 @@ class DocumentList extends Component {
 
         switch(index){
             case 'up':
-                currentPage * data.pageLength < data.size ? currentPage++ : null;
+                currentPage * data.pageLength < data.size ?
+                    currentPage++ : null;
                 break;
             case 'down':
                 currentPage != 1 ? currentPage-- : null;
@@ -305,7 +306,9 @@ class DocumentList extends Component {
         this.setState({
             sort: this.getSortingQuery(asc, field)
         }, () => {
-            this.getData(viewId, startPage ? 1 : page, this.getSortingQuery(asc, field));
+            this.getData(
+                viewId, startPage ? 1 : page, this.getSortingQuery(asc, field)
+            );
         });
     }
 
@@ -335,7 +338,9 @@ class DocumentList extends Component {
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
-                    <div className="panel panel-primary panel-spaced panel-inline document-list-header">
+                    <div
+                        className="panel panel-primary panel-spaced panel-inline document-list-header"
+                    >
                         <div>
                             {layout.supportNewRecord && !isModal &&
                                 <button
@@ -343,7 +348,8 @@ class DocumentList extends Component {
                                     onClick={() => this.redirectToNewDocument()}
                                     title={layout.newRecordCaption}
                                 >
-                                    <i className="meta-icon-add" /> {layout.newRecordCaption}
+                                    <i className="meta-icon-add" />
+                                    {layout.newRecordCaption}
                                 </button>
                             }
                             {layout.filters && <Filters
@@ -381,7 +387,9 @@ class DocumentList extends Component {
                             keyProperty="id"
                             onDoubleClick={(id) => {
                                 !isModal &&
-                                dispatch(push('/window/' + windowType + '/' + id))
+                                dispatch(
+                                    push('/window/' + windowType + '/' + id)
+                                )
                                 if(isSideListShow) {
                                     closeSideList();
                                 }
@@ -413,8 +421,12 @@ class DocumentList extends Component {
                                 >
                                     <SelectionAttributes
                                         refresh={refresh}
-                                        setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={selectionValid ? selected : undefined}
+                                        setClickOutsideLock={
+                                            this.setClickOutsideLock
+                                        }
+                                        selected={selectionValid ?
+                                            selected : undefined
+                                        }
                                         shouldNotUpdate={
                                             inBackground
                                         }

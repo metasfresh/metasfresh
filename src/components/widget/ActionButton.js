@@ -5,7 +5,8 @@ import {
     dropdownRequest
 } from '../../actions/GenericActions';
 
-import DocumentStatusContextShortcuts from '../shortcuts/DocumentStatusContextShortcuts';
+import DocumentStatusContextShortcuts
+    from '../shortcuts/DocumentStatusContextShortcuts';
 
 class ActionButton extends Component {
     constructor(props) {
@@ -52,7 +53,8 @@ class ActionButton extends Component {
         const next = up ? selected + 1 : selected - 1;
 
         this.setState({
-            selected: (next >= 0 && next <= list.values.length) ? next : selected
+            selected: (next >= 0 && next <= list.values.length) ?
+                next : selected
         });
     }
 
@@ -75,7 +77,9 @@ class ActionButton extends Component {
         const { dispatch, windowType, fields, dataId} = this.props;
 
         dispatch(
-            dropdownRequest(windowType, fields[1].field, dataId, null, null, 'window')
+            dropdownRequest(
+                windowType, fields[1].field, dataId, null, null, 'window'
+            )
         ).then((res) => {
             this.setState({list: res.data});
         });
@@ -94,7 +98,8 @@ class ActionButton extends Component {
     getStatusClassName = (abrev) => {
         const {data} = this.props;
 
-        if((data.action.value !== undefined) && Object.keys(data.action.value)[0] !== abrev){
+        if((data.action.value !== undefined) &&
+            Object.keys(data.action.value)[0] !== abrev){
             return '';
         }
 
@@ -137,8 +142,10 @@ class ActionButton extends Component {
 
     render() {
         const {data} = this.props;
-        const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
-        const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
+        const abrev = (data.status.value !== undefined) ?
+            Object.keys(data.status.value)[0] : null;
+        const value = (abrev !== null || undefined) ?
+            data.status.value[abrev] : null;
         const { list } = this.state;
 
         return (
@@ -150,14 +157,22 @@ class ActionButton extends Component {
                 onBlur={this.handleDropdownBlur}
                 onFocus={this.handleDropdownFocus}
             >
-                <div className={'tag tag-' + this.getStatusContext(abrev)}>{value} </div>
-                <i className={'meta-icon-chevron-1 meta-icon-' + this.getStatusContext(abrev)} />
+                <div className={'tag tag-' + this.getStatusContext(abrev)}>
+                    {value}
+                </div>
+                <i
+                    className={
+                        'meta-icon-chevron-1 meta-icon-' +
+                        this.getStatusContext(abrev)}
+                />
                 <ul className="dropdown-status-list">
                     {this.renderStatusList(list)}
                 </ul>
                 <DocumentStatusContextShortcuts
                     handleDocumentCompleteStatus={() => {
-                        this.handleChangeStatus(list.values.filter(elem => !!elem.CO)[0])
+                        this.handleChangeStatus(
+                            list.values.filter(elem => !!elem.CO)[0]
+                        )
                     }}
                 />
             </div>

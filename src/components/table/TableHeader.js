@@ -31,9 +31,23 @@ class TableHeader extends Component {
         })
 
         return (
-            <div className="sort-menu" onClick={() => {sort(!sorting.asc, field, true, page); deselect()} }>
+            <div
+                className="sort-menu"
+                onClick={() => {
+                    sort(!sorting.asc, field, true, page);
+                    deselect()
+                }}
+            >
                 <span className="th-caption">{caption}</span>
-                <span className={sorting.name && sorting.asc ? 'sort rotate-90 sort-ico' : (sorting.name && !sorting.asc) ? 'sort sort-ico' : 'sort-ico'}><i className="meta-icon-chevron-1" /></span>
+                <span
+                    className={sorting.name && sorting.asc ?
+                        'sort rotate-90 sort-ico' :
+                            (sorting.name && !sorting.asc) ?
+                                'sort sort-ico' : 'sort-ico'
+                    }
+                >
+                    <i className="meta-icon-chevron-1" />
+                </span>
             </div>
 
         )
@@ -48,7 +62,8 @@ class TableHeader extends Component {
                 }
             >
                 {!mainTable ? item.caption: ''}
-                {mainTable ? this.renderSorting(item.fields[0].field, item.caption) : ''}
+                {mainTable ?
+                    this.renderSorting(item.fields[0].field, item.caption) : ''}
             </th>
         );
     }

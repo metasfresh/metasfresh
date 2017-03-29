@@ -11,10 +11,11 @@ class Container extends Component {
 
     render() {
         const {
-            docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
-            dataId, windowType, breadcrumb, references, actions, showSidelist,
-            siteName, connectionError, noMargin, entity, children, query, attachments,
-            showIndicator, isDocumentNotSaved, dontShowNotifications
+            docActionElem, docStatusData, docNoElement, docNoData,
+            docSummaryData, dataId, windowType, breadcrumb, references, actions,
+            showSidelist, siteName, connectionError, noMargin, entity, children,
+            query, attachments, showIndicator, isDocumentNotSaved,
+            dontShowNotifications
         } = this.props;
 
         return (
@@ -39,7 +40,9 @@ class Container extends Component {
                     isDocumentNotSaved={isDocumentNotSaved}
                 />
                 {connectionError && <ErrorScreen />}
-                <NotificationHandler dontShowNotifications={dontShowNotifications} />
+                <NotificationHandler
+                    dontShowNotifications={dontShowNotifications}
+                />
                 <div
                     className={
                         'header-sticky-distance js-unselect ' +

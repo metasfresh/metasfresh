@@ -110,8 +110,8 @@ class RawWidget extends Component {
             (icon ? 'input-icon-container ' : '') +
             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
             ((widgetData[0].mandatory &&
-                ((widgetData[0].value &&
-                widgetData[0].value.length === 0) || !widgetData[0].value)) ? 'input-mandatory ' : '') +
+                ((widgetData[0].value && widgetData[0].value.length === 0) ||
+                    !widgetData[0].value)) ? 'input-mandatory ' : '') +
             ((widgetData[0].validStatus &&
                 (
                     !widgetData[0].validStatus.valid &&
@@ -161,7 +161,8 @@ class RawWidget extends Component {
             disabled: widgetData[0].readonly || disabled,
             onFocus: this.handleFocus,
             tabIndex: fullScreen ? -1 : tabIndex,
-            onChange: e => handleChange && handleChange(widgetField, e.target.value),
+            onChange: e => handleChange &&
+                handleChange(widgetField, e.target.value),
             onBlur: e => this.handleBlur(widgetField, e.target.value, id)
         }
 
@@ -259,18 +260,22 @@ class RawWidget extends Component {
                                 dateFormat={true}
                                 inputProps={{
                                     placeholder: fields[0].emptyText,
-                                    disabled: widgetData[0].readonly || disabled,
+                                    disabled:
+                                        widgetData[0].readonly || disabled,
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
                                 value={widgetValue}
-                                onChange={(date) => handleChange(widgetField, date)}
+                                onChange={
+                                    (date) => handleChange(widgetField, date)
+                                }
                                 patch={(date) => this.handlePatch(widgetField,
-                                    date ? Moment(date).format(DATE_FORMAT) : null
+                                    date ?
+                                        Moment(date).format(DATE_FORMAT) : null
                                 )}
                                 tabIndex={fullScreen ? -1 : tabIndex}
                                 handleBackdropLock={handleBackdropLock}
                             />
-                            <i className="meta-icon-calendar input-icon-right"></i>
+                            <i className="meta-icon-calendar input-icon-right"/>
                         </div>
                     )
                 }
@@ -348,7 +353,9 @@ class RawWidget extends Component {
                         windowType={windowType}
                         rowId={rowId}
                         tabId={tabId}
-                        onChange={(option) => this.handlePatch(widgetField, option, id)}
+                        onChange={(option) =>
+                            this.handlePatch(widgetField, option, id)
+                        }
                         align={gridAlign}
                         updated={updated}
                         filterWidget={filterWidget}
@@ -372,7 +379,9 @@ class RawWidget extends Component {
                             {...widgetProperties}
                             type="text"
                         />
-                        {icon && <i className="meta-icon-edit input-icon-right"></i>}
+                        {icon &&
+                            <i className="meta-icon-edit input-icon-right"/>
+                        }
                     </div>
                 )
             case 'LongText':
@@ -457,7 +466,8 @@ class RawWidget extends Component {
                     <label
                         className={
                             'input-checkbox ' +
-                            (widgetData[0].readonly || disabled ? 'input-disabled ' : '')
+                            (widgetData[0].readonly || disabled ?
+                                'input-disabled ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
@@ -473,7 +483,9 @@ class RawWidget extends Component {
                             type="checkbox"
                             checked={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
-                            onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
+                            onChange={(e) => this.handlePatch(
+                                widgetField, e.target.checked, id
+                            )}
                             tabIndex="-1"
                         />
                         <div className="input-checkbox-tick" />
@@ -507,7 +519,9 @@ class RawWidget extends Component {
                             checked={widgetData[0].value}
                             disabled={widgetData[0].readonly || disabled}
                             tabIndex="-1"
-                            onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
+                            onChange={(e) => this.handlePatch(
+                                widgetField, e.target.checked, id
+                            )}
                         />
                         <div className="input-slider" />
                     </label>
@@ -531,13 +545,16 @@ class RawWidget extends Component {
                         className={
                             'btn btn-sm btn-meta-primary ' +
                             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
+                            (widgetData[0].readonly || disabled ?
+                                'tag-disabled disabled ' : '')
                         }
                         onClick={() => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
                     >
-                        {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
+                        {widgetData[0]
+                            .value[Object.keys(widgetData[0].value)[0]]
+                        }
                     </button>
                 )
             case 'ProcessButton':
@@ -546,7 +563,8 @@ class RawWidget extends Component {
                         className={
                             'btn btn-sm btn-meta-primary ' +
                             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-                            (widgetData[0].readonly || disabled ? 'tag-disabled disabled ' : '')
+                            (widgetData[0].readonly || disabled ?
+                                'tag-disabled disabled ' : '')
                         }
                         onClick={this.handleProcess}
                         tabIndex={fullScreen ? -1 : tabIndex}
@@ -562,7 +580,9 @@ class RawWidget extends Component {
                         windowType={windowType}
                         fields={fields}
                         dataId={dataId}
-                        onChange={(option) => this.handlePatch(fields[1].field, option)}
+                        onChange={(option) =>
+                            this.handlePatch(fields[1].field, option)
+                        }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         dropdownOpenCallback={dropdownOpenCallback}
                         ref={c => this.rawWidget = c}
@@ -580,7 +600,8 @@ class RawWidget extends Component {
                         rowId={rowId}
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
-                        patch={(option) => this.handlePatch(widgetField, option)}
+                        patch={(option) =>
+                            this.handlePatch(widgetField, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
                         readonly={widgetData[0].readonly || disabled}
@@ -598,7 +619,8 @@ class RawWidget extends Component {
                         rowId={rowId}
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
-                        patch={(option) => this.handlePatch(widgetField, option)}
+                        patch={(option) =>
+                            this.handlePatch(widgetField, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
                         readonly={widgetData[0].readonly || disabled}
@@ -617,8 +639,8 @@ class RawWidget extends Component {
 
     render() {
         const {
-            caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch,
-            widgetType
+            caption, fields, type, noLabel, widgetData, rowId, isModal,
+            handlePatch, widgetType
         } = this.props;
 
         const {errorPopup} = this.state;
@@ -651,7 +673,8 @@ class RawWidget extends Component {
                         key="title"
                         className={
                             'form-control-label ' +
-                            ((type === 'primary') ? 'col-sm-12 panel-title' : 'col-sm-3')
+                            ((type === 'primary') ?
+                                'col-sm-12 panel-title' : 'col-sm-3')
                         }
                         title={caption}
                     >
@@ -660,7 +683,8 @@ class RawWidget extends Component {
                 }
                 <div
                     className={
-                        ((type === 'primary' || noLabel) ? 'col-sm-12 ' : 'col-sm-9 ') +
+                        ((type === 'primary' || noLabel) ?
+                            'col-sm-12 ' : 'col-sm-9 ') +
                         (fields[0].devices ? 'form-group-flex ': '')
                     }
                     onMouseEnter={() => this.handleErrorPopup(true)}
@@ -687,7 +711,8 @@ class RawWidget extends Component {
                             devices={fields[0].devices}
                             tabIndex={1}
                             handleChange={(value) =>
-                                handlePatch && handlePatch(fields[0].field, value)
+                                handlePatch &&
+                                    handlePatch(fields[0].field, value)
                             }
                         />
                     }

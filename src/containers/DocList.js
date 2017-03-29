@@ -97,7 +97,8 @@ class DocList extends Component {
                         indicator={indicator}
                         isDocumentNotSaved={
                             (modal.saveStatus && !modal.saveStatus.saved) &&
-                            (modal.validStatus && !modal.validStatus.initialValue)
+                            (modal.validStatus &&
+                                !modal.validStatus.initialValue)
                         }
                      />
                  }
