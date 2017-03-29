@@ -594,6 +594,8 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 			{
 				document.deleteFromRepository();
 			}
+			
+			document.markAsDeleted();
 
 			// Delete it from our documents map
 			_documents.remove(documentId);

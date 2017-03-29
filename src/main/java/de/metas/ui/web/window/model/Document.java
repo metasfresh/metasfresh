@@ -942,6 +942,7 @@ public final class Document
 	/* package */ void markAsDeleted()
 	{
 		_deleted = true;
+		Execution.getCurrentDocumentChangesCollectorOrNull().collectDeleted(getDocumentPath());
 	}
 
 	/* package */ boolean isDeleted()

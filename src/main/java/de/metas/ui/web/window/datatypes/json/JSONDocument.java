@@ -163,6 +163,13 @@ public final class JSONDocument implements Serializable
 
 		final JSONDocument jsonDocument = new JSONDocument(documentChangedEvents.getDocumentPath());
 
+		// If the document was deleted, we just need to export that flag. All the other changes are not relevant.
+		if(documentChangedEvents.isDeleted())
+		{
+			jsonDocument.setDeleted();
+			return jsonDocument;
+		}
+
 		//
 		// Fields
 		{
@@ -295,6 +302,10 @@ public final class JSONDocument implements Serializable
 	@JsonProperty("saveStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentSaveStatus saveStatus;
+	
+	@JsonProperty("deleted")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean deleted;
 
 	@JsonProperty("fields")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -397,6 +408,11 @@ public final class JSONDocument implements Serializable
 	public DocumentSaveStatus getSaveStatus()
 	{
 		return saveStatus;
+	}
+	
+	public void setDeleted()
+	{
+		this.deleted = Boolean.TRUE;
 	}
 
 	@JsonAnyGetter
