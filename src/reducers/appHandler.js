@@ -68,11 +68,12 @@ export default function appHandler(state = initialState, action) {
         case types.UPDATE_NOTIFICATION:
             return update(state, {
                 inbox: {
-                    notifications: { $set: state.inbox.notifications.map(item =>
-                                    item.id === action.notification.id ?
-                                        Object.assign({}, item, action.notification) :
-                                        item
-                                )},
+                    notifications: { $set:
+                        state.inbox.notifications.map(item =>
+                            item.id === action.notification.id ?
+                                Object.assign({}, item, action.notification) :
+                                item
+                    )},
                     unreadCount: {$set: action.unreadCount}
                 }
             })
