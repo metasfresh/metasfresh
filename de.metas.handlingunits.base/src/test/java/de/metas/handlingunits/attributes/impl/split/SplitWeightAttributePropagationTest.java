@@ -223,11 +223,11 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 	@Test
 	public void testSplitWeightTransfer_LU_On_Another_SameType_LU_1TU_7CU()
 	{
-		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100.add(new BigDecimal("0.123"))); // 85 x Tomato with a certain weight.
+		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato with a certain weight.
 		//helper.commitAndDumpHU(paletToSplit);
 		
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("100.123", "66.123", "34", "0"),
+				newHUWeightsExpectation("100.000", "66.000", "34", "0"),
 				newHUWeightsExpectation("4.882", "3.882", "1", "0"), // "real" TU with 5
 				newHUWeightsExpectation("70.118", "62.118", "8", "0") // aggregate TU with 80
 				);
