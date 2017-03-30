@@ -212,7 +212,7 @@ public class LUTUProducerDestinationLoadTests
 	 * @task https://github.com/metasfresh/metasfresh/issues/460
 	 */
 	@Test
-	public void testCompressedSingleLUFullyLoaded()
+	public void testAggregateSingleLUFullyLoaded()
 	{
 		final int cuQty = 200;
 		final int expectedFullLUsCount = 1;
@@ -220,10 +220,43 @@ public class LUTUProducerDestinationLoadTests
 	}
 
 	/**
-	 * Similar to {@link #testCompressedSingleLUFullyLoaded()}, but just loads 199kg tomatoes. Still, expect one LU and one "aggregated" TU.
+	 * Verifies the creation of an aggregate HU with a non-int storage value.
+	 * Related to issue https://github.com/metasfresh/metasfresh/issues/1237, but this even worked before the issue came up.
 	 */
 	@Test
-	public void testCompressedSingleLUPartiallyLoaded()
+	public void testAggregateSingleLUFullyLoaded_non_int()
+	{
+		// create a special hu pi item that says "on LU can hold 20 IFCOs"
+		final I_M_HU_PI_Item piLU_Item_20_IFCO = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"));
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUPI(data.piLU);
+		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
+		lutuProducer.setTUPI(data.piTU_IFCO);
+		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+
+		// load the tomatoes into HUs
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
+		assertThat(lutuProducer.getCreatedHUs().size(), is(1));
+		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
+
+		final Node createdLuXML = HUXmlConverter.toXml(createdLU);
+
+		// there shall be no "real" HU
+		assertThat(createdLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU'])", is("0")));
+
+		// the aggregate HU shall contain the full quantity and represent 20 IFCOs
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("109.400")));
+
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@Qty)", is("20")));
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("109.400")));
+	}
+
+	/**
+	 * Similar to {@link #testAggregateSingleLUFullyLoaded()}, but just loads 199kg tomatoes. Still, expect one LU and one "aggregated" TU.
+	 */
+	@Test
+	public void testAggregateSingleLUPartiallyLoaded()
 	{
 		final int cuQty = 199;
 		final int expectedFullLUsCount = 0;
@@ -294,26 +327,26 @@ public class LUTUProducerDestinationLoadTests
 	}
 
 	/**
-	 * Similar to {@link #testCompressedSingleLUFullyLoaded()}, but loads 6000kg of tomatoes. Therefore we expect not one LU, but 30 LU with each one holding 200kg tomatoes.
+	 * Similar to {@link #testAggregateSingleLUFullyLoaded()}, but loads 6000kg of tomatoes. Therefore we expect not one LU, but 30 LU with each one holding 200kg tomatoes.
 	 */
 	@Test
-	public void testCompressed30LUsFullyLoadedExplicitTUCapacity()
+	public void testAggregate30LUsFullyLoadedExplicitTUCapacity()
 	{
 		performTest(6000, 30, null, new BigDecimal("40"));
 	}
 
 	@Test
-	public void testCompressed30LUsFullyLoaded_UseTUCapacityFromPI()
+	public void testAggregate30LUsFullyLoaded_UseTUCapacityFromPI()
 	{
 		performTest(6000, 30, null, null);
 	}
 
 	/**
-	 * Similar to {@link #testCompressed31LUsPartiallyLoaded()}, but loads 6050kg tomatoes. Therefore we expect the 30 LU from the other test,
-	 * plus a 31st LU that contains just 2 "aggregated" TUs (similar to {@link #testCompressedSingleLUPartiallyLoaded()}) with two aggregated IFCOs.
+	 * Similar to {@link #testAggregate31LUsPartiallyLoaded()}, but loads 6050kg tomatoes. Therefore we expect the 30 LU from the other test,
+	 * plus a 31st LU that contains just 2 "aggregated" TUs (similar to {@link #testAggregateSingleLUPartiallyLoaded()}) with two aggregated IFCOs.
 	 */
 	@Test
-	public void testCompressed31LUsPartiallyLoaded()
+	public void testAggregate31LUsPartiallyLoaded()
 	{
 		performTest(6050, 30,
 				husExpectation -> {
@@ -414,7 +447,7 @@ public class LUTUProducerDestinationLoadTests
 		new de.metas.handlingunits.util.HUTracerInstance().dump(createdHUs.get(0));
 
 		// example: for 6000 CUs:
-		// there shall be 30 compressed HU
+		// there shall be 30 Aggregate HU
 		// * each one with with 6000kg / 30 = 200kg tomatos
 		// * each one with 5 TUs
 		// * each one consisting of 1 palete
@@ -561,6 +594,5 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(l.getM_Locator_ID())))); // verify that the locator is propagated
 		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item/@ItemType)", is("MI")));
 		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Ea']/@Qty)", is("252")));
-
 	}
 }
