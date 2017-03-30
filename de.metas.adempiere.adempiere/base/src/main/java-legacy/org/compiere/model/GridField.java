@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.function.Supplier;
 
 import javax.swing.SwingUtilities;
 
@@ -55,9 +56,6 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
