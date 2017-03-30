@@ -61,6 +61,11 @@ axios.interceptors.response.use(function (response) {
             
             console.error(data.message);
             
+            // Dashboard disabled notifications
+            if(window.location.pathname === "/"){
+                return;
+            }
+            
             store.dispatch(addNotification(
                 'Error: ' + data.message.split(' ', 4).join(' ') + '...',
                 data.message, 5000, 'error', errorTitle)
