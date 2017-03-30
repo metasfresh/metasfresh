@@ -93,7 +93,8 @@ class Modal extends Component {
             case 'window':
                 dispatch(createWindow(
                     windowType, dataId, tabId, rowId, true, isAdvanced
-                )).catch(() => {
+                )).catch(ee => {
+                    console.log(ee)
                     this.handleClose();
                 });
                 break;

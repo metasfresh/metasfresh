@@ -268,7 +268,7 @@ export function createWindow(
                 if (isModal) {
                     if(rowId === 'NEW'){
                         dispatch(mapDataToState(
-                            [response.data[0]], false, 'NEW', docId, windowType
+                            response.data, false, 'NEW', docId, windowType
                         ));
                         dispatch(updateModal(response.data[0].rowId));
                     }
@@ -413,7 +413,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
 
             // Mapping fields property
             item.fields = parseToDisplay(item.fields);
-            if (rowId === 'NEW') {
+            if (rowId === 'NEW' && item.rowId) {
                 dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
             } else {
                 item.fields.map(field => {
@@ -443,14 +443,14 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
-
+        
         dispatch(updateStatus(data))
     }
 }
 
 function updateStatus(responseData) {
     return dispatch => {
-        const updateDispatch = (item) => {
+        const updateDispatch = (item) => {            
             if(item.rowId){
                 dispatch(updateRowStatus(
                     'master', item.tabid, item.rowId, item.saveStatus
@@ -462,6 +462,8 @@ function updateStatus(responseData) {
                     dispatch(updateDataSaveStatus('master', item.saveStatus));
             }
         }
+        
+        
 
         if(Array.isArray(responseData)){
             responseData.map(item => {
