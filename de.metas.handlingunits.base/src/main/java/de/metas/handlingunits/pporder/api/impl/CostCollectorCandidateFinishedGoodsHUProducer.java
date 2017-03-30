@@ -81,7 +81,7 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 		return _ppOrder;
 	}
 
-	protected final IReceiptCostCollectorCandidate getReceiptCostCollectorCandidate()
+	private final IReceiptCostCollectorCandidate getReceiptCostCollectorCandidate()
 	{
 		return _costCollectorCandidate;
 	}
