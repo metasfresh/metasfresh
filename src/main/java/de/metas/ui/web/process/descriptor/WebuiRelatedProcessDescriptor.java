@@ -70,7 +70,7 @@ public final class WebuiRelatedProcessDescriptor
 
 		this.relatedProcessDescriptor = relatedProcessDescriptor;
 		this.processDescriptor = processDescriptor;
-		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.ofJUFSupplier(preconditionsResolutionSupplier);
+		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(preconditionsResolutionSupplier);
 	}
 
 	public int getAD_Process_ID()
