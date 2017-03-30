@@ -47,6 +47,7 @@ import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.UpperBoundAllocationStrategy;
+import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -200,12 +201,17 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 		if (handlingUnitsBL.isAggregateHU(tuHU))
 		{
 			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class); // check if the TU's capacity exceeds the current request
+
 			final IHUCapacityDefinition exceedingCapacityOfTU = capacityBL.getAvailableCapacity(request.getQty(), request.getC_UOM(), capacityPerTU);
 
-			if (exceedingCapacityOfTU.getCapacity().signum() > 0)
+			if (HandlingUnitsDAO.VIRTUAL_HU_PI_ID == parentPIItem.getIncluded_HU_PI_ID()
+					|| exceedingCapacityOfTU.getCapacity().signum() > 0)
 			{
-				// The request's capacity is less than a full TU. That means that we can't allocate against the aggregate tuHU.
-				// Instead we need to create a "real" partially filled TU now and then aggregate the allocate stuff against that one.
+				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194). 
+				// or the request's capacity is less than a full TU. 
+				// In both cases it means means that we can't allocate against the aggregate tuHU.
+
+				// Instead we need to create a "real" (virtual or partially filled) TU now and then allocate our stuff against that one.
 
 				// get the aggregate VHU's parent and make sure it now has a "real" HU item with type "HandlingUnit". It will be preferred as parent item next time child HU (i.e. a sibling for tuHU) is created.
 				// therefore this sibling will be a "real" HU and not an aggregate one.
@@ -219,14 +225,14 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 			}
 
 			final I_M_HU_Item haItem = tuHU.getM_HU_Item_Parent();
-			
-			// specify the HU PI Item that is represented in this aggregate 
+
+			// specify the HU PI Item that is represented in this aggregate
 			haItem.setM_HU_PI_Item(parentPIItem);
-			
+
 			// updating the qty is also done by an IHUTrxListener after loading took place, *but* only for items whose HU were a loading *source*;
 			// here we also set the qty for new items
 			haItem.setQty(haItem.getQty().add(BigDecimal.ONE));
-			
+
 			InterfaceWrapperHelper.save(haItem);
 		}
 

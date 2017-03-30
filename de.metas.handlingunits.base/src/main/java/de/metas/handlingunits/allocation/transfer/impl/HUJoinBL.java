@@ -40,8 +40,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 public class HUJoinBL implements IHUJoinBL
 {
 	@Override
-	public void assignTradingUnitToLoadingUnit(final IHUContext huContext, 
-			final I_M_HU loadingUnit, 
+	public void assignTradingUnitToLoadingUnit(final IHUContext huContext,
+			final I_M_HU loadingUnit,
 			final I_M_HU tradingUnit) throws NoCompatibleHUItemParentFoundException
 	{
 		//
@@ -52,26 +52,24 @@ public class HUJoinBL implements IHUJoinBL
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 		// why is that?
-		//Check.errorIf(handlingUnitsBL.isAggregateHU(tradingUnit), "Param 'tradingUnit' can't be an aggregate HU; tradingUnit={}", tradingUnit);
+		// Check.errorIf(handlingUnitsBL.isAggregateHU(tradingUnit), "Param 'tradingUnit' can't be an aggregate HU; tradingUnit={}", tradingUnit);
 
-		boolean availableLUPIFound = false;
-
+		//
+		// iterate existing items of 'lodingUnit' and see if one fits to our 'tradingUnit'
 		final List<I_M_HU_Item> luItems = handlingUnitsDAO.retrieveItems(loadingUnit);
 		for (final I_M_HU_Item luItem : luItems)
 		{
-			if (handlingUnitsBL.isVirtual(tradingUnit))
-			{
-				//
-				// We assign virtual PI to any loading unit.
-				huTrxBL.setParentHU(huContext, luItem, tradingUnit);
-				availableLUPIFound = true;
-				break;
-			}
-
 			if (!X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(luItem)))
 			{
-				
+
 				continue; // Item type needs to be handling unit
+			}
+
+			if (handlingUnitsBL.isVirtual(tradingUnit))
+			{
+				// We assign virtual PI to any loading unit.
+				huTrxBL.setParentHU(huContext, luItem, tradingUnit);
+				return; // we are done
 			}
 
 			if (luItem.getM_HU_PI_Item().getIncluded_HU_PI_ID() != tradingUnit.getM_HU_PI_Version().getM_HU_PI_ID())
@@ -79,33 +77,28 @@ public class HUJoinBL implements IHUJoinBL
 				continue; // Item not supported by this handling unit
 			}
 
-			//
 			// Assign HU to the luItem which we just found
 			huTrxBL.setParentHU(huContext, luItem, tradingUnit);
-			availableLUPIFound = true;
+			return; // we are done
 		}
 
-		if (!availableLUPIFound)
+		// we did not find a compatible item for 'tradingUnit' to attach.
+		// try if we can create one on the fly
+		final I_M_HU_PI_Item luPI = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(loadingUnit, tradingUnit.getM_HU_PI_Version().getM_HU_PI(), huContext);
+		if (luPI != null)
 		{
-			final I_M_HU_PI_Item luPI = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(loadingUnit, tradingUnit.getM_HU_PI_Version().getM_HU_PI(), huContext);
-			if (luPI != null)
-			{
-				final I_M_HU_Item newLUItem = handlingUnitsDAO.createHUItem(loadingUnit, luPI);
+			final I_M_HU_Item newLUItem = handlingUnitsDAO.createHUItem(loadingUnit, luPI);
 
-				//
-				// Assign HU to the newLUItem which we just created
-				huTrxBL.setParentHU(huContext, newLUItem, tradingUnit);
-				availableLUPIFound = true;
-			}
+			// Assign HU to the newLUItem which we just created
+			huTrxBL.setParentHU(huContext, newLUItem, tradingUnit);
+			return; // we are done
 		}
 
-		if (!availableLUPIFound)
-		{
-			//
-			// This does not need to be translated, as it will be handled later (internal error message)
-			throw new NoCompatibleHUItemParentFoundException("TU could not be attached to the specified LU because no LU-PI Item supports it"
-					+ "\nLoading Unit (LU): " + loadingUnit
-					+ "\nTrading Unit (TU): " + tradingUnit);
-		}
+		// We did not succeed; thorw an exception.
+		// This does not need to be translated, as it will be handled later (internal error message)
+		throw new NoCompatibleHUItemParentFoundException("TU could not be attached to the specified LU because no LU-PI Item supports it"
+				+ "\nLoading Unit (LU): " + loadingUnit
+				+ "\nTrading Unit (TU): " + tradingUnit);
+
 	}
 }

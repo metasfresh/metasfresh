@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.async;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,11 +29,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -168,34 +166,30 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			final String trxName)
 	{
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 		//
 		// Create shipment producer
-		final IInOutProducerFromShipmentScheduleWithHU inoutProducer = huShipmentScheduleBL.createInOutProducerFromShipmentSchedule();
-		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		inoutProducer
+		final IInOutProducerFromShipmentScheduleWithHU inoutProducer = huShipmentScheduleBL
+				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipmentsDocAction(processShipmentsDocAction)
 				.setCreatePackingLines(createPackingLines)
 				.setManualPackingMaterial(manualPackingMaterial);
 
 		//
 		// Create shipment producer batch executor
-		final ITrxItemProcessorExecutorService executorService = trxItemProcessorExecutorService;
-
-		final ITrx trx = trxManager.getTrx(trxName);
-		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, trx);
-		final ITrxItemProcessorExecutor<IShipmentScheduleWithHU, InOutGenerateResult> executor = executorService.createExecutor(processorCtx, inoutProducer);
-
+		final ITrxItemExecutorBuilder<IShipmentScheduleWithHU, InOutGenerateResult> executorBuilder = trxItemProcessorExecutorService
+				.<IShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+				.setContext(ctx, trxName)
+				.setProcessor(inoutProducer);
 		if (trxItemExceptionHandler != null)
 		{
-			executor.setExceptionHandler(trxItemExceptionHandler);
+			executorBuilder.setExceptionHandler(trxItemExceptionHandler);
 		}
 
 		//
 		// Process candidates
-		final InOutGenerateResult result = executor.execute(candidates);
+		final InOutGenerateResult result = executorBuilder.process(candidates);
 
 		//
 		// Send notifications

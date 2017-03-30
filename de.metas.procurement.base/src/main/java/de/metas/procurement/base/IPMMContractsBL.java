@@ -48,9 +48,12 @@ public interface IPMMContractsBL extends ISingletonService
 	I_AD_User getDefaultContractUserInChargeOrNull(Properties ctx);
 
 	/**
+	 * 
+	 * 
 	 * @param dataEntry
-	 * @return true if given data entry has the price or qty planned set
-	 * @task FRESH-568
+	 * @return {@code true} if given {@code dataEntry} is not {@code null} has the price (a.k.a {@code FlatrateAmtPerUOM}) or qty planned set to a value that is {@code !=null} and equal to or greater than zero.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/263 (FRESH-568)
 	 */
 	boolean hasPriceOrQty(I_C_Flatrate_DataEntry dataEntry);
 }
