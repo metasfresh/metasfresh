@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Header from './header/Header';
 import ErrorScreen from './app/ErrorScreen';
-import NotificationHandler from './notifications/NotificationHandler';
 
 class Container extends Component {
     constructor(props){
@@ -14,8 +13,7 @@ class Container extends Component {
             docActionElem, docStatusData, docNoElement, docNoData,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
-            query, attachments, showIndicator, isDocumentNotSaved,
-            dontShowNotifications
+            query, attachments, showIndicator, isDocumentNotSaved
         } = this.props;
 
         return (
@@ -40,9 +38,6 @@ class Container extends Component {
                     isDocumentNotSaved={isDocumentNotSaved}
                 />
                 {connectionError && <ErrorScreen />}
-                <NotificationHandler
-                    dontShowNotifications={dontShowNotifications}
-                />
                 <div
                     className={
                         'header-sticky-distance js-unselect ' +

@@ -631,6 +631,10 @@ body {
     min-height: 500px;
 }
 
+.fullscreen {
+    height: 100%;
+}
+
 html {
     height: 100%;
 }

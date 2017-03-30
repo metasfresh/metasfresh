@@ -228,6 +228,9 @@ export function createWindow(
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
+                if(!response){
+                    return;
+                }
                 if (docId == 'NEW' && !isModal) {
                     dispatch(setLatestNewDocument(response.data[0].id));
                     // redirect immedietely
