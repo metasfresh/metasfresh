@@ -251,16 +251,22 @@ public final class HUDocumentView implements IDocumentView
 		
 		return summary.toString();
 	}
+	
+	public JSONLookupValue getProduct()
+	{
+		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		return productLV;
+	}
 
 	public int getM_Product_ID()
 	{
-		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		final JSONLookupValue productLV = getProduct();
 		return productLV == null ? -1 : productLV.getKeyAsInt();
 	}
 	
 	public String getM_Product_DisplayName()
 	{
-		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		final JSONLookupValue productLV = getProduct();
 		return productLV == null ? null : productLV.getName();
 	}
 
@@ -279,6 +285,12 @@ public final class HUDocumentView implements IDocumentView
 		final Object packingInfo = delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
 		return packingInfo == null ? null : packingInfo.toString();
 	}
+	
+	public JSONLookupValue getUOM()
+	{
+		final JSONLookupValue uomLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
+		return uomLV;
+	}
 
 	/**
 	 * 
@@ -286,7 +298,7 @@ public final class HUDocumentView implements IDocumentView
 	 */
 	public int getC_UOM_ID()
 	{
-		final JSONLookupValue uomLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
+		final JSONLookupValue uomLV = getUOM();
 		return uomLV == null ? -1 : uomLV.getKeyAsInt();
 	}
 
