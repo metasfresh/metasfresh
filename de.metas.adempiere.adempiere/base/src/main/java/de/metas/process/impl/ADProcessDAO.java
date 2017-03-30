@@ -152,23 +152,6 @@ public class ADProcessDAO implements IADProcessDAO
 		return ImmutableSet.copyOf(processIds);
 	}
 
-	// @Cached
-	@Override
-	public final List<I_AD_Process> retrieveProcessesForTable(final Properties ctx, final int adTableId)
-	{
-		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_AD_Process.class);
-	}
-
-	@Override
-	public final Set<Integer> retrieveProcessesIdsForTable(final Properties ctx, final int adTableId)
-	{
-		final Map<Integer, RelatedProcessDescriptor> relatedProcesses = retrieveRelatedProcessesForTableIndexedByProcessId(ctx, adTableId);
-		return relatedProcesses.keySet();
-	}
-
 	@Override
 	public final List<I_AD_Process> retrieveReportProcessesForTable(final Properties ctx, final String tableName)
 	{

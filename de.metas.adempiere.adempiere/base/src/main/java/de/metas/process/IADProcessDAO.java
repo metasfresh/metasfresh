@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
@@ -38,21 +37,6 @@ import org.compiere.model.I_AD_Role;
 
 public interface IADProcessDAO extends ISingletonService
 {
-	/**
-	 * Retrieves {@link I_AD_Process}es which are assigned to given <code>adTableId</code>
-	 *
-	 * @param ctx
-	 * @param adTableId
-	 * @return assigned processes
-	 */
-	List<I_AD_Process> retrieveProcessesForTable(Properties ctx, int adTableId);
-
-	/**
-	 * @return list of AD_Process_IDs
-	 * @see #retrieveProcessesForTable(Properties, int)
-	 */
-	Set<Integer> retrieveProcessesIdsForTable(Properties ctx, int adTableId);
-
 	/**
 	 * Retrieves {@link I_AD_Process}es which are assigned to given <code>tableName</code> and have <code>IsReport=true</code>
 	 *
