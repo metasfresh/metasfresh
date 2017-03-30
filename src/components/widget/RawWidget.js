@@ -627,11 +627,14 @@ class RawWidget extends Component {
                     />
                 )
             case 'Image':
-                return <Image
-                    fields={fields}
-                    data={widgetData[0]}
-                    handlePatch={this.handlePatch}
-                />;
+                return (
+                    <Image
+                        fields={fields}
+                        data={widgetData[0]}
+                        handlePatch={this.handlePatch}
+                        readonly={widgetData[0].readonly || disabled}
+                    />
+                )
             default:
                 return false;
         }
