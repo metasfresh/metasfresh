@@ -6,10 +6,10 @@ import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.pporder.PPOrderLine;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 
@@ -43,6 +43,14 @@ public class ForwardingDocumentView implements IDocumentView
 	{
 		Preconditions.checkNotNull(delegate, "delegate is null");
 		this.delegate = delegate;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(delegate)
+				.toString();
 	}
 
 	@OverridingMethodsMustInvokeSuper
@@ -112,10 +120,15 @@ public class ForwardingDocumentView implements IDocumentView
 	}
 
 	@Override
-	public List<PPOrderLine> getIncludedDocuments()
+	public List<? extends IDocumentView> getIncludedDocuments()
+	{
+		return getDelegate().getIncludedDocuments();
+	}
+
+	protected final <T extends IDocumentView> List<T> getIncludedDocuments(final Class<T> type)
 	{
 		@SuppressWarnings("unchecked")
-		final List<PPOrderLine> includedHUDocuments = (List<PPOrderLine>)(List<? extends IDocumentView>)getDelegate().getIncludedDocuments();
+		final List<T> includedHUDocuments = (List<T>)(List<? extends IDocumentView>)getDelegate().getIncludedDocuments();
 		return includedHUDocuments;
 	}
 }
