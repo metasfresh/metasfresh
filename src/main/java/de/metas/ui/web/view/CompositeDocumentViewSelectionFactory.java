@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,6 +111,14 @@ public class CompositeDocumentViewSelectionFactory
 	{
 		final int adWindowId = jsonRequest.getAD_Window_ID();
 		final JSONViewDataType viewType = jsonRequest.getViewType();
-		return getFactory(adWindowId, viewType).createView(jsonRequest);
+		final IDocumentViewSelectionFactory factory = getFactory(adWindowId, viewType);
+		final IDocumentViewSelection view = factory.createView(jsonRequest);
+		if (view == null)
+		{
+			throw new AdempiereException("Failed creating view")
+					.setParameter("request", jsonRequest)
+					.setParameter("factory", factory.toString());
+		}
+		return view;
 	}
 }
