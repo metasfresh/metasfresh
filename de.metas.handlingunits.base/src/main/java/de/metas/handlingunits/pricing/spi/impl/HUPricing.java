@@ -19,12 +19,24 @@ import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 
+/**
+ * Note that we invoke {@link AttributePricing#registerDefaultMatcher(IProductPriceQueryMatcher)} with {@link #HUPIItemProductMatcher_None} (in a model interceptor)
+ * to make sure that our super class will ignore those product price records that have a {@code M_HU_PI_Item_Product_ID} set.<br>
+ * That way this class can reuse a lot of stuff like the {@link #applies(IPricingContext, IPricingResult)} method from its superclass.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class HUPricing extends AttributePricing
 {
 	private static final transient Logger logger = LogManager.getLogger(HUPricing.class);
 
 	private static final String HUPIItemProductMatcher_NAME = "M_HU_PI_Item_Product_Matcher";
 	public static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
+
+	/**
+	 * Matches any product price with a not-null M_HU_PI_Item_Product_ID.
+	 */
 	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, new NotEqualsQueryFilter<>(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
@@ -172,19 +184,21 @@ public class HUPricing extends AttributePricing
 		//
 		// Make sure the default product price attribute is matching our pricing context M_HU_PI_Item_Product_ID,
 		// or it has no M_HU_PI_Item_Product_ID set.
+		final int ctxPIItemProductId = getM_HU_PI_Item_Product_ID(pricingCtx);
+		if (ctxPIItemProductId <= 0)
+		{
+			// We don't have a M_HU_PI_Item_Product_ID on the pricing context.
+			// Return the default price. It's M_HU_PI_Item_Product_ID will be used, e.g. in the C_OrderLine or C_OLCand which this invocation is about
+			return defaultPrice;
+		}
+
 		final int productPrice_HUPIItemProductId = defaultPrice.getM_HU_PI_Item_Product_ID();
-		if (productPrice_HUPIItemProductId <= 0)
+		if (productPrice_HUPIItemProductId == ctxPIItemProductId)
 		{
 			return defaultPrice;
 		}
-		else if (productPrice_HUPIItemProductId == getM_HU_PI_Item_Product_ID(pricingCtx))
-		{
-			return defaultPrice;
-		}
-		else
-		{
-			return null;
-		}
+
+		return null;
 	}
 
 	private int getM_HU_PI_Item_Product_ID(final IPricingContext pricingCtx)

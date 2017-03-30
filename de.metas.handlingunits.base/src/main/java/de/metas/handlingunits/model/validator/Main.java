@@ -199,10 +199,9 @@ public final class Main extends AbstractModuleInterceptor
 	{
 		ProductPriceQuery.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
 
-		// Registers a default matcher which filters out all product prices which have an M_HU_PI_Item_Product_ID set.
+		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
 		//
 		// From skype chat:
-		//
 		// <pre>
 		// [Dienstag, 4. Februar 2014 15:33] Cis:
 		//
@@ -217,7 +216,6 @@ public final class Main extends AbstractModuleInterceptor
 		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
 		//
 		// <pre>
-		//
 		// ..and that's why we register the filter here.
 		//
 		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);

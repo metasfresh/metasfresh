@@ -1,6 +1,5 @@
 package de.metas.pricing.attributebased.impl;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -34,6 +33,11 @@ public class AttributePricing extends PricingRuleAdapter
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
+	/**
+	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
+	 * 
+	 * @param matcher
+	 */
 	public static final void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
 	{
 		Check.assumeNotNull(matcher, "Parameter matcher is not null");
@@ -41,17 +45,13 @@ public class AttributePricing extends PricingRuleAdapter
 		logger.info("Registered default matcher: {}", matcher);
 	}
 	
-	private List<IProductPriceQueryMatcher> getDefaultMatchers()
-	{
-		return _defaultMatchers;
-	}
-
 	/**
 	 * Checks if the attribute pricing rule could be applied. Mainly it checks:
 	 * <ul>
 	 * <li>the result shall not be already calculated
 	 * <li>a product shall exist in pricing context
-	 * <li>a matching attributed {@link I_M_ProductPrice} shall be found
+	 * <li>a matching attributed {@link I_M_ProductPrice} shall be found.<br>
+	 * Note that here that matcher(s) that were registered via {@link #registerDefaultMatcher(IProductPriceQueryMatcher)} are also applied.
 	 * </ul>
 	 */
 	@Override
@@ -248,7 +248,7 @@ public class AttributePricing extends PricingRuleAdapter
 
 		final I_M_ProductPrice productPrice = ProductPriceQuery.newInstance(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
-				.matching(getDefaultMatchers())
+				.matching(_defaultMatchers)
 				.matchingAttributes(attributeSetInstance)
 				.firstMatching();
 
