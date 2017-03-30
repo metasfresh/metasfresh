@@ -59,6 +59,12 @@ export function initDataSuccess(data, scope, docId, saveStatus, validStatus) {
     }
 }
 
+export function clearMasterData() {
+    return {
+        type: types.CLEAR_MASTER_DATA
+    }
+}
+
 export function addRowData(data, scope) {
     return {
         type: types.ADD_ROW_DATA,

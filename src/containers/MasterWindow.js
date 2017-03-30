@@ -3,7 +3,8 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    attachFileAction
+    attachFileAction,
+    clearMasterData
 } from '../actions/WindowActions';
 
 import {
@@ -49,7 +50,7 @@ class MasterWindow extends Component {
     }
 
     componentWillUnmount() {
-        const { master } = this.props;
+        const { master, dispatch } = this.props;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
         window.removeEventListener('beforeunload', this.confirm);
@@ -61,6 +62,8 @@ class MasterWindow extends Component {
                 this.context.router.goBack();
             }
         }
+
+        dispatch(clearMasterData());
     }
 
     confirm = (e) => {

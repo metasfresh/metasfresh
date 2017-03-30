@@ -31,7 +31,8 @@ const initialState = {
         data: [],
         rowData: {},
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        docId: undefined
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -106,6 +107,15 @@ export default function windowHandler(state = initialState, action) {
                     validStatus: action.validStatus
                 })
         })
+
+        case types.CLEAR_MASTER_DATA:
+            return Object.assign({}, state, {
+                master: Object.assign({}, state.master, {
+                    data: [],
+                    rowData: {},
+                    docId: undefined
+                })
+            })
 
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
