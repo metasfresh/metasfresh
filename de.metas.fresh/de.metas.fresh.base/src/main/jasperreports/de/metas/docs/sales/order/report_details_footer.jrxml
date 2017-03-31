@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-02-22T15:27:16 -->
+<!-- 2017-03-23T17:17:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="dffd0ce7-f5c2-4d5c-8553-9b258e5080c6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -156,7 +156,7 @@ ORDER BY
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="b53cb513-89fe-4646-9a2f-4e940c593ba2">
-					<printWhenExpression><![CDATA[new Boolean($F{textleft} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{textleft} != null && !$F{textleft}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,7 +173,7 @@ $F{textleft}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="af89e589-625d-4610-9d91-3dc5542cc1d5">
-					<printWhenExpression><![CDATA[new Boolean($F{textcenter} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{textcenter} != null && !$F{textcenter}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
