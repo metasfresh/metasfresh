@@ -1,4 +1,4 @@
-
+﻿
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root;
 
@@ -13,7 +13,8 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root
 	PrintName Character Varying(60),
 	AD_Language Text,
 	IsHidePackingMaterialInShipmentPrint Character (1),
-	email Character Varying(50)
+	email Character Varying(50),
+	displayhu text
 );
 
 
