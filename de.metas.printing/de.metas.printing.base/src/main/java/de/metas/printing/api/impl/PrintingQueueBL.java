@@ -114,7 +114,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		// see if a copies-per-archive value was specified. If yes, then use it as a multiplier.
 		// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
 		// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
-		// Also note that right now idk any case where a user can set copies-per.-archive in a case that is also handled by a printingQueueHandler.
+		// Also note that right now I don't know any case where a user can set copies-per-archive in a case that is also handled by a printingQueueHandler.
 		final Optional<Integer> copiesIfExists = COPIES_PER_ARCHIVE.getValueIfExists(printOut);
 		if (copiesIfExists.isPresent())
 		{
