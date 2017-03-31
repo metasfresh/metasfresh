@@ -42,7 +42,7 @@ FROM
 			presum.C_Currency_ID
 		FROM	(
 				SELECT 	iol.M_InOut_ID,
-					p.M_Product_Category_ID =
+					p.M_Product_Category_ID IN
 					(
 						SELECT value::numeric FROM AD_SysConfig sc
 						WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y'
