@@ -104,6 +104,12 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return adWindowId;
 	}
+	
+	@Override
+	public String getTableName()
+	{
+		return I_M_HU.Table_Name;
+	}
 
 	@Override
 	public long size()
@@ -220,7 +226,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
 	{
-		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, I_M_HU.Table_Name, selectedDocumentIds);
+		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, getTableName(), selectedDocumentIds);
 		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 

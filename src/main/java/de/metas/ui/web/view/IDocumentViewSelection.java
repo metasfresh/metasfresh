@@ -44,6 +44,9 @@ public interface IDocumentViewSelection
 	String getViewId();
 
 	int getAD_Window_ID();
+	
+	/** @return table name or null */
+	String getTableName();
 
 	long size();
 

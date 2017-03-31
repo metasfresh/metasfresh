@@ -197,7 +197,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		return adWindowId;
 	}
 
-	private String getTableName()
+	@Override
+	public String getTableName()
 	{
 		return tableName;
 	}

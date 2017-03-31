@@ -160,8 +160,7 @@ public class ProcessInstancesRepository
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
 			viewSelectedIdsAsStr = DocumentId.toCommaSeparatedString(viewDocumentIds);
-			final int view_AD_Window_ID = view.getAD_Window_ID();
-			tableName = documentDescriptorFactory.getTableNameOrNull(view_AD_Window_ID);
+			tableName = view.getTableName();
 
 			if (viewDocumentIds.size() == 1)
 			{
