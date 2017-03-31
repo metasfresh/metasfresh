@@ -99,6 +99,8 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		item.setIsPrintoutForOtherUser(false); // task 09028: this the default, but the printingQueueHandler can override it.
 
+		item.setCopies(1); // can be changed by printingQueueHandlers and a value stored in "COPIES_PER_ARCHIVE"
+
 		printingQueueHandler.afterEnqueueBeforeSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
 		// If queue item was deactivated by listeners, there is no point to save it or go forward
 		if (!item.isActive())
@@ -118,14 +120,14 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		final Optional<Integer> copiesIfExists = COPIES_PER_ARCHIVE.getValueIfExists(printOut);
 		if (copiesIfExists.isPresent())
 		{
-			final int oldItemCopies = Math.max(item.getCopies(), 1);
-			final Integer copiesMultipliers = Math.max(copiesIfExists.get(), 1);
+			final int oldItemCopies = Math.max(item.getCopies(), 1); // note about Math.max(): it should not happen that a printingQueueHandler sets copies:=0, but if it happens and COPIES_PER_ARCHIVE contained a value, then go with COPIES_PER_ARCHIVE
+			final Integer copiesMultipliers = copiesIfExists.get();
 			final int newItemCopies = oldItemCopies * copiesMultipliers;
 
 			if (oldItemCopies != newItemCopies)
 			{
 				logger.debug("An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
-						copiesMultipliers, oldItemCopies, oldItemCopies, copiesMultipliers, newItemCopies, item);
+						copiesMultipliers, item.getCopies(), oldItemCopies, copiesMultipliers, newItemCopies, item);
 				item.setCopies(newItemCopies);
 			}
 		}
@@ -183,7 +185,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		}
 		else
 		{
-			// Just renqueue underlying archive again
+			// Just re-enqueue then underlying archive
 			enqueue(archive);
 		}
 	}
