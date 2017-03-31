@@ -14,6 +14,11 @@ Here come the actual release notes:
 
 **upcoming**
 
+# Fixes
+* metasfresh-backend
+  * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
+  * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
+
 # metasfresh 5.3 (2017-13)
 
 **this week's release candidate**
