@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-07T15:16:48 -->
+<!-- 2017-03-23T17:21:12 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="24208fd1-eaa1-4f8e-a2aa-22ed9c4e6234">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -48,7 +48,7 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="36" y="0" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="69cc9972-35a0-4cfb-8592-f84e25c66b5d">
-					<printWhenExpression><![CDATA[new Boolean ($F{textleft} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ($F{textleft} != null && !$F{textleft}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -63,7 +63,7 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="36" y="0" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="afb81463-7b39-4cae-ac3c-396c9b924106">
-					<printWhenExpression><![CDATA[new Boolean ($F{textcenter} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ($F{textcenter} != null && !$F{textcenter}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

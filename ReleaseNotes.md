@@ -14,6 +14,16 @@ Here come the actual release notes:
 
 **upcoming**
 
+## Features
+* metasfresh-backend
+  * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
+  
+## Fixes
+* metasfresh-backend
+  * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
+  * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
+  * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
+
 # metasfresh 5.3 (2017-13)
 
 **this week's release candidate**
@@ -32,6 +42,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#273](https://github.com/metasfresh/metasfresh-webui-api/issues/273) remove deprecated staleTabIds
   * [#272](https://github.com/metasfresh/metasfresh-webui-api/issues/272) Document Line Delete Behaviour
+  * [#276](https://github.com/metasfresh/metasfresh-webui-api/issues/276) Cannot change BPartner address
 
 * metasfresh-webui-frontend
   * [#118](https://github.com/metasfresh/metasfresh-webui-frontend/issues/118) Copy-paste behaviour for document and lists
