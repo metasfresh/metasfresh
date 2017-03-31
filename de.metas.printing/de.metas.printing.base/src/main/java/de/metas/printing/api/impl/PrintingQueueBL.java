@@ -110,15 +110,27 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
 
+		// https://github.com/metasfresh/metasfresh/issues/1240
+		// see if a copies-per-archive value was specified. If yes, then use it as a multiplier.
+		// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
+		// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
+		// Also note that right now idk any case where a user can set copies-per.-archive in a case that is also handled by a printingQueueHandler.
 		final Optional<Integer> copiesIfExists = COPIES_PER_ARCHIVE.getValueIfExists(printOut);
 		if (copiesIfExists.isPresent())
 		{
-			logger.debug("An explicit number of copies={} was specified for the given achive. Overwriting previous value {}; item={}", copiesIfExists.get(), item.getCopies(), item);
-			item.setCopies(copiesIfExists.get());
+			final int oldItemCopies = Math.max(item.getCopies(), 1);
+			final Integer copiesMultipliers = Math.max(copiesIfExists.get(), 1);
+			final int newItemCopies = oldItemCopies * copiesMultipliers;
+
+			if (oldItemCopies != newItemCopies)
+			{
+				logger.debug("An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
+						copiesMultipliers, oldItemCopies, oldItemCopies, copiesMultipliers, newItemCopies, item);
+				item.setCopies(newItemCopies);
+			}
 		}
 
 		InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
-
 		return item;
 	}
 
