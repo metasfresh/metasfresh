@@ -136,7 +136,7 @@ ORDER BY
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="b53cb513-89fe-4646-9a2f-4e940c593ba2">
-					<printWhenExpression><![CDATA[new Boolean($F{textleft} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{textleft} != null && !$F{textleft}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -153,7 +153,7 @@ $F{textleft}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="af89e589-625d-4610-9d91-3dc5542cc1d5">
-					<printWhenExpression><![CDATA[new Boolean($F{textcenter} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{textcenter} != null && !$F{textcenter}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
