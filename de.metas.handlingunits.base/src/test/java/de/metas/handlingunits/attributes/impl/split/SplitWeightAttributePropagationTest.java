@@ -223,11 +223,14 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 	@Test
 	public void testSplitWeightTransfer_LU_On_Another_SameType_LU_1TU_7CU()
 	{
-		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
+		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato with a certain weight.
+		//helper.commitAndDumpHU(paletToSplit);
+		
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
-				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
+				newHUWeightsExpectation("100.000", "66.000", "34", "0"),
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"), // "real" TU with 5
+				newHUWeightsExpectation("70.118", "62.118", "8", "0") // aggregate TU with 80
+				);
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on NoPI (TUs which are split will not be on an LU)
@@ -257,6 +260,52 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("6.436", "5.436", "1", "0"));
 	}
 
+	/**
+	 * Like {@link #testSplitWeightTransfer_LU_On_Another_SameType_LU_1TU_7CU()}, but with a non-integer weight-gross
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1237
+	 */
+	@Test
+	public void testSplitWeightTransfer_LU_On_Another_SameType_LU_1TU_7CU_non_int()
+	{
+		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, 
+				CU_QTY_85, 
+				INPUT_GROSS_100.add(new BigDecimal("0.123"))); // 85 x Tomato with an "odd" weight.
+		
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
+				newHUWeightsExpectation("100.123", "66.123", "34", "0"),
+				newHUWeightsExpectation("4.890", "3.890", "1", "0"), // "real" TU with 5
+				newHUWeightsExpectation("70.233", "62.233", "8", "0") // aggregate TU with 80
+				);
+
+		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
+				huItemIFCO_10, // split on NoPI (TUs which are split will not be on an LU)
+				materialItemTomato_10, // TU item x 10
+				CU_QTY_85, // total qty to split
+				BigDecimal.valueOf(7), // 7, split the 7 CUs of the TU
+				BigDecimal.valueOf(1), // TUs per LU
+				BigDecimal.ONE); // split on ONE additional LU
+
+		Assert.assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+
+		//
+		// Assert data integrity on SOURCE LU
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 8, // #490 the original pre-aggregate test had "9", but imho 8 is better :-)
+				newHUWeightsExpectation("93.678", "60.678", "33", "0"),
+				newHUWeightsExpectation("7.223", "6.223", "1", "0"),
+				newHUWeightsExpectation("61.454", "54.454", "7", "0"));
+
+		//
+		// Assert data integrity on TARGET LU
+		//
+		final I_M_HU splitLU = splitLUs.get(0);
+		Assert.assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
+
+		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
+				newHUWeightsExpectation("31.445", "5.445", "26", "0"),
+				newHUWeightsExpectation("6.445", "5.445", "1", "0"));
+	}
+	
 	/**
 	 * S050: Split 1 x TU from source LU on the SAME source LU
 	 */
