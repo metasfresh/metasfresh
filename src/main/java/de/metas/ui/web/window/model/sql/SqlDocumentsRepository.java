@@ -310,11 +310,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 
 			final Object idObj = getValue(idField);
-			if(idObj == null)
+			if (idObj == null)
 			{
 				throw new NullPointerException("Null id");
 			}
-			else if(idObj instanceof Number)
+			else if (idObj instanceof Number)
 			{
 				final int idInt = ((Number)idObj).intValue();
 				id = DocumentId.of(idInt);
@@ -595,7 +595,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			final Object poValue = po.get_Value(poColumnIndex);
 			final Class<?> poValueClass = poInfo.getColumnClass(poColumnIndex);
 			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, documentField.getWidgetType(), poValueClass);
-			if (DataTypes.equals(fieldValueConv, poValue))
+			if (poFieldValueEqual(fieldValueConv, poValue))
 			{
 				logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
 				return false; // no change
@@ -606,7 +606,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			if (!po.is_new())
 			{
 				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, documentField.getWidgetType(), poValueClass);
-				if (!DataTypes.equals(fieldInitialValueConv, poValue))
+				if (!poFieldValueEqual(fieldInitialValueConv, poValue))
 				{
 					throw new AdempiereException("Document's field was changed from when we last queried it. Please re-query."
 							+ "\n Document field initial value: " + fieldInitialValueConv
@@ -632,6 +632,40 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 			logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
 			return true;
+		}
+	}
+
+	/** @return true if PO field's values can be considered the same */
+	private static final boolean poFieldValueEqual(final Object value1, final Object value2)
+	{
+		if (value1 == value2)
+		{
+			return true;
+		}
+
+		// If both values are empty we can consider they are equal
+		// (see task https://github.com/metasfresh/metasfresh-webui-api/issues/276)
+		if(isEmptyPOFieldValue(value1) && isEmptyPOFieldValue(value2))
+		{
+			return true;
+		}
+		
+		return DataTypes.equals(value1, value2);
+	}
+
+	private static final boolean isEmptyPOFieldValue(final Object value)
+	{
+		if (value == null)
+		{
+			return true;
+		}
+		else if (value instanceof String)
+		{
+			return ((String)value).isEmpty();
+		}
+		else
+		{
+			return false;
 		}
 	}
 
