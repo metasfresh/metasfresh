@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 
 import {
     openModal,

@@ -156,23 +156,22 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
-        case types.UPDATE_ROW_SUCCESS:
+        case types.UPDATE_ROW_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {
+                        [action.tabid]: {$set: {
                             [action.rowid]: {
-                                fields: {$set: state[action.scope]
-                                    .rowData[action.tabid][action.rowid]
-                                    .fields.map(item =>
-                                        item.field === action.item.field ?
-                                            Object.assign(
-                                                {}, item, action.item
-                                            ) : item
-                                    )
-                                }
+                                //TODO: fix this issue with new row
+                                [action.property]: Object.assign({},
+                                    state[action.scope]
+                                        .rowData[action.tabid]
+                                        [action.rowid]
+                                        [action.property],
+                                    action.item
+                                )
                             }
-                        }
+                        }}
                     }
                 }
             })
@@ -204,31 +203,28 @@ export default function windowHandler(state = initialState, action) {
                 })
             })
 
-        case types.UPDATE_DATA_SUCCESS:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    data: state[action.scope].data.map(item =>
-                        item.field === action.item.field ?
-                            Object.assign({}, item, action.item) :
-                            item
-                    ),
-                    saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
-                })
-        })
+        case types.UPDATE_DATA_FIELD_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    data: {$set: state[action.scope].data.map(item =>
+                        item.field === action.property ?
+                        Object.assign({}, item, action.item) :
+                        item
+                    )}
+                }
+            })
 
         case types.UPDATE_DATA_PROPERTY:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    data: state[action.scope].data.map(item =>
-                        item.field === action.property ?
-                        Object.assign({}, item, { value: action.value }) :
-                        item
-                    )
-                })
-        })
+            return update(state, {
+                [action.scope]: {
+                    [action.property]: {$set: Object.assign({},
+                        state[action.scope][action.property],
+                        action.value
+                    )}
+                }
+            })
 
-        case types.UPDATE_ROW_PROPERTY:
+        case types.UPDATE_ROW_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
@@ -239,9 +235,9 @@ export default function windowHandler(state = initialState, action) {
                                         .rowData[action.tabid][action.rowid]
                                         .fields.map(item =>
                                         item.field === action.property ?
-                                            Object.assign({}, item, {
-                                                value: action.value
-                                            }) : item
+                                            Object.assign(
+                                                {}, item, action.item
+                                            ) : item
                                     )
                                 }
                             }

@@ -83,12 +83,11 @@ export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     }
 }
 
-export function updateDataSuccess(item, scope, saveStatus, validStatus) {
+export function updateDataProperty(property, value, scope) {
     return {
-        type: types.UPDATE_DATA_SUCCESS,
-        item,
-        saveStatus,
-        validStatus,
+        type: types.UPDATE_DATA_PROPERTY,
+        property,
+        value,
         scope
     }
 }
@@ -109,13 +108,14 @@ export function updateDataValidStatus(scope, validStatus) {
     }
 }
 
-export function updateRowSuccess(item, tabid, rowid, scope) {
+export function updateRowProperty(property, item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_SUCCESS,
-        item: item,
-        tabid: tabid,
-        rowid: rowid,
-        scope: scope
+        property,
+        item,
+        tabid,
+        rowid,
+        scope
     }
 }
 
@@ -138,20 +138,20 @@ export function deleteRow(tabid, rowid, scope) {
     }
 }
 
-export function updateDataProperty(property, value, scope) {
+export function updateDataFieldProperty(property, item, scope) {
     return {
-        type: types.UPDATE_DATA_PROPERTY,
+        type: types.UPDATE_DATA_FIELD_PROPERTY,
         property: property,
-        value: value,
+        item: item,
         scope: scope
     }
 }
 
-export function updateRowProperty(property, value, tabid, rowid, scope) {
+export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_PROPERTY,
         property: property,
-        value: value,
+        item: item,
         tabid: tabid,
         rowid: rowid,
         scope: scope
@@ -400,6 +400,41 @@ export function patch(
     }
 }
 
+function updateData(doc, scope){
+    return dispatch => {
+        doc.fields.map(field => {
+            dispatch(updateDataFieldProperty(
+                field.field, field, scope
+            ))
+        })
+
+        delete doc.fields;
+
+        Object.keys(doc).map(key => {
+            dispatch(updateDataProperty(key, doc[key], scope))
+        })
+    }
+}
+
+function updateRow(row, scope){
+    return dispatch => {
+
+        row.fields.map(field => {
+            dispatch(updateRowFieldProperty(
+                field.field, field, row.tabid, row.rowid, scope
+            ))
+        });
+
+        delete row.fields;
+
+        Object.keys(row).map(key => {
+            dispatch(updateRowProperty(
+                key, row[key], row.tabid, row.rowId, scope
+            ));
+        })
+    }
+}
+
 function mapDataToState(data, isModal, rowId, id, windowType) {
     return (dispatch) => {
         let staleTabIds = [];
@@ -411,29 +446,21 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 }
             })
 
-            // Mapping fields property
-            item.fields = parseToDisplay(item.fields);
-            if (rowId === 'NEW' && item.rowId) {
-                dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
-            } else {
-                item.fields.map(field => {
-                    if (rowId && !isModal) {
-                        dispatch(updateRowSuccess(
-                            field, item.tabid, item.rowId, getScope(isModal)
-                        ));
-                    } else {
-                        if (rowId) {
-                            dispatch(updateRowSuccess(
-                                field, item.tabid, item.rowId, getScope(false)
-                            ));
-                        }
+            const parsedItem = Object.assign({}, item, {
+                fields: parseToDisplay(item.fields)
+            });
 
-                        dispatch(updateDataSuccess(
-                            field, getScope(isModal), data[0].saveStatus,
-                            data[0].validStatus
-                        ));
-                    }
-                });
+            if(!parsedItem.fields.length){
+                delete parsedItem.fields;
+            }
+
+            if (item.rowId && !isModal) {
+                dispatch(updateRow(parsedItem, getScope(isModal)));
+            } else {
+                item.rowId &&
+                    dispatch(updateRow(parsedItem, getScope(isModal)));
+
+                dispatch(updateData(parsedItem, getScope(isModal)));
             }
         })
 
@@ -443,14 +470,13 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
-        
-        dispatch(updateStatus(data))
+
     }
 }
 
 function updateStatus(responseData) {
     return dispatch => {
-        const updateDispatch = (item) => {            
+        const updateDispatch = (item) => {
             if(item.rowId){
                 dispatch(updateRowStatus(
                     'master', item.tabid, item.rowId, item.saveStatus
@@ -462,8 +488,6 @@ function updateStatus(responseData) {
                     dispatch(updateDataSaveStatus('master', item.saveStatus));
             }
         }
-        
-        
 
         if(Array.isArray(responseData)){
             responseData.map(item => {
@@ -475,18 +499,18 @@ function updateStatus(responseData) {
     }
 }
 
-export function updateProperty(property, value, tabid, rowid, isModal) {
+export function updatePropertyValue(property, value, tabid, rowid, isModal) {
     return dispatch => {
         if (tabid && rowid) {
             dispatch(updateRowProperty(property, value, tabid, rowid, 'master'))
             if (isModal) {
-                dispatch(updateDataProperty(property, value, 'modal'))
+                dispatch(updateDataFieldProperty(property, {value}, 'modal'))
             }
         } else {
-            dispatch(updateDataProperty(property, value, getScope(isModal)))
+            dispatch(updateDataFieldProperty(property, {value}, getScope(isModal)))
             if (isModal) {
                 //update the master field too if exist
-                dispatch(updateDataProperty(property, value, 'master'))
+                dispatch(updateDataFieldProperty(property, {value}, 'master'))
             }
         }
     }
