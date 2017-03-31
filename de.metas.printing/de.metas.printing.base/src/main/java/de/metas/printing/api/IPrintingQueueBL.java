@@ -38,8 +38,7 @@ public interface IPrintingQueueBL extends ISingletonService
 {
 	/**
 	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
-	 * The valie that is set here will be set in the respective printing queue item
-	 * TODO: consider if it shall be a multiplier, if > 0.
+	 * The value that is set here will be used in the respective printing queue item
 	 * 
 	 * @task https://github.com/metasfresh/metasfresh/issues/1240
 	 */
