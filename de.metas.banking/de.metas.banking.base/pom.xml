@@ -14,7 +14,6 @@
 
 	<properties>
 		<migration-sql-basedir>50-sw01_banking</migration-sql-basedir>
-		<!-- migration-sql-basedir>50-de.metas.commission</migration-sql-basedir -->
 	</properties>
 
 	<dependencies>

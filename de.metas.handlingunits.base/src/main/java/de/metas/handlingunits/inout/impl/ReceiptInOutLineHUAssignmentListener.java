@@ -1,5 +1,8 @@
 package de.metas.handlingunits.inout.impl;
 
+import java.util.List;
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,25 +16,27 @@ package de.metas.handlingunits.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -44,6 +49,9 @@ import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.report.HUReportExecutor;
+import de.metas.handlingunits.report.HUReportService;
+import de.metas.logging.LogManager;
 
 /**
  * Listener triggered by {@link IHUAssignmentBL} when a HU is assigned/un-assigned from an Receipt Line.
@@ -55,11 +63,12 @@ import de.metas.handlingunits.model.X_M_HU;
  */
 public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentListenerAdapter
 {
+	private static final transient Logger logger = LogManager.getLogger(ReceiptInOutLineHUAssignmentListener.class);
+
 	public static final transient ReceiptInOutLineHUAssignmentListener instance = new ReceiptInOutLineHUAssignmentListener();
 
 	private ReceiptInOutLineHUAssignmentListener()
 	{
-		super();
 	}
 
 	@Override
@@ -84,6 +93,11 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Active HU
 		activateHU(hu, inoutLine, trxName);
+
+		//
+		// Print receipt label, see https://github.com/metasfresh/metasfresh-webui/issues/209
+		printReceiptLabel(hu);
+
 	}
 
 	private void activateHU(final I_M_HU hu, final I_M_InOutLine inoutLine, final String trxName)
@@ -91,7 +105,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Get running context
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final IContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		Services.get(ITrxManager.class).assertTrxNameNotNull(trxName);
 
 		//
@@ -102,7 +116,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		huTrxBL.createHUContextProcessorExecutor(contextProvider)
 				.run(new IHUContextProcessor()
 				{
-
 					@Override
 					public IMutableAllocationResult process(final IHUContext huContext)
 					{
@@ -213,5 +226,58 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Sets the ex-Vendor BPartner ID as SubProducer.
 		huAttributeStorage.setValue(attribute_subProducer, bpartnerId);
+	}
+
+	/**
+	 *
+	 * @param hu
+	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
+	 */
+	private void printReceiptLabel(final I_M_HU hu)
+	{
+		if (hu == null)
+		{
+			logger.info("Param 'hu'==null; nothing to do");
+			return;
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+
+		final HUReportService huReportService = HUReportService.get();
+		if (!huReportService.isReceiptLabelAutoPrintEnabled(ctx))
+		{
+			logger.info("Auto printing receipt labels is not enabled via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED);
+			return;
+		}
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isTopLevel(hu))
+		{
+			logger.info("We only print top level HUs; nothing to do; hu={}", hu);
+			return;
+		}
+
+		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(ctx);
+		if (!process.isPresent())
+		{
+			logger.info("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
+			return;
+		}
+
+		final List<I_M_HU> husToProcess = huReportService
+				.getHUsToProcess(hu, process.get()).stream()
+				.filter(huToProcess -> handlingUnitsBL.isTopLevel(huToProcess)) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
+				.collect(Collectors.toList());
+		if (husToProcess.isEmpty())
+		{
+			logger.info("hu's type does not match process {}; nothing to do; hu={}", process.get().getValue(), hu);
+			return;
+		}
+
+		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount(ctx);
+
+		HUReportExecutor.get(ctx)
+				.withNumberOfCopies(copies)
+				.executeHUReportAfterCommit(process.get(), husToProcess);
 	}
 }

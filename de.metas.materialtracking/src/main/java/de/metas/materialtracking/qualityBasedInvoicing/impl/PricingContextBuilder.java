@@ -24,15 +24,14 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 /**
@@ -58,7 +57,7 @@ public class PricingContextBuilder
 		final I_M_PriceList_Version plv = vendorInvoicingInfo.getM_PriceList_Version();
 		Check.assumeNotNull(plv,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
-		final I_M_PriceList pl = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class);
+		final I_M_PriceList pl = plv.getM_PriceList();
 		Check.assumeNotNull(pl,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 		Check.assumeNotNull(pl.getM_PricingSystem(),

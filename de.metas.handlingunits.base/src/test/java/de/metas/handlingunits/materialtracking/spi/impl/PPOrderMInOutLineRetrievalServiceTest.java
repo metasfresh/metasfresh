@@ -56,11 +56,11 @@ import de.metas.handlingunits.util.HUTopLevel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -92,7 +92,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final Properties deriveCtx = Env.deriveCtx(context.getCtx());
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Client_ID, 0);
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Org_ID, 0);
-		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class,  new PlainContextAware(deriveCtx, ITrx.TRXNAME_None));
+		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class, new PlainContextAware(deriveCtx, ITrx.TRXNAME_None));
 		sysConfig.setName(SaveDecoupledHUAttributesDAO.SYSCONFIG_AutoFlushEnabledInitial);
 		sysConfig.setValue("Y");
 		InterfaceWrapperHelper.save(sysConfig);
@@ -217,15 +217,17 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		huAssignmentBL.assignHUs(
 				model,
 				topLevelTuSingletonList);
+
 		for (final HUTopLevel huTopLevel : toTopLevels)
 		{
-			huAssignmentBL.createTradingUnitDerivedAssignment(
+			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(
 					context.getCtx(),
 					model,
 					huTopLevel.getM_HU_TopLevel(),
 					huTopLevel.getM_LU_HU(),
 					huTopLevel.getM_TU_HU(),
-					context.getTrxName());
+					context.getTrxName())
+					.build();
 		}
 	}
 

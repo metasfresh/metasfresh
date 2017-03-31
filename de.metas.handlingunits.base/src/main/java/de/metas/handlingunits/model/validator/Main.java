@@ -33,6 +33,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
@@ -42,6 +43,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
@@ -72,6 +74,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineHUTrxListener;
+import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
 import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleListener;
@@ -99,6 +102,7 @@ import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 
@@ -119,6 +123,8 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Setup caching
 		setupTableCacheConfig();
+		
+		setupPricing();
 
 		//
 		// Register model validators
@@ -135,11 +141,11 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Storage(), client);
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice_Attribute(), client);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
 
 		//
 		// M_Package integration
@@ -189,6 +195,34 @@ public final class Main extends AbstractModuleInterceptor
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new HUC_Invoice_Candidate_GridTabSummaryInfoProvider(), true); // forceOverride
 	}
 
+	public static void setupPricing()
+	{
+		ProductPriceQuery.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
+
+		// Registers a default matcher which filters out all product prices which have an M_HU_PI_Item_Product_ID set.
+		//
+		// From skype chat:
+		//
+		// <pre>
+		// [Dienstag, 4. Februar 2014 15:33] Cis:
+		//
+		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
+		// more concretely: we have two rules:
+		// IFCO A, with Red
+		// IFCO B with Blue
+		//
+		// And we put a product in IFCO A with Blue
+		//
+		// HU pricing rule won't find a match,
+		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
+		//
+		// <pre>
+		//
+		// ..and that's why we register the filter here.
+		//
+		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
+	}
+
 	public void setupTourPlanning()
 	{
 		// 07341: Register delivery day updater (for HU related fields)
@@ -203,7 +237,10 @@ public final class Main extends AbstractModuleInterceptor
 		// Warm-up our cache
 		// NOTE: We are calling this on user login and not "onInit" because after logout, cache is reseted.
 		// On server side, it's not so important to warm-up cache, because it will be warmed up much more quickly
-		cacheWarmUp();
+		if (Ini.isClient())
+		{
+			cacheWarmUp();
+		}
 	}
 
 	private void setupTableCacheConfig()
@@ -242,11 +279,18 @@ public final class Main extends AbstractModuleInterceptor
 		Services.get(IStorageEngineService.class)
 				.registerStorageEngine(de.metas.storage.spi.hu.impl.HUStorageEngine.instance);
 
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		//
+		// aggregate material items
+		{
+			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
+		}
+
 		//
 		// Weights Attributes
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(WeightGenerateHUTrxListener.instance);
+			huTrxBL.addListener(WeightGenerateHUTrxListener.instance);
 		}
 
 		//
@@ -255,20 +299,20 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IReceiptScheduleProducerFactory.class)
 					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class)
 					.registerWarehouseDestProvider(QualityInspectionWarehouseDestProvider.instance);
+			
 			Services.get(IReceiptScheduleBL.class)
 					.addReceiptScheduleListener(HUReceiptScheduleListener.instance);
+			
 			Services.get(IHUDocumentFactoryService.class)
 					.registerHUDocumentFactory(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleHUDocumentFactory());
 
-			Services.get(IHUTrxBL.class)
-					.addListener(ReceiptScheduleHUTrxListener.instance);
+			huTrxBL.addListener(ReceiptScheduleHUTrxListener.instance);
 		}
 
 		//
 		// Shipment Schedule
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(ShipmentScheduleHUTrxListener.instance);
+			huTrxBL.addListener(ShipmentScheduleHUTrxListener.instance);
 
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IInOutCandHandlerBL.class)
@@ -278,8 +322,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Manufacturing
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(PPOrderBOMLineHUTrxListener.instance);
+			huTrxBL.addListener(PPOrderBOMLineHUTrxListener.instance);
 		}
 
 		// Order - Fast Input

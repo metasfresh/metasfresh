@@ -164,4 +164,10 @@ public class CompositeHUTrxListener implements IHUTrxListener
 			listener.onSplitTransaction(huContext, unloadTrx, loadTrx);
 		}
 	}
+
+	@Override
+	public String toString()
+	{
+		return "CompositeHUTrxListener [listeners=" + listeners + "]";
+	}
 }

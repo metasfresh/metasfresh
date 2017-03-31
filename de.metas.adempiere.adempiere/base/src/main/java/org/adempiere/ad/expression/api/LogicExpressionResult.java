@@ -175,6 +175,11 @@ public class LogicExpressionResult
 	{
 		return !value;
 	}
+	
+	public String getName()
+	{
+		return name;
+	}
 
 	/**
 	 * @return which parameters were used while evaluating and which was their value

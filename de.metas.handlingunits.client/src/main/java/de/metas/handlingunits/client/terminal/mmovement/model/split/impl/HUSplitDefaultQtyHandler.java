@@ -227,7 +227,7 @@ import de.metas.logging.LogManager;
 		final Map<Integer, Long> includedTUCounts = handlingUnitsDAO
 				.retrieveIncludedHUs(luHU)
 				.stream()
-				.map(tu -> tu.getM_HU_PI_Version().getM_HU_PI_ID())
+				.map(tu -> handlingUnitsBL.getEffectivePIVersion(tu).getM_HU_PI_ID())
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
 		// find the M_HU_PI_ID that occurs most often

@@ -6,7 +6,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;
@@ -52,10 +54,10 @@ public class C_RfQ_Publish extends JavaProcess implements IProcessPrecondition
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_RfQ rfq = context.getModel(I_C_RfQ.class);
-		return rfqBL.isCompleted(rfq);
+		final I_C_RfQ rfq = context.getSelectedModel(I_C_RfQ.class);
+		return ProcessPreconditionsResolution.acceptIf(rfqBL.isCompleted(rfq));
 	}
 
 	@Override

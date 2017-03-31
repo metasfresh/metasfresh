@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.model.ModelColumn;
@@ -33,6 +32,21 @@ import org.adempiere.model.ModelColumn;
  */
 public class EqualsQueryFilter<T> extends CompareQueryFilter<T>
 {
+	public static final <T> EqualsQueryFilter<T> isNull(final String columnName)
+	{
+		return new EqualsQueryFilter<>(columnName, null);
+	}
+
+	public static final <T> EqualsQueryFilter<T> of(final String columnName, final Object value)
+	{
+		return new EqualsQueryFilter<>(columnName, value);
+	}
+
+	public static final <T> EqualsQueryFilter<T> of(final ModelColumn<T, ?> column, final Object value)
+	{
+		return new EqualsQueryFilter<>(column, value);
+	}
+
 	public EqualsQueryFilter(final String columnName, final Object value, final IQueryFilterModifier modifier)
 	{
 		super(columnName, Operator.EQUAL, value, modifier);
@@ -42,7 +56,7 @@ public class EqualsQueryFilter<T> extends CompareQueryFilter<T>
 	{
 		this(columnName, value, NullQueryFilterModifier.instance);
 	}
-	
+
 	public EqualsQueryFilter(final ModelColumn<T, ?> column, final Object value)
 	{
 		this(column.getColumnName(), value, NullQueryFilterModifier.instance);

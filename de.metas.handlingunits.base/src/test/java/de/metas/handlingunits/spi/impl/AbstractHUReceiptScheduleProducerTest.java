@@ -66,14 +66,13 @@ public abstract class AbstractHUReceiptScheduleProducerTest extends OrderReceipt
 	protected I_M_HU_PI piTU;
 	private I_M_HU_PI_Item_Product piTU_ItemProduct;
 
-	protected I_C_BPartner bpartner1;
 	protected I_M_Warehouse w1;
 
 	@Override
 	public void setup()
 	{
 		huTestHelper = new HUTestHelper(false);
-		huTestHelper.setInitAdempiere(false);
+		huTestHelper.setInitAdempiere(false); // the caller already inited adempiere
 		huTestHelper.init();
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -100,12 +99,11 @@ public abstract class AbstractHUReceiptScheduleProducerTest extends OrderReceipt
 		product = huTestHelper.pTomato;
 		productUOM = huTestHelper.uomKg;
 
-		bpartner1 = createBPartner("Partner1");
 		w1 = createWarehouse("Warehouse1");
 
 	}
 
-	protected void setupLUTU(
+	protected void setupLUandTUPackingInstructions(
 			final I_M_HU_PI piTUToUse,
 			final BigDecimal qtyTUsPerLU,
 			final BigDecimal qtyCUsPerTU)
@@ -170,7 +168,7 @@ public abstract class AbstractHUReceiptScheduleProducerTest extends OrderReceipt
 		orderLine.setQtyEnteredTU(qtyTUsToOrder);
 		orderLine.setC_UOM(productUOM);
 
-		InterfaceWrapperHelper.save(orderLine);
+		InterfaceWrapperHelper.save(orderLine); // this triggers *all* the stuff, including receipt schedules, HUs, allocations and assignments
 		return orderLine;
 	}
 

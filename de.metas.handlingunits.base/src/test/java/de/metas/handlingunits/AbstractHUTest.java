@@ -13,11 +13,11 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -112,8 +112,8 @@ public abstract class AbstractHUTest
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_LotNumberDate}
 	 */
 	protected I_M_Attribute attr_LotNumberDate;
-	
-	//#653
+
+	// #653
 	protected I_M_Attribute attr_LotNumber;
 
 	@BeforeClass
@@ -173,8 +173,8 @@ public abstract class AbstractHUTest
 		attr_SubProducerBPartner = helper.attr_SubProducerBPartner;
 
 		attr_LotNumberDate = helper.attr_LotNumberDate;
-		
-		//#654
+
+		// #654
 		attr_LotNumber = helper.attr_LotNumber;
 
 		uomEach = helper.uomEach;

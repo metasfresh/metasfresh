@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-28T11:26:31 -->
+<!-- 2017-02-22T15:27:16 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="dffd0ce7-f5c2-4d5c-8553-9b258e5080c6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -26,7 +28,7 @@ FROM
 	SELECT
 		null		 	as textleft,
 		CASE WHEN o.descriptionbottom IS NOT NULL
-			THEN '<br><br><br>'
+			THEN E'\n\n\n'
 			ELSE ''
 		END || dt.documentnote	as textcenter,
 		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y' AND isActive = 'Y') as language,
@@ -44,7 +46,7 @@ FROM
 	SELECT
 		null		 	as textleft,
 		CASE WHEN o.descriptionbottom IS NOT NULL
-			THEN '<br><br><br>'
+			THEN E'\n\n\n'
 			ELSE ''
 		END || dt.documentnote	as textcenter,
 		dt.ad_language		as language,
@@ -162,7 +164,7 @@ ORDER BY
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement markup="html">
+				<textElement markup="none">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $R{PaymentCond}+": ": "") +
@@ -179,7 +181,7 @@ $F{textleft}]]></textFieldExpression>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center" markup="html">
+				<textElement textAlignment="Center" markup="none">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{tag}.equals("cond") ? $R{PaymentCond}+": " : "") +

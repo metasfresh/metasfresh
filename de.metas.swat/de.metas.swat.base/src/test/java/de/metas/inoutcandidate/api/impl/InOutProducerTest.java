@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.Services;
 import org.junit.Assert;
@@ -39,7 +38,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
-		receiptGenerateResult =  Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		receiptGenerateResult = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
 
 		final boolean complete = true;
 		inOutProducer = new InOutProducer(receiptGenerateResult, complete);
@@ -197,9 +196,11 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		previousReceiptSchedule.setAD_User_ID(12);
 		receiptSchedule.setAD_User_ID(14);
+
 		previousReceiptSchedule.setAD_User_Override_ID(11);
 		receiptSchedule.setAD_User_Override_ID(10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
+
 		Assert.assertTrue(isNewRequired);
 	}
 

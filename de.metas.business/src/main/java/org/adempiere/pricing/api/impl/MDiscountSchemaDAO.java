@@ -84,26 +84,21 @@ public class MDiscountSchemaDAO implements IMDiscountSchemaDAO
 	}
 
 	@Cached(cacheName = I_M_DiscountSchemaLine.Table_Name + "#by#" + I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID)
-	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(@CacheCtx final Properties ctx, 
-			final int discountSchemaId, 
-			@CacheTrx final String trxName)
+	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(@CacheCtx final Properties ctx, final int discountSchemaId, @CacheTrx final String trxName)
 	{
-		// Find the discount breaks for the given schema
-		final IQueryBuilder<I_M_DiscountSchemaLine> queryBuilder =
-				Services.get(IQueryBL.class)
-						.createQueryBuilder(I_M_DiscountSchemaLine.class, ctx, trxName)
-						.addOnlyActiveRecordsFilter()
-						.filterByClientId()
-						.addEqualsFilter(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID, discountSchemaId);
-
-		// Order by sequence
-		queryBuilder.orderBy()
-				.addColumn(I_M_DiscountSchemaLine.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.Last);
-
-		final List<I_M_DiscountSchemaLine> lines = queryBuilder
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_DiscountSchemaLine.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.filterByClientId()
+				.addEqualsFilter(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID, discountSchemaId)
+				//
+				// Order by sequence
+				.orderBy()
+				.addColumn(I_M_DiscountSchemaLine.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.Last)
+				.addColumn(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchemaLine_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				//
 				.create()
 				.list(I_M_DiscountSchemaLine.class);
-
-		return lines;
 	}
 }

@@ -1,6 +1,7 @@
 package org.adempiere.ad.model.util;
 
 import java.util.HashSet;
+import java.util.Properties;
 
 /*
  * #%L
@@ -15,19 +16,19 @@ import java.util.HashSet;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Set;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -52,14 +53,14 @@ public class ModelCopyHelper implements IModelCopyHelper
 			.add("Updated")
 			.add("UpdatedBy")
 			.build();
-	
+
 	private final Set<String> targetColumnNamesToSkip = new HashSet<>();
 
 	@Override
 	public void copy()
 	{
-		final IModelInternalAccessor from = getFrom();
-		final IModelInternalAccessor to = getTo();
+		final IModelInternalAccessor from = getFromAccessor();
+		final IModelInternalAccessor to = getToAccessor();
 
 		for (final String columnName : to.getColumnNames())
 		{
@@ -68,9 +69,9 @@ public class ModelCopyHelper implements IModelCopyHelper
 			{
 				continue;
 			}
-			
+
 			// Skip columns which were advised to be skipped
-			if(targetColumnNamesToSkip.contains(columnName))
+			if (targetColumnNamesToSkip.contains(columnName))
 			{
 				continue;
 			}
@@ -113,6 +114,18 @@ public class ModelCopyHelper implements IModelCopyHelper
 	}
 
 	@Override
+	public <T> T copyToNew(final Class<T> modelClass)
+	{
+		final Object fromModel = getFrom();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(fromModel);
+		final T toModel = InterfaceWrapperHelper.create(ctx, modelClass, ITrx.TRXNAME_ThreadInherited);
+		setTo(toModel);
+		copy();
+
+		return toModel;
+	}
+
+	@Override
 	public IModelCopyHelper setFrom(final Object fromModel)
 	{
 		this._fromModel = fromModel;
@@ -120,14 +133,19 @@ public class ModelCopyHelper implements IModelCopyHelper
 		return this;
 	}
 
-	private final IModelInternalAccessor getFrom()
+	private final IModelInternalAccessor getFromAccessor()
 	{
 		if (_fromModelAccessor == null)
 		{
-			Check.assumeNotNull(_fromModel, "_fromModel not null");
-			_fromModelAccessor = InterfaceWrapperHelper.getModelInternalAccessor(_fromModel);
+			return InterfaceWrapperHelper.getModelInternalAccessor(getFrom());
 		}
 		return _fromModelAccessor;
+	}
+
+	private Object getFrom()
+	{
+		Check.assumeNotNull(_fromModel, "_fromModel not null");
+		return _fromModel;
 	}
 
 	@Override
@@ -138,7 +156,7 @@ public class ModelCopyHelper implements IModelCopyHelper
 		return this;
 	}
 
-	private final IModelInternalAccessor getTo()
+	private final IModelInternalAccessor getToAccessor()
 	{
 		if (_toModelAccessor == null)
 		{

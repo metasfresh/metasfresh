@@ -1,5 +1,7 @@
 package de.metas.async.spi.impl;
 
+import java.util.function.Function;
+
 /*
  * #%L
  * de.metas.async
@@ -23,7 +25,6 @@ package de.metas.async.spi.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.spi.IWorkpackagePrioStrategy;

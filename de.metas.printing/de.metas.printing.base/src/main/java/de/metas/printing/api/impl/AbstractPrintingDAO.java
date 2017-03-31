@@ -10,18 +10,17 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -63,7 +62,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
 	/** Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)} */
 	private static final ModelDynAttributeAccessor<I_C_Printing_Queue_Recipient, Boolean> DYNATTR_DisableAggregationKeyUpdate = new ModelDynAttributeAccessor<>("DisableAggregationKeyUpdate", Boolean.class);
-	
+
 	@Override
 	public Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job)
 	{
@@ -181,8 +180,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			return null;
 		}
 
-		final List<I_AD_Printer> printers = new ArrayList<I_AD_Printer>();
-		for (I_AD_Printer_Matching matching : matchings)
+		final List<I_AD_Printer> printers = new ArrayList<>();
+		for (final I_AD_Printer_Matching matching : matchings)
 		{
 			printers.add(matching.getAD_Printer());
 		}
@@ -192,7 +191,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, String hostKey, int userToPrintId)
+	public I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, final String hostKey, final int userToPrintId)
 	{
 		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Printer_Config.class, ctx)
 				.addOnlyActiveRecordsFilter();
@@ -242,8 +241,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listDistinct(I_C_Printing_Queue_Recipient.COLUMNNAME_AD_User_ToPrint_ID);
-		final List<Integer> result = new ArrayList<Integer>();
-		for (Map<String, Object> distinct : listDistinct)
+		final List<Integer> result = new ArrayList<>();
+		for (final Map<String, Object> distinct : listDistinct)
 		{
 			result.add((Integer)distinct.get(I_C_Printing_Queue_Recipient.COLUMNNAME_AD_User_ToPrint_ID));
 		}
@@ -287,7 +286,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final Boolean disabled = DYNATTR_DisableAggregationKeyUpdate.getValue(recipient);
 		return disabled != null && disabled ? false : true;
 	}
-	
+
 	@Override
 	public void setDisableAggregationKeyUpdate(final I_C_Printing_Queue_Recipient recipient)
 	{

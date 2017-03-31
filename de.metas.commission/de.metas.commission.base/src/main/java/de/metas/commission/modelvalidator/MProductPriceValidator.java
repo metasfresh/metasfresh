@@ -76,7 +76,7 @@ public class MProductPriceValidator implements ModelValidator
 			return null;
 		}
 
-		if (!po.is_ValueChanged(de.metas.adempiere.model.I_M_ProductPrice.COLUMNNAME_UseScalePrice))
+		if (!po.is_ValueChanged(I_M_ProductPrice.COLUMNNAME_UseScalePrice))
 		{
 			return null;
 		}

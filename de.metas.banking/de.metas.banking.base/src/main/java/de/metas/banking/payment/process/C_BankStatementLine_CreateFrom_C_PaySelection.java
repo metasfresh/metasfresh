@@ -10,8 +10,10 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess implements IProcessPrecondition
 {
@@ -54,14 +56,14 @@ public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess i
 	 * @return <code>true</code> if the given gridTab belongs to a bank statement that is drafted or in progress
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_BankStatement bankStatement = context.getModel(I_C_BankStatement.class);
-			return docActionBL.isStatusOneOf(bankStatement,
-					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress);
+			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(bankStatement,
+					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress));
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 }

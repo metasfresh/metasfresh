@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +31,8 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
+
+import com.google.common.base.MoreObjects;
 
 class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExecutor<ToModelType, FromModelType>
 {
@@ -42,8 +42,12 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	private final AbstractTypedQuery<FromModelType> fromQuery;
 	private final Class<FromModelType> fromModelClass;
 
+	// Mapping
 	private final Map<String, IQueryInsertFromColumn> toColumn2fromColumn = new HashMap<>();
 	private final Map<String, IQueryInsertFromColumn> toColumn2fromColumnRO = Collections.unmodifiableMap(toColumn2fromColumn);
+
+	// Options
+	private boolean createSelectionOfInsertedRows = false;
 
 	QueryInsertExecutor(final Class<ToModelType> toModelClass, final AbstractTypedQuery<FromModelType> fromQuery)
 	{
@@ -61,15 +65,22 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("toTableName", toTableName)
+				.add("fromModelClass", fromModelClass)
+				.add("fromQuery", fromQuery)
+				.add("mapping", toColumn2fromColumnRO)
+				.add("createSelectionOfInsertedRows", createSelectionOfInsertedRows ? Boolean.TRUE : null)
+				.toString();
 	}
 
 	@Override
-	public int execute()
+	public QueryInsertExecutorResult execute()
 	{
 		return fromQuery.executeInsert(this);
 	}
-
+	
 	@Override
 	public QueryInsertExecutor<ToModelType, FromModelType> mapCommonColumns()
 	{
@@ -108,36 +119,61 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 		mapColumn(toColumnName, from);
 		return this;
 	}
-	
+
+	@Override
+	public QueryInsertExecutor<ToModelType, FromModelType> mapColumnToSql(final String toColumnName, final String fromSql)
+	{
+		final IQueryInsertFromColumn from = new SqlQueryInsertFromColumn(fromSql);
+		mapColumn(toColumnName, from);
+		return this;
+	}
+
 	@Override
 	public QueryInsertExecutor<ToModelType, FromModelType> mapPrimaryKey()
 	{
-		final String toColumnName = InterfaceWrapperHelper.getKeyColumnName(toModelClass);
+		final String toColumnName = getToKeyColumnName();
 		final IQueryInsertFromColumn from = new PrimaryKeyQueryInsertFromColumn(getToTableName());
 		mapColumn(toColumnName, from);
 		return this;
+	}
+
+	@Override
+	public QueryInsertExecutor<ToModelType, FromModelType> creatingSelectionOfInsertedRows()
+	{
+		this.createSelectionOfInsertedRows = true;
+		return this;
+	}
+	
+	/* package */ boolean isCreateSelectionOfInsertedRows()
+	{
+		return createSelectionOfInsertedRows;
+	}
+
+	/* package */String getToKeyColumnName()
+	{
+		return InterfaceWrapperHelper.getKeyColumnName(toModelClass);
 	}
 
 	/**
 	 *
 	 * @return "To ColumnName" to "From Column" map
 	 */
-	public Map<String, IQueryInsertFromColumn> getColumnMapping()
+	/* package */ Map<String, IQueryInsertFromColumn> getColumnMapping()
 	{
 		return toColumn2fromColumnRO;
 	}
 
-	public boolean isEmpty()
+	/* package */ boolean isEmpty()
 	{
 		return toColumn2fromColumn.isEmpty();
 	}
 
-	public String getToTableName()
+	/* package */ String getToTableName()
 	{
 		return toTableName;
 	}
-	
-	public Class<ToModelType> getToModelClass()
+
+	/* package */ Class<ToModelType> getToModelClass()
 	{
 		return toModelClass;
 	}

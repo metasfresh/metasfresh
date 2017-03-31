@@ -26,20 +26,14 @@ package de.metas.handlingunits.callout;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.callout.OrderFastInput;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.IHUDocumentHandler;
-import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_Order;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 
 public class C_Order extends OrderFastInput
@@ -99,64 +93,13 @@ public class C_Order extends OrderFastInput
 
 	public String onMProductChange(final ICalloutField calloutField)
 	{
-		//
-		// services
-		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-
 		Check.assumeNotNull(order, "Order cannot be null");
+		
+		final I_M_Product quickInputProduct = order.getM_Product();
 
-		if (order.getC_BPartner() == null || order.getDateOrdered() == null)
-		{
-			// in case order's C_BPartner_ID or DateOrdered are null
-			// (i.e. when we just hit New to create a new order), there is no point to search for M_HU_PI_Item_Product record.
-			// Please assume M_HU_PI_Item_Product is null immediately
-
-			return CalloutEngine.NO_ERROR;
-		}
-
-		final I_M_Product product = InterfaceWrapperHelper.create(order.getM_Product(), I_M_Product.class);
-
-		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_C_Order.Table_Name);
-		if (null != handler && order.getM_Product_ID() > 0)
-		{
-			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(order);
-			// If we have a default price and it has an M_HU_PI_Item_Product, suggest it in quick entry.
-			if (null != overridePip && overridePip.getM_HU_PI_Item_Product_ID() > 0)
-			{
-				if (overridePip.isAllowAnyProduct())
-				{
-					order.setM_HU_PI_Item_Product(null);
-				}
-				else
-				{
-					order.setM_HU_PI_Item_Product(overridePip);
-				}
-				return CalloutEngine.NO_ERROR;
-			}
-		}
-
-		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(product, order.getC_BPartner(), order.getDateOrdered(),
-				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
-				true); // allowInfiniteCapacity = true
-
-		if (pip == null)
-		{
-			// nothing to do, product is not included in any Transport Units
-			return CalloutEngine.NO_ERROR;
-		}
-
-		else if (pip.isAllowAnyProduct())
-		{
-			return CalloutEngine.NO_ERROR;
-		}
-		else
-		{
-			order.setM_HU_PI_Item_Product(pip);
-		}
-
-		return CalloutEngine.NO_ERROR;
+		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, order::setM_HU_PI_Item_Product);
+		return NO_ERROR;
 	}
+	
 }

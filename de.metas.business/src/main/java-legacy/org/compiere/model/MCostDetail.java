@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,10 +28,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Cost Detail Model
@@ -87,7 +86,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.info("Deleted #" + no);
+			s_log.debug("Deleted #{}", no);
 		MCostDetail cd = get (as.getCtx(), "C_OrderLine_ID=?", 
 			C_OrderLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -122,7 +121,6 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createOrder
 
@@ -156,7 +154,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.info("Deleted #" + no);
+			s_log.debug("Deleted #{}", no);
 		MCostDetail cd = get (as.getCtx(), "C_InvoiceLine_ID=?", 
 			C_InvoiceLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -191,7 +189,6 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createInvoice
 	
@@ -225,7 +222,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.info("Deleted #" + no);
+			s_log.debug("Deleted #{}", no);
 		MCostDetail cd = get (as.getCtx(), "M_InOutLine_ID=?", 
 			M_InOutLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -261,7 +258,6 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createShipment
 	
@@ -304,7 +300,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.info("Deleted #" + no);
+			s_log.debug("Deleted #{}", no);
 		MCostDetail cd = get (as.getCtx(), "M_InventoryLine_ID=?", 
 			M_InventoryLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -339,7 +335,6 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createInventory
 	
@@ -374,7 +369,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.info("Deleted #" + no);
+			s_log.debug("Deleted #{}", no);
 		MCostDetail cd = get (as.getCtx(), "M_MovementLine_ID=? AND IsSOTrx=" 
 			+ (from ? "'Y'" : "'N'"), 
 			M_MovementLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
@@ -411,7 +406,6 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createMovement
 
@@ -444,7 +438,7 @@ public class MCostDetail extends X_M_CostDetail
 			+ " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 		int no = DB.executeUpdate(sql, trxName);
 		if (no != 0)
-			s_log.info("Deleted #" + no);
+			s_log.debug("Deleted #{}", no);
 		MCostDetail cd = get (as.getCtx(), "M_ProductionLine_ID=?", 
 			M_ProductionLine_ID, M_AttributeSetInstance_ID, as.getC_AcctSchema_ID(), trxName);
 		//
@@ -479,7 +473,6 @@ public class MCostDetail extends X_M_CostDetail
 			if (client.isCostImmediate())
 				cd.process();
 		}
-		s_log.info("(" + ok + ") " + cd);
 		return ok;
 	}	//	createProduction
 	
@@ -573,7 +566,7 @@ public class MCostDetail extends X_M_CostDetail
 			rs = null; pstmt = null;
 		}
 		
-		s_log.info("OK=" + counterOK + ", Errors=" + counterError);
+		s_log.debug("processProduct: OK={}, Errors={}", counterOK, counterError);
 		return counterError == 0;
 	}	//	processProduct
 	
@@ -771,7 +764,7 @@ public class MCostDetail extends X_M_CostDetail
 	{
 		if (isProcessed())
 		{
-			log.info("Already processed");
+			log.debug("Already processed");
 			return true;
 		}
 		boolean ok = false;
@@ -819,7 +812,7 @@ public class MCostDetail extends X_M_CostDetail
 			setProcessed(true);
 			ok = save();
 		}
-		log.info(ok + " - " + toString());
+		log.debug("processed: ok={} - {}", ok, this);
 		return ok;
 	}	//	process
 	

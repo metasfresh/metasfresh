@@ -41,14 +41,12 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.storage.HUStorageChangeEvent;
 import de.metas.handlingunits.storage.IGenericHUStorage;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.handlingunits.storage.IHUStorageListener;
 import de.metas.handlingunits.storage.IProductStorage;
 
 /* package */class HUStorage implements IHUStorage
@@ -59,8 +57,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 
 	private final IHUStorageFactory storageFactory;
 	private final IHUStorageDAO dao;
-	private final CompositeHUStorageListener listeners = new CompositeHUStorageListener();
-
+	
 	private final I_M_HU hu;
 	private final boolean virtualHU;
 
@@ -82,12 +79,6 @@ import de.metas.handlingunits.storage.IProductStorage;
 	public IHUStorageFactory getHUStorageFactory()
 	{
 		return storageFactory;
-	}
-
-	@Override
-	public void addHUStorageListener(final IHUStorageListener listener)
-	{
-		listeners.addHUStorageListener(listener);
 	}
 
 	private I_M_HU_Storage getCreateStorageLine(final I_M_Product product, final I_C_UOM uomIfNew)
@@ -163,10 +154,6 @@ import de.metas.handlingunits.storage.IProductStorage;
 		storageLine.setQty(qtyNew);
 
 		dao.save(storageLine);
-
-		//
-		// Fire listeners
-		listeners.onQtyChanged(new HUStorageChangeEvent(this, product, uomStorage, qtyOld, qtyNew));
 
 		//
 		// Roll-up
@@ -379,7 +366,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 	@Override
 	public String toString()
 	{
-		return "HUStorage [hu=" + hu + ", listeners=" + listeners + ", virtualHU=" + virtualHU + "]";
+		return "HUStorage [hu=" + hu + ", virtualHU=" + virtualHU + "]";
 	}
 
 	@Override

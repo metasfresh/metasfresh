@@ -10,18 +10,17 @@ package de.metas.async.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -49,12 +48,12 @@ import de.metas.event.IEventBusFactory;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.
- * 
+ *
  * NOTE: to prevent data coruption, this validator shall be started as last one because it will also start the queue processors (if running on server).
  * Also to make sure this case does not happen we are using a inital delay (see {@link #getInitDelayMillis()}).
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class Main extends AbstractModuleInterceptor
 {
@@ -80,18 +79,18 @@ public class Main extends AbstractModuleInterceptor
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage.Table_Name);
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Log.Table_Name);
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Param.Table_Name);
-		
+
 		// Data import (async support)
 		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(AsyncImportWorkpackageProcessor.TOPIC_RecordsImported);
-	Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
 	/**
 	 * Gets how many milliseconds to wait until to actually initialize the {@link IQueueProcessorExecutorService}.
-	 * 
+	 *
 	 * Mainly we use this delay to make sure everything else is started before the queue processors will start to process.
-	 * 
+	 *
 	 * @return how many milliseconds to wait until to actually initialize the {@link IQueueProcessorExecutorService}.
 	 */
 	private final int getInitDelayMillis()
@@ -114,6 +113,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Queue_Processor(), client);
 		engine.addModelValidator(new de.metas.lock.model.validator.Main(), client);
 		engine.addModelValidator(new C_Async_Batch(), client);
+		engine.addModelValidator(C_Queue_WorkPackage.INSTANCE, client);
 	}
 
 	/**

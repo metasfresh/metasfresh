@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -43,7 +44,7 @@ import de.metas.inout.model.I_M_QualityNote;
 {
 	//
 	// Params
-	private final IHUReceiptLinePartAttributes _attributes;
+	private final HUReceiptLinePartAttributes _attributes;
 
 	//
 	// Aggregated values
@@ -61,7 +62,7 @@ import de.metas.inout.model.I_M_QualityNote;
 	private final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 	private final transient List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocsRO = Collections.unmodifiableList(receiptScheduleAllocs);
 
-	public HUReceiptLinePartCandidate(final IHUReceiptLinePartAttributes attributes)
+	public HUReceiptLinePartCandidate(final HUReceiptLinePartAttributes attributes)
 	{
 		super();
 
@@ -119,7 +120,7 @@ import de.metas.inout.model.I_M_QualityNote;
 
 		//
 		// Shall be precisely the same attributes (i.e. M_HU_ID)
-		if (!Check.equals(getAttributes().getId(), receiptLinePart.getAttributes().getId()))
+		if (!Objects.equals(getAttributes().getId(), receiptLinePart.getAttributes().getId()))
 		{
 			return false;
 		}
@@ -142,7 +143,7 @@ import de.metas.inout.model.I_M_QualityNote;
 			return;
 		}
 
-		final IHUReceiptLinePartAttributes attributes = getAttributes();
+		final HUReceiptLinePartAttributes attributes = getAttributes();
 
 		//
 		// Qty & Quality
@@ -177,7 +178,7 @@ import de.metas.inout.model.I_M_QualityNote;
 	 * @return part attributes; never return null
 	 */
 	// package level access for testing purposes
-	IHUReceiptLinePartAttributes getAttributes()
+	HUReceiptLinePartAttributes getAttributes()
 	{
 		return _attributes;
 	}

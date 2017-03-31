@@ -26,6 +26,7 @@ import java.sql.Connection;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.function.Function;
 
 import org.adempiere.exceptions.DBException;
 
@@ -203,4 +204,9 @@ public interface ITrx
 	 * @return property's value or null
 	 */
 	<T> T getProperty(String name, Supplier<T> valueInitializer);
+
+	/**
+	 * @see #getProperty(String, Supplier)
+	 */
+	<T> T getProperty(String name, Function<ITrx, T> valueInitializer);
 }

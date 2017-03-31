@@ -40,6 +40,8 @@ public interface IConnectionCustomizerService extends ISingletonService
 	 * Its {@link AutoCloseable#close()} method will remove the customizer from the list and invoke {@link ITemporaryConnectionCustomizer#undoCustomization()}.
 	 * <p>
 	 * Hint: use this method within a <code>try</code>-with-resources statement.
+	 * <p>
+	 * <b>Important:</b> as always, the registered customizer will only influence <i>future</i> transactions, not the ones that are already open!
 	 *
 	 * @param connectionCustomizer
 	 * @return

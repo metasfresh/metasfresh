@@ -27,10 +27,10 @@ import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 

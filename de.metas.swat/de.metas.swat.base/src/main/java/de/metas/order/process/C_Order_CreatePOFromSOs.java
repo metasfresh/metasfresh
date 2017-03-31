@@ -15,7 +15,9 @@ import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -30,11 +32,11 @@ import de.metas.process.JavaProcess;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -131,16 +133,21 @@ public class C_Order_CreatePOFromSOs
 	 * @return <code>true</code> if the given gridTab is a completed sales order.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!I_C_Order.Table_Name.equals(context.getTableName()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final I_C_Order order = context.getModel(I_C_Order.class);
-		return order.isSOTrx()
-				&& DocAction.STATUS_Completed.equals(order.getDocStatus());
+		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+		if (order == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
+		}
+
+		return ProcessPreconditionsResolution.acceptIf(order.isSOTrx()
+				&& DocAction.STATUS_Completed.equals(order.getDocStatus()));
 	}
 
 }

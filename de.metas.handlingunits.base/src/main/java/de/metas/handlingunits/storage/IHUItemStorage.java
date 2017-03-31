@@ -13,15 +13,14 @@ package de.metas.handlingunits.storage;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,6 +34,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 
 /**
  * HU Item Storage
@@ -55,9 +55,15 @@ public interface IHUItemStorage extends IGenericHUStorage
 	@Override
 	IHUStorage getParentStorage();
 
+	/**
+	 * Retrieve or create the underlying {@link I_M_HU_Item_Storage} and add the given quantity to it.
+	 */
 	@Override
 	void addQty(I_M_Product product, BigDecimal qty, I_C_UOM uom);
 
+	/**
+	 * Retrieve the underlying {@link I_M_HU_Item_Storage} (if there is any) and return its quantity (or zero).
+	 */
 	@Override
 	BigDecimal getQty(I_M_Product product, I_C_UOM uom);
 
@@ -95,14 +101,38 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * @param product
 	 * @param uom
 	 * @param date
+	 * 
 	 * @return available capacity
 	 */
 	IHUCapacityDefinition getAvailableCapacity(I_M_Product product, I_C_UOM uom, Date date);
 
+	/**
+	 * 
+	 * @param request
+	 * 
+	 * @return the given <code>request</code>, if <code>this</code> storage instance is big enough for it.
+	 *         IF the requested quantity exceeds this storage's capacity, then return a new "smaller" request.
+	 * 
+	 * @see #getAvailableCapacity(I_M_Product, I_C_UOM, Date)
+	 */
 	IAllocationRequest requestQtyToAllocate(IAllocationRequest request);
 
+	/**
+	 * Similar to {@link #requestQtyToAllocate(IAllocationRequest)}, but the returned request's quantity does not depend on the capacity of a destination storage, but one the actual contend of a source storage.
+	 * 
+	 * @param request
+	 * @return
+	 * 
+	 * @see #getQty(I_M_Product, I_C_UOM)
+	 */
 	IAllocationRequest requestQtyToDeallocate(IAllocationRequest request);
 
+	/**
+	 * Decides if a new child-HU can be created and attached to this instance's {@link I_M_HU_Item}. This usually depends on the capacity of the items own "parent" HU.
+	 * If another HU can be created, then also this instance's {@code huCount} as returned by {@link #getHUCount()} is increased.
+	 * 
+	 * @return {@code true} if a new HU can be created.
+	 */
 	boolean requestNewHU();
 
 	boolean releaseHU(I_M_HU hu);

@@ -1,6 +1,5 @@
 package de.metas.process;
 
-import org.compiere.model.GridField;
 import org.compiere.model.Null;
 
 /*
@@ -38,8 +37,6 @@ public interface IProcessDefaultParametersProvider
 
 	/**
 	 * Gets process parameter's default value.
-	 * <p>
-	 * Note: we could consider to pass a dedicated object to the method, not the full {@link GridField}. See {@link ISvrProcessPrecondition#isPreconditionApplicable(org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext)}.
 	 *
 	 * @param parameter
 	 * @return
@@ -47,8 +44,8 @@ public interface IProcessDefaultParametersProvider
 	 *         <li>not null value
 	 *         <li>{@link Null#NULL} to specify that we provide a null value
 	 *         <li>{@link #DEFAULT_VALUE_NOTAVAILABLE} to advice the caller that we don't have a default value for given parameter and the caller can search forward in other places.
-	 *         <li>Important: if the field is a lookup field (table, search etc), then the calles expects an integer <b>ID</b>, not the actual model.
+	 *         <li>Important: if the field is a lookup field (table, search etc), then the callers expects an integer <b>ID</b>, not the actual model.
 	 *         </ul>
 	 */
-	Object getParameterDefaultValue(final GridField parameter);
+	Object getParameterDefaultValue(final IProcessDefaultParameter parameter);
 }

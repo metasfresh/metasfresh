@@ -47,8 +47,10 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.api.IShipperDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
@@ -88,11 +90,11 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	private I_M_Shipper shipper;
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		// task 06058: if the document is processed, we not allowed to run this process
-		final I_M_ShipperTransportation shipperTransportation = context.getModel(I_M_ShipperTransportation.class);
-		return !shipperTransportation.isProcessed();
+		final I_M_ShipperTransportation shipperTransportation = context.getSelectedModel(I_M_ShipperTransportation.class);
+		return ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed());
 	}
 
 	@Override

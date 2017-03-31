@@ -13,11 +13,11 @@ package de.metas.ordercandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -50,6 +52,7 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
@@ -61,13 +64,13 @@ import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReference;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_C_Order;
@@ -76,11 +79,9 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
-
 import ch.qos.logback.classic.Level;
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -101,8 +102,8 @@ import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAttributeAware;
-import de.metas.pricing.attributebased.ProductPriceAttributeAware;
+import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.product.IProductPA;
 import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
@@ -127,7 +128,7 @@ public class OLCandBL implements IOLCandBL
 			final String trxName)
 	{
 		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
-		
+
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
 		// but I'm afraid that grouping by time - granularity is not really portable. Also there might be other
 		// granularity levels, that can't be put into an sql later on.
@@ -135,13 +136,21 @@ public class OLCandBL implements IOLCandBL
 		//
 		// 1. Get the ol-candidates to process (using relation)
 		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
-		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance
+				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
+
+		if (allCandidates.isEmpty())
+		{
+			loggable.addLog("Found no order candidates for relationTypeInternalName={}; nothing to do", relationTypeInternalName);
+			return;
+		}
+
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
-				
+
 		if (orderCandidates.isEmpty())
 		{
-			loggable.addLog("Found no Orders candidates; nothing to do");
+			loggable.addLog("Found no candidates for relation type with internalName={}; nothing to do", relationTypeInternalName);
 			return;
 		}
 
@@ -149,11 +158,11 @@ public class OLCandBL implements IOLCandBL
 
 		if (candidates.isEmpty())
 		{
-			loggable.addLog("Found no unprocessed candidates; nothing to do");
+			loggable.addLog("Found no unprocessed and valid candidates; nothing to do");
 			return;
 		}
 
-		loggable.addLog("Processing " + candidates.size() + " order line candidates");
+		loggable.addLog("Processing {} order line candidates", candidates.size());
 
 		//
 		// 2. Order the candidates
@@ -242,15 +251,16 @@ public class OLCandBL implements IOLCandBL
 					final String msg = "Caught exception while processing {}; message={}; exception={}";
 					Loggables.get().addLog(msg, candOfGroup, e.getLocalizedMessage(), e);
 					logger.warn(StringUtils.formatMessage(msg, candOfGroup, e.getLocalizedMessage(), e), e);
-					
+
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+					final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 					// storing the error-info out of trx, i hope this solves the bug that the info just wasn't there
 					final int userInChargeId = processor.getAD_User_InCharge_ID();
 					final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, ITrx.TRXNAME_None);
 					note.setRecord(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name), candOfGroup.getC_OLCand_ID());
 
-					final MUser user = MUser.get(ctx, userInChargeId);
+					final I_AD_User user = userDAO.retrieveUser(ctx, userInChargeId);
 					note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 
 					note.setTextMsg(e.getLocalizedMessage());
@@ -306,7 +316,7 @@ public class OLCandBL implements IOLCandBL
 				final String msg = "Caught exception while completing {}; message={}; exception={}";
 				Loggables.get().addLog(msg, order, e.getLocalizedMessage(), e);
 				logger.warn(StringUtils.formatMessage(msg, order, e.getLocalizedMessage(), e), e);
-				
+
 				final StringBuilder sb = new StringBuilder();
 				boolean first = true;
 				int counter = 0;
@@ -330,7 +340,9 @@ public class OLCandBL implements IOLCandBL
 				final int userInChargeId = processor.getAD_User_InCharge_ID();
 				final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, trxName);
 
-				final MUser user = MUser.get(ctx, userInChargeId);
+				final IUserDAO userDAO = Services.get(IUserDAO.class);
+				final I_AD_User user = userDAO.retrieveUser(ctx, userInChargeId);
+
 				note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 
 				note.setReference(e.getLocalizedMessage());
@@ -441,7 +453,7 @@ public class OLCandBL implements IOLCandBL
 		final IAttributeSetInstanceAware orderLineASIAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(resultOrderLinePO);
 		Check.assumeNotNull(orderLineASIAware, "We can allways obtain a not-null ASI aware for C_OrderLine {} ", resultOrderLine);
 
-		final Optional<IProductPriceAttributeAware> ppaAware = ProductPriceAttributeAware.ofModel(candToProcess);
+		final Optional<IProductPriceAware> ppaAware = ProductPriceAware.ofModel(candToProcess);
 		Services.get(IAttributePricingBL.class).setDynAttrProductPriceAttributeAware(orderLineASIAware, ppaAware);
 
 		InterfaceWrapperHelper.save(resultOrderLine);
@@ -564,13 +576,14 @@ public class OLCandBL implements IOLCandBL
 	{
 		Check.assumeNotNull(olCand, "Param 'olCand' not null");
 
+		final int result;
 		if (olCand.getM_PricingSystem_ID() > 0)
 		{
-			return olCand.getM_PricingSystem_ID();
+			result = olCand.getM_PricingSystem_ID();
 		}
 		else if (processor != null && processor.getM_PricingSystem_ID() > 0)
 		{
-			return processor.getM_PricingSystem_ID();
+			result = processor.getM_PricingSystem_ID();
 		}
 		else
 		{
@@ -581,8 +594,10 @@ public class OLCandBL implements IOLCandBL
 			final boolean soTrx = true;
 
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctx, bpartnerID, soTrx, trxName);
-			return pricingSystemId;
+			result = pricingSystemId;
 		}
+
+		return result;
 	}
 
 	/**
@@ -613,7 +628,7 @@ public class OLCandBL implements IOLCandBL
 		// We keep this block for the time being because as of now we did not make sure that the aggAndOrderList is complete to ensure that all
 		// C_OLCands with different C_Order-"header"-columns will be split into different orders (think of e.g. C_OLCands with different currencies).
 		if (previousCandidate.getAD_Org_ID() != candidate.getAD_Org_ID()
-				|| !Check.equals(previousCandidate.getPOReference(), candidate.getPOReference())
+				|| !Objects.equals(previousCandidate.getPOReference(), candidate.getPOReference())
 				|| previousCandidate.getC_Currency_ID() != candidate.getC_Currency_ID()
 				|| effectiveValuesBL.getC_BPartner_Effective_ID(previousCandidate) != effectiveValuesBL.getC_BPartner_Effective_ID(candidate)
 				|| effectiveValuesBL.getC_BP_Location_Effective_ID(previousCandidate) != effectiveValuesBL.getC_BP_Location_Effective_ID(candidate)
@@ -622,11 +637,11 @@ public class OLCandBL implements IOLCandBL
 				|| effectiveValuesBL.getBill_Location_Effective_ID(previousCandidate) != effectiveValuesBL.getBill_Location_Effective_ID(candidate)
 				|| effectiveValuesBL.getBill_User_Effective_ID(previousCandidate) != effectiveValuesBL.getBill_User_Effective_ID(candidate)
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
-				|| !Check.equals(effectiveValuesBL.getDatePromised_Effective(previousCandidate), effectiveValuesBL.getDatePromised_Effective(candidate))
-				|| !Check.equals(effectiveValuesBL.getHandOver_Partner_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
-				|| !Check.equals(effectiveValuesBL.getHandOver_Location_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
-				|| !Check.equals(effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
-				|| !Check.equals(effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getDatePromised_Effective(previousCandidate), effectiveValuesBL.getDatePromised_Effective(candidate))
+				|| !Objects.equals(effectiveValuesBL.getHandOver_Partner_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getHandOver_Location_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
 				|| getPricingSystemId(ctx, previousCandidate, processor, trxName) != getPricingSystemId(ctx, candidate, processor, trxName))
 		{
 			return true;
@@ -641,7 +656,7 @@ public class OLCandBL implements IOLCandBL
 
 			final Object value = getValueByColumnId(processor, candidate, aggAndOrder);
 			final Object previousValue = getValueByColumnId(processor, previousCandidate, aggAndOrder);
-			if (!Check.equals(value, previousValue))
+			if (!Objects.equals(value, previousValue))
 			{
 				return true;
 			}
@@ -890,7 +905,6 @@ public class OLCandBL implements IOLCandBL
 		return I_C_OLCandProcessor.Table_Name + "_" + processor.getC_OLCandProcessor_ID() + "<=>" + I_C_OLCand.Table_Name;
 	}
 
-
 	/**
 	 * Returns a list containing only those input candidates which have Processed='N' and Error='N'.
 	 *
@@ -905,6 +919,7 @@ public class OLCandBL implements IOLCandBL
 		{
 			if (cand.isProcessed() || cand.isError())
 			{
+				logger.debug("Skipping C_OLCand with Processed={} and IsError={}; cand={}", cand.isProcessed(), cand.isError(), cand);
 				continue;
 			}
 			result.add(cand);
@@ -913,7 +928,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	/**
-	 * Returns a list containing only those input candidates which have destination Orders
+	 * Returns a list containing only those input candidates which have no error and {@link I_C_OLCand#COLUMNNAME_AD_DataDestination_ID} pointing to {@link OrderCandidate_Constants#DATA_DESTINATION_INTERNAL_NAME}.
 	 *
 	 * @param ctx
 	 * @param cands
@@ -924,12 +939,11 @@ public class OLCandBL implements IOLCandBL
 	{
 		final List<I_C_OLCand> result = new ArrayList<I_C_OLCand>();
 
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
-						ctx,
-						OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
-						true, // throwEx
-						ITrx.TRXNAME_None);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
+				ctx,
+				OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
+				true, // throwEx
+				ITrx.TRXNAME_None);
 
 		final int processorDataDestinationId = dataDest.getAD_InputDataSource_ID();
 
@@ -940,6 +954,8 @@ public class OLCandBL implements IOLCandBL
 			if (!isValidDataDestination(processorDataDestinationId, cand.getAD_DataDestination_ID())
 					|| isImportedWithIssues(cand))
 			{
+				logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} and IsImportedWithIssues={}; cand={}",
+						processorDataDestinationId, cand.getAD_DataDestination_ID(), cand);
 				continue;
 			}
 			result.add(cand);
@@ -975,8 +991,7 @@ public class OLCandBL implements IOLCandBL
 		model.setRecordSourceId(processor.getC_OLCandProcessor_ID());
 
 		// filter by AD_DataDestination_ID
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
 
 		if (!Check.isEmpty(whereClause, true))
 		{
@@ -999,8 +1014,7 @@ public class OLCandBL implements IOLCandBL
 				(sourceTabName == null ? "" : sourceTabName + " ")
 						+ processor.getName()
 						+ "<=>"
-						+ olCandTable.getName()
-				);
+						+ olCandTable.getName());
 
 		return model;
 	}
@@ -1062,6 +1076,7 @@ public class OLCandBL implements IOLCandBL
 		}
 		else
 		{
+
 			relType = retrievedRelType;
 			refSource = relType.getAD_Reference_Source();
 			refTableSource = MReference.retrieveRefTable(ctx, refSource.getAD_Reference_ID(), trxName);
@@ -1082,7 +1097,10 @@ public class OLCandBL implements IOLCandBL
 		final String[] keyColumnsSource = tableSource.getKeyColumns();
 		Check.assume(keyColumnsSource.length == 1, "keyColumnsSource=" + keyColumnsSource + " has one element");
 
-		final int keyColumnSourceId = tableSource.getColumn(keyColumnsSource[0]).get_ID();
+		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
+		final I_AD_Column keyColumnSource = tableDAO.retrieveColumnOrNull(tableSource.get_TableName(), keyColumnsSource[0]);
+		final int keyColumnSourceId = keyColumnSource.getAD_Column_ID();
 		refTableSource.setAD_Key(keyColumnSourceId);
 		refTableSource.setAD_Display(keyColumnSourceId);
 
@@ -1097,7 +1115,8 @@ public class OLCandBL implements IOLCandBL
 		final String[] keyColumnsTarget = tableTarget.getKeyColumns();
 		assert keyColumnsTarget.length == 1;
 
-		final int keyColumnTargetId = tableTarget.getColumn(keyColumnsTarget[0]).get_ID();
+		final I_AD_Column keyColumnTarget = tableDAO.retrieveColumnOrNull(tableSource.get_TableName(), keyColumnsSource[0]);
+		final int keyColumnTargetId = keyColumnTarget.getAD_Column_ID();
 		refTableTarget.setAD_Key(keyColumnTargetId);
 		refTableTarget.setAD_Display(keyColumnTargetId);
 
@@ -1260,10 +1279,7 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl =
-					InterfaceWrapperHelper.create(
-							productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName),
-							I_M_PriceList.class);
+			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName);
 
 			if (pl == null)
 			{

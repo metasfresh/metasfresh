@@ -1,11 +1,11 @@
 package de.metas.fresh.setup.process;
 
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.GridField;
 import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -41,7 +41,7 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 	private ClientSetup _clientSetup;
 
 	@Override
-	public Object getParameterDefaultValue(final GridField field)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter field)
 	{
 		final String name = field.getColumnName();
 

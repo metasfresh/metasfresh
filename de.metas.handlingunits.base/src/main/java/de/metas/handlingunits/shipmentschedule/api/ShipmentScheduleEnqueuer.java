@@ -23,6 +23,7 @@ package de.metas.handlingunits.shipmentschedule.api;
  */
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -35,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -153,6 +153,7 @@ public class ShipmentScheduleEnqueuer
 
 		if (!shipmentSchedules.hasNext())
 		{
+			// TODO: the the query which was used to understand why there were no results
 			throw new AdempiereException("@NoSelection@");
 		}
 
@@ -181,7 +182,7 @@ public class ShipmentScheduleEnqueuer
 			//
 			// Check if we shall close our current workpackage (if any)
 			final String headerAggregationKey = shipmentSchedule.getHeaderAggregationKey();
-			if (!Check.equals(headerAggregationKey, lastHeaderAggregationKey))
+			if (!Objects.equals(headerAggregationKey, lastHeaderAggregationKey))
 			{
 				handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
 				workpackageBuilder = null;

@@ -29,7 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 

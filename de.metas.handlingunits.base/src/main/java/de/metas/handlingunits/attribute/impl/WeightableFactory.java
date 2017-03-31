@@ -39,10 +39,10 @@ public class WeightableFactory implements IWeightableFactory
 {
 	//
 	// Weight related M_Attribute.Value(s)
-	private static final String ATTR_WeightGross_Value = "WeightGross";
-	private static final String ATTR_WeightNet_Value = "WeightNet";
-	private static final String ATTR_WeightTare_Value = "WeightTare";
-	private static final String ATTR_WeightTareAdjust_Value = "WeightTareAdjust";
+	public static final String ATTR_WeightGross_Value = "WeightGross";
+	public static final String ATTR_WeightNet_Value = "WeightNet";
+	public static final String ATTR_WeightTare_Value = "WeightTare";
+	public static final String ATTR_WeightTareAdjust_Value = "WeightTareAdjust";
 
 	/** true if this factory is initialized */
 	private boolean initialized = false;

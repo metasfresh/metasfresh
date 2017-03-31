@@ -26,20 +26,16 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.JLabel;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.GridField;
@@ -47,14 +43,15 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Sets;
 
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 /* package */abstract class AbstractPaymentForm
 {
@@ -199,7 +196,7 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 
 	protected final void setDate(final Timestamp value)
 	{
-		if (Check.equals(this._date, value))
+		if (Objects.equals(this._date, value))
 		{
 			return;
 		}

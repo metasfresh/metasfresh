@@ -40,7 +40,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.allocation.builder.impl.LUTUAssignBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUAssignBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;

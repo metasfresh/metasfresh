@@ -13,23 +13,25 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -46,7 +48,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -62,20 +64,50 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	protected static final BigDecimal CU_QTY_46 = BigDecimal.valueOf(46);
 
 	protected I_M_HU_PI huDefPalet;
+
+	/**
+	 * Included-HU item to link {@link #huDefIFCO_10} with {@link #huDefPalet}. 88 of those IFCOs fit on one palet.
+	 */
+
 	protected I_M_HU_PI_Item huItemIFCO_10;
 	protected I_M_HU_PI_Item huItemIFCO_5;
+
+	/**
+	 * Included-HU item to link {@link #huDefIFCO_2} with {@link #huDefPalet}. 88 of those IFCOs fit on one palet.
+	 */
 	protected I_M_HU_PI_Item huItemIFCO_2;
 
+	/**
+	 * PI for IFCO, one of these IFCOs can hold 10kg tomato
+	 */
 	protected I_M_HU_PI huDefIFCO_10;
 	protected I_M_HU_PI_Item materialItemTomato_10;
+
+	/**
+	 * HU PI Item that sais that 10kg of tomato fit onto one {@link #huDefIFCO_10}.
+	 */
 	protected I_M_HU_PI_Item_Product materialItemProductTomato_10;
 
+	/**
+	 * PI for IFCO, one of these IFCOs can hold 5kg tomato
+	 */
 	protected I_M_HU_PI huDefIFCO_5;
 	protected I_M_HU_PI_Item materialItemTomato_5;
+
+	/**
+	 * HU PI Item that sais that 5kg of tomato fit onto one {@link #huDefIFCO_5}.
+	 */
 	protected I_M_HU_PI_Item_Product materialItemProductTomato_5;
 
+	/**
+	 * PI for IFCO, one of these IFCOs can hold 2kg tomato
+	 */
 	protected I_M_HU_PI huDefIFCO_2;
 	protected I_M_HU_PI_Item materialItemTomato_2;
+
+	/**
+	 * HU PI Item that sais that 2kg of tomato fit onto one {@link #huDefIFCO_2}.
+	 */
 	protected I_M_HU_PI_Item_Product materialItemProductTomato_2;
 
 	protected I_M_HU_PI huDefPaloxe_430;
@@ -97,8 +129,8 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	{
 		//
 		// Prepare context
-		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
-
+		// final String trxName = helper.trxName; // use the helper's thread-inherited trxName
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		huContext = helper.createMutableHUContextForProcessing(trxName);
 		huStorageFactory = huContext.getHUStorageFactory();
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -199,11 +231,20 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 
 		//
 		// Create and destroy instances only with an I_M_Transaction
-		final List<I_M_HU> loadingUnits = helper.createHUs(huContext, luProducerDestination, cuQty);
+		final List<I_M_HU> loadingUnits = new ArrayList<>();
+		// Services.get(ITrxManager.class).run(new TrxRunnable()
+		// {
+		// @Override
+		// public void run(String localTrxName) throws Exception
+		// {
+		// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+		loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
+		// }
+		// });
 
 		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
 		final I_M_HU loadingUnit = loadingUnits.get(0);
-
+		// HUXmlConverter.toString(HUXmlConverter.toXml(loadingUnit));
 		//
 		// Propagate WeightGross (this will also calculate Net); Net = Gross - Tare - TareAdjust
 		final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(loadingUnit);
@@ -290,20 +331,15 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	protected final I_M_HU findTUInLUWithQty(final I_M_HU loadingUnit, final int customerUnitQty)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
 		// Iterate through the loadingUnit's items
-		final List<I_M_HU_Item> luItems = handlingUnitsDAO.retrieveItems(loadingUnit);
+		final List<I_M_HU_Item> luItems = handlingUnitsDAO.retrieveItems(loadingUnit).stream()
+				.filter(item -> X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(item.getItemType()) || X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
+				.collect(Collectors.toList());
+
 		for (final I_M_HU_Item luItem : luItems)
 		{
-			// We only have one item with handling unit Item Type
-			final String itemType = handlingUnitsBL.getItemType(luItem);
-			if (!X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
-			{
-				continue;
-			}
-
 			//
 			// Iterate through the tradingUnits
 			final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luItem);
@@ -319,10 +355,21 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 				return tuHU;
 			}
 		}
-
-		throw new AdempiereException("Storage not found with desired qty {} in {}", new Object[] { customerUnitQty, loadingUnit });
+		Check.errorIf(true, "Storage not found with desired qty {} in {}", customerUnitQty, loadingUnit);
+		return null;
 	}
 
+	/**
+	 * 
+	 * @param luToSplit
+	 * @param luPIItem
+	 * @param tuPIItem
+	 * @param cuQty the qty to split, but note that the qty that is actually split is also limited by {@code cuPerTU}, {@code tuPerLU} and {@code maxLUToAllocate}
+	 * @param cuPerTU
+	 * @param tuPerLU
+	 * @param maxLUToAllocate
+	 * @return
+	 */
 	protected final List<I_M_HU> splitLU(final I_M_HU luToSplit,
 			final I_M_HU_PI_Item luPIItem,
 			final I_M_HU_PI_Item tuPIItem,
@@ -334,10 +381,22 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final I_M_Product cuProduct = getCUProduct();
 		final I_C_UOM cuUOM = getCUUOM();
 
-		return helper.splitHUs(huContext,
-				luToSplit,
-				cuProduct, cuQty, cuUOM,
-				cuPerTU, tuPerLU, maxLUToAllocate,
-				tuPIItem, luPIItem);
+		final List<I_M_HU> loadingUnits = new ArrayList<>();
+		// Services.get(ITrxManager.class).run(new TrxRunnable()
+		// {
+		// @Override
+		// public void run(String localTrxName) throws Exception
+		// {
+		// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+		loadingUnits.addAll(
+				helper.splitHUs(
+						huContext,
+						luToSplit,
+						cuProduct, cuQty, cuUOM,
+						cuPerTU, tuPerLU, maxLUToAllocate,
+						tuPIItem, luPIItem));
+		// }
+		// });
+		return loadingUnits;
 	}
 }

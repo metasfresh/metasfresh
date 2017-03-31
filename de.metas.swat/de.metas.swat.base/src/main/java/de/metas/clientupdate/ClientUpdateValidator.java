@@ -141,7 +141,8 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 		final String clientVersion = Adempiere.getImplementationVersion();
 		Check.assumeNotNull(clientVersion, "Adempiere.getImplementationVersion() is not null");
 		if (clientVersion.endsWith(CLIENT_VERSION_UNPROCESSED)
-				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
+				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD)
+				|| clientVersion.endsWith(Adempiere.CLIENT_BRANCH_LOCAL_BUILD))
 		{
 			log.info("Adempiere ImplementationVersion=" + clientVersion + "! Not checking against DB");
 			return;

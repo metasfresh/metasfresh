@@ -34,12 +34,12 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
 
 /**

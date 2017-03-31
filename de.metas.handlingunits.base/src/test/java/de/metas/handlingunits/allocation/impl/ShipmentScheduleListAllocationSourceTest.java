@@ -158,7 +158,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		//
 		// Allocation Destination: IFCO hu producer
-		final HUProducerDestination destination = new HUProducerDestination(huDefIFCO);
+		final HUProducerDestination destination = HUProducerDestination.of(huDefIFCO);
 
 		//
 		// Allocation Request
@@ -166,8 +166,8 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		//
 		// Execute HU Load
-		final HULoader loader = new HULoader(source, destination);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(source, destination)
+				.load(request);
 		// NOTE: transactions are already processed at this point
 
 		Assert.assertTrue("Request shall be completelly allocated: " + result, result.isCompleted());

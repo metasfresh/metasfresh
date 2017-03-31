@@ -1,5 +1,7 @@
 package org.adempiere.util.net;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * de.metas.util
@@ -28,7 +30,7 @@ package org.adempiere.util.net;
  * <p>
  * <b>IMPORTANT:</b> Neither value may be <code>null</code>.
  */
-public interface IHostIdentifier
+public interface IHostIdentifier extends Serializable
 {
 
 	String getIP();

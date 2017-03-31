@@ -13,6 +13,9 @@
 	<artifactId>de.metas.commission.base</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<migration-sql-basedir>50-de.metas.commission</migration-sql-basedir>
+	</properties>
 
 	<dependencies>
 

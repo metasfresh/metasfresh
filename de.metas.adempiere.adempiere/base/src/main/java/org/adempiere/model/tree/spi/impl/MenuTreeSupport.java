@@ -16,11 +16,11 @@ package org.adempiere.model.tree.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,7 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -45,7 +44,7 @@ import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+import org.compiere.util.Language;
 
 /**
  * @author tsa
@@ -53,24 +52,30 @@ import org.compiere.util.Env;
  */
 public class MenuTreeSupport extends DefaultPOTreeSupport
 {
+	private static final String SQL_WindowMainTableName = "select t.TableName"
+			+ " from AD_Tab tt"
+			+ " inner join AD_Table t on (t.AD_Table_ID=tt.AD_Table_ID)"
+			+ " where tt.AD_Window_ID=AD_Menu.AD_Window_ID"
+			+ " and tt.IsActive='Y' and t.IsActive='Y'"
+			+ " and tt.TabLevel=0"
+			+ " order by tt.SeqNo"
+			+ " limit 1";
+
 	@Override
 	public String getNodeInfoSelectSQL(final MTree tree, final List<Object> sqlParams)
 	{
-		final Properties ctx = tree.getCtx();
-
 		final StringBuilder sqlDeveloperMode = new StringBuilder();
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			sqlDeveloperMode
-					.append("\n, (select min(t.TableName) from AD_Tab tt inner join AD_Table t on (t.AD_Table_ID=tt.AD_Table_ID) where tt.AD_Window_ID=AD_Menu.AD_Window_ID and tt.SeqNo=10 and tt.IsActive='Y') as AD_Window_TableName");
 			sqlDeveloperMode.append("\n, (select coalesce(process.JasperReport, process.Classname) from AD_Process process where process.AD_Process_ID=AD_Menu.AD_Process_ID) as AD_Process_ClassName");
 			sqlDeveloperMode.append("\n, (select form.Classname from AD_Form form where form.AD_Form_ID=AD_Menu.AD_Form_ID) as AD_Form_ClassName");
 			sqlDeveloperMode.append("\n");
 		}
 
+		final String adLanguage = tree.getAD_Language();
+		final boolean isBaseLanguage = Language.isBaseLanguage(adLanguage);
 		final StringBuilder sql = new StringBuilder();
-		final boolean base = Env.isBaseLanguage(ctx, "AD_Menu");
-		if (base)
+		if (isBaseLanguage)
 		{
 			sql.append("SELECT AD_Menu.AD_Menu_ID AS Node_ID"
 					+ ", AD_Menu.Name"
@@ -80,10 +85,11 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ ", NULL AS " + COLUMNNAME_PrintColor
 					+ ", AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID"
 					+ ", AD_Menu.InternalName "
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameNew
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_IsCreateNew
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb
+					+ "\n, (" + SQL_WindowMainTableName + ") as AD_Window_TableName "
 					+ " " + sqlDeveloperMode
 					+ "\n FROM AD_Menu ");
 		}
@@ -97,17 +103,18 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ ", NULL AS " + COLUMNNAME_PrintColor
 					+ ", AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID"
 					+ ", AD_Menu.InternalName "
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
 					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameNew
 					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb
+					+ "\n, (" + SQL_WindowMainTableName + ") as AD_Window_TableName "
 					+ " " + sqlDeveloperMode
 					+ "\n FROM AD_Menu, AD_Menu_Trl t");
 		}
 		sql.append(" WHERE 1=1 ");
-		if (!base)
+		if (!isBaseLanguage)
 		{
-			sql.append("\n AND AD_Menu.AD_Menu_ID=t.AD_Menu_ID AND t.AD_Language=").append(DB.TO_STRING(Env.getAD_Language(ctx)));
+			sql.append("\n AND AD_Menu.AD_Menu_ID=t.AD_Menu_ID AND t.AD_Language=").append(DB.TO_STRING(adLanguage));
 		}
 		if (!tree.isEditable())
 		{
@@ -195,7 +202,8 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final String webuiNameBrowse = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse);
 		final String webuiNameNew = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNew);
 		final String webuiNameNewBreadcrumb = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb);
-		
+		final String windowMainTableName = rs.getString("AD_Window_TableName"); // table name of first window tab
+
 		info.setAD_Window_ID(AD_Window_ID);
 		info.setAD_Process_ID(AD_Process_ID);
 		info.setAD_Form_ID(AD_Form_ID);
@@ -205,6 +213,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		info.setWEBUI_NameBrowse(webuiNameBrowse);
 		info.setWEBUI_NameNew(webuiNameNew);
 		info.setWEBUI_NameNewBreadcrumb(webuiNameNewBreadcrumb);
+		info.setMainTableName(windowMainTableName);
 
 		if (info.getAllowsChildren() || action == null)
 		{
@@ -226,10 +235,9 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
-				final String tableName = rs.getString("AD_Window_TableName"); // table name of first window tab
-				if (!Check.isEmpty(tableName, true))
+				if (!Check.isEmpty(windowMainTableName, true))
 				{
-					info.setName(info.getName() + " (" + tableName + ")");
+					info.setName(info.getName() + " (" + windowMainTableName + ")");
 				}
 			}
 		}
@@ -286,7 +294,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		{
 			return null;
 		}
-		
+
 		return info;
 	}
 }

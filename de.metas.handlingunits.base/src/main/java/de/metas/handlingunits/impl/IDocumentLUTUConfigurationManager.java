@@ -24,8 +24,7 @@ package de.metas.handlingunits.impl;
 
 
 import java.util.List;
-
-import org.adempiere.util.collections.Converter;
+import java.util.function.Function;
 
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
@@ -34,6 +33,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 /**
  * Interface used to manage (create, update, edit etc) the LU/TU configuration of a particular document line.
+ * 
+ * Under the hood, it uses {@link IDocumentLUTUConfigurationHandler}.
  *
  * @author tsa
  *
@@ -49,7 +50,7 @@ public interface IDocumentLUTUConfigurationManager
 	 * @param lutuConfigurationEditor
 	 * @return
 	 */
-	I_M_HU_LUTU_Configuration createAndEdit(final Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> converter);
+	I_M_HU_LUTU_Configuration createAndEdit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> converter);
 
 	/**
 	 * Gets current LU/TU configuration if exists. If not, a new one is created but is not set back to underlying document line.
@@ -68,17 +69,9 @@ public interface IDocumentLUTUConfigurationManager
 	List<I_M_HU_LUTU_Configuration> getCurrentLUTUConfigurationAlternatives();
 
 	/**
+	 * Sets given configuration to underlying document line and save that line.
 	 *
 	 * @param lutuConfiguration
-	 * @see IDocumentLUTUConfigurationHandler#setCurrentLUTUConfiguration(Object, I_M_HU_LUTU_Configuration)
-	 */
-	void setCurrentLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
-
-	/**
-	 * Same as {@link #setCurrentLUTUConfiguration(I_M_HU_LUTU_Configuration)} but the underlying document line is also saved.
-	 *
-	 * @param lutuConfiguration
-	 * @see IDocumentLUTUConfigurationHandler#setCurrentLUTUConfiguration(Object, I_M_HU_LUTU_Configuration)
 	 */
 	void setCurrentLUTUConfigurationAndSave(I_M_HU_LUTU_Configuration lutuConfiguration);
 

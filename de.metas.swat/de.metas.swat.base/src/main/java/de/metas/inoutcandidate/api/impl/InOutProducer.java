@@ -52,7 +52,7 @@ import org.compiere.util.Env;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.event.InOutGeneratedEventBus;
+import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutProducer;
@@ -283,7 +283,7 @@ public class InOutProducer implements IInOutProducer
 			result.addInOut(receipt);
 
 			// Notify the user that a new receipt was created (task 09334)
-			InOutGeneratedEventBus.newInstance()
+			InOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(getTrxName())
 					.notify(receipt);
 		}

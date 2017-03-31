@@ -26,6 +26,8 @@ package de.metas.handlingunits.attribute.propagation.impl;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
+import java.util.Objects;
+
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
@@ -61,7 +63,7 @@ public abstract class AbstractHUAttributePropagator implements IHUAttributePropa
 	public boolean isCompatible(final IHUAttributePropagator otherPropagator)
 	{
 		// The parent propagator and "this" have compatible propagation types
-		if (Check.equals(otherPropagator.getPropagationType(), getPropagationType()))
+		if (Objects.equals(otherPropagator.getPropagationType(), getPropagationType()))
 		{
 			return true;
 		}

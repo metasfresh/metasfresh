@@ -13,19 +13,19 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -82,13 +82,20 @@ import de.metas.inout.model.I_M_QualityNote;
 		return ObjectUtils.toString(this);
 	}
 
-	public boolean add(final HUReceiptLinePartCandidate receiptLinePartToAdd)
+	/**
+	 * Merges the given {@code candidate} with one of the previously added candidates if one matches match, or adds the given {@code candidate} as a new one.
+	 * Calls {@link #canAdd(HUReceiptLinePartCandidate)} to find out if the candidate can be added or not.
+	 * 
+	 * @param candidate
+	 * @return {@code true} if the candidate could be added.
+	 */
+	public boolean add(final HUReceiptLinePartCandidate candidate)
 	{
-		Check.assumeNotNull(receiptLinePartToAdd, "receiptLinePartToAdd not null");
+		Check.assumeNotNull(candidate, "receiptLinePartToAdd not null");
 
 		//
 		// Check if we can add this Part to somewhere to this candidate
-		if (!canAdd(receiptLinePartToAdd))
+		if (!canAdd(candidate))
 		{
 			return false;
 		}
@@ -97,7 +104,7 @@ import de.metas.inout.model.I_M_QualityNote;
 		// Add given Part to existing Part if possible
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{
-			if (receiptLinePart.add(receiptLinePartToAdd))
+			if (receiptLinePart.add(candidate))
 			{
 				_stale = true; // flag this candidate as stale; we need to recompute values
 				return true;
@@ -110,9 +117,9 @@ import de.metas.inout.model.I_M_QualityNote;
 		{
 			// We are dealing with a new candidate.
 			// => initialize it and add this part as it's first part
-			init(receiptLinePartToAdd);
+			init(candidate);
 		}
-		receiptLinePartCandidates.add(receiptLinePartToAdd);
+		receiptLinePartCandidates.add(candidate);
 		_stale = true; // flag this candidate as stale; we need to recompute values
 
 		return true;
@@ -144,7 +151,7 @@ import de.metas.inout.model.I_M_QualityNote;
 
 		// It shall have the same ASI Aggregation Key
 		final Object receiptLinePartToAdd_ASIAggregationKey = receiptLinePartToAdd.getAttributeStorageAggregationKey();
-		if (!Check.equals(_asiAggregationKey, receiptLinePartToAdd_ASIAggregationKey))
+		if (!Objects.equals(_asiAggregationKey, receiptLinePartToAdd_ASIAggregationKey))
 		{
 			return false;
 		}
@@ -192,11 +199,11 @@ import de.metas.inout.model.I_M_QualityNote;
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{
 			// In case there are several qualityNotes, only the first one shall be remembered
-			if(_qualityNote == null)
+			if (_qualityNote == null)
 			{
 				_qualityNote = receiptLinePart.getQualityNote();
 			}
-			
+
 			final IQtyAndQuality partQtyAndQuality = receiptLinePart.getQtyAndQuality();
 			if (partQtyAndQuality.isZero())
 			{
@@ -247,7 +254,7 @@ import de.metas.inout.model.I_M_QualityNote;
 		updateIfStale();
 		return _qtyAndQuality;
 	}
-	
+
 	public I_M_QualityNote get_qualityNote()
 	{
 		return _qualityNote;

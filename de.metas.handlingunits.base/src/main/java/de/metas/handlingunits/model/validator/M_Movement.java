@@ -99,7 +99,8 @@ public class M_Movement
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_PREPARE)
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
 	{
-		Services.get(IHUMovementBL.class).createPackingMaterialMovementLines(movement);
+		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+		huMovementBL.createPackingMaterialMovementLines(movement);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)

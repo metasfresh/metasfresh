@@ -58,7 +58,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
-import de.metas.inout.event.InOutGeneratedEventBus;
+import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
@@ -199,7 +199,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 		//
 		// Send notifications
-		InOutGeneratedEventBus.newInstance()
+		InOutProcessedEventBus.newInstance()
 				.queueEventsUntilTrxCommit(trxName)
 				.notify(result.getInOuts());
 

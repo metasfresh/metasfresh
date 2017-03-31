@@ -27,12 +27,12 @@ package org.adempiere.model.engines;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,16 +58,15 @@ import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
  * Storage Engine
- * 
+ *
  * @author victor.perez@e-evolution.com http://www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
@@ -120,14 +119,23 @@ public class StorageEngine
 							docLine.getM_Product_ID(),
 							ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 							QtyMA,
-							Env.ZERO,
-							Env.ZERO,
+							BigDecimal.ZERO,
+							BigDecimal.ZERO,
 							docLine.get_TrxName()))
 					{
 						// won't happen because MStorage.add() either succeeds and returns true, or throws an exception
 						throw new LiberoException("Cannot correct Inventory (Material allocation)");
 					}
-					create(docLine, MovementType, MovementDate, ma.getM_AttributeSetInstance_ID(), QtyMA);
+					create(docLine,
+							MovementType,
+							MovementDate,
+
+							// #gh489: M_Storage is a legacy and currently doesn't really work.
+							// In this case, its use of M_AttributeSetInstance_ID (which is forwarded from storage to 'ma') introduces a coupling between random documents.
+							// this coupling is a big problem, so we don't forward the ASI-ID to the M_Transaction
+							0, // ma.getM_AttributeSetInstance_ID(),
+
+							QtyMA);
 				}
 			}
 			// sLine.getM_AttributeSetInstance_ID() != 0
@@ -143,7 +151,7 @@ public class StorageEngine
 						docLine.getM_Locator_ID(),
 						docLine.getM_Product_ID(),
 						docLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
-						Qty, Env.ZERO, Env.ZERO, docLine.get_TrxName()))
+						Qty, BigDecimal.ZERO, BigDecimal.ZERO, docLine.get_TrxName()))
 				{
 					// won't happen because MStorage.add() either succeeds and returns true, or throws an exception
 					throw new LiberoException("Cannot correct Inventory (Material allocation)");
@@ -166,15 +174,6 @@ public class StorageEngine
 		final MProduct product = MProduct.get(line.getCtx(), line.getM_Product_ID());
 		final String mmPolicy = Services.get(IProductBL.class).getMMPolicy(product);
 
-		// Need to have Location
-		if (line.getM_Locator_ID() == 0)
-		{
-			// MWarehouse w = MWarehouse.get(getCtx(), getM_Warehouse_ID());
-			// line.setM_Warehouse_ID(M_Warehouse_ID);
-			// line.setM_Locator_ID(getM_Locator_ID(line.getCtx(),line.getM_Warehouse_ID(), line.getM_Product_ID(),line.getM_AttributeSetInstance_ID(), incomingTrx ? Env.ZERO : line.getMovementQty(),
-			// line.get_TrxName()));
-		}
-
 		// Attribute Set Instance
 		// Create an Attribute Set Instance to any receipt FIFO/LIFO
 		if (line.getM_AttributeSetInstance_ID() == 0)
@@ -184,24 +183,7 @@ public class StorageEngine
 			// (we receive materials to our warehouse/locator)
 			if (incomingTrx)
 			{
-				MAttributeSetInstance asi = null;
-				// auto balance negative on hand
-				MStorage[] storages = MStorage.getWarehouse(line.getCtx(), M_Warehouse_ID, line.getM_Product_ID(), 0,
-						null, MClient.MMPOLICY_FiFo.equals(mmPolicy), false, line.getM_Locator_ID(), line.get_TrxName());
-				for (final I_M_Storage storage : storages)
-				{
-					if (storage.getQtyOnHand().signum() < 0)
-					{
-						asi = new MAttributeSetInstance(line.getCtx(), storage.getM_AttributeSetInstance_ID(), line.get_TrxName());
-						break;
-					}
-				}
-				// always create asi so fifo/lifo work.
-				if (asi == null)
-				{
-					asi = MAttributeSetInstance.create(line.getCtx(), product, line.get_TrxName());
-				}
-				line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+				line.setM_AttributeSetInstance_ID(0 /* asi.getM_AttributeSetInstance_ID() */);
 				log.info("New ASI=" + line);
 				createMA(line, line.getM_AttributeSetInstance_ID(), line.getMovementQty());
 			}
@@ -218,12 +200,16 @@ public class StorageEngine
 				{
 					if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 					{
-						createMA(line, storage.getM_AttributeSetInstance_ID(), qtyToDeliver);
-						qtyToDeliver = Env.ZERO;
+						createMA(line,
+								0, // storage.getM_AttributeSetInstance_ID(),
+								qtyToDeliver);
+						qtyToDeliver = BigDecimal.ZERO;
 					}
 					else
 					{
-						createMA(line, storage.getM_AttributeSetInstance_ID(), storage.getQtyOnHand());
+						createMA(line,
+								0, // storage.getM_AttributeSetInstance_ID(),
+								storage.getQtyOnHand());
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
 						log.debug("QtyToDeliver=" + qtyToDeliver);
 					}
@@ -278,13 +264,23 @@ public class StorageEngine
 		InterfaceWrapperHelper.save(line);
 	}
 
-	private static void create(IDocumentLine model, String MovementType, Timestamp MovementDate,
-			int M_AttributeSetInstance_ID, BigDecimal Qty)
+	private static void create(IDocumentLine model,
+			String MovementType,
+			Timestamp MovementDate,
+			int M_AttributeSetInstance_ID,
+			BigDecimal Qty)
 	{
-		MTransaction mtrx = new MTransaction(model.getCtx(), model.getAD_Org_ID(),
-				MovementType, model.getM_Locator_ID(),
-				model.getM_Product_ID(), M_AttributeSetInstance_ID,
-				Qty, MovementDate, model.get_TrxName());
+
+		MTransaction mtrx = new MTransaction(
+				model.getCtx(),
+				model.getAD_Org_ID(),
+				MovementType,
+				model.getM_Locator_ID(),
+				model.getM_Product_ID(),
+				M_AttributeSetInstance_ID,
+				Qty,
+				MovementDate,
+				model.get_TrxName());
 		setReferenceLine_ID(mtrx, model);
 		mtrx.saveEx();
 		CostEngineFactory.getCostEngine(model.getAD_Client_ID()).createCostDetail(model, mtrx);
@@ -321,7 +317,7 @@ public class StorageEngine
 				.setParameters(new Object[] { model.get_ID() })
 				.setOrderBy(IDColumnName)
 				.list();
-		
+
 		final List<IInventoryAllocation> inventoryAllocationList = InterfaceWrapperHelper.createList(list, IInventoryAllocation.class);
 		IInventoryAllocation[] arr = new IInventoryAllocation[list.size()];
 		return inventoryAllocationList.toArray(arr);
@@ -340,7 +336,7 @@ public class StorageEngine
 
 	/**
 	 * Set (default) Locator based on qty.
-	 * 
+	 *
 	 * @param Qty quantity Assumes Warehouse is set
 	 */
 	public static int getM_Locator_ID(

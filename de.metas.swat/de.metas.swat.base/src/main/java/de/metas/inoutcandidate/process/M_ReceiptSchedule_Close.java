@@ -6,6 +6,8 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.IProcessPreconditionsContext;
 
 /**
  * Close receipt schedule line.
@@ -21,17 +23,22 @@ public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrec
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
-		final I_M_ReceiptSchedule receiptSchedule = context.getModel(I_M_ReceiptSchedule.class);
+		if(!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		
+		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
 
 		// Make sure receipt schedule is open
 		if (receiptScheduleBL.isClosed(receiptSchedule))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("already closed");
 		}
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override

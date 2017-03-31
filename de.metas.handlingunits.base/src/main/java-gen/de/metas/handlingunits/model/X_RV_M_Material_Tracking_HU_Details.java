@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.handlingunits.model;
 
@@ -32,7 +16,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -112517208L;
+	private static final long serialVersionUID = 1265720941L;
 
     /** Standard Constructor */
     public X_RV_M_Material_Tracking_HU_Details (Properties ctx, int RV_M_Material_Tracking_HU_Details_ID, String trxName)
@@ -204,6 +188,74 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
+	public org.compiere.model.I_M_InOut getM_InOut_Receipt() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_Receipt_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut_Receipt(org.compiere.model.I_M_InOut M_InOut_Receipt)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_Receipt_ID, org.compiere.model.I_M_InOut.class, M_InOut_Receipt);
+	}
+
+	/** Set Material Receipt.
+		@param M_InOut_Receipt_ID Material Receipt	  */
+	@Override
+	public void setM_InOut_Receipt_ID (int M_InOut_Receipt_ID)
+	{
+		if (M_InOut_Receipt_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Receipt_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Receipt_ID, Integer.valueOf(M_InOut_Receipt_ID));
+	}
+
+	/** Get Material Receipt.
+		@return Material Receipt	  */
+	@Override
+	public int getM_InOut_Receipt_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_Receipt_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut_Shipment() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_Shipment_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut_Shipment(org.compiere.model.I_M_InOut M_InOut_Shipment)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_Shipment_ID, org.compiere.model.I_M_InOut.class, M_InOut_Shipment);
+	}
+
+	/** Set Shipment.
+		@param M_InOut_Shipment_ID Shipment	  */
+	@Override
+	public void setM_InOut_Shipment_ID (int M_InOut_Shipment_ID)
+	{
+		if (M_InOut_Shipment_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Shipment_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Shipment_ID, Integer.valueOf(M_InOut_Shipment_ID));
+	}
+
+	/** Get Shipment.
+		@return Shipment	  */
+	@Override
+	public int getM_InOut_Shipment_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_Shipment_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
@@ -311,6 +363,86 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		return ii.intValue();
 	}
 
+	/** 
+	 * PP_Order_Issue_DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int PP_ORDER_ISSUE_DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String PP_ORDER_ISSUE_DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set MO Issue Doc Status.
+		@param PP_Order_Issue_DocStatus MO Issue Doc Status	  */
+	@Override
+	public void setPP_Order_Issue_DocStatus (java.lang.String PP_Order_Issue_DocStatus)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocStatus, PP_Order_Issue_DocStatus);
+	}
+
+	/** Get MO Issue Doc Status.
+		@return MO Issue Doc Status	  */
+	@Override
+	public java.lang.String getPP_Order_Issue_DocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Issue_DocStatus);
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType getPP_Order_Issue_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_Issue_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setPP_Order_Issue_DocType(org.compiere.model.I_C_DocType PP_Order_Issue_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_Issue_DocType_ID, org.compiere.model.I_C_DocType.class, PP_Order_Issue_DocType);
+	}
+
+	/** Set MO Issue DocType.
+		@param PP_Order_Issue_DocType_ID MO Issue DocType	  */
+	@Override
+	public void setPP_Order_Issue_DocType_ID (int PP_Order_Issue_DocType_ID)
+	{
+		if (PP_Order_Issue_DocType_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocType_ID, Integer.valueOf(PP_Order_Issue_DocType_ID));
+	}
+
+	/** Get MO Issue DocType.
+		@return MO Issue DocType	  */
+	@Override
+	public int getPP_Order_Issue_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Issue_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.eevolution.model.I_PP_Order getPP_Order_Issue() throws RuntimeException
 	{
@@ -340,6 +472,86 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	public int getPP_Order_Issue_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * PP_Order_Receipt_DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int PP_ORDER_RECEIPT_DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String PP_ORDER_RECEIPT_DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set MO Receipt DocStatus.
+		@param PP_Order_Receipt_DocStatus MO Receipt DocStatus	  */
+	@Override
+	public void setPP_Order_Receipt_DocStatus (java.lang.String PP_Order_Receipt_DocStatus)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocStatus, PP_Order_Receipt_DocStatus);
+	}
+
+	/** Get MO Receipt DocStatus.
+		@return MO Receipt DocStatus	  */
+	@Override
+	public java.lang.String getPP_Order_Receipt_DocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Receipt_DocStatus);
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType getPP_Order_Receipt_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_Receipt_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setPP_Order_Receipt_DocType(org.compiere.model.I_C_DocType PP_Order_Receipt_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_Receipt_DocType_ID, org.compiere.model.I_C_DocType.class, PP_Order_Receipt_DocType);
+	}
+
+	/** Set MO Receipt DocType.
+		@param PP_Order_Receipt_DocType_ID MO Receipt DocType	  */
+	@Override
+	public void setPP_Order_Receipt_DocType_ID (int PP_Order_Receipt_DocType_ID)
+	{
+		if (PP_Order_Receipt_DocType_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocType_ID, Integer.valueOf(PP_Order_Receipt_DocType_ID));
+	}
+
+	/** Get MO Receipt DocType.
+		@return MO Receipt DocType	  */
+	@Override
+	public int getPP_Order_Receipt_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Receipt_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -399,6 +611,22 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Waschprobe.
+		@param QualityInspectionCycle Waschprobe	  */
+	@Override
+	public void setQualityInspectionCycle (java.lang.String QualityInspectionCycle)
+	{
+		set_ValueNoCheck (COLUMNNAME_QualityInspectionCycle, QualityInspectionCycle);
+	}
+
+	/** Get Waschprobe.
+		@return Waschprobe	  */
+	@Override
+	public java.lang.String getQualityInspectionCycle () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_QualityInspectionCycle);
 	}
 
 	/** Set RV_M_Material_Tracking_HU_Details_ID.

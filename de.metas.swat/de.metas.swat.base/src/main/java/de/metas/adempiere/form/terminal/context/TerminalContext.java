@@ -110,7 +110,13 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 				+ ", screenHeight=" + screenHeight
 				// + ", ctx=" + ctx
 				// + ", factory=" + factory
-				+ ", referencesList=" + referencesList
+				// task #827
+				// Do not include referencesList(.toString()) in the toString of this object because it might lead to an infinite loop.
+				// Reason:
+				// This method might be  called from IDisposable objects 
+				// TerminalContextReference.toString() calls all the disposable components => loop
+				// Commenting this out.
+				//+ ", referencesList=" + referencesList
 				+ "]";
 	}
 

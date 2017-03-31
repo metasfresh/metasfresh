@@ -132,7 +132,7 @@ public class Helper extends de.metas.adempiere.ait.helper.HelperDelegator
 	public void createOrder_checkOrderLine(
 			I_C_OrderLine orderLine,
 			BigDecimal priceActualBD,
-			de.metas.adempiere.model.I_M_ProductPrice pp)
+			org.compiere.model.I_M_ProductPrice pp)
 	{
 		super.createOrder_checkOrderLine(orderLine, priceActualBD, pp);
 

@@ -17,15 +17,14 @@ import org.compiere.model.I_C_Order;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.slf4j.Logger;
 
@@ -33,7 +32,9 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements IProcessPrecondition
 {
@@ -62,29 +63,33 @@ public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_Order order = context.getModel(I_C_Order.class);
+		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+		if (order == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
+		}
 
 		// Make sure this feature is enabled (sysconfig)
 		if (!sysConfigBL.getBooleanValue(SYSCONFIG_EnableProcessGear, false, order.getAD_Client_ID(), order.getAD_Org_ID()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not enabled");
 		}
 
 		// Only completed/closed orders
 		if (!docActionBL.isStatusCompletedOrClosed(order))
 		{
 			logger.debug("{} has DocStatus={}; nothing to do", new Object[] { order, order.getDocStatus() });
-			return false; // nothing to do
+			return ProcessPreconditionsResolution.reject("only completed/closed orders are allowed");
 		}
 
 		// Only eligible orders
 		if (!orderCheckupBL.isEligibleForReporting(order))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("not eligible for reporting");
 		}
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 }

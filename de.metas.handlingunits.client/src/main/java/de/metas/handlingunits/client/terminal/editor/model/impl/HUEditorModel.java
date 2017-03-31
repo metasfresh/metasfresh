@@ -1236,9 +1236,28 @@ public class HUEditorModel implements IDisposable
 	@Override
 	public String toString()
 	{
-		return "HUEditorModel [_terminalContext=" + _terminalContext + ", pcs=" + pcs + ", breadcrumbKeyLayout=" + breadcrumbKeyLayout + ", breadcrumbKeyLayoutListener=" + breadcrumbKeyLayoutListener + ", _huKeyFilterModel=" + _huKeyFilterModel + ", handlingUnitsKeyLayout=" + handlingUnitsKeyLayout + ", propertiesPanelModel=" + propertiesPanelModel + ", attributesEditableOnlyIfVHU="
-				+ attributesEditableOnlyIfVHU + ", rootHUKey=" + rootHUKey + ", _currentKey=" + _currentKey + ", changesTracker=" + changesTracker + ", _selectedKeyIds=" + _selectedKeyIds + ", displayBarcode=" + displayBarcode + ", updateHUAllocationsOnSave=" + updateHUAllocationsOnSave + ", allowSelectingReadonlyKeys=" + allowSelectingReadonlyKeys + ", disposed=" + disposed
-				+ ", _originalTopLevelHUs=" + _originalTopLevelHUs + "]";
+		final StringBuilder stringBuilder = new StringBuilder();
+
+		stringBuilder.append("HUEditorModel [_terminalContext=").append(_terminalContext)
+				.append(", pcs=").append(pcs)
+				.append(", breadcrumbKeyLayout=").append(breadcrumbKeyLayout)
+				.append(", breadcrumbKeyLayoutListener=").append(breadcrumbKeyLayoutListener)
+				.append(", _huKeyFilterModel=").append(_huKeyFilterModel)
+				.append(", handlingUnitsKeyLayout=").append(handlingUnitsKeyLayout)
+				.append(", propertiesPanelModel=").append(propertiesPanelModel)
+				.append(", attributesEditableOnlyIfVHU=").append(attributesEditableOnlyIfVHU)
+				.append(", rootHUKey=").append(rootHUKey)
+				.append(", _currentKey=").append(_currentKey)
+				.append(", changesTracker=").append(changesTracker)
+				.append(", _selectedKeyIds=").append(_selectedKeyIds)
+				.append(", displayBarcode=").append(displayBarcode)
+				.append(", updateHUAllocationsOnSave=").append(updateHUAllocationsOnSave)
+				.append(", allowSelectingReadonlyKeys=").append(allowSelectingReadonlyKeys)
+				.append(", disposed=").append(disposed)
+				.append(", _originalTopLevelHUs=").append(_originalTopLevelHUs)
+				.append("]");
+
+		return stringBuilder.toString();
 	}
 
 }

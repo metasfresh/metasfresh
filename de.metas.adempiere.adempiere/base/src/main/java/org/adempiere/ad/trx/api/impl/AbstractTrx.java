@@ -25,9 +25,9 @@ package org.adempiere.ad.trx.api.impl;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -54,7 +54,7 @@ import de.metas.logging.LogManager;
 public abstract class AbstractTrx implements ITrx
 {
 	/** Logger */
-	private final Logger log = LogManager.getLogger(getClass());
+	private static final transient Logger log = LogManager.getLogger(AbstractTrx.class);
 
 	private final ITrxManager trxManager;
 	private final String m_trxName;
@@ -67,8 +67,7 @@ public abstract class AbstractTrx implements ITrx
 
 	private final boolean autoCommit;
 
-	private Map<String, Object> properties = null;
-	private ReentrantLock propertiesLock = new ReentrantLock();
+	private volatile ConcurrentHashMap<String, Object> _properties = null;
 
 	//
 	// Debug info
@@ -102,13 +101,13 @@ public abstract class AbstractTrx implements ITrx
 		{
 			debugCreateStacktrace = new Exception("Create stacktrace");
 		}
-	}	// Trx
+	}
 
 	@Override
-	public String getTrxName()
+	public final String getTrxName()
 	{
 		return m_trxName;
-	}	// getName
+	}
 
 	private final void validateTrxSavepoint(final ITrxSavepoint savepoint)
 	{
@@ -394,7 +393,7 @@ public abstract class AbstractTrx implements ITrx
 
 			getTrxListenerManager(false).fireAfterClose(this);
 
-			log.debug(getTrxName());
+			log.debug("Closed: {}", getTrxName());
 		}
 	}
 
@@ -485,75 +484,80 @@ public abstract class AbstractTrx implements ITrx
 	{
 		return trxManager;
 	}
+	
+	private final Map<String, Object> getPropertiesMap()
+	{
+		if(_properties == null)
+		{
+			synchronized (this)
+			{
+				if(_properties == null)
+				{
+					_properties = new ConcurrentHashMap<>();
+				}
+			}
+		}
+		return _properties;
+	}
+	
+	private final Map<String, Object> getPropertiesMapOrNull()
+	{
+		synchronized (this)
+		{
+			return _properties;
+		}
+	}
 
 	@Override
 	public final <T> T setProperty(final String name, final Object value)
 	{
-		propertiesLock.lock();
-		try
+		Check.assumeNotEmpty(name, "name is not empty");
+		
+		// Handle null value case
+		if(value == null)
 		{
-			if (properties == null)
+			final Map<String, Object> properties = getPropertiesMapOrNull();
+			if(properties == null)
 			{
-				properties = new HashMap<>();
+				return null;
 			}
-
+			
 			@SuppressWarnings("unchecked")
-			final T valueOld = (T)properties.put(name, value);
+			final T valueOld = (T)properties.remove(name);
 			return valueOld;
 		}
-		finally
+		else
 		{
-			propertiesLock.unlock();
+			@SuppressWarnings("unchecked")
+			final T valueOld = (T)getPropertiesMap().put(name, value);
+			return valueOld;
 		}
 	}
 
 	@Override
 	public final <T> T getProperty(final String name)
 	{
-		propertiesLock.lock();
-		try
-		{
-			if (properties == null)
-			{
-				return null;
-			}
-
-			@SuppressWarnings("unchecked")
-			final T value = (T)properties.get(name);
-			return value;
-		}
-		finally
-		{
-			propertiesLock.unlock();
-		}
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().get(name);
+		return value;
 	}
 
 	@Override
 	public <T> T getProperty(final String name, final Supplier<T> valueInitializer)
 	{
-		propertiesLock.lock();
-		try
-		{
-			if (properties == null)
-			{
-				properties = new HashMap<>();
-			}
-
-			@SuppressWarnings("unchecked")
-			T value = (T)properties.get(name);
-			if (value == null)
-			{
-				value = valueInitializer.get();
-				properties.put(name, value);
-			}
-			return value;
-		}
-		finally
-		{
-			propertiesLock.unlock();
-		}
-
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.get());
+		return value;
 	}
+	
+	@Override
+	public <T> T getProperty(final String name, final Function<ITrx, T> valueInitializer)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
+		return value;
+	}
+
 
 	protected final void setDebugConnectionBackendId(final String debugConnectionBackendId)
 	{

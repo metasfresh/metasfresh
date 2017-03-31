@@ -13,22 +13,24 @@ package org.compiere.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -95,7 +97,7 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
-	
+
 	/**
 	 * Same as {@link #list(Class)} but returns an {@link ImmutableList}.
 	 * 
@@ -190,9 +192,8 @@ public interface IQuery<T>
 	IQuery<T> setOption(String name, Object value);
 
 	<OT> OT getOption(String name);
-	
-	IQuery<T> setOptions(Map<String, Object> options);
 
+	IQuery<T> setOptions(Map<String, Object> options);
 
 	/**
 	 * Check if there items for query criteria
@@ -217,9 +218,20 @@ public interface IQuery<T>
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
 	 * 
+	 * NOTE: {@link #setOnlySelection(int)} and {@link #setNotInSelection(int)} are complementary and NOT exclusive.
+	 * 
 	 * @param AD_PInstance_ID
 	 */
 	IQuery<T> setOnlySelection(int AD_PInstance_ID);
+
+	/**
+	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
+	 * 
+	 * NOTE: {@link #setOnlySelection(int)} and {@link #setNotInSelection(int)} are complementary and NOT exclusive.
+	 * 
+	 * @param AD_PInstance_ID
+	 */
+	IQuery<T> setNotInSelection(int AD_PInstance_ID);
 
 	/**
 	 * Select only active records (i.e. IsActive='Y')
@@ -370,7 +382,7 @@ public interface IQuery<T>
 	 * 
 	 * @param columnNames
 	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
-	 * @see #listColumns(String...) 
+	 * @see #listColumns(String...)
 	 */
 	List<Map<String, Object>> listDistinct(String... columnNames);
 
@@ -379,7 +391,7 @@ public interface IQuery<T>
 	 * 
 	 * @param columnName
 	 * @param valueType value type
-	 * @see #listColumns(String...) 
+	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
 
@@ -463,6 +475,13 @@ public interface IQuery<T>
 	default Stream<T> stream() throws DBException
 	{
 		return list().stream();
+	}
+
+	default Stream<T> iterateAndStream() throws DBException
+	{
+		final Iterator<T> iterator = iterate(getModelClass());
+		final boolean parallel = false;
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
 	}
 
 	/**

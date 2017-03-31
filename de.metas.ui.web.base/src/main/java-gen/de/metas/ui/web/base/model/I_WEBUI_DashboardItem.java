@@ -99,6 +99,56 @@ public interface I_WEBUI_DashboardItem
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Time range.
+	 * Time range using format 'PnDTnHnMn.nS'
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setES_TimeRange (java.lang.String ES_TimeRange);
+
+	/**
+	 * Get Time range.
+	 * Time range using format 'PnDTnHnMn.nS'
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getES_TimeRange();
+
+    /** Column definition for ES_TimeRange */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_ES_TimeRange = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "ES_TimeRange", null);
+    /** Column name ES_TimeRange */
+    public static final String COLUMNNAME_ES_TimeRange = "ES_TimeRange";
+
+	/**
+	 * Set Time range end.
+	 * Time range's ending offset (relative to now)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End);
+
+	/**
+	 * Get Time range end.
+	 * Time range's ending offset (relative to now)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getES_TimeRange_End();
+
+    /** Column definition for ES_TimeRange_End */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_ES_TimeRange_End = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "ES_TimeRange_End", null);
+    /** Column name ES_TimeRange_End */
+    public static final String COLUMNNAME_ES_TimeRange_End = "ES_TimeRange_End";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -302,4 +352,31 @@ public interface I_WEBUI_DashboardItem
     public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_WEBUI_DashboardWidgetType = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "WEBUI_DashboardWidgetType", null);
     /** Column name WEBUI_DashboardWidgetType */
     public static final String COLUMNNAME_WEBUI_DashboardWidgetType = "WEBUI_DashboardWidgetType";
+
+	/**
+	 * Set KPI.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_KPI_ID (int WEBUI_KPI_ID);
+
+	/**
+	 * Get KPI.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getWEBUI_KPI_ID();
+
+	public de.metas.ui.web.base.model.I_WEBUI_KPI getWEBUI_KPI();
+
+	public void setWEBUI_KPI(de.metas.ui.web.base.model.I_WEBUI_KPI WEBUI_KPI);
+
+    /** Column definition for WEBUI_KPI_ID */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, de.metas.ui.web.base.model.I_WEBUI_KPI> COLUMN_WEBUI_KPI_ID = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, de.metas.ui.web.base.model.I_WEBUI_KPI>(I_WEBUI_DashboardItem.class, "WEBUI_KPI_ID", de.metas.ui.web.base.model.I_WEBUI_KPI.class);
+    /** Column name WEBUI_KPI_ID */
+    public static final String COLUMNNAME_WEBUI_KPI_ID = "WEBUI_KPI_ID";
 }

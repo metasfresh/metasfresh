@@ -598,6 +598,9 @@ public class LookupDAO implements ILookupDAO
 	@Override
 	public ITableRefInfo retrieveTableRefInfoOrNull(final int AD_Reference_ID)
 	{
+		// NOTE: this method is called when we are loading POInfoColumn,
+		// so it's very important to not use POs here but just plain SQL!
+		
 		if (AD_Reference_ID <= 0)
 		{
 			logger.warn("retrieveTableRefInfoOrNull: Invalid AD_Reference_ID={}. Returning null", AD_Reference_ID);

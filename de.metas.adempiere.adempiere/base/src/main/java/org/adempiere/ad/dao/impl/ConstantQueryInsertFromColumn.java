@@ -35,7 +35,7 @@ import org.compiere.util.DB;
  * @author tsa
  *
  */
-public class ConstantQueryInsertFromColumn implements IQueryInsertFromColumn
+class ConstantQueryInsertFromColumn implements IQueryInsertFromColumn
 {
 	private final Object constantValue;
 

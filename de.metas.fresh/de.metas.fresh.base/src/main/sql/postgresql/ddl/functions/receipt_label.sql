@@ -24,7 +24,8 @@ CREATE FUNCTION report.receipt_label(IN M_HU_ID numeric) RETURNS TABLE
 	PackingInstruction Character Varying,
 	deliverydate timestamp without time zone,
 	isQualityInspection Character Varying,
-	QualityInspectionCycle Character Varying
+	QualityInspectionCycle Character Varying,
+	tuvalue Character Varying
 	)
 AS 
 $$
@@ -76,17 +77,20 @@ SELECT distinct
 	) AS deliverydate
 	, (t.TU_Attrs).isQualityInspection_Value AS isQualityInspection
 	, (t.TU_Attrs).QualityInspectionCycle_Name AS QualityInspectionCycle
+	, tuvalue
 FROM (
  SELECT
   lu.M_HU_ID as LU_HU_ID
   , tu.M_HU_ID as TU_HU_ID
-  , lu.value as luvalue, tu.value as tuvalue
+  , lu.value as luvalue
+  , (case when lu.M_HU_ID = $1 then lu.value else val.huvalue end) as tuvalue
   , "de.metas.handlingunits".getHUAttributes(tu.M_HU_ID, p_FillPurchaseDocInfo := true) as TU_Attrs
   ,lu.C_BPartner_ID as C_BPartner_ID
  FROM
  "de.metas.handlingunits".get_All_TUs($1) tu
  left outer join M_HU_Item lui on (lui.M_HU_Item_ID=tu.M_HU_Item_Parent_ID) AND lui.isActive = 'Y'
  left outer join M_HU lu on (lu.M_HU_ID=lui.M_HU_ID)
+ left outer join "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 ) t
 LEFT OUTER JOIN C_BPartner vendorbp ON (SELECT C_BPartner_ID FROM M_HU WHERE M_HU_ID = TU_HU_ID) =vendorbp.C_BPartner_ID  AND vendorbp.isActive = 'Y'
 LEFT OUTER JOIN C_BPartner producerbp ON (t.TU_Attrs).SubProducerBPartner_Value = producerbp.C_BPartner_ID AND producerbp.isActive = 'Y'

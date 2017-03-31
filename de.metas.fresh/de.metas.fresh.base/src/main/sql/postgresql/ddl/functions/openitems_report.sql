@@ -35,7 +35,7 @@ create table de_metas_endcustomer_fresh_reports.OpenItems_Report
 );
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN Reference_Date date DEFAULT now(), IN switchDate character varying DEFAULT 'N')
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN Reference_Date date DEFAULT now(), IN switchDate character varying DEFAULT 'N')
 RETURNS SETOF de_metas_endcustomer_fresh_reports.OpenItems_Report AS
 $$
 SELECT
@@ -127,8 +127,8 @@ FROM
 		WHERE true
 			AND i.DocStatus IN ('CO','CL','RE') AND i.isActive = 'Y'
 	)as oi
-	INNER JOIN C_BPartner bp 	ON oi.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN C_Currency c 	ON oi.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+	INNER JOIN C_BPartner bp 	ON oi.C_BPartner_ID = bp.C_BPartner_ID
+	INNER JOIN C_Currency c 	ON oi.C_Currency_ID = c.C_Currency_ID
 	WHERE true
 		and oi.OpenAmt <> 0
 	

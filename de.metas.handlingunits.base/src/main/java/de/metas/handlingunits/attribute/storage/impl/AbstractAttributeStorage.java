@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -450,7 +451,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		//
-		// Notify parent that a new child attributes storage was added
+		// Notify parent that a new child attributes storage was added. This might result in child attributes beein gpropagate upwards from the child
 		final IAttributeStorage parentAttributeStorage = getParentAttributeStorage();
 		if (!NullAttributeStorage.instance.equals(parentAttributeStorage))
 		{
@@ -707,7 +708,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		final Object valueOld = getValue(propagationContext.getAttribute());
-		if (Check.equals(valueOld, value)
+		if (Objects.equals(valueOld, value)
 				//
 				// We only wish to skip propagating when we're not updating internal storage value (because that happens in reversal and we want reversals)
 				//

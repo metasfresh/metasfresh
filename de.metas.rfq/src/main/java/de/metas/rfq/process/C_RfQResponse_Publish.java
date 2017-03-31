@@ -3,7 +3,9 @@ package de.metas.rfq.process;
 import org.adempiere.util.Services;
 
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;
@@ -46,10 +48,10 @@ public class C_RfQResponse_Publish extends JavaProcess implements IProcessPrecon
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_RfQResponse rfqResponse = context.getModel(I_C_RfQResponse.class);
-		return rfqBL.isDraft(rfqResponse);
+		final I_C_RfQResponse rfqResponse = context.getSelectedModel(I_C_RfQResponse.class);
+		return ProcessPreconditionsResolution.acceptIf(rfqBL.isDraft(rfqResponse));
 	}
 
 	@Override

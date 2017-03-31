@@ -12,10 +12,10 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
@@ -73,7 +73,7 @@ public class C_Order
 			return;
 		}
 
-		final I_M_PriceList pl = InterfaceWrapperHelper.create(order.getM_PriceList(), I_M_PriceList.class);
+		final I_M_PriceList pl = order.getM_PriceList();
 
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());

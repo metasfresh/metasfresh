@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.trx.api.ITrx;
@@ -60,7 +61,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	private final Class<T> modelClass;
 	private final String tableName;
 	private final ICompositeQueryFilter<T> filters;
-	private POJOInSelectionQueryFilter<T> filter_onlySelection = null;
+	private POJOInSelectionQueryFilter<T> filter_inSelection = null;
+	private POJOInSelectionQueryFilter<T> filter_notInSelection = null;
 	private IQueryOrderBy orderBy;
 	private Map<String, Object> options = null;
 	private int limit = NO_LIMIT;
@@ -501,20 +503,43 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public POJOQuery<T> setOnlySelection(final int AD_PInstance_ID)
 	{
 		// If Only selection filter has not changed then do nothing
-		if (filter_onlySelection != null && filter_onlySelection.getSelectionId() == AD_PInstance_ID)
+		if (filter_inSelection != null && filter_inSelection.getSelectionId() == AD_PInstance_ID)
 		{
 			return this;
 		}
 
-		if (filter_onlySelection != null)
+		if (filter_inSelection != null)
 		{
-			removeFilter(filter_onlySelection);
+			removeFilter(filter_inSelection);
 		}
 
 		if (AD_PInstance_ID > 0)
 		{
-			filter_onlySelection = new POJOInSelectionQueryFilter<T>(AD_PInstance_ID);
-			addFilter(filter_onlySelection);
+			filter_inSelection = POJOInSelectionQueryFilter.inSelection(AD_PInstance_ID);
+			addFilter(filter_inSelection);
+		}
+
+		return this;
+	}
+	
+	@Override
+	public POJOQuery<T> setNotInSelection(final int AD_PInstance_ID)
+	{
+		// If Only selection filter has not changed then do nothing
+		if (filter_notInSelection != null && filter_notInSelection.getSelectionId() == AD_PInstance_ID)
+		{
+			return this;
+		}
+
+		if (filter_notInSelection != null)
+		{
+			removeFilter(filter_notInSelection);
+		}
+
+		if (AD_PInstance_ID > 0)
+		{
+			filter_notInSelection = POJOInSelectionQueryFilter.notInSelection(AD_PInstance_ID);
+			addFilter(filter_notInSelection);
 		}
 
 		return this;
@@ -834,9 +859,15 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	protected <ToModelType> int executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
+	protected <ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
+		
+		if(queryInserter.isCreateSelectionOfInsertedRows())
+		{
+			throw new UnsupportedOperationException("CreateSelectionOfInsertedRows not supported for "+queryInserter);
+		}
+		final int insertSelectionId = -1;
 
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
@@ -875,6 +906,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			countInsert++;
 		}
 
-		return countInsert;
+		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

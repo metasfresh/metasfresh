@@ -230,7 +230,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			receiptLines.add(receiptLineWithoutIssues);
 		}
-		
 
 		//
 		// If there is Qty with issues, an extra receipt line is needed (with qtyWithIssues)
@@ -556,7 +555,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		//
 		// Gebinde Lager packing materials collector; will be used when the HU's owner is "us"
-		final IHUPackingMaterialsCollector<?> destroyedHUPackingMaterialsCollector = huContext.getDestroyedHUPackingMaterialsCollector();
+		final IHUPackingMaterialsCollector<?> destroyedHUPackingMaterialsCollector = huContext.getHUPackingMaterialsCollector();
 
 		//
 		// We only collect top level HUs for transfer.
@@ -567,7 +566,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocs)
 		{
 			final int tuHUId = rsa.getM_TU_HU_ID();
-			Check.assume(tuHUId > 0, "tuHUId > 0 ({})", rsa);
+			Check.assume(tuHUId > 0, "tuHUId > 0 (rsa={})", rsa);
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 
 			//
@@ -671,7 +670,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			final I_M_HU luHU = huToAssign.getM_LU_HU();
 			final I_M_HU tuHU = huToAssign.getM_TU_HU();
-			huAssignmentBL.createTradingUnitDerivedAssignment(huContext.getCtx(), receiptLine, topLevelHU, luHU, tuHU, huContext.getTrxName());
+			huAssignmentBL
+					.createTradingUnitDerivedAssignmentBuilder(huContext.getCtx(), receiptLine, topLevelHU, luHU, tuHU, huContext.getTrxName())
+					.build();
 		}
 	}
 

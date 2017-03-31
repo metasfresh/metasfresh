@@ -38,12 +38,12 @@ public interface IQueryBL extends ISingletonService
 	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
 
 	/**
-	 * Create a query builder to quirey for a class like <code>IProductAware</code>, for which the framework can't deduct the table name.
+	 * Create a query builder to query for a class like <code>IProductAware</code> (but also regular model interfaces like I_C_Order are supported), for which the framework can't deduct the table name.
 	 *
 	 * @param modelClass
-	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>.
+	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>. In case this is null, the tableName will be fetched from <code>modelClass</code>.
 	 * @param contextProvider
-	 * @return
+	 * @return query builder
 	 */
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider);
 

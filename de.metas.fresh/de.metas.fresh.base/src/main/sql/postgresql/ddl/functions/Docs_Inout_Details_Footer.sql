@@ -23,7 +23,7 @@ FROM
 	SELECT
 		null			as textleft,
 		CASE WHEN io.descriptionbottom IS NOT NULL
-			THEN '<br><br><br>'
+			THEN E'\n\n\n'
 			ELSE ''
 		END || dt.documentnote 	as textcenter,
 		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y' AND isActive = 'Y') as language,
@@ -40,7 +40,7 @@ FROM
 	SELECT
 		null			as textleft,
 		CASE WHEN io.descriptionbottom IS NOT NULL
-			THEN '<br><br><br>'
+			THEN E'\n\n\n'
 			ELSE ''
 		END || dt.documentnote	as textcenter,
 		dt.ad_language		as language,

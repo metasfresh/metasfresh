@@ -31,8 +31,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -41,27 +39,32 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
 import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductPrice;
 import org.compiere.model.MStorage;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 
 /**
@@ -502,16 +505,20 @@ public class VAttributeGrid extends CPanel
 		pe.add(new JLabel(product.getValue()), new GridBagConstraints(0,0, 1,1, 0,0, 
 				GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, ii, 0,0));
 		String formatted = "";
-		if (m_M_PriceList_Version_ID != 0)
+		if (m_M_PriceList_Version_ID > 0)
 		{
-			MProductPrice pp = MProductPrice.get(Env.getCtx(), m_M_PriceList_Version_ID, M_Product_ID, null);
+			final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(Env.getCtx(), m_M_PriceList_Version_ID, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
+			final I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, M_Product_ID)
+					.orElse(null);
 			if (pp != null)
 			{
 				BigDecimal price = pp.getPriceStd();
 				formatted = m_price.format(price);
 			}
 			else
+			{
 				formatted = "-";
+			}
 		}
 		pe.add(new JLabel(formatted, JLabel.RIGHT), new GridBagConstraints(1,0, 1,1, .5,0, 
 			GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, ii, 0,0));

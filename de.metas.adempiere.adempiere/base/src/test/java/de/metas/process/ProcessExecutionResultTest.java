@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -12,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Invoice;
 
@@ -52,13 +52,14 @@ public class ProcessExecutionResultTest
 	@Test
 	public void testJsonSerializeDeserialize() throws Exception
 	{
-		final List<TableRecordReference> invoiceRefs = ImmutableList.of(createDummyTableRecordReference(), createDummyTableRecordReference());
-
 		ProcessExecutionResult result = new ProcessExecutionResult();
 		result.setAD_PInstance_ID(12345);
-		result.setRecordsToSelectAfterExecution(invoiceRefs);
+		result.setRecordToSelectAfterExecution(createDummyTableRecordReference());
 		result.markAsError("error summary1");
 		result.setReportData(new byte[] { 1, 2, 3 }, "report.pdf", "application/pdf");
+		//
+		result.setRecordsToOpen(createDummyTableRecordReferenceList(3), 1234);
+		//
 		System.out.println("result: " + result);
 
 		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
@@ -80,8 +81,9 @@ public class ProcessExecutionResultTest
 		Assert.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
 		Assert.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
 		//
-		Assert.assertEquals(result.getRecordsToSelectAfterExecution(), resultFromJson.getRecordsToSelectAfterExecution());
 		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
+		//
+		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
 		//
 		// Assert.assertEquals(result.get, resultFromJson.get);
 	}
@@ -93,5 +95,16 @@ public class ProcessExecutionResultTest
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 		return invoiceRef;
 	}
+	
+	private static final List<TableRecordReference> createDummyTableRecordReferenceList(final int size)
+	{
+		final List<TableRecordReference> list = new ArrayList<>();
+		for (int i = 0; i < size; i++)
+		{
+			list.add(createDummyTableRecordReference());
+		}
+		return list;
+	}
+
 
 }

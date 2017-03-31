@@ -31,6 +31,7 @@ package org.adempiere.util.collections;
  * @param <OT> output type
  * @param <IT> input type
  */
+@FunctionalInterface
 public interface Converter<OT, IT>
 {
 	OT convert(IT value);

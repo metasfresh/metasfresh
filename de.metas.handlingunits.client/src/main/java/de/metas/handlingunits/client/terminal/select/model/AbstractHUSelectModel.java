@@ -681,7 +681,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		// 06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
 		final List<I_M_Warehouse> warehousesAll = service.retrieveWarehouses(getCtx());
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), warehousesAll);
-		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found");
+		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found. Check your POS profile.");
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 

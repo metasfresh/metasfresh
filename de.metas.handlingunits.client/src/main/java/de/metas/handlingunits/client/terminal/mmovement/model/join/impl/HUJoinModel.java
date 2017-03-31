@@ -48,7 +48,7 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
-import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinBL;
+import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinOrMergeBL;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -64,7 +64,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 	// private static final String ERR_ONE_LU_KEY_ALLOWED_ON_FINAL_JOIN = "OneLUKeyAllowedOnFinalJoin";
 
 	// Services
-	private final transient ILUTUJoinBL lutuJoinBL = Services.get(ILUTUJoinBL.class);
+	private final transient ILUTUJoinOrMergeBL lutuJoinBL = Services.get(ILUTUJoinOrMergeBL.class);
 
 	private boolean _mergeableLUs = false; // disable by default (requires user interaction)
 	private boolean _mergeableTUs = false; // disable by default (requires user interaction)
@@ -241,7 +241,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 
 	private final void joinHUs(final ILUTUJoinKey luKey, final List<ILUTUJoinKey> tuKeys)
 	{
-		final List<I_M_HU> joinedHUs = lutuJoinBL.joinHUs(getTerminalContext(), luKey, tuKeys);
+		final List<I_M_HU> joinedHUs = lutuJoinBL.joinOrMergeHUs(getTerminalContext(), luKey, tuKeys);
 
 		//
 		// Note that refresh decision is not this model's, but the callee's

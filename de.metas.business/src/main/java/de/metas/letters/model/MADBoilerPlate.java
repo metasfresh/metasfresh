@@ -50,14 +50,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
 import org.compiere.model.MAsset;
-import org.compiere.model.MAttachment;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCampaign;
 import org.compiere.model.MInOut;
@@ -80,12 +82,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 
@@ -231,24 +233,24 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		request.setResult(message);
 		updateRequestDetails(request, parent_table_id, parent_record_id, variables);
 		request.saveEx();
+		
 		//
 		// Attach email attachments to this request
-		final MAttachment requestAttachment = request.createAttachment();
-		for (final EMailAttachment emailAttachment : email.getAttachments())
+		try
 		{
-			try
+			final List<DataSource> attachmentDataSources = email.getAttachments().stream()
+					.map(EMailAttachment::createDataSource)
+					.collect(ImmutableList.toImmutableList());
+			if (!attachmentDataSources.isEmpty())
 			{
-				final DataSource dataSource = emailAttachment.createDataSource();
-				requestAttachment.addEntry(dataSource);
-			}
-			catch (Exception e)
-			{
-				log.warn("Failed adding {} to {}", emailAttachment, requestAttachment);
+				final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
+				final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
+				attachmentBL.addEntries(requestAttachment, attachmentDataSources);
 			}
 		}
-		if (requestAttachment.getEntryCount() > 0)
+		catch (final Exception ex)
 		{
-			requestAttachment.saveEx();
+			log.warn("Failed attaching email attachments to request: {}", request, ex);
 		}
 	}
 
@@ -267,10 +269,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		);
 		MADBoilerPlate.updateRequestDetails(request, parent_table_id, parent_record_id, variables);
 		request.saveEx();
+		
+		//
 		// Attach printed letter
-		final MAttachment requestAttachment = request.createAttachment();
-		requestAttachment.addEntry(pdf);
-		requestAttachment.saveEx();
+		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
+		final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
+		attachmentBL.addEntry(requestAttachment, pdf);
 	}
 
 	private static void updateRequestDetails(I_R_Request rq,
@@ -291,7 +295,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		//
 		if (parent_table_id == MBPartner.Table_ID)
 			rq.setC_BPartner_ID(parent_record_id);
-		else if (parent_table_id == MUser.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 			rq.setAD_User_ID(parent_record_id);
 		//
 		else if (parent_table_id == MProject.Table_ID)

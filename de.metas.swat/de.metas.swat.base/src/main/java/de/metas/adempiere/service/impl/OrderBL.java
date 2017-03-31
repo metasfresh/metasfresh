@@ -13,11 +13,11 @@ package de.metas.adempiere.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -105,14 +105,13 @@ public class OrderBL implements IOrderBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final MFreightCost freightCost =
-				MFreightCost.retrieveFor(ctx,
-						bPartnerId,
-						bPartnerLocationId,
-						shipperId,
-						order.getAD_Org_ID(),
-						order.getDateOrdered(),
-						trxName);
+		final MFreightCost freightCost = MFreightCost.retrieveFor(ctx,
+				bPartnerId,
+				bPartnerLocationId,
+				shipperId,
+				order.getAD_Org_ID(),
+				order.getDateOrdered(),
+				trxName);
 		if (freightCost == null)
 		{
 			throw new AdempiereException("@" + MSG_NO_FREIGHT_COST_DETAIL + "@");
@@ -122,7 +121,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystem)
 	{
-		if (overridePricingSystem || order.getM_PricingSystem_ID() <= 0)
+		final int previousPricingSystemId = order.getM_PricingSystem_ID();
+		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
 			final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 			final int bPartnerId = bpartnerAndLocation.getC_BPartner_ID();
@@ -131,16 +131,27 @@ public class OrderBL implements IOrderBL
 				logger.debug("Order {} has no C_BPartner_ID. Doing nothing", order);
 				return;
 			}
-	
+
 			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 			final String trxName = InterfaceWrapperHelper.getTrxName(order);
 			final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
 			final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, order.isSOTrx(), trxName);
-	
+
 			order.setM_PricingSystem_ID(pricingSysId);
 		}
 
-		setPriceList(order);
+		//
+		// Update the M_PriceList_ID only if:
+		// * overridePricingSystem is true => this is also covering the case when pricing system was not changed but for some reason the price list could be a different one (Date changed etc)
+		// * pricing system really changed => we need to set to correct price list
+		// Cases we want to avoid:
+		// * overridePriceSystem is false and M_PricingSystem_ID was not changed: in this case we shall NOT update the price list because it might be that we were called for a completed Order and we don't want to change the data.
+		if (overridePricingSystem || previousPricingSystemId != order.getM_PricingSystem_ID()
+				|| order.getM_PriceList_ID() <= 0 // gh #936: attempt to set the pricelist, if we don't have it yet (i don't understand the error, but this might solve it. going to try it out)
+		)
+		{
+			setPriceList(order);
+		}
 	}
 
 	@Override
@@ -152,7 +163,7 @@ public class OrderBL implements IOrderBL
 			logger.debug("order {} has no M_PricingSystem_ID. Doing nothing", order);
 			return;
 		}
-		
+
 		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 		if (bpartnerAndLocation.getC_BPartner_Location_ID() <= 0)
 		{
@@ -161,7 +172,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
-		if(priceList == null)
+		if (priceList == null)
 		{
 			// Fail if no price list found
 			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(Env.getCtx(), pricingSystemId, I_M_PricingSystem.class, ITrx.TRXNAME_None);
@@ -180,13 +191,13 @@ public class OrderBL implements IOrderBL
 		{
 			return;
 		}
-		
+
 		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 		if (bpartnerAndLocation.getC_BPartner_Location_ID() <= 0)
 		{
 			return;
 		}
-		
+
 		final I_M_PriceList pl = retrievePriceListOrNull(order, bpartnerAndLocation);
 		if (pl == null)
 		{
@@ -195,7 +206,7 @@ public class OrderBL implements IOrderBL
 			throw new PriceListNotFoundException(pricingSystemName, order.isSOTrx());
 		}
 	}
-	
+
 	@Override
 	public int retrievePriceListId(final I_C_Order order)
 	{
@@ -203,7 +214,7 @@ public class OrderBL implements IOrderBL
 		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
 		return priceList == null ? 0 : priceList.getM_PriceList_ID();
 	}
-	
+
 	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BPartnerAndLocation bpartnerAndLocation)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
@@ -214,23 +225,23 @@ public class OrderBL implements IOrderBL
 		{
 			return null;
 		}
-		
+
 		final IProductPA productPA = Services.get(IProductPA.class);
 		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
 		final boolean isSOTrx = order.isSOTrx();
 		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, M_PricingSystem_ID, C_BPartner_Location_ID, isSOTrx, trxName);
 		return pl;
 	}
-	
+
 	private BPartnerAndLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
 	{
 		// TODO: shall we also consider Bill_BPartner_ID and Dropship_BPartner_ID?
 		final int bpartnerId = order.getC_BPartner_ID();
 		final int bpartnerLocationId = order.getC_BPartner_Location_ID();
-		
+
 		return new BPartnerAndLocation(bpartnerId, bpartnerLocationId);
 	}
-	
+
 	private static class BPartnerAndLocation
 	{
 		private final int C_BPartner_ID;
@@ -242,12 +253,12 @@ public class OrderBL implements IOrderBL
 			this.C_BPartner_ID = C_BPartner_ID;
 			this.C_BPartner_Location_ID = C_BPartner_Location_ID;
 		}
-		
+
 		public int getC_BPartner_ID()
 		{
 			return C_BPartner_ID;
 		}
-		
+
 		public int getC_BPartner_Location_ID()
 		{
 			return C_BPartner_Location_ID;
@@ -575,7 +586,10 @@ public class OrderBL implements IOrderBL
 		}
 
 		setBPLocation(order, bp);
-		setBillLocation(order, bp, null);
+
+		// #1056
+		// find if the partner doesn't have a bill relation with another partner. In such a case, that partner will have priority.
+		setBillLocation(order);
 
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 

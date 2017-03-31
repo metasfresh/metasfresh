@@ -62,6 +62,7 @@ import com.google.common.base.Supplier;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessDefaultParameter;
 
 /**
  * Grid Field Model.
@@ -85,11 +86,17 @@ import de.metas.logging.LogManager;
 public class GridField
 		implements Serializable, Evaluatee
 		, ICalloutField
+		, IProcessDefaultParameter
 {
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1124123543602986028L;
+	
+	public static GridField extractFrom(IProcessDefaultParameter parameter)
+	{
+		return (GridField)parameter;
+	}
 
 	/**
 	 * Field Constructor. requires initField for complete instantiation
@@ -2238,5 +2245,11 @@ public class GridField
 		final GridTab gridTab = getGridTab();
 		Check.assumeNotNull(gridTab, "gridTab not null");
 		return gridTab;
+	}
+	
+	@Override
+	public int getContextAsInt(String name)
+	{
+		return Env.getContextAsInt(getCtx(), getWindowNo(), name);
 	}
 }

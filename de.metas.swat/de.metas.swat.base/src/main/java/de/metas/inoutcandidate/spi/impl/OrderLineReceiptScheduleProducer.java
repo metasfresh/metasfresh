@@ -65,11 +65,20 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-		final I_M_ReceiptSchedule receiptSchedule = createReceiptScheduleFromOrderLine(orderLine);
+		final boolean createReceiptScheduleIfNotExists = true;
+		final I_M_ReceiptSchedule receiptSchedule = createOrReceiptScheduleFromOrderLine(orderLine, createReceiptScheduleIfNotExists);
 		return Collections.singletonList(receiptSchedule);
 	}
+	
+	@Override
+	public void updateReceiptSchedules(final Object model)
+	{
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		final boolean createReceiptScheduleIfNotExists = false;
+		createOrReceiptScheduleFromOrderLine(orderLine, createReceiptScheduleIfNotExists);
+	}
 
-	private I_M_ReceiptSchedule createReceiptScheduleFromOrderLine(final I_C_OrderLine line)
+	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(final I_C_OrderLine line, final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
@@ -80,6 +89,11 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final boolean isNewReceiptSchedule = (receiptSchedule == null);
 		if (isNewReceiptSchedule)
 		{
+			if(!createReceiptScheduleIfNotExists)
+			{
+				return null;
+			}
+			
 			receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, line);
 		}
 

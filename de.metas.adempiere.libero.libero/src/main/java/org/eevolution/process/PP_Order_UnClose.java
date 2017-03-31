@@ -45,7 +45,9 @@ import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Unclose a manufacturing order.
@@ -63,10 +65,10 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_PP_Order ppOrder = context.getModel(I_PP_Order.class);
-		return isEligible(ppOrder);
+		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
+		return ProcessPreconditionsResolution.acceptIf(isEligible(ppOrder));
 	}
 
 	private boolean isEligible(I_PP_Order ppOrder)

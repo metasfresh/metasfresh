@@ -34,6 +34,48 @@ import org.compiere.util.TrxRunnable2;
 	private TrxCallableWrappers()
 	{
 	}
+	
+	public static TrxCallableWithTrxName<Void> wrapIfNeeded(final Runnable runnable)
+	{
+		if(runnable == null)
+		{
+			return null;
+		}
+		
+		return new TrxCallableWithTrxName<Void>()
+		{
+			@Override
+			public String toString()
+			{
+				return "TrxCallableWithTrxName-wrapper[" + runnable + "]";
+			}
+
+			@Override
+			public Void call(final String localTrxName) throws Exception
+			{
+				runnable.run();
+				return null;
+			}
+
+			@Override
+			public Void call() throws Exception
+			{
+				throw new IllegalStateException("This method shall not be called");
+			}
+
+			@Override
+			public boolean doCatch(final Throwable e) throws Throwable
+			{
+				throw e;
+			}
+
+			@Override
+			public void doFinally()
+			{
+				// nothing
+			}
+		};
+	}
 
 	public static TrxCallableWithTrxName<Void> wrapIfNeeded(final TrxRunnable trxRunnable)
 	{

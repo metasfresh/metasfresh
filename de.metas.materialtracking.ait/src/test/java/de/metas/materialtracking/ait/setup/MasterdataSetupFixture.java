@@ -10,14 +10,12 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.impl.rules.MockedPricingRule;
 import org.adempiere.pricing.spi.impl.rules.PriceListVersion;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
@@ -227,7 +225,7 @@ public class MasterdataSetupFixture
 
 		final I_C_Country country = Helper.retrieveExisting(nameCountry, I_C_Country.class);
 
-		final de.metas.adempiere.model.I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(de.metas.adempiere.model.I_M_PriceList.class, Helper.context);
+		final org.compiere.model.I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_PriceList.class, Helper.context);
 		priceList.setM_PricingSystem(pricingSystem);
 		priceList.setName(name);
 		priceList.setC_Country(country);
@@ -252,7 +250,6 @@ public class MasterdataSetupFixture
 
 	public void set_up_M_Product(final String value, final String name, final String nameUom)
 	{
-		final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 		final IProductPA productPA = Services.get(IProductPA.class);
 
 		final de.metas.adempiere.model.I_M_Product existingProduct = productPA.retrieveProduct(Helper.context.getCtx(), value,
@@ -281,7 +278,7 @@ public class MasterdataSetupFixture
 		MockedPricingRule.INSTANCE.setPrecision(pricePrecision);
 
 		final IProductPA productPA = Services.get(IProductPA.class);
-		final PlainContextAware context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		final PlainContextAware context = PlainContextAware.newOutOfTrx(Env.getCtx());
 
 		for (final Map<String, String> tableRow : table)
 		{
@@ -304,7 +301,7 @@ public class MasterdataSetupFixture
 
 		final I_M_PriceList priceList = Helper.retrieveExisting(namePriceList, I_M_PriceList.class);
 
-		final org.adempiere.pricing.model.I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(org.adempiere.pricing.model.I_M_PriceList_Version.class, Helper.context);
+		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class, Helper.context);
 		plv.setName(name);
 		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		plv.setValidFrom(validFrom);

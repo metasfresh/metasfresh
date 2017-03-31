@@ -5,8 +5,10 @@ import java.util.List;
 import org.adempiere.util.Services;
 
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfqBL;
@@ -52,10 +54,10 @@ public class C_RfQ_CreateResponses extends JavaProcess implements IProcessPrecon
 	private boolean p_IsSendRfQ;
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_RfQ rfq = context.getModel(I_C_RfQ.class);
-		return rfqBL.isCompleted(rfq);
+		final I_C_RfQ rfq = context.getSelectedModel(I_C_RfQ.class);
+		return ProcessPreconditionsResolution.acceptIf(rfqBL.isCompleted(rfq));
 	}
 
 	@Override

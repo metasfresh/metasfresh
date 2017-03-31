@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -31,6 +30,8 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -55,7 +56,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 						pTomato, productUOM, BigDecimal.valueOf(30)), // shipment schedule 0
 				createShipmentSchedule(true, // on new order
 						pSalad, productUOM, BigDecimal.valueOf(50)) // shipment schedule 1
-				);
+		);
 	}
 
 	@Override
@@ -266,9 +267,18 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 		//@formatter:on
 	}
 
+	/**
+	 * Creates and executes an {@link IHUSplitBuilder} to split the given {@code qty} of the given {@code product}
+	 * from the given {@code tuHU} onto an LU.
+	 * 
+	 * @param tuHU
+	 * @param product
+	 * @param qty
+	 * @return
+	 */
 	protected final List<I_M_HU> splitOnLU(final I_M_HU tuHU, final I_M_Product product, final BigDecimal qty)
 	{
-		final List<I_M_HU> splitLUs = helper.splitHUs()
+		final List<I_M_HU> splitLUs = new HUSplitBuilder(helper.ctx)
 				.setHUToSplit(tuHU)
 				.setCUQty(qty)
 				// LU

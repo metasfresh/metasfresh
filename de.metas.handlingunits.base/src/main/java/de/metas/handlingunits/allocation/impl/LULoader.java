@@ -47,23 +47,23 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 public class LULoader
 {
 	private final IHUContext huContext;
+	
 	private final List<LULoaderInstance> luInstances = new ArrayList<LULoaderInstance>();
 
 	public LULoader(final IHUContext huContext)
 	{
-		super();
-
 		Check.assumeNotNull(huContext, "huContext not null");
 		Services.get(ITrxManager.class).assertTrxNotNull(huContext);
+		
 		this.huContext = huContext;
 	}
 
 	/**
 	 * Add given Transport Unit (TU) to a Loading Unit (LU).
 	 *
-	 * If there already exist an LU which accept given TU then the TU will be added to that LU. If not, a new LU will be created.
+	 * If there already exists an LU which accepts the given TU then the TU will be added to that LU. If not, a new LU will be created.
 	 *
-	 * @param tuHU
+	 * @param tuHU may not be {@code null}
 	 * @throws AdempiereException if TU could not be added
 	 */
 	public void addTU(final I_M_HU tuHU)
@@ -81,7 +81,7 @@ public class LULoader
 		}
 
 		//
-		// None of current LUs accepted our TU
+		// None of current LUs accepted our TU, e.g. because there is no more free capacity in their wrapped LUs, or maybe because the TU's C_BPartner didn't match.
 		// => create another LU
 		final LULoaderInstance luInstance = createLULoaderInstanceForTU(tuHU);
 		if (!luInstance.addTU(tuHU))

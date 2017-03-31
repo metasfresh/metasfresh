@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attributes.impl;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,24 +15,21 @@ package de.metas.handlingunits.attributes.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
-import org.junit.Assert;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -40,7 +39,7 @@ import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
 
 public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -72,31 +71,36 @@ public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpe
 
 		//
 		// Iterate through the loadingUnit's items
+		int tuCountActual = 0;
 		final List<I_M_HU_Item> luItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(lu);
+		final List<I_M_HU> tus = new ArrayList<>();
 		for (final I_M_HU_Item luItem : luItems)
 		{
 			// We only have one item with handling unit Item Type
-			final String itemType = Services.get(IHandlingUnitsBL.class).getItemType(luItem);
-			if (!itemType.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
-			{
-				continue;
-			}
-			if (luPIItem.getM_HU_PI_Item_ID() != luItem.getM_HU_PI_Item_ID())
+			final String itemType = luItem.getItemType();
+			if (!itemType.equals(X_M_HU_Item.ITEMTYPE_HUAggregate) && !itemType.equals(X_M_HU_Item.ITEMTYPE_HandlingUnit))
 			{
 				continue;
 			}
 
 			InterfaceWrapperHelper.refresh(luItem, true);
 
-			final List<I_M_HU> tus = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(luItem);
-			assertEquals(message.expect("Invalid number of TUs on LU"), tuCount, tus.size());
-			Assert.assertEquals("Invalid number of IFCOs in pallet, palet item: \n" + luItem, tuCount, tus.size());
+			final List<I_M_HU> luItemTUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(luItem);
+			if (itemType.equals(X_M_HU_Item.ITEMTYPE_HandlingUnit))
+			{
+				tuCountActual += luItemTUs.size();
+			}
+			else
+			{ // luItem is an HU aggregate item
+				tuCountActual += luItem.getQty().intValue();
+			}
 
-			//
-			// TU
-			tuWeightsExpectations.setAttributeStorageFactory(attributeStorageFactory);
-			tuWeightsExpectations.assertExpected(message, tus);
+			tus.addAll(luItemTUs);
 		}
+
+		tuWeightsExpectations.setAttributeStorageFactory(attributeStorageFactory);
+		tuWeightsExpectations.assertExpected(message, tus);
+		assertEquals(message.expect("Invalid number of TUs on LU"), tuCount, tuCountActual);
 	}
 
 	public LUWeightsExpectations<ParentExpectationType> setAttributeStorageFactory(final IAttributeStorageFactory attributeStorageFactory)
@@ -131,8 +135,7 @@ public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpe
 		}
 
 		@SuppressWarnings("unchecked")
-		final HUWeightsExpectation<LUWeightsExpectations<ParentExpectationType>> luWeightsExpectationCast =
-				(HUWeightsExpectation<LUWeightsExpectations<ParentExpectationType>>)luWeightsExpectation;
+		final HUWeightsExpectation<LUWeightsExpectations<ParentExpectationType>> luWeightsExpectationCast = (HUWeightsExpectation<LUWeightsExpectations<ParentExpectationType>>)luWeightsExpectation;
 		return luWeightsExpectationCast;
 	}
 

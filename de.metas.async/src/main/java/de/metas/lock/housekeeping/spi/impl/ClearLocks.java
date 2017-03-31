@@ -25,7 +25,7 @@ package de.metas.lock.housekeeping.spi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.compiere.util.DB;
 
 import de.metas.lock.model.I_T_Lock;
@@ -41,12 +41,12 @@ import de.metas.lock.model.I_T_Lock;
 public class ClearLocks implements IStartupHouseKeepingTask
 {
 	@Override
-	public void executeTask(final ILoggable loggable)
+	public void executeTask()
 	{
 		final String sql = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE " + I_T_Lock.COLUMNNAME_IsAutoCleanup + "=?";
 		final Object[] sqlParams = new Object[] { true };
 		final int countLocksReleased = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
-		loggable.addLog("Deleted " + countLocksReleased + " stale " + I_T_Lock.Table_Name + " records");
+		Loggables.get().addLog("Deleted " + countLocksReleased + " stale " + I_T_Lock.Table_Name + " records");
 	}
 
 }

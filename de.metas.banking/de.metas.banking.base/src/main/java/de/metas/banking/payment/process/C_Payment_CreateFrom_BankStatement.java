@@ -56,8 +56,10 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Renamed and refactored from <code>de.metas.banking.process.BankStatementPayment</code> (swat).
@@ -140,14 +142,14 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 	 * @return <code>true</code> if the given gridTab belongs to a bank statement that is completed or closed.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_BankStatement bankStatement = context.getModel(I_C_BankStatement.class);
-			return docActionBL.isStatusOneOf(bankStatement,
-					DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(bankStatement,
+					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 }

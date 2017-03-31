@@ -47,17 +47,17 @@ public interface IEmptiesInOutProducer
 	 */
 	I_M_InOut create();
 
-	void addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty);
+	IEmptiesInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty);
 
-	void setC_BPartner(final I_C_BPartner bpartner);
+	IEmptiesInOutProducer setC_BPartner(final I_C_BPartner bpartner);
 
-	void setC_BPartner_Location(final I_C_BPartner_Location bpLocation);
+	IEmptiesInOutProducer setC_BPartner_Location(final I_C_BPartner_Location bpLocation);
 
-	void setMovementType(String movementType);
+	IEmptiesInOutProducer setMovementType(String movementType);
 
-	void setM_Warehouse(I_M_Warehouse warehouse);
+	IEmptiesInOutProducer setM_Warehouse(I_M_Warehouse warehouse);
 
-	void setMovementDate(Date movementDate);
+	IEmptiesInOutProducer setMovementDate(Date movementDate);
 
 	/**
 	 * Check if this producer is empty.
@@ -73,13 +73,7 @@ public interface IEmptiesInOutProducer
 	 * 
 	 * @param order
 	 */
-	void setC_Order(I_C_Order order);
-
-	/**
-	 * The order that was selected to created the empties inout based on.
-	 * It's acceptable for it to be null in case it wasn't set
-	 * 
-	 * @return
-	 */
-	I_C_Order getC_Order();
+	IEmptiesInOutProducer setC_Order(I_C_Order order);
+	
+	IEmptiesInOutProducer dontComplete();
 }

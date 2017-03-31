@@ -106,7 +106,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 		//
 		// Make sure that we're using a saved parent HU item
-		Check.assume(parentItem.getM_HU_PI_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
+		Check.assume(parentItem.getM_HU_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
 		final I_M_HU parentHU = parentItem.getM_HU();
 
 		//
@@ -155,12 +155,14 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 		// Retrieve HU items and get children HUs
 		final List<I_M_HU_Item> huItems = handlingUnitsDAO.retrieveItems(hu);
+		final boolean saveOnChange = isSaveOnChange();
 		for (final I_M_HU_Item item : huItems)
 		{
 			final List<I_M_HU> childrenHU = handlingUnitsDAO.retrieveIncludedHUs(item);
 			for (final I_M_HU childHU : childrenHU)
 			{
 				final IAttributeStorage childAttributeSetStorage = storageFactory.getAttributeStorage(childHU);
+				childAttributeSetStorage.setSaveOnChange(saveOnChange); // propagate saveOnChange to child
 				childrenAttributeSetStorages.put(childAttributeSetStorage.getId(), childAttributeSetStorage);
 			}
 		}

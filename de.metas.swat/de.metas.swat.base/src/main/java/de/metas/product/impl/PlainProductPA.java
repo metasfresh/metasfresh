@@ -31,9 +31,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
 
 import de.metas.adempiere.model.I_C_Location;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
 
 public class PlainProductPA extends ProductPA

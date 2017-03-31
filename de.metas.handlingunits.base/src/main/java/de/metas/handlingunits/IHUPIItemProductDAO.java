@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -59,6 +60,8 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	/**
 	 * Retrieves a I_M_HU_PI_Item_Product for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there are multiple records for the given parameters, they are ordered using
 	 * this DAO's standard ordering (see class-javadoc) and the first one is returned.
+	 * <p>
+	 * Note that the {@code C_BPArtner_ID} is taken from the given {@code huItem}'s {@link I_M_HU}.
 	 *
 	 * @param huItem
 	 * @param product
@@ -141,6 +144,16 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	List<I_M_HU_PI_Item_Product> retrieveAllForProduct(I_M_Product product);
 
 	/**
+	 * Invoke {@link #retrieveTUs(Properties, I_M_Product, I_C_BPartner, boolean)} with {@code allowInfiniteCapacity = false}.
+	 * 
+	 * @param ctx
+	 * @param cuProduct
+	 * @param bpartner
+	 * @return
+	 */
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner);
+
+	/**
 	 * Retrieve available {@link I_M_HU_PI_Item_Product}s for TUs which are matching our product and bpartner.
 	 *
 	 * NOTE: the default bpartner's TU, if any, will be returned first.
@@ -148,8 +161,9 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param ctx
 	 * @param cuProduct
 	 * @param bpartner
+	 * @param allowInfiniteCapacity
 	 * @return
 	 */
-	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner);
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner, boolean allowInfiniteCapacity);
 
 }

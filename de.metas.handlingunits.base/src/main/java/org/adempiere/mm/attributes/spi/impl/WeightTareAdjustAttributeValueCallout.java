@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.spi.impl;
 
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -38,11 +39,11 @@ public class WeightTareAdjustAttributeValueCallout extends AbstractWeightAttribu
 	 * Fires WeightGross recalculation based on existing WeightNet & the new WeightTare value
 	 */
 	@Override
-	public void onValueChanged0(final IAttributeValueContext attributeValueContext,
+	public void onValueChanged0(final IAttributeValueContext attributeValueContext_IGNORED,
 			final IAttributeSet attributeSet,
-			final I_M_Attribute attribute,
-			final Object valueOld,
-			final Object valueNew)
+			final I_M_Attribute attribute_IGNORED,
+			final Object valueOld_IGNORED,
+			final Object valueNew_IGNORED)
 	{
 		recalculateWeightNet(attributeSet);
 	}
@@ -87,6 +88,6 @@ public class WeightTareAdjustAttributeValueCallout extends AbstractWeightAttribu
 			final Object valueOld,
 			final Object valueNew)
 	{
-		return !Check.equals(valueOld, valueNew);
+		return !Objects.equals(valueOld, valueNew);
 	}
 }

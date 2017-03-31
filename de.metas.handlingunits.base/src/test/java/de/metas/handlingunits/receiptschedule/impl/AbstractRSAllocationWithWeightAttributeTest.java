@@ -128,7 +128,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 		//
 		// Misc
-		// NOT (we don't care): enabling string values because we want to make sure that only defined fields are used
+		// NOT (we don't care): enabling strict values because we want to make sure that only defined fields are used
 		// POJOWrapper.getWrapper(rs).setStrictValues(true);
 	}
 

@@ -19,5 +19,11 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.dlm</groupId>
+			<artifactId>metasfresh-dlm-swingui</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 	</dependencies>
 </project>

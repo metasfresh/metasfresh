@@ -23,6 +23,7 @@ package de.metas.testsupport;
  */
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -44,12 +45,12 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.interfaces.I_C_BPartner_Product;
@@ -76,7 +77,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_Product pojo)
 			{
-				return Check.equals(pojo.getValue(), productValue) && pojo.getM_Product_ID() == productId;
+				return Objects.equals(pojo.getValue(), productValue) && pojo.getM_Product_ID() == productId;
 			}
 		});
 
@@ -119,7 +120,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_ProductPrice pojo)
 			{
-				return Check.equals(pojo.getM_ProductPrice_ID(), productPriceId);
+				return Objects.equals(pojo.getM_ProductPrice_ID(), productPriceId);
 			}
 		});
 
@@ -143,7 +144,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_DiscountSchemaLine pojo)
 			{
-				return Check.equals(pojo.getM_DiscountSchemaLine_ID(), discountSchemaLineId);
+				return Objects.equals(pojo.getM_DiscountSchemaLine_ID(), discountSchemaLineId);
 			}
 		});
 
@@ -167,7 +168,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_PriceList pojo)
 			{
-				return Check.equals(pojo.getM_PriceList_ID(), priceListId);
+				return Objects.equals(pojo.getM_PriceList_ID(), priceListId);
 			}
 		});
 
@@ -191,7 +192,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_PriceList_Version pojo)
 			{
-				return Check.equals(pojo.getM_PriceList_Version_ID(), priceListVersionId);
+				return Objects.equals(pojo.getM_PriceList_Version_ID(), priceListVersionId);
 			}
 		});
 
@@ -215,7 +216,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_AttributeSetInstance pojo)
 			{
-				return Check.equals(pojo.getM_AttributeSetInstance_ID(), id);
+				return Objects.equals(pojo.getM_AttributeSetInstance_ID(), id);
 			}
 		});
 
@@ -238,7 +239,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_AttributeInstance pojo)
 			{
-				return Check.equals(pojo.getM_AttributeValue(), value) && Check.equals(pojo.getM_AttributeSetInstance_ID(), setId);
+				return Objects.equals(pojo.getM_AttributeValue(), value) && Objects.equals(pojo.getM_AttributeSetInstance_ID(), setId);
 			}
 		});
 
@@ -268,7 +269,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_AttributeValue pojo)
 			{
-				return Check.equals(pojo.getValue(), value);
+				return Objects.equals(pojo.getValue(), value);
 			}
 		});
 
@@ -291,7 +292,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_DocType pojo)
 			{
-				return Check.equals(pojo.getDocBaseType(), baseType) && Check.equals(pojo.getDocSubType(), baseType);
+				return Objects.equals(pojo.getDocBaseType(), baseType) && Objects.equals(pojo.getDocSubType(), baseType);
 			}
 		});
 
@@ -315,7 +316,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_Tax pojo)
 			{
-				return Check.equals(pojo.getRate(), rate);
+				return Objects.equals(pojo.getRate(), rate);
 			}
 		});
 
@@ -343,7 +344,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_BPartner pojo)
 			{
-				return Check.equals(pojo.getValue(), bpValue);
+				return Objects.equals(pojo.getValue(), bpValue);
 			}
 		});
 
@@ -383,7 +384,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_Order pojo)
 			{
-				return Check.equals(pojo.getDocumentNo(), orderDocNo);
+				return Objects.equals(pojo.getDocumentNo(), orderDocNo);
 			}
 		});
 
@@ -405,7 +406,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_AD_User pojo)
 			{
-				return Check.equals(pojo.getName(), userName);
+				return Objects.equals(pojo.getName(), userName);
 			}
 		});
 
@@ -432,7 +433,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_OrderLine pojo)
 			{
-				return Check.equals(pojo.getDescription(), orderLineDescription);
+				return Objects.equals(pojo.getDescription(), orderLineDescription);
 			}
 		});
 
@@ -458,7 +459,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_InvoiceSchedule pojo)
 			{
-				return Check.equals(pojo.getName(), scheduleName);
+				return Objects.equals(pojo.getName(), scheduleName);
 			}
 		});
 
@@ -482,7 +483,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_C_Charge pojo)
 			{
-				return Check.equals(pojo.getName(), chargeName);
+				return Objects.equals(pojo.getName(), chargeName);
 			}
 		});
 
@@ -509,7 +510,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_InOut pojo)
 			{
-				return Check.equals(pojo.getDocumentNo(), inoutDocumentNo);
+				return Objects.equals(pojo.getDocumentNo(), inoutDocumentNo);
 			}
 		});
 
@@ -545,7 +546,7 @@ public class AbstractTestSupport
 			@Override
 			public boolean accept(final I_M_InOutLine pojo)
 			{
-				return Check.equals(pojo.getDescription(), inOutLineDescription);
+				return Objects.equals(pojo.getDescription(), inOutLineDescription);
 			}
 		});
 

@@ -42,7 +42,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MDiscountSchema;
 import org.slf4j.Logger;
 
 import de.metas.commission.custom.type.ICommissionType;
@@ -148,7 +147,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		I_C_AdvCommissionSalaryGroup rank = null;
-		MDiscountSchema newDs = null;
+		I_M_DiscountSchema newDs = null;
 
 		final List<I_C_Sponsor> sponsorsAtDate = Services.get(ISponsorDAO.class).retrieveForSalesRepAt(customer, order.getDateOrdered());
 		if (sponsorsAtDate.isEmpty())
@@ -334,7 +333,7 @@ public class OrderLineBL implements IOrderLineBL
 	 */
 	private boolean updateDiscount(
 			final org.compiere.model.I_C_OrderLine olGen,
-			final MDiscountSchema newDs, final int precision)
+			final I_M_DiscountSchema newDs, final int precision)
 	{
 
 		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);

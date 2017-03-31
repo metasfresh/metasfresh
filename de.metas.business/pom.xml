@@ -38,9 +38,10 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- this module wants to register de.metas.dlm.coordinator.IRecordInspectors, e.g. for invoices --> 
 		<dependency>
 			<groupId>de.metas.dlm</groupId>
-			<artifactId>metasfresh-dlm</artifactId>
+			<artifactId>metasfresh-dlm-base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

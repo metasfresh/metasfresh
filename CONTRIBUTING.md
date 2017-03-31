@@ -17,7 +17,7 @@ Note that we intent to switch to GPL-3 in the future.
 
 Information about the GPL-3 and about the GPL in general can be found [here](https://www.gnu.org/licenses/quick-guide-gplv3.html).
 
-Additional information about the undlying principles of "copyleft" can be found in [this wikipedia article](https://en.wikipedia.org/wiki/Copyleft).
+Additional information about the underlying principles of "copyleft" can be found in [this wikipedia article](https://en.wikipedia.org/wiki/Copyleft).
 
 Note that your contribution remains yours and you can still lincense it as your own work under any other license you wish. 
 We are allowed to use it for metasfresh under the GPL version two, three, or any possible future version.
@@ -25,11 +25,12 @@ We are allowed to use it for metasfresh under the GPL version two, three, or any
 # How to contribute
 
 * If you don't yet have one, create a github account for yourself.
-* Create a fork of the metasfresh repositotory you want to contribute to.
+* Create a fork of the metasfresh repository you want to contribute to.
+  * **Important** please fork from the `master` branch. If you need to fork from any other branch, please consult with us first, in order to avoid possible problems down the road
 * Make your contribution and create a pull request.
 * We will review and comment on the pull request. We may suggest some changes or improvements or alternatives. We will always thread your work and of course also yourself with respect, even in case we choose not to incorporate it into metasfresh.
 
-The process of creating and maintaning a fork with git and github is explained in [this article](https://help.github.com/articles/fork-a-repo/). Note that at the articles end, there is also a link to [this article](https://help.github.com/articles/using-pull-requests/) about pull requests.
+The process of creating and maintaning a fork with git and github is explained in [this article](https://help.github.com/articles/fork-a-repo/). Note that at that article's end, there is also a link to [this article](https://help.github.com/articles/using-pull-requests/) about pull requests.
 
 If you need help, don't hesitate to contact us, for example on our [metasfresh gitter chat](https://gitter.im/metasfresh/metasfresh).
 

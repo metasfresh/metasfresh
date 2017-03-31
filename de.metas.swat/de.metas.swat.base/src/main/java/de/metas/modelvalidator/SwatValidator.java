@@ -51,7 +51,6 @@ import org.adempiere.model.tree.spi.impl.MElementValueTreeSupport;
 import org.adempiere.model.tree.spi.impl.MenuTreeSupport;
 import org.adempiere.model.tree.spi.impl.OrgTreeSupport;
 import org.adempiere.model.tree.spi.impl.ProductTreeSupport;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
@@ -83,7 +82,6 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.impl.JasperService;
 import org.compiere.util.CCache.CacheMapType;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -114,9 +112,6 @@ import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
-import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
-import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
-import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
 import de.metas.request.model.validator.R_Request;
 import de.metas.request.service.IRequestCreator;
 import de.metas.request.service.impl.AsyncRequestCreator;
@@ -229,9 +224,6 @@ public class SwatValidator implements ModelValidator
 		// pricing
 		{
 			engine.addModelValidator(new de.metas.pricing.modelvalidator.M_ProductPrice(), client); // 06931
-
-			// task 07286: a replacement for the former jboss-aop aspect <code>de.metas.adempiere.aop.PriceListCreate</code>.
-			Services.get(IPriceListBL.class).addPlvCreationListener(new AttributePlvCreationListener());
 		}
 
 		// #361: Request
@@ -367,12 +359,6 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
-
-		final CacheMgt cacheMgt = CacheMgt.get();
-
-		// task 09509: changes in the pricing data shall also be propagated to other hosts
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice_Attribute.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ProductPrice_Attribute_Line.Table_Name);
 	}
 
 	@Override

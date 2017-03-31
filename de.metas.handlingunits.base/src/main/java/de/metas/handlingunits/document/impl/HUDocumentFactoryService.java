@@ -47,8 +47,6 @@ public class HUDocumentFactoryService implements IHUDocumentFactoryService
 
 	public HUDocumentFactoryService()
 	{
-		super();
-
 		//
 		// Register standard factories
 		registerHUDocumentFactory(I_M_HU.Table_Name, new HandlingUnitHUDocumentFactory());

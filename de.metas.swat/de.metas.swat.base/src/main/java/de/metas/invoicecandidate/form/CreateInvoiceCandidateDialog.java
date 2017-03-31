@@ -53,8 +53,10 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.api.IPriceListBL;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VLookup;
@@ -64,6 +66,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -76,6 +79,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
+
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -400,13 +404,17 @@ public class CreateInvoiceCandidateDialog
 						locationField.getValueAsInt(),
 						I_C_BPartner_Location.class,
 						InterfaceWrapperHelper.getTrxName(product));
+				
+				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
+						pricingSystem //
+						, location.getC_Location().getC_Country() // country
+						, SystemTime.asDayTimestamp() // date
+						, isSOTrx //
+						, (Boolean)null // processedPLVFiltering
+						);
 
-				productPrice = priceListBL.getCurrentProductPrice(
-						contextProvider,
-						pricingSystem,
-						product,
-						location.getC_Location().getC_Country(),
-						isSOTrx);
+				productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(currentVersion, product.getM_Product_ID())
+						.orElse(null);
 			}
 			if (productPrice == null)
 			{

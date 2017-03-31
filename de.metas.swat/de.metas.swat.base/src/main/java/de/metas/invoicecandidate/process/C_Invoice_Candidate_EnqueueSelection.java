@@ -38,6 +38,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
+import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -46,9 +47,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.process.RunOutOfTrx;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.process.RunOutOfTrx;
 
 /**
  * @author cg
@@ -108,11 +109,20 @@ public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 		{
 			return;
 		}
-		final boolean performEnqueuing = Services.get(IClientUI.class).ask()
-				.setParentWindowNo(getProcessInfo().getWindowNo())
-				.setAD_Message(MSG_InvoiceCandidate_PerformEnqueuing, selectionCount, bpartnerCount)
-				.setDefaultAnswer(false)
-				.getAnswer();
+		final boolean performEnqueuing;
+		if (Ini.isClient())
+		{
+			performEnqueuing = Services.get(IClientUI.class).ask()
+					.setParentWindowNo(getProcessInfo().getWindowNo())
+					.setAD_Message(MSG_InvoiceCandidate_PerformEnqueuing, selectionCount, bpartnerCount)
+					.setDefaultAnswer(false)
+					.getAnswer();
+		}
+		else
+		{
+			performEnqueuing = true;
+		}
+		
 		// if the enqueuing was not accepted by the user, do nothing
 		if (!performEnqueuing)
 		{

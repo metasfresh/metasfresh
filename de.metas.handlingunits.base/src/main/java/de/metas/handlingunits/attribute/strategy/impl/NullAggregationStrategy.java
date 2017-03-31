@@ -33,7 +33,6 @@ public final class NullAggregationStrategy implements IAttributeAggregationStrat
 
 	private NullAggregationStrategy()
 	{
-		super();
 	}
 
 	/**

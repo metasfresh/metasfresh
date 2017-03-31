@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.spi.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,11 +49,11 @@ import de.metas.interfaces.I_C_BP_Relation;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -101,7 +102,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		Check.assumeNotNull(attribute, "Parameter attribute is not null");
 		this.attribute = attribute;
 	}
-	
+
 	@Override
 	public String getCachePrefix()
 	{
@@ -130,9 +131,14 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	{
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
 
+		final KeyNamePair nullValue = KeyNamePair.of(0, DISPLAYNAME_None.translate(adLanguage));
+		if (adLanguage == null)
+		{
+			return nullValue; // guard against NPE, which happened when running this code via async-processor on an "embedded server"
+		}
 		// NOTE: we use KeyNamePair's Key=0 because "-1" is specially handled by KeyNamePair (see KeyNamePair.getID() which returns null)
 		// and we run in some weird problems
-		return adLanguage2keyNamePairNone.computeIfAbsent(adLanguage, key -> KeyNamePair.of(0, DISPLAYNAME_None.translate(adLanguage)));
+		return adLanguage2keyNamePairNone.computeIfAbsent(adLanguage, key -> nullValue);
 
 	}
 
@@ -202,13 +208,38 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		return hu2subProducers.getOrLoad(cacheKey, () -> retrieveSubProducerKeyNamePairs(attribute, bpartnerId, currentSubProducerBPartnerId));
 	}
 
+	private static final String normalizeValueKey(final Object valueKey)
+	{
+		if(valueKey == null)
+		{
+			return null;
+		}
+		else if (valueKey instanceof Number)
+		{
+			final int valueKeyAsInt = ((Number)valueKey).intValue();
+			return String.valueOf(valueKeyAsInt);
+		}
+		else
+		{
+			return valueKey.toString();
+		}
+	}
+
 	@Override
-	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final String value)
+	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
 		final List<? extends NamePair> availableValues = getAvailableValues(evalCtx);
+		if(availableValues.isEmpty())
+		{
+			return null;
+		}
+		
+		// Normalize the valueKey
+		final String valueKeyNormalized = normalizeValueKey(valueKey);
+		
 		for (final NamePair vnp : availableValues)
 		{
-			if (Check.equals(vnp.getID(), value))
+			if (Objects.equals(vnp.getID(), valueKeyNormalized))
 			{
 				return vnp;
 			}
@@ -218,7 +249,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final String valueKey)
+	public int getM_AttributeValue_ID(final Object valueKey)
 	{
 		return -1;
 	}

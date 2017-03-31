@@ -29,7 +29,14 @@ package org.compiere.util;
  *
  * @see CacheMgt#addCacheResetListener(String, ICacheResetListener)
  */
+@FunctionalInterface
 public interface ICacheResetListener
 {
+	/**
+	 * Method called when listened cache got reset.
+	 * 
+	 * @param tableName
+	 * @param key actual key or <code>null</code> in case the whole cache got reset
+	 */
 	int reset(String tableName, Object key);
 }

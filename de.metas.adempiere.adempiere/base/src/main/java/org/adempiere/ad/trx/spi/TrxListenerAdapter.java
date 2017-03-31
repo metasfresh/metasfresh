@@ -37,25 +37,25 @@ public abstract class TrxListenerAdapter implements ITrxListener
 	private boolean active = true; // active until explicitly deactivated
 
 	@Override
-	public void beforeCommit(ITrx trx)
+	public void beforeCommit(final ITrx trx)
 	{
 		// nothing
 	}
 
 	@Override
-	public void afterCommit(ITrx trx)
+	public void afterCommit(final ITrx trx)
 	{
 		// nothing
 	}
 
 	@Override
-	public void afterRollback(ITrx trx)
+	public void afterRollback(final ITrx trx)
 	{
 		// nothing
 	}
 
 	@Override
-	public void afterClose(ITrx trx)
+	public void afterClose(final ITrx trx)
 	{
 		// nothing
 	}

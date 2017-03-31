@@ -113,6 +113,9 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	 *
 	 * @param onItemErrorPolicy
 	 * @return
+	 *
+	 * @see ITrxItemProcessorExecutor#DEFAULT_OnItemErrorPolicy for the default value.
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/302
 	 */
 	ITrxItemExecutorBuilder<IT, RT> setOnItemErrorPolicy(OnItemErrorPolicy onItemErrorPolicy);

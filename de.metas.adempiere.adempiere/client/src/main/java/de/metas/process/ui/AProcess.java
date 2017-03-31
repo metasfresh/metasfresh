@@ -5,15 +5,14 @@ package de.metas.process.ui;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 
 import javax.swing.AbstractButton;
 import javax.swing.JPopupMenu;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.APanel;
 import org.compiere.apps.AppsAction;
 import org.compiere.grid.ed.VButton;
-import org.compiere.model.I_AD_Process;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
@@ -53,17 +52,25 @@ public class AProcess
 		action.setDelegate(event -> showPopup());
 	}
 
+	private Properties getCtx()
+	{
+		return Env.getCtx();
+	}
+
 	private JPopupMenu getPopupMenu()
 	{
-		final List<I_AD_Process> processes = model.fetchProcesses(Env.getCtx(), parent.getCurrentTab());
+		final Properties ctx = getCtx();
+		final List<SwingRelatedProcessDescriptor> processes = model.fetchProcesses(ctx, parent.getCurrentTab());
 		if (processes.isEmpty())
 		{
 			return null;
 		}
 
+		final String adLanguage = Env.getAD_Language(ctx);
+
 		final JPopupMenu popup = new JPopupMenu("ProcessMenu");
 		processes.stream()
-				.map(process -> createProcessMenuItem(process))
+				.map(process -> createProcessMenuItem(process, adLanguage))
 				.sorted(Comparator.comparing(CMenuItem::getText))
 				.forEach(mi -> popup.add(mi));
 
@@ -85,27 +92,41 @@ public class AProcess
 		}
 	}
 
-	private CMenuItem createProcessMenuItem(final I_AD_Process process)
+	private CMenuItem createProcessMenuItem(final SwingRelatedProcessDescriptor process, final String adLanguage)
 	{
-		final CMenuItem mi = new CMenuItem(model.getDisplayName(process));
-		mi.setIcon(model.getIcon(process));
-		mi.setToolTipText(model.getDescription(process));
-		mi.addActionListener(event -> startProcess(process));
+		final CMenuItem mi = new CMenuItem(process.getCaption(adLanguage));
+		mi.setIcon(process.getIcon());
+		mi.setToolTipText(process.getDescription(adLanguage));
+		
+		if (process.isEnabled())
+		{
+			mi.setEnabled(true);
+			mi.addActionListener(event -> startProcess(process));
+		}
+		else
+		{
+			mi.setEnabled(false);
+			mi.setToolTipText(process.getDisabledReason(adLanguage));
+		}
+		
 		return mi;
 	}
 
-	private void startProcess(final I_AD_Process process)
+	private void startProcess(final SwingRelatedProcessDescriptor process)
 	{
-		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class);
+		final String adLanguage = Env.getAD_Language(getCtx());
+
 		final VButton button = new VButton(
-				"StartProcess",    // columnName,
-				false,    // mandatory,
-				false,    // isReadOnly,
-				true,    // isUpdateable,
-				processTrl.getName(),
-				processTrl.getDescription(),
-				processTrl.getHelp(),
+				"StartProcess", // columnName,
+				false,        // mandatory,
+				false,        // isReadOnly,
+				true,        // isUpdateable,
+				process.getCaption(adLanguage),
+				process.getDescription(adLanguage),
+				process.getHelp(adLanguage),
 				process.getAD_Process_ID());
+		
+		// Invoke action
 		parent.actionButton(button);
 	}
 }

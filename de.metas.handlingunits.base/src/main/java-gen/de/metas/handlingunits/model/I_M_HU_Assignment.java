@@ -291,7 +291,9 @@ public interface I_M_HU_Assignment
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProducts (java.lang.String Products);
 
 	/**

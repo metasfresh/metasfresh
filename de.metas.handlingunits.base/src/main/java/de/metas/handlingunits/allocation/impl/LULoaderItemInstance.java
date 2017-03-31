@@ -133,7 +133,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 	 */
 	public boolean addTU(final I_M_HU tuHU)
 	{
-		if (!acceptTU(tuHU))
+		if (!isMatchTU(tuHU))
 		{
 			return false;
 		}
@@ -147,7 +147,10 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 		return true;
 	}
 
-	private boolean acceptTU(final I_M_HU tuHU)
+	/**
+	 * @return {@code true} if the given {@code tuHU} fits to this instance's wrapped item. 
+	 */
+	public boolean isMatchTU(final I_M_HU tuHU)
 	{
 		//
 		// Check if TU's M_HU_PI_ID is accepted

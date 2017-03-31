@@ -27,12 +27,12 @@ package org.adempiere.inout.replenish.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,6 +44,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
@@ -69,17 +70,17 @@ import org.compiere.util.Msg;
 import org.compiere.util.ReplenishInterface;
 
 import de.metas.adempiere.service.IOrderBL;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 
 /**
  *	Replenishment Report
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: ReplenishReport.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
- *  
+ *
  *  Carlos Ruiz globalqss - integrate bug fixing from Chris Farley
  *    [ 1619517 ] Replenish report fails when no records in m_storage
  */
@@ -95,10 +96,11 @@ public class ReplenishReport extends JavaProcess
 	private int		p_C_DocType_ID = 0;
 	/** Return Info				*/
 	private String	m_info = "";
-	
+
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -122,20 +124,21 @@ public class ReplenishReport extends JavaProcess
 
 	/**
 	 *  Perrform process.
-	 *  @return Message 
+	 *  @return Message
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("M_Warehouse_ID=" + p_M_Warehouse_ID 
-			+ ", C_BPartner_ID=" + p_C_BPartner_ID 
+		log.info("M_Warehouse_ID=" + p_M_Warehouse_ID
+			+ ", C_BPartner_ID=" + p_C_BPartner_ID
 			+ " - ReplenishmentCreate=" + p_ReplenishmentCreate
 			+ ", C_DocType_ID=" + p_C_DocType_ID);
 		if (p_ReplenishmentCreate != null && p_C_DocType_ID == 0)
 			throw new AdempiereUserError("@FillMandatory@ @C_DocType_ID@");
-		
+
 		MWarehouse wh = MWarehouse.get(getCtx(), p_M_Warehouse_ID);
-		if (wh.get_ID() == 0)  
+		if (wh.get_ID() == 0)
 			throw new AdempiereSystemError("@FillMandatory@ @M_Warehouse_ID@");
 		//
 		prepareTable();
@@ -169,7 +172,7 @@ public class ReplenishReport extends JavaProcess
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected Max_Level=" + no);
-		
+
 		//	Minimum Order should be 1
 		sql = "UPDATE M_Product_PO"
 			+ " SET Order_Min = 1 "
@@ -177,7 +180,7 @@ public class ReplenishReport extends JavaProcess
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected Order Min=" + no);
-		
+
 		//	Pack should be 1
 		sql = "UPDATE M_Product_PO"
 			+ " SET Order_Pack = 1 "
@@ -209,7 +212,7 @@ public class ReplenishReport extends JavaProcess
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Corrected CurrentVendor(N)=" + no);
-		
+
 		//	Just to be sure
 		sql = "DELETE FROM T_Replenish WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
@@ -228,7 +231,7 @@ public class ReplenishReport extends JavaProcess
 			+ " ReplenishType, Level_Min, Level_Max,"
 			+ " C_BPartner_ID, Order_Min, Order_Pack, QtyToOrder, ReplenishmentCreate,"
 			+ " C_Calendar_ID, C_Period_ID, TimeToMarket)"
-			+ "SELECT " + getAD_PInstance_ID() 
+			+ "SELECT " + getAD_PInstance_ID()
 				+ ", r.M_Warehouse_ID, r.M_Product_ID, r.AD_Client_ID, r.AD_Org_ID,"
 			+ " r.ReplenishType, r.Level_Min, r.Level_Max,"
 			+ " po.C_BPartner_ID, po.Order_Min, po.Order_Pack, 0, ";
@@ -236,9 +239,9 @@ public class ReplenishReport extends JavaProcess
 			sql += "null";
 		else
 			sql += "'" + p_ReplenishmentCreate + "'";
-		
+
 		sql += ", r.C_Calendar_ID, r.C_Period_ID, r.TimeToMarket";
-		
+
 		sql += " FROM M_Replenish r"
 			+ " INNER JOIN M_Product_PO po ON (r.M_Product_ID=po.M_Product_ID) "
 			+ "WHERE po.IsCurrentVendor='Y'"	//	Only Current Vendor
@@ -250,7 +253,7 @@ public class ReplenishReport extends JavaProcess
 		int no = DB.executeUpdate(sql, get_TrxName());
 		log.trace(sql);
 		log.debug("Insert (1) #" + no);
-		
+
 		if (p_C_BPartner_ID == 0)
 		{
 			sql = "INSERT INTO T_Replenish "
@@ -266,9 +269,9 @@ public class ReplenishReport extends JavaProcess
 				sql += "null";
 			else
 				sql += "'" + p_ReplenishmentCreate + "'";
-			
+
 			sql += ", r.C_Calendar_ID, r.C_Period_ID, r.TimeToMarket";
-			
+
 			sql	+= " FROM M_Replenish r "
 				+ "WHERE r.ReplenishType<>'0' AND r.IsActive='Y'"
 				+ " AND r.M_Warehouse_ID=" + p_M_Warehouse_ID
@@ -278,7 +281,7 @@ public class ReplenishReport extends JavaProcess
 			no = DB.executeUpdate(sql, get_TrxName());
 			log.debug("Insert (BP) #" + no);
 		}
-		
+
 		sql = "UPDATE T_Replenish t SET "
 			+ "QtyOnHand = (SELECT COALESCE(SUM(QtyOnHand),0) FROM M_Storage s, M_Locator l WHERE t.M_Product_ID=s.M_Product_ID"
 				+ " AND l.M_Locator_ID=s.M_Locator_ID AND l.M_Warehouse_ID=t.M_Warehouse_ID),"
@@ -303,7 +306,7 @@ public class ReplenishReport extends JavaProcess
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Deleted Inactive=" + no);
-	 
+
 		//	Ensure Data consistency
 		sql = "UPDATE T_Replenish SET QtyOnHand = 0 WHERE QtyOnHand IS NULL";
 		no = DB.executeUpdate(sql, get_TrxName());
@@ -318,7 +321,7 @@ public class ReplenishReport extends JavaProcess
 			+ " SET QtyToOrder = CASE WHEN QtyOnHand - QtyReserved + QtyOrdered <= Level_Min "
 			+ " THEN Level_Max - QtyOnHand + QtyReserved - QtyOrdered "
 			+ " ELSE 0 END "
-			+ "WHERE ReplenishType='1'" 
+			+ "WHERE ReplenishType='1'"
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
@@ -327,18 +330,18 @@ public class ReplenishReport extends JavaProcess
 		//	X_M_Replenish.REPLENISHTYPE_MaintainMaximumLevel
 		sql = "UPDATE T_Replenish"
 			+ " SET QtyToOrder = Level_Max - QtyOnHand + QtyReserved - QtyOrdered "
-			+ "WHERE ReplenishType='2'" 
+			+ "WHERE ReplenishType='2'"
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Update Type-2=" + no);
-	
+
 
 		//	Minimum Order Quantity
 		sql = "UPDATE T_Replenish"
 			+ " SET QtyToOrder = Order_Min "
 			+ "WHERE QtyToOrder < Order_Min"
-			+ " AND QtyToOrder > 0" 
+			+ " AND QtyToOrder > 0"
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
@@ -353,12 +356,12 @@ public class ReplenishReport extends JavaProcess
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Set OrderPackQty=" + no);
-		
+
 		//	Source from other warehouse
 		if (wh.getM_WarehouseSource_ID() != 0)
 		{
 			sql = "UPDATE T_Replenish"
-				+ " SET M_WarehouseSource_ID=" + wh.getM_WarehouseSource_ID() 
+				+ " SET M_WarehouseSource_ID=" + wh.getM_WarehouseSource_ID()
 				+ " WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
 			no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
@@ -366,17 +369,17 @@ public class ReplenishReport extends JavaProcess
 		}
 		//	Check Source Warehouse
 		sql = "UPDATE T_Replenish"
-			+ " SET M_WarehouseSource_ID = NULL " 
+			+ " SET M_WarehouseSource_ID = NULL "
 			+ "WHERE M_Warehouse_ID=M_WarehouseSource_ID"
 			+ " AND AD_PInstance_ID=" + getAD_PInstance_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("Set same Source Warehouse=" + no);
-		
+
 		//	Custom Replenishment
 		String className = wh.getReplenishmentClass();
 		if (className != null && className.length() > 0)
-		{	
+		{
 			//	Get Replenishment Class
 			ReplenishInterface custom = null;
 			try
@@ -391,14 +394,14 @@ public class ReplenishReport extends JavaProcess
 			}
 			excecReplenishInterface(wh, custom, X_M_Replenish.REPLENISHTYPE_Custom);
 		}
-		
+
 		//metas
 		// X_M_Replenish.REPLENISHTYPE_EnsureFutureCapacity
 		final ReplenishInterface replenishForFutureCapacity = new ReplenishForFutureQtyServiceInvoker();
-		excecReplenishInterface(wh, replenishForFutureCapacity, 
+		excecReplenishInterface(wh, replenishForFutureCapacity,
 				Constants.REPLENISHTYPE_EnsureFutureQty);
 		//metas end
-		
+
 		//	Delete rows where nothing to order
 		sql = "DELETE FROM T_Replenish "
 			+ "WHERE QtyToOrder < 1"
@@ -410,7 +413,7 @@ public class ReplenishReport extends JavaProcess
 
 	private void excecReplenishInterface(MWarehouse wh,
 			ReplenishInterface custom, String replenishType) {
-		
+
 		X_T_Replenish[] replenishs = getReplenish("ReplenishType='"+replenishType+'\'');
 		for (int i = 0; i < replenishs.length; i++)
 		{
@@ -451,17 +454,17 @@ public class ReplenishReport extends JavaProcess
 			if (wh == null || wh.getM_Warehouse_ID() != replenish.getM_Warehouse_ID())
 				wh = MWarehouse.get(getCtx(), replenish.getM_Warehouse_ID());
 			//
-			if (order == null 
+			if (order == null
 				|| order.getC_BPartner_ID() != replenish.getC_BPartner_ID()
 				|| order.getM_Warehouse_ID() != replenish.getM_Warehouse_ID())
 			{
 				order = new MOrder(getCtx(), 0, get_TrxName());
 				order.setIsSOTrx(false);
 				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
-				
+
 				final MBPartner bp = new MBPartner(getCtx(), replenish.getC_BPartner_ID(), get_TrxName());
 				Services.get(IOrderBL.class).setBPartner(order, bp);
-				
+
 				order.setSalesRep_ID(getAD_User_ID());
 				order.setDescription(Msg.getMsg(getCtx(), "Replenishment"));
 				//	Set Org/WH
@@ -482,7 +485,7 @@ public class ReplenishReport extends JavaProcess
 		m_info = "#" + noOrders + info;
 		log.info(m_info);
 	}	//	createPO
-	
+
 	/**
 	 * 	Create Requisition
 	 */
@@ -559,7 +562,7 @@ public class ReplenishReport extends JavaProcess
 			{
 				M_WarehouseSource_ID = replenish.getM_WarehouseSource_ID();
 				M_Warehouse_ID = replenish.getM_Warehouse_ID();
-				
+
 				move = new MMovement (getCtx(), 0, get_TrxName());
 				move.setC_DocType_ID(p_C_DocType_ID);
 				move.setDescription(Msg.getMsg(getCtx(), "Replenishment")
@@ -577,9 +580,9 @@ public class ReplenishReport extends JavaProcess
 			//	From: Look-up Storage
 			MProduct product = MProduct.get(getCtx(), replenish.getM_Product_ID());
 			String MMPolicy = product.getMMPolicy();
-			MStorage[] storages = MStorage.getWarehouse(getCtx(), 
+			MStorage[] storages = MStorage.getWarehouse(getCtx(),
 				whSource.getM_Warehouse_ID(), replenish.getM_Product_ID(), 0, 0,
-				true, null, 
+				true, null,
 				MClient.MMPOLICY_FiFo.equals(MMPolicy), get_TrxName());
 			//
 			BigDecimal target = replenish.getQtyToOrder();
@@ -598,9 +601,9 @@ public class ReplenishReport extends JavaProcess
 				if (replenish.getQtyToOrder().compareTo(moveQty) != 0)
 					line.setDescription("Total: " + replenish.getQtyToOrder());
 				line.setM_Locator_ID(storage.getM_Locator_ID());		//	from
-				line.setM_AttributeSetInstance_ID(storage.getM_AttributeSetInstance_ID());
+				line.setM_AttributeSetInstance_ID(0 /* storage.getM_AttributeSetInstance_ID() */);
 				line.setM_LocatorTo_ID(M_LocatorTo_ID);					//	to
-				line.setM_AttributeSetInstanceTo_ID(storage.getM_AttributeSetInstance_ID());
+				line.setM_AttributeSetInstanceTo_ID(0 /* storage.getM_AttributeSetInstance_ID() */);
 				line.save();
 				//
 				target = target.subtract(moveQty);
@@ -631,7 +634,7 @@ public class ReplenishReport extends JavaProcess
 		if (where != null && where.length() > 0)
 			sql += " AND " + where;
 		sql	+= " ORDER BY M_Warehouse_ID, M_WarehouseSource_ID, C_BPartner_ID";
-		ArrayList<X_T_Replenish> list = new ArrayList<X_T_Replenish>();
+		ArrayList<X_T_Replenish> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -662,5 +665,5 @@ public class ReplenishReport extends JavaProcess
 		list.toArray (retValue);
 		return retValue;
 	}	//	getReplenish
-	
+
 }	//	Replenish

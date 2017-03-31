@@ -53,7 +53,8 @@ public interface IAllocationSource
 	List<IPair<IAllocationRequest, IAllocationResult>> unloadAll(IHUContext huContext);
 
 	/**
-	 * Called by API when an entire unloading round was finished and database transaction is about to COMMIT.
+	 * Called by API when an entire unloading round was finished and database transaction is about to COMMIT.<br>
+	 * Note that this also means that the full loading was done. 
 	 *
 	 * Implementations of this method can clean up, process or complete data created while loading
 	 *

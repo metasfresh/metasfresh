@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2077721723L;
+	private static final long serialVersionUID = 936190244L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -29,9 +29,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 // Y
 			setIsInPayroll (false);
 // N
+			setIsMFProcurementUser (false);
+// N
+			setIsPurchaseContact_Default (false);
+// N
+			setIsSalesContact_Default (false);
+// N
 			setName (null);
 			setNotificationType (null);
-// E
+// N
         } */
     }
 
@@ -107,6 +113,43 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
+	}
+
+	/** Set Betreuer.
+		@param AD_User_InCharge_ID 
+		Person, die bei einem fachlichen Problem vom System informiert wird.
+	  */
+	@Override
+	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
+	{
+		if (AD_User_InCharge_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+	}
+
+	/** Get Betreuer.
+		@return Person, die bei einem fachlichen Problem vom System informiert wird.
+	  */
+	@Override
+	public int getAD_User_InCharge_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -662,6 +705,32 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
+	/** Set Mengenmeldung-WebUI.
+		@param IsMFProcurementUser 
+		Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	  */
+	@Override
+	public void setIsMFProcurementUser (boolean IsMFProcurementUser)
+	{
+		set_Value (COLUMNNAME_IsMFProcurementUser, Boolean.valueOf(IsMFProcurementUser));
+	}
+
+	/** Get Mengenmeldung-WebUI.
+		@return Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	  */
+	@Override
+	public boolean isMFProcurementUser () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsMFProcurementUser);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Einkaufskontakt.
 		@param IsPurchaseContact Einkaufskontakt	  */
 	@Override
@@ -685,6 +754,29 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
+	/** Set IsPurchaseContact_Default.
+		@param IsPurchaseContact_Default IsPurchaseContact_Default	  */
+	@Override
+	public void setIsPurchaseContact_Default (boolean IsPurchaseContact_Default)
+	{
+		set_Value (COLUMNNAME_IsPurchaseContact_Default, Boolean.valueOf(IsPurchaseContact_Default));
+	}
+
+	/** Get IsPurchaseContact_Default.
+		@return IsPurchaseContact_Default	  */
+	@Override
+	public boolean isPurchaseContact_Default () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPurchaseContact_Default);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set IsSalesContact.
 		@param IsSalesContact IsSalesContact	  */
 	@Override
@@ -699,6 +791,29 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isSalesContact () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSalesContact);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsSalesContact_Default.
+		@param IsSalesContact_Default IsSalesContact_Default	  */
+	@Override
+	public void setIsSalesContact_Default (boolean IsSalesContact_Default)
+	{
+		set_Value (COLUMNNAME_IsSalesContact_Default, Boolean.valueOf(IsSalesContact_Default));
+	}
+
+	/** Get IsSalesContact_Default.
+		@return IsSalesContact_Default	  */
+	@Override
+	public boolean isSalesContact_Default () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSalesContact_Default);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -798,6 +913,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public static final String NOTIFICATIONTYPE_None = "X";
 	/** EMailPlusNotice = B */
 	public static final String NOTIFICATIONTYPE_EMailPlusNotice = "B";
+	/** NotifyUserInCharge = O */
+	public static final String NOTIFICATIONTYPE_NotifyUserInCharge = "O";
 	/** Set Benachrichtigungs-Art.
 		@param NotificationType 
 		Type of Notifications

@@ -278,7 +278,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 					Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", schedule);
 					return Collections.emptyList();
 				}
-
+				Loggables.get().withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", schedule);
 				final String errorMsg = Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(schedule), MSG_NoQtyPicked);
 				throw new AdempiereException(errorMsg);
 			}
@@ -480,10 +480,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Execute transfer
-		final HULoader loader = new HULoader(allocationSource, allocationDestination);
-		loader.setAllowPartialLoads(false);
-		loader.setAllowPartialUnloads(false);
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result = HULoader.of(allocationSource, allocationDestination)
+				.setAllowPartialLoads(false)
+				.setAllowPartialUnloads(false)
+				.load(request);
 		Check.assume(result.isCompleted(), "Result shall be completed: {}", result);
 
 		// NOTE: at this point we shall have QtyPicked records with M_LU_HU_ID set

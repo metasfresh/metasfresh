@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +51,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.NullHUIteratorListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -60,7 +60,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 {
 	//
 	// Services
-	protected final IHandlingUnitsDAO dao = Services.get(IHandlingUnitsDAO.class);
+	protected final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	protected final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	//
@@ -87,10 +87,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 
 	protected static enum HUIteratorStatus
 	{
-		NeverStarted,
-		Running,
-		Stopped,
-		Finished,
+		NeverStarted, Running, Stopped, Finished,
 	}
 
 	private HUIteratorStatus _status = HUIteratorStatus.NeverStarted;
@@ -111,10 +108,11 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final void setListener(final IHUIteratorListener listener)
+	public final IHUIterator setListener(final IHUIteratorListener listener)
 	{
 		Check.assumeNotNull(listener, "listener not null");
 		this.listener = listener;
+		return this;
 	}
 
 	protected IHUIteratorListener getActiveListener()
@@ -123,9 +121,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final void setHUContext(final IHUContext huContext)
+	public IHUIterator setHUContext(final IHUContext huContext)
 	{
 		_huContext = huContext;
+		return this;
 	}
 
 	@Override
@@ -156,9 +155,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public void setCtx(final Properties ctx)
+	public IHUIterator setCtx(final Properties ctx)
 	{
 		this.ctx = ctx;
+		return this;
 	}
 
 	@Override
@@ -174,9 +174,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public final void setDate(final Date date)
+	public IHUIterator setDate(final Date date)
 	{
 		_date = (Date)date.clone();
+		return this;
 	}
 
 	@Override
@@ -259,8 +260,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 
 		switch (statusNew)
 		{
-		//
-		// Change status to Running
+			//
+			// Change status to Running
 			case Running:
 				Check.errorIf(listener == null, "listener member of {} may not be null", this);
 				_status = HUIteratorStatus.Running;
@@ -375,7 +376,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 				case STOP:
 					setStatus(HUIteratorStatus.Stopped);
 					return;
-					// break;
+				// break;
 				case SKIP_DOWNSTREAM:
 					skipDownstream = true;
 					break;
@@ -404,7 +405,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 				case STOP:
 					setStatus(HUIteratorStatus.Stopped);
 					return;
-					// break;
+				// break;
 				case SKIP_DOWNSTREAM:
 					throw new AdempiereException("Unexpected after result: " + afterResult);
 					// break;
@@ -480,7 +481,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		/**
 		 * Get iterator used to navigate downstream nodes.
 		 *
-		 * If returned iterator is <code>null</code>, downstream nodes will not be iteratated.
+		 * If returned iterator is <code>null</code>, downstream nodes will not be iterated.
 		 *
 		 * @param node
 		 * @return downstream nodes iterator or <code>null</code>
@@ -513,9 +514,9 @@ public abstract class AbstractHUIterator implements IHUIterator
 		}
 
 		@Override
-		public final Result afterIterate(final I_M_HU node)
+		public final Result afterIterate(final I_M_HU hu)
 		{
-			return getActiveListener().afterHU(node);
+			return getActiveListener().afterHU(hu);
 		}
 
 		@Override
@@ -527,7 +528,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		@Override
 		public List<?> retrieveDownstreamNodes(final I_M_HU node)
 		{
-			return new ArrayList<Object>(dao.retrieveItems(node));
+			return new ArrayList<Object>(handlingUnitsDAO.retrieveItems(node));
 		}
 
 		@Override
@@ -566,34 +567,34 @@ public abstract class AbstractHUIterator implements IHUIterator
 		@Override
 		public AbstractNodeIterator<?> getDownstreamNodeIterator(final I_M_HU_Item node)
 		{
+
 			final String itemType = handlingUnitsBL.getItemType(node);
-			if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+			switch (itemType)
 			{
-				return getNodeIteratorOrNull(I_M_HU.class);
-			}
-			else if (X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType))
-			{
-				// If this item is part of a Virtual HU, then we can navigate through it's Item Storages
-				if (handlingUnitsBL.isVirtual(node))
-				{
-					return getNodeIteratorOrNull(IHUItemStorage.class);
-				}
-				// If this item is NOT part of a virtual HU it means that under this item we have Virtual HUs
-				// so instead of navigating through Item Storages (which is just an aggregation of VHUs storages)
-				// better navigate through its VHUs and then on VHU level we will navigate through it's Item Storages
-				else
-				{
+				case X_M_HU_Item.ITEMTYPE_HandlingUnit:
 					return getNodeIteratorOrNull(I_M_HU.class);
-				}
-			}
-			else if (X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
-			{
-				// nothing to navigate downstream of this node
-				return NULL_NODE_ITERATOR;
-			}
-			else
-			{
-				throw new IllegalArgumentException("No downstream iterator for " + node + " (type=" + itemType + ")");
+					
+				case X_M_HU_Item.ITEMTYPE_HUAggregate:
+					return getNodeIteratorOrNull(I_M_HU.class); // same as ITEMTYPE_HandlingUnit because in the end it's just a special kind of M_HU
+
+				case X_M_HU_PI_Item.ITEMTYPE_Material:
+
+					// If this item is part of a Virtual HU, then we can navigate through it's Item Storages
+					if (handlingUnitsBL.isVirtual(node))
+					{
+						return getNodeIteratorOrNull(IHUItemStorage.class);
+					}
+					// If this item is NOT part of a virtual HU it means that under this item we have Virtual HUs
+					// so instead of navigating through Item Storages (which is just an aggregation of VHUs storages)
+					// better navigate through its VHUs and then on VHU level we will navigate through it's Item Storages
+					return getNodeIteratorOrNull(I_M_HU.class);
+	
+				case X_M_HU_PI_Item.ITEMTYPE_PackingMaterial:
+					// nothing to navigate downstream of this node
+					return NULL_NODE_ITERATOR;
+
+				default:
+					throw new IllegalArgumentException("No downstream iterator for " + node + " (type=" + itemType + ")");
 			}
 		}
 
@@ -601,12 +602,13 @@ public abstract class AbstractHUIterator implements IHUIterator
 		public List<Object> retrieveDownstreamNodes(final I_M_HU_Item node)
 		{
 			final String itemType = handlingUnitsBL.getItemType(node);
-			if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+			if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
-				final List<I_M_HU> includedHUs = dao.retrieveIncludedHUs(node);
+				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(node);
 				return new ArrayList<Object>(includedHUs);
 			}
-			else if (X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType))
+			else if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType) 
+					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType)) // gh #1099: this is the actual fix. Also load VHUs that are below HA items.
 			{
 				if (handlingUnitsBL.isVirtual(node))
 				{
@@ -616,7 +618,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 				else
 				{
 					// Navigate included Virtual HUs
-					final List<I_M_HU> vhus = dao.retrieveVirtualHUs(node);
+					final List<I_M_HU> vhus = handlingUnitsDAO.retrieveVirtualHUs(node);
 					return new ArrayList<Object>(vhus);
 				}
 			}

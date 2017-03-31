@@ -87,6 +87,8 @@ import de.metas.interfaces.I_C_BPartner;
 		//
 		// Update LU/TU configuration
 		updateLUTUConfiguration(lutuConfiguration, documentLine);
+		
+		// NOTE: don't save it
 
 		return lutuConfiguration;
 	}

@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.BooleanUtils;
 
+import com.google.common.base.MoreObjects;
+
 /*
  * #%L
  * de.metas.device.scales
@@ -94,6 +96,8 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 	@Override
 	public String toString()
 	{
-		return String.format("ConfigureDeviceHandler [device=%s]", device);
+		return MoreObjects.toStringHelper(this)
+				.add("device", device)
+				.toString();
 	}
 }

@@ -228,7 +228,12 @@ import de.metas.logging.LogManager;
 				final String name = model.getPropertyDisplayName(propertyName);
 				throw new WrongValueException(editor, "@NotValid@ " + name);
 			}
+
+			// task #857
+			// Make sure all the values set in UI are pushed to the model when they are validated and the OK button is pressed
+			setValueFromUI(propertyName, editor.getValue(), editor);
 		}
+
 	}
 
 	/**
@@ -425,7 +430,7 @@ import de.metas.logging.LogManager;
 					true,       // withButtons,
 					false,       // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
-				editor.addListener(new PropertyChangeListener()
+			editor.addListener(new PropertyChangeListener()
 			{
 				@Override
 				public void propertyChange(final PropertyChangeEvent evt)
@@ -436,6 +441,7 @@ import de.metas.logging.LogManager;
 						setValueFromUI(propertyName, value, editor);
 					}
 				}
+
 				// @formatter:off
 				@Override public String toString() { return "SwingPropertiesPanel[<anonymous propertyChangeListener for property=" + propertyName + " and editor=" + editor+">]"; }
 				// @formatter:on
@@ -547,9 +553,11 @@ import de.metas.logging.LogManager;
 							|| fireValueChangedOnFocusLost && isValueChanged
 							|| isFocusLost)
 					{
+
 						final Object value = editor.getText();
 						setValueFromUI(propertyName, value, editor);
 					}
+
 				}
 			});
 
@@ -663,4 +671,5 @@ import de.metas.logging.LogManager;
 	{
 		scroll.setVerticalScrollBarPolicy(scrollPolicy);
 	}
+
 }

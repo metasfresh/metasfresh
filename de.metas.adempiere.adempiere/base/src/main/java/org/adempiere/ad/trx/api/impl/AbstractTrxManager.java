@@ -470,6 +470,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 		return call(trxCallable);
 	}
 
+	@Override
+	public void run(final Runnable runnable)
+	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
+		call(callable);
+	}
+
 	/**
 	 * Runs the given trx runnable in an internal transaction (the transaction name will start with <code>"TrxRun"</code>).
 	 */

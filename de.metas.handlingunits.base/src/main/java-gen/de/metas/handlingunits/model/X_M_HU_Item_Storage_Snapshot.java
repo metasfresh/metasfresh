@@ -16,7 +16,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1933814055L;
+	private static final long serialVersionUID = 1402357528L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Storage_Snapshot (Properties ctx, int M_HU_Item_Storage_Snapshot_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
       /** if (M_HU_Item_Storage_Snapshot_ID == 0)
         {
 			setM_HU_Item_ID (0);
+			setM_HU_Item_Storage_Snapshot_ID (0);
 			setM_Product_ID (0);
 			setQty (Env.ZERO);
 			setSnapshot_UUID (null);
@@ -146,6 +147,28 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	public int getM_HU_Item_Storage_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Item_Storage_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Handling Units Item Storage Snapshot.
+		@param M_HU_Item_Storage_Snapshot_ID Handling Units Item Storage Snapshot	  */
+	@Override
+	public void setM_HU_Item_Storage_Snapshot_ID (int M_HU_Item_Storage_Snapshot_ID)
+	{
+		if (M_HU_Item_Storage_Snapshot_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Storage_Snapshot_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Storage_Snapshot_ID, Integer.valueOf(M_HU_Item_Storage_Snapshot_ID));
+	}
+
+	/** Get Handling Units Item Storage Snapshot.
+		@return Handling Units Item Storage Snapshot	  */
+	@Override
+	public int getM_HU_Item_Storage_Snapshot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Item_Storage_Snapshot_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

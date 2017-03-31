@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -38,21 +37,19 @@ import org.compiere.model.I_M_AttributeValue;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.storage.HUStorageChangeEvent;
-import de.metas.handlingunits.storage.IHUStorageListener;
 import de.metas.logging.LogManager;
 
 /**
  * Common super class of all weight related callouts.
  *
  */
-/* package */abstract class AbstractWeightAttributeValueCallout implements IAttributeValueGenerator, IAttributeValueCallout, IHUStorageListener
+/* package */abstract class AbstractWeightAttributeValueCallout implements IAttributeValueGenerator,
+		IAttributeValueCallout
 {
 	private static final String SYSCONFIG_IsNonWeightableReadOnlyUIOverride = "org.adempiere.mm.attributes.spi.impl.AbstractWeightAttributeValueCallout.IsNonWeightableReadOnlyUIOverride";
 
@@ -70,19 +67,6 @@ import de.metas.logging.LogManager;
 	protected AbstractWeightAttributeValueCallout()
 	{
 		super();
-	}
-
-	@Override
-	public final void onQtyChanged(final HUStorageChangeEvent event)
-	{
-		final IAttributeValueContext attributesContext = event.getAttributeValueContext();
-		final IAttributeSet attributeSet = event.getAttributeStorage();
-		final IAttributeValue attributeValue = event.getAttributeValue();
-		final I_M_Attribute attribute = attributeValue.getM_Attribute();
-		final Object valueOld = null;
-		final Object valueNew = attributeValue.getValue();
-
-		onValueChanged(attributesContext, attributeSet, attribute, valueOld, valueNew);
 	}
 
 	/**
@@ -275,7 +259,7 @@ import de.metas.logging.LogManager;
 	{
 		throw new UnsupportedOperationException("Not supported");
 	}
-	
+
 	@Override
 	public final I_M_AttributeValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
 	{

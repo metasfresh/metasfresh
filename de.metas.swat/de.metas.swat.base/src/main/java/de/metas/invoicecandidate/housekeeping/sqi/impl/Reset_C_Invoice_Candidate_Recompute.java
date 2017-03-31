@@ -2,7 +2,7 @@ package de.metas.invoicecandidate.housekeeping.sqi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.compiere.util.DB;
 
 /*
@@ -36,9 +36,9 @@ import org.compiere.util.DB;
 public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeepingTask
 {
 	@Override
-	public void executeTask(final ILoggable loggable)
+	public void executeTask()
 	{
 		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "select de_metas_invoicecandidate.Reset_C_Invoice_Candidate_Recompute();");
-		loggable.addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
+		Loggables.get().addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
 	}
 }

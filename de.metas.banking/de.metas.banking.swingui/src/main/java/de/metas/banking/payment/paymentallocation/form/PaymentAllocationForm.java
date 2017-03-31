@@ -1255,6 +1255,9 @@ public class PaymentAllocationForm
 		final ReadPaymentDocumentDialog readPaymentDocumentDialog = ReadPaymentDocumentDialog.create(getCtx(), m_frame, getAD_Org_ID());
 		final ReadPaymentDocumentPanel readPaymentDocumentPanel = readPaymentDocumentDialog.getDialogComponent();
 
+		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		readPaymentDocumentPanel.setContextBPartner_ID(getC_BPartner_ID());
+
 		readPaymentDocumentDialog.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentDocumentPanel)
 		{
 			@Override

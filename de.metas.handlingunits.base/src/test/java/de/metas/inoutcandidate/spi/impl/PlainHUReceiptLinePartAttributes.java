@@ -28,7 +28,7 @@ import java.util.UUID;
 
 import de.metas.inout.model.I_M_QualityNote;
 
-public class PlainHUReceiptLinePartAttributes implements IHUReceiptLinePartAttributes
+public class PlainHUReceiptLinePartAttributes extends HUReceiptLinePartAttributes
 {
 	private String id;
 	private BigDecimal QualityDiscountPercent = BigDecimal.ZERO;
@@ -38,7 +38,6 @@ public class PlainHUReceiptLinePartAttributes implements IHUReceiptLinePartAttri
 
 	public PlainHUReceiptLinePartAttributes()
 	{
-		super();
 		id = UUID.randomUUID().toString();
 	}
 
