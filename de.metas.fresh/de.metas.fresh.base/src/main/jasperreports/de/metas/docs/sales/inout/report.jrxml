@@ -125,7 +125,9 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 		<band height="179" splitType="Stretch">
 			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="0" y="31" width="595" height="123" uuid="33aa081f-33c9-46b8-83ec-1eb82afda15f"/>
+				<reportElement key="subreport-7" x="0" y="0" width="595" height="123" uuid="33aa081f-33c9-46b8-83ec-1eb82afda15f">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>

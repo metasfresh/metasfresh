@@ -84,6 +84,7 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 			</line>
 		</band>
 		<band height="69">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
 				<reportElement key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000" uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4"/>
 				<textElement markup="none">
@@ -106,9 +107,11 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 			</line>
 		</band>
 		<band height="60">
-			<printWhenExpression><![CDATA[new Boolean(!$P{ad_language}.equals("fr_CH") && $R{showdetailsfooter}.equals( "N" ))]]></printWhenExpression>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean(!$P{ad_language}.equals("fr_CH") && $R{showdetailsfooter}.equals( "N" ) && $F{countrycode}.equals("CH"))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="0" width="488" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
+				<reportElement key="textField-16" x="37" y="0" width="488" height="60" isRemoveLineWhenBlank="true" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
@@ -118,9 +121,11 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 			</textField>
 		</band>
 		<band height="60">
-			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && $R{showdetailsfooter}.equals( "N" ))]]></printWhenExpression>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && $R{showdetailsfooter}.equals( "N" ) && $F{countrycode}.equals("CH"))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="0" width="488" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
+				<reportElement key="textField-16" x="37" y="0" width="488" height="60" isRemoveLineWhenBlank="true" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
