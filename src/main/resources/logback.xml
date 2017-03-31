@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- metasfresh-webui default logback configuration which is used when none is present in server's home folder -->
+
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+	<include resource="de/metas/ui/web/logging/defaults.xml" />
+</configuration>

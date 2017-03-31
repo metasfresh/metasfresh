@@ -12,12 +12,153 @@
 	<version>1.0.0</version>
 
 	<groupId>de.metas.ui.web</groupId>
-	<artifactId>metasfresh-webui-parent</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>metasfresh-webui-api</artifactId>
 
-	<modules>
-		<module>metasfresh-webui-api</module>
-	</modules>
+	<properties>
+	
+		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+		<springfox-swagger.version>2.6.1</springfox-swagger.version>
+
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>1.0.0</metasfresh.version>
+
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Import dependency management from Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+		</dependency>
+
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>21.0</version>
+		</dependency>
+
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Adempiere dependencies -->
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<exclusions>
+				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base !!! -->
+				<exclusion>
+					<groupId>de.metas.adempiere.adempiere</groupId>
+					<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>de.metas.ui.web.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<!-- Elasticsearch -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-elasticsearch</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+		</dependency>
+		<dependency>
+			<!-- Required for elasticsearch -->
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+		</dependency>
+
+		<!-- Swagger -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${springfox-swagger.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${springfox-swagger.version}</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<!-- excluded to avoid maven-enforcer-plugin error: Duplicate classes found: org.ow2.asm:asm:jar:5.0.3:test, net.minidev:accessors-smart:jar:1.1:test -->
+				<exclusion>
+				    <groupId>org.ow2.asm</groupId>
+   					<artifactId>asm</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -40,13 +181,32 @@
 					</properties>
 				</configuration>
 			</plugin>
-			
-			
+
+			<!-- Add the generic info plus ci build info to the manifests of all jars that we create -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Version>${project.version}</Implementation-Version>
+							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
+							<ciJobName>${JOB_NAME}</ciJobName>
+							<ciBuildUrl>${BUILD_URL}</ciBuildUrl>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
 				<executions>
-					
 					<execution>
 						<id>copy-springboot-properties</id>
 						<phase>process-resources</phase>
@@ -73,7 +233,23 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<executable>true</executable>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
