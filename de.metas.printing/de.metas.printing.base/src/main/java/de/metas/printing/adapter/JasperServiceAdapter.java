@@ -35,6 +35,7 @@ import org.compiere.model.PrintInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.report.IJasperService;
 
+import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.ProcessInfo;
 
@@ -88,12 +89,13 @@ public final class JasperServiceAdapter extends AbstractJasperService
 				archiveService.archive(exportData, printInfo, forceArchiving, save, trxName),
 				I_AD_Archive.class);
 		Check.assumeNotNull(archive, "archive not null");
-
 		//
 		// Ask our printing service to printing it right now
 		archive.setIsDirectEnqueue(true);
 		archive.setIsCreatePrintJob(true); // create the print job not only enqueue to printing queue
 
+		IPrintingQueueBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
+		
 		//
 		// Save archive. This will trigger the printing...
 		InterfaceWrapperHelper.save(archive);
