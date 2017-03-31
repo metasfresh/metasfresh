@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -111,6 +112,22 @@ public class HUDocumentViewLoader
 				.stream()
 				.map(hu -> createDocumentView(hu))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	/**
+	 * Retrieves the {@link HUDocumentView} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.
+	 * 
+	 * @param huId
+	 * @return {@link HUDocumentView} or null if the huId negative or zero.
+	 */
+	public HUDocumentView retrieveForHUId(final int huId)
+	{
+		if (huId <= 0)
+		{
+			return null;
+		}
+		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
+		return createDocumentView(hu);
 	}
 
 	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> filterOnlyIds)
@@ -268,13 +285,12 @@ public class HUDocumentViewLoader
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
-		
+
 		final I_M_Product product = huStorage.getM_Product();
 
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 
-		
 		final DocumentView.Builder storageDocumentBuilder = DocumentView.builder(adWindowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
@@ -289,12 +305,12 @@ public class HUDocumentViewLoader
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(product))
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(huStorage.getC_UOM()))
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty());
-		
-		if(huId != parent_HU_ID)
+
+		if (huId != parent_HU_ID)
 		{
 			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId));
 		}
-		
+
 		return HUDocumentView.of(storageDocumentBuilder.build());
 	}
 
