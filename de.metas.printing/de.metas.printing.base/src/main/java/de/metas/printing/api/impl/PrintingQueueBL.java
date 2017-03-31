@@ -16,11 +16,11 @@ package de.metas.printing.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -73,7 +74,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
-		
+
 	@Override
 	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive printOut)
 	{
@@ -98,6 +99,8 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		item.setIsPrintoutForOtherUser(false); // task 09028: this the default, but the printingQueueHandler can override it.
 
+		item.setCopies(1); // can be changed by printingQueueHandlers and a value stored in "COPIES_PER_ARCHIVE"
+
 		printingQueueHandler.afterEnqueueBeforeSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
 		// If queue item was deactivated by listeners, there is no point to save it or go forward
 		if (!item.isActive())
@@ -108,8 +111,28 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		InterfaceWrapperHelper.save(item);
 
 		printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
-		InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
 
+		// https://github.com/metasfresh/metasfresh/issues/1240
+		// see if a copies-per-archive value was specified. If yes, then use it as a multiplier.
+		// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
+		// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
+		// Also note that right now I don't know any case where a user can set copies-per-archive in a case that is also handled by a printingQueueHandler.
+		final Optional<Integer> copiesIfExists = COPIES_PER_ARCHIVE.getValueIfExists(printOut);
+		if (copiesIfExists.isPresent())
+		{
+			final int oldItemCopies = Math.max(item.getCopies(), 1); // note about Math.max(): it should not happen that a printingQueueHandler sets copies:=0, but if it happens and COPIES_PER_ARCHIVE contained a value, then go with COPIES_PER_ARCHIVE
+			final Integer copiesMultipliers = copiesIfExists.get();
+			final int newItemCopies = oldItemCopies * copiesMultipliers;
+
+			if (oldItemCopies != newItemCopies)
+			{
+				logger.debug("An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
+						copiesMultipliers, item.getCopies(), oldItemCopies, copiesMultipliers, newItemCopies, item);
+				item.setCopies(newItemCopies);
+			}
+		}
+
+		InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
 		return item;
 	}
 
@@ -162,7 +185,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		}
 		else
 		{
-			// Just renqueue underlying archive again
+			// Just re-enqueue then underlying archive
 			enqueue(archive);
 		}
 	}
@@ -282,7 +305,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void setPrintoutForOtherUsers(final I_C_Printing_Queue item, 
+	public void setPrintoutForOtherUsers(final I_C_Printing_Queue item,
 			final Set<Integer> userToPrintIds)
 	{
 		//
