@@ -90,7 +90,7 @@ FROM
 	LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN LATERAL
 	(
-		SELECT	M_Product_Category_ID IN (SELECT value::numeric FROM AD_SysConfig sc WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y' AND (sc.ad_org_id = il.ad_org_id OR sc.ad_org_id = 0)) AS isHU,
+		SELECT	M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID) AS isHU,
 			M_Product_Category_ID
 		FROM	M_Product_Category
 		WHERE isActive = 'Y'

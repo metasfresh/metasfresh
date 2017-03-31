@@ -41,7 +41,7 @@ FROM
 	
 WHERE
 	io.M_InOut_ID = $1 AND io.isActive = 'Y'
-	AND pc.M_Product_Category_ID IN (SELECT value::numeric FROM AD_SysConfig sc WHERE sc.name = 'PackingMaterialProductCategoryID' AND isActive = 'Y' AND (sc.ad_org_id = iol.ad_org_id OR sc.ad_org_id = 0))
+	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 GROUP BY
 	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, iol.description
