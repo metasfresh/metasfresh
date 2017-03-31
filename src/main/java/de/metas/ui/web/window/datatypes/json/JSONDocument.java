@@ -258,6 +258,7 @@ public final class JSONDocument implements Serializable
 			}
 			if (documentView.getType() != null)
 			{
+				// NOTE: mainly used by frontend to decide which Icon to show for this line
 				jsonDocument.putOtherProperty("type", documentView.getType().getName());
 			}
 		}
