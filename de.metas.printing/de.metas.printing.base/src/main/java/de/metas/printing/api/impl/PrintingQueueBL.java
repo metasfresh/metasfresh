@@ -16,11 +16,11 @@ package de.metas.printing.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -73,7 +74,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
-		
+
 	@Override
 	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive printOut)
 	{
@@ -108,6 +109,14 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		InterfaceWrapperHelper.save(item);
 
 		printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
+
+		final Optional<Integer> copiesIfExists = COPIES_PER_ARCHIVE.getValueIfExists(printOut);
+		if (copiesIfExists.isPresent())
+		{
+			logger.debug("An explicit number of copies={} was specified for the given achive. Overwriting previous value {}; item={}", copiesIfExists.get(), item.getCopies(), item);
+			item.setCopies(copiesIfExists.get());
+		}
+
 		InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
 
 		return item;
@@ -282,7 +291,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void setPrintoutForOtherUsers(final I_C_Printing_Queue item, 
+	public void setPrintoutForOtherUsers(final I_C_Printing_Queue item,
 			final Set<Integer> userToPrintIds)
 	{
 		//
