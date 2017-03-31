@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum ( IN Record_ID numeric );
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum ( IN Record_ID numeric );
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum;
 
 CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum
