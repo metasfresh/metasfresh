@@ -430,6 +430,9 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		productId2tuCapacity.put(productId, tuCapacity);
 	}
 
+	/**
+	 * Explicitly specify the quantity for a given product that fits onto one TU.
+	 */
 	@Override
 	public void addTUCapacity(final I_M_Product cuProduct, final BigDecimal qtyCUPerTU, final I_C_UOM cuUOM)
 	{
