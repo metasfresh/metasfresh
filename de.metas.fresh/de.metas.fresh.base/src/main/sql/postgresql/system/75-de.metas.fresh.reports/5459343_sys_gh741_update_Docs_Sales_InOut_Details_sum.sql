@@ -42,11 +42,9 @@ FROM
 			presum.C_Currency_ID
 		FROM	(
 				SELECT 	iol.M_InOut_ID,
-					p.M_Product_Category_ID IN
+					p.M_Product_Category_ID =
 					(
-						SELECT value::numeric FROM AD_SysConfig sc
-						WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y'
-								AND (sc.ad_org_id = iol.ad_org_id OR sc.ad_org_id = 0)
+						 getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 					) as IsHULine,
 					COALESCE(ic.PriceEntered_Override, ic.PriceEntered) AS PriceEntered,
 					COALESCE(ic.Discount_Override, ic.Discount) AS Discount,

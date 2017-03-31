@@ -44,7 +44,7 @@ FROM
 	LEFT OUTER JOIN C_Tax t			ON il.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
 WHERE
 	il.C_Invoice_ID = $1 AND il.isActive = 'Y'
-	AND pc.M_Product_Category_ID IN (SELECT value::numeric FROM AD_SysConfig sc WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y' AND (sc.ad_org_id = il.ad_org_id OR sc.ad_org_id = 0))
+	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
 GROUP BY
 	COALESCE(pt.Name, p.Name), COALESCE(uom.UOMSymbol, uomt.UOMSymbol), il.PriceEntered,
 	t.rate,

@@ -8,6 +8,7 @@ from AD_SysConfig
 where Name=$1
 	and AD_Client_ID in (0, $2)
 	and AD_Org_ID in (0, $3)
+	and isActive = 'Y'
 order by AD_Client_ID desc, AD_Org_ID desc
 limit 1
 

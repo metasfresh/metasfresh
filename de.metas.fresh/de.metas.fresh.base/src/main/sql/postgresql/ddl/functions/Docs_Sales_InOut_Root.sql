@@ -41,7 +41,7 @@ $$SELECT
 			FROM M_InOutLine iol1
 			INNER JOIN M_Product p ON iol1.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-			WHERE pc.M_Product_Category_ID IN ((SELECT value::numeric FROM AD_SysConfig sc WHERE name = 'PackingMaterialProductCategoryID' AND sc.isActive = 'Y' AND (sc.ad_org_id = iol1.ad_org_id OR sc.ad_org_id = 0)))
+			WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol1.AD_Client_ID, iol1.AD_Org_ID)
 				AND io.M_InOut_ID = iol1.M_InOut_ID AND iol1.isActive = 'Y'
 		)
 		THEN 'Y'
