@@ -18,7 +18,7 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
   
-# Fixes
+## Fixes
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
