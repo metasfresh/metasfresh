@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#995](https://github.com/metasfresh/metasfresh/issues/995) Translation en_US for Material Receipt Candidates Window
+    * Adding the initial set of Translation en_US to the material Receipt Candidates Window in WebUI.
   * [#1182](https://github.com/metasfresh/metasfresh/issues/1182) Create Layout for User Window in WebUI
     * Adding the initial Layout for the User window into WebUI.
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
