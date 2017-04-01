@@ -193,7 +193,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 
 	protected void subtractQty(final int qtyToSubtract)
 	{
-		qty = qty.add(BigDecimal.valueOf(qtyToSubtract));
+		qty = qty.subtract(BigDecimal.valueOf(qtyToSubtract));
 	}
 
 	/**
