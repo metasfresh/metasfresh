@@ -31,8 +31,8 @@ Here come the actual release notes:
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes
-* user credentials of "SuperUser" are renamed to metasfresh
-  * [#1199](https://github.com/metasfresh/metasfresh/issues/1199)
+* metasfresh-backend
+  * [#1199](https://github.com/metasfresh/metasfresh/issues/1199) user credentials of "SuperUser" are renamed to metasfresh
     * Changing the default login credentials to the vanilla system to metasfresh/ metasfresh.
   
 ## Features
@@ -55,13 +55,18 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#118](https://github.com/metasfresh/metasfresh-webui-frontend/issues/118) Copy-paste behaviour for document and lists
+    * New functionality to Copy-Paste Grid view content in webUI. This was an activly used functionality in Swing User Interface now ported to the new WebUI.
   * [#442](https://github.com/metasfresh/metasfresh-webui-frontend/issues/442) Image Widget from Attachment in User Window
+    * New Image windget for WebUI. Will be able to used to include images/ phots for record which are attached to a record.
   
 ## Fixes
 * metasfresh-backend
   * [#1194](https://github.com/metasfresh/metasfresh/issues/1194) HU "Herkunft" HU_Attribute is not propagated from LU to VHU
+    * Fix for the the propagation of attributes top-down. In this case an Attribute added to the Top-Level HU was not propagated down to the included Customer Units.
   * [#1203](https://github.com/metasfresh/metasfresh/issues/1203) Rounding of weights after split in HU Editors is not working correctly
+    * Fixing the rounding of weights after Split with the new HU compression Implementation.
   * [#1237](https://github.com/metasfresh/metasfresh/issues/1237) Split fails with aggregate HUs that don't have an integer storage qty
+    * Fixes a Bug that appeared when splitting HU generated with the new HU Compression functionality and dis not lead into an integer number storage quantity.
 
 * metasfresh-webui-frontend
   * [#133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/133) Notification display problem
