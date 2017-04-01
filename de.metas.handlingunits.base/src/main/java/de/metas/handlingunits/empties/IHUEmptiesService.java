@@ -1,5 +1,7 @@
 package de.metas.handlingunits.empties;
 
+import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
@@ -62,10 +64,12 @@ public interface IHUEmptiesService extends ISingletonService
 	void generateMovementFromEmptiesInout(I_M_InOut emptiesInOut);
 
 	/**
-	 * Calls {@link EmptiesMovementBuilder#newInstance()}.
+	 * Calls {@link EmptiesMovementProducer#newInstance()}.
 	 */
-	EmptiesMovementBuilder newEmptiesMovementBuilder();
+	EmptiesMovementProducer newEmptiesMovementProducer();
 
 	boolean isEmptiesInOut(I_M_InOut inout);
+
+	IEmptiesInOutProducer newEmptiesInOutProducer(Properties ctx);
 
 }

@@ -65,11 +65,11 @@ import lombok.Value;
  * destroying an HU).
  *
  */
-public class EmptiesMovementBuilder
+public class EmptiesMovementProducer
 {
-	public static final EmptiesMovementBuilder newInstance()
+	public static final EmptiesMovementProducer newInstance()
 	{
-		return new EmptiesMovementBuilder();
+		return new EmptiesMovementProducer();
 	}
 
 	public static enum EmptiesMovementDirection
@@ -85,18 +85,18 @@ public class EmptiesMovementBuilder
 	private int _referencedInOutId = -1;
 	private List<HUPackingMaterialDocumentLineCandidate> candidates = new ArrayList<>();
 
-	private EmptiesMovementBuilder()
+	private EmptiesMovementProducer()
 	{
 	}
 
-	public EmptiesMovementBuilder setEmptiesMovementDirection(EmptiesMovementDirection emptiesMovementDirection)
+	public EmptiesMovementProducer setEmptiesMovementDirection(EmptiesMovementDirection emptiesMovementDirection)
 	{
 		Check.assumeNotNull(emptiesMovementDirection, "Parameter emptiesMovementDirection is not null");
 		this._emptiesMovementDirection = emptiesMovementDirection;
 		return this;
 	}
 
-	public EmptiesMovementBuilder setEmptiesMovementDirectionAuto()
+	public EmptiesMovementProducer setEmptiesMovementDirectionAuto()
 	{
 		this._emptiesMovementDirection = null;
 		return this;
@@ -122,7 +122,7 @@ public class EmptiesMovementBuilder
 	 * 
 	 * @param referencedInOutId
 	 */
-	public EmptiesMovementBuilder setReferencedInOutId(int referencedInOutId)
+	public EmptiesMovementProducer setReferencedInOutId(int referencedInOutId)
 	{
 		this._referencedInOutId = referencedInOutId;
 		return this;
@@ -133,7 +133,7 @@ public class EmptiesMovementBuilder
 		return _referencedInOutId;
 	}
 
-	public EmptiesMovementBuilder addCandidates(Collection<HUPackingMaterialDocumentLineCandidate> candidates)
+	public EmptiesMovementProducer addCandidates(Collection<HUPackingMaterialDocumentLineCandidate> candidates)
 	{
 		if (candidates == null || candidates.isEmpty())
 		{
@@ -199,7 +199,7 @@ public class EmptiesMovementBuilder
 		final List<HUPackingMaterialDocumentLineCandidate> linesEffective = lines.stream()
 				.filter(line -> line.getM_Locator() != null) // has locator
 				.filter(line -> line.getM_Locator().getM_Locator_ID() != emptiesLocator.getM_Locator_ID()) // not same as empties locator
-				.filter(line -> line.getQty().signum() == 0) // have some quantity to move
+				.filter(line -> line.getQty().signum() != 0) // have some quantity to move
 				.collect(Collectors.toCollection(ArrayList::new));
 		if (linesEffective.isEmpty())
 		{
@@ -249,8 +249,7 @@ public class EmptiesMovementBuilder
 		return movement;
 	}
 
-	private I_M_MovementLine createMovementLine(
-			final I_M_Movement movement, final I_M_Locator emptiesLocator, final EmptiesMovementDirection direction, final I_M_Product product, final BigDecimal qty, final I_M_Locator locator)
+	private I_M_MovementLine createMovementLine(final I_M_Movement movement, final I_M_Locator emptiesLocator, final EmptiesMovementDirection direction, final I_M_Product product, final BigDecimal qty, final I_M_Locator locator)
 	{
 		final I_M_MovementLine movementLine = InterfaceWrapperHelper.newInstance(I_M_MovementLine.class, movement);
 		movementLine.setAD_Org_ID(movement.getAD_Org_ID());
@@ -298,7 +297,7 @@ public class EmptiesMovementBuilder
 
 		private final int warehouseId;
 		@Getter(lazy = true)
-		private final I_M_Warehouse warehouse = retrieveWarehouse();
+		private final transient I_M_Warehouse warehouse = retrieveWarehouse();
 
 		private I_M_Warehouse retrieveWarehouse()
 		{

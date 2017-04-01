@@ -117,7 +117,7 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 
 				//
 				// Create packing material movements (if needed)
-				huEmptiesService.newEmptiesMovementBuilder()
+				huEmptiesService.newEmptiesMovementProducer()
 						.setEmptiesMovementDirectionAuto()
 						.addCandidates(huContextInLocalTrx.getHUPackingMaterialsCollector().getAndClearCandidates())
 						.createMovements();

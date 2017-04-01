@@ -142,12 +142,20 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
 	{
+		// do nothing if completing the reversal document
+		if(inout.getReversal_ID() > 0)
+		{
+			return;
+		}
+
+		// do nothing if this is not an empties shipment/receipt
 		final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 		if (!huEmptiesService.isEmptiesInOut(inout))
 		{
 			return;
 		}
-		
+
+		// Actually generate the empties movements
 		huEmptiesService.generateMovementFromEmptiesInout(inout);
 	}
 

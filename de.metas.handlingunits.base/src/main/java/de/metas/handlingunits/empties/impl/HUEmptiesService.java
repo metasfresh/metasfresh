@@ -1,6 +1,7 @@
 package de.metas.handlingunits.empties.impl;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,8 +19,9 @@ import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.empties.EmptiesMovementBuilder;
-import de.metas.handlingunits.empties.EmptiesMovementBuilder.EmptiesMovementDirection;
+import de.metas.handlingunits.empties.EmptiesMovementProducer;
+import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
+import de.metas.handlingunits.empties.IEmptiesInOutProducer;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -91,9 +93,9 @@ public class HUEmptiesService implements IHUEmptiesService
 	}
 
 	@Override
-	public EmptiesMovementBuilder newEmptiesMovementBuilder()
+	public EmptiesMovementProducer newEmptiesMovementProducer()
 	{
-		return EmptiesMovementBuilder.newInstance();
+		return EmptiesMovementProducer.newInstance();
 	}
 	
 	@Override
@@ -102,7 +104,7 @@ public class HUEmptiesService implements IHUEmptiesService
 		Check.assumeNotNull(emptiesInOut, "Parameter emptiesInOut is not null");
 
 		//
-		// Fetch inout lines and convert them to packing material line candidates.
+		// Fetch shipment/receipt lines and convert them to packing material line candidates.
 		final List<HUPackingMaterialDocumentLineCandidate> lines = Services.get(IInOutDAO.class).retrieveLines(emptiesInOut, I_M_InOutLine.class)
 				.stream()
 				.map(line -> HUPackingMaterialDocumentLineCandidate.of(line.getM_Locator(), line.getM_Product(), line.getMovementQty().intValueExact()))
@@ -110,7 +112,7 @@ public class HUEmptiesService implements IHUEmptiesService
 
 		//
 		// Generate the empties movement
-		newEmptiesMovementBuilder()
+		newEmptiesMovementProducer()
 				.setEmptiesMovementDirection(emptiesInOut.isSOTrx() ? EmptiesMovementDirection.ToEmptiesWarehouse : EmptiesMovementDirection.FromEmptiesWarehouse)
 				.setReferencedInOutId(emptiesInOut.getM_InOut_ID())
 				.addCandidates(lines)
@@ -130,5 +132,12 @@ public class HUEmptiesService implements IHUEmptiesService
 		return X_C_DocType.DOCSUBTYPE_Leergutanlieferung.equals(docSubType)
 				|| X_C_DocType.DOCSUBTYPE_Leergutausgabe.equals(docSubType);
 	}
+	
+	@Override
+	public IEmptiesInOutProducer newEmptiesInOutProducer(final Properties ctx)
+	{
+		return new EmptiesInOutProducer(ctx);
+	}
+
 
 }

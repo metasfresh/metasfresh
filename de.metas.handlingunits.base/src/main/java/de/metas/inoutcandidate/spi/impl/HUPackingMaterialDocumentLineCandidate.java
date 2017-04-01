@@ -39,6 +39,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -121,19 +123,14 @@ public final class HUPackingMaterialDocumentLineCandidate
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("HUPackingMaterialDocumentLineCandidate [product=");
-		builder.append(product);
-		builder.append(", uom=");
-		builder.append(uom);
-		builder.append(", qty=");
-		builder.append(qty);
-		builder.append(", locator=");
-		builder.append(locator);
-		builder.append(", materialTracking=");
-		builder.append(materialTracking);
-		builder.append("]");
-		return builder.toString();
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("product", product)
+				.add("uom", uom)
+				.add("qty", qty)
+				.add("locator", locator)
+				.add("materialTracking", materialTracking)
+				.toString();
 	}
 
 	/**
