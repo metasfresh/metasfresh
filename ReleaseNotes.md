@@ -33,18 +33,25 @@ Here come the actual release notes:
 ## Important Changes
 * user credentials of "SuperUser" are renamed to metasfresh
   * [#1199](https://github.com/metasfresh/metasfresh/issues/1199)
+    * Changing the default login credentials to the vanilla system to metasfresh/ metasfresh.
   
 ## Features
 * metasfresh-backend
   * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
+    * Introducing getter and setter for Parameters in ADempiereException.
   * [#1201](https://github.com/metasfresh/metasfresh/issues/1201) Add Manufacturing Order Window for WebUI
+    * Adding a new window to webUI for Manufacturing Order. This is the first step in the new Manufacuring Project introducing Manufacturing disposition and WebUI Interface. The first Milestone of the Project is Planned for early June 2017.
   * [#1202](https://github.com/metasfresh/metasfresh/issues/1202) Clean up ReplicationException
+    * Maintenance Task. Cleaning up the addParameter method in Replication Exception which is now available in ADempiereException and therfor deprecated.
 
 
 * metasfresh-webui-api
   * [#273](https://github.com/metasfresh/metasfresh-webui-api/issues/273) remove deprecated staleTabIds
+    * Adding a fnctionality to not show stale Tabs in WebUI.
   * [#272](https://github.com/metasfresh/metasfresh-webui-api/issues/272) Document Line Delete Behaviour
+    * Adjusting the delete behavior of document lines. Now the line also visibly dissappears after delete action.
   * [#276](https://github.com/metasfresh/metasfresh-webui-api/issues/276) Cannot change BPartner address
+    * Now allowing the change of BusinessPartner Locations after initial creation.
 
 * metasfresh-webui-frontend
   * [#118](https://github.com/metasfresh/metasfresh-webui-frontend/issues/118) Copy-paste behaviour for document and lists
