@@ -70,10 +70,15 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/133) Notification display problem
+    * Fixes a display bug in notifications created for the user after finishing asynchronous generated documents. Some documents were displayed more than once.
   * [#469](https://github.com/metasfresh/metasfresh-webui-frontend/issues/469) missing value to for range date-time filter
+    * Fixes the BUg in Date Range filter widget, where the selection possibility for date-to was missing.
   * [#470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/470) changing AM to PM in Date+Time fields
+    * Adjustment of Date-Time Fields, fixing the wrong AP/ PM declaration.
   * [#475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/475) When editing the text field in grid mode i cannot see selected text
+    * Color Adjustment of selected Text. Now allowing the user to see what is selected.
   * [#593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/593) DocAction bug when opening a document from references of another
+    * Fixes a Bug that appeared when jumping to referenced documents without a valid docaction.
   
 # metasfresh 5.2 (2017-12)
 
