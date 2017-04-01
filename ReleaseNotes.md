@@ -21,12 +21,13 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
+    * Adding a few detailed adjustments to the default metasfresh documents layout, especially for cases when generating documents with many lines.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
+    * Adjustment of the document line description field now defining boundaries for the field content on the generated Jasper Documents making the content better readable.
   * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
+    * Manintenance of Jasper Document SQL. Removing legace SQL thats not needed anymore.
 
 # metasfresh 5.3 (2017-13)
-
-**this week's release candidate**
 
 ## Important Changes
 * user credentials of "SuperUser" are renamed to metasfresh
