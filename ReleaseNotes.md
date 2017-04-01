@@ -16,50 +16,73 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#995](https://github.com/metasfresh/metasfresh/issues/995) Translation en_US for Material Receipt Candidates Window
+    * Adding the initial set of Translation en_US to the material Receipt Candidates Window in WebUI.
+  * [#1182](https://github.com/metasfresh/metasfresh/issues/1182) Create Layout for User Window in WebUI
+    * Adding the initial Layout for the User window into WebUI.
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
+    * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
   
 ## Fixes
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
+    * Adding a few detailed adjustments to the default metasfresh documents layout, especially for cases when generating documents with many lines.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
+    * Adjustment of the document line description field now defining boundaries for the field content on the generated Jasper Documents making the content better readable.
   * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
+    * Manintenance of Jasper Document SQL. Removing legace SQL thats not needed anymore.
 
 # metasfresh 5.3 (2017-13)
 
-**this week's release candidate**
-
 ## Important Changes
-* user credentials of "SuperUser" are renamed to metasfresh
-  * [#1199](https://github.com/metasfresh/metasfresh/issues/1199)
+* metasfresh-backend
+  * [#1199](https://github.com/metasfresh/metasfresh/issues/1199) user credentials of "SuperUser" are renamed to metasfresh
+    * Changing the default login credentials to the vanilla system to metasfresh/ metasfresh.
   
 ## Features
 * metasfresh-backend
   * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
+    * Introducing getter and setter for Parameters in ADempiereException.
   * [#1201](https://github.com/metasfresh/metasfresh/issues/1201) Add Manufacturing Order Window for WebUI
+    * Adding a new window to webUI for Manufacturing Order. This is the first step in the new Manufacuring Project introducing Manufacturing disposition and WebUI Interface. The first Milestone of the Project is planned for early June 2017.
   * [#1202](https://github.com/metasfresh/metasfresh/issues/1202) Clean up ReplicationException
+    * Maintenance Task. Cleaning up the addParameter method in Replication Exception which is now available in ADempiereException and therfor deprecated.
 
 
 * metasfresh-webui-api
   * [#273](https://github.com/metasfresh/metasfresh-webui-api/issues/273) remove deprecated staleTabIds
+    * Adding a functionality to not show stale Tabs in WebUI.
   * [#272](https://github.com/metasfresh/metasfresh-webui-api/issues/272) Document Line Delete Behaviour
+    * Adjusting the delete behavior of document lines. Now the line also visibly dissappears after delete action.
   * [#276](https://github.com/metasfresh/metasfresh-webui-api/issues/276) Cannot change BPartner address
+    * Now allowing the change of BusinessPartner Locations after initial creation.
 
 * metasfresh-webui-frontend
   * [#118](https://github.com/metasfresh/metasfresh-webui-frontend/issues/118) Copy-paste behaviour for document and lists
+    * New functionality to Copy-Paste Grid view content in webUI. This was an activly used functionality in Swing User Interface now ported to the new WebUI.
   * [#442](https://github.com/metasfresh/metasfresh-webui-frontend/issues/442) Image Widget from Attachment in User Window
+    * New Image widget for WebUI. Will be able to used to include images/ phots for record which are attached to a record.
   
 ## Fixes
 * metasfresh-backend
   * [#1194](https://github.com/metasfresh/metasfresh/issues/1194) HU "Herkunft" HU_Attribute is not propagated from LU to VHU
+    * Fix for the the propagation of attributes top-down. In this case an Attribute added to the Top-Level HU was not propagated down to the included Customer Units.
   * [#1203](https://github.com/metasfresh/metasfresh/issues/1203) Rounding of weights after split in HU Editors is not working correctly
+    * Fixing the rounding of weights after Split with the new HU compression Implementation.
   * [#1237](https://github.com/metasfresh/metasfresh/issues/1237) Split fails with aggregate HUs that don't have an integer storage qty
+    * Fixes a Bug that appeared when splitting HU generated with the new HU Compression functionality and dis not lead into an integer number storage quantity.
 
 * metasfresh-webui-frontend
   * [#133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/133) Notification display problem
+    * Fixes a display bug in notifications created for the user after finishing asynchronous generated documents. Some documents were displayed more than once.
   * [#469](https://github.com/metasfresh/metasfresh-webui-frontend/issues/469) missing value to for range date-time filter
+    * Fixes the Bug in Date Range filter widget, where the selection possibility for date-to was missing.
   * [#470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/470) changing AM to PM in Date+Time fields
+    * Adjustment of Date-Time Fields, fixing the wrong AP/ PM declaration.
   * [#475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/475) When editing the text field in grid mode i cannot see selected text
+    * Color Adjustment of selected Text. Now allowing the user to see what is selected.
   * [#593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/593) DocAction bug when opening a document from references of another
+    * Fixes a Bug that appeared when jumping to referenced documents without a valid docaction.
   
 # metasfresh 5.2 (2017-12)
 
