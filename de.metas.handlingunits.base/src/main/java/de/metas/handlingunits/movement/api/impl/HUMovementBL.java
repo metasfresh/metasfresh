@@ -23,7 +23,6 @@ package de.metas.handlingunits.movement.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,17 +31,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -54,6 +55,7 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.IInOutDAO;
@@ -101,25 +103,45 @@ public class HUMovementBL implements IHUMovementBL
 	{
 		Check.assume(!lines.isEmpty(), "lines not empty");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
-		final String trxName = InterfaceWrapperHelper.getTrxName(warehouse);
+		//
+		// Get the empties warehouse/locator
+		final I_M_Warehouse emptiesWarehouse = Services.get(IHandlingUnitsBL.class).getEmptiesWarehouse(warehouse);
+		final I_M_Locator emptiesLocator = Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse);
 
-		final IContextAware contextAwareWarehouse = InterfaceWrapperHelper.getContextAware(warehouse);
-		final Timestamp movementDate = Env.getDate(contextAwareWarehouse.getCtx());	// use Login date (08306)
-		final I_M_Movement movement = generateMovementHeader(contextAwareWarehouse, movementDate);
+		//
+		// Iterate given packing material lines and keep only those which are eligible
+		final List<HUPackingMaterialDocumentLineCandidate> linesEffective = lines.stream()
+				.filter(line -> line.getM_Locator() != null) // has locator
+				.filter(line -> line.getM_Locator().getM_Locator_ID() != emptiesLocator.getM_Locator_ID()) // not same as empties locator
+				.filter(line -> line.getQty().signum() == 0) // have some quantity to move
+				.collect(Collectors.toCollection(ArrayList::new));
+		if(linesEffective.isEmpty())
+		{
+			// if no eligible lines found, do nothing
+			return null;
+		}
+
+		//
+		// Create & save the movement header
+		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx();
+		final I_M_Movement movement = InterfaceWrapperHelper.newInstance(I_M_Movement.class, context);
+		movement.setMovementDate(Env.getDate(context.getCtx())); // use Login date (08306)
+		movement.setDocStatus(DocAction.STATUS_Drafted);
+		movement.setDocAction(DocAction.ACTION_Complete);
+		InterfaceWrapperHelper.save(movement);
 
 		//
 		// Sort lines by M_Product_ID
 		final Comparator<Integer> productIdsComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
-				.setContext(ctx)
+				.setContext(context.getCtx())
 				.setC_BPartner_ID(movement.getC_BPartner_ID())
 				.setC_DocType(movement.getC_DocType())
 				.findProductIdsComparator();
-		Collections.sort(lines, HUPackingMaterialDocumentLineCandidate.comparatorFromProductIds(productIdsComparator));
+		Collections.sort(linesEffective, HUPackingMaterialDocumentLineCandidate.comparatorFromProductIds(productIdsComparator));
 
-		final I_M_Warehouse emptiesWarehouse = Services.get(IHandlingUnitsBL.class).getEmptiesWarehouse(ctx, warehouse, trxName);
-		final I_M_Locator emptiesLocator = Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse);
-		for (final HUPackingMaterialDocumentLineCandidate line : lines)
+		//
+		// Iterate the eligible lines and generate movement lines for them
+		for (final HUPackingMaterialDocumentLineCandidate line : linesEffective)
 		{
 			generateMovementLine(
 					movement,
@@ -129,6 +151,9 @@ public class HUMovementBL implements IHUMovementBL
 					line.getQty().abs(),
 					line.getM_Locator());
 		}
+		
+		//
+		// Complete the movement
 		Services.get(IDocActionBL.class).processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
 		return movement;
@@ -220,55 +245,31 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public I_M_Movement generateMovementFromEmptiesInout(final I_M_InOut inout)
+	public void generateMovementFromEmptiesInout(final I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, " Inout not null");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inout);
-
-		final IContextAware contextAwareInOut = InterfaceWrapperHelper.getContextAware(inout);
-		final Timestamp movementDate = inout.getMovementDate();
-		final I_M_Movement movement = generateMovementHeader(contextAwareInOut, movementDate);
-
+		//
+		// Get empties warehouse
 		final I_M_Warehouse warehouse = inout.getM_Warehouse();
-
-		final I_M_Warehouse emptiesWarehouse = Services.get(IHandlingUnitsBL.class).getEmptiesWarehouse(ctx, warehouse, trxName);
-
-		final I_M_Locator emptiesLocator = Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse);
-
-		final boolean direction = inout.isSOTrx() ? true : false;
-
-		final List<I_M_InOutLine> lines = Services.get(IInOutDAO.class).retrieveLines(inout);
-
-		for (final I_M_InOutLine line : lines)
+		final I_M_Warehouse emptiesWarehouse = Services.get(IHandlingUnitsBL.class).getEmptiesWarehouse(warehouse);
+		if(warehouse.getM_Warehouse_ID() == emptiesWarehouse.getM_Warehouse_ID())
 		{
-			generateMovementLine(
-					movement,
-					emptiesLocator,
-					direction,
-					line.getM_Product(),
-					line.getMovementQty(),
-					line.getM_Locator());
+			// nothing to generate if the empties warehouse is the same as the warehouse where we will transfer the empties to/from.
+			return;
 		}
+		
+		//
+		// Fetch inout lines and convert them to packing material line candidates.
+		final List<HUPackingMaterialDocumentLineCandidate> lines = Services.get(IInOutDAO.class).retrieveLines(inout, I_M_InOutLine.class)
+				.stream()
+				.map(line -> HUPackingMaterialDocumentLineCandidate.of(line.getM_Locator(), line.getM_Product(), line.getMovementQty().intValueExact()))
+				.collect(GuavaCollectors.toImmutableList());
 
-		Services.get(IDocActionBL.class).processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-
-		return movement;
-	}
-
-	private I_M_Movement generateMovementHeader(final IContextAware contextAware, final Timestamp movementDate)
-	{
-		Check.assumeNotNull(movementDate, "movementDate not null");
-
-		final I_M_Movement movement = InterfaceWrapperHelper.newInstance(I_M_Movement.class, contextAware);
-		movement.setMovementDate(movementDate);
-		movement.setDocStatus(DocAction.STATUS_Drafted);
-		movement.setDocAction(DocAction.ACTION_Complete);
-
-		InterfaceWrapperHelper.save(movement);
-
-		return movement;
+		//
+		// Generate the empties movement
+		final boolean direction = inout.isSOTrx() ? true : false;
+		generateMovementFromPackingMaterialCandidates(emptiesWarehouse, direction, lines);
 	}
 
 	private I_M_MovementLine generateMovementLine(
@@ -311,7 +312,7 @@ public class HUMovementBL implements IHUMovementBL
 
 		InterfaceWrapperHelper.save(movementLine);
 
-		Services.get(IHUMovementBL.class).setPackingMaterialCActivity(movementLine);
+		setPackingMaterialCActivity(movementLine);
 		return movementLine;
 	}
 

@@ -67,7 +67,7 @@ public interface IHUMovementBL extends ISingletonService
 	 * @param warehouse
 	 * @param direction
 	 * @param lines
-	 * @return
+	 * @return generated movement or null
 	 */
 	I_M_Movement generateMovementFromPackingMaterialCandidates(I_M_Warehouse warehouse, boolean direction, List<HUPackingMaterialDocumentLineCandidate> lines);
 
@@ -76,10 +76,9 @@ public interface IHUMovementBL extends ISingletonService
 	 * inOut is a shipment, the movement will be in the opposite direction.
 	 *
 	 * @param inout
-	 * @return
 	 * @task 08070
 	 */
-	I_M_Movement generateMovementFromEmptiesInout(I_M_InOut inout);
+	void generateMovementFromEmptiesInout(I_M_InOut inout);
 
 	/**
 	 * Move the given <code>hus</code>HUs to the given <code>destinationWarehouse</code>

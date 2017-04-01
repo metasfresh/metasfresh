@@ -117,7 +117,7 @@ public class EmptiesMovementBuilder implements IEmptiesMovementBuilder
 
 		//
 		// Generate movements for each "warehouseDestId -> inout lines" pair
-		final List<I_M_Movement> movements = new ArrayList<I_M_Movement>();
+		final List<I_M_Movement> movements = new ArrayList<>();
 		for (final Map.Entry<WarehouseDirection, List<HUPackingMaterialDocumentLineCandidate>> movementCandidate : directionToCandidates.entrySet())
 		{
 			final WarehouseDirection warehouseDirection = movementCandidate.getKey();

@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,6 +54,22 @@ import de.metas.product.IProductBL;
  */
 public final class HUPackingMaterialDocumentLineCandidate
 {
+	/**
+	 * Creates a packing material line for given locator, empties product and empties count.
+	 * 
+	 * @param locator on which locator the empties are
+	 * @param emptiesProduct empties product (e.g. IFCO)
+	 * @param emptiesCount how many empties we have (e.g. 5 IFCOs)
+	 * @return packing material line
+	 */
+	public static final HUPackingMaterialDocumentLineCandidate of(final I_M_Locator locator, final I_M_Product emptiesProduct, final int emptiesCount)
+	{
+		final I_M_Material_Tracking materialTracking = null; // N/A, not needed
+		final HUPackingMaterialDocumentLineCandidate candidate = new HUPackingMaterialDocumentLineCandidate(emptiesProduct, materialTracking, locator);
+		candidate.addQty(emptiesCount);
+		return candidate;
+	}
+
 	public static Comparator<HUPackingMaterialDocumentLineCandidate> comparatorFromProductIds(final Comparator<Integer> productIdsComparator)
 	{
 		if (NullComparator.isNull(productIdsComparator))

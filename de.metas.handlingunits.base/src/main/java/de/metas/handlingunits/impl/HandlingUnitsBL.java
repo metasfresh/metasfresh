@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -21,6 +22,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.slf4j.Logger;
@@ -797,7 +799,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
+	public I_M_Warehouse getEmptiesWarehouse(final I_M_Warehouse warehouse)
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
 
@@ -808,9 +810,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// In case the requirements will change and the empties ditribution network
 		// will be product based, here we will need to get the product gebinde
 		// and send it as parameter in the method above
-		final I_DD_NetworkDistribution emptiesNetworkDistribution = handlingUnitsDAO.retrieveEmptiesDistributionNetwork(ctx,
+		final I_DD_NetworkDistribution emptiesNetworkDistribution = handlingUnitsDAO.retrieveEmptiesDistributionNetwork(Env.getCtx(),
 				null, // Product
-				trxName);
+				ITrx.TRXNAME_None);
 		if (emptiesNetworkDistribution == null)
 		{
 			throw new AdempiereException("@NotFound@ @DD_NetworkDistribution_ID@ (@IsHUDestroyed@=@Y@)");
@@ -825,7 +827,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		return lines.get(0).getM_Warehouse();
-
 	}
 
 	@Override

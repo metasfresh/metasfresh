@@ -339,15 +339,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isPhysicalHU(String huStatus);
 
 	/**
-	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse sourse the one given as parameter
+	 * Gets the warehouse to be used for empties (Gebinde).
+	 * 
+	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse source the one given as parameter
 	 *
-	 * @param ctx
-	 * @param warehouse
-	 * @param trxName
+	 * @param warehouse counter part warehouse, i.e. on which warehouse the empties are currently on
 	 *
-	 * @return the gebinde warehouse (if found,exception thrown otherwise)
+	 * @return the empties warehouse which shall be used for given counterpart warehouse
+	 * @throws AdempiereException if empties warehouse was not found
 	 */
-	I_M_Warehouse getEmptiesWarehouse(Properties ctx, I_M_Warehouse warehouse, String trxName);
+	I_M_Warehouse getEmptiesWarehouse(I_M_Warehouse warehouse);
 
 	/**
 	 * Set the status of the HU. <br>
