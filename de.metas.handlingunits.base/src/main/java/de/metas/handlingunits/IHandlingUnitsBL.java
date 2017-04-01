@@ -10,7 +10,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -22,7 +21,6 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Status;
-import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public interface IHandlingUnitsBL extends ISingletonService
@@ -338,17 +336,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isPhysicalHU(String huStatus);
 
-	/**
-	 * Gets the warehouse to be used for empties (Gebinde).
-	 * 
-	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse source the one given as parameter
-	 *
-	 * @param warehouse counter part warehouse, i.e. on which warehouse the empties are currently on
-	 *
-	 * @return the empties warehouse which shall be used for given counterpart warehouse
-	 * @throws AdempiereException if empties warehouse was not found
-	 */
-	I_M_Warehouse getEmptiesWarehouse(I_M_Warehouse warehouse);
 
 	/**
 	 * Set the status of the HU. <br>
@@ -387,13 +374,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @param hus HUs to mark as destroyed
 	 */
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
-
-	/**
-	 * Builder for the movements TO and FROM the GebindeLager
-	 *
-	 * @return
-	 */
-	IEmptiesMovementBuilder createEmptiesMovementBuilder();
 
 	/**
 	 * Checks if the given {@code hu} is a "bag".

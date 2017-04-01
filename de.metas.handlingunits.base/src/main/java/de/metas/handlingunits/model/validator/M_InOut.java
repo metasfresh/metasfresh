@@ -41,6 +41,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
+import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
@@ -136,7 +137,18 @@ public class M_InOut
 		{
 			huPickingSlotBL.removeFromPickingSlotQueueRecursivelly(hu);
 		}
-
+	}
+	
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
+	{
+		final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+		if (!huEmptiesService.isEmptiesInOut(inout))
+		{
+			return;
+		}
+		
+		huEmptiesService.generateMovementFromEmptiesInout(inout);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })

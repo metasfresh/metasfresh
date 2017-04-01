@@ -68,7 +68,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 
 /**
  *
@@ -81,7 +80,6 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	// services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 	public static enum BPartnerReturnType
@@ -238,8 +236,9 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 			{
 				result[0] = createInOut(localTrxName);
 
-				final I_M_InOut emptiesInOut = result[0];
-				huMovementBL.generateMovementFromEmptiesInout(emptiesInOut);
+				// NOTE: movements are automatically generated after empties inout complete.
+				// final I_M_InOut emptiesInOut = result[0];
+				// huEmptiesService.generateMovementFromEmptiesInout(emptiesInOut);
 			}
 
 			@Override
