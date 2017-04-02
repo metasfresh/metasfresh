@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Inventory_Turnover(IN c_period_id numeric, IN noOfmonths integer);
+﻿--DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Inventory_Turnover(IN c_period_id numeric, IN noOfmonths integer);
 CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Inventory_Turnover(IN c_period_id numeric, IN noOfmonths integer DEFAULT 12)
 RETURNS TABLE
 (
