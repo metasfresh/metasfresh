@@ -19,6 +19,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -728,6 +730,13 @@ public final class ProcessInfo implements Serializable
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
+			//
+			final MFSession mfSession = Services.get(ISessionBL.class).getCurrentSession(ctx);
+			if(mfSession != null)
+			{
+				mfSession.updateContext(processCtx);
+			}
+			
 			//
 			// AD_Client, AD_Language
 			final IClientDAO clientDAO = Services.get(IClientDAO.class);
