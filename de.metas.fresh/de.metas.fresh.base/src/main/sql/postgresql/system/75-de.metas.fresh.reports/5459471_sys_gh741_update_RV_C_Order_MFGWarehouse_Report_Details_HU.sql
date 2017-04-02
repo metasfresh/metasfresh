@@ -1,4 +1,4 @@
-drop view if exists report.RV_C_Order_MFGWarehouse_Report_Details_HU;
+﻿drop view if exists report.RV_C_Order_MFGWarehouse_Report_Details_HU;
 create or replace view report.RV_C_Order_MFGWarehouse_Report_Details_HU
 AS
 SELECT DISTINCT
