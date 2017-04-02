@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.umsatzreport_week_report 
+﻿DROP FUNCTION IF EXISTS report.umsatzreport_week_report 
 (
 	IN Base_Year numeric, --$1
 	IN Base_Week integer, --$2

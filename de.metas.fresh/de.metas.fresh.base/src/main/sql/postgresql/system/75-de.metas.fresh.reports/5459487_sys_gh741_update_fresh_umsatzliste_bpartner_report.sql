@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.fresh_umsatzliste_bpartner_report_sub
+﻿DROP FUNCTION IF EXISTS report.fresh_umsatzliste_bpartner_report_sub
 	(
 		IN Base_Period_Start date,
 		IN Base_Period_End date, 
