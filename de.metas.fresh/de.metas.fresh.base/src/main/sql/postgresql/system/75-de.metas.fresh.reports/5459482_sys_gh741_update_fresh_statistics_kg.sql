@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.fresh_statistics_kg ( 
+﻿DROP FUNCTION IF EXISTS report.fresh_statistics_kg ( 
 	IN C_Period_ID numeric, 
 	IN issotrx character varying,
 	IN C_Activity_ID numeric,
