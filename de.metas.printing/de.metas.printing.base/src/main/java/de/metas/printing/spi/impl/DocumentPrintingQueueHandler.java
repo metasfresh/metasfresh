@@ -79,8 +79,6 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		logger.debug("C_Printing_Queue={}; AD_Archive {} has [AD_Table_ID={}, Record_ID={}, C_BPartner_ID={}];",
 				new Object[] { queueItem, archive, archive.getAD_Table_ID(), archive.getRecord_ID(), archive.getC_BPartner_ID() });
 
-		queueItem.setCopies(1); // may be overridden further down
-
 		//
 		// try to set the C_BPartner_ID for our queueItem
 		if (archive.getC_BPartner_ID() > 0)
