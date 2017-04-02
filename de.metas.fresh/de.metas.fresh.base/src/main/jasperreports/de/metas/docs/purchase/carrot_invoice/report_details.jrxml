@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-03-06T18:53:00 -->
+<!-- 2017-04-02T14:17:37 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -126,7 +126,7 @@ WHERE
 	il.C_Invoice_ID = $P{c_invoice_id} AND il.isActive = 'Y'
 	-- the lines for withhold will be displayed in a different subreport
 	AND (il.M_Product_ID != M_Product_Witholding_ID OR M_Product_Witholding_ID IS NULL)
-	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
 ) i
 	--Invoice Detail Override
 	LEFT OUTER JOIN C_Invoice_Detail ido ON i.C_InvoiceLine_ID = ido.C_InvoiceLine_ID AND ido.IsDetailOverridesLine = 'Y' AND ido.isActive = 'Y'
