@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Details(IN c_order_id numeric);
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Details(IN c_order_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Details(IN c_order_id numeric)
 RETURNS TABLE 
