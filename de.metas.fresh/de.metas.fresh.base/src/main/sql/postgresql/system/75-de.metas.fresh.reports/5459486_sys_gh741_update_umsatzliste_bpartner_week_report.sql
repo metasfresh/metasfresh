@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
+﻿DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
 DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
 
 CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
