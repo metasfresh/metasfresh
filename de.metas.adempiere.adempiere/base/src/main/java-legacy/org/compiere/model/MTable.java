@@ -39,6 +39,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.compiere.dbPort.Convert;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -437,7 +438,8 @@ public class MTable extends X_AD_Table
 	 */
 	public String getSQLCreate()
 	{
-		final StringBuffer sb = new StringBuffer("CREATE TABLE ")
+		final StringBuffer sb = new StringBuffer(Convert.DDL_PREFIX + "CREATE TABLE ")
+				.append("public.") // schema
 				.append(getTableName())
 				.append(" (");
 		//
