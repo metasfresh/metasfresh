@@ -14,13 +14,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.eevolution.api.IPPOrderBOMDAO;
-import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -95,7 +93,7 @@ public class PPOrderLinesLoader
 		return _huViewRecordLoader;
 	}
 
-	public List<PPOrderLine> retrieveRecords()
+	public List<PPOrderLineRow> retrieveRecords()
 	{
 		final int ppOrderId = getPP_Order_ID();
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_None);
@@ -104,7 +102,7 @@ public class PPOrderLinesLoader
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> Util.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), 0)));
 
-		final ImmutableList.Builder<PPOrderLine> records = ImmutableList.builder();
+		final ImmutableList.Builder<PPOrderLineRow> records = ImmutableList.builder();
 
 		// Main product
 		records.add(createForMainProduct(ppOrder, ppOrderQtysByBOMLineId.get(0)));
@@ -119,15 +117,14 @@ public class PPOrderLinesLoader
 		return records.build();
 	}
 
-	private PPOrderLine createForMainProduct(final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
+	private PPOrderLineRow createForMainProduct(final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
-		// NOTE: the only reason why we use PP_Order_BOM instance of PP_Order it's because,
-		// when the related processes are fetched we don't want to fetch the PP_Order related processes.
-		final I_PP_Order_BOM ppOrderBOM = ppOrderBOMDAO.retrieveOrderBOM(ppOrder);
-		final String tableName = I_PP_Order_BOM.Table_Name;
-		final int recordId = ppOrderBOM.getPP_Order_BOM_ID();
-		final DocumentId documentId = DocumentId.of(tableName + "_" + recordId);
+		final DocumentId documentId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
 
+		final BigDecimal qty = ppOrder.getQtyDelivered();
+		final BigDecimal qtyPlanTotal = ppOrder.getQtyOrdered();
+		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
+		
 		final DocumentView.Builder builder = DocumentView.builder(getAD_Window_ID())
 				.setDocumentId(documentId)
 				.setType(PPOrderLineType.MainProduct)
@@ -138,8 +135,8 @@ public class PPOrderLinesLoader
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_M_Product_ID, createProductLookupValue(ppOrder.getM_Product()))
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, null)
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, createUOMLookupValue(ppOrder.getC_UOM()))
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, ppOrder.getQtyDelivered())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, ppOrder.getQtyOrdered())
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, qty)
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan)
 		//
 		;
 
@@ -147,20 +144,19 @@ public class PPOrderLinesLoader
 				.map(ppOrderQty -> createForQty(ppOrderQty))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
 
-		return PPOrderLine.of(tableName, recordId, builder.build());
+		return PPOrderLineRow.builder(builder.build())
+				.ppOrder(ppOrder.getPP_Order_ID())
+				.build();
 	}
 
-	private PPOrderLine createForBOMLine(final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
+	private PPOrderLineRow createForBOMLine(final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
-		final String tableName = I_PP_Order_BOMLine.Table_Name;
-		final int recordId = ppOrderBOMLine.getPP_Order_BOMLine_ID();
-		final DocumentId documentId = DocumentId.of(tableName + "_" + recordId);
-		
+		final DocumentId documentId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBOMLine.getPP_Order_BOMLine_ID());
+
 		final PPOrderLineType lineType;
 		final String componentType = ppOrderBOMLine.getComponentType();
-		if(X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
-				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType)
-				)
+		if (X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
+				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType))
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
 		}
@@ -168,6 +164,10 @@ public class PPOrderLinesLoader
 		{
 			lineType = PPOrderLineType.BOMLine_Component;
 		}
+
+		final BigDecimal qty = ppOrderBOMLine.getQtyDeliveredActual();
+		final BigDecimal qtyPlanTotal = ppOrderBOMLine.getQtyRequiered();
+		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 		
 		final DocumentView.Builder builder = DocumentView.builder(getAD_Window_ID())
 				.setDocumentId(documentId)
@@ -179,49 +179,67 @@ public class PPOrderLinesLoader
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_M_Product_ID, createProductLookupValue(ppOrderBOMLine.getM_Product()))
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, null)
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, ppOrderBOMLine.getQtyDeliveredActual())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, ppOrderBOMLine.getQtyRequiered())
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, qty)
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan)
 		//
 		;
 		ppOrderQtys.stream()
 				.map(ppOrderQty -> createForQty(ppOrderQty))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
 
-		return PPOrderLine.of(tableName, recordId, builder.build());
+		return PPOrderLineRow.builder(builder.build())
+				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
+				.build();
 	}
 
 	private IDocumentView createForQty(final I_PP_Order_Qty ppOrderQty)
 	{
 		final HUDocumentView huViewRecord = getHUViewRecordLoader().retrieveForHUId(ppOrderQty.getM_HU_ID());
-		return createForHUViewRecordRecursivelly(huViewRecord);
+		return createForHUViewRecordRecursivelly(ppOrderQty, huViewRecord);
 	}
 
-	private PPOrderLine createForHUViewRecordRecursivelly(final HUDocumentView huViewRecord)
+	private PPOrderLineRow createForHUViewRecordRecursivelly(final I_PP_Order_Qty ppOrderQty, final HUDocumentView huViewRecord)
 	{
-		final String tableName = I_M_HU.Table_Name;
-		final int recordId = huViewRecord.getM_HU_ID();
+		final PPOrderLineType type = PPOrderLineType.ofHUDocumentViewType(huViewRecord.getType());
+
+		final BigDecimal qty;
+		final BigDecimal qtyPlan;
+		if (ppOrderQty.isProcessed())
+		{
+			qtyPlan = BigDecimal.ZERO;
+			qty = huViewRecord.getQtyCU();
+		}
+		else
+		{
+			qtyPlan = huViewRecord.getQtyCU();
+			qty = BigDecimal.ZERO;
+		}
 
 		final DocumentView.Builder builder = DocumentView.builder(getAD_Window_ID())
 				.setDocumentId(huViewRecord.getDocumentId())
-				.setType(PPOrderLineType.HU)
+				.setType(type)
 				//
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, huViewRecord.getValue())
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_BOMType, null)
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_HUType, huViewRecord.getType())
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_M_Product_ID, huViewRecord.getProduct())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, null)
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, huViewRecord.getPackingInfo())
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, huViewRecord.getUOM())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, BigDecimal.ZERO)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, huViewRecord.getQtyCU())
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, qty)
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan)
+				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_StatusInfo, huViewRecord.getHUStatusDisplayName())
 		//
 		;
 
 		huViewRecord.getIncludedDocuments()
 				.stream()
-				.map(includedHUViewRecord -> createForHUViewRecordRecursivelly(includedHUViewRecord))
+				.map(includedHUViewRecord -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUViewRecord))
 				.forEach(builder::addIncludedDocument);
 
-		return PPOrderLine.of(tableName, recordId, builder.build());
+		return PPOrderLineRow.builder(builder.build())
+				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
+				.processed(ppOrderQty.isProcessed())
+				.build();
 	}
 
 	private static JSONLookupValue createProductLookupValue(final I_M_Product product)

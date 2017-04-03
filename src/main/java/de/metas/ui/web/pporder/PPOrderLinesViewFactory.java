@@ -46,25 +46,32 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 @DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt, viewType = JSONViewDataType.grid)
 public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 {
-	public static final int AD_WINDOW_ID = 540328; // Manufacturing Issue/Receipt
-
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorsFactory;
 
 	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
+	
+	@Override
+	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
+	{
+		return PPOrderLinesView.builder()
+				.setViewId(UUID.randomUUID().toString())
+				.setAD_Window_ID(jsonRequest.getAD_Window_ID())
+				.setRecords(PPOrderLinesLoader.of(jsonRequest))
+				.setServices(processDescriptorsFactory)
+				.build();
+	}
 
 	@Override
 	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType_NOTUSED, final JSONOptions jsonOpts)
 	{
-		final DocumentViewLayout huViewLayout = layouts.getOrLoad(adWindowId, () -> createHUViewLayout(adWindowId));
-
-		// final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(adWindowId);
+		final DocumentViewLayout viewLayout = layouts.getOrLoad(adWindowId, () -> createViewLayout(adWindowId));
 		final Collection<DocumentFilterDescriptor> filters = null; // filters are not supported yet
 
-		return JSONDocumentViewLayout.of(huViewLayout, filters, jsonOpts);
+		return JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
 	}
 
-	private final DocumentViewLayout createHUViewLayout(final int adWindowId)
+	private final DocumentViewLayout createViewLayout(final int adWindowId)
 	{
 		return DocumentViewLayout.builder()
 				.setAD_Window_ID(adWindowId)
@@ -75,13 +82,13 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 				.setHasTreeSupport(true)
 				//
 				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_Value)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
 						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_M_Product_ID)))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(DocumentFieldWidgetType.Text)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_Value)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
@@ -106,19 +113,11 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
 						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID)))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(DocumentFieldWidgetType.Text)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_StatusInfo)))
 				//
 				.build();
 	}
-
-	@Override
-	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
-	{
-		return PPOrderLinesView.builder()
-				.setViewId(UUID.randomUUID().toString())
-				.setAD_Window_ID(jsonRequest.getAD_Window_ID())
-				.setRecords(PPOrderLinesLoader.of(jsonRequest))
-				.setServices(processDescriptorsFactory)
-				.build();
-	}
-
 }

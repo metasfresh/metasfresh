@@ -110,20 +110,34 @@ public final class HUDocumentView extends ForwardingDocumentView
 		return (String)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
 	}
 
-	public String getHUStatus()
+	private JSONLookupValue getHUStatus()
 	{
 		final JSONLookupValue jsonHUStatus = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
+		return jsonHUStatus;
+	}
+	
+	public String getHUStatusKey()
+	{
+		final JSONLookupValue jsonHUStatus = getHUStatus();
 		return jsonHUStatus == null ? null : jsonHUStatus.getKey();
 	}
+	
+	public String getHUStatusDisplayName()
+	{
+		final JSONLookupValue jsonHUStatus = getHUStatus();
+		return jsonHUStatus == null ? null : jsonHUStatus.getName();
+	}
+
+
 
 	public boolean isHUStatusPlanning()
 	{
-		return X_M_HU.HUSTATUS_Planning.equals(getHUStatus());
+		return X_M_HU.HUSTATUS_Planning.equals(getHUStatusKey());
 	}
 
 	public boolean isHUStatusActive()
 	{
-		return X_M_HU.HUSTATUS_Active.equals(getHUStatus());
+		return X_M_HU.HUSTATUS_Active.equals(getHUStatusKey());
 	}
 
 	public boolean isPureHU()

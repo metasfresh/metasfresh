@@ -2,28 +2,35 @@ package de.metas.ui.web.pporder.process;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.pporder.PPOrderLine;
+import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
-import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.process.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -48,9 +55,13 @@ import de.metas.ui.web.process.ViewBasedProcessTemplate;
  */
 
 public class WEBUI_PP_Order_Receipt
-		extends ViewBasedProcessTemplate
+		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition
 {
+	// services
+	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
 	//
 	// Parameters
 	private static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
@@ -81,7 +92,7 @@ public class WEBUI_PP_Order_Receipt
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final PPOrderLine row = getSingleSelectedRow();
+		final PPOrderLineRow row = getSingleSelectedRow();
 		if (!row.isReceipt())
 		{
 			return ProcessPreconditionsResolution.reject("not a receipt line");
@@ -91,18 +102,7 @@ public class WEBUI_PP_Order_Receipt
 	}
 
 	@Override
-	protected final PPOrderLinesView getView()
-	{
-		return super.getView(PPOrderLinesView.class);
-	}
-
-	@Override
-	protected final PPOrderLine getSingleSelectedRow()
-	{
-		return PPOrderLine.cast(super.getSingleSelectedRow());
-	}
-
-	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		createHUs();
@@ -113,22 +113,52 @@ public class WEBUI_PP_Order_Receipt
 
 	public Collection<I_M_HU> createHUs()
 	{
-		final PPOrderLine row = getSingleSelectedRow();
+		final IPPOrderReceiptHUProducer receiptProducer;
+		final I_M_HU_LUTU_Configuration lutuConfigTemplate;
+		final PPOrderLineRow row = getSingleSelectedRow();
 		final PPOrderLineType type = row.getType();
-		if(type == PPOrderLineType.MainProduct)
+		if (type == PPOrderLineType.MainProduct)
 		{
-			
+			final int ppOrderId = row.getPP_Order_ID();
+			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_ThreadInherited);
+			lutuConfigTemplate = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
+			receiptProducer = IPPOrderReceiptHUProducer.receiveMainProduct(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
-			
+			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
+			final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(getCtx(), ppOrderBOMLineId, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
+			lutuConfigTemplate = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine).getCreateLUTUConfiguration();
+			receiptProducer = IPPOrderReceiptHUProducer.receiveByOrCoProduct(ppOrderBOMLine);
 		}
 		else
 		{
 			throw new AdempiereException("Receiving is not allowed");
 		}
-		
-		throw new UnsupportedOperationException();
+
+		//
+		// Calculate and set the LU/TU config
+		final I_M_HU_LUTU_Configuration lutuConfig = createM_HU_LUTU_Configuration(lutuConfigTemplate);
+		lutuConfigurationFactory.save(lutuConfig);
+		receiptProducer.setM_HU_LUTU_Configuration(lutuConfig);
+
+
+		//
+		// Calculate total quantity to receive
+		final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
+		if(qtyCUsTotal.isZero())
+		{
+			throw new AdempiereException("Zero quantity to receive");
+		}
+		else if(qtyCUsTotal.isInfinite())
+		{
+			throw new AdempiereException("Quantity to receive was not determined");
+		}
+
+		//
+		// Generate the HUs and return them
+		final List<I_M_HU> hus = receiptProducer.receiveHUs(qtyCUsTotal.getQty(), qtyCUsTotal.getUOM());
+		return hus;
 	}
 
 	private I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template)
@@ -166,6 +196,7 @@ public class WEBUI_PP_Order_Receipt
 		//
 		// CU
 		lutuConfigurationNew.setQtyCU(qtyCU);
+		lutuConfigurationNew.setIsInfiniteQtyCU(false);
 
 		//
 		// TU
@@ -174,6 +205,7 @@ public class WEBUI_PP_Order_Receipt
 		lutuConfigurationNew.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfigurationNew.setM_TU_HU_PI(tuPI);
 		lutuConfigurationNew.setQtyTU(qtyTU);
+		lutuConfigurationNew.setIsInfiniteQtyTU(false);
 
 		//
 		// LU
@@ -183,15 +215,24 @@ public class WEBUI_PP_Order_Receipt
 
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
-			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, lutuConfigurationNew.getC_BPartner())
+			final List<I_M_HU_PI_Item> luPI_ItemsAvailable = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, lutuConfigurationNew.getC_BPartner());
+			final I_M_HU_PI_Item luPI_Item = luPI_ItemsAvailable
 					.stream()
 					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
 					.findFirst()
-					.orElseThrow(() -> new AdempiereException(tuPI.getName() + " cannot be loaded to " + luPI.getName()));
+					.orElseThrow(() -> {
+						final String luPI_ItemsAvailableStr = luPI_ItemsAvailable.stream()
+								.map(item -> item.getM_HU_PI_Version().getM_HU_PI().getName())
+								.distinct()
+								.collect(Collectors.joining(", "));
+						return new AdempiereException(tuPI.getName() + " cannot be loaded to " + luPI.getName()
+								+ "\n Available LU PI items: " + luPI_ItemsAvailableStr);
+					});;
 
 			lutuConfigurationNew.setM_LU_HU_PI(luPI);
 			lutuConfigurationNew.setM_LU_HU_PI_Item(luPI_Item);
 			lutuConfigurationNew.setQtyLU(qtyLU);
+			lutuConfigurationNew.setIsInfiniteQtyLU(false);
 		}
 		else
 		{

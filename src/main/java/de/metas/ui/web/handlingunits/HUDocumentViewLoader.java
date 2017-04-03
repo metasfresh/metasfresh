@@ -14,6 +14,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -26,6 +27,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.DocumentView;
@@ -64,6 +66,8 @@ public class HUDocumentViewLoader
 	{
 		return new HUDocumentViewLoader(request, referencingTableName);
 	}
+
+	private static final transient Logger logger = LogManager.getLogger(HUDocumentViewLoader.class);
 
 	private final int adWindowId;
 	private final String referencingTableName;
@@ -247,9 +251,17 @@ public class HUDocumentViewLoader
 			return "";
 		}
 
-		return HUPackingInfoFormatter.newInstance()
-				.setShowLU(true)
-				.format(HUPackingInfos.of(hu));
+		try
+		{
+			return HUPackingInfoFormatter.newInstance()
+					.setShowLU(true)
+					.format(HUPackingInfos.of(hu));
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed extracting packing info for {}", hu, ex);
+			return "?";
+		}
 	}
 
 	private final boolean extractProcessed(final I_M_HU hu)

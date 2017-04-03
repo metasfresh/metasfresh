@@ -15,7 +15,6 @@ import org.compiere.util.Evaluatee;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
@@ -124,7 +123,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	@Override
 	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final Stream<PPOrderLine> stream = getRecords().stream()
+		final Stream<PPOrderLineRow> stream = getRecords().stream()
 				.skip(firstRow)
 				.limit(pageLength);
 
@@ -134,7 +133,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@Override
-	public PPOrderLine getById(final DocumentId documentId) throws EntityNotFoundException
+	public PPOrderLineRow getById(final DocumentId documentId) throws EntityNotFoundException
 	{
 		return getRecords().getById(documentId);
 	}
@@ -178,25 +177,28 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	@Override
 	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
 	{
-		if (selectedDocumentIds.isEmpty())
-		{
-			return Stream.empty();
-		}
-
-		if (selectedDocumentIds.size() != 1)
-		{
-			return Stream.empty();
-		}
-
-		final DocumentId selectedDocumentId = selectedDocumentIds.iterator().next();
-		final PPOrderLine record = getById(selectedDocumentId);
-		if (record == null)
-		{
-			return Stream.empty();
-		}
-
-		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, record.getTableName(), ImmutableSet.of(record.getDocumentId()));
+		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, getTableName(), selectedDocumentIds);
 		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
+		
+//		if (selectedDocumentIds.isEmpty())
+//		{
+//			return Stream.empty();
+//		}
+//
+//		if (selectedDocumentIds.size() != 1)
+//		{
+//			return Stream.empty();
+//		}
+//
+//		final DocumentId selectedDocumentId = selectedDocumentIds.iterator().next();
+//		final PPOrderLineRow record = getById(selectedDocumentId);
+//		if (record == null)
+//		{
+//			return Stream.empty();
+//		}
+//
+//		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, record.getTableName(), ImmutableSet.of(record.getDocumentId()));
+//		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 
 	@Override
@@ -212,10 +214,17 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@Override
-	public Stream<PPOrderLine> streamByIds(final Collection<DocumentId> documentIds)
+	public Stream<PPOrderLineRow> streamByIds(final Collection<DocumentId> documentIds)
 	{
 		return getRecords().streamByIds(documentIds);
 	}
+	
+	/** @return top level rows and included rows recursive stream */
+	public Stream<PPOrderLineRow> streamAllRecursive()
+	{
+		return getRecords().streamRecursive();
+	}
+
 
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
@@ -243,7 +252,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 	private IndexedDocumentViews retrieveRecords()
 	{
-		final List<PPOrderLine> recordsList = loader.retrieveRecords();
+		final List<PPOrderLineRow> recordsList = loader.retrieveRecords();
 		return new IndexedDocumentViews(recordsList);
 	}
 
@@ -253,20 +262,20 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	private static final class IndexedDocumentViews
 	{
 		/** Top level records list */
-		private final List<PPOrderLine> records;
+		private final List<PPOrderLineRow> records;
 		/** All records (included ones too) indexed by DocumentId */
-		private final Map<DocumentId, PPOrderLine> allRecordsById;
+		private final Map<DocumentId, PPOrderLineRow> allRecordsById;
 
-		public IndexedDocumentViews(final List<PPOrderLine> records)
+		public IndexedDocumentViews(final List<PPOrderLineRow> records)
 		{
 			super();
 			this.records = ImmutableList.copyOf(records);
 			allRecordsById = buildRecordsByIdMap(this.records);
 		}
 
-		public PPOrderLine getById(final DocumentId documentId)
+		public PPOrderLineRow getById(final DocumentId documentId)
 		{
-			final PPOrderLine record = allRecordsById.get(documentId);
+			final PPOrderLineRow record = allRecordsById.get(documentId);
 			if (record == null)
 			{
 				throw new EntityNotFoundException("No document found for documentId=" + documentId);
@@ -274,7 +283,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			return record;
 		}
 
-		public Stream<PPOrderLine> streamByIds(final Collection<DocumentId> documentIds)
+		public Stream<PPOrderLineRow> streamByIds(final Collection<DocumentId> documentIds)
 		{
 			if (documentIds == null || documentIds.isEmpty())
 			{
@@ -286,30 +295,47 @@ public class PPOrderLinesView implements IDocumentViewSelection
 					.map(documentId -> allRecordsById.get(documentId))
 					.filter(document -> document != null);
 		}
-
-		public Stream<PPOrderLine> stream()
+		
+		public Stream<PPOrderLineRow> stream()
 		{
 			return records.stream();
 		}
+		
+		public Stream<PPOrderLineRow> streamRecursive()
+		{
+			return records.stream()
+					.map(row -> streamIncludedRowsRecursive(row))
+					.reduce(Stream::concat)
+					.orElse(Stream.of());
+		}
+
+		private Stream<PPOrderLineRow> streamIncludedRowsRecursive(PPOrderLineRow row)
+		{
+			return row.getIncludedDocuments()
+					.stream()
+					.map(includedRow -> streamIncludedRowsRecursive(includedRow))
+					.reduce(Stream.of(row), Stream::concat);
+		}
+
 
 		public long size()
 		{
 			return records.size();
 		}
 
-		private static ImmutableMap<DocumentId, PPOrderLine> buildRecordsByIdMap(final List<PPOrderLine> records)
+		private static ImmutableMap<DocumentId, PPOrderLineRow> buildRecordsByIdMap(final List<PPOrderLineRow> records)
 		{
 			if (records.isEmpty())
 			{
 				return ImmutableMap.of();
 			}
 
-			final ImmutableMap.Builder<DocumentId, PPOrderLine> recordsById = ImmutableMap.builder();
+			final ImmutableMap.Builder<DocumentId, PPOrderLineRow> recordsById = ImmutableMap.builder();
 			records.forEach(record -> indexByIdRecursively(recordsById, record));
 			return recordsById.build();
 		}
 
-		private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLine> collector, final PPOrderLine record)
+		private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow record)
 		{
 			collector.put(record.getDocumentId(), record);
 			record.getIncludedDocuments()
@@ -320,7 +346,6 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	//
 	//
 	//
-
 	public static final class Builder
 	{
 		private String viewId;
