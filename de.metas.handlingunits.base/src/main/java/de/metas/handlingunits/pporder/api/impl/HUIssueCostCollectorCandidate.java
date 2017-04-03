@@ -77,7 +77,7 @@ import de.metas.handlingunits.util.HUByIdComparator;
 	 * @param qtyToIssueToAdd
 	 * @param huToAssign HU to be assigned to generated cost collector
 	 */
-	public void addQtyToIssue(final I_M_Product product, final Quantity qtyToIssueToAdd, final I_M_HU huToAssign)
+	void addQtyToIssue(final I_M_Product product, final Quantity qtyToIssueToAdd, final I_M_HU huToAssign)
 	{
 		// Validate
 		if (product.getM_Product_ID() != ppOrderBOMLine.getM_Product_ID())
