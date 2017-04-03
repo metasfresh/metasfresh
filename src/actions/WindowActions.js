@@ -110,7 +110,7 @@ export function updateDataValidStatus(scope, validStatus) {
 
 export function updateRowProperty(property, item, tabid, rowid, scope) {
     return {
-        type: types.UPDATE_ROW_SUCCESS,
+        type: types.UPDATE_ROW_PROPERTY,
         property,
         item,
         tabid,
@@ -149,7 +149,7 @@ export function updateDataFieldProperty(property, item, scope) {
 
 export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
     return {
-        type: types.UPDATE_ROW_PROPERTY,
+        type: types.UPDATE_ROW_FIELD_PROPERTY,
         property: property,
         item: item,
         tabid: tabid,
@@ -402,35 +402,34 @@ export function patch(
 
 function updateData(doc, scope){
     return dispatch => {
-        doc.fields.map(field => {
-            dispatch(updateDataFieldProperty(
-                field.field, field, scope
-            ))
-        })
-
-        delete doc.fields;
-
         Object.keys(doc).map(key => {
-            dispatch(updateDataProperty(key, doc[key], scope))
+            if(key === 'fields'){
+                doc.fields.map(field => {
+                    dispatch(updateDataFieldProperty(
+                        field.field, field, scope
+                    ))
+                })
+            }else{
+                dispatch(updateDataProperty(key, doc[key], scope))
+            }
         })
     }
 }
 
 function updateRow(row, scope){
     return dispatch => {
-
-        row.fields.map(field => {
-            dispatch(updateRowFieldProperty(
-                field.field, field, row.tabid, row.rowid, scope
-            ))
-        });
-
-        delete row.fields;
-
         Object.keys(row).map(key => {
-            dispatch(updateRowProperty(
-                key, row[key], row.tabid, row.rowId, scope
-            ));
+            if(key === 'fields'){
+                row.fields.map(field => {
+                    dispatch(updateRowFieldProperty(
+                        field.field, field, row.tabid, row.rowid, scope
+                    ))
+                });
+            }else{
+                dispatch(updateRowProperty(
+                    key, row[key], row.tabid, row.rowId, scope
+                ));
+            }
         })
     }
 }
@@ -438,7 +437,8 @@ function updateRow(row, scope){
 function mapDataToState(data, isModal, rowId, id, windowType) {
     return (dispatch) => {
         let staleTabIds = [];
-        data.map(item => {
+        
+        data.map((item, index) => {
             // Merging staleTabIds
             item.includedTabsInfo && item.includedTabsInfo.map(tabInfo => {
                 if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
@@ -453,14 +453,18 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             if(!parsedItem.fields.length){
                 delete parsedItem.fields;
             }
-
-            if (item.rowId && !isModal) {
-                dispatch(updateRow(parsedItem, getScope(isModal)));
-            } else {
-                item.rowId &&
+            
+            if(index === 0 && rowId === 'NEW'){
+                dispatch(addNewRow(parsedItem, parsedItem.tabid, parsedItem.rowId, getScope(false)))
+            }else{
+                if (item.rowId && !isModal) {
                     dispatch(updateRow(parsedItem, getScope(isModal)));
+                } else {
+                    item.rowId &&
+                        dispatch(updateRow(parsedItem, getScope(isModal)));
 
-                dispatch(updateData(parsedItem, getScope(isModal)));
+                    dispatch(updateData(parsedItem, getScope(isModal)));
+                }
             }
         })
 

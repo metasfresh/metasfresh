@@ -130,9 +130,9 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {$set: action.item}
-                        }
+                        [action.tabid]: {$set: {
+                            [action.rowid]: action.item
+                        }}
                     }
                 }
             })
@@ -160,18 +160,22 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$set: {
-                            [action.rowid]: {
-                                //TODO: fix this issue with new row
+                        [action.tabid]: {
+                            [action.rowid]: {$set: {
                                 [action.property]: Object.assign({},
+                                    (state[action.scope]
+                                        .rowData[action.tabid] &&
                                     state[action.scope]
                                         .rowData[action.tabid]
-                                        [action.rowid]
-                                        [action.property],
+                                        [action.rowid]) ?
+                                        state[action.scope]
+                                            .rowData[action.tabid]
+                                            [action.rowid]
+                                            [action.property] : {},
                                     action.item
                                 )
-                            }
-                        }}
+                            }}
+                        }
                     }
                 }
             })
@@ -218,7 +222,7 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     [action.property]: {$set: Object.assign({},
-                        state[action.scope][action.property],
+                        state[action.scope] ? state[action.scope][action.property] : {},
                         action.value
                     )}
                 }
