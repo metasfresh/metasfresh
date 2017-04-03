@@ -89,12 +89,7 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 		//
 		// Get/Create Issue Candidate
 		final int ppOrderBOMLineId = ppOrderBOMLine.getPP_Order_BOMLine_ID();
-		HUIssueCostCollectorCandidate issueCandidate = ppOrderBOMLineId2candidate.get(ppOrderBOMLineId);
-		if (issueCandidate == null)
-		{
-			issueCandidate = new HUIssueCostCollectorCandidate(ppOrderBOMLine);
-			ppOrderBOMLineId2candidate.put(ppOrderBOMLineId, issueCandidate);
-		}
+		final HUIssueCostCollectorCandidate issueCandidate = ppOrderBOMLineId2candidate.computeIfAbsent(ppOrderBOMLineId, k -> new HUIssueCostCollectorCandidate(ppOrderBOMLine));
 
 		//
 		// Add Qty To Issue
