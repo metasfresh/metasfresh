@@ -152,3 +152,113 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para SET IsActive='N',Updated=TO_TIMESTAMP('2017-03-30 16:49:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541170
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2017-03-30T16:51:01.109
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540773,53027,TO_TIMESTAMP('2017-03-30 16:51:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y',TO_TIMESTAMP('2017-03-30 16:51:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N')
+;
+
+-- 2017-03-30T16:51:06.899
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction_Default='Y',Updated=TO_TIMESTAMP('2017-03-30 16:51:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540773 AND AD_Table_ID=53027
+;
+
+-- 2017-03-30T16:51:22.256
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540773,53025,TO_TIMESTAMP('2017-03-30 16:51:22','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y',TO_TIMESTAMP('2017-03-30 16:51:22','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y')
+;
+
+-- 2017-03-30T18:18:57.818
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540773,53026,TO_TIMESTAMP('2017-03-30 18:18:57','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y',TO_TIMESTAMP('2017-03-30 18:18:57','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y')
+;
+
+-- 2017-03-30T18:19:02.985
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540773 AND AD_Table_ID=53027
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2017-04-02T16:33:32.885
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540775,'Y','de.metas.ui.web.pporder.process.WEBUI_PP_Order_ProcessPlan','N',TO_TIMESTAMP('2017-04-02 16:33:32','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','N','N','N','N','N','Y',0,'Process plan','N','Y','Java',TO_TIMESTAMP('2017-04-02 16:33:32','YYYY-MM-DD HH24:MI:SS'),100,'WEBUI_PP_Order_ProcessPlan')
+;
+
+-- 2017-04-02T16:33:32.900
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Process_ID=540775 AND NOT EXISTS (SELECT * FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- 2017-04-02T16:33:57.019
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2017-04-02 16:33:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540775
+;
+
+-- 2017-04-02T16:34:30.156
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540775,53024,TO_TIMESTAMP('2017-04-02 16:34:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y',TO_TIMESTAMP('2017-04-02 16:34:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N')
+;
+
+-- 2017-04-03T03:39:31.653
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540775 AND AD_Table_ID=53024
+;
+
+-- 2017-04-03T03:39:44.460
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540773 AND AD_Table_ID=53025
+;
+
+-- 2017-04-03T03:39:44.496
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540773 AND AD_Table_ID=53026
+;
+

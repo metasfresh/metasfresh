@@ -125,11 +125,9 @@ import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.PPOrderBOMLineModel;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessExecutionListener;
-import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
@@ -1053,17 +1051,20 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 					if (isOnlyReceipt() || isBackflush())
 					{
 						final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-						final IReceiptCostCollectorCandidate candidate = ppCostCollectorBL.createReceiptCostCollectorCandidate();
-						candidate.setPP_Order(order);
-						candidate.setMovementDate(getMovementDate());
-						candidate.setQtyToReceive(getToDeliverQty());
-						candidate.setQtyScrap(getScrapQty());
-						candidate.setQtyReject(getRejectQty());
-						candidate.setM_Product(order.getM_Product());
-						candidate.setC_UOM(order.getC_UOM());
-						candidate.setM_Locator_ID(getM_Locator_ID());
-						candidate.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
+						final IReceiptCostCollectorCandidate candidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+								.PP_Order(order)
+								.movementDate(getMovementDate())
+								.qtyToReceive(getToDeliverQty())
+								.qtyScrap(getScrapQty())
+								.qtyReject(getRejectQty())
+								.M_Product(order.getM_Product())
+								.C_UOM(order.getC_UOM())
+								.M_Locator_ID(getM_Locator_ID())
+								.M_AttributeSetInstance_ID(getM_AttributeSetInstance_ID())
+								.build();
+						
 						ppCostCollectorBL.createReceipt(candidate);
+						
 						if (isCloseDocument)
 						{
 							order.setDateFinish(getMovementDate());

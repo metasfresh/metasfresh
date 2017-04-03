@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.pporder.receipt.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,8 +31,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.util.TrxRunnable;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMBL;
@@ -50,8 +48,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateCoProductHUProducer;
-import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateFinishedGoodsHUProducer;
 
 public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 {
@@ -61,6 +57,8 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private List<I_M_HU> createdHUs = new ArrayList<I_M_HU>();
 
@@ -122,10 +120,11 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
-		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = ppCostCollectorBL.createReceiptCostCollectorCandidate();
-		receiptCostCollectorCandidate.setPP_Order(ppOrder);
-		receiptCostCollectorCandidate.setM_Product(lutuConfiguration.getM_Product());
-		receiptCostCollectorCandidate.setC_UOM(lutuConfiguration.getC_UOM());
+		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+				.PP_Order(ppOrder)
+				.M_Product(lutuConfiguration.getM_Product())
+				.C_UOM(lutuConfiguration.getC_UOM())
+				.build();
 
 		final BigDecimal qtyToReceiveTarget = ppOrderBL.getQtyOpen(ppOrder);
 
@@ -156,11 +155,12 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
-		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = ppCostCollectorBL.createReceiptCostCollectorCandidate();
-		receiptCostCollectorCandidate.setPP_Order(ppOrder);
-		receiptCostCollectorCandidate.setPP_Order_BOMLine(ppOrderBOMLine);
-		receiptCostCollectorCandidate.setM_Product(lutuConfiguration.getM_Product());
-		receiptCostCollectorCandidate.setC_UOM(lutuConfiguration.getC_UOM());
+		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+				.PP_Order(ppOrder)
+				.PP_Order_BOMLine(ppOrderBOMLine)
+				.M_Product(lutuConfiguration.getM_Product())
+				.C_UOM(lutuConfiguration.getC_UOM())
+				.build();
 
 		final BigDecimal qtyToReceiveTarget = ppOrderBOMBL.getQtyToReceive(ppOrderBOMLine);
 
@@ -197,49 +197,49 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 
 		// Create Receipt Cost Collector candidate
 		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = productKey.getReceiptCostCollectorCandidate();
-		receiptCostCollectorCandidate.setQtyToReceive(qtyToReceive);
-		receiptCostCollectorCandidate.setC_UOM(luTuConfiguration.getC_UOM());
-		receiptCostCollectorCandidate.setMovementDate(SystemTime.asTimestamp());
-		receiptCostCollectorCandidate.setM_Product(luTuConfiguration.getM_Product());
+		final I_C_UOM qtyToReceiveUOM = luTuConfiguration.getC_UOM();
+//		receiptCostCollectorCandidate.setQtyToReceive(qtyToReceive);
+//		receiptCostCollectorCandidate.setC_UOM(qtyToReceiveUOM);
+//		receiptCostCollectorCandidate.setMovementDate(SystemTime.asTimestamp());
+//		receiptCostCollectorCandidate.setM_Product(luTuConfiguration.getM_Product());
 
 		final IPPOrderReceiptHUProducer producer;
-
 		if (receiptCostCollectorCandidate.getPP_Order_BOMLine() != null)
 		{
-			producer = new CostCollectorCandidateCoProductHUProducer(receiptCostCollectorCandidate);
+			producer = IPPOrderReceiptHUProducer.receiveByOrCoProduct(receiptCostCollectorCandidate.getPP_Order_BOMLine());
 		}
 
 		else
 		{
-			producer = new CostCollectorCandidateFinishedGoodsHUProducer(receiptCostCollectorCandidate);
+			producer = IPPOrderReceiptHUProducer.receiveMainProduct(receiptCostCollectorCandidate.getPP_Order());
 		}
+		// producer.setMovementDate(SystemTime.asDayTimestamp()); // that's by default
 
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
+		createdHUs = trxManager.call(() -> {
+			// At this point, only create the HUs.
+			// No movements shall be created now.
+			// They will be modified afterwards, when the user wants them to
+
+			final List<I_M_HU> hus = producer.receiveHUs(qtyToReceive, qtyToReceiveUOM);
+
+			final I_PP_Order ppOrder = receiptCostCollectorCandidate.getPP_Order();
+			for (final I_M_HU hu : hus)
 			{
-				// At this point, only create the HUs.
-				// No movements shall be created now.
-				// They will be modified afterwards, when the user wants them to
-				
-				final I_PP_Order ppOrder = receiptCostCollectorCandidate.getPP_Order();
-				
-				createdHUs = producer.createHUs(ppOrder, ITrx.TRXNAME_ThreadInherited);
-				
-				for (final I_M_HU hu : createdHUs)
-				{
-					//
-					// Set the HU's PIIP when created (if available)
-					hu.setM_HU_PI_Item_Product(luTuConfiguration.getM_HU_PI_Item_Product());
-					
-					// task 08177
-					// Modify the HU Attributes based on the attributes already existing from issuing
-					Services.get(IPPOrderProductAttributeBL.class).updateHUAttributes(ppOrder, hu);
-					
-					InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None);
-				}
+				//
+				// Set the HU's PIIP when created (if available)
+				// TODO: check if shall not be needed because it's set when HU is created
+				hu.setM_HU_PI_Item_Product(luTuConfiguration.getM_HU_PI_Item_Product());
+
+				// task 08177
+				// Modify the HU Attributes based on the attributes already existing from issuing
+				// TODO: consider moving it to producer!!!
+				ppOrderProductAttributeBL.updateHUAttributes(ppOrder, hu);
+
+				// TODO: the producer is returning the HUs with TrxInherited... i guess we can remove this from here
+				InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None);
 			}
+
+			return hus;
 		});
 	}
 

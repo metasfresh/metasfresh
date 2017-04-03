@@ -42,15 +42,11 @@ public interface IReceiptCostCollectorCandidate
 {
 	I_PP_Order getPP_Order();
 
-	void setPP_Order(I_PP_Order order);
-
 	/**
 	 * 
 	 * @return manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise 
 	 */
 	I_PP_Order_BOMLine getPP_Order_BOMLine();
-
-	void setPP_Order_BOMLine(I_PP_Order_BOMLine orderBOMLine);
 
 	Timestamp getMovementDate();
 
@@ -62,25 +58,17 @@ public interface IReceiptCostCollectorCandidate
 
 	BigDecimal getQtyScrap();
 
-	void setQtyScrap(BigDecimal qtyScrap);
-
 	BigDecimal getQtyReject();
-
-	void setQtyReject(BigDecimal qtyReject);
 
 	int getM_Locator_ID();
 
-	void setM_Locator_ID(int m_Locator_ID);
-
 	int getM_AttributeSetInstance_ID();
-
-	void setM_AttributeSetInstance_ID(int m_AttributeSetInstance_ID);
 
 	I_C_UOM getC_UOM();
 
 	void setC_UOM(final I_C_UOM uom);
 
-	void setM_Product(I_M_Product product);
-
 	I_M_Product getM_Product();
+	
+	void setM_Product(I_M_Product product);
 }

@@ -170,6 +170,7 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 
 							//
 							// Ask the API to get the packing materials needed to the HU which we just activate it
+							// TODO: i think we can remove this part because it's done automatically ?!
 							huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
 						}
 						return NULL_RESULT; // don't care

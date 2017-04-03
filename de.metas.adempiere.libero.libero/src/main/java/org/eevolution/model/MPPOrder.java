@@ -694,16 +694,18 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(this);
 
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final IReceiptCostCollectorCandidate candidate = ppCostCollectorBL.createReceiptCostCollectorCandidate();
-		candidate.setPP_Order(this);
-		candidate.setMovementDate(today);
-		candidate.setQtyToReceive(qtyToReceive);
-		candidate.setQtyScrap(getQtyScrap());
-		candidate.setQtyReject(getQtyReject());
-		candidate.setM_Locator_ID(getM_Locator_ID());
-		candidate.setM_Product(getM_Product());
-		candidate.setC_UOM(getC_UOM());
-		candidate.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
+		final IReceiptCostCollectorCandidate candidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
+				.PP_Order(this)
+				.movementDate(today)
+				.qtyToReceive(qtyToReceive)
+				.qtyScrap(getQtyScrap())
+				.qtyReject(getQtyReject())
+				.M_Locator_ID(getM_Locator_ID())
+				.M_Product(getM_Product())
+				.C_UOM(getC_UOM())
+				.M_AttributeSetInstance_ID(getM_AttributeSetInstance_ID())
+				.build();
+		
 		ppCostCollectorBL.createReceipt(candidate);
 
 		setQtyDelivered(qtyToReceive);

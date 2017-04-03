@@ -13,34 +13,84 @@ package de.metas.handlingunits.pporder.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IReceiptCostCollectorCandidate;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 
 public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 {
+	@Override
+	public I_PP_Cost_Collector createReceipt(final IReceiptCostCollectorCandidate candidate, final I_M_HU hu)
+	{
+		Preconditions.checkNotNull(candidate, "candidate is null");
+		Preconditions.checkNotNull(hu, "hu is null");
+
+		// services
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		//
+		// Create & process the receipt cost collector
+		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(ppCostCollectorBL.createReceipt(candidate), I_PP_Cost_Collector.class);
+
+		// Assign the HU to cost collector
+		assignHUs(cc, ImmutableList.of(hu));
+
+		//
+		// Activate the HU (assuming it was Planning)
+		huTrxBL.process(huContext -> {
+			final boolean isPhysicalHU = handlingUnitsBL.isPhysicalHU(hu.getHUStatus());
+			if (isPhysicalHU)
+			{
+				// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
+				// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
+				// ... but when you get to verteilung the boxes are already there
+				return;
+			}
+
+			handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
+
+			//
+			// Ask the API to get the packing materials needed to the HU which we just activate it
+			// TODO: i think we can remove this part because it's done automatically ?!
+			huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
+		});
+
+		return cc;
+	}
+
 	@Override
 	public void assignHUs(final org.eevolution.model.I_PP_Cost_Collector cc, final Collection<I_M_HU> husToAssign)
 	{

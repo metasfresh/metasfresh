@@ -189,12 +189,16 @@ public class PP_Cost_Collector
 						handlingUnitsBL.markDestroyed(huContext, hu);
 					}
 				});
+		
+		// TODO: reverse PP_Order_Qty records
 	}
 
 	private final void reverseCostCollector_Issue(final I_PP_Cost_Collector cc)
 	{
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
+		
+		// TODO: reverse PP_Order_Qty records
 	}
 
 	@DocValidate(timings = {

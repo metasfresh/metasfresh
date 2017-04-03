@@ -180,6 +180,116 @@ public interface I_PP_Order_Qty
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
+	 * Set Lagerort.
+	 * Lagerort im Lager
+	 *
+	 * <br>Type: Locator
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Locator_ID (int M_Locator_ID);
+
+	/**
+	 * Get Lagerort.
+	 * Lagerort im Lager
+	 *
+	 * <br>Type: Locator
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Locator_ID();
+
+	public org.compiere.model.I_M_Locator getM_Locator();
+
+	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
+
+    /** Column definition for M_Locator_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Locator>(I_PP_Order_Qty.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
+    /** Column name M_Locator_ID */
+    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Product>(I_PP_Order_Qty.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Bewegungs-Datum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungs-Datum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMovementDate();
+
+    /** Column definition for MovementDate */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "MovementDate", null);
+    /** Column name MovementDate */
+    public static final String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
+	 * Set Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
+
+	/**
+	 * Get Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Cost_Collector_ID();
+
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+
+	public void setPP_Cost_Collector(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
+
+    /** Column definition for PP_Cost_Collector_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Cost_Collector>(I_PP_Order_Qty.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
+    /** Column name PP_Cost_Collector_ID */
+    public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
 	 * Set Manufacturing Order BOM Line.
 	 *
 	 * <br>Type: Search
