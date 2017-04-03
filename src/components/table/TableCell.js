@@ -64,15 +64,25 @@ class TableCell extends Component {
         }else{
             switch(typeof field){
                 case 'object':
-                    if(type === 'Date' || type === 'DateTime' || type === 'Time'){
+                    if(
+                        type === 'Date' ||
+                        type === 'DateTime' ||
+                        type === 'Time'
+                    ){
                         return this.createDate(field, type);
                     } else {
                         return field[Object.keys(field)[0]];
                     }
                 case 'boolean':
-                    return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
+                    return field ?
+                        <i className="meta-icon-checkbox-1" /> :
+                        <i className="meta-icon-checkbox" />;
                 case 'string':
-                    if(type === 'Date' || type === 'DateTime' || type === 'Time'){
+                    if(
+                        type === 'Date' ||
+                        type === 'DateTime' ||
+                        type === 'Time'
+                    ){
                         return this.createDate(field, type);
                     } else {
                         return field;
@@ -86,9 +96,9 @@ class TableCell extends Component {
 
     render() {
         const {
-            isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
-            onKeyDown, readonly, updatedRow, tabIndex, entity, listenOnKeys,
-            listenOnKeysFalse, closeTableField
+            isEdited, widgetData, item, docId, type, rowId, tabId,
+            onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
+            listenOnKeys, listenOnKeysFalse, closeTableField
         } = this.props;
 
         return (
@@ -134,7 +144,9 @@ class TableCell extends Component {
                         />
                     :
                        <div className="cell-text-wrapper">
-                           {this.fieldToString(widgetData[0].value, item.widgetType)}
+                           {this.fieldToString(
+                               widgetData[0].value, item.widgetType
+                           )}
                        </div>
                 }
             </td>

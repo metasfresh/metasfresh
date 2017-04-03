@@ -18,7 +18,7 @@ class Login extends Component {
     render() {
         const {redirect} = this.props;
         return (
-            <div>
+            <div className="fullscreen">
                 <div className="login-container">
                     <LoginForm
                         redirect={redirect}

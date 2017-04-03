@@ -19,7 +19,8 @@ class SelectionAttributes extends Component {
 
     componentDidUpdate = (prevProps) => {
         const {
-            selected, DLWrapperSetData, DLWrapperSetLayout, refresh, shouldNotUpdate
+            selected, DLWrapperSetData, DLWrapperSetLayout, refresh,
+            shouldNotUpdate
         } = this.props;
 
         if(shouldNotUpdate){
@@ -30,29 +31,31 @@ class SelectionAttributes extends Component {
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
             (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
         ){
-                DLWrapperSetData([], null, () => {
-                    DLWrapperSetLayout([], () => {
-                        if(selected && selected.length === 1){
-                            if(selected[0] == 0){
-                                return;
-                            }
-                            this.fetchActions();
+            DLWrapperSetData([], null, () => {
+                DLWrapperSetLayout([], () => {
+                    if(selected && selected.length === 1){
+                        if(selected[0] == 0){
+                            return;
                         }
-                    })
+                        this.fetchActions();
+                    }
                 })
+            })
         }
     }
 
     fetchActions = () => {
         const {
-            windowType, viewId, selected, entity, DLWrapperSetData, DLWrapperSetLayout,
-            dispatch
+            windowType, viewId, selected, entity, DLWrapperSetData,
+            DLWrapperSetLayout, dispatch
         } = this.props;
 
         dispatch(initLayout(entity, windowType, selected[0], null, viewId)
             ).then(response => {
                 DLWrapperSetLayout(response.data.elements);
-                return dispatch(getData(entity, windowType, viewId, selected[0]));
+                return dispatch(
+                    getData(entity, windowType, viewId, selected[0])
+                );
             }).then(response => {
                 DLWrapperSetData(response.data.fields, response.data.id);
             }).catch(() => {});
@@ -79,7 +82,8 @@ class SelectionAttributes extends Component {
     render() {
         const {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
-            DLWrapperHandleChange, DLWrapperHandlePatch, entity, setClickOutsideLock
+            DLWrapperHandleChange, DLWrapperHandlePatch, entity,
+            setClickOutsideLock
         } = this.props;
 
         return (
@@ -87,7 +91,10 @@ class SelectionAttributes extends Component {
                 <div className="attributes-selector-header">
                     Selection attributes
                 </div>
-                <div tabIndex={1} className="attributes-selector-body js-attributes">
+                <div
+                    tabIndex={1}
+                    className="attributes-selector-body js-attributes"
+                >
                     {DLWrapperLayout && DLWrapperLayout.map((item, id) =>
                         <RawWidget
                             entity={entity}
@@ -96,7 +103,9 @@ class SelectionAttributes extends Component {
                             dataId={DLWrapperDataId}
                             windowType={windowType}
                             viewId={viewId}
-                            widgetData={item.fields.map(elem => findRowByPropName(DLWrapperData, elem.field))}
+                            widgetData={item.fields.map(elem =>
+                                findRowByPropName(DLWrapperData, elem.field)
+                            )}
                             gridAlign={item.gridAlign}
                             key={id}
                             type={item.type}
@@ -105,12 +114,23 @@ class SelectionAttributes extends Component {
                             handleBlur={() => setClickOutsideLock(false)}
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
-                            tabIndex={this.getTabId(item.fields.map(elem => findRowByPropName(DLWrapperData, elem.field)))}
+                            tabIndex={this.getTabId(
+                                item.fields.map(elem =>
+                                    findRowByPropName(
+                                        DLWrapperData, elem.field)
+                                )
+                            )}
                         />
                     )}
-                    {DLWrapperLayout && !DLWrapperLayout.length && <i>Select element to display its attributes.</i>}
+                    {DLWrapperLayout && !DLWrapperLayout.length &&
+                        <i>Select element to display its attributes.</i>
+                    }
                 </div>
-                <div className="focusHandler" tabIndex={1} onFocus={this.selectTable}></div>
+                <div
+                    className="focusHandler"
+                    tabIndex={1}
+                    onFocus={this.selectTable}
+                />
             </div>
         );
     }

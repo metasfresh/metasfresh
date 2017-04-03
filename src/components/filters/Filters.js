@@ -43,9 +43,10 @@ class Filters extends Component {
             notValidFields: !valid
         }, () => {
             if (valid){
-                const parsedFilter = filter.parameters ? Object.assign({}, filter, {
-                    parameters: this.parseToPatch(filter.parameters)
-                }) : filter;
+                const parsedFilter = filter.parameters ?
+                    Object.assign({}, filter, {
+                        parameters: this.parseToPatch(filter.parameters)
+                    }) : filter;
                 this.setFilterActive([parsedFilter]);
                 cb && cb();
             }
@@ -113,7 +114,9 @@ class Filters extends Component {
 
     render() {
         const {filterData, windowType, viewId} = this.props;
-        const {frequentFilters, notFrequentFilters} = this.sortFilters(filterData);
+        const {
+            frequentFilters, notFrequentFilters
+        } = this.sortFilters(filterData);
         const {notValidFields, widgetShown, filter} = this.state;
         return (
             <div className="filter-wrapper js-not-unselect">

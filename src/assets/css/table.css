@@ -3,9 +3,14 @@
     margin-bottom: 0;
 }
 
-.table *::selection {
+.table *::selection{
     background-color: transparent;
     color: $brand-font-color;
+}
+
+.table .input-body-container *::selection {
+    background-color: $brand-color-primary;
+    color: #fff;
 }
 
 .table tbody+tbody {

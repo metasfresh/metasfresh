@@ -94,7 +94,9 @@ class Notification extends Component {
                         <span
                             className={
                                 'tag tag-sm tag-default ' +
-                                ('tag-' + (item.notifType ? item.notifType : 'error '))
+                                ('tag-' + (
+                                    item.notifType ? item.notifType : 'error '
+                                ))
                             }>{item.count}</span> : ''}
                     <i
                         onClick={() => this.handleCloseButton()}

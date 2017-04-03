@@ -10,6 +10,9 @@ import { Router, browserHistory } from 'react-router';
 
 import Moment from 'moment';
 
+import NotificationHandler
+    from '../components/notifications/NotificationHandler';
+
 import {
     noConnection
 } from '../actions/WindowActions'
@@ -34,9 +37,9 @@ axios.interceptors.response.use(function (response) {
         store.dispatch(noConnection(true));
     }
 
-    //
-    // Authorization error
-    //
+    /*
+     * Authorization error
+     */
     if(error.response.status == 401){
         store.dispatch(logoutSuccess());
         store.dispatch(push('/login?redirect=true'));
@@ -50,10 +53,22 @@ axios.interceptors.response.use(function (response) {
                         return 'Client error';
                 }
             }
-            const {data, status} = error.response;
+            const {
+                data, status
+            } = error.response;
+
+            const errorTitle = errorMessenger(status);
+
+            console.error(data.message);
+
+            // Dashboard disabled notifications
+            if(window.location.pathname === '/'){
+                return;
+            }
+
             store.dispatch(addNotification(
                 'Error: ' + data.message.split(' ', 4).join(' ') + '...',
-                data.message, 5000, 'error', errorMessenger(status))
+                data.message, 5000, 'error', errorTitle)
             );
         }
     }
@@ -77,7 +92,12 @@ export default class App extends Component {
     render() {
         return (
             <Provider store={store}>
-                <Router history={history} routes={getRoutes(store)} />
+                <NotificationHandler>
+                    <Router
+                        history={history}
+                        routes={getRoutes(store)}
+                    />
+                </NotificationHandler>
             </Provider>
         )
     }

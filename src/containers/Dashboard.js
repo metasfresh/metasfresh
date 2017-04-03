@@ -9,13 +9,16 @@ export class Dashboard extends Component {
     }
 
     render() {
+        const {location} = this.props;
         return (
             <Container
-                siteName = "Dashboard"
-                noMargin = {true}
+                siteName="Dashboard"
+                noMargin={true}
             >
                 <div className="container-fluid dashboard-wrapper">
-                    <DraggableWrapper dashboard={this.props.location.pathname} />
+                    <DraggableWrapper
+                        dashboard={location.pathname}
+                    />
                 </div>
             </Container>
         );

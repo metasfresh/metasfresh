@@ -31,7 +31,8 @@ const initialState = {
         data: [],
         rowData: {},
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        docId: undefined
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -107,10 +108,21 @@ export default function windowHandler(state = initialState, action) {
                 })
         })
 
+        case types.CLEAR_MASTER_DATA:
+            return Object.assign({}, state, {
+                master: Object.assign({}, state.master, {
+                    data: [],
+                    rowData: {},
+                    docId: undefined
+                })
+            })
+
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    rowData: Object.assign({}, state[action.scope].rowData, action.data)
+                    rowData: Object.assign(
+                        {}, state[action.scope].rowData, action.data
+                    )
                 })
         })
 
@@ -130,13 +142,16 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {$set:
-                            Object.keys(state[action.scope].rowData[action.tabid])
-                                .filter(key => key !== action.rowid)
-                                .reduce((result, current) => {
-                                    result[current] = state[action.scope].rowData[action.tabid][current];
-                                    return result;
-                                }, {})
-                            }
+                            Object.keys(
+                                state[action.scope].rowData[action.tabid]
+                            ).filter(key => key !== action.rowid)
+                            .reduce((result, current) => {
+                                result[current] =
+                                    state[action.scope]
+                                        .rowData[action.tabid][current];
+                                return result;
+                            }, {})
+                        }
                     }
                 }
             })
@@ -147,11 +162,15 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {
                         [action.tabid]: {
                             [action.rowid]: {
-                                fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map(item =>
-                                    item.field === action.item.field ?
-                                        Object.assign({}, item, action.item) :
-                                        item
-                                )}
+                                fields: {$set: state[action.scope]
+                                    .rowData[action.tabid][action.rowid]
+                                    .fields.map(item =>
+                                        item.field === action.item.field ?
+                                            Object.assign(
+                                                {}, item, action.item
+                                            ) : item
+                                    )
+                                }
                             }
                         }
                     }
@@ -215,11 +234,16 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {
                         [action.tabid]: {
                             [action.rowid]: {
-                                fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map( item =>
-                                    item.field === action.property ?
-                                        Object.assign({}, item, {value: action.value}):
-                                        item
-                                )}
+                                fields: {$set:
+                                    state[action.scope]
+                                        .rowData[action.tabid][action.rowid]
+                                        .fields.map(item =>
+                                        item.field === action.property ?
+                                            Object.assign({}, item, {
+                                                value: action.value
+                                            }) : item
+                                    )
+                                }
                             }
                         }
                     }

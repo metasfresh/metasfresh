@@ -40,14 +40,19 @@ class TableItem extends Component {
                 edited: property
             }, ()=>{
                 if(callback){
-                    const elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+                    const elem =
+                        document
+                            .activeElement
+                            .getElementsByClassName('js-input-field')[0];
 
                     if(elem){
                         elem.focus();
                     }
 
-                    const disabled = document.activeElement.querySelector('.input-disabled');
-                    const readonly = document.activeElement.querySelector('.input-readonly');
+                    const disabled =
+                        document.activeElement.querySelector('.input-disabled');
+                    const readonly =
+                        document.activeElement.querySelector('.input-readonly');
 
                     if(disabled || readonly) {
                         changeListenOnTrue();
@@ -95,8 +100,8 @@ class TableItem extends Component {
 
     renderCells = (cols, cells) => {
         const {
-            type, docId, rowId, tabId, readonly, mainTable, newRow, changeListenOnTrue,
-            tabIndex, entity
+            type, docId, rowId, tabId, readonly, mainTable, newRow,
+            changeListenOnTrue, tabIndex, entity
         } = this.props;
 
         const {
@@ -106,7 +111,9 @@ class TableItem extends Component {
         // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
-            let widgetData = item.fields.map(property => findRowByPropName(cells, property.field));
+            const widgetData = item.fields.map(property =>
+                findRowByPropName(cells, property.field)
+            );
 
             return (
                 <TableCell
@@ -120,10 +127,16 @@ class TableItem extends Component {
                     key={index}
                     widgetData={widgetData}
                     isEdited={edited === property}
-                    onDoubleClick={(e) => this.handleEditProperty(e, property, true)}
-                    onClickOutside={(e) => {this.handleEditProperty(e); changeListenOnTrue()}}
+                    onDoubleClick={(e) =>
+                        this.handleEditProperty(e, property, true)
+                    }
+                    onClickOutside={(e) => {
+                        this.handleEditProperty(e); changeListenOnTrue()}
+                    }
                     disableOnClickOutside={edited !== property}
-                    onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
+                    onKeyDown = {!mainTable ?
+                        (e) => this.handleKey(e, property) : ''
+                    }
                     updatedRow={updatedRow || newRow}
                     updateRow={this.updateRow}
                     tabIndex={tabIndex}
@@ -187,7 +200,9 @@ class TableItem extends Component {
                     <div
                         className={
                             (indent[i] ? 'indent-sign ' : '') +
-                            ((lastSibling && i === indent.length - 1) ? 'indent-sign-bot ' : '')
+                            ((lastSibling && i === indent.length - 1) ?
+                                'indent-sign-bot ' : ''
+                            )
                         }
                     />
                 </div>
@@ -198,7 +213,9 @@ class TableItem extends Component {
             return (
                 <div
                     className="indent"
-                    onClick={(e) => this.handleIndentSelect(e, rowId, includedDocuments)}
+                    onClick={(e) =>
+                        this.handleIndentSelect(e, rowId, includedDocuments)
+                    }
                 >
                     {indentation}
 
@@ -220,9 +237,9 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick,
-            indentSupported, contextType, item, lastSibling, includedDocuments,
-            notSaved
+            isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
+            handleRightClick, indentSupported, contextType, item, lastSibling,
+            includedDocuments, notSaved
         } = this.props;
 
         return (

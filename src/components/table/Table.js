@@ -7,7 +7,8 @@ import {
     openModal,
     selectTableItems,
     deleteLocal,
-    mapIncluded
+    mapIncluded,
+    getItemsByProperty
 } from '../../actions/WindowActions';
 
 import {
@@ -23,7 +24,8 @@ import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 
 import keymap from '../../keymap.js';
-import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
+import DocumentListContextShortcuts
+    from '../shortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
@@ -44,7 +46,8 @@ class Table extends Component {
             },
             promptOpen: false,
             isBatchEntry: false,
-            rows: []
+            rows: [],
+            pendingInit: true
         }
     }
 
@@ -102,7 +105,8 @@ class Table extends Component {
             })
 
             this.setState({
-                rows: rowsData
+                rows: rowsData,
+                pendingInit: !rowsData
             }, () => {
                 if(selectFirst){
                     this.selectOneProduct(this.state.rows[0].id);
@@ -112,7 +116,8 @@ class Table extends Component {
             })
         } else {
             this.setState({
-                rows: rowData[tabid]
+                rows: rowData[tabid],
+                pendingInit: !rowData[tabid]
             });
         }
     }
@@ -197,7 +202,8 @@ class Table extends Component {
                 rowSelected[0].children[idFocused].focus();
             }
             if(typeof idFocusedDown == 'number'){
-                rowSelected[rowSelected.length-1].children[idFocusedDown].focus();
+                rowSelected[rowSelected.length-1]
+                    .children[idFocusedDown].focus();
             }
         }
     }
@@ -206,7 +212,10 @@ class Table extends Component {
         if(event.target.parentNode !== document) {
             const item = event.path;
             for(let i = 0; i < item.length; i++){
-                if(item[i].classList && item[i].classList.contains('js-not-unselect')){
+                if(
+                    item[i].classList &&
+                    item[i].classList.contains('js-not-unselect')
+                ){
                     return;
                 }
             }
@@ -219,7 +228,10 @@ class Table extends Component {
         const {selected, rows} = this.state;
         const selectRange = e.shiftKey;
 
-        const nodeList = Array.prototype.slice.call(document.activeElement.parentElement.children);
+        const nodeList =
+            Array.prototype.slice.call(
+                document.activeElement.parentElement.children
+            );
         const idActive = nodeList.indexOf(document.activeElement);
 
         let idFocused = null;
@@ -231,15 +243,21 @@ class Table extends Component {
             case 'ArrowDown': {
                 e.preventDefault();
 
-                const actualId = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
+                const actualId = Object.keys(rows).findIndex(x =>
+                    x === selected[selected.length-1]
+                )
 
                 if(actualId < Object.keys(rows).length-1 ){
                     let newId = actualId+1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rows)[newId], false, idFocused);
+                        this.selectOneProduct(
+                            Object.keys(rows)[newId], false, idFocused
+                        );
                     } else {
-                        this.selectProduct(Object.keys(rows)[newId], false, idFocused);
+                        this.selectProduct(
+                            Object.keys(rows)[newId], false, idFocused
+                        );
                     }
                 }
                 break;
@@ -247,15 +265,21 @@ class Table extends Component {
             case 'ArrowUp': {
                 e.preventDefault();
 
-                const actual = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
+                const actual = Object.keys(rows).findIndex(x =>
+                    x === selected[selected.length-1]
+                )
 
                 if(actual > 0 ){
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rows)[newId], idFocused, false);
+                        this.selectOneProduct(
+                            Object.keys(rows)[newId], idFocused, false
+                        );
                     } else {
-                        this.selectProduct(Object.keys(rows)[newId], idFocused, false);
+                        this.selectProduct(
+                            Object.keys(rows)[newId], idFocused, false
+                        );
                     }
                 }
                 break;
@@ -301,7 +325,9 @@ class Table extends Component {
                     return item.id
                 });
 
-                const actualId = array.findIndex(x => x === selected[selected.length-1]);
+                const actualId = array.findIndex(x =>
+                    x === selected[selected.length-1]
+                );
 
                 if(actualId < array.length-1 ){
                     let newId = actualId+1;
@@ -321,7 +347,9 @@ class Table extends Component {
                     return item.id
                 });
 
-                const actual = arrays.findIndex(x => x === selected[selected.length-1])
+                const actual = arrays.findIndex(x =>
+                    x === selected[selected.length-1]
+                );
 
                 if(actual > 0 ){
                     let newId = actual-1;
@@ -351,7 +379,8 @@ class Table extends Component {
                 break;
             case 'Tab': {
                 e.preventDefault();
-                const focusedElem = document.getElementsByClassName('js-attributes')[0];
+                const focusedElem =
+                    document.getElementsByClassName('js-attributes')[0];
                 if(focusedElem){
                     focusedElem.getElementsByTagName('input')[0].focus();
                 }
@@ -432,7 +461,9 @@ class Table extends Component {
             selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0])
         }else {
             selectIdA = Object.keys(rowData[tabid]).findIndex(x => x === id)
-            selectIdB = Object.keys(rowData[tabid]).findIndex(x => x === this.state.selected[0])
+            selectIdB = Object.keys(rowData[tabid]).findIndex(x =>
+                x === this.state.selected[0]
+            )
         }
 
         let selected = [
@@ -444,7 +475,9 @@ class Table extends Component {
             if(keyProperty === 'id'){
                 return arrayIndex.slice(selected[0], selected[1]+1);
             }else {
-                return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
+                return Object.keys(rowData[tabid]).slice(
+                    selected[0], selected[1] + 1
+                );
             }
     }
 
@@ -464,7 +497,9 @@ class Table extends Component {
     handleAdvancedEdit = (type, tabId, selected) => {
         const {dispatch} = this.props;
 
-        dispatch(openModal('Advanced edit', type, 'window', tabId, selected[0], true));
+        dispatch(openModal(
+            'Advanced edit', type, 'window', tabId, selected[0], true
+        ));
     }
 
     handleOpenNewTab = (selected) => {
@@ -496,7 +531,10 @@ class Table extends Component {
             selected: []
         }, () => {
             dispatch(
-                deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected)
+                deleteRequest(
+                    'window', type, docId ? docId : null, docId ? tabid : null,
+                    selected
+                )
             ).then(response => {
                 if(docId){
                     dispatch(deleteLocal(tabid, selected, 'master', response))
@@ -505,6 +543,53 @@ class Table extends Component {
                 }
             });
         });
+    }
+
+    getSelectedRows = () => {
+        const {rows, selected} = this.state;
+        const {keyProperty} = this.props;
+        const keyProp = keyProperty ? keyProperty : 'rowId';
+
+        let selectedRows = [];
+        Object.keys(rows).map(id => {
+            if(selected.indexOf(rows[id][keyProp]) > -1){
+                selectedRows.push(rows[id].fields);
+            }
+        });
+
+        return selectedRows;
+    }
+
+    handleCopy = (e) => {
+        const {cols} = this.props;
+        e.preventDefault();
+
+        // Prepare table headers
+        const header = cols
+            .map(col => col.caption)
+            .join();
+
+        // Prepare selected rows
+        const selectedRows = this.getSelectedRows();
+
+        // Prepare values of selectedRows to display
+        const content = selectedRows.map(row =>
+            cols.map(col => {
+                const field =
+                    getItemsByProperty(row, 'field', col.fields[0].field)[0];
+                const value = field ? field.value : '';
+
+                if(typeof value === 'object' && value !== null){
+                    return value[Object.keys(value)[0]];
+                }else{
+                    return value;
+                }
+            })
+        )
+
+        // Push together to clipboard
+        const toCopy = header + '\n' + content.join('\n');
+        e.clipboardData.setData('text/plain', toCopy);
     }
 
     handleKey = (e) => {
@@ -553,20 +638,31 @@ class Table extends Component {
                             mainTable={mainTable}
                             selected={selected}
                             keyProperty={keyProp}
-                            onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][keyProp])}
-                            onMouseDown={(e) => this.handleClick(e, item[key][keyProp])}
-                            handleRightClick={(e) => this.handleRightClick(e, item[key][keyProp])}
+                            onDoubleClick={() => onDoubleClick &&
+                                onDoubleClick(item[key][keyProp])
+                            }
+                            onMouseDown={(e) =>
+                                this.handleClick(e, item[key][keyProp])
+                            }
+                            handleRightClick={(e) =>
+                                this.handleRightClick(e, item[key][keyProp])
+                            }
                             changeListenOnTrue={() => this.changeListen(true)}
                             changeListenOnFalse={() => this.changeListen(false)}
                             newRow={i === keys.length-1 ? newRow : false}
-                            isSelected={selected.indexOf(item[key][keyProp]) > -1}
+                            isSelected={
+                                selected.indexOf(item[key][keyProp]) > -1
+                            }
                             handleSelect={this.selectRangeProduct}
                             indentSupported={indentSupported}
                             indent={item[key].indent}
                             includedDocuments={item[key].includedDocuments}
                             lastSibling={item[key].lastChild}
                             contextType={item[key].type}
-                            notSaved={item[key].saveStatus && !item[key].saveStatus.saved}
+                            notSaved={
+                                item[key].saveStatus &&
+                                !item[key].saveStatus.saved
+                            }
                         />
                     </tbody>
                 );
@@ -578,6 +674,11 @@ class Table extends Component {
 
     renderEmptyInfo = (data, tabId) => {
         const {emptyText, emptyHint} = this.props;
+        const {pendingInit} = this.state;
+
+        if(pendingInit){
+            return false;
+        }
 
         if(
             (data && data[tabId] && Object.keys(data[tabId]).length === 0) ||
@@ -625,14 +726,20 @@ class Table extends Component {
                         deselect={() => this.deselectAllProducts()}
                         mainTable={mainTable}
                         updateDocList={updateDocList}
-                        handleAdvancedEdit={() => this.handleAdvancedEdit(type, tabid, selected)}
+                        handleAdvancedEdit={() =>
+                            this.handleAdvancedEdit(type, tabid, selected)
+                        }
                         handleOpenNewTab={() => this.handleOpenNewTab(selected)}
-                        handleDelete={!isModal ? () => this.handleDelete() : null}
+                        handleDelete={
+                            !isModal ? () => this.handleDelete() : null
+                        }
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
                             <TableFilter
-                                openModal={() => this.openModal(type, tabid, 'NEW')}
+                                openModal={() =>
+                                    this.openModal(type, tabid, 'NEW')
+                                }
                                 toggleFullScreen={toggleFullScreen}
                                 fullScreen={fullScreen}
                                 docType={type}
@@ -640,7 +747,9 @@ class Table extends Component {
                                 tabId={tabid}
                                 tabIndex={tabIndex}
                                 isBatchEntry={isBatchEntry}
-                                handleBatchEntryToggle={this.handleBatchEntryToggle}
+                                handleBatchEntryToggle={
+                                    this.handleBatchEntryToggle
+                                }
                                 supportQuickInput={supportQuickInput}
                             />
                         </div>
@@ -648,8 +757,9 @@ class Table extends Component {
 
                     <div
                         className={
-                            'panel panel-primary panel-bordered panel-bordered-force ' +
-                            'table-flex-wrapper document-list-table js-not-unselect ' +
+                            'panel panel-primary panel-bordered ' +
+                            'panel-bordered-force table-flex-wrapper ' +
+                            'document-list-table js-not-unselect ' +
                             ((
                                 (rowData && rowData[tabid] &&
                                 Object.keys(rowData[tabid]).length === 0) ||
@@ -659,13 +769,15 @@ class Table extends Component {
                     >
                         <table
                             className={
-                                'table table-bordered-vertically table-striped js-table ' +
+                                'table table-bordered-vertically ' +
+                                'table-striped js-table ' +
                                 (readonly ? 'table-read-only' : '')
                             }
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
                             ref={c => this.table = c}
+                            onCopy={this.handleCopy}
                         >
                             <thead>
                                 <TableHeader
@@ -718,14 +830,23 @@ class Table extends Component {
                         text="Are you sure?"
                         buttons={{submit: 'Delete', cancel: 'Cancel'}}
                         onCancelClick={this.handlePromptCancelClick}
-                        onSubmitClick={() => this.handlePromptSubmitClick(selected)}
+                        onSubmitClick={() =>
+                            this.handlePromptSubmitClick(selected)
+                        }
                     />
                 }
 
                 <DocumentListContextShortcuts
-                    handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
-                    handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
-                    handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+                    handleAdvancedEdit={selected.length > 0 ?
+                        () => this.handleAdvancedEdit(type, tabid, selected) :
+                        ''
+                    }
+                    handleOpenNewTab={selected.length > 0 && mainTable ?
+                        () => this.handleOpenNewTab(selected) : ''
+                    }
+                    handleDelete={selected.length > 0 ?
+                        () => this.handleDelete() : ''
+                    }
                     getAllLeafs={this.getAllLeafs}
                 />
 

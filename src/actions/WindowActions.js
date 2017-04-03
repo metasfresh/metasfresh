@@ -59,6 +59,12 @@ export function initDataSuccess(data, scope, docId, saveStatus, validStatus) {
     }
 }
 
+export function clearMasterData() {
+    return {
+        type: types.CLEAR_MASTER_DATA
+    }
+}
+
 export function addRowData(data, scope) {
     return {
         type: types.ADD_ROW_DATA,
@@ -228,6 +234,9 @@ export function createWindow(
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
+                if(!response){
+                    return;
+                }
                 if (docId == 'NEW' && !isModal) {
                     dispatch(setLatestNewDocument(response.data[0].id));
                     // redirect immedietely
@@ -324,14 +333,21 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
         } else {
             if (rowId === 'NEW') {
                 //New row document
-                return dispatch(patchRequest('window', windowType, docId, tabId, 'NEW'))
+                return dispatch(patchRequest(
+                    'window', windowType, docId, tabId, 'NEW'
+                ))
             } else if (rowId) {
                 //Existing row document
-                return dispatch(getData('window', windowType, docId, tabId, rowId, null, null, isAdvanced))
+                return dispatch(getData(
+                    'window', windowType, docId, tabId, rowId, null, null,
+                    isAdvanced
+                ))
             } else {
                 //Existing master document
-                return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
-                .catch(() => {
+                return dispatch(getData(
+                    'window', windowType, docId, null, null, null, null,
+                    isAdvanced
+                )).catch(() => {
                     dispatch(push('/window/'+ windowType));
                 });
             }
@@ -402,13 +418,20 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             } else {
                 item.fields.map(field => {
                     if (rowId && !isModal) {
-                        dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
+                        dispatch(updateRowSuccess(
+                            field, item.tabid, item.rowId, getScope(isModal)
+                        ));
                     } else {
                         if (rowId) {
-                            dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
+                            dispatch(updateRowSuccess(
+                                field, item.tabid, item.rowId, getScope(false)
+                            ));
                         }
 
-                        dispatch(updateDataSuccess(field, getScope(isModal), data[0].saveStatus, data[0].validStatus));
+                        dispatch(updateDataSuccess(
+                            field, getScope(isModal), data[0].saveStatus,
+                            data[0].validStatus
+                        ));
                     }
                 });
             }
@@ -429,10 +452,14 @@ function updateStatus(responseData) {
     return dispatch => {
         const updateDispatch = (item) => {
             if(item.rowId){
-                dispatch(updateRowStatus('master', item.tabid, item.rowId, item.saveStatus));
+                dispatch(updateRowStatus(
+                    'master', item.tabid, item.rowId, item.saveStatus
+                ));
             }else{
-                item.validStatus && dispatch(updateDataValidStatus('master', item.validStatus));
-                item.saveStatus && dispatch(updateDataSaveStatus('master', item.saveStatus));
+                item.validStatus &&
+                    dispatch(updateDataValidStatus('master', item.validStatus));
+                item.saveStatus &&
+                    dispatch(updateDataSaveStatus('master', item.saveStatus));
             }
         }
 
@@ -465,15 +492,22 @@ export function updateProperty(property, value, tabid, rowid, isModal) {
 
 export function attachFileAction(windowType, docId, data){
     return dispatch => {
-        dispatch(addNotification('Attachment', 'Uploading attachment', 5000, 'primary'));
+        dispatch(addNotification(
+            'Attachment', 'Uploading attachment', 5000, 'primary'
+        ));
 
-        return axios.post(`${config.API_URL}/window/${windowType}/${docId}/attachments`, data)
-            .then(() => {
-                dispatch(addNotification('Attachment', 'Uploading attachment succeeded.', 5000, 'primary'))
-            })
-            .catch(() => {
-                dispatch(addNotification('Attachment', 'Uploading attachment error.', 5000, 'error'))
-            })
+        return axios.post(
+            `${config.API_URL}/window/${windowType}/${docId}/attachments`, data
+        ).then(() => {
+            dispatch(addNotification(
+                'Attachment', 'Uploading attachment succeeded.', 5000, 'primary'
+            ))
+        })
+        .catch(() => {
+            dispatch(addNotification(
+                'Attachment', 'Uploading attachment error.', 5000, 'error'
+            ))
+        })
     }
 }
 
@@ -505,7 +539,6 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 });
-
             }
         })
     }
@@ -514,8 +547,8 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
 export function handleProcessResponse(response, type, id, successCallback) {
     return (dispatch) => {
         const {
-            error, summary, openDocumentId, openDocumentWindowId, reportFilename,
-            openViewId, openViewWindowId
+            error, summary, openDocumentId, openDocumentWindowId,
+            reportFilename, openViewId, openViewWindowId
         } = response.data;
 
         if(error){
@@ -524,7 +557,9 @@ export function handleProcessResponse(response, type, id, successCallback) {
             if(openViewId && openViewWindowId){
                 dispatch(openRawModal(openViewWindowId, openViewId));
             }else if(openDocumentWindowId && openDocumentId){
-                dispatch(push('/window/' + openDocumentWindowId + '/' + openDocumentId));
+                dispatch(push(
+                    '/window/' + openDocumentWindowId + '/' + openDocumentId
+                ));
             }else if(reportFilename){
                 dispatch(openFile('process', type, id, 'print', reportFilename))
             }
@@ -591,8 +626,9 @@ function parseDateToReadable(arr) {
     const dateParse = ['Date', 'DateTime', 'Time'];
     return arr.map(item =>
         (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
-        Object.assign({}, item, { value: item.value ? new Date(item.value) : '' }) :
-        item
+        Object.assign({}, item, {
+            value: item.value ? new Date(item.value) : ''
+        }) : item
     )
 }
 

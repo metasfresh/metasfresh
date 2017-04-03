@@ -13,7 +13,8 @@ export const drawData = (svg, dimensions, ranges, data, labelField) => {
     const bars = groups.enter().append('g')
         .classed('bar-group', true)
     .merge(groups)
-        .attr('transform', d => 'translate(' + ranges.x0(d[labelField]) + ', 0)')
+        .attr('transform', d => 'translate(' +
+            ranges.x0(d[labelField]) + ', 0)')
         .selectAll('rect')
         .data(d => mapDataset(d, labelField))
 
