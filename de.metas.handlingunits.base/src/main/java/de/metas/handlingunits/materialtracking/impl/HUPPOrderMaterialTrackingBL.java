@@ -50,37 +50,14 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 	@Override
 	public void linkPPOrderToMaterialTracking(final IHUContext huContext, final I_PP_Order_BOMLine ppOrderBOMLine, final I_M_HU hu)
 	{
-		// Do nothing if material tracking module is not activated
-		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
-		if (!materialTrackingBL.isEnabled())
-		{
-			return;
-		}
-
-		// If there is no HU => do nothing
-		if (hu == null)
-		{
-			return;
-		}
-
-		// Services
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
-
 		//
-		// Get HU Attributes from top level HU
-		final I_M_HU huTopLevel = handlingUnitsBL.getTopLevelParent(hu);
-		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(huTopLevel);
-
-		//
-		// Get Material Tracking from HU Attributes
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTracking(huContext, huAttributes);
-		if (materialTracking == null)
+		// Get material tracking
+		final I_M_Material_Tracking materialTracking = extractMaterialTrackingIfAny(huContext, hu);
+		if(materialTracking == null)
 		{
-			// HU's Attributes does not contain material tracking
-			return;
+			return; // no material tracking
 		}
-
+		// Make sure the material tracking is compatible with BOM line
 		if (ppOrderBOMLine.getM_Product_ID() != materialTracking.getM_Product_ID())
 		{
 			// the M_Material_Tracking HU-Attribute was inherited from the original raw material, but this PP_Order is about a different product
@@ -88,7 +65,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		}
 
 		//
-		// Assign PP_Order to material tracking
+		// Set PP_Order.M_Material_Tracking_ID
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(ppOrderBOMLine.getPP_Order(), I_PP_Order.class);
 		if (ppOrder.getM_Material_Tracking_ID() <= 0)
 		{
@@ -103,12 +80,44 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 					ppOrder,ppOrder.getM_Material_Tracking(), materialTracking);
 		}
 
-		materialTrackingBL.linkModelToMaterialTracking(
-				MTLinkRequest.builder()
+		//
+		// Assign PP_Order to material tracking
+		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
+		materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
 						.setModel(ppOrder)
 						.setMaterialTracking(materialTracking)
 						.setAssumeNotAlreadyAssigned(true) // avoid assigning to a different material tracking
 						.build());
+	}
+	
+	private I_M_Material_Tracking extractMaterialTrackingIfAny(final IHUContext huContext, final I_M_HU hu)
+	{
+		// Do nothing if material tracking module is not activated
+		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
+		if (!materialTrackingBL.isEnabled())
+		{
+			return null;
+		}
+
+		// If there is no HU => do nothing
+		if (hu == null)
+		{
+			return null;
+		}
+
+		// Services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
+
+		//
+		// Get HU Attributes from top level HU
+		final I_M_HU huTopLevel = handlingUnitsBL.getTopLevelParent(hu);
+		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(huTopLevel);
+
+		//
+		// Get Material Tracking from HU Attributes
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTracking(huContext, huAttributes);
+		return materialTracking;
 	}
 
 }
