@@ -56,10 +56,10 @@ public class CompositeDocumentViewSelectionFactory
 	{
 		//
 		// Discover context factories
-		for (final Object factoryObj : context.getBeansWithAnnotation(AutoRegistrableDocumentViewSelectionFactory.class).values())
+		for (final Object factoryObj : context.getBeansWithAnnotation(DocumentViewFactory.class).values())
 		{
 			final IDocumentViewSelectionFactory factory = (IDocumentViewSelectionFactory)factoryObj;
-			final AutoRegistrableDocumentViewSelectionFactory annotation = factoryObj.getClass().getAnnotation(AutoRegistrableDocumentViewSelectionFactory.class);
+			final DocumentViewFactory annotation = factoryObj.getClass().getAnnotation(DocumentViewFactory.class);
 			registerFactory(annotation.windowId(), annotation.viewType(), factory);
 		}
 	}

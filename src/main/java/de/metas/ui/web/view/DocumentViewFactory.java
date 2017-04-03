@@ -40,7 +40,7 @@ import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Service
-public @interface AutoRegistrableDocumentViewSelectionFactory
+public @interface DocumentViewFactory
 {
 	int windowId();
 

@@ -7,7 +7,7 @@ import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.view.AutoRegistrableDocumentViewSelectionFactory;
+import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
@@ -43,7 +43,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@AutoRegistrableDocumentViewSelectionFactory(windowId = PPOrderLinesViewFactory.AD_WINDOW_ID, viewType = JSONViewDataType.grid)
+@DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt, viewType = JSONViewDataType.grid)
 public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 {
 	public static final int AD_WINDOW_ID = 540328; // Manufacturing Issue/Receipt

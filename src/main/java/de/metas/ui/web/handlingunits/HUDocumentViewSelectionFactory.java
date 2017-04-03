@@ -8,7 +8,7 @@ import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.view.AutoRegistrableDocumentViewSelectionFactory;
+import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
@@ -46,7 +46,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@AutoRegistrableDocumentViewSelectionFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID, viewType = JSONViewDataType.grid)
+@DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID, viewType = JSONViewDataType.grid)
 public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
 {
 	@Autowired
