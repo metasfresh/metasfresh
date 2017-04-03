@@ -66,7 +66,6 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 
 /**
  * Manufacturing Order Issue ViewModel
@@ -323,20 +322,6 @@ public class HUIssueModel implements IDisposable
 	}
 
 	/**
-	 * Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
-	 *
-	 * @param hus HUs to issue
-	 */
-	private void createIssues(final Set<I_M_HU> hus)
-	{
-		final IHUPPOrderIssueProducer issueProducer = huPPOrderBL.createIssueProducer(getCtx());
-		issueProducer.setMovementDate(getMovementDate());
-		issueProducer.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLines());
-
-		issueProducer.createIssues(hus);
-	}
-
-	/**
 	 * Gets document date to be used when creating Issue Cost Collectors.
 	 *
 	 * @return
@@ -364,7 +349,13 @@ public class HUIssueModel implements IDisposable
 			if (edited)
 			{
 				final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
-				createIssues(selectedHUs);
+
+				//
+				// Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
+				huPPOrderBL.createIssueProducer(getCtx())
+						.setMovementDate(getMovementDate())
+						.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLines())
+						.createIssues(selectedHUs);
 			}
 		}
 

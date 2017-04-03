@@ -40,6 +40,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.handlingunits.IDocumentCollector;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
@@ -79,6 +81,16 @@ import de.metas.logging.LogManager;
 
 		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("movementDate", movementDate)
+				.add("targetOrderBOMLines", targetOrderBOMLines)
+				.toString();
 	}
 
 	private final Properties getCtx()
@@ -215,12 +227,4 @@ import de.metas.logging.LogManager;
 		Check.assumeNotEmpty(targetOrderBOMLines, "targetOrderBOMLines not empty");
 		return targetOrderBOMLines;
 	}
-
-	@Override
-	public String toString()
-	{
-		return "HUPPOrderIssueProducer [movementDate=" + movementDate + ", targetOrderBOMLines=" + targetOrderBOMLines + ", trxName=" + trxName + ", huContextFactory=" + huContextFactory + ", ctx=" + ctx + "]";
-	}
-
-
 }
