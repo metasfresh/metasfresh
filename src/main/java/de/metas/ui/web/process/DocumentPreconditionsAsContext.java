@@ -57,6 +57,12 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 				.addValue(document)
 				.toString();
 	}
+	
+	@Override
+	public int getAD_Window_ID()
+	{
+		return document.getDocumentPath().getAD_Window_ID(-1);
+	}
 
 	@Override
 	public String getTableName()

@@ -70,14 +70,17 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 
 	private final IDocumentViewSelection view;
 	private final String tableName;
+	private final int adWindowId;
 	private final Set<DocumentId> selectedDocumentIds;
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
+
 
 	private DocumentViewAsPreconditionsContext(final IDocumentViewSelection view, final String tableName, final Collection<DocumentId> selectedDocumentIds)
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
+		this.adWindowId = view.getAD_Window_ID();
 		this.tableName = tableName;
 		this.selectedDocumentIds = ImmutableSet.copyOf(selectedDocumentIds);
 	}
@@ -103,6 +106,12 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 		@SuppressWarnings("unchecked")
 		final T viewCasted = (T)view;
 		return viewCasted;
+	}
+	
+	@Override
+	public int getAD_Window_ID()
+	{
+		return adWindowId;
 	}
 
 	@Override

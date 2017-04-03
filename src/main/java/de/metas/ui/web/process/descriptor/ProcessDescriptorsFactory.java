@@ -91,9 +91,13 @@ public class ProcessDescriptorsFactory
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
 	{
 		final String tableName = preconditionsContext.getTableName();
-		final int adTableId = adTableDAO.retrieveTableId(tableName);
+		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
+		
+		final int adWindowId = preconditionsContext.getAD_Window_ID();
+		
 		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
-		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId)
+		
+		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
 				.values()
 				.stream()
 				.filter(relatedProcess -> relatedProcess.isExecutionGranted(userRolePermissions)) // only those which can be executed by current user permissions
@@ -102,7 +106,7 @@ public class ProcessDescriptorsFactory
 
 	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
 	{
-		final int adProcessId = relatedProcess.getAD_Process_ID();
+		final int adProcessId = relatedProcess.getProcessId();
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
 		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
 		return WebuiRelatedProcessDescriptor.of(relatedProcess, processDescriptor, preconditionsResolutionSupplier);

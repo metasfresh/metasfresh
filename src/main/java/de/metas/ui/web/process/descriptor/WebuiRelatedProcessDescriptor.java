@@ -66,7 +66,7 @@ public final class WebuiRelatedProcessDescriptor
 
 		Check.assumeNotNull(relatedProcessDescriptor, "Parameter relatedProcessDescriptor is not null");
 		Check.assumeNotNull(processDescriptor, "Parameter processDescriptor is not null");
-		Check.assume(relatedProcessDescriptor.getAD_Process_ID() == processDescriptor.getAD_Process_ID(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
+		Check.assume(relatedProcessDescriptor.getProcessId() == processDescriptor.getAD_Process_ID(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
 
 		this.relatedProcessDescriptor = relatedProcessDescriptor;
 		this.processDescriptor = processDescriptor;
