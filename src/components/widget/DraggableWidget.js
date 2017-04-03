@@ -57,6 +57,18 @@ export class DraggableWidget extends Component {
         };
     }
 
+    componentDidUpdate(prevProps) {
+        if(prevProps !== this.props) {
+            this.setState({
+                forceChartReRender: true,
+            }, () => {
+                this.setState({
+                    forceChartReRender: false
+                })
+            })
+        }
+    }
+
     handleClickOutside = () => {
         this.setState({
             toggleWidgetMenu: false
