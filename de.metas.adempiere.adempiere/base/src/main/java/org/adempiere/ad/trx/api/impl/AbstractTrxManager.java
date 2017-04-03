@@ -766,9 +766,10 @@ public abstract class AbstractTrxManager implements ITrxManager
 			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
 			if (onRunnableSuccess == OnRunnableSuccess.COMMIT)
 			{
-				if (trxPropagation != TrxPropagation.REQUIRES_NEW)
+				// if (trxPropagation != TrxPropagation.REQUIRES_NEW)
+				// gh #1263: Actually we should not commit. It will be done again in the finally block when we call trx.close().
+				// therefore, our onAfterCommit listeners might be invoked twice. However, right now I'm too chicken and have too little time to change it.
 				{
-					// gh #1263: Don't commit. It will be done in the finally block when we call trx.close().
 					trx.commit(true); // throwException=true
 				}
 
