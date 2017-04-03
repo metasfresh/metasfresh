@@ -25,8 +25,10 @@ package de.metas.handlingunits;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -152,6 +154,22 @@ public interface IHUTrxBL extends ISingletonService
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IHUContext huContext);
 
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IContextAware context);
+	
+	/** @return executor which will run using current environment and thread inherited trx */
+	default IHUContextProcessorExecutor createHUContextProcessorExecutor()
+	{
+		return createHUContextProcessorExecutor(PlainContextAware.newWithThreadInheritedTrx());
+	}
+
+	/**
+	 * Convenient method to process using current env and thread inherited trx.
+	 * 
+	 * @param processor
+	 */
+	default void process(final Consumer<IHUContext> processor)
+	{
+		createHUContextProcessorExecutor().run(processor);
+	}
 
 	/**
 	 * Iterate the {@link IHUTransaction}s that were added so far and aggregate those that only differ in their quantity.
