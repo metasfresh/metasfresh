@@ -11,6 +11,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTrxListener;
@@ -131,9 +133,10 @@ public class AggregateHUTrxListener implements IHUTrxListener
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final BigDecimal cuQty = huContext.getProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(item));
+		// this is the former cuQty, before the load from which this listener was called.
+		final BigDecimal cuQtyBeforeLoad = huContext.getProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(item));
 
-		if (cuQty == null || cuQty.signum() <= 0)
+		if (cuQtyBeforeLoad == null || cuQtyBeforeLoad.signum() <= 0)
 		{
 			return; // nothing to do
 		}
@@ -147,23 +150,20 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		final IHUTransaction trx = itemId2Trx.get(item.getM_HU_Item_ID());
 		final BigDecimal storageQty = storage.getQty(trx.getProduct(), trx.getQuantity().getUOM());
 
-		// it's important to avoid rounding errors, because they would lead to a wrong splitQty value further down
-		final int scaleForDivision = Math.max(1, trx.getQuantity().getUOM().getStdPrecision()) * 3;
+		// get the new TU quantity, which as TUs go needs to be an integer
+		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
+				0,
+				RoundingMode.FLOOR);
 
-		final BigDecimal newTuQty = storageQty.divide(cuQty,
-				scaleForDivision,
-				RoundingMode.HALF_UP);
-
-		final BigDecimal newTuQtyFloor = newTuQty.setScale(0, RoundingMode.FLOOR);
-		item.setQty(newTuQtyFloor);
+		item.setQty(newTuQty);
 		InterfaceWrapperHelper.save(item);
 
-		if (newTuQty.compareTo(newTuQtyFloor) != 0)
-		{
-			// if tuQty is not a natural number, then we need to initiate another split now
+		// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
+		final BigDecimal splitQty = computeSplitQty(storageQty, cuQtyBeforeLoad);
 
-			final BigDecimal aggregateItemQty = newTuQtyFloor.multiply(cuQty);
-			final BigDecimal splitQty = newTuQty.multiply(cuQty).subtract(aggregateItemQty);
+		if (splitQty.signum() != 0)
+		{
+			// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
 			final I_M_HU_PI_Item splitHUPIItem = item.getM_HU_PI_Item();
 
 			// create a handling unit item
@@ -199,5 +199,20 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				aggregateVHUAttributeStorage.pushUp();
 			}
 		}
+	}
+
+	/**
+	 * Returns the quantity that needs to be split off the current storage quantity in order to achieve the same CU-per-TU quantity which the aggregate HU in question used to have before the loading operation which lead to this listener being called.
+	 * 
+	 * @param storageQty the current qty re have in the storage
+	 * @param cuQtyBeforeLoad the former CU-per-TU qty, before the loading took place
+	 * @return
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1203
+	 */
+	@VisibleForTesting
+	/* package */ BigDecimal computeSplitQty(final BigDecimal storageQty, final BigDecimal cuQtyBeforeLoad)
+	{
+		return storageQty.remainder(cuQtyBeforeLoad);
 	}
 }

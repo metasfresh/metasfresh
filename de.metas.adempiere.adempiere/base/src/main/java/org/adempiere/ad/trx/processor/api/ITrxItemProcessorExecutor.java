@@ -73,7 +73,8 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	 * Instead of setting the exception handler here, you can also use {@link ITrxItemExecutorBuilder#setExceptionHandler(ITrxItemExceptionHandler)}.
 	 *
 	 * @param trxItemExceptionHandler
-	 * @deprecated please use {@link ITrxItemExecutorBuilder#setExceptionHandler(ITrxItemExceptionHandler)} instead.
+	 * @deprecated please use {@link ITrxItemExecutorBuilder#setExceptionHandler(ITrxItemExceptionHandler)} instead.<br>
+	 *             See <a href="https://github.com/metasfresh/metasfresh/commit/03496dfbccde6156227b8f9d5ad20c6f5ed8854d">this commit</a> for an example on how to migrate the code.
 	 */
 	@Deprecated
 	ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
@@ -82,7 +83,8 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	 * See {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)}.
 	 *
 	 * @param useTrxSavepoints
-	 * @deprecated please use {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)} instead.
+	 * @deprecated please use {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)} instead.<br>
+	 *             See <a href="https://github.com/metasfresh/metasfresh/commit/03496dfbccde6156227b8f9d5ad20c6f5ed8854d">this commit</a> for an example on how to migrate the code.
 	 */
 	@Deprecated
 	ITrxItemProcessorExecutor<IT, RT> setUseTrxSavepoints(boolean useTrxSavepoints);

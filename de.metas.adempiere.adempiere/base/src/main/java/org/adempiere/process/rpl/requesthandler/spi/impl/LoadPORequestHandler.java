@@ -72,9 +72,9 @@ public class LoadPORequestHandler extends ReplRequestHandlerAdapter
 		{
 			// this shall not happen, it's an internal error
 			throw new ReplicationException("PO does not have same context as we need it to use")
-					.addParameter("PO", po)
-					.addParameter("Ctx", po.getCtx())
-					.addParameter("CtxToUse", ctxToUse);
+					.setParameter("PO", po)
+					.setParameter("Ctx", po.getCtx())
+					.setParameter("CtxToUse", ctxToUse);
 			
 			// Alternative: reload the given PO with 'ctxToUse' and therefore see if the current role really has access
 			// final PO poToSend = MTable.get(ctxToUse, po.get_Table_ID()).getPO(po.get_ID(), po.get_TrxName());

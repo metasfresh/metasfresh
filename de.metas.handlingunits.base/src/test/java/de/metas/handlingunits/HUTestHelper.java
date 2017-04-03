@@ -82,6 +82,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AbstractAllocationSourceDestination;
@@ -1631,7 +1632,7 @@ public class HUTestHelper
 	 * @param loadCuUOM
 	 */
 	public final void load(
-			final AbstractProducerDestination producer,
+			final IHUProducerAllocationDestination producer,
 			final I_M_Product cuProduct,
 			final BigDecimal loadCuQty,
 			final I_C_UOM loadCuUOM)

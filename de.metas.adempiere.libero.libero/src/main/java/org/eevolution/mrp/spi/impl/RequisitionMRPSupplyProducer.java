@@ -165,7 +165,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 		reqline.setC_BPartner_ID(bpartnerId);
 		reqline.setM_Product_ID(m_product_planning.getM_Product_ID());
 		// reqline.setPrice(); // called automatically on beforeSave
-		reqline.setPriceActual(Env.ZERO);
+		reqline.setPriceActual(BigDecimal.ZERO);
 		reqline.setQty(QtyPlanned);
 		InterfaceWrapperHelper.save(reqline);
 

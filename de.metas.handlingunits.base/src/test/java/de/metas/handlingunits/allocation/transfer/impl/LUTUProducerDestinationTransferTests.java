@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
@@ -23,9 +25,14 @@ import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUTransaction;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 /*
  * #%L
@@ -37,12 +44,12 @@ import de.metas.handlingunits.model.I_M_HU;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +59,7 @@ import de.metas.handlingunits.model.I_M_HU;
 /**
  * This test verifies the loader's behavior if quantities are transferred between HUs. It uses {@link HUTestHelper#transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM)}.
  * The reason it doesn't use the {@link HUSplitBuilder} has more moving parts (like running the BL in yet another IHUContextProcessor and destroying empty HUs) which are not relevant for these tests.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -60,15 +67,20 @@ public class LUTUProducerDestinationTransferTests
 {
 	private LUTUProducerDestinationTestSupport data;
 
+	private IHandlingUnitsDAO handlingUnitsDAO;
+	private IHandlingUnitsBL handlingUnitsBL;
+
 	@Before
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	}
 
 	/**
 	 * Here we verify the behavior if two "real" IFCOS of 20kg each are transferred to one IFCO that sits on a palet and can cold 40kg.
-	 * 
+	 *
 	 * The current behavior is that the system creates a LU (palet) with one TU (IFCO) with two VHU of 20kg each.
 	 * It might be OK to have a different behavior (with an aggregated target), but this is how it is now.
 	 */
@@ -156,7 +168,7 @@ public class LUTUProducerDestinationTransferTests
 
 	/**
 	 * Verifies a standalone IFCO that was created using the producer from {@link #mkLUTUProducerForSingleIFCO()}.
-	 * 
+	 *
 	 * @param sourceXML
 	 */
 	private void verifySingleIFCO(final Node sourceXML, final String storageQty)
@@ -322,7 +334,7 @@ public class LUTUProducerDestinationTransferTests
 			useCase2VerifyBagInvariants(huBagsXML);
 
 			// FIXME the first two bags shall have a Bag packing material item with qty=0 because there aren't any bags anymore.
-			// Note: as far as this test is concerned, it would also be OK to not have the PM items alltogether
+			// Note: as far as this test is concerned, it would also be OK to not have the PM items altogether
 
 			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='0.000' and @C_UOM_Name='Kg'])", is("1")));
 			// assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[1]/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Bag' and @Qty='0'])", is("1")));
@@ -360,7 +372,7 @@ public class LUTUProducerDestinationTransferTests
 
 	/**
 	 * Verifies that the given {@code huPaletXML} has an aggregate VHU that is not really used in this case. It has no storage, and its HA item has a quantity of zero
-	 * 
+	 *
 	 * @param huPaletXML
 	 */
 	private void verifyPaletHasEmptyAggregateVHU(final Node huPaletXML)
@@ -374,7 +386,7 @@ public class LUTUProducerDestinationTransferTests
 
 	/**
 	 * Verify some things that shall stay the same about the "Bag" TUs after different operations done within {@link #useCase2()}.
-	 * 
+	 *
 	 * @param huBagsXML
 	 */
 	private void useCase2VerifyBagInvariants(final Node huBagsXML)
@@ -414,7 +426,7 @@ public class LUTUProducerDestinationTransferTests
 	 *
 	 * <li>Create one IFCO with 35kg tomatoes. That IFCO has a capacity of 40kg.
 	 * <li>Repackage/Move the 35kg onto a palet with once again one IFCO that has the same capacity
-	 * 
+	 *
 	 */
 	@Test
 	public void testSplitTUontoLUwithOneTU()
@@ -506,7 +518,7 @@ public class LUTUProducerDestinationTransferTests
 	/**
 	 * <li>Create one IFCO with 35kg tomatoes. That IFCO has a capacity of 40kg.
 	 * <li>Repackage/Move the 35kg onto a palet with two IFCOs, but each of those two IFCOs have a capacity of 20kg each.
-	 * 
+	 *
 	 */
 	@Test
 	public void testSplitTUontoLUwithTwoTUs()
@@ -757,7 +769,6 @@ public class LUTUProducerDestinationTransferTests
 		// verify the source after the transfer
 		{
 			final Node huPaletXML = HUXmlConverter.toXml(luPalet);
-			System.out.println(HUXmlConverter.toString(huPaletXML));
 
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet)", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='85.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -918,7 +929,7 @@ public class LUTUProducerDestinationTransferTests
 	 * Then, from the unloader there will be one {@link IHUTransaction} with 5 which will in consequence completely fill the target.
 	 * Then the second {@link IHUTransaction} with with the remaining 80 that were also unloaded will come in.<br>
 	 * This rest verifies that those 80 won't be loaded <b>and</b> that the destination HU's HA item's qty will be 1 (and not two because of the two incoming transactions).
-	 * 
+	 *
 	 */
 	@Test
 	public void testForCorrectItemQtyOnTwoTrxCandidates()
@@ -960,5 +971,63 @@ public class LUTUProducerDestinationTransferTests
 
 		assertThat(splitLUsXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1'])", is("1")));
 		assertThat(splitLUsXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1']/Storage[@M_Product_Value='Tomato' and @Qty='5.000' and @C_UOM_Name='Kg'])", is("1")));
+	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/1203
+	 */
+	@Test
+	public void testForMissingRoundingIssue()
+	{
+		final I_M_HU_PI piTU_IFCO_with3kg = data.helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+
+		final I_M_HU_PI_Item piTU_Item_IFCO_with3kg = data.helper.createHU_PI_Item_Material(piTU_IFCO_with3kg);
+		data.helper.assignProduct(piTU_Item_IFCO_with3kg, data.helper.pTomato, new BigDecimal("3"), data.helper.uomKg);
+
+		data.helper.createHU_PI_Item_PackingMaterial(piTU_IFCO_with3kg, data.helper.pmIFCO);
+
+		final I_M_HU_PI_Item piLU_Item_IFCO_with3kg = data.helper.createHU_PI_Item_IncludedHU(data.piLU, piTU_IFCO_with3kg, new BigDecimal("20"));
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUPI(data.piLU);
+		lutuProducer.setLUItemPI(piLU_Item_IFCO_with3kg);
+		lutuProducer.setTUPI(piTU_IFCO_with3kg);
+
+		// create one LU with and aggregate HU representing 8 x 3kg = 24kg
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("24"), data.helper.uomKg);
+
+		// guards to make sure the HU-tree under test is what we expect
+		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
+		assertThat(createdLUs.size(), is(1));
+		final I_M_HU createdLU = createdLUs.get(0);
+
+		final List<I_M_HU> createdAggregateTUs = handlingUnitsDAO.retrieveIncludedHUs(createdLU);
+		assertThat(createdAggregateTUs.size(), is(1));
+		final I_M_HU createdAggregateTU = createdAggregateTUs.get(0);
+		assertThat(handlingUnitsBL.isAggregateHU(createdAggregateTU), is(true));
+		assertThat(handlingUnitsDAO.retrieveParentItem(createdAggregateTU).getQty(), comparesEqualTo(new BigDecimal("8")));
+
+		final LUTUProducerDestination transferLutuProducer = new LUTUProducerDestination();
+		transferLutuProducer.setTUPI(data.piTU_IFCO);
+		transferLutuProducer.setNoLU();
+
+		data.helper.transferMaterialToNewHUs(ImmutableList.of(createdAggregateTU),
+				transferLutuProducer,
+				new BigDecimal("5"),
+				data.helper.pTomato,
+				data.helper.uomKg);
+
+		final List<I_M_HU> createdTUsAfterSplit = transferLutuProducer.getCreatedHUs();
+		assertThat(createdTUsAfterSplit.size(), is(1));
+		final I_M_HU createdTUAfterSplit = createdTUsAfterSplit.get(0);
+
+		final Node createdTUAfterSplitXML = HUXmlConverter.toXml(createdTUAfterSplit);
+		assertThat(createdTUAfterSplitXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("5.000")));
+
+		final Node huPaletXML = HUXmlConverter.toXml(createdLU);
+		assertThat(huPaletXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("19.000")));
+		// verify that below the LU level we have a "clean" split without rounding issues.
+		assertThat(huPaletXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
+		assertThat(huPaletXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("18.000")));
 	}
 }
