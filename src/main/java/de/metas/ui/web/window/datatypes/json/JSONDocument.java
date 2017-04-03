@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -23,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.view.IDocumentView;
@@ -120,7 +118,6 @@ public final class JSONDocument implements Serializable
 				.stream()
 				.map(JSONIncludedTabInfo::new)
 				.forEach(jsonDocument::setIncludedTabInfo);
-		jsonDocument.updateStaleTabIds();
 
 		//
 		// Set debugging info
@@ -162,6 +159,13 @@ public final class JSONDocument implements Serializable
 		}
 
 		final JSONDocument jsonDocument = new JSONDocument(documentChangedEvents.getDocumentPath());
+
+		// If the document was deleted, we just need to export that flag. All the other changes are not relevant.
+		if(documentChangedEvents.isDeleted())
+		{
+			jsonDocument.setDeleted();
+			return jsonDocument;
+		}
 
 		//
 		// Fields
@@ -205,7 +209,6 @@ public final class JSONDocument implements Serializable
 				.stream()
 				.map(JSONIncludedTabInfo::new)
 				.forEach(jsonDocument::setIncludedTabInfo);
-		jsonDocument.updateStaleTabIds();
 
 		return jsonDocument;
 	}
@@ -295,6 +298,10 @@ public final class JSONDocument implements Serializable
 	@JsonProperty("saveStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentSaveStatus saveStatus;
+	
+	@JsonProperty("deleted")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean deleted;
 
 	@JsonProperty("fields")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -305,11 +312,6 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
-
-	@JsonProperty("staleTabIds")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private Set<String> staleTabIds;
 
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -398,6 +400,11 @@ public final class JSONDocument implements Serializable
 	{
 		return saveStatus;
 	}
+	
+	public void setDeleted()
+	{
+		this.deleted = Boolean.TRUE;
+	}
 
 	@JsonAnyGetter
 	public Map<String, Object> getOtherProperties()
@@ -435,22 +442,6 @@ public final class JSONDocument implements Serializable
 			includedTabsInfo = new HashMap<>();
 		}
 		includedTabsInfo.put(tabInfo.tabid, tabInfo);
-	}
-
-	@Deprecated
-	private final void updateStaleTabIds()
-	{
-		if (includedTabsInfo == null || includedTabsInfo.isEmpty())
-		{
-			staleTabIds = ImmutableSet.of();
-		}
-		else
-		{
-			staleTabIds = includedTabsInfo.values().stream()
-					.filter(JSONIncludedTabInfo::isStale)
-					.map(JSONIncludedTabInfo::getTabid)
-					.collect(ImmutableSet.toImmutableSet());
-		}
 	}
 
 	private void setIncludedDocuments(final List<JSONDocument> includedDocuments)
@@ -544,19 +535,6 @@ public final class JSONDocument implements Serializable
 				this.allowDelete = null;
 				allowDeleteReason = null;
 			}
-
 		}
-
-		public String getTabid()
-		{
-			return tabid;
-		}
-
-		public boolean isStale()
-		{
-			final Boolean stale = this.stale;
-			return stale != null && stale.booleanValue();
-		}
-
 	}
 }

@@ -120,6 +120,12 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
+	public void collectDeleted(final DocumentPath documentPath)
+	{
+		// do nothing
+	}
+
+	@Override
 	public void collectStaleDetailId(final DocumentPath rootDocumentPath, final DetailId detailId)
 	{
 		// do nothing

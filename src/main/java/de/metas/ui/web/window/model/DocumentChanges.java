@@ -52,6 +52,7 @@ public final class DocumentChanges
 	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
 	private DocumentValidStatus documentValidStatus = null;
 	private DocumentSaveStatus documentSaveStatus = null;
+	private boolean deleted = false;
 
 	private Map<DetailId, IncludedDetailInfo> includedDetailInfos = new HashMap<>();
 
@@ -104,6 +105,7 @@ public final class DocumentChanges
 		return fieldChangesByName.isEmpty()
 				&& documentValidStatus == null
 				&& documentSaveStatus == null
+				&& !deleted
 				&& includedDetailInfos.isEmpty();
 	}
 
@@ -182,6 +184,11 @@ public final class DocumentChanges
 		if (fromDocumentChanges.documentSaveStatus != null)
 		{
 			collectDocumentSaveStatusChanged(fromDocumentChanges.documentSaveStatus);
+		}
+		
+		if(fromDocumentChanges.isDeleted())
+		{
+			collectDeleted();
 		}
 
 		fromDocumentChanges.includedDetailInfos.values()
@@ -286,6 +293,16 @@ public final class DocumentChanges
 	public DocumentSaveStatus getDocumentSaveStatus()
 	{
 		return documentSaveStatus;
+	}
+	
+	/* package */ void collectDeleted()
+	{
+		this.deleted = true;
+	}
+	
+	public boolean isDeleted()
+	{
+		return deleted;
 	}
 
 	public List<IncludedDetailInfo> getIncludedDetailInfos()

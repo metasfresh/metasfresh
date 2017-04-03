@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.view.AutoRegistrableDocumentViewSelectionFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
@@ -46,7 +46,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@Service
+@AutoRegistrableDocumentViewSelectionFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID, viewType = JSONViewDataType.grid)
 public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
 {
 	@Autowired
@@ -54,7 +54,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorsFactory;
 
-	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 100, 0);
+	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
 
 	@Override
 	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType_NOTUSED, final JSONOptions jsonOpts)
@@ -126,7 +126,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		final int adWindowId = jsonRequest.getAD_Window_ID();
 
 		//
-		// Referencing path and tableName (i.e. from where are we coming)
+		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
 		final Set<DocumentPath> referencingDocumentPaths = jsonRequest.getReferencingDocumentPaths();
 		final String referencingTableName;
 		if (!referencingDocumentPaths.isEmpty())

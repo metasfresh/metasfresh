@@ -140,6 +140,11 @@ public final class QuickInput
 				.toString();
 	}
 	
+	public DocumentPath getDocumentPath()
+	{
+		return quickInputDocument.getDocumentPath();
+	}
+	
 	public IAutoCloseable lockForReading()
 	{
 		final ReadLock readLock = readwriteLock.readLock();

@@ -62,7 +62,7 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	}
 
 	@Override
-	public void setPrimaryChange(DocumentPath documentPath)
+	public void setPrimaryChange(final DocumentPath documentPath)
 	{
 		documentChanges(documentPath).setPrimaryChange();
 	}
@@ -215,6 +215,13 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	{
 		documentChanges(documentPath)
 				.collectDocumentSaveStatusChanged(documentSaveStatus);
+	}
+
+	@Override
+	public void collectDeleted(final DocumentPath documentPath)
+	{
+		documentChanges(documentPath)
+				.collectDeleted();
 	}
 
 	@Override

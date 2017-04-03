@@ -160,7 +160,7 @@ public class DocumentViewRestController
 	public List<JSONDocument> getByIds(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
-			, @PathVariable("ids") @ApiParam("comma separated IDs") final String idsListStr)
+			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr)
 	{
 		userSession.assertLoggedIn();
 
