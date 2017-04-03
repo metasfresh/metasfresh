@@ -305,25 +305,44 @@ public final class ASIEditingInfo
 	public boolean isExcludedAttributeSet()
 	{
 		final I_M_AttributeSet attributeSet = getM_AttributeSet();
-		if (attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0)
+		final boolean attributeSetExists = attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0;
+		
+		//
+		// Exclude if it was configured to be excluded
+		if (attributeSetExists)
 		{
 			final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
 			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getCallerColumnId(), isSOTrx());
 			final boolean exclude = asExclude != null && excludeBL.isFullExclude(asExclude);
-			return exclude;
+			if(exclude)
+			{
+				return true; // exclude
+			}
 		}
-
-		// NOTE: at this point attributeSet is null or ID=0
+		
+		//
+		// If no attributeSet, find out a default per each window type
+		if(!attributeSetExists)
+		{
+			// Product window requires a valid attributeSet.
+			final WindowType type = getWindowType();
+			if (type == WindowType.ProductWindow)
+			{
+				return true; // exclude
+			}
+			else if(type == WindowType.Regular)
+			{
+				final boolean asiExists = getM_AttributeSetInstance_ID() > 0;
+				if(!asiExists)
+				{
+					return true; // exclude
+				}
+			}
+		}
 
 		//
-		// Regular window or product window requires a valid attributeSet
-		final WindowType type = getWindowType();
-		if (type == WindowType.Regular || type == WindowType.ProductWindow)
-		{
-			return true;
-		}
-
-		return false;
+		// Fallback
+		return false; // don't exclude
 	}
 
 	public List<MAttribute> getAvailableAttributes()
