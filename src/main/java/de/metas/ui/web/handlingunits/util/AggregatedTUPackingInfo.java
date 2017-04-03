@@ -17,7 +17,6 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 
@@ -89,29 +88,13 @@ class AggregatedTUPackingInfo implements IHUPackingInfo
 	@Override
 	public I_M_HU_PI getM_TU_HU_PI()
 	{
-		final I_M_HU_Item parentHUItem = aggregatedTU.getM_HU_Item_Parent();
-		if (parentHUItem == null)
+		final I_M_HU_PI tuPI = Services.get(IHandlingUnitsBL.class).getEffectivePI(aggregatedTU);
+		if(tuPI == null)
 		{
-			// note: shall not happen because we assume the aggregatedTU is really an aggregated TU.
-			new HUException("Invalid aggregated TU. Parent item is null; aggregatedTU=" + aggregatedTU).throwIfDeveloperModeOrLogWarningElse(logger);
-			return null;
-
-		}
-		final I_M_HU_PI_Item parentPIItem = parentHUItem.getM_HU_PI_Item();
-
-		if (parentPIItem == null)
-		{
-			new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + parentHUItem).throwIfDeveloperModeOrLogWarningElse(logger);
+			new HUException("Invalid aggregated TU. Effective PI could not be fetched; aggregatedTU=" + aggregatedTU).throwIfDeveloperModeOrLogWarningElse(logger);
 			return null;
 		}
-		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
-		if (included_HU_PI == null)
-		{
-			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + parentHUItem).throwIfDeveloperModeOrLogWarningElse(logger);
-			return null;
-		}
-
-		return included_HU_PI;
+		return tuPI;
 	}
 
 	@Override
