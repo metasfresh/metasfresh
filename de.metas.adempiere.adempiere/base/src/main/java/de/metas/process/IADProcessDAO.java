@@ -15,11 +15,11 @@ import java.util.Collection;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,12 +48,13 @@ public interface IADProcessDAO extends ISingletonService
 
 	/**
 	 * Retrieves {@link RelatedProcessDescriptor} indexed by AD_Process_ID.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adTableId
+	 * @param adWindowId
 	 * @return AD_Process_ID to {@link RelatedProcessDescriptor}
 	 */
-	Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(Properties ctx, int adTableId);
+	Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(Properties ctx, int adTableId, int adWindowId);
 
 	/**
 	 * Retrieves the {@link I_AD_Process} which references the given <code>AD_Form_ID</code>. If there is no such process, the method returns <code>null</code>. If there are multiple such records,
@@ -70,17 +71,33 @@ public interface IADProcessDAO extends ISingletonService
 	 * Registers a process for a certain table without the need of an <code>AD_Table_Process</code> record in the database.
 	 *
 	 * @param adTableId
+	 * @param adWindowId (optional)
 	 * @param adProcessId
 	 */
-	void registerTableProcess(int adTableId, int adProcessId);
+	void registerTableProcess(int adTableId, int adWindowId, int adProcessId);
+
+	default void registerTableProcess(final int adTableId, final int adProcessId)
+	{
+		final int adWindowId = 0;
+		registerTableProcess(adTableId, adWindowId, adProcessId);
+	}
 
 	/**
 	 * Registers a process for a certain table without the need of an <code>AD_Table_Process</code> record in the database.
 	 *
 	 * @param tableName
+	 * @param adWindowId (optional)
 	 * @param adProcessId
 	 */
-	void registerTableProcess(String tableName, int adProcessId);
+	void registerTableProcess(String tableName, int adWindowId, int adProcessId);
+
+	default void registerTableProcess(final String tableName, final int adProcessId)
+	{
+		final int adWindowId = 0;
+		registerTableProcess(tableName, adWindowId, adProcessId);
+	}
+
+	void registerTableProcess(RelatedProcessDescriptor descriptor);
 
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Classname Classname} column matches the given class.
@@ -98,7 +115,7 @@ public interface IADProcessDAO extends ISingletonService
 
 	/**
 	 * Retrieves {@link I_AD_Process} by given ID.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adProcessId
 	 * @return process; never returns null
@@ -154,7 +171,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * (including translations)
 	 * and saves.
 	 * Not overwritten: name, value, entitytype
-	 * 
+	 *
 	 * @param targetProcess
 	 * @param sourceProcess
 	 */
