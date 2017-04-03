@@ -24,9 +24,13 @@ package org.adempiere.ad.trx.processor.api;
 
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
+import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Helper interface which can assist you configure and execute an {@link ITrxItemProcessor}.<br>
@@ -99,6 +103,23 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 
 	/** Configures the processor to be used. Here you will inject your nice code ;) */
 	ITrxItemExecutorBuilder<IT, RT> setProcessor(ITrxItemProcessor<IT, RT> processor);
+	
+	/** Configures the processor to be used. Here you will inject your nice code ;) */
+	default ITrxItemExecutorBuilder<IT, RT> setProcessor(final Consumer<IT> processor)
+	{
+		Preconditions.checkNotNull(processor, "processor is null");
+		
+		setProcessor(new TrxItemProcessorAdapter<IT, RT>()
+		{
+			@Override
+			public void process(IT item) throws Exception
+			{
+				processor.accept(item);
+			}
+		});
+		return this;
+	}
+
 
 	/**
 	 * Sets exception handler to be used if processing fails.
