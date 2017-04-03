@@ -1,5 +1,6 @@
 package de.metas.handlingunits.report;
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -9,6 +10,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.report.IJasperService;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
@@ -47,7 +49,14 @@ import de.metas.process.ProcessInfo;
  */
 public class HUReceiptScheduleReportExecutor
 {
-	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasperProcess = "ReceiptScheduleHUPOSJasperProcess";
+	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasper_Process = "de.metas.handlingunits.ReceiptScheduleHUPOSJasper.AD_Process_ID";
+
+	/**
+	 * The number of copies to create when we perform this print.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/210
+	 */
+	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies = "de.metas.handlingunits.ReceiptScheduleHUPOSJasper.Copies";
 
 	private static final String PARA_C_Orderline_ID = " C_Orderline_ID";
 	private static final String PARA_AD_Table_ID = "AD_Table_ID";
@@ -98,14 +107,18 @@ public class HUReceiptScheduleReportExecutor
 
 		//
 		// Get Process from SysConfig
-		final String defaultValue = null;
-		final String reportConfigValue = sysConfigBL.getValue(SYSCONFIG_ReceiptScheduleHUPOSJasperProcess,
-				defaultValue,
+		final int reportProcessId = sysConfigBL.getIntValue(SYSCONFIG_ReceiptScheduleHUPOSJasper_Process,
+				-1, // default
 				receiptSchedule.getAD_Client_ID(),
 				receiptSchedule.getAD_Org_ID());
-		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
+		Check.errorIf(reportProcessId <= 0, "Report SysConfig value not set for for {}", SYSCONFIG_ReceiptScheduleHUPOSJasper_Process);
 
-		final int reportProcessId = Integer.parseInt(reportConfigValue);
+		//
+		// get number of copies from SysConfig (default=1)
+		final int copies = sysConfigBL.getIntValue(SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies,
+				1, // default
+				receiptSchedule.getAD_Client_ID(),
+				receiptSchedule.getAD_Org_ID());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
@@ -126,6 +139,8 @@ public class HUReceiptScheduleReportExecutor
 				.setReportLanguage(bpartnerLaguage)
 				.addParameter(PARA_C_Orderline_ID, orderLineId)
 				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+				.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
+
 				//
 				// Execute report in a new AD_PInstance
 				.buildAndPrepareExecution()

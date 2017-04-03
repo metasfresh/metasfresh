@@ -1026,7 +1026,7 @@ public class LUTUProducerDestinationTransferTests
 
 		final Node huPaletXML = HUXmlConverter.toXml(createdLU);
 		assertThat(huPaletXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("19.000")));
-		// verify that below the LU level we have a "clean" split without rounding issues. 
+		// verify that below the LU level we have a "clean" split without rounding issues.
 		assertThat(huPaletXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("1.000")));
 		assertThat(huPaletXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("18.000")));
 	}

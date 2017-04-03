@@ -13,20 +13,20 @@ package de.metas.printing.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
@@ -36,6 +36,14 @@ import de.metas.printing.spi.IPrintingQueueHandler;
 
 public interface IPrintingQueueBL extends ISingletonService
 {
+	/**
+	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
+	 * The value that is set here will be used in the respective printing queue item
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1240
+	 */
+	public static ModelDynAttributeAccessor<I_AD_Archive, Integer> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(Integer.class);
+
 	/**
 	 * Adds the given print-out to the queue
 	 * 
@@ -61,7 +69,8 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * This method is expected to run asynchronously so it's possible to not have the result immediate.
 	 * 
 	 * @param item
-	 * @param recreateArchive <ul>
+	 * @param recreateArchive
+	 *            <ul>
 	 *            <li>if true then the printout archive of underlying model will be generated (asynchronously) and then enqueued again;</li>
 	 *            <li>if false then current underlying archive is just re-enqueued
 	 *            </ul>

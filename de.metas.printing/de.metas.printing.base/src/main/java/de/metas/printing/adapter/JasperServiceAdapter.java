@@ -10,21 +10,17 @@ package de.metas.printing.adapter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import net.sf.jasperreports.engine.JRExporter;
-import net.sf.jasperreports.engine.JasperPrint;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
@@ -35,14 +31,15 @@ import org.compiere.model.PrintInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.report.IJasperService;
 
+import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.ProcessInfo;
-
-
+import net.sf.jasperreports.engine.JRExporter;
+import net.sf.jasperreports.engine.JasperPrint;
 
 /**
  * Adapt the old school Jasper Printing Service ( {@link IJasperService}) to our printing module.
- * 
+ *
  * @author tsa
  *
  */
@@ -58,7 +55,7 @@ public final class JasperServiceAdapter extends AbstractJasperService
 	/**
 	 * Exports the given data to PDF and creates an <code>AD_Archive</code> with <code>IsDirectPrint='Y'</code> (to trigger a <code>C_Printing_Queue</code> record being created) and
 	 * <code>IsCreatePrintJob='Y'</code> to also trigger a direct <code>C_PrintJob</code> creation.
-	 * 
+	 *
 	 */
 	@Override
 	public void print(final JasperPrint jasperPrint, final ProcessInfo pi, final boolean displayDialog)
@@ -75,24 +72,28 @@ public final class JasperServiceAdapter extends AbstractJasperService
 
 		//
 		// Create the archive
-		
+
 		// archive it even if AutoArchive says no
-		final boolean forceArchiving = true; 
-		
-		// task 09752: don't let the API save it, 
+		final boolean forceArchiving = true;
+
+		// task 09752: don't let the API save it,
 		// because we want to first set the two flags below, and we want the model interceptor to be fired only once
-		final boolean save = false; 
-		
+		final boolean save = false;
+
 		final String trxName = ITrx.TRXNAME_None;
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				archiveService.archive(exportData, printInfo, forceArchiving, save, trxName),
 				I_AD_Archive.class);
 		Check.assumeNotNull(archive, "archive not null");
-
 		//
 		// Ask our printing service to printing it right now
 		archive.setIsDirectEnqueue(true);
 		archive.setIsCreatePrintJob(true); // create the print job not only enqueue to printing queue
+
+		// https://github.com/metasfresh/metasfresh/issues/1240
+		// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
+		// but it needs to be available in case the system has to create a printing queue item for this archive
+		IPrintingQueueBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
 
 		//
 		// Save archive. This will trigger the printing...
