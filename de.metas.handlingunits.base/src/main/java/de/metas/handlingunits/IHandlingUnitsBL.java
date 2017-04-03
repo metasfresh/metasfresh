@@ -410,4 +410,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI_Version getEffectivePIVersion(I_M_HU hu);
+
+	/**
+	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
+	 * Otherwise, return the given {@code hu}'s own/direct PI.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_PI getEffectivePI(I_M_HU hu);
 }

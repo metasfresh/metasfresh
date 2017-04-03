@@ -795,6 +795,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
 	}
+	
+	@Override
+	public I_M_HU_PI getEffectivePI(final I_M_HU hu)
+	{
+		if (!isAggregateHU(hu))
+		{
+			return hu.getM_HU_PI_Version().getM_HU_PI();
+		}
+
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+		return included_HU_PI;
+	}
+
 
 	@Override
 	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
