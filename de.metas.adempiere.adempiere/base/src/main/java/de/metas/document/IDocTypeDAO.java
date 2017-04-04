@@ -93,4 +93,18 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return
 	 */
 	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType);
+
+	/**
+	 * Retrieve the doctype based on the given basetype, subtype and IsSOTrx
+	 * 
+	 * @param ctx
+	 * @param docBaseType
+	 * @param docSubType
+	 * @param isSOTrx
+	 * @param adClientId
+	 * @param adOrgId
+	 * @param trxName
+	 * @return
+	 */
+	I_C_DocType getDocTypeOrNullForSOTrx(Properties ctx, String docBaseType, String docSubType, boolean isSOTrx, int adClientId, int adOrgId, String trxName);
 }

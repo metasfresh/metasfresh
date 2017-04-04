@@ -13,15 +13,14 @@ package de.metas.handlingunits.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public interface I_M_Warehouse extends org.adempiere.warehouse.model.I_M_Warehouse
 {
@@ -30,6 +29,13 @@ public interface I_M_Warehouse extends org.adempiere.warehouse.model.I_M_Warehou
 	public static final String COLUMNNAME_IsHUStorageDisabled = "IsHUStorageDisabled";
 	public void setIsHUStorageDisabled(boolean IsHUStorageDisabled);
 	public boolean isHUStorageDisabled();
+	//@formatter:on
+
+	//@formatter:off
+	// task #1056
+	public static final String COLUMNNAME_IsQualityReturnWarehouse = "IsQualityReturnWarehouse";
+	public void setIsQualityReturnWarehouse(boolean isQualityReturnWarehouse);
+	public boolean isQualityReturnWarehouse();
 	//@formatter:on
 
 }

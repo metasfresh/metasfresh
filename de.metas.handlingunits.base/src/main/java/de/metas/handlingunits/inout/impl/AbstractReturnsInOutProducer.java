@@ -1,5 +1,4 @@
-package de.metas.handlingunits.empties.impl;
-
+package de.metas.handlingunits.inout.impl;
 
 /*
  * #%L
@@ -24,13 +23,11 @@ package de.metas.handlingunits.empties.impl;
  */
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,57 +36,48 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.LazyInitializer;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
-import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
-import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
-import de.metas.handlingunits.inout.impl.AbstractReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.inout.IInOutBL;
-import de.metas.logging.LogManager;
 
-
-
-public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
+public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProducer
 {
-
+	//
 	// Services
-
-	private static final transient Logger logger = LogManager.getLogger(EmptiesInOutProducer.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private Properties _ctx;
+	protected boolean executed = false;
+
+	private I_C_BPartner _bpartner = null;
+	private int _bpartnerLocationId = -1;
+	private String _movementType = null;
+	private I_M_Warehouse _warehouse = null;
+	private Date _movementDate = null;
+	private boolean _complete = true;
+
+	/** #643 The order on based on which the empties inout is created (if it was selected) */
+	private I_C_Order _order = null;
 
 	/** InOut header reference. It will be created just when it is needed. */
+	protected final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
 
-	private final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
-	private final List<IPackingMaterialDocumentLineSource> sources = new ArrayList<>();
-
-	private final EmptiesInOutLinesProducer inoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
-	
-	private Properties _ctx;
-	private ITrxManager trxManager;
-
-
-	public EmptiesInOutProducer(final Properties ctx)
+	public void setCtx(final Properties ctx)
 	{
-		super();
-
-		Check.assumeNotNull(ctx, "ctx not null");
-
-		_ctx = ctx;
+		this._ctx = ctx;
 	}
 
 	private final Properties getCtx()
@@ -110,32 +98,8 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	public I_M_InOut create()
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(new TrxCallable<I_M_InOut>()
-		{
-
-			@Override
-			public I_M_InOut call() throws Exception
-			{
-				return createInTrx();
-			}
-			
-			@Override
-			public boolean doCatch(Throwable e) throws Throwable
-			{
-				throw e;
-			}
-		});
-	}
-	
-	private I_M_InOut createInTrx()
-	{
 		Check.assume(!executed, "inout not already created");
 		executed = true;
-		
-		final EmptiesInOutLinesProducer inoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
-		inoutLinesBuilder.addSources(sources);
-
 
 		final boolean doComplete = isComplete();
 
@@ -145,7 +109,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		{
 			// Create document lines
 			// NOTE: as a side effect the document header will be created, if there was at least one line
-			inoutLinesBuilder.create();
+			createLines();
 			if (!inoutRef.isInitialized())
 			{
 				// nothing created
@@ -166,34 +130,32 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		// Create a draft material return, even if there are no lines
 		else
 		{
-			inoutLinesBuilder.create();
+			createLines();
 			final I_M_InOut inout = inoutRef.getValue();
 			InterfaceWrapperHelper.save(inout);
 			return inout;
 		}
-
-	//	setCtx(ctx);
 	}
+
+	protected abstract void createLines();
 
 	@Override
-	public final boolean isEmpty()
-	{
-		return sources.isEmpty();
-	}
+	public abstract boolean isEmpty();
+	
+	@Override
+	public abstract IReturnsInOutProducer addPackingMaterial(I_M_HU_PackingMaterial packingMaterial, int qty);
 
-	public IReturnsInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty)
-	{
-		Check.assume(!executed, "inout shall not be generated yet");
-		
-		sources.add(PlainPackingMaterialDocumentLineSource.of(packingMaterial, qty));
-		
-		return this;
-	}
+	/**
+	 * Check if this producer is empty.
+	 *
+	 * A producer is considered empty, when there are no packing material added.
+	 *
+	 * @return true if empty.
+	 */
 
 	private I_M_InOut createInOutHeader()
 	{
 		final IContextAware contextProvider = getContextProvider();
-		final Properties ctx = contextProvider.getCtx();
 
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class, contextProvider);
 
@@ -204,18 +166,14 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 			final boolean isSOTrx = inOutBL.getSOTrxFromMovementType(movementType);
 			// isSOTrx = 'Y' means packing material coming back from the customer -> incoming -> Receipt
 			// isSOTrx = 'N' means packing material is returned to the vendor -> outgoing -> Delivery
-			final String docBaseType = isSOTrx ? X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
+			final String docBaseType = isSOTrx ?  X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
 
 			inout.setMovementType(movementType);
 			inout.setIsSOTrx(isSOTrx);
 
-			final I_C_DocType docType = getEmptiesDocType(ctx,
-					docBaseType,
-					inout.getAD_Client_ID(),
-					inout.getAD_Org_ID(),
-					isSOTrx,
-					ITrx.TRXNAME_None);
-			inout.setC_DocType(docType);
+			final int docTypeId = getReturnsDocTypeId(contextProvider, isSOTrx, inout, docBaseType);
+
+			inout.setC_DocType_ID(docTypeId);
 		}
 
 		//
@@ -250,7 +208,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		//
 		// task #643: Add order related details
 		{
-			final org.compiere.model.I_C_Order order = getC_Order();
+			final I_C_Order order = getC_Order();
 
 			if (order == null)
 			{
@@ -270,6 +228,8 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		// InterfaceWrapperHelper.save(inout);
 		return inout;
 	}
+
+	protected abstract int getReturnsDocTypeId(IContextAware contextProvider, boolean isSOTrx, I_M_InOut inout, String docBaseType);
 
 	/**
 	 * Asserts this producer is in configuration stage (nothing produced yet)
@@ -346,74 +306,49 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		return _warehouse;
 	}
 
-
-	private I_C_DocType getEmptiesDocType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx, final String trxName)
+	@Override
+	public IReturnsInOutProducer setMovementDate(final Date movementDate)
 	{
-		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(ctx, docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
-		if(docTypes == null)
+		Check.assumeNotNull(movementDate, "movementDate not null");
+		_movementDate = movementDate;
+		return this;
+	}
+
+	private final Timestamp getMovementDateToUse()
+	{
+		if (_movementDate != null)
 		{
-			logger.warn("No document types found for docBaseType={}, adClientId={}, adOrgId={}", docBaseType, adClientId, adOrgId);
-			return null;
+			return TimeUtil.asTimestamp(_movementDate);
 		}
 
-		//
-		// Search for specific empties shipment/receipt document sub-type (task 07694)
-		// 07694: using the empties-subtype for receipts.
-		final String docSubType = isSOTrx ? X_C_DocType.DOCSUBTYPE_Leergutanlieferung : X_C_DocType.DOCSUBTYPE_Leergutausgabe;
-		for (final I_C_DocType docType : docTypes)
-		{
-			final String subType = docType.getDocSubType();
-			if (docSubType.equals(subType))
-			{
-				return docType;
-			}
-		}
-		
-		//
-		// If the empties doc type was not found (should not happen) fallback to the default one
-		{
-			final I_C_DocType defaultDocType = docTypes.get(0);
-			logger.warn("No empties document type found for docBaseType={}, docSubType={}, adClientId={}, adOrgId={}. Using fallback docType={}", docBaseType, docSubType, adClientId, adOrgId, defaultDocType);
-			return defaultDocType;
-		}
+		final Properties ctx = getCtx();
+		final Timestamp movementDate = Env.getDate(ctx); // use Login date (08306)
+		return movementDate;
 	}
 
 	@Override
-	protected void createLines()
+	public IReturnsInOutProducer setC_Order(final I_C_Order order)
 	{
-		inoutLinesBuilder.create();
+		assertConfigurable();
+		_order = order;
+		return this;
+	}
 
+	private I_C_Order getC_Order()
+	{
+		return _order;
 	}
 
 	@Override
-	protected int getReturnsDocTypeId(
-			final IContextAware contextProvider,
-			final boolean isSOTrx,
-			final I_M_InOut inout,
-			final String docBaseType)
+	public IReturnsInOutProducer dontComplete()
 	{
-		final Properties ctx = contextProvider.getCtx();
-		final String trxName = contextProvider.getTrxName();
+		_complete = false;
+		return this;
+	}
 
-		final I_C_DocType docType = getEmptiesDocType(ctx,
-				docBaseType,
-				inout.getAD_Client_ID(),
-				inout.getAD_Org_ID(),
-				isSOTrx,
-				trxName);
-
-		int docTypeId = docType == null ? -1 : docType.getC_DocType_ID();
-
-		// If the empties doc type was not found (should not happen) fallback to the default one
-		if (docTypeId <= 0)
-		{
-			docTypeId = docTypeDAO.getDocTypeId(ctx,
-					docBaseType,
-					inout.getAD_Client_ID(),
-					inout.getAD_Org_ID(),
-					trxName);
-		}
-
-		return docTypeId;
+	private boolean isComplete()
+	{
+		return _complete;
 	}
 }
+

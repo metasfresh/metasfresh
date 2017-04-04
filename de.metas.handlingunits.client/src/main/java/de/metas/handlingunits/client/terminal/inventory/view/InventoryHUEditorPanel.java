@@ -13,19 +13,24 @@ package de.metas.handlingunits.client.terminal.inventory.view;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 
@@ -33,10 +38,14 @@ import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
+import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.inventory.model.InventoryHUEditorModel;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
 
@@ -47,10 +56,13 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	 */
 	public static final String ACTION_DirectMoveToWarehouse = "de.metas.handlingunits.client.terminal.inventory.view.InventoryHUEditorPanel#DirectMoveToWarehouse";
 
+	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	public InventoryHUEditorPanel(final HUEditorModel model)
 	{
 		super(model);
-		
+
 		enableMarkAsQualityInspectionButton(); // task 08639
 	}
 
@@ -83,7 +95,17 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 				}
 			});
 			buttonsPanel.add(bDirectMoveToWarehouse, "");
+
 		}
+
+		buttonsPanel.add(bMoveToQualityWarehouse, "newline");
+		buttonsPanel.add(bCreateVendorReturn, "");
+	}
+
+	@Override
+	protected I_M_Warehouse getCurrentWarehouse()
+	{
+		return getHUEditorModel().getM_Warehouse();
 	}
 
 	@Override
@@ -105,13 +127,28 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	 */
 	private final void doDirectMoveToWarehouse()
 	{
+
+		final boolean exceptionIfNull = false;
 		//
 		// Generate the movement
-		final I_M_Movement movement = getHUEditorModel().doDirectMoveToWarehouse();
+
+		// Warehouse from: We are moving from the currently selected warehouse
+
+		final I_M_Warehouse warehouseFrom = getCurrentWarehouse();
+
+		// Warehouse to: we are moving the warehouses for direct movements
+		final I_M_Warehouse warehouseTo = huMovementBL.getDirectMove_Warehouse(getTerminalContext().getCtx(), exceptionIfNull);
+		Check.assumeNotNull(warehouseTo, "warehouseTo not null"); // shall not happen, because if it's null the action button shall be hidden
+	
+		final List<I_M_HU> hus = getSelectedHUs(warehouseFrom);
+		final I_M_Movement movement = huMovementBL.doDirectMoveToWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
 		if (movement == null)
 		{
 			return;
 		}
+		
+		getHUEditorModel().refreshSelectedHUKeys();
+		
 
 		//
 		// Inform the user about which movement was created
@@ -120,4 +157,48 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		final String message = msgBL.parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
 		terminalFactory.showInfo(this, "Created", message);
 	}
+
+	private List<I_M_HU> getSelectedHUs(final I_M_Warehouse warehouseFrom)
+	{
+		//
+		// Get selected HUs
+		final Set<HUKey> huKeys = new HashSet<>(getHUEditorModel().getSelectedHUKeys());
+		for (final Iterator<HUKey> huKeysIterator = huKeys.iterator(); huKeysIterator.hasNext();)
+		{
+			final HUKey huKey = huKeysIterator.next();
+			final I_M_HU hu = huKey.getM_HU();
+
+			// Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+			if (handlingUnitsBL.isPureVirtual(hu))
+			{
+				huKeysIterator.remove();
+				continue;
+			}
+		}
+		if (Check.isEmpty(huKeys))
+		{
+			throw new TerminalException("@NoSelection@");
+		}
+
+		//
+		// create our list of HUs to pass to the API service
+		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
+		for (final HUKey huKey : huKeys)
+		{
+			final I_M_HU hu = huKey.getM_HU();
+			hus.add(hu);
+
+			// guard: verify the the HU's current warehouse matches the selected warehouseFrom
+			if (warehouseFrom != null)
+			{
+				final int huWarehouseID = hu.getM_Locator().getM_Warehouse_ID();
+				Check.errorUnless(huWarehouseID == warehouseFrom.getM_Warehouse_ID(),
+						"The selected HU {} has a M_Locator {} with M_Warehouse_ID {} which is != the M_Warehouse_ID {} of warehouse {}",
+						hu, hu.getM_Locator(), huWarehouseID, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
+			}
+		}
+		
+		return hus;
+	}
+
 }
