@@ -27,6 +27,7 @@ Here come the actual release notes:
   * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
+  * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
   
 ## Fixes
 * metasfresh-backend
