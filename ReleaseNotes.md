@@ -35,6 +35,7 @@ Here come the actual release notes:
     * Adjustment of the document line description field now defining boundaries for the field content on the generated Jasper Documents making the content better readable.
   * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
     * Manintenance of Jasper Document SQL. Removing legace SQL thats not needed anymore.
+  * [#1244](https://github.com/metasfresh/metasfresh/issues/1244) Shipment Schedule's QtyDeliveredTU is not updated correctly
   * [#1260](https://github.com/metasfresh/metasfresh/issues/1260) DocumentNo not generated for manual invoices in WebUI
     * Adding a minor fix to the customer Invoice Window in WebUI, that prevented the creation of manual Invoices for customers.
   * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) https://github.com/metasfresh/metasfresh/issues/1263
