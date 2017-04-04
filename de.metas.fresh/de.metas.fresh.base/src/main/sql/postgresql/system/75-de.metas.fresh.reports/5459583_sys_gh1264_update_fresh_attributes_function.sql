@@ -1,4 +1,4 @@
--- View: Report.fresh_Attributes
+﻿-- View: Report.fresh_Attributes
 
 -- DROP VIEW IF EXISTS Report.fresh_Attributes;
 
