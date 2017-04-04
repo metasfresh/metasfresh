@@ -67,7 +67,6 @@ public class HUPPOrderReceiptHUEditorModel extends HUEditorModel
 	//
 	// Parameters
 	private final I_PP_Order ppOrder;
-
 	private final List<I_PP_Order_BOMLine> ppOrderBOMLines;
 
 	/**
@@ -158,17 +157,12 @@ public class HUPPOrderReceiptHUEditorModel extends HUEditorModel
 		return ppOrder;
 	}
 
-	public List<I_PP_Order_BOMLine> getOrderBomLines()
-	{
-		return ppOrderBOMLines;
-	}
-
 	public CUKey getCUKey()
 	{
 		return cuKey;
 	}
 
-	public void doMoveForwardSelectedHUs()
+	private void doMoveForwardSelectedHUs()
 	{
 		final I_PP_Order ppOrder = getPP_Order();
 		final I_M_Product product = ppOrder.getM_Product();

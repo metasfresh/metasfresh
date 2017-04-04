@@ -49,7 +49,7 @@ import de.metas.logging.LogManager;
 /**
  * Processes given {@link I_PP_Order_Qty}.
  *
- * By default, {@link #process()} will process each record in it's own transaction/savepoint.
+ * By default, {@link #process()} will process each candidate in it's own transaction/savepoint.
  *
  * Processing one {@link I_PP_Order_Qty} means:
  * <ul>
@@ -62,25 +62,25 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class HUPPOrderQtyProcessor
+public class HUPPOrderIssueReceiptCandidatesProcessor
 {
-	public static final HUPPOrderQtyProcessor newInstance()
+	public static final HUPPOrderIssueReceiptCandidatesProcessor newInstance()
 	{
-		return new HUPPOrderQtyProcessor();
+		return new HUPPOrderIssueReceiptCandidatesProcessor();
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(HUPPOrderQtyProcessor.class);
+	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
-	private static final Supplier<List<I_PP_Order_Qty>> RecordsToProcessSupplier_NONE = () -> ImmutableList.of();
-	private Supplier<List<I_PP_Order_Qty>> recordsToProcessSupplier = RecordsToProcessSupplier_NONE;
+	private static final Supplier<List<I_PP_Order_Qty>> CandidatesToProcessSupplier_NONE = () -> ImmutableList.of();
+	private Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier = CandidatesToProcessSupplier_NONE;
 	
-	private HUPPOrderQtyProcessor()
+	private HUPPOrderIssueReceiptCandidatesProcessor()
 	{
 	}
 
@@ -88,97 +88,97 @@ public class HUPPOrderQtyProcessor
 	{
 		trxItemProcessorService.<I_PP_Order_Qty, Void> createExecutor()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setProcessor(this::processRecord)
-				.process(getRecordsToProcess().iterator());
+				.setProcessor(this::processCandidate)
+				.process(getCandidatesToProcess().iterator());
 	}
 
-	private void processRecord(final I_PP_Order_Qty record)
+	private void processCandidate(final I_PP_Order_Qty candidate)
 	{
-		if (record.isProcessed())
+		if (candidate.isProcessed())
 		{
-			logger.debug("Skip processing {} because it was already processed", record);
+			logger.debug("Skip processing {} because it was already processed", candidate);
 			return;
 		}
 
-		InterfaceWrapperHelper.setThreadInheritedTrxName(record); // just to be sure
+		InterfaceWrapperHelper.setThreadInheritedTrxName(candidate); // just to be sure
 
-		if (isMaterialReceipt(record))
+		if (isMaterialReceipt(candidate))
 		{
-			processMaterialReceipt(record);
+			processReceiptCandidate(candidate);
 		}
 		else
 		{
-			processMaterialIssue(record);
+			processIssueCandidate(candidate);
 		}
 	}
 
-	private boolean isMaterialReceipt(final I_PP_Order_Qty record)
+	private boolean isMaterialReceipt(final I_PP_Order_Qty candidate)
 	{
-		final I_PP_Order_BOMLine ppOrderBOMLine = record.getPP_Order_BOMLine();
+		final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getPP_Order_BOMLine();
 		return ppOrderBOMLine == null || ppOrderBOMBL.isReceipt(ppOrderBOMLine);
 	}
 
-	private void processMaterialReceipt(final I_PP_Order_Qty record)
+	private void processReceiptCandidate(final I_PP_Order_Qty candidate)
 	{
-		final I_M_HU hu = record.getM_HU();
-		Preconditions.checkNotNull(hu, "No HU for %s", record);
+		final I_M_HU hu = candidate.getM_HU();
+		Preconditions.checkNotNull(hu, "No HU for %s", candidate);
 
 		//
 		// Create material receipt and activate the HU
-		final IReceiptCostCollectorCandidate candidate = ReceiptCostCollectorCandidate.builder()
-				.PP_Order(record.getPP_Order())
-				.PP_Order_BOMLine(record.getPP_Order_BOMLine())
-				.movementDate(record.getMovementDate())
-				.qtyToReceive(record.getQty())
-				.M_Product(record.getM_Product())
-				.C_UOM(record.getC_UOM())
-				.M_Locator_ID(record.getM_Locator_ID())
+		final IReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
+				.PP_Order(candidate.getPP_Order())
+				.PP_Order_BOMLine(candidate.getPP_Order_BOMLine())
+				.movementDate(candidate.getMovementDate())
+				.qtyToReceive(candidate.getQty())
+				.M_Product(candidate.getM_Product())
+				.C_UOM(candidate.getC_UOM())
+				.M_Locator_ID(candidate.getM_Locator_ID())
 				.build();
-		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(candidate, hu);
+		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);
 
 		//
 		// Update the (planning) qty record
-		record.setPP_Cost_Collector(cc);
-		record.setProcessed(true);
-		InterfaceWrapperHelper.save(record);
+		candidate.setPP_Cost_Collector(cc);
+		candidate.setProcessed(true);
+		InterfaceWrapperHelper.save(candidate);
 	}
 
-	private void processMaterialIssue(final I_PP_Order_Qty record)
+	private void processIssueCandidate(final I_PP_Order_Qty candidates)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
-	public HUPPOrderQtyProcessor setRecordsToProcess(final Supplier<List<I_PP_Order_Qty>> recordsToProcessSupplier)
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
 	{
-		Preconditions.checkNotNull(recordsToProcessSupplier, "recordsToProcessSupplier");
-		this.recordsToProcessSupplier = recordsToProcessSupplier;
+		Preconditions.checkNotNull(candidatesToProcessSupplier, "candidatesToProcessSupplier");
+		this.candidatesToProcessSupplier = candidatesToProcessSupplier;
 		return this;
 	}
 
-	public HUPPOrderQtyProcessor setRecordsToProcess(final List<I_PP_Order_Qty> recordsToProcess)
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final List<I_PP_Order_Qty> candidatesToProcess)
 	{
-		Preconditions.checkNotNull(recordsToProcess, "recordsToProcess");
-		if (recordsToProcess.isEmpty())
+		Preconditions.checkNotNull(candidatesToProcess, "candidatesToProcess");
+		if (candidatesToProcess.isEmpty())
 		{
-			setRecordsToProcess(RecordsToProcessSupplier_NONE);
+			setCandidatesToProcess(CandidatesToProcessSupplier_NONE);
 		}
 		else
 		{
-			setRecordsToProcess(() -> recordsToProcess);
+			setCandidatesToProcess(() -> candidatesToProcess);
 		}
 		return this;
 	}
 
-	public HUPPOrderQtyProcessor setRecordsToProcessByPPOrderId(final int ppOrderId, final Collection<Integer> ppOrderQtyIds)
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId, final Collection<Integer> ppOrderQtyIds)
 	{
 		if (ppOrderQtyIds == null || ppOrderQtyIds.isEmpty())
 		{
-			setRecordsToProcess(RecordsToProcessSupplier_NONE);
+			setCandidatesToProcess(CandidatesToProcessSupplier_NONE);
 		}
 		else
 		{
-			setRecordsToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+			setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
 					.stream()
 					.filter(candidate -> !candidate.isProcessed()) // not already processed
 					.filter(candidate -> ppOrderQtyIds.contains(candidate.getPP_Order_Qty_ID())) // matching the IDs list
@@ -188,8 +188,8 @@ public class HUPPOrderQtyProcessor
 		return this;
 	}
 
-	private List<I_PP_Order_Qty> getRecordsToProcess()
+	private List<I_PP_Order_Qty> getCandidatesToProcess()
 	{
-		return recordsToProcessSupplier.get();
+		return candidatesToProcessSupplier.get();
 	}
 }

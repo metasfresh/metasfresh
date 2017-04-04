@@ -120,7 +120,7 @@ import lombok.Data;
 	}
 
 	@Override
-	public final List<I_M_HU> receiveHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
+	public final List<I_M_HU> createPlanningHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
 	{
 		return trxManager.call(() -> createHUsInTrx(qtyToReceive, uom));
 	}

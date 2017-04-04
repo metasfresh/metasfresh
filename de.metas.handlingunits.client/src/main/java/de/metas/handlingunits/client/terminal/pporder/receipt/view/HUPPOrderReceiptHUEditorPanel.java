@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
-import org.eevolution.api.IDDOrderBL;
 
 import com.google.common.collect.ImmutableList;
 
@@ -18,7 +17,7 @@ import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
 import de.metas.handlingunits.client.terminal.pporder.receipt.model.HUPPOrderReceiptCUKey;
 import de.metas.handlingunits.client.terminal.pporder.receipt.model.HUPPOrderReceiptHUEditorModel;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.pporder.api.HUPPOrderQtyProcessor;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 
 public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
@@ -52,11 +51,12 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 		// get the selected cuKey
 		final CUKey cuKey = model.getCUKey();
 
-		if (!(cuKey instanceof HUPPOrderReceiptCUKey))
-		{
-			model.doMoveForwardSelectedHUs();
-			return;
-		}
+		// TODO: decide to delete following because not needed and will be implemented differently
+//		if (!(cuKey instanceof HUPPOrderReceiptCUKey))
+//		{
+//			model.doMoveForwardSelectedHUs();
+//			return;
+//		}
 
 		final HUPPOrderReceiptCUKey orderReceiptCUKey = (HUPPOrderReceiptCUKey)cuKey;
 
@@ -65,11 +65,16 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 			{
 				final I_M_HU selectedHU = huKey.getM_HU();
 
+				//
+				// Create receipt candidates for our already existing planning HU
 				final IPPOrderReceiptHUProducer producer = orderReceiptCUKey.createReceiptCandidatesProducer();
 				producer.createReceiptCandidatesFromPlanningHU(selectedHU);
 
-				HUPPOrderQtyProcessor.newInstance()
-						.setRecordsToProcess(producer.getCreatedCandidates())
+				//
+				// Process the receipt candidates we just created
+				// => HU will be activated, a receipt cost collector will be generated, 
+				HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+						.setCandidatesToProcess(producer.getCreatedCandidates())
 						.process();
 			}
 		});
@@ -78,7 +83,8 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 		// Complete forward DD Order if exists.
 		// We need to do this after first MO receipt, to allow the Bereitsteller to move the materials forward.
 		// task 07395
-		Services.get(IDDOrderBL.class).completeForwardDDOrdersIfNeeded(model.getPP_Order());
+		// TODO: decide to delete following because not needed and will be implemented differently
+//		Services.get(IDDOrderBL.class).completeForwardDDOrdersIfNeeded(model.getPP_Order());
 	}
 
 	@Override
