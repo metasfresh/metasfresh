@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.pporder.receipt.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +66,7 @@ public class HUPPOrderReceiptHUEditorModel extends HUEditorModel
 	//
 	// Parameters
 	private final I_PP_Order ppOrder;
-	private final List<I_PP_Order_BOMLine> ppOrderBOMLines;
+	// private final List<I_PP_Order_BOMLine> ppOrderBOMLines;
 
 	/**
 	 * This indicates the selected cuKey (in case there is any)
@@ -93,7 +92,7 @@ public class HUPPOrderReceiptHUEditorModel extends HUEditorModel
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		this.ppOrder = ppOrder;
 
-		this.ppOrderBOMLines = ppOrderBOMLines;
+		// this.ppOrderBOMLines = ppOrderBOMLines;
 
 		// The selected cuKey shall be propagated for further processing
 
