@@ -154,6 +154,11 @@ public class MFSession
 		return sessionPO.getRemote_Addr();
 	}
 
+	public String getRemote_Host()
+	{
+		return sessionPO.getRemote_Addr();
+	}
+	
 	public void setRemote_Addr(final String remoteAddr, final String remoteHost)
 	{
 		sessionPO.setRemote_Addr(remoteAddr);
