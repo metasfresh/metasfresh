@@ -54,11 +54,11 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
-	private List<I_M_HU> createdHUs = new ArrayList<I_M_HU>();
+	private List<I_M_HU> createdPlanningHUs = new ArrayList<I_M_HU>();
 
-	public List<I_M_HU> getCreatedHUs()
+	public List<I_M_HU> getCreatedPlanningHUs()
 	{
-		return createdHUs;
+		return createdPlanningHUs;
 	}
 
 	public HUPPOrderReceiptModel(final ITerminalContext terminalContext)
@@ -194,7 +194,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 		//
 		// Receive new HUs, update their attributes, and automatically assign them to PP_Order/PP_Order_BOMLine
 		final IPPOrderReceiptHUProducer producer = productKey.createReceiptCandidatesProducer();
-		createdHUs = producer.createReceiptCandidatesAndPlanningHUs(qtyToReceive, qtyToReceiveUOM);
+		createdPlanningHUs = producer.createReceiptCandidatesAndPlanningHUs(qtyToReceive, qtyToReceiveUOM);
 	}
 
 }

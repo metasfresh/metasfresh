@@ -565,7 +565,7 @@ public class HUIssuePanel implements IHUSelectPanel
 		Check.assumeInstanceOf(selectedKey, ManufacturingOrderKey.class, "selectedKey");
 		final ManufacturingOrderKey manufacturingOrderKey = (ManufacturingOrderKey)selectedKey;
 
-		final List<I_M_HU> hus;
+		final List<I_M_HU> planningHUs;
 		final CUKey cuKey;
 
 		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
@@ -589,7 +589,7 @@ public class HUIssuePanel implements IHUSelectPanel
 
 			model.loadOrderBOMLineKeyLayout();
 
-			hus = receiptModel.getCreatedHUs();
+			planningHUs = receiptModel.getCreatedPlanningHUs();
 			cuKey = receiptModel.getSelectedCUKey();
 		}
 		//
@@ -598,12 +598,12 @@ public class HUIssuePanel implements IHUSelectPanel
 
 		// 08077
 		// We must associate the HUs with the transaction None because their original transaction is no more
-		hus.stream().forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None));
+		planningHUs.stream().forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None));
 
-		doReceiptHUEditor(hus, cuKey);
+		doReceiptHUEditor(planningHUs, cuKey);
 
 		// after receipt
-		afterReceipt(hus);
+		afterReceipt(planningHUs);
 
 		model.refreshAfterReceipt();
 	}
@@ -630,7 +630,7 @@ public class HUIssuePanel implements IHUSelectPanel
 	/**
 	 * Open HUEditor on Receipt warehouse letting the user to do further editing and move the HUs forward through DD Order Line.
 	 */
-	private void doReceiptHUEditor(final List<I_M_HU> hus, final CUKey cuKey)
+	private void doReceiptHUEditor(final List<I_M_HU> planningHUs, final CUKey cuKey)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
 
@@ -648,7 +648,7 @@ public class HUIssuePanel implements IHUSelectPanel
 
 			// We don't want any document line for the HUKeys
 			final IHUDocumentLine nullDocumentLine = null;
-			final List<IHUKey> huKeys = keyFactory.createKeys(hus, nullDocumentLine);
+			final List<IHUKey> huKeys = keyFactory.createKeys(planningHUs, nullDocumentLine);
 			rootHUKey.addChildren(huKeys);
 
 			//
