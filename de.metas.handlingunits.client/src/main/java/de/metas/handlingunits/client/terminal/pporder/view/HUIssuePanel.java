@@ -104,7 +104,6 @@ public class HUIssuePanel implements IHUSelectPanel
 
 	public static final String PROPERTY_Disposed = "Disposed";
 	public static final String ACTION_Receipt = "de.metas.handlingunits.client.ACTION_Receipt";
-	public static final String ACTION_Receipt_HUEditor = "de.metas.handlingunits.client.ACTION_Receipt_HUEditor";
 	public static final String ACTION_DDOrderPanel = "ACTION_DDOrderPanel";
 	public static final String ACTION_ClosePPOrder = "de.metas.handlingunits.client.ACTION_ClosePPOrder";
 	public static final String ACTION_Issue = "de.metas.handlingunits.client.ACTION_Issue";
@@ -118,7 +117,6 @@ public class HUIssuePanel implements IHUSelectPanel
 	private ITerminalButton ddOrderButton;
 	private ITerminalButton issueOrderButton;
 	private ITerminalButton receiptOrderButton;
-	private ITerminalButton receiptHUEditorButton;
 	private ITerminalButton closeOrderBUtton;
 	private ITerminalLabel detailsLabel;
 
@@ -195,12 +193,10 @@ public class HUIssuePanel implements IHUSelectPanel
 		ddOrderButton = confirmPanel.addButton(HUIssuePanel.ACTION_DDOrderPanel);
 		issueOrderButton = confirmPanel.addButton(ACTION_Issue);
 		receiptOrderButton = confirmPanel.addButton(HUIssuePanel.ACTION_Receipt);
-		receiptHUEditorButton = confirmPanel.addButton(HUIssuePanel.ACTION_Receipt_HUEditor);
 		closeOrderBUtton = confirmPanel.addButton(ACTION_ClosePPOrder);
 		ddOrderButton.setEnabled(false);
 		issueOrderButton.setEnabled(false);
 		receiptOrderButton.setEnabled(false);
-		receiptHUEditorButton.setEnabled(false);
 		closeOrderBUtton.setEnabled(false);
 
 		//
@@ -244,10 +240,6 @@ public class HUIssuePanel implements IHUSelectPanel
 					model.loadOrderBOMLineKeyLayout();
 
 				}
-				else if (HUIssuePanel.ACTION_Receipt_HUEditor.equals(action))
-				{
-					doReceiptHUEditor();
-				}
 				else if (HUIssuePanel.ACTION_ClosePPOrder.equals(action))
 				{
 					model.closeSelectedOrder();
@@ -278,7 +270,6 @@ public class HUIssuePanel implements IHUSelectPanel
 		ddOrderButton.setEnabled(enabled);
 		issueOrderButton.setEnabled(enabled);
 		receiptOrderButton.setEnabled(enabled);
-		receiptHUEditorButton.setEnabled(enabled);
 		closeOrderBUtton.setEnabled(enabled);
 
 		updateDetailsLabels();
@@ -653,32 +644,8 @@ public class HUIssuePanel implements IHUSelectPanel
 
 			//
 			// Create HU Editor Model
-
-			// we don't need the already existing HUs to be loaded because we only want the ones to be created according with the lu tu configuration
-			final boolean loadHUs = false;
-			final HUPPOrderReceiptHUEditorModel editorModel = model.createReceiptHUEditorModel(cuKey, loadHUs);
+			final HUPPOrderReceiptHUEditorModel editorModel = model.createReceiptHUEditorModel(cuKey);
 			editorModel.setRootHUKey(rootHUKey);
-			final HUPPOrderReceiptHUEditorPanel editorPanel = new HUPPOrderReceiptHUEditorPanel(editorModel);
-
-			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel);
-			editorDialog.setSize(getTerminalContext().getScreenResolution());
-
-			// Activate editor dialog
-			editorDialog.activate();
-		}
-	}
-
-	private void doReceiptHUEditor()
-	{
-		// we don't have a certain cuKey selected so we will pass null
-		final CUKey cuKey = null;
-
-		// we want the already existing HUs to be all loaded.
-		final boolean loadHUs = true;
-
-		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
-		{
-			final HUPPOrderReceiptHUEditorModel editorModel = model.createReceiptHUEditorModel(cuKey, loadHUs);
 			final HUPPOrderReceiptHUEditorPanel editorPanel = new HUPPOrderReceiptHUEditorPanel(editorModel);
 
 			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel);

@@ -417,14 +417,11 @@ public class HUIssueModel implements IDisposable
 	 * @param loadHUs true if we need the already existing HUs to be loaded, flase otherwise
 	 * @return
 	 */
-	public HUPPOrderReceiptHUEditorModel createReceiptHUEditorModel(final CUKey cuKey, final boolean loadHUs)
+	public HUPPOrderReceiptHUEditorModel createReceiptHUEditorModel(final CUKey cuKey)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
-
 		final I_PP_Order ppOrder = getSelectedOrder();
-		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getPP_Order_BOMLines();
-
-		final HUPPOrderReceiptHUEditorModel editorModel = new HUPPOrderReceiptHUEditorModel(terminalContext, ppOrder, ppOrderBOMLines, cuKey, loadHUs);
+		final HUPPOrderReceiptHUEditorModel editorModel = new HUPPOrderReceiptHUEditorModel(terminalContext, ppOrder, cuKey);
 
 		return editorModel;
 	}
