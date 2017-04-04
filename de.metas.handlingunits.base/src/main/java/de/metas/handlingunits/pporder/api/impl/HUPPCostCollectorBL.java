@@ -25,7 +25,6 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -38,12 +37,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 
@@ -57,7 +54,6 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 
 		// services
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
@@ -69,24 +65,7 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 
 		//
 		// Activate the HU (assuming it was Planning)
-		huTrxBL.process(huContext -> {
-			final boolean isPhysicalHU = handlingUnitsBL.isPhysicalHU(hu.getHUStatus());
-			if (isPhysicalHU)
-			{
-				// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
-				// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
-				// ... but when you get to verteilung the boxes are already there
-				return;
-			}
-
-			handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
-
-			//
-			// Ask the API to get the packing materials needed to the HU which we just activate it
-			// TODO: i think we can remove this part because it's done automatically ?!
-			huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
-		});
+		handlingUnitsBL.setHUStatusActive(ImmutableList.of(hu));
 
 		return cc;
 	}
