@@ -33,6 +33,10 @@ import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.allocation.IAllocationResult;
 
+/**
+ * @deprecated TODO: scheduled to be deleted because we shall register some IHUTrxListener specific for each use-case.
+ */
+@Deprecated
 public final class PPOrderBOMLineHUTrxListener implements IHUTrxListener
 {
 	public static final PPOrderBOMLineHUTrxListener instance = new PPOrderBOMLineHUTrxListener();
