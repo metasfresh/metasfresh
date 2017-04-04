@@ -60,7 +60,6 @@ public class HUPPOrderReceiptHUEditorModel extends HUEditorModel
 {
 	//
 	// Services
-	// private final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -153,6 +152,7 @@ public class HUPPOrderReceiptHUEditorModel extends HUEditorModel
 		setRootHUKey(rootHUKey);
 	}
 
+	/** @return PP_Order; never returns null */
 	public I_PP_Order getPP_Order()
 	{
 		return ppOrder;
