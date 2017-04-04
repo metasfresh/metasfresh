@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
@@ -37,6 +38,9 @@ import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 
 public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base
 {
+	// services
+	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -74,29 +78,39 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 				.copyToNew(I_M_HU_LUTU_Configuration.class);
 
 		adjustLUTUConfiguration(lutuConfigurationNew, getM_ReceiptSchedule());
-		lutuConfigurationNew.setQtyLU(BigDecimal.ONE);
 
 		// NOTE: don't save it
 		return lutuConfigurationNew;
 	}
 
-	private static final void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule receiptSchedule)
+	private final void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule receiptSchedule)
 	{
-		//
-		// Adjust LU
-		lutuConfig.setQtyLU(BigDecimal.ONE);
-
-		//
-		// Adjust TU
-		// * if the standard QtyTU is less than how much is available to be received => enforce the available Qty
-		// * else always take the standard QtyTU
-		// see https://github.com/metasfresh/metasfresh-webui/issues/228
+		if(lutuConfigurationFactory.isNoLU(lutuConfig))
 		{
-			final BigDecimal qtyToMoveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(receiptSchedule);
-
-			if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
+			//
+			// Adjust TU
+			lutuConfig.setIsInfiniteQtyTU(false);
+			lutuConfig.setQtyTU(BigDecimal.ONE);
+		}
+		else
+		{
+			//
+			// Adjust LU
+			lutuConfig.setIsInfiniteQtyLU(false);
+			lutuConfig.setQtyLU(BigDecimal.ONE);
+	
+			//
+			// Adjust TU
+			// * if the standard QtyTU is less than how much is available to be received => enforce the available Qty
+			// * else always take the standard QtyTU
+			// see https://github.com/metasfresh/metasfresh-webui/issues/228
 			{
-				lutuConfig.setQtyTU(qtyToMoveTU);
+				final BigDecimal qtyToMoveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(receiptSchedule);
+	
+				if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
+				{
+					lutuConfig.setQtyTU(qtyToMoveTU);
+				}
 			}
 		}
 	}
