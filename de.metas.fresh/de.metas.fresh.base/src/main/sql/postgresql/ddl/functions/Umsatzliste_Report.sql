@@ -80,7 +80,7 @@ FROM
 				SELECT 	
 					fa.M_Product_ID, fa.C_Period_ID, fa.C_BPartner_ID,
 					CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct,
-					il.M_AttributeSetInstance_ID, fa.ad_org_id
+					il.M_AttributeSetInstance_ID, fa.ad_org_id, fa.AD_Client_ID
 					 
 				FROM 	
 					Fact_Acct fa 
@@ -122,7 +122,7 @@ FROM
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
 			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID  
-				AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y') AND pr.isActive = 'Y'
+				AND pr.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', fa.AD_Client_ID, fa.AD_Org_ID) AND pr.isActive = 'Y'
 			INNER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 
 			LEFT OUTER JOIN	(

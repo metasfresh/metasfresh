@@ -217,7 +217,7 @@ FROM
 			AND ( CASE WHEN $6 IS NULL THEN TRUE ELSE p.M_Product_ID = $6 END )
 			AND ( CASE WHEN $7 IS NULL THEN TRUE ELSE p.M_Product_Category_ID = $7 END 
 				-- It was a requirement to not have HU Packing material within the sums of the Statistics reports 
-				AND p.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+				AND p.M_Product_Category_ID !=  getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
 			)
 			AND ( 
 				-- If the given attribute set instance has values set... 
