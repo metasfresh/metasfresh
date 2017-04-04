@@ -27,8 +27,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationLoadTests;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
@@ -92,8 +94,6 @@ public class HUTransferServiceTests
 				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 		assertThat(newCUs.size(), is(0));
 	}
-
-
 
 	/**
 	 * Tests {@link HUTransferService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
@@ -217,7 +217,7 @@ public class HUTransferServiceTests
 	public void testAggregateCU_To_NewTUs_1Tomato(
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
-		final I_M_HU cuToSplit = mkAggregateCUToSplit("80"); // match the IFCOs capacity
+		final I_M_HU cuToSplit = mkAggregateCUToSplit("80");
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
@@ -786,7 +786,6 @@ public class HUTransferServiceTests
 		final I_M_HU cu1 = mkRealCUWithTUToSplit("2");
 		final I_M_HU existingTU = handlingUnitsDAO.retrieveParent(cu1);
 
-
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
@@ -825,7 +824,6 @@ public class HUTransferServiceTests
 		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
-
 
 		HUTransferService.get(data.helper.getHUContext())
 				.cuToExistingTU(cu2, four, tuWithMixedCUs);
@@ -901,5 +899,57 @@ public class HUTransferServiceTests
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()));
 
 		return cuToSplit;
+	}
+
+	/**
+	 * Verifies the splitting off an aggregate HU with a non-int storage value.
+	 * If this test shows problems, also see {@link LUTUProducerDestinationLoadTests#testAggregateSingleLUFullyLoaded_non_int()}.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1237, but this even worked before the issue came up.
+	 * 
+	 */
+	@Theory
+	public void testAggregateSingleLUFullyLoaded_non_int(@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		// create a special hu pi item that says "on LU can hold 20 IFCOs"
+		final I_M_HU_PI_Item piLU_Item_20_IFCO = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"));
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUPI(data.piLU);
+		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
+		lutuProducer.setTUPI(data.piTU_IFCO);
+		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+
+		// load the tomatoes into HUs
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
+		assertThat(lutuProducer.getCreatedHUs().size(), is(1));
+		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
+
+		final List<I_M_HU> aggregateTUs = handlingUnitsDAO.retrieveIncludedHUs(createdLU);
+		assertThat(aggregateTUs.size(), is(1));
+		final I_M_HU aggregateTU = aggregateTUs.get(0);
+		assertThat(handlingUnitsBL.isAggregateHU(aggregateTU), is(true));
+
+		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
+				.tuToNewTUs(aggregateTU, BigDecimal.ONE, isOwnPackingMaterials);
+		assertThat(newTUs.size(), is(1));
+		final I_M_HU newTU = newTUs.get(0);
+		//data.helper.commitAndDumpHU(newTU);
+		
+		final Node newTuXML = HUXmlConverter.toXml(newTU);
+		assertThat(newTuXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("5.470")));
+		
+		// the original aggregate HU is still intact, it just represents one less TU
+		
+		final Node createdLuXML = HUXmlConverter.toXml(createdLU);
+
+		// there shall still be no "real" HU
+		assertThat(createdLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU'])", is("0")));
+
+		// the aggregate HU shall contain the full remaining quantity and represent 19 IFCOs; 5.47 x 19 = 103,93
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("103.930")));
+
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@Qty)", is("19")));
+		assertThat(createdLuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("103.930")));
 	}
 }
