@@ -38,7 +38,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 
-import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
@@ -46,21 +45,12 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
-import de.metas.handlingunits.pporder.api.impl.PPOrderHUAssignmentListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 
 @Validator(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
 {
-
-	@Init
-	public void init()
-	{
-		Services.get(IHUAssignmentBL.class)
-				.registerHUAssignmentListener(PPOrderHUAssignmentListener.instance);
-	}
-
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseCostCollector(final I_PP_Cost_Collector cc)
 	{
