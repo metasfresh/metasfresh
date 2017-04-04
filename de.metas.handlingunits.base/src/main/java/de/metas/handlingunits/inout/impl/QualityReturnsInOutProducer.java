@@ -18,6 +18,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
@@ -73,7 +74,7 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 	/**
 	 * Builder for packing material lines
 	 */
-	private final EmptiesInOutLinesBuilder packingMaterialInoutLinesBuilder = EmptiesInOutLinesBuilder.newBuilder(inoutRef);
+	private final EmptiesInOutLinesProducer packingMaterialInoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
 
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

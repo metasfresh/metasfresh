@@ -62,10 +62,10 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private Properties _ctx;
 	protected boolean executed = false;
 
-	private I_C_BPartner _bpartner = null;
-	private int _bpartnerLocationId = -1;
-	private String _movementType = null;
-	private I_M_Warehouse _warehouse = null;
+	protected I_C_BPartner _bpartner = null;
+	protected int _bpartnerLocationId = -1;
+	protected String _movementType = null;
+	protected I_M_Warehouse _warehouse = null;
 	private Date _movementDate = null;
 	private boolean _complete = true;
 
@@ -314,7 +314,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return this;
 	}
 
-	private final Timestamp getMovementDateToUse()
+	protected final Timestamp getMovementDateToUse()
 	{
 		if (_movementDate != null)
 		{
@@ -334,7 +334,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return this;
 	}
 
-	private I_C_Order getC_Order()
+	protected I_C_Order getC_Order()
 	{
 		return _order;
 	}
@@ -346,7 +346,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return this;
 	}
 
-	private boolean isComplete()
+	protected boolean isComplete()
 	{
 		return _complete;
 	}
