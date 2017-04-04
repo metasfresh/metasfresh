@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBOMBL;
@@ -71,15 +71,15 @@ public class HUPPOrderQtyProcessor
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderQtyProcessor.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 	private static final Supplier<List<I_PP_Order_Qty>> RecordsToProcessSupplier_NONE = () -> ImmutableList.of();
 	private Supplier<List<I_PP_Order_Qty>> recordsToProcessSupplier = RecordsToProcessSupplier_NONE;
-
+	
 	private HUPPOrderQtyProcessor()
 	{
 	}
@@ -156,7 +156,21 @@ public class HUPPOrderQtyProcessor
 		return this;
 	}
 
-	public HUPPOrderQtyProcessor setRecordsToProcessByPPOrderQtyId(final Collection<Integer> ppOrderQtyIds)
+	public HUPPOrderQtyProcessor setRecordsToProcess(final List<I_PP_Order_Qty> recordsToProcess)
+	{
+		Preconditions.checkNotNull(recordsToProcess, "recordsToProcess");
+		if (recordsToProcess.isEmpty())
+		{
+			setRecordsToProcess(RecordsToProcessSupplier_NONE);
+		}
+		else
+		{
+			setRecordsToProcess(() -> recordsToProcess);
+		}
+		return this;
+	}
+
+	public HUPPOrderQtyProcessor setRecordsToProcessByPPOrderId(final int ppOrderId, final Collection<Integer> ppOrderQtyIds)
 	{
 		if (ppOrderQtyIds == null || ppOrderQtyIds.isEmpty())
 		{
@@ -164,12 +178,11 @@ public class HUPPOrderQtyProcessor
 		}
 		else
 		{
-			setRecordsToProcess(() -> queryBL.createQueryBuilder(I_PP_Order_Qty.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-					.addInArrayFilter(I_PP_Order_Qty.COLUMN_PP_Order_Qty_ID, ppOrderQtyIds)
-					.addEqualsFilter(I_PP_Order_Qty.COLUMN_Processed, false) // not already processed
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.listImmutable(I_PP_Order_Qty.class));
+			setRecordsToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+					.stream()
+					.filter(candidate -> !candidate.isProcessed()) // not already processed
+					.filter(candidate -> ppOrderQtyIds.contains(candidate.getPP_Order_Qty_ID())) // matching the IDs list
+					.collect(GuavaCollectors.toImmutableList()));
 		}
 
 		return this;
