@@ -59,21 +59,29 @@ public class HostKeyConfig
 		Services.registerService(IHttpSessionProvider.class, new SpringHttpSessionProvider());
 
 		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final IHostKeyStorage hostKeyStorageImpl;
+		// when this method is called, there is not DB connection yet.
+		// so provide the storage implementation as a supplier when it's actually needed and when (hopefully)
+		// the system is ready
+		hostKeyBL.setHostKeyStorage(() -> {
 
-		final String hostKeyStorage = sysConfigBL.getValue(PRINTING_WEBUI_HOST_KEY_STORAGE_MODE, "cookies");
-		if (hostKeyStorage.toLowerCase().startsWith("cookie".toLowerCase()))
-		{
-			hostKeyStorageImpl = new HttpCookieHostKeyStorage();
-		}
-		else
-		{
-			// https://github.com/metasfresh/metasfresh/issues/1274
-			hostKeyStorageImpl = new SessionRemoteHostStorage();
-		}
-		hostKeyBL.setHostKeyStorage(hostKeyStorageImpl);
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+			final IHostKeyStorage hostKeyStorageImpl;
+
+			final String hostKeyStorage = sysConfigBL.getValue(PRINTING_WEBUI_HOST_KEY_STORAGE_MODE, "cookies");
+			if (hostKeyStorage.toLowerCase().startsWith("cookie".toLowerCase()))
+			{
+				hostKeyStorageImpl = new HttpCookieHostKeyStorage();
+			}
+			else
+			{
+				// https://github.com/metasfresh/metasfresh/issues/1274
+				hostKeyStorageImpl = new SessionRemoteHostStorage();
+			}
+
+			return hostKeyStorageImpl;
+		});
 	}
 
 	private static final class SpringHttpSessionProvider implements IHttpSessionProvider
