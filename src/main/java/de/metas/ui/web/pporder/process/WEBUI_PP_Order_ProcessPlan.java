@@ -57,12 +57,13 @@ public class WEBUI_PP_Order_ProcessPlan
 	@Override
 	protected String doIt() throws Exception
 	{
+		final int ppOrderId = getView().getPP_Order_ID();
 		final List<Integer> ppOrderQtyIds = streamRowsToProcess()
 				.map(row -> row.getPP_Order_Qty_ID())
 				.collect(GuavaCollectors.toImmutableList());
 
 		HUPPOrderQtyProcessor.newInstance()
-				.setRecordsToProcessByPPOrderQtyId(ppOrderQtyIds)
+				.setRecordsToProcessByPPOrderId(ppOrderId, ppOrderQtyIds)
 				.process();
 
 		getView().invalidateAll();

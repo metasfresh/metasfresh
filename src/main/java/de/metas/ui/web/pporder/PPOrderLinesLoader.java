@@ -16,6 +16,7 @@ import org.compiere.util.Util;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
@@ -75,6 +76,7 @@ public class PPOrderLinesLoader
 
 		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
 		final int ppOrderId = ListUtils.singleElement(filterOnlyIds);
+		Preconditions.checkArgument(ppOrderId > 0, "No manufacturing order ID found in %s", request);
 		this._ppOrderId = ppOrderId;
 	}
 
@@ -83,7 +85,7 @@ public class PPOrderLinesLoader
 		return _adWindowId;
 	}
 
-	private int getPP_Order_ID()
+	int getPP_Order_ID()
 	{
 		return _ppOrderId;
 	}
@@ -98,8 +100,7 @@ public class PPOrderLinesLoader
 		final int ppOrderId = getPP_Order_ID();
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_None);
 
-		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.retrieveOrderQtys(ppOrderId)
-				.stream()
+		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
 				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> Util.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), 0)));
 
 		final ImmutableList.Builder<PPOrderLineRow> records = ImmutableList.builder();

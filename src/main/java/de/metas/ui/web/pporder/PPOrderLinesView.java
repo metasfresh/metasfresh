@@ -63,9 +63,11 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 	private final String viewId;
 	private final int adWindowId;
+	private final int ppOrderId;
 
 	private final PPOrderLinesLoader loader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
+
 
 	private PPOrderLinesView(final Builder builder)
 	{
@@ -76,6 +78,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		adWindowId = builder.getAD_Window_ID();
 
 		loader = builder.getLoader();
+		ppOrderId = loader.getPP_Order_ID();
 	}
 
 	@Override
@@ -94,6 +97,11 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	public String getTableName()
 	{
 		return null; // no particular table (i.e. we have more)
+	}
+	
+	public int getPP_Order_ID()
+	{
+		return ppOrderId;
 	}
 
 	@Override
@@ -410,5 +418,4 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			return processDescriptorsFactory;
 		}
 	}
-
 }
