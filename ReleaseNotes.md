@@ -42,7 +42,7 @@ Here come the actual release notes:
   * [#1244](https://github.com/metasfresh/metasfresh/issues/1244) Shipment Schedule's QtyDeliveredTU is not updated correctly
   * [#1260](https://github.com/metasfresh/metasfresh/issues/1260) DocumentNo not generated for manual invoices in WebUI
     * Adding a minor fix to the customer Invoice Window in WebUI, that prevented the creation of manual Invoices for customers.
-  * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) https://github.com/metasfresh/metasfresh/issues/1263
+  * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) ITrxListener.afterCommit is fired twice with TrxPropagation.REQUIRES_NEW
   
 # metasfresh 5.3 (2017-13)
 
