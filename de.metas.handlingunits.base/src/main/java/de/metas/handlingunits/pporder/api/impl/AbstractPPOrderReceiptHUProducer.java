@@ -161,8 +161,7 @@ import lombok.Data;
 		// Create receipt candidates
 		ppOrderReceiptCandidateCollector
 				.streamReceiptCandidates()
-				.map(this::createReceiptCandidateFromRequest)
-				.forEach(huPPOrderQtyDAO::save);
+				.forEach(this::createReceiptCandidateFromRequest);
 
 		//
 		// Generate the HUs 
@@ -205,7 +204,7 @@ import lombok.Data;
 			huContext.getHUStorageFactory()
 					.getStorage(planningHU)
 					.getProductStorages().stream()
-					// TODO: validate if the product from storage is accepted
+					// FIXME: validate if the product from storage is accepted
 					//
 					// Create candidate request
 					.map(productStorage -> CreateReceiptCandidateRequest.builder()
@@ -216,8 +215,7 @@ import lombok.Data;
 							.addQty(productStorage.getQty(), productStorage.getC_UOM()))
 					//
 					// Create candidate from request
-					.map(this::createReceiptCandidateFromRequest)
-					.forEach(huPPOrderQtyDAO::save);
+					.forEach(this::createReceiptCandidateFromRequest);
 
 			//
 			updateReceivedHUs(ImmutableSet.of(planningHU));
@@ -243,7 +241,7 @@ import lombok.Data;
 	 * @param request
 	 * @return candidate
 	 */
-	private I_PP_Order_Qty createReceiptCandidateFromRequest(CreateReceiptCandidateRequest request)
+	private void createReceiptCandidateFromRequest(CreateReceiptCandidateRequest request)
 	{
 		final Date movementDate = getMovementDate();
 		
@@ -258,8 +256,6 @@ import lombok.Data;
 		huPPOrderQtyDAO.save(candidate);
 		
 		createdCandidates.add(candidate);
-
-		return candidate;
 	}
 	
 	@Override
