@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.empties.impl;
 
 /*
  * #%L
@@ -23,12 +23,14 @@ package de.metas.handlingunits.inout.impl;
  */
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,18 +47,24 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.handlingunits.inout.IEmptiesInOutProducer;
+import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
+import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
+import de.metas.handlingunits.empties.IEmptiesInOutProducer;
+import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.inout.IInOutBL;
+import de.metas.logging.LogManager;
 
 /* package */class EmptiesInOutProducer implements IEmptiesInOutProducer
 {
 	//
 	// Services
+	private static final transient Logger logger = LogManager.getLogger(EmptiesInOutProducer.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
@@ -78,9 +86,9 @@ import de.metas.inout.IInOutBL;
 
 	/** InOut header reference. It will be created just when it is needed. */
 	private final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
-	private final EmptiesInOutLinesBuilder inoutLinesBuilder = EmptiesInOutLinesBuilder.newBuilder(inoutRef);
+	private final List<IPackingMaterialDocumentLineSource> sources = new ArrayList<>();
 
-	public EmptiesInOutProducer(final Properties ctx)
+	/* package */EmptiesInOutProducer(final Properties ctx)
 	{
 		super();
 
@@ -106,8 +114,32 @@ import de.metas.inout.IInOutBL;
 	@Override
 	public I_M_InOut create()
 	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(new TrxCallable<I_M_InOut>()
+		{
+
+			@Override
+			public I_M_InOut call() throws Exception
+			{
+				return createInTrx();
+			}
+			
+			@Override
+			public boolean doCatch(Throwable e) throws Throwable
+			{
+				throw e;
+			}
+		});
+	}
+	
+	private I_M_InOut createInTrx()
+	{
 		Check.assume(!executed, "inout not already created");
 		executed = true;
+		
+		final EmptiesInOutLinesProducer inoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
+		inoutLinesBuilder.addSources(sources);
+
 
 		final boolean doComplete = isComplete();
 
@@ -148,14 +180,16 @@ import de.metas.inout.IInOutBL;
 	@Override
 	public final boolean isEmpty()
 	{
-		return inoutLinesBuilder.isEmpty();
+		return sources.isEmpty();
 	}
 
 	@Override
 	public IEmptiesInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty)
 	{
 		Check.assume(!executed, "inout shall not be generated yet");
-		inoutLinesBuilder.addSource(packingMaterial, qty);
+		
+		sources.add(PlainPackingMaterialDocumentLineSource.of(packingMaterial, qty));
+		
 		return this;
 	}
 
@@ -163,7 +197,6 @@ import de.metas.inout.IInOutBL;
 	{
 		final IContextAware contextProvider = getContextProvider();
 		final Properties ctx = contextProvider.getCtx();
-		final String trxName = contextProvider.getTrxName();
 
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class, contextProvider);
 
@@ -179,28 +212,12 @@ import de.metas.inout.IInOutBL;
 			inout.setMovementType(movementType);
 			inout.setIsSOTrx(isSOTrx);
 
-			int docTypeId = -1;
-
-			// 07694: using the empties-subtype for receipts.
 			final I_C_DocType docType = getEmptiesDocType(ctx,
 					docBaseType,
 					inout.getAD_Client_ID(),
 					inout.getAD_Org_ID(),
-					isSOTrx,
-					trxName);
-			docTypeId = docType == null ? -1 : docType.getC_DocType_ID();
-
-			// If the empties doc type was not found (should not happen) fallback to the default one
-			if (docTypeId <= 0)
-			{
-				docTypeId = docTypeDAO.getDocTypeId(ctx,
-						docBaseType,
-						inout.getAD_Client_ID(),
-						inout.getAD_Org_ID(),
-						trxName);
-			}
-
-			inout.setC_DocType_ID(docTypeId);
+					isSOTrx);
+			inout.setC_DocType(docType);
 		}
 
 		//
@@ -331,22 +348,34 @@ import de.metas.inout.IInOutBL;
 		return _warehouse;
 	}
 
-	private I_C_DocType getEmptiesDocType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx, final String trxName)
+	private I_C_DocType getEmptiesDocType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx)
 	{
-		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(ctx, docBaseType, adClientId, adOrgId, trxName);
+		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(ctx, docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
+		if(docTypes == null)
+		{
+			logger.warn("No document types found for docBaseType={}, adClientId={}, adOrgId={}", docBaseType, adClientId, adOrgId);
+			return null;
+		}
 
+		//
+		// Search for specific empties shipment/receipt document sub-type (task 07694)
 		final String docSubType = isSOTrx ? X_C_DocType.DOCSUBTYPE_Leergutanlieferung : X_C_DocType.DOCSUBTYPE_Leergutausgabe;
-
 		for (final I_C_DocType docType : docTypes)
 		{
 			final String subType = docType.getDocSubType();
-
 			if (docSubType.equals(subType))
 			{
 				return docType;
 			}
 		}
-		return null;
+		
+		//
+		// If the empties doc type was not found (should not happen) fallback to the default one
+		{
+			final I_C_DocType defaultDocType = docTypes.get(0);
+			logger.warn("No empties document type found for docBaseType={}, docSubType={}, adClientId={}, adOrgId={}. Using fallback docType={}", docBaseType, docSubType, adClientId, adOrgId, defaultDocType);
+			return defaultDocType;
+		}
 	}
 
 	@Override

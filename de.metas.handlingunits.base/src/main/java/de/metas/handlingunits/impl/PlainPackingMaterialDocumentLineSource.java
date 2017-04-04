@@ -31,6 +31,7 @@ import org.adempiere.util.Check;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import lombok.Value;
 
 /**
  * Just a plain implementation of {@link IPackingMaterialDocumentLineSource} which wraps an {@link I_M_HU_PackingMaterial}.
@@ -38,30 +39,23 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
  * @author tsa
  *
  */
+@Value
 public final class PlainPackingMaterialDocumentLineSource implements IPackingMaterialDocumentLineSource
 {
-	private final List<I_M_HU_PackingMaterial> packingMaterials;
+	public static final PlainPackingMaterialDocumentLineSource of(final I_M_HU_PackingMaterial packingMaterial, final int qty)
+	{
+		return new PlainPackingMaterialDocumentLineSource(packingMaterial, qty);
+	}
+	
+	private final List<I_M_HU_PackingMaterial> M_HU_PackingMaterials;
 	private final BigDecimal qty;
 
-	public PlainPackingMaterialDocumentLineSource(final I_M_HU_PackingMaterial packingMaterial, final BigDecimal qty)
+	private PlainPackingMaterialDocumentLineSource(final I_M_HU_PackingMaterial packingMaterial, final int qty)
 	{
 		super();
 		Check.assumeNotNull(packingMaterial, "packingMaterial not null");
-		packingMaterials = Collections.singletonList(packingMaterial);
+		M_HU_PackingMaterials = Collections.singletonList(packingMaterial);
 
-		Check.assumeNotNull(qty, "qty not null");
-		this.qty = qty;
-	}
-
-	@Override
-	public List<I_M_HU_PackingMaterial> getM_HU_PackingMaterials()
-	{
-		return packingMaterials;
-	}
-
-	@Override
-	public BigDecimal getQty()
-	{
-		return qty;
+		this.qty = BigDecimal.valueOf(qty);
 	}
 }

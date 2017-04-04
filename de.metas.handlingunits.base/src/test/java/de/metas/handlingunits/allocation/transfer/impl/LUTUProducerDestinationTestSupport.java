@@ -1,12 +1,16 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.collections.ListUtils;
 import org.junit.Before;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -151,4 +155,34 @@ public class LUTUProducerDestinationTestSupport
 		}
 	}
 
+	public I_M_HU createLU(final int qtyTUs, final int qtyCUPerTU)
+	{
+		return createLU(qtyTUs, qtyCUPerTU, lutuProducer -> {
+		});
+	}
+
+	public I_M_HU createLU(final int qtyTUs, final int qtyCUPerTU, Consumer<LUTUProducerDestination> producerCustomizer)
+	{
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		// lutuProducer.setM_Locator(locator);
+
+		// LU
+		lutuProducer.setLUPI(piLU);
+		lutuProducer.setMaxLUs(1);
+		lutuProducer.setMaxTUsPerLU(qtyTUs);
+
+		// TU
+		lutuProducer.setLUItemPI(piLU_Item_IFCO);
+		lutuProducer.setTUPI(piTU_IFCO);
+		lutuProducer.addTUCapacity(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), helper.uomKg);
+
+		producerCustomizer.accept(lutuProducer);
+
+		final int qtyCUTotal = qtyTUs * qtyCUPerTU;
+
+		helper.load(lutuProducer, helper.pTomato, BigDecimal.valueOf(qtyCUTotal), helper.uomKg);
+
+		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
+		return ListUtils.singleElement(hus);
+	}
 }

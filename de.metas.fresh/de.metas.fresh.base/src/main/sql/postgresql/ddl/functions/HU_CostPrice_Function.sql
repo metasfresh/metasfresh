@@ -86,7 +86,7 @@ FROM
 		LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 		LEFT OUTER JOIN M_Product_acct pa ON p.M_Product_ID = pa.M_Product_ID AND pa.isActive = 'Y'
 	WHERE
-		p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+		p.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', wh.AD_Client_ID, wh.AD_Org_ID)
 		AND t.MovementDate::date <= $1
 	GROUP BY
 		pa.P_Asset_acct,
