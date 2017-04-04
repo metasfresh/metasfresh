@@ -220,7 +220,7 @@ else
 }
 
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
-final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable' || MF_UPSTREAM_BRANCH == 'FRESH-112') ? '20' : '5'
+final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
