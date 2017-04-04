@@ -26,10 +26,12 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
@@ -154,7 +156,7 @@ public interface IHUTrxBL extends ISingletonService
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IHUContext huContext);
 
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IContextAware context);
-	
+
 	/** @return executor which will run using current environment and thread inherited trx */
 	default IHUContextProcessorExecutor createHUContextProcessorExecutor()
 	{
@@ -169,6 +171,17 @@ public interface IHUTrxBL extends ISingletonService
 	default void process(final Consumer<IHUContext> processor)
 	{
 		createHUContextProcessorExecutor().run(processor);
+	}
+
+	default <R> R process(final Function<IHUContext, R> procesor)
+	{
+		final Mutable<R> resultHolder = new Mutable<>();
+		createHUContextProcessorExecutor().run(huContext -> {
+			final R result = procesor.apply(huContext);
+			resultHolder.setValue(result);
+		});
+
+		return resultHolder.getValue();
 	}
 
 	/**
