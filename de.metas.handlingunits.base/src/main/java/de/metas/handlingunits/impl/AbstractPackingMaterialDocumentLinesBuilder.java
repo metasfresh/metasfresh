@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -124,6 +126,17 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			}
 		}
 	}
+	
+	public final void addSources(final Collection<IPackingMaterialDocumentLineSource> sources)
+	{
+		if(sources == null || sources.isEmpty())
+		{
+			return;
+		}
+		
+		sources.forEach(this::addSource);
+	}
+
 
 	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
 	{

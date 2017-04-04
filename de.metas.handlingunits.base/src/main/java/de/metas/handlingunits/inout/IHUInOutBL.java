@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inout;
 
+
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -71,6 +72,7 @@ public interface IHUInOutBL extends ISingletonService
 
 	HUShipmentPackingMaterialLinesBuilder createHUShipmentPackingMaterialLinesBuilder(I_M_InOut shipment);
 
+
 	/**
 	 * Create an instance <code>of de.metas.handlingunits.inout.impl.EmptiesInOutProducer</code>
 	 * 
@@ -78,6 +80,7 @@ public interface IHUInOutBL extends ISingletonService
 	 * @return
 	 */
 	IReturnsInOutProducer createEmptiesInOutProducer(Properties ctx);
+
 
 	/**
 	 * Gets TU PI from inout line.

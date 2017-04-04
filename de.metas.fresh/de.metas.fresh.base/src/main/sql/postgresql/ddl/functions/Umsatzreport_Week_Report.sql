@@ -122,7 +122,7 @@ FROM
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
 			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID  
-				AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y') AND pr.isActive = 'Y'
+				AND pr.M_Product_Category_ID !=  getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID) AND pr.isActive = 'Y'
 			INNER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 
 			LEFT OUTER JOIN	(

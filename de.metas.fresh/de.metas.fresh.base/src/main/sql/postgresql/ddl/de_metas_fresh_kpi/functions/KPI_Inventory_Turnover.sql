@@ -28,7 +28,7 @@ FROM m_hu_storage hust
  JOIN M_Warehouse wh ON wh.m_Warehouse_ID = l.m_warehouse_ID
  JOIN C_Period p ON p.c_period_id = $1
  JOIN C_Period pp ON pp.c_period_id = report.get_predecessor_period_recursive($1, $2)
- JOIN m_product pr ON pr.m_product_id =  hutl.m_product_id AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+ JOIN m_product pr ON pr.m_product_id =  hutl.m_product_id AND pr.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', hust.AD_Client_ID, hust.AD_Org_ID)
 WHERE hutl.datetrx::date >= pp.startdate AND hutl.datetrx::date <= p.enddate  
  AND wh.m_warehouse_id !=(SELECT Value FROM AD_SysConfig WHERE Name LIKE 'de.metas.hANDlingunits.client.terminal.inventory.model.InventoryHUEditorModel#DirectMove_Warehouse_ID')::integer
 group by hutl.m_product_id, pr.name
@@ -43,7 +43,7 @@ SELECT * FROM
 SELECT iol.m_product_id AS m_product_id, pr.name AS product_name, 0 as qty_stored, sum(iol.movementqty) as qty_delivered 
 FROM m_inoutline iol
 inner JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
-JOIN m_product pr ON pr.m_product_id =iol.m_product_id AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+JOIN m_product pr ON pr.m_product_id =iol.m_product_id AND pr.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 JOIN C_Period p ON p.c_period_id = $1
  JOIN C_Period pp ON pp.c_period_id = report.get_predecessor_period_recursive($1, $2)
 WHERE io.movementdate::date >= pp.startdate AND io.movementdate::date <= p.enddate 
@@ -62,7 +62,7 @@ FROM m_hu_storage hust
  JOIN M_Warehouse wh ON wh.m_Warehouse_ID = l.m_warehouse_ID
  JOIN C_Period p ON p.c_period_id = $1
  JOIN C_Period pp ON pp.c_period_id = report.get_predecessor_period_recursive($1, $2)
- JOIN m_product pr ON pr.m_product_id =  hutl.m_product_id AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+ JOIN m_product pr ON pr.m_product_id =  hutl.m_product_id AND pr.M_Product_Category_ID !=  getSysConfigAsNumeric('PackingMaterialProductCategoryID', hust.AD_Client_ID, hust.AD_Org_ID)
 WHERE hutl.datetrx::date >= pp.startdate AND hutl.datetrx::date <= p.enddate  
  AND  wh.m_warehouse_id !=(SELECT Value FROM AD_SysConfig WHERE Name LIKE 'de.metas.hANDlingunits.client.terminal.inventory.model.InventoryHUEditorModel#DirectMove_Warehouse_ID')::integer --AND hutl.m_product_id=2001043
 group by hutl.m_product_id,pr.name
