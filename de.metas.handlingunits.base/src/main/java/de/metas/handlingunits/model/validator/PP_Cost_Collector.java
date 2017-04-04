@@ -24,9 +24,9 @@ package de.metas.handlingunits.model.validator;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,6 +38,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
@@ -45,6 +47,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 
@@ -179,15 +182,26 @@ public class PP_Cost_Collector
 						handlingUnitsBL.markDestroyed(huContext, hu);
 					}
 				});
-		
-		// TODO: reverse PP_Order_Qty records
+
+		//
+		// Reverse PP_Order_Qty records
+		final Set<Integer> huIds = hus.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
+		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+		huPPOrderQtyDAO
+				.retrieveOrderQtys(cc.getPP_Order_ID())
+				.stream()
+				.filter(candidate -> huIds.contains(candidate.getM_HU_ID()))
+				.forEach(candidate -> {
+					candidate.setProcessed(false);
+					huPPOrderQtyDAO.delete(candidate);
+				});
 	}
 
 	private final void reverseCostCollector_Issue(final I_PP_Cost_Collector cc)
 	{
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
-		
+
 		// TODO: reverse PP_Order_Qty records
 	}
 
