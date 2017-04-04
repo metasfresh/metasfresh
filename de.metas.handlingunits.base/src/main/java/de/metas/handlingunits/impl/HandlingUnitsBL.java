@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -795,7 +796,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
 	}
-	
+
 	@Override
 	public I_M_HU_PI getEffectivePI(final I_M_HU hu)
 	{
@@ -815,7 +816,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
 		return included_HU_PI;
 	}
-
 
 	@Override
 	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
@@ -857,10 +857,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext,
-			final I_M_HU hu,
-			final String huStatus,
-			final boolean forceFetchPackingMaterial)
+	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus, final boolean forceFetchPackingMaterial)
 	{
 		// keep this so we can compare it with the new one and make sure the moving to/from
 		// gebindelager is done only when needed
@@ -942,6 +939,40 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		hu.setHUStatus(huStatus);
 
 		// Do not save the HU because, at this point, we don't know what's to be done with it in future
+	}
+
+	@Override
+	public void setHUStatusActive(final Collection<I_M_HU> hus)
+	{
+		if (hus == null || hus.isEmpty())
+		{
+			return;
+		}
+
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		huTrxBL.process(huContext -> {
+			for (final I_M_HU hu : hus)
+			{
+				final boolean isPhysicalHU = isPhysicalHU(hu.getHUStatus());
+				if (isPhysicalHU)
+				{
+					// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
+					// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
+					// ... but when you get to verteilung the boxes are already there
+					return;
+				}
+
+				setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+				InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
+
+				//
+				// Ask the API to get the packing materials needed to the HU which we just activate it
+				// TODO: i think we can remove this part because it's done automatically ?! (NOTE: this one was copied from swing UI, de.metas.handlingunits.client.terminal.pporder.receipt.view.HUPPOrderReceiptHUEditorPanel.onDialogOkBeforeSave(ITerminalDialog))
+				huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
+			}
+		});
+
 	}
 
 	@Override

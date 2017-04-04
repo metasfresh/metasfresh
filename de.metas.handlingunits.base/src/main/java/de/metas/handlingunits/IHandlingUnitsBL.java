@@ -364,12 +364,21 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
 	 *
+	 * NOTE: this method is not saving the HU.
+	 * 
 	 * @param huContext
 	 * @param hu
 	 * @param huStatus
 	 * @param forceFetchPackingMaterial
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
+	
+	/**
+	 * Activate the HU (assuming it was Planning)
+	 * 
+	 * @param hus
+	 */
+	void setHUStatusActive(Collection<I_M_HU> hus);
 
 	/**
 	 * Marks the hu as destroyed, but doesn't handle the storages
@@ -419,4 +428,5 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
+
 }
