@@ -37,7 +37,8 @@ public interface ITrxRunConfig
 	public enum TrxPropagation
 	{
 		/**
-		 * The run method creates its own local transaction which is closed at the end.
+		 * The run method creates its own local transaction which is closed at the end.<br>
+		 * This implies that the transaction is also committed, no matter what {@link OnRunnableSuccess} value was selected.
 		 *
 		 * If a not-NULL <code>trxName</code> is given to the run method, then that trxName is used as prefix for the local transaction's name.
 		 */
@@ -54,10 +55,15 @@ public interface ITrxRunConfig
 	public enum OnRunnableSuccess
 	{
 		/**
-		 * If the {@link TrxRunnable}'s run method succeeds, then the transaction is committed
+		 * If the {@link TrxRunnable}'s run method succeeds, then the transaction is committed.
 		 */
 		COMMIT,
 
+		/**
+		 * Don't commit on success.
+		 * <p>
+		 * <b>IMORTANT:</b> even with {@link #DONT_COMMIT} the transaction will be committed if {@link TrxPropagation#REQUIRES_NEW} was selected.
+		 */
 		DONT_COMMIT
 	}
 
