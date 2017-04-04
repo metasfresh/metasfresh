@@ -731,7 +731,7 @@ class Table extends Component {
                         }
                         handleOpenNewTab={() => this.handleOpenNewTab(selected)}
                         handleDelete={(
-                            !isModal && (tabInfo && tabInfo.allowDelete)) ? 
+                            !isModal && (tabInfo && tabInfo.allowDelete)) ?
                                 () => this.handleDelete() : null}
                     />}
                     {!readonly && <div className="row">
@@ -751,7 +751,9 @@ class Table extends Component {
                                     this.handleBatchEntryToggle
                                 }
                                 supportQuickInput={supportQuickInput}
-                                allowCreateNew={tabInfo && tabInfo.allowCreateNew}
+                                allowCreateNew={
+                                    tabInfo && tabInfo.allowCreateNew
+                                }
                             />
                         </div>
                     </div>}

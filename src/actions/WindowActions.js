@@ -475,11 +475,11 @@ function updateStatus(responseData) {
                 ));
             }else{
 
-                item.validStatus && 
+                item.validStatus &&
                     dispatch(updateDataValidStatus('master', item.validStatus));
-                item.saveStatus && 
+                item.saveStatus &&
                     dispatch(updateDataSaveStatus('master', item.saveStatus));
-                item.includedTabsInfo && 
+                item.includedTabsInfo &&
                     dispatch(updateDataIncludedTabsInfo(
                         'master', item.includedTabsInfo
                     ));
