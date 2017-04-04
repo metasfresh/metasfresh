@@ -6,7 +6,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_InOut;
 
-import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
@@ -50,7 +50,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 	}
 
 	// services
-	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private final String _returnMovementType;
@@ -81,7 +81,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 	{
 		final I_M_ReceiptSchedule receiptSchedule = getRecord(I_M_ReceiptSchedule.class);
 
-		final I_M_InOut inout = huInOutBL.createEmptiesInOutProducer(getCtx())
+		//
+		// Create a draft "empties inout" without any line;
+		// Lines will be created manually by the user.
+		final I_M_InOut emptiesInOut = huEmptiesService.newEmptiesInOutProducer(getCtx())
 				.setC_BPartner(receiptScheduleBL.getC_BPartner_Effective(receiptSchedule))
 				.setC_BPartner_Location(receiptScheduleBL.getC_BPartner_Location_Effective(receiptSchedule))
 				.setMovementType(getReturnMovementType())
@@ -92,8 +95,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 				.dontComplete()
 				.create();
 
+		//
+		// Notify frontend that the empties document shall be opened in single document layout (not grid)
 		final boolean gridView = false; // single document
-		getResult().setRecordToOpen(TableRecordReference.of(inout), getTargetWindowId(), gridView);
+		getResult().setRecordToOpen(TableRecordReference.of(emptiesInOut), getTargetWindowId(), gridView);
 
 		return MSG_OK;
 	}
