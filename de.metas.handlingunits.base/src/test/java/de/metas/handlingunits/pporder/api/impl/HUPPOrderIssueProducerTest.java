@@ -13,20 +13,18 @@ package de.metas.handlingunits.pporder.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,14 +50,19 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.common.base.Joiner;
+
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
@@ -82,6 +85,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	{
 		return new HUTestHelper()
 		{
+			@Override
+			protected String createAndStartTransaction()
+			{
+				return ITrx.TRXNAME_None;
+			}
+
 			@Override
 			protected void setupModuleInterceptors_HU()
 			{
@@ -117,7 +126,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				rate_Millimeter_to_Rolle  // divide rate
 		);
 	}
-
+	
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29#Result_of_IT1
 	 * @task http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
@@ -148,8 +157,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		Assert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				// Expected: 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
-				Matchers.comparesEqualTo(new BigDecimal("28600"))
-				);
+				Matchers.comparesEqualTo(new BigDecimal("28600")));
 
 		//
 		// Create an VHU with 1Rolle, issue it to manufacturing order and test
@@ -262,42 +270,57 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	 * @param expectedHUQtyAfterIssue how much quantity remained in the HU after issue (expected)
 	 * @param expectedIssuedQtyOnBOMLine how much was issued on BOM line (expected); note: how much issued and not how much was issued until now!
 	 */
-	private void create_OneRoleHU_Issue_And_Test(final I_PP_Order ppOrder,
-			final BigDecimal expectedHUQtyAfterIssue,
-			final BigDecimal expectedIssuedQtyOnBOMLine)
+	private void create_OneRoleHU_Issue_And_Test(final I_PP_Order ppOrder, final BigDecimal expectedHUQtyAfterIssue, final BigDecimal expectedIssuedQtyOnBOMLine)
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 
 		//
 		// Create VirtualHU with 1 rolle of Folie
-		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
-		final List<I_M_HU> hus = helper.createHUs(huContext,
-				helper.huDefVirtual,
-				pFolie,
-				new BigDecimal("1"), // Qty=1 Rolle
-				uomRolle // UOM
-				);
-		Assert.assertEquals("Invalid HUs count", 1, hus.size());
-		final I_M_HU hu = hus.get(0);
-		
-		hu.setM_Locator(ppOrder.getM_Locator());
-		InterfaceWrapperHelper.save(hu);
-		Assert.assertNotNull("HU's locator shall be set", hu.getM_Locator());
+		final I_M_HU hu = helper.trxBL.process(huContext -> {
+			final List<I_M_HU> newHUs = helper.createHUs(huContext,
+					helper.huDefVirtual,
+					pFolie,
+					new BigDecimal("1"), // Qty=1 Rolle
+					uomRolle // UOM
+			);
+
+			Assert.assertEquals("Invalid HUs count", 1, newHUs.size());
+			final I_M_HU newHU = newHUs.get(0);
+
+			newHU.setM_Locator(ppOrder.getM_Locator());
+			InterfaceWrapperHelper.save(newHU);
+			Assert.assertNotNull("HU's locator shall be set", newHU.getM_Locator());
+
+			Services.get(IHandlingUnitsBL.class).setHUStatusActive(newHUs);
+			return newHU;
+		});
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final HUPPOrderIssueProducer issueProducer = new HUPPOrderIssueProducer(Env.getCtx());
 		final Timestamp movementDate = TimeUtil.getDay(2014, 10, 01);
-		issueProducer.setMovementDate(movementDate);
-		issueProducer.setTargetOrderBOMLines(Collections.singletonList(ppOrderBOMLine_Folie));
-		final List<I_PP_Cost_Collector> costCollectors = issueProducer.createIssues(hus);
+		final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
+				.setMovementDate(movementDate)
+				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
+				.createIssues(hu);
+		System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
+		//
+		final List<I_PP_Cost_Collector> costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+				.setCandidatesToProcess(candidates)
+				.process();
+		System.out.println("Cost collectors: \n" + Joiner.on("\n").join(costCollectors));
 
 		//
 		// Validate HU
 		HUAssert.assertStorageLevel(hu, pFolie, expectedHUQtyAfterIssue);
+		//
+		InterfaceWrapperHelper.refresh(hu);
+		if(expectedHUQtyAfterIssue.signum() == 0)
+		{
+			Assert.assertEquals(X_M_HU.HUSTATUS_Destroyed, hu.getHUStatus());
+		}
 
-		// NOTE: at this moment when i write this test, the cost collector is not actually processed in decoupled mode, so Order BOM Line is not updated.
-		// So we need to validate the cost collector
+		// NOTE: at this moment when i write this test, the cost collector is not actually processed in JUnit testing mode, so Order BOM Line is not updated.
+		// So we need to validate the cost collector.
 
 		//
 		// Validate cost collector
@@ -312,8 +335,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter, costCollector.getC_UOM());
 			Assert.assertThat("Invalid Cost Collector Qty",
 					costCollector.getMovementQty(),
-					Matchers.comparesEqualTo(expectedIssuedQtyOnBOMLine)
-					);
+					Matchers.comparesEqualTo(expectedIssuedQtyOnBOMLine));
 		}
 		else
 		{
@@ -325,7 +347,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrderBOMBL.addQtyDelivered(ppOrderBOMLine_Folie,
 				false, // isVariance
 				expectedIssuedQtyOnBOMLine // which actually is same as cc.getMovementQty()
-				);
+		);
 		InterfaceWrapperHelper.save(ppOrderBOMLine_Folie);
 	}
 
@@ -352,14 +374,14 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				, new BigDecimal(40) // under receipt
 				, new BigDecimal(100) // received as much as was planed
 				, new BigDecimal(150) // over receipt
-				);
+		);
 		final BigDecimal ppOrderBOMLine_Folie_QtyRequired_Expected = new BigDecimal("28600"); // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
 		final List<BigDecimal> ppOrderBOMLine_Folie_QtyIssued_List = Arrays.asList(
 				new BigDecimal("0") // nothing issued
 				, new BigDecimal("20000") // under issued
 				, new BigDecimal("28600") // issued as much as planed
 				, new BigDecimal("40000") // over issued
-				);
+		);
 
 		for (final BigDecimal finishedGoods_QtyReceived : finishedGoods_QtyReceived_List)
 		{
@@ -373,8 +395,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
 				Assert.assertThat("Invalid PP_Order QtyRequired",
 						ppOrderBOMLine_Folie.getQtyRequiered(),
-						Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected)
-						);
+						Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
 
 				//
 				// Set finish goods received quantity
@@ -444,8 +465,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
 		Assert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
-				Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected)
-				);
+				Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
 
 		//
 		// Create an VHU with 1Rolle, issue it to manufacturing order and test

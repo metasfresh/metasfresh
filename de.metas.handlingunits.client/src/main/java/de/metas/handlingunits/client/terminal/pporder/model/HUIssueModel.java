@@ -352,7 +352,7 @@ public class HUIssueModel implements IDisposable
 
 				//
 				// Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
-				huPPOrderBL.createIssueProducer(getCtx())
+				huPPOrderBL.createIssueProducer()
 						.setMovementDate(getMovementDate())
 						.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLines())
 						.createIssues(selectedHUs);

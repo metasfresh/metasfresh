@@ -10,18 +10,17 @@ package de.metas.handlingunits.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,15 +37,17 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBOMBL;
-import org.eevolution.model.I_PP_Cost_Collector;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.materialtracking.IHUPPOrderMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.logging.LogManager;
 
 /**
  * Aggregates {@link IHUTransaction}s and creates {@link I_PP_Cost_Collector}s for issuing materials to manufacturing order
@@ -54,11 +55,14 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
  * @author tsa
  *
  */
-/* package */class HUIssueCostCollectorBuilder
+public class HUIssueCostCollectorBuilder
 {
 	// Services
+	private static final Logger logger = LogManager.getLogger(HUIssueCostCollectorBuilder.class);
+	//
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	//
 	private final transient IHUPPOrderMaterialTrackingBL huPPOrderMaterialTrackingBL = Services.get(IHUPPOrderMaterialTrackingBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
@@ -133,6 +137,7 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 		// .. but only for issues
 		if (ppOrderBOMBL.isReceipt(ppOrderBOMLine))
 		{
+			logger.warn("Ignoring BOM line because it's a receipt line: {}", ppOrderBOMLine);
 			return null;
 		}
 
@@ -182,7 +187,7 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 
 		//
 		// Create the cost collector & process it.
-		final I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(
+		final org.eevolution.model.I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(
 				huContext, // context
 				ppOrderBOMLine,
 				locatorId, // locator
@@ -192,8 +197,8 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 				BigDecimal.ZERO, // qtyScrap,
 				BigDecimal.ZERO, // qtyReject
 				uom // UOM
-				);
-		
+		);
+
 		//
 		// Assign the HUs to cost collector.
 		// NOTE: even if those HUs were already destroyed, we have to assign them, for tracking
@@ -201,6 +206,6 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 
 		//
 		// Return it
-		return cc;
+		return InterfaceWrapperHelper.create(cc, I_PP_Cost_Collector.class);
 	}
 }

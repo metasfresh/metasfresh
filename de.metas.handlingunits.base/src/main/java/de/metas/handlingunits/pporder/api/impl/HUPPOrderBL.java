@@ -1,7 +1,5 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import java.util.Properties;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -40,8 +38,8 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public IHUPPOrderIssueProducer createIssueProducer(final Properties ctx)
+	public IHUPPOrderIssueProducer createIssueProducer()
 	{
-		return new HUPPOrderIssueProducer(ctx);
+		return new HUPPOrderIssueProducer();
 	}
 }

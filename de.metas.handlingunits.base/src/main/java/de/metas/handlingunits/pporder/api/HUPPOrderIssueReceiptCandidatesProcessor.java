@@ -1,27 +1,44 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
-import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUTransaction;
+import de.metas.handlingunits.IHUTrxListener;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.IAllocationDestination;
+import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.impl.HUIssueCostCollectorBuilder;
+import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.logging.LogManager;
 
 /*
@@ -73,42 +90,54 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
-	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	//
+	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
+	//
+	// Parameters
 	private static final Supplier<List<I_PP_Order_Qty>> CandidatesToProcessSupplier_NONE = () -> ImmutableList.of();
 	private Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier = CandidatesToProcessSupplier_NONE;
-	
+
 	private HUPPOrderIssueReceiptCandidatesProcessor()
 	{
 	}
 
-	public void process()
+	public List<I_PP_Cost_Collector> process()
 	{
+		final List<I_PP_Cost_Collector> result = new ArrayList<>();
+
 		trxItemProcessorService.<I_PP_Order_Qty, Void> createExecutor()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setProcessor(this::processCandidate)
-				.process(getCandidatesToProcess().iterator());
+				.setProcessor(candidate -> {
+					final List<I_PP_Cost_Collector> costCollectors = processCandidate(candidate);
+					result.addAll(costCollectors);
+				})
+				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
+				.process(getCandidatesToProcess());
+
+		return result;
 	}
 
-	private void processCandidate(final I_PP_Order_Qty candidate)
+	private List<I_PP_Cost_Collector> processCandidate(final I_PP_Order_Qty candidate)
 	{
 		if (candidate.isProcessed())
 		{
 			logger.debug("Skip processing {} because it was already processed", candidate);
-			return;
+			return ImmutableList.of();
 		}
 
 		InterfaceWrapperHelper.setThreadInheritedTrxName(candidate); // just to be sure
 
 		if (isMaterialReceipt(candidate))
 		{
-			processReceiptCandidate(candidate);
+			return processReceiptCandidate(candidate);
 		}
 		else
 		{
-			processIssueCandidate(candidate);
+			return processIssueCandidate(candidate);
 		}
 	}
 
@@ -118,7 +147,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		return ppOrderBOMLine == null || ppOrderBOMBL.isReceipt(ppOrderBOMLine);
 	}
 
-	private void processReceiptCandidate(final I_PP_Order_Qty candidate)
+	private List<I_PP_Cost_Collector> processReceiptCandidate(final I_PP_Order_Qty candidate)
 	{
 		final I_M_HU hu = candidate.getM_HU();
 		Preconditions.checkNotNull(hu, "No HU for %s", candidate);
@@ -141,12 +170,78 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		candidate.setPP_Cost_Collector(cc);
 		candidate.setProcessed(true);
 		InterfaceWrapperHelper.save(candidate);
+
+		return ImmutableList.of(cc);
 	}
 
-	private void processIssueCandidate(final I_PP_Order_Qty candidates)
+	private List<I_PP_Cost_Collector> processIssueCandidate(final I_PP_Order_Qty candidate)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		//
+		// Validate the HU
+		final I_M_HU hu = candidate.getM_HU();
+		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		{
+			throw new HUException("Only active HUs can be issued")
+					.setParameter("HU", hu)
+					.setParameter("HUStatus", hu.getHUStatus())
+					.setParameter("candidate", candidate);
+		}
+
+		final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getPP_Order_BOMLine();
+		final Timestamp movementDate = candidate.getMovementDate();
+
+		//
+		// Fully unload the HU
+		final String snapshotId;
+		final List<I_PP_Cost_Collector> costCollectors;
+		{
+			//
+			// Allocation Source: our HUs
+			final HUListAllocationSourceDestination husSource = HUListAllocationSourceDestination.of(hu)
+					.setCreateHUSnapshots(true) // Ask to create snapshots of HUs because in case we want to revert the Cost Collector, to be able to recover the HUs (08731).
+					.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
+
+			//
+			// Allocation Destination: our BOM Lines
+			final IAllocationDestination orderBOMLinesDestination;
+			{
+				final PPOrderBOMLineProductStorage productStorage = new PPOrderBOMLineProductStorage(ppOrderBOMLine);
+				orderBOMLinesDestination = new GenericAllocationSourceDestination(productStorage, ppOrderBOMLine);
+			}
+
+			//
+			// Create and setup context
+			final IssueCostCollectorProducer issueCostCollectorProducer = new IssueCostCollectorProducer();
+			final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
+			huContext.getTrxListeners().addListener(issueCostCollectorProducer);
+			huContext.setDate(movementDate);
+
+			//
+			// Create and configure Loader
+			final HULoader loader = HULoader.of(husSource, orderBOMLinesDestination);
+			loader.setAllowPartialLoads(true);
+
+			//
+			// Unload everything from source (our HUs) and move it to manufacturing order BOM lines
+			// NOTE: this will also produce the corresponding cost collectors (see de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineHUTrxListener)
+			loader.unloadAllFromSource(huContext);
+
+			snapshotId = husSource.getSnapshotId();
+			costCollectors = issueCostCollectorProducer.getAllCostCollectors();
+		}
+
+		//
+		// Get created cost collectors and set the Snapshot_UUID for later recall, in case of an reversal.
+		for (final I_PP_Cost_Collector costCollector : costCollectors)
+		{
+			costCollector.setSnapshot_UUID(snapshotId);
+			InterfaceWrapperHelper.save(costCollector);
+
+			// Add issued attributes to manufacturing order (task 08177)
+			ppOrderProductAttributeBL.addPPOrderProductAttributes(costCollector);
+		}
+
+		return costCollectors;
 	}
 
 	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
@@ -192,4 +287,52 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	{
 		return candidatesToProcessSupplier.get();
 	}
+
+	//
+	//
+	//
+	//
+	//
+	private final class IssueCostCollectorProducer implements IHUTrxListener
+	{
+		private final List<I_PP_Cost_Collector> allCostCollectors = new ArrayList<>();
+
+		private IssueCostCollectorProducer()
+		{
+			super();
+		}
+
+		public List<I_PP_Cost_Collector> getAllCostCollectors()
+		{
+			return allCostCollectors;
+		}
+
+		@Override
+		public void afterLoad(final IHUContext huContext, final List<IAllocationResult> loadResults)
+		{
+			createIssueCostCollectors(huContext, loadResults);
+		}
+
+		private final void createIssueCostCollectors(final IHUContext huContext, final List<IAllocationResult> loadResults)
+		{
+			final HUIssueCostCollectorBuilder issueCostCollectorsBuilder = new HUIssueCostCollectorBuilder(huContext);
+
+			//
+			// Iterate HU Transactions and build up Issue Cost Collector Candidates
+			for (final IAllocationResult loadResult : loadResults)
+			{
+				final List<IHUTransaction> huTransactions = loadResult.getTransactions();
+				for (final IHUTransaction huTransaction : huTransactions)
+				{
+					issueCostCollectorsBuilder.addHUTransaction(huTransaction);
+				}
+			}
+
+			//
+			// Create Issue Cost Collectors from collected candidates
+			final List<I_PP_Cost_Collector> costCollectors = issueCostCollectorsBuilder.createCostCollectors();
+			allCostCollectors.addAll(costCollectors);
+		}
+	}
+
 }
