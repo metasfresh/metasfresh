@@ -60,6 +60,10 @@ public interface IPPOrderReceiptHUProducer
 	 */
 	List<I_M_HU> receiveHUs(BigDecimal qtyToReceive, I_C_UOM uom);
 
+	void createReceiptCandidatesFromPlanningHU(I_M_HU planningHU);
+
+	List<I_PP_Order_Qty> getCreatedCandidates();
+
 	IPPOrderReceiptHUProducer setMovementDate(final java.util.Date movementDate);
 
 	/**

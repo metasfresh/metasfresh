@@ -8,6 +8,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
@@ -15,16 +17,22 @@ import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 
 public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderReceiptHUProducer
 {
+	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	
 	private final I_PP_Order_BOMLine _ppOrderBOMLine;
 	private final I_M_Product _product;
 
 	public CostCollectorCandidateCoProductHUProducer(final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		Check.assumeNotNull(ppOrderBOMLine, "ppOrderBOMLine not null");
-		// TODO: validate if is really a receipt (i.e. it's a co/by product line)
+		super(Preconditions.checkNotNull(ppOrderBOMLine, "ppOrderBOMLine not null").getPP_Order_ID());
+		
+		// TODO: validate:
+		// * if is a completed PP_Order
+		// * if is really a receipt (i.e. it's a co/by product line)
 		_ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
 
 		_product = ppOrderBOMLine.getM_Product();
@@ -68,9 +76,9 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 	}
 	
 	@Override
-	protected void processReceiptCandidate(final PPOrderReceiptCandidate candidate)
+	protected I_PP_Order_Qty newCandidate()
 	{
-		final I_PP_Order_Qty ppOrderQty = preparePPOrderQty(candidate);
+		final I_PP_Order_Qty ppOrderQty = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
 		
 		final I_PP_Order_BOMLine ppOrderBOMLine = getPP_Order_BOMLine();
 		final org.eevolution.model.I_PP_Order ppOrder = ppOrderBOMLine.getPP_Order();
@@ -78,7 +86,7 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 		ppOrderQty.setPP_Order(ppOrder);
 		ppOrderQty.setPP_Order_BOMLine(ppOrderBOMLine);
 		
-		InterfaceWrapperHelper.save(ppOrderQty);
+		return ppOrderQty;
 	}
 
 

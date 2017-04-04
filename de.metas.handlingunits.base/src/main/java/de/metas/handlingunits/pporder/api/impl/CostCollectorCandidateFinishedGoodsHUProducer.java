@@ -4,9 +4,10 @@ import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.base.Preconditions;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -14,19 +15,25 @@ import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 
 public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
 {
+	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	
 	private final I_PP_Order _ppOrder;
 	private final I_M_Product _product;
 
 	public CostCollectorCandidateFinishedGoodsHUProducer(final org.eevolution.model.I_PP_Order ppOrder)
 	{
-		Check.assumeNotNull(ppOrder, "PP Order not null");
+		super(Preconditions.checkNotNull(ppOrder).getPP_Order_ID());
+		// TODO: validate:
+		// * if is a completed PP_Order
+		
 		_ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
 
 		_product = ppOrder.getM_Product();
-		Check.assumeNotNull(_product, "Parameter product is not null");
+		Preconditions.checkNotNull(_product); // shall not happen
 	}
 
 	private final I_PP_Order getPP_Order()
@@ -64,16 +71,16 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 	}
 
 	@Override
-	protected void processReceiptCandidate(final PPOrderReceiptCandidate candidate)
+	protected I_PP_Order_Qty newCandidate()
 	{
-		final I_PP_Order_Qty ppOrderQty = preparePPOrderQty(candidate);
+		final I_PP_Order_Qty ppOrderQty = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
 		
 		final I_PP_Order ppOrder = getPP_Order();
 		ppOrderQty.setAD_Org_ID(ppOrder.getAD_Org_ID());
 		ppOrderQty.setPP_Order(ppOrder);
 		ppOrderQty.setPP_Order_BOMLine(null);
 		
-		InterfaceWrapperHelper.save(ppOrderQty);
+		return ppOrderQty;
 	}
 
 	@Override
