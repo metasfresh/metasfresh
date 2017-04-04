@@ -253,7 +253,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class)
 				.createInOutGenerateResult(true); // storeReceipts = true
-		
+
 		return new InOutProducerFromShipmentScheduleWithHU(result);
 	}
 
@@ -430,9 +430,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void updateHUDeliveryQuantities(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-		
+
 		final List<I_M_ShipmentSchedule_QtyPicked> allocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
-		
+
 		IPair<BigDecimal, BigDecimal> deliveredQtyLUAndTU = calculateQtyDeliveredFromQtyPickedRecords(allocations);
 		if (deliveredQtyLUAndTU == null)
 		{
@@ -444,7 +444,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 		BigDecimal qtyDelivered_LU = deliveredQtyLUAndTU.getLeft();
 		BigDecimal qtyDelivered_TU = deliveredQtyLUAndTU.getRight();
-		
+
 		final I_M_ShipmentSchedule huShipmentSchedule = InterfaceWrapperHelper.create(shipmentSchedule, I_M_ShipmentSchedule.class);
 		huShipmentSchedule.setQtyDelivered_TU(qtyDelivered_TU);
 		huShipmentSchedule.setQtyDelivered_LU(qtyDelivered_LU);
@@ -457,13 +457,13 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	/** @return QtyDeliveredLU / QtyDeliveredTU pair */
 	private IPair<BigDecimal, BigDecimal> calculateQtyDeliveredFromQtyPickedRecords(final Collection<I_M_ShipmentSchedule_QtyPicked> allocations)
 	{
-		if(allocations.isEmpty())
+		if (allocations.isEmpty())
 		{
 			return null;
 		}
-		
+
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
-		
+
 		final Set<Integer> seenLUIds = new HashSet<>();
 		final Set<Integer> seenTUIds = new HashSet<>();
 		int qtyDelivered_TU = 0;
@@ -495,46 +495,49 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				seenLUIds.add(huLUId);
 				allocationsHaveNoLUTU = false; // task 08298: at least one alloc has a LU-ID set so we assume that the LUTU-information is valid
 			}
-			
+
 			//
 			// count delivered TUs
 			final int huTUId = alloc.getM_TU_HU_ID();
-			if(huTUId > 0 && seenTUIds.add(huTUId))
+			if (huTUId > 0 && seenTUIds.add(huTUId))
 			{
-				// TODO: following code can be a performance penalty so we might consider introducing I_M_ShipmentSchedule_QtyPicked.QtyDelivered_TU/QtyDelivered_LU fields
+				// gh #1244: the following code can be a performance penalty and the assumption below might not be 100% correct.
+				// TODO in gh#1271: we might consider introducing I_M_ShipmentSchedule_QtyPicked.QtyDelivered_TU/QtyDelivered_LU fields
 				final I_M_HU huTU = alloc.getM_TU_HU();
-				if(huTU != null)
+				if (huTU != null)
 				{
-					if (Services.get(IHandlingUnitsBL.class).isAggregateHU(huTU))
+					//gh #1244: also cover the case of aggregate HUs.
+					final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+					final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+					if (handlingUnitsBL.isAggregateHU(huTU))
 					{
-						// TODO: Atm we assume the whole aggregated TU was assigned to this shipment schedule, so that's why we consider the whole number of TUs
-						qtyDelivered_TU += Services.get(IHandlingUnitsDAO.class).retrieveParentItem(huTU).getQty().intValueExact();
+						// we assume the whole aggregated TU was assigned to this shipment schedule, so that's why we consider the whole number of TUs (to be done in gh#1271)
+						qtyDelivered_TU += handlingUnitsDAO.retrieveParentItem(huTU).getQty().intValueExact();
 					}
 					else
 					{
 						qtyDelivered_TU += 1;
 					}
-					
 					allocationsHaveNoLUTU = false; // task 08298: at least one alloc has a TU-ID set so we assume that the LUTU-information is valid
 				}
 			}
 		}
-		
+
 		if (allocationsHaveNoLUTU)
 		{
 			return null;
 		}
-		
+
 		final BigDecimal qtyDelivered_LU = BigDecimal.valueOf(seenLUIds.size());
 		return ImmutablePair.of(qtyDelivered_LU, BigDecimal.valueOf(qtyDelivered_TU));
 	}
-	
+
 	/** @return QtyDeliveredLU / QtyDeliveredTU pair */
 	private IPair<BigDecimal, BigDecimal> calculateQtyDeliveredFromInOutLines(final Collection<I_M_ShipmentSchedule_QtyPicked> allocations)
 	{
 		// set of the linked inouts that have status Complete. It will be needed to determine the number of LUs
 		final Set<Integer> seenIOIds = new HashSet<Integer>();
-		
+
 		// task 08298: fallback and use the actual lines' TU-Qty
 		BigDecimal iolTuQtySum = BigDecimal.ZERO;
 
@@ -561,7 +564,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				}
 			}
 		}
-		
+
 		final BigDecimal qtyDelivered_TU = iolTuQtySum;
 
 		// task 08959
@@ -570,6 +573,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final BigDecimal qtyDelivered_LU = BigDecimal.valueOf(seenIOIds.size());
 		// task 08959: I will leave this here for traceability :
 		// final BigDecimal currentQtyToDeliverLU = huShipmentSchedule.getQtyToDeliver_LU();
+
 		// NOTE: because we don't have handlers for the shipment schedules update other than the swat one, we cannot properly update the HU delivered qtys on shipment complete,
 		// which would be similar with the CU qty
 		// To make sure we are not updating the QtyDeliveredLU too early, make sure to set it only when the QtyDeliveredTU is also set
@@ -583,7 +587,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		return ImmutablePair.of(qtyDelivered_LU, qtyDelivered_TU);
 	}
-
 
 	@Override
 	public I_M_ShipmentSchedule getShipmentScheduleOrNull(final I_M_HU hu)
