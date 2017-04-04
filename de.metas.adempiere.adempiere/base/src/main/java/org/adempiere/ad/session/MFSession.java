@@ -10,6 +10,7 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -20,6 +21,8 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.hostkey.api.IHostKeyBL;
+import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.logging.LogManager;
 
 /*
@@ -49,6 +52,13 @@ import de.metas.logging.LogManager;
  */
 public class MFSession
 {
+	/**
+	 * New sessions receive this value until the time {@link #getHostKey()} is invoked for the first time.
+	 * Then, this value is replaced with the return value from {@link IHostKeyBL#getCreateHostKey()}.
+	 * We invoke the hostKeyBL late, because in the case of {@link SessionRemoteHostStorage}, the hostkey can only be determined after a successful login.
+	 */
+	public static final String HOSTKEY_NOT_YET_DETERMINED = "<not-yet-determined>";
+
 	private static final transient Logger log = LogManager.getLogger(MFSession.class);
 
 	private static final String CTX_Prefix = "#AD_Session.";
@@ -158,7 +168,7 @@ public class MFSession
 	{
 		return sessionPO.getRemote_Addr();
 	}
-	
+
 	public void setRemote_Addr(final String remoteAddr, final String remoteHost)
 	{
 		sessionPO.setRemote_Addr(remoteAddr);
@@ -191,7 +201,19 @@ public class MFSession
 
 	public String getHostKey()
 	{
-		return sessionPO.getHostKey();
+		final String hostKey = sessionPO.getHostKey();
+
+		if (HOSTKEY_NOT_YET_DETERMINED.equals(hostKey))
+		{
+			// now get the session's HostKey
+			final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
+			final String newHostKey = hostKeyBL.getCreateHostKey();
+			log.info("Setting AD_Session.HostKey={} for sessionPO={}", hostKey, sessionPO);
+
+			sessionPO.setHostKey(newHostKey);
+			InterfaceWrapperHelper.save(sessionPO);
+		}
+		return hostKey;
 	}
 
 	public void setWebSessionId(final String webSessionId)
