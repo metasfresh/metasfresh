@@ -28,6 +28,7 @@ Here come the actual release notes:
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
   * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
+  * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt
   
 ## Fixes
 * metasfresh-backend
