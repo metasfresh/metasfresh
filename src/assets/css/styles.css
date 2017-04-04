@@ -1031,3 +1031,7 @@ td.pulse-off input {
     max-width: 300px;
     text-align: center;
 }
+
+.browser-warning p {
+    margin: 0;
+}

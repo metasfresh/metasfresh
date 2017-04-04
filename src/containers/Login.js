@@ -26,7 +26,7 @@ class Login extends Component {
                     safari.pushNotification);
         const isOpera = (!!window.opr && !!opr.addons) || !!window.opera ||
                         navigator.userAgent.indexOf(' OPR/') >= 0;
-                        
+
         const isIE = /*@cc_on!@*/false || !!document.documentMode; // IE 6-11
 
         const isEdge = !isIE && !!window.StyleMedia;
@@ -69,9 +69,10 @@ class Login extends Component {
                         redirect={redirect}
                      />
                     {! isYourBrowserSupported &&
-                        <span className="browser-warning">
-                            Your browser might be not fully supported
-                        </span>
+                        <div className="browser-warning">
+                            <p>Your browser might be not fully supported.</p>
+                            <p>Please try Chrome in case of any errors.</p>
+                        </div>
                     }
                 </div>
             </div>
