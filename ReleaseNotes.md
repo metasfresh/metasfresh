@@ -37,7 +37,8 @@ Here come the actual release notes:
     * Manintenance of Jasper Document SQL. Removing legace SQL thats not needed anymore.
   * [#1260](https://github.com/metasfresh/metasfresh/issues/1260) DocumentNo not generated for manual invoices in WebUI
     * Adding a minor fix to the customer Invoice Window in WebUI, that prevented the creation of manual Invoices for customers.
-
+  * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) https://github.com/metasfresh/metasfresh/issues/1263
+  
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes
