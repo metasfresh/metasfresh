@@ -267,7 +267,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	{
 		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ? OnTrxMissingPolicy.CreateNew
 				: OnTrxMissingPolicy.ReturnTrxNone // backward compatibility
-				;
+		;
 
 		return get(trxName, onTrxMissingPolicy);
 	}
@@ -278,7 +278,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final boolean autoCommit = false; // backward compatibility
 		return get(trxName, onTrxMissingPolicy, autoCommit);
 	}
-
 
 	private final ITrx get(String trxName, final OnTrxMissingPolicy onTrxMissingPolicy, final boolean autoCommit)
 	{
@@ -767,9 +766,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
 			if (onRunnableSuccess == OnRunnableSuccess.COMMIT)
 			{
-				trx.commit(true); // throwException=true
+				// if (trxPropagation != TrxPropagation.REQUIRES_NEW)
+				// gh #1263: Actually we should not commit. It will be done again in the finally block when we call trx.close().
+				// therefore, our onAfterCommit listeners might be invoked twice. However, right now I'm too chicken and have too little time to change it.
+				{
+					trx.commit(true); // throwException=true
+				}
 
-				// unsetting the savepoint because after the commit an attempt to release if would cause
+				// unsetting the savepoint because after the commit an attempt to release it would cause
 				// "org.postgresql.util.PSQLException: ERROR: RELEASE SAVEPOINT can only be used in transaction blocks; State=25P01; ErrorCode=0"
 				savepoint = null;
 			}
@@ -992,7 +996,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 		return trx.getTrxListenerManager();
 	}
-	
+
 	@Override
 	public ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit()
 	{
@@ -1175,7 +1179,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		{
 			throw new TrxException("Setting the thread inherited transaction to " + trxName + " is not allowed");
 		}
-		
+
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
 

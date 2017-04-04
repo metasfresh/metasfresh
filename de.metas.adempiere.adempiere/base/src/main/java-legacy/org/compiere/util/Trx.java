@@ -245,43 +245,43 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	protected boolean rollbackNative(boolean throwException) throws SQLException
 	{
 		final String trxName = getTrxName();
-		
+
 		//
 		// Get current connection
 		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
 		final Connection connection = m_connection;
 
-		if(connection == null || connection.getAutoCommit())
+		if (connection == null || connection.getAutoCommit())
 		{
 			log.debug("rollbackNative: doing nothing because we have a null or autocommit connection; this={}, connection={}", this, m_connection);
-			// => consider this a success because if there was no open transaction then there is nothing to rollback 
+			// => consider this a success because if there was no open transaction then there is nothing to rollback
 			return true;
 		}
 
 		// Case: we really have something to rollback (because connection was acquired and used)
 		if (connection != null)
 		{
-		try
-		{
+			try
+			{
 				connection.rollback();
 				log.debug("rollbackNative: OK - {}", trxName);
 				return true;
 			}
-		catch (SQLException e)
-		{
-				log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
-			if (throwException)
+			catch (SQLException e)
 			{
-				throw e;
-			}
+				log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
+				if (throwException)
+				{
+					throw e;
+				}
 				return false;
-		}
+			}
 		}
 		//
 		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
 		else
 		{
-			// => consider this a success because if nothing was done then there is nothing to rollback 
+			// => consider this a success because if nothing was done then there is nothing to rollback
 			return true;
 		}
 	}	// rollback
@@ -290,7 +290,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	protected boolean rollbackNative(ITrxSavepoint savepoint) throws SQLException
 	// metas: end: 02367
 	{
-		if(m_connection == null || m_connection.getAutoCommit())
+		if (m_connection == null || m_connection.getAutoCommit())
 		{
 			log.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
 			return false;
@@ -322,7 +322,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	@Override
 	protected boolean commitNative(boolean throwException) throws SQLException
 	{
-		if(m_connection == null || m_connection.getAutoCommit())
+		if (m_connection == null || m_connection.getAutoCommit())
 		{
 			log.debug("commitNative: doing nothing because we have an autocomit connection; this={}, connection={}", this, m_connection);
 			return true;
@@ -334,28 +334,28 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		// Get current connection
 		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
 		final Connection connection = this.m_connection;
-		
+
 		//
 		// Case: we really have something to commit (because connection was acquired and used)
 		if (connection != null)
 		{
-		try
-		{
+			try
+			{
 				connection.commit();
 				log.debug("commitNative: OK - {}", trxName);
 				// m_active = false;
 				return true;
 			}
-		catch (SQLException e)
-		{
-				log.error("commitNative: FAILED - {} (throwException={})", trxName, throwException, e);
-			if (throwException)
+			catch (SQLException e)
 			{
-				// m_active = false;
-				throw e;
-			}
+				log.error("commitNative: FAILED - {} (throwException={})", trxName, throwException, e);
+				if (throwException)
+				{
+					// m_active = false;
+					throw e;
+				}
 				return false;
-		}
+			}
 		}
 		//
 		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
@@ -416,7 +416,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			getConnection();
 		}
 
-		if(m_connection.getAutoCommit())
+		if (m_connection.getAutoCommit())
 		{
 			log.debug("createTrxSavepointNative: returning null because we have an autocomit connection; this={}, connection={}", this, m_connection);
 			return null;
