@@ -139,6 +139,12 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	{
 		return getType().canReceive();
 	}
+	
+	public boolean isIssue()
+	{
+		return getType().canIssue();
+	}
+
 
 	@Override
 	public List<PPOrderLineRow> getIncludedDocuments()
