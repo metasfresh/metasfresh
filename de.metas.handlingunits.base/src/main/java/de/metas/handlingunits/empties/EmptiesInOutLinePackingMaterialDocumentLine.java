@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.empties;
 
 /*
  * #%L
@@ -13,15 +13,14 @@ package de.metas.handlingunits.inout.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -35,11 +34,11 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 
-public class EmptiesInOutLinePackingMaterialDocumentLine extends AbstractPackingMaterialDocumentLine
+/* package */class EmptiesInOutLinePackingMaterialDocumentLine extends AbstractPackingMaterialDocumentLine
 {
 	private final I_M_InOutLine inoutLine;
 
-	public EmptiesInOutLinePackingMaterialDocumentLine(final I_M_InOutLine inoutLine)
+	EmptiesInOutLinePackingMaterialDocumentLine(final I_M_InOutLine inoutLine)
 	{
 		super();
 

@@ -30,21 +30,20 @@ import org.compiere.util.TrxRunnable2;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder;
-import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
+import de.metas.handlingunits.empties.IHUEmptiesService;
 
 public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 {
 	//
 	// Services that we use
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IHandlingUnitsBL huBL = Services.get(IHandlingUnitsBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 
 	private final IHUContext huContextInitial;
 
@@ -118,8 +117,10 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 
 				//
 				// Create packing material movements (if needed)
-				final IEmptiesMovementBuilder emptiesMovementBuilder = huBL.createEmptiesMovementBuilder();
-				emptiesMovementBuilder.createMovements(huContextInLocalTrx);
+				huEmptiesService.newEmptiesMovementProducer()
+						.setEmptiesMovementDirectionAuto()
+						.addCandidates(huContextInLocalTrx.getHUPackingMaterialsCollector().getAndClearCandidates())
+						.createMovements();
 
 				//
 				// If we reach this point it was a success

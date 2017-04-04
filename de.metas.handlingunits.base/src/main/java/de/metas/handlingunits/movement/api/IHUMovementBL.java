@@ -29,13 +29,11 @@ import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
 
 public interface IHUMovementBL extends ISingletonService
@@ -60,26 +58,6 @@ public interface IHUMovementBL extends ISingletonService
 	 * @task 07689, 07690
 	 */
 	void setPackingMaterialCActivity(I_M_MovementLine movementLine);
-
-	/**
-	 * Generate empties movements from HUPackingMaterialDocumentLineCandidate entries
-	 *
-	 * @param warehouse
-	 * @param direction
-	 * @param lines
-	 * @return
-	 */
-	I_M_Movement generateMovementFromPackingMaterialCandidates(I_M_Warehouse warehouse, boolean direction, List<HUPackingMaterialDocumentLineCandidate> lines);
-
-	/**
-	 * Generate movements for the empties (Leergut) inOut. If the given <code>inout</code> is a receipt, the movement will be from inOut's warehouse to the empties-warehouse (Gebindelager). If the
-	 * inOut is a shipment, the movement will be in the opposite direction.
-	 *
-	 * @param inout
-	 * @return
-	 * @task 08070
-	 */
-	I_M_Movement generateMovementFromEmptiesInout(I_M_InOut inout);
 
 	/**
 	 * Move the given <code>hus</code>HUs to the given <code>destinationWarehouse</code>
