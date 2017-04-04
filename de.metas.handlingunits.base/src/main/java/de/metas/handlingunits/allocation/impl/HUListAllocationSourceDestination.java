@@ -385,12 +385,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	}
 
 	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// nothing
-	}
-
-	@Override
 	public void unloadComplete(final IHUContext huContext)
 	{
 		performDestroyEmptyHUsIfNeeded(huContext);

@@ -174,11 +174,4 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		Services.get(IDocActionBL.class).processEx(inventory, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
 	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// Finally, process the inventory doc.
-
-	}
 }
