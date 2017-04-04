@@ -57,6 +57,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return true if given Order BOM Line is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
 	 */
 	boolean isReceipt(I_PP_Order_BOMLine bomLine);
+	
+	default boolean isIssue(final I_PP_Order_BOMLine bomLine)
+	{
+		return !isReceipt(bomLine);
+	}
 
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.
