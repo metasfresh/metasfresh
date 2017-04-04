@@ -25,7 +25,7 @@ SELECT
 	SUM( ic.QtyInvoiced * ic.PriceActual ) AS TotalInvoiced,
 	SUM( ic.QtyInvoicable * ic.PriceActual ) AS TotalShipped,
 	SUM( CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END * ic.PriceActual ) AS TotalOrdered,
-	p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y') AS IsPackingMaterial,
+	p.M_Product_Category_ID =  getSysConfigAsNumeric('PackingMaterialProductCategoryID', ic.AD_Client_ID, ic.AD_Org_ID) AS IsPackingMaterial,
 	date_trunc( 'month', ic.Date ) AS Month,
 	c.ISO_Code,
 	ic.ad_org_id
@@ -44,7 +44,7 @@ FROM
 
 			-- Date for filtering
 			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date,
-			ic.AD_Org_ID
+			ic.AD_Org_ID, ic.AD_Client_ID
 		FROM
 			C_Invoice_Candidate ic
 			INNER JOIN (
@@ -115,12 +115,13 @@ GROUP BY
 	p.M_Product_Category_ID,
 	date_trunc( 'month', ic.Date ),
 	c.ISO_Code,
-	ic.ad_org_id
+	ic.ad_org_id,
+	ic.ad_client_id
 ORDER BY
 	date_trunc( 'month', ic.Date ),
 	bp.Value,
 	p.M_Product_Category_ID =
-		(SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+		 getSysConfigAsNumeric('PackingMaterialProductCategoryID', ic.AD_Client_ID, ic.AD_Org_ID)
 
 $$
   LANGUAGE sql STABLE;

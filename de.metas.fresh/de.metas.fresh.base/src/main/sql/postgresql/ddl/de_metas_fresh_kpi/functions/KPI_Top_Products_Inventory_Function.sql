@@ -67,7 +67,7 @@ FROM
 						LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID
 						LEFT OUTER JOIN M_Product_acct pa ON p.M_Product_ID = pa.M_Product_ID
 					WHERE
-						p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+						p.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', wh.AD_Client_ID, wh.AD_Org_ID)
 						AND t.MovementDate::date <= $1
 					GROUP BY
 						p.M_Product_ID
@@ -122,7 +122,7 @@ FROM
 						LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID
 						LEFT OUTER JOIN M_Product_acct pa ON p.M_Product_ID = pa.M_Product_ID
 					WHERE
-						p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+						p.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', wh.AD_Client_ID, wh.AD_Org_ID)
 						AND t.MovementDate::date <= $2
 					GROUP BY
 						p.M_Product_ID

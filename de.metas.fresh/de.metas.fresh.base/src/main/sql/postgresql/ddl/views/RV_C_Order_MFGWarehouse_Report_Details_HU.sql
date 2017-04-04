@@ -66,7 +66,7 @@ FROM
 WHERE
 	1=1
 	AND report.IsActive='Y' and reportLine.IsActive='Y'
-	AND pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', olpm.AD_Client_ID, olpm.AD_Org_ID)
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
 /*

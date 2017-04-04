@@ -21,9 +21,6 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -38,7 +35,6 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -49,8 +45,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
-import de.metas.handlingunits.movement.api.impl.EmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
@@ -818,38 +812,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
-	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
-		// services
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-
-		// In case the requirements will change and the empties ditribution network
-		// will be product based, here we will need to get the product gebinde
-		// and send it as parameter in the method above
-		final I_DD_NetworkDistribution emptiesNetworkDistribution = handlingUnitsDAO.retrieveEmptiesDistributionNetwork(ctx,
-				null, // Product
-				trxName);
-		if (emptiesNetworkDistribution == null)
-		{
-			throw new AdempiereException("@NotFound@ @DD_NetworkDistribution_ID@ (@IsHUDestroyed@=@Y@)");
-		}
-
-		final List<I_DD_NetworkDistributionLine> lines = distributionNetworkDAO.retrieveNetworkLinesBySourceWarehouse(emptiesNetworkDistribution, warehouse.getM_Warehouse_ID());
-
-		if (lines.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
-					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution);
-		}
-
-		return lines.get(0).getM_Warehouse();
-
-	}
-
-	@Override
 	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus)
 	{
 		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
@@ -973,11 +935,5 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			}
 		});
 
-	}
-
-	@Override
-	public IEmptiesMovementBuilder createEmptiesMovementBuilder()
-	{
-		return new EmptiesMovementBuilder();
 	}
 }

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inout;
+package de.metas.handlingunits.empties;
 
 /*
  * #%L

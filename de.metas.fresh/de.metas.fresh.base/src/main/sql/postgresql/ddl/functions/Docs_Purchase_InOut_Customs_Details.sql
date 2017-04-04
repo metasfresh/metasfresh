@@ -87,7 +87,7 @@ FROM
 	) thu ON iol.M_InOutLine_ID = thu.Record_ID
 	LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = thu.C_UOM_ID AND uom.isActive = 'Y'
 WHERE
-	p.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+	p.M_Product_Category_ID !=  getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 ORDER BY
 	p.name, thu.value
 $$

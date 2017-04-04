@@ -1,28 +1,5 @@
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.empties;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,18 +18,24 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
 
-public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLinesBuilder
+/**
+ * Helper class used to create {@link I_M_InOutLine}s for a given inout header.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLinesBuilder
 {
-	public static EmptiesInOutLinesBuilder newBuilder(final IReference<I_M_InOut> inoutRef)
+	public static EmptiesInOutLinesProducer newInstance(final IReference<I_M_InOut> inoutRef)
 	{
-		return new EmptiesInOutLinesBuilder(inoutRef);
+		return new EmptiesInOutLinesProducer(inoutRef);
 	}
 
-	public static EmptiesInOutLinesBuilder newBuilder(final I_M_InOut inout)
+	public static EmptiesInOutLinesProducer newInstance(final I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, "Parameter inout is not null");
 		final IReference<I_M_InOut> inoutRef = ImmutableReference.valueOf(inout);
-		return new EmptiesInOutLinesBuilder(inoutRef);
+		return new EmptiesInOutLinesProducer(inoutRef);
 	}
 
 	//
@@ -64,21 +47,21 @@ public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLin
 	/** set of M_InOutLine_IDs which were created/updated by this processor */
 	private final Set<Integer> affectedInOutLinesId = new HashSet<>();
 
-	private EmptiesInOutLinesBuilder(final IReference<I_M_InOut> inoutRef)
+	private EmptiesInOutLinesProducer(final IReference<I_M_InOut> inoutRef)
 	{
 		super();
 
 		Check.assumeNotNull(inoutRef, "inoutRef not null");
 		_inoutRef = inoutRef;
 	}
-	
+
 	@Override
-	public EmptiesInOutLinesBuilder create()
+	public EmptiesInOutLinesProducer create()
 	{
 		super.create();
 		return this;
 	}
-	
+
 	/** @return set of M_InOutLine_IDs which were created/updated by this processor */
 	public Set<Integer> getAffectedInOutLinesId()
 	{
@@ -90,11 +73,9 @@ public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLin
 		return _inoutRef.getValue();
 	}
 
-	public EmptiesInOutLinesBuilder addSource(final I_M_HU_PackingMaterial packingMaterial, final int qty)
+	public EmptiesInOutLinesProducer addSource(final I_M_HU_PackingMaterial packingMaterial, final int qty)
 	{
-		final BigDecimal qtyBD = BigDecimal.valueOf(qty);
-		final PlainPackingMaterialDocumentLineSource source = new PlainPackingMaterialDocumentLineSource(packingMaterial, qtyBD);
-		addSource(source);
+		addSource(PlainPackingMaterialDocumentLineSource.of(packingMaterial, qty));
 		return this;
 	}
 
@@ -144,11 +125,11 @@ public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLin
 		inoutLine.setIsActive(true); // just to be sure
 		// task FRESH-273
 		inoutLine.setIsPackagingMaterial(true);
-		
+
 		final boolean wasNew = InterfaceWrapperHelper.isNew(inoutLine);
 		InterfaceWrapperHelper.save(inoutLine);
-		
-		if(wasNew)
+
+		if (wasNew)
 		{
 			affectedInOutLinesId.add(inoutLine.getM_InOutLine_ID());
 		}

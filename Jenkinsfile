@@ -22,29 +22,29 @@ def String getEffectiveDownStreamJobName(final String jobFolderName, final Strin
 		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
 		jobName = jobFolderName + "/" + upstreamBranch
 	}
-	else 
+	else
 	{
 		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
 		jobName = jobFolderName + "/master"
 	}
 
 	// I also tried
-	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name] 
+	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name]
 	// which worked from chrome, also for metas-dev.
 	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
 	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
 	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
 
-	// and I also tried inspecting the list returned by 
+	// and I also tried inspecting the list returned by
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
-	
+
 	return jobName;
 }
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
- * 
+ *
  * TODO: move it into a shared library
  * IMPORTANT: i'm now wrapping up this work (i.e. https://github.com/metasfresh/metasfresh/issues/968) to do other things! it's not yet finsined or tested!
  *
@@ -58,8 +58,8 @@ def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, f
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 
 	final String jobName = getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
-	
-	final buildResult = build job: jobName, 
+
+	final buildResult = build job: jobName,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
@@ -69,7 +69,7 @@ def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, f
 	;
 
 	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
-	
+
 	return buildResult.getBuildVariables();
 }
 
@@ -116,9 +116,9 @@ def createRepo(String repoId)
 		// # nexus ignored application/json
 		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
-		
+
 		echo "Create the repository-group ${repoId}";
-		
+
 		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
 <repo-group>
   <data>
@@ -152,7 +152,7 @@ def createRepo(String repoId)
 		sh "${createGroupCommand}"
 
 		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
-		
+
 final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 <scheduled-task>
   <data>
@@ -179,10 +179,10 @@ final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 	</properties>
   </data>
 </scheduled-task>"""
-	
+
 		// # nexus ignored application/json
 		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
-		sh "${createScheduleCommand}"		
+		sh "${createScheduleCommand}"
 	} // withCredentials
 }
 
@@ -191,13 +191,13 @@ def deleteRepo(String repoId)
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
 		echo "Delete the repository ${repoId}";
-		
+
 		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
 		sh "${deleteGroupCommand}"
-		
+
 		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
 		sh "${deleteRepoCommand}"
-		
+
 		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
 		sh "${deleteScheduleCommand}"
 	}
@@ -220,30 +220,30 @@ else
 }
 
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
-final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable' || MF_UPSTREAM_BRANCH == 'FRESH-112') ? '20' : '5'
+final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
 	parameters([
-		string(defaultValue: '', 
+		string(defaultValue: '',
 			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
+<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
-		string(defaultValue: '', 
-			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_VERSION', 
+		string(defaultValue: '',
+			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_VERSION',
 			name: 'MF_UPSTREAM_JOBNAME'),
 		string(defaultValue: '',
-			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.', 
+			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
-		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
+		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''',
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
-		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
-			name: 'MF_SKIP_TO_DIST'),	
-		string(defaultValue: '', 
-			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
+		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''',
+			name: 'MF_SKIP_TO_DIST'),
+		string(defaultValue: '',
+			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>',
 			name: 'MF_BUILD_ID')
 	]),
 	pipelineTriggers([]),
@@ -277,7 +277,7 @@ echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
 // name of the task/branch specific maven nexus-repository that we will create if it doesn't exist and and resolve from
 // make sure the maven repo name is OK, to avoid an error message saying
 // "Only letters, digits, underscores(_), hyphens(-), and dots(.) are allowed in Repository ID"
-final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}".replaceAll('[^a-zA-Z0-9_-]', '_'); 
+final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}".replaceAll('[^a-zA-Z0-9_-]', '_');
 echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
 
 
@@ -301,18 +301,18 @@ echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 // these two are shown in jenkins, for each build
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 
-timestamps 
+timestamps
 {
 node('agent && linux')
 {
-	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
-            stage('Set versions and build metasfresh') 
-            {
-				if(params.MF_SKIP_TO_DIST) 
+      stage('Set versions and build metasfresh')
+      {
+				if(params.MF_SKIP_TO_DIST)
 				{
 					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
 				}
@@ -345,13 +345,13 @@ node('agent && linux')
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
-							
-				} // if(params.MF_SKIP_TO_DIST)
-            }
 
-            stage('Set versions and build esb') 
-            {
-				if(params.MF_SKIP_TO_DIST) 
+				} // if(params.MF_SKIP_TO_DIST)
+      } // stage
+
+      stage('Set versions and build esb')
+      {
+				if(params.MF_SKIP_TO_DIST)
 				{
 					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
 				}
@@ -364,27 +364,27 @@ node('agent && linux')
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
 	           	sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				
+
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
-						
+
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-								
-				} // if(params.MF_SKIP_TO_DIST)
-			}
 
-			if(!params.MF_SKIP_TO_DIST) 
+				} // if(params.MF_SKIP_TO_DIST)
+			} // stage
+
+			if(!params.MF_SKIP_TO_DIST)
 			{
 				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
 				junit '**/target/surefire-reports/*.xml'
 			}
-			
+
 		} // withMaven
 	} // configFileProvider
-} // node			
+} // node
 
 // this map is populated in the "Invoke downstream jobs" stage
 final MF_ARTIFACT_VERSIONS = [:];
@@ -392,13 +392,13 @@ final MF_ARTIFACT_VERSIONS = [:];
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
 // TODO: invoke them in parallel
-stage('Invoke downstream jobs') 
+stage('Invoke downstream jobs')
 {
-	if(params.MF_SKIP_TO_DIST) 
+	if(params.MF_SKIP_TO_DIST)
 	{
 		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs";
 
-		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui or metasfresh-webui-frontend.. 
+		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui or metasfresh-webui-frontend..
 		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_VERSION is set
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
@@ -406,13 +406,13 @@ stage('Invoke downstream jobs')
 			MF_ARTIFACT_VERSIONS['metasfresh-webui']=params.MF_UPSTREAM_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui=${MF_ARTIFACT_VERSIONS['metasfresh-webui']}"
 		}
-		
+
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend')
 		{
 			MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui-frontend=${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}"
 		}
-		
+
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-procurement-webui')
 		{
 			MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=params.MF_UPSTREAM_VERSION;
@@ -423,15 +423,15 @@ stage('Invoke downstream jobs')
 	else
 	{
 		MF_ARTIFACT_VERSIONS['metasfresh'] = BUILD_VERSION;
-		
+
 		// params.MF_SKIP_TO_DIST == false, so invoke downstream jobs and get the build versions which came out of them
-		
-//		 parallel 
+
+//		 parallel
 //			"metasfresh-webui" : {
 				// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
 				final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 				MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
-//			}, 
+//			},
 //			"metasfresh-procurement-webui" : {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
@@ -439,13 +439,13 @@ stage('Invoke downstream jobs')
 //			},
 //			failFast : true
 //		;
-			
-		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo. 
+
+		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo.
 		// Therefore we will just get the latest webui-frontend later, when we need it.
 
 		// more to come: admin-webui
 	} // if(params.MF_SKIP_TO_DIST)
-	
+
 	// complement the MF_ARTIFACT_VERSIONS we did not set so far
 	MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] ?: "LATEST";
@@ -457,14 +457,14 @@ stage('Invoke downstream jobs')
 	echo "Going to notify external systems via zapier webhook"
 	node('linux')
 	{
-		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')])
 		{
 			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
-			
+
 			/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-			final jsonPayload = """{ 
-				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", 
-				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", 
+			final jsonPayload = """{
+				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\",
+				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\",
 				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
@@ -475,7 +475,7 @@ stage('Invoke downstream jobs')
 			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}";
 		}
 	}
-	
+
 	echo "Invoking downstream job 'metasfresh-dist' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
 	final List distJobParameters = [
@@ -486,14 +486,13 @@ stage('Invoke downstream jobs')
 			string(name: 'MF_METASFRESH_WEBUI_API_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui']),
 			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])
 		];
-	
+
 	build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
-		parameters: distJobParameters, 
+		parameters: distJobParameters,
 		wait: false;
-		
+
 	build job: getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
-		parameters: distJobParameters, 
+		parameters: distJobParameters,
 		wait: false;
 }
 } // timestamps
-

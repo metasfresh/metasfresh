@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#741](https://github.com/metasfresh/metasfresh/issues/741) packing material product category config
   * [#995](https://github.com/metasfresh/metasfresh/issues/995) Translation en_US for Material Receipt Candidates Window
     * Adding the initial set of Translation en_US to the material Receipt Candidates Window in WebUI.
   * [#1181](https://github.com/metasfresh/metasfresh/issues/1181) Refine Layout for Attribute Window in WebUI
@@ -24,9 +25,12 @@ Here come the actual release notes:
     * Adding the initial Layout for the User window into WebUI.
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
+  * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
-  
+  * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
+  * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt
+    
 ## Fixes
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
@@ -35,9 +39,11 @@ Here come the actual release notes:
     * Adjustment of the document line description field now defining boundaries for the field content on the generated Jasper Documents making the content better readable.
   * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
     * Manintenance of Jasper Document SQL. Removing legace SQL thats not needed anymore.
+  * [#1244](https://github.com/metasfresh/metasfresh/issues/1244) Shipment Schedule's QtyDeliveredTU is not updated correctly
   * [#1260](https://github.com/metasfresh/metasfresh/issues/1260) DocumentNo not generated for manual invoices in WebUI
     * Adding a minor fix to the customer Invoice Window in WebUI, that prevented the creation of manual Invoices for customers.
-
+  * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) ITrxListener.afterCommit is fired twice with TrxPropagation.REQUIRES_NEW
+  
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes

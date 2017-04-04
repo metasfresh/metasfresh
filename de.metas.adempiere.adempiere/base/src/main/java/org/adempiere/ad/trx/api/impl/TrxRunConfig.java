@@ -37,7 +37,7 @@ import org.adempiere.util.Check;
 @Immutable
 final class TrxRunConfig implements ITrxRunConfig
 {
-	private final TrxPropagation trxMode;
+	private final TrxPropagation trxPropagation;
 	private final OnRunnableSuccess onRunnableSuccess;
 	private final OnRunnableFail onRunnableFail;
 	private final boolean autocommit;
@@ -51,7 +51,7 @@ final class TrxRunConfig implements ITrxRunConfig
 		Check.assumeNotNull(onRunnableSuccess, "Param 'onRunnableSuccess' is not null");
 		Check.assumeNotNull(onRunnableFail, "Param 'onRunnableFail' is not null");
 
-		this.trxMode = trxMode;
+		this.trxPropagation = trxMode;
 		this.onRunnableSuccess = onRunnableSuccess;
 		this.onRunnableFail = onRunnableFail;
 		this.autocommit = autoCommit;
@@ -60,7 +60,7 @@ final class TrxRunConfig implements ITrxRunConfig
 	@Override
 	public String toString()
 	{
-		return "TrxRunConfig [trxMode=" + trxMode + ", onRunnableSuccess=" + onRunnableSuccess + ", onRunnableFail=" + onRunnableFail + "]";
+		return "TrxRunConfig [trxPropagation=" + trxPropagation + ", onRunnableSuccess=" + onRunnableSuccess + ", onRunnableFail=" + onRunnableFail + "]";
 	}
 
 
@@ -68,7 +68,7 @@ final class TrxRunConfig implements ITrxRunConfig
 	@Override
 	public TrxPropagation getTrxPropagation()
 	{
-		return trxMode;
+		return trxPropagation;
 	}
 
 	@Override
