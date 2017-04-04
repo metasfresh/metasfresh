@@ -39,16 +39,24 @@ export const populateXAxis = (svg, rangeX0) => {
             .map(size => size.height)
     ));
 
-    const size = sizes.find(item => item.width === maxW && item.height === maxH);
+    const size = sizes.find(
+        item => item.width === maxW && item.height === maxH
+    );
     const radianAngle = getXAxisTickAngle(size, rangeX0.bandwidth());
-    const angle = (radianAngle > (Math.PI / 2)) ? -90 : (radianAngle * (-180 / Math.PI));
-    const line = (radianAngle > (Math.PI / 2)) ? 0 : (6 * Math.cos(angle * (Math.PI / 180)));
+    const angle =
+        (radianAngle > (Math.PI / 2)) ? -90 : (radianAngle * (-180 / Math.PI));
+    const line =
+        (radianAngle > (Math.PI / 2)) ?
+            0 : (6 * Math.cos(angle * (Math.PI / 180)));
 
     svg.selectAll('.x-axis-label')
         .style('text-anchor', 'end')
         .attr('dx', '-.8em')
         .attr('dy', '.15em')
-        .attr('transform', 'rotate(' + angle + ') translate(0, ' + ((size.height / -2) + line) + ')');
+        .attr('transform',
+            'rotate(' + angle + ') translate(0, ' +
+                ((size.height / -2) + line) + ')'
+        );
 };
 
 export const getXAxisLabelsHeight = (svg) => {

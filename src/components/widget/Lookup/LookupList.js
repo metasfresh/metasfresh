@@ -17,8 +17,10 @@ class LookupList extends Component {
     componentDidMount(){
         // needed for calculating scroll position
         const listElementHeight = 30;
-        const listVisibleElements = Math.floor(this.listScrollWrap.clientHeight / listElementHeight);
-        const shouldListScrollUpdate = listVisibleElements > this.items.childNodes.length;
+        const listVisibleElements =
+            Math.floor(this.listScrollWrap.clientHeight / listElementHeight);
+        const shouldListScrollUpdate =
+            listVisibleElements > this.items.childNodes.length;
 
         this.setState({
             listElementHeight: listElementHeight,
@@ -28,7 +30,9 @@ class LookupList extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-        const {shouldListScrollUpdate, listElementHeight, listVisibleElements} = this.state;
+        const {
+            shouldListScrollUpdate, listElementHeight, listVisibleElements
+        } = this.state;
 
         // no need for updating scroll
         if (
@@ -51,7 +55,8 @@ class LookupList extends Component {
 
         //not visible from above
         if (nextProps.selected * listElementHeight < visibleMin){
-            this.listScrollWrap.scrollTop = nextProps.selected * listElementHeight
+            this.listScrollWrap.scrollTop =
+                nextProps.selected * listElementHeight
         }
     }
 
@@ -65,7 +70,8 @@ class LookupList extends Component {
                 key={key}
                 className={
                     'input-dropdown-list-option ' +
-                    (selected === index ? 'input-dropdown-list-option-key-on' : '') }
+                    (selected === index ?
+                        'input-dropdown-list-option-key-on' : '') }
                 onClick={() => {handleSelect(item)}}
             >
                 <p className="input-dropdown-item-title">{name}</p>
@@ -81,11 +87,10 @@ class LookupList extends Component {
     renderNew = () => {
         const {selected, handleAddNew, newRecordCaption} = this.props;
         return (
-            <div
-                className={
-                    'input-dropdown-list-option input-dropdown-list-option-alt '  +
-                    (selected === 'new' ? 'input-dropdown-list-option-key-on' : '')
-                }
+            <div className={
+                'input-dropdown-list-option input-dropdown-list-option-alt '  +
+                (selected === 'new' ? 'input-dropdown-list-option-key-on' : '')
+            }
                 onClick={handleAddNew}
             >
                 <p>{newRecordCaption}</p>
@@ -127,13 +132,17 @@ class LookupList extends Component {
         } = this.props;
 
         return (
-            <div className="input-dropdown-list" ref={c => this.listScrollWrap = c}>
+            <div
+                className="input-dropdown-list"
+                ref={c => this.listScrollWrap = c}
+            >
                 {(loading && list.length === 0) && this.renderLoader()}
                 {(!loading && list.length === 0) && this.renderEmpty()}
                 <div ref={(c) => this.items = c}>
-                    {list.map((item, index) => this.getDropdownComponent(index, item))}
-                    {
-                        list.length === 0 && newRecordCaption &&
+                    {list.map((item, index) =>
+                        this.getDropdownComponent(index, item))
+                    }
+                    {list.length === 0 && newRecordCaption &&
                         !creatingNewDisabled && this.renderNew()
                     }
                 </div>

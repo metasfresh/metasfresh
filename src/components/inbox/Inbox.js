@@ -27,7 +27,10 @@ class Inbox extends Component {
         if(item.target){
             switch(item.target.targetType){
                 case 'window':
-                    dispatch(push('/window/' + item.target.documentType + '/' + item.target.documentId));
+                    dispatch(push(
+                        '/window/' + item.target.documentType + '/' +
+                        item.target.documentId
+                    ));
                     break;
             }
         }
@@ -53,7 +56,8 @@ class Inbox extends Component {
 
     componentDidUpdate() {
         const {open} = this.props;
-        const inboxWrapper = document.getElementsByClassName('js-inbox-wrapper')[0];
+        const inboxWrapper =
+            document.getElementsByClassName('js-inbox-wrapper')[0];
         if(inboxWrapper && open){
             inboxWrapper.focus();
         }
@@ -65,11 +69,13 @@ class Inbox extends Component {
         switch(e.key){
             case 'ArrowDown':
                 e.preventDefault();
-                if (document.activeElement.classList.contains('js-inbox-wrapper')) {
+                if (
+                    document.activeElement.classList
+                        .contains('js-inbox-wrapper')
+                ) {
                     if(inboxItem){
                         inboxItem.focus();
                     }
-
                 }
                 break;
             case 'Escape':
@@ -82,7 +88,11 @@ class Inbox extends Component {
     render() {
         const {open, inbox, all, close} = this.props;
         return (
-            <div className="js-inbox-wrapper" onKeyDown={(e) => this.handleKeyDown(e)} tabIndex={0}>
+            <div
+                className="js-inbox-wrapper"
+                onKeyDown={(e) => this.handleKeyDown(e)}
+                tabIndex={0}
+            >
                 {(all || open) && <div className={
                     (all ? 'inbox-all ': 'inbox')
                 }>

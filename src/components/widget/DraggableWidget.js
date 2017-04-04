@@ -57,6 +57,18 @@ export class DraggableWidget extends Component {
         };
     }
 
+    componentDidUpdate(prevProps) {
+        if(prevProps !== this.props) {
+            this.setState({
+                forceChartReRender: true,
+            }, () => {
+                this.setState({
+                    forceChartReRender: false
+                })
+            })
+        }
+    }
+
     handleClickOutside = () => {
         this.setState({
             toggleWidgetMenu: false
@@ -103,7 +115,9 @@ export class DraggableWidget extends Component {
             caption, fields, groupBy, pollInterval
         } = this.props;
 
-        const { toggleWidgetMenu, isMaximize, forceChartReRender, height } = this.state;
+        const {
+            toggleWidgetMenu, isMaximize, forceChartReRender, height
+        } = this.state;
 
         return connectDragSource(connectDropTarget(
             <div className={
@@ -119,13 +133,30 @@ export class DraggableWidget extends Component {
                         () => {this.maximizeWidget(); hideWidgets(index)}}
                 >
                     {text}
-                    <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}/>
+                    <i
+                        className="draggable-widget-icon meta-icon-down-1 input-icon-sm"
+                        onClick={() => this.toggleMenu()}
+                    />
                     {toggleWidgetMenu &&
                         <div className="draggable-widget-menu">
 
                             { isMaximize ?
-                                <span onClick={() => {this.minimizeWidget(); showWidgets()} }>Minimize</span> :
-                                <span onClick={() => {this.maximizeWidget(); hideWidgets(index)} }>Maximize</span>
+                                <span
+                                    onClick={() => {
+                                        this.minimizeWidget();
+                                        showWidgets()
+                                    }}
+                                >
+                                    Minimize
+                                </span> :
+                                <span
+                                    onClick={() => {
+                                        this.maximizeWidget();
+                                        hideWidgets(index)
+                                    }}
+                                >
+                                    Maximize
+                                </span>
                             }
 
                         </div>
@@ -161,6 +192,11 @@ DraggableWidget.propTypes = {
     moveCard: PropTypes.func.isRequired
 };
 
-DraggableWidget = DragSource(ItemTypes.DRAGGABLE_CARD, cardSource, collect)(DropTarget(ItemTypes.DRAGGABLE_CARD, cardTarget, connect)(onClickOutside(DraggableWidget)));
+DraggableWidget =
+    DragSource(ItemTypes.DRAGGABLE_CARD, cardSource, collect)(
+        DropTarget(ItemTypes.DRAGGABLE_CARD, cardTarget, connect)(
+            onClickOutside(DraggableWidget
+        )
+    ));
 
 export default DraggableWidget;

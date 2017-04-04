@@ -1,9 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import {push} from 'react-router-redux';
 
 import {
     findRowByPropName,
-    attachFileAction
+    attachFileAction,
+    clearMasterData
 } from '../actions/WindowActions';
 
 import {
@@ -49,16 +51,21 @@ class MasterWindow extends Component {
     }
 
     componentWillUnmount() {
-        const { master } = this.props;
-        const isDocumentNotSaved = !master.saveStatus.saved;
+        const { master, dispatch } = this.props;
+        const {pathname} = this.props.location;
+        const isDocumentNotSaved =
+            !master.saveStatus.saved && master.saveStatus.saved !== undefined;
+        window.removeEventListener('beforeunload', this.confirm);
 
         if(isDocumentNotSaved){
             const result = window.confirm('Do you really want to leave?');
-            window.removeEventListener('beforeunload', this.confirm);
+
             if(!result){
-                this.context.router.goBack();
+                dispatch(push(pathname));
             }
         }
+
+        dispatch(clearMasterData());
     }
 
     confirm = (e) => {
@@ -100,7 +107,8 @@ class MasterWindow extends Component {
     handleRejectDropped(droppedFiles){
         const { dispatch } = this.props;
 
-        const dropped = droppedFiles instanceof Array ? droppedFiles[0] : droppedFiles;
+        const dropped = droppedFiles instanceof Array ?
+            droppedFiles[0] : droppedFiles;
 
         dispatch(addNotification(
             'Attachment', 'Dropped item [' +
@@ -186,7 +194,11 @@ class MasterWindow extends Component {
                         closeCallback={this.closeModalCallback}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
-                        modalSaveStatus={modal.saveStatus ? modal.saveStatus.saved : true}
+                        modalSaveStatus={
+                            modal.saveStatus &&
+                            modal.saveStatus.saved !== undefined ?
+                                modal.saveStatus.saved : true
+                        }
                         isDocumentNotSaved={modal.saveStatus ?
                             !modal.saveStatus.saved &&
                             !modal.validStatus.initialValue : false
@@ -215,7 +227,9 @@ class MasterWindow extends Component {
                     isModal={false}
                     newRow={newRow}
                     handleDropFile={accepted => this.handleDropFile(accepted)}
-                    handleRejectDropped={rejected => this.handleRejectDropped(rejected)}
+                    handleRejectDropped={
+                        rejected => this.handleRejectDropped(rejected)
+                    }
                 />
             </Container>
         );

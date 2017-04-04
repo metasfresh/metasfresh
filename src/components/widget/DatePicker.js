@@ -46,8 +46,8 @@ class DatePicker extends Component {
     }
 
     handleClickOutside = () => {
-		this.handleClose();
-	}
+        this.handleClose();
+    }
 
     renderDay = (props, currentDate) => {
         return (

@@ -9,15 +9,21 @@ class NotificationHandler extends Component {
     }
 
     render() {
-        const {notifications} = this.props;
+        const {
+            notifications, children
+        } = this.props;
+
         return (
-            <div className="notification-handler">
-                {Object.keys(notifications).map((key) =>
-                    <Notification
-                        key={key}
-                        item={notifications[key]}
-                    />
-                )}
+            <div>
+                <div className="notification-handler">
+                    {Object.keys(notifications).map(key =>
+                        <Notification
+                            key={key}
+                            item={notifications[key]}
+                        />
+                    )}
+                </div>
+                {children}
             </div>
         )
     }

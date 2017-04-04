@@ -44,16 +44,28 @@ class TableFilter extends Component {
                         {(supportQuickInput && !fullScreen && allowCreateNew) && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
                             onClick={handleBatchEntryToggle}
-                            onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT)}
+                            onMouseEnter={() =>
+                                this.toggleTooltip(
+                                    keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT
+                                )
+                            }
                             onMouseLeave={this.toggleTooltip}
                             tabIndex="-1"
                         >
                             {isBatchEntry ? 'Close batch entry' : 'Batch entry'}
-                            {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT && <Tooltips
-                                name={keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT}
-                                action={isBatchEntry ? 'Close batch entry' : 'Batch entry'}
-                                type={''}
-                            />}
+                            {isTooltipShow ===
+                                keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT &&
+                                <Tooltips
+                                    name={
+                                        keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT
+                                    }
+                                    action={
+                                        isBatchEntry ?
+                                            'Close batch entry' : 'Batch entry'
+                                    }
+                                    type={''}
+                                />
+                            }
                         </button>}
                     </div>
                     {((isBatchEntry || fullScreen) && allowCreateNew) &&
@@ -69,17 +81,22 @@ class TableFilter extends Component {
                 {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
                     onClick={() => toggleFullScreen(!fullScreen)}
-                    onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_EXPAND)}
+                    onMouseEnter={() =>
+                        this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_EXPAND)
+                    }
                     onMouseLeave={this.toggleTooltip}
                     tabIndex="-1"
                 >
-                    {fullScreen ? <i className="meta-icon-collapse"/> : <i className="meta-icon-fullscreen"/>}
+                    {fullScreen ? <i className="meta-icon-collapse"/> :
+                        <i className="meta-icon-fullscreen"/>}
 
-                    {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND && <Tooltips
-                        name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
-                        action={fullScreen ? 'Collapse' : 'Expand'}
-                        type={''}
-                    />}
+                    {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND &&
+                        <Tooltips
+                            name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
+                            action={fullScreen ? 'Collapse' : 'Expand'}
+                            type={''}
+                        />
+                    }
                 </button>}
             </div>
         )

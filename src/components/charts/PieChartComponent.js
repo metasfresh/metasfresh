@@ -13,8 +13,12 @@ class PieChartComponent extends Component {
             .range(colors);
 
         const dimensions = this.setDimensions();
-        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie,
-                        dimensions.arc, data, color, dimensions.radius);
+
+        this.drawChart(
+            dimensions.wrapperWidth, dimensions.width, dimensions.height,
+            dimensions.pie, dimensions.arc, data, color, dimensions.radius
+        );
+
         if(responsive){
             this.addResponsive(data, color);
         }
@@ -27,30 +31,33 @@ class PieChartComponent extends Component {
 
     componentDidUpdate() {
         const {data, colors, chartClass} = this.props;
-        const chartWrapp = document.getElementsByClassName(chartClass+'-wrapper')[0];
+        const chartWrapp =
+            document.getElementsByClassName(chartClass + '-wrapper')[0];
         const color = d3.scaleOrdinal()
             .range(colors);
         this.clearChart();
         const dimensions = this.setDimensions(chartWrapp.offsetWidth);
-        this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height, dimensions.pie,
-                            dimensions.arc, data, color);
+        this.drawChart(
+            dimensions.wrapperWidth, dimensions.width, dimensions.height,
+            dimensions.pie, dimensions.arc, data, color
+        );
     }
 
-    setDimensions = (width=400) => {
+    setDimensions = (width = 400) => {
         const {chartClass, responsive, fields, height} = this.props;
         let wrapperWidth = 0;
         let chartWidth = width;
         let chartHeight = height;
 
         if(responsive) {
-            wrapperWidth = document.getElementsByClassName(chartClass+'-wrapper')[0].offsetWidth;
-            if(wrapperWidth<height){
-                chartWidth = wrapperWidth;
-            }
-
+            wrapperWidth =
+                document.getElementsByClassName(chartClass + '-wrapper')[0]
+                    .offsetWidth;
+            chartWidth = wrapperWidth;
         }
         const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
-        const arc = d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
+        const arc =
+            d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
         const pie = d3.pie()
             .sort(null)
             .value( d => d[fields[0].fieldName]);
@@ -77,7 +84,9 @@ class PieChartComponent extends Component {
             .attr('height', height)
             .append('g')
             .attr('class', 'chart')
-            .attr('transform', 'translate(' + wrapperWidth / 2 + ',' + 0.66*height + ')');
+            .attr('transform',
+                'translate(' + wrapperWidth / 2 + ',' + 0.66*height + ')'
+            );
 
         chart.append('g')
             .attr('class', 'slices');
@@ -134,20 +143,26 @@ class PieChartComponent extends Component {
         .attr('y', legendRectSize - legendSpacing)
         .attr('font-size', 12)
         .text(function(d, i) {
-            return data[i][groupBy.fieldName] + (groupBy.unit ? ' [' + groupBy.unit + ']' : '');
+            return data[i][groupBy.fieldName] + (
+                groupBy.unit ? ' [' + groupBy.unit + ']' : ''
+            );
         });
     };
 
     addResponsive = (data, color) => {
         const {chartClass} = this.props;
-        const chartWrap = document.getElementsByClassName(chartClass+'-wrapper')[0];
+        const chartWrap =
+            document.getElementsByClassName(chartClass+'-wrapper')[0];
 
         d3.select(window)
             .on('resize.'+chartClass, () => {
                 this.clearChart();
                 const dimensions = this.setDimensions(chartWrap.offsetWidth);
-                this.drawChart(dimensions.wrapperWidth, dimensions.width, dimensions.height,
-                                dimensions.pie, dimensions.arc, data, color);
+                this.drawChart(
+                    dimensions.wrapperWidth, dimensions.width,
+                    dimensions.height, dimensions.pie, dimensions.arc, data,
+                    color
+                );
             });
     };
 

@@ -82,7 +82,9 @@ class AttributesDropdown extends Component {
 
         if(layout){
             return layout.map((item, id) => {
-                const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
+                const widgetData = item.fields.map(elem =>
+                    findRowByPropName(data, elem.field)
+                );
                 return (<RawWidget
                     entity={attributeType}
                     widgetType={item.widgetType}
@@ -94,7 +96,8 @@ class AttributesDropdown extends Component {
                     type={item.type}
                     caption={item.caption}
                     handleBlur={this.handleBlur}
-                    handlePatch={(prop, value) => this.handlePatch(prop, value, attrId)}
+                    handlePatch={(prop, value) =>
+                        this.handlePatch(prop, value, attrId)}
                     handleFocus={this.handleFocus}
                     handleChange={handleChange}
                     tabIndex={tabIndex}

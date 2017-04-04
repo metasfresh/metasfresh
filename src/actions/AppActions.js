@@ -18,12 +18,19 @@ export function loginSuccess() {
                     const notification = JSON.parse(msg.body);
 
                     if(notification.eventType === 'Read'){
-                        dispatch(updateNotification(notification.notification, notification.unreadCount));
+                        dispatch(updateNotification(
+                            notification.notification, notification.unreadCount
+                        ));
                     }else if(notification.eventType === 'New'){
-                        dispatch(newNotification(notification.notification, notification.unreadCount));
+                        dispatch(newNotification(
+                            notification.notification, notification.unreadCount
+                        ));
                         const notif = notification.notification;
                         if(notif.important){
-                            dispatch(addNotification('Important notification', notif.message, 5000, 'primary'))
+                            dispatch(addNotification(
+                                'Important notification', notif.message, 5000,
+                                'primary'
+                            ))
                         }
                     }
                 });
@@ -111,7 +118,8 @@ export function updateUri(pathname, query, prop, value) {
         const queryKeys = Object.keys(query);
 
         for(let i = 0; i < queryKeys.length; i++){
-            url += queryKeys[i] + '=' + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? '&': '');
+            url += queryKeys[i] + '=' + query[queryKeys[i]] +
+                (queryKeys.length - 1 !== i  ? '&': '');
         }
 
         dispatch(replace(url));
@@ -119,7 +127,11 @@ export function updateUri(pathname, query, prop, value) {
 }
 
 export function loginRequest(username, password){
-    return () => axios.post(config.API_URL + '/login/authenticate', { username, password });
+    return () => axios.post(
+        config.API_URL +
+        '/login/authenticate',
+        { username, password }
+    );
 }
 
 export function localLoginRequest(){
@@ -152,7 +164,9 @@ export function markAsRead(id) {
 
 // Attribute widget backend
 
-export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, rowId, fieldName) {
+export function getAttributesInstance(
+    attrType, tmpId, docType, docId, tabId, rowId, fieldName
+) {
     return () => axios.post(config.API_URL + '/' + attrType, {
         'templateId': tmpId,
         'source': {
@@ -227,7 +241,12 @@ export function getKPIData(id) {
 }
 
 export function getTargetIndicatorsData(id) {
-    return () => axios.get(config.API_URL + '/dashboard/targetIndicators/'+id+'/data');
+    return () => axios.get(
+        config.API_URL +
+        '/dashboard/targetIndicators/' +
+        id +
+        '/data'
+    );
 }
 
 export function setUserDashboardWidgets(payload) {

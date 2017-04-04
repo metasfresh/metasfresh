@@ -12,12 +12,12 @@ import {
 import QuickActionsDropdown from './QuickActionsDropdown';
 
 import keymap from '../../keymap.js';
-import QuickActionsContextShortcuts from '../shortcuts/QuickActionsContextShortcuts';
+import QuickActionsContextShortcuts
+    from '../shortcuts/QuickActionsContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class QuickActions extends Component {
-
     constructor(props){
         super(props);
 
@@ -31,6 +31,14 @@ class QuickActions extends Component {
         if(fetchOnInit){
             this.fetchActions();
         }
+    }
+
+    componentDidMount = () => {
+        this.mounted = true;
+    }
+
+    componentWillUnmount = () => {
+        this.mounted = false;
     }
 
     componentDidUpdate = (prevProps) => {
@@ -76,7 +84,7 @@ class QuickActions extends Component {
         dispatch(
             quickActionsRequest(windowType, viewId, selected)
         ).then(response => {
-            this.setState({
+            this.mounted && this.setState({
                 actions: response.data.actions
             })
         });
@@ -101,8 +109,13 @@ class QuickActions extends Component {
                     <span className="spacer-right">Actions:</span>
                     <div className="quick-actions-wrapper">
                         <div
-                            className={'tag tag-success tag-xlg spacer-right quick-actions-tag ' +
-                                ((actions[0].disabled || processStatus === 'pending') ? 'tag-default ' : 'pointer ')
+                            className={
+                                'tag tag-success tag-xlg spacer-right ' +
+                                'quick-actions-tag ' +
+                                ((actions[0].disabled ||
+                                    processStatus === 'pending') ?
+                                        'tag-default ' : 'pointer '
+                                )
                             }
                             onClick={() => this.handleClick(actions[0])}
                             title={actions[0].caption}
@@ -111,7 +124,8 @@ class QuickActions extends Component {
                         </div>
                         <div
                             className={
-                                'btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer ' +
+                                'btn-meta-outline-secondary btn-icon-sm ' +
+                                'btn-inline btn-icon pointer ' +
                                 (isDropdownOpen ? 'btn-disabled ' : '')
                             }
                             onClick={() => this.toggleDropdown(!isDropdownOpen)}
@@ -123,13 +137,17 @@ class QuickActions extends Component {
                             <QuickActionsDropdown
                                 actions={actions}
                                 handleClick={this.handleClick}
-                                handleClickOutside={() => this.toggleDropdown(false)}
+                                handleClickOutside={() =>
+                                    this.toggleDropdown(false)
+                                }
                                 disableOnClickOutside={!isDropdownOpen}
                             />
                         }
                     </div>
                     <QuickActionsContextShortcuts
-                        handleClick={() => shouldNotUpdate ? null : this.handleClick(actions[0])}
+                        handleClick={() => shouldNotUpdate ?
+                            null : this.handleClick(actions[0])
+                        }
                     />
                 </div>
             );

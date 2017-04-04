@@ -51,7 +51,9 @@ class DropzoneWrapper extends Component {
                 disableClick={true}
                 onDragEnter={() => this.handleDragStart()}
                 onDragLeave={() => this.handleDragEnd()}
-                onDrop={(accepted, rejected) => this.handleDropFile(accepted, rejected)}
+                onDrop={(accepted, rejected) =>
+                    this.handleDropFile(accepted, rejected)
+                }
             >
                 {this.props.children}
                 <div className="document-file-dropzone-backdrop">
