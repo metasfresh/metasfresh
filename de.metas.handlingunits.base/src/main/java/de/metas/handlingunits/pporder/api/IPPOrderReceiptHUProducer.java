@@ -64,6 +64,11 @@ public interface IPPOrderReceiptHUProducer
 
 	List<I_PP_Order_Qty> getCreatedCandidates();
 
+	/**
+	 * NOTE: by default current system time is considered.
+	 * 
+	 * @param movementDate
+	 */
 	IPPOrderReceiptHUProducer setMovementDate(final java.util.Date movementDate);
 
 	/**
