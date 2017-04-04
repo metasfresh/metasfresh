@@ -26,9 +26,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -41,7 +38,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
-import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.LUTUConfigurationEditorModel;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -57,8 +53,6 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private List<I_M_HU> createdHUs = new ArrayList<I_M_HU>();
 
@@ -187,60 +181,20 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 		// Update LU/TU configuration
 		final ILUTUConfigurationEditor lutuConfigurationEditor = productKey.getLUTUConfigurationEditor();
 		save(lutuConfigurationEditor); // save edited configuration back
-
+		//
 		lutuConfigurationEditor
 				.save() // save configuration to database
 				.pushBackToModel(); // make sure it's set back in model
-
-		// LU/TU configuration
+		//
 		final I_M_HU_LUTU_Configuration luTuConfiguration = lutuConfigurationEditor.getLUTUConfiguration();
 
-		// Create Receipt Cost Collector candidate
-		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = productKey.getReceiptCostCollectorCandidate();
+		// Get UOM
 		final I_C_UOM qtyToReceiveUOM = luTuConfiguration.getC_UOM();
-//		receiptCostCollectorCandidate.setQtyToReceive(qtyToReceive);
-//		receiptCostCollectorCandidate.setC_UOM(qtyToReceiveUOM);
-//		receiptCostCollectorCandidate.setMovementDate(SystemTime.asTimestamp());
-//		receiptCostCollectorCandidate.setM_Product(luTuConfiguration.getM_Product());
 
-		final IPPOrderReceiptHUProducer producer;
-		if (receiptCostCollectorCandidate.getPP_Order_BOMLine() != null)
-		{
-			producer = IPPOrderReceiptHUProducer.receiveByOrCoProduct(receiptCostCollectorCandidate.getPP_Order_BOMLine());
-		}
-
-		else
-		{
-			producer = IPPOrderReceiptHUProducer.receiveMainProduct(receiptCostCollectorCandidate.getPP_Order());
-		}
-		// producer.setMovementDate(SystemTime.asDayTimestamp()); // that's by default
-
-		createdHUs = trxManager.call(() -> {
-			// At this point, only create the HUs.
-			// No movements shall be created now.
-			// They will be modified afterwards, when the user wants them to
-
-			final List<I_M_HU> hus = producer.receiveHUs(qtyToReceive, qtyToReceiveUOM);
-
-			final I_PP_Order ppOrder = receiptCostCollectorCandidate.getPP_Order();
-			for (final I_M_HU hu : hus)
-			{
-				//
-				// Set the HU's PIIP when created (if available)
-				// TODO: check if shall not be needed because it's set when HU is created
-				hu.setM_HU_PI_Item_Product(luTuConfiguration.getM_HU_PI_Item_Product());
-
-				// task 08177
-				// Modify the HU Attributes based on the attributes already existing from issuing
-				// TODO: consider moving it to producer!!!
-				ppOrderProductAttributeBL.updateHUAttributes(ppOrder, hu);
-
-				// TODO: the producer is returning the HUs with TrxInherited... i guess we can remove this from here
-				InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None);
-			}
-
-			return hus;
-		});
+		//
+		// Receive new HUs, update their attributes, and automatically assign them to PP_Order/PP_Order_BOMLine
+		final IPPOrderReceiptHUProducer producer = productKey.createReceiptCandidatesProducer();
+		createdHUs = producer.receiveHUs(qtyToReceive, qtyToReceiveUOM);
 	}
 
 }

@@ -64,6 +64,7 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -80,14 +81,15 @@ import lombok.Data;
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
 	// Services
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
-	private final int ppOrderId;
+	private final int _ppOrderId;
 	private transient I_M_HU_LUTU_Configuration _lutuConfiguration;
 	private Date _movementDate;
 	
@@ -109,7 +111,12 @@ import lombok.Data;
 	public AbstractPPOrderReceiptHUProducer(final int ppOrderId)
 	{
 		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId not valid");
-		this.ppOrderId = ppOrderId;
+		this._ppOrderId = ppOrderId;
+	}
+	
+	private int getPP_Order_ID()
+	{
+		return _ppOrderId;
 	}
 
 	@Override
@@ -158,10 +165,13 @@ import lombok.Data;
 				.forEach(huPPOrderQtyDAO::save);
 
 		//
-		// Assign created HUs to Receipt Cost Collector
+		// Generate the HUs 
 		final List<I_M_HU> createdHUs = huProducerDestination.getCreatedHUs();
-		InterfaceWrapperHelper.setThreadInheritedTrxName(createdHUs);
-		setAssignedHUs(createdHUs);
+		
+		//
+		// Update received HUs
+		InterfaceWrapperHelper.setThreadInheritedTrxName(createdHUs); // just to be sure
+		updateReceivedHUs(createdHUs);
 
 		//
 		// Return created HUs
@@ -183,7 +193,7 @@ import lombok.Data;
 			//
 			// Delete previously created candidates
 			// Assume there are no processed one, and even if it would be it would fail on DAO level
-			huPPOrderQtyDAO.streamOrderQtys(ppOrderId)
+			huPPOrderQtyDAO.streamOrderQtys(getPP_Order_ID())
 					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
 					.forEach(huPPOrderQtyDAO::delete);
 
@@ -210,8 +220,19 @@ import lombok.Data;
 					.forEach(huPPOrderQtyDAO::save);
 
 			//
-			setAssignedHUs(ImmutableSet.of(planningHU));
+			updateReceivedHUs(ImmutableSet.of(planningHU));
 		});
+	}
+	
+	private void updateReceivedHUs(final Collection<I_M_HU> hus)
+	{
+		// 
+		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPP_Order_ID());
+
+		//
+		// Assign HUs to PP_Order/PP_Order_BOMLine
+		setAssignedHUs(hus);
 	}
 	
 	/**
