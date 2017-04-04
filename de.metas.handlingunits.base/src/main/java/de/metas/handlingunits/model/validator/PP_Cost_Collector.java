@@ -213,6 +213,6 @@ public class PP_Cost_Collector
 	})
 	public void deactivatePPOrderProductAttributes(final I_PP_Cost_Collector costCollector)
 	{
-		Services.get(IPPOrderProductAttributeDAO.class).deactivateForCostCollector(costCollector);
+		Services.get(IPPOrderProductAttributeDAO.class).deactivateForCostCollector(costCollector.getPP_Cost_Collector_ID());
 	}
 }

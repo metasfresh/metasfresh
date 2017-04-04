@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,7 +25,8 @@ package de.metas.handlingunits.attribute;
  */
 
 import org.adempiere.util.ISingletonService;
-import org.eevolution.model.I_PP_Order;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
@@ -35,14 +38,19 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	/**
 	 * Transfer PP_Order's attributes (see {@link I_PP_Order_ProductAttribute}) to
 	 * <ul>
-	 * <li>given HU
+	 * <li>given HUs
 	 * <li>all already received HUs
 	 * </ul>
 	 * 
 	 * @param ppOrder
-	 * @param hu
+	 * @param hus
 	 */
-	void updateHUAttributes(I_PP_Order ppOrder, I_M_HU hu);
+	void updateHUAttributes(Collection<I_M_HU> hus, final int fromPPOrderId);
+	
+	default void updateHUAttributes(final I_M_HU hu, final int fromPPOrderId)
+	{
+		updateHUAttributes(ImmutableSet.of(hu), fromPPOrderId);
+	}
 
 	/**
 	 * Create new PP_Order_ProductAttribute entries for the given cost collector
@@ -50,5 +58,6 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	 * @param costCollector
 	 */
 	void addPPOrderProductAttributes(I_PP_Cost_Collector costCollector);
+
 
 }

@@ -66,23 +66,64 @@ import lombok.ToString;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 {
-
 	@Override
-	public void updateHUAttributes(final I_PP_Order ppOrder, final I_M_HU hu)
+	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, final int fromPPOrderId)
 	{
+		final I_PP_Order fromPPOrder = InterfaceWrapperHelper.load(fromPPOrderId, I_PP_Order.class);
+		Preconditions.checkNotNull(fromPPOrder, "fromPPOrder not found found ID=%s", fromPPOrderId);
+		
+		// Skip it if there are no HUs to update
+		if (husToUpdate.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Fetch PP_Order's attributes that shall be propagated to HUs
+		final AttributesMap attributesMap = getAttributesMap(fromPPOrder);
+		if (attributesMap.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Update the attributes of given HUs
+		final Set<Integer> huIdsUpdated = new HashSet<>();
+		husToUpdate.forEach(hu -> {
+			updateHUAttributesFromAttributesMap(hu, attributesMap);
+			huIdsUpdated.add(hu.getM_HU_ID());
+		});
+
+		//
+		// Make sure the HUs of the already existing receipt are also updated.
+		// TODO: consider doing this when some new PP_Order_ProductAttributes where added/changed
+		{
+			final Collection<I_M_HU> husAlreadyReceived = getAllReceivedHUs(fromPPOrder, huIdsUpdated); // exclude those which were already updated above
+			husAlreadyReceived.forEach(hu -> {
+				updateHUAttributesFromAttributesMap(hu, attributesMap);
+				huIdsUpdated.add(hu.getM_HU_ID());
+			});
+		}
+	}
+
+	private static AttributesMap getAttributesMap(final I_PP_Order ppOrder)
+	{
+		final AttributesMap attributesMap = new AttributesMap();
+
 		// Fetch all attributes to be transferred from PP_Order to HU
 		final Set<Integer> attributeIdsToBeTransfered = getAttributeIdsToBeTransferred();
+		if (attributeIdsToBeTransfered.isEmpty())
+		{
+			return attributesMap; // empty
+		}
 
 		// Fetch all attributes from PP_Order's ASI (which have a non-null value)
 		final Set<Integer> attributeIdsSetInPPOrder = extractPPOrderASIAttributeIds(ppOrder);
 
 		//
-		final AttributesMap attributesMap = new AttributesMap();
-
-		//
 		// Collect all attributes which were directly assigned to given PP_Order
 		final IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
-		final List<I_PP_Order_ProductAttribute> ppOrderAttributes = ppOrderProductAttributeDAO.retrieveProductAttributesForPPOrder(ppOrder);
+		final List<I_PP_Order_ProductAttribute> ppOrderAttributes = ppOrderProductAttributeDAO.retrieveProductAttributesForPPOrder(ppOrder.getPP_Order_ID());
 		for (final I_PP_Order_ProductAttribute ppOrderAttribute : ppOrderAttributes)
 		{
 			final int attributeId = ppOrderAttribute.getM_Attribute_ID();
@@ -105,12 +146,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			attributesMap.putOrMerge(ppOrderAttribute);
 		}
 
-		// Update the attributes of given HU
-		createHUAttributes(attributesMap, hu);
-
-		// Make sure the HUs of the already existing receipt are also updated.
-		// TODO: consider doing this when some new PP_Order_ProductAttributes where added/changed
-		updateExistingReceiptHUAttributes(attributesMap, ppOrder);
+		return attributesMap;
 	}
 
 	/** @return M_Attribute_IDs to be transferred from PP_Order to HUs */
@@ -127,7 +163,13 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	private static Set<Integer> extractPPOrderASIAttributeIds(final I_PP_Order ppOrder)
 	{
-		final I_M_AttributeSetInstance ppOrderASI = ppOrder.getM_AttributeSetInstance();
+		final int asiId = ppOrder.getM_AttributeSetInstance_ID();
+		if (asiId <= 0)
+		{
+			return ImmutableSet.of();
+		}
+
+		final I_M_AttributeSetInstance ppOrderASI = InterfaceWrapperHelper.load(asiId, I_M_AttributeSetInstance.class);
 		if (ppOrderASI == null)
 		{
 			return ImmutableSet.of();
@@ -149,29 +191,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		return attributesSetInPPOrder;
 	}
 
-	/**
-	 * For the HUs of the already existing receipts, update the HUAttributes values with the ones that were updated
-	 *
-	 * @param attributesMap
-	 * @param ppOrder
-	 */
-	private static void updateExistingReceiptHUAttributes(final AttributesMap attributesMap, final I_PP_Order ppOrder)
-	{
-		if (attributesMap.isEmpty())
-		{
-			return;
-		}
-
-		//
-		// Extract the already received HUs
-		final Collection<I_M_HU> receivedHUs = getAllReceivedHUs(ppOrder);
-
-		//
-		// Update the attributes of each received HU
-		receivedHUs.forEach(hu -> createHUAttributes(attributesMap, hu));
-	}
-
-	private static final Collection<I_M_HU> getAllReceivedHUs(final I_PP_Order ppOrder)
+	private static final Collection<I_M_HU> getAllReceivedHUs(final I_PP_Order ppOrder, final Set<Integer> excludeHUIds)
 	{
 		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
@@ -183,7 +203,15 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveHUAssignmentsForModel(receiptCollector);
 			for (final I_M_HU_Assignment assignment : assignments)
 			{
-				receivedHUs.computeIfAbsent(assignment.getM_HU_ID(), k -> assignment.getM_HU());
+				final int huId = assignment.getM_HU_ID();
+
+				// Exclude HU if required
+				if (excludeHUIds != null && excludeHUIds.contains(huId))
+				{
+					continue;
+				}
+
+				receivedHUs.computeIfAbsent(huId, k -> assignment.getM_HU());
 			}
 		}
 
@@ -193,12 +221,12 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	/**
 	 * Set the correct values in the already existing attributes of the HU
 	 *
-	 * @param attributesMap
 	 * @param hu
+	 * @param from
 	 */
-	private static void createHUAttributes(final AttributesMap attributesMap, final I_M_HU hu)
+	private static void updateHUAttributesFromAttributesMap(final I_M_HU hu, final AttributesMap from)
 	{
-		if (attributesMap.isEmpty())
+		if (from.isEmpty())
 		{
 			return;
 		}
@@ -207,13 +235,13 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		for (final I_M_HU_Attribute huAttribute : existingHUAttributes)
 		{
 			final int attributeId = huAttribute.getM_Attribute_ID();
-			final AttributeWithValue attributeWithValues = attributesMap.getByAttributeId(attributeId);
+			final AttributeWithValue attributeWithValues = from.getByAttributeId(attributeId);
 			if (attributeWithValues == null)
 			{
 				// the attribute was not used in PPOrder. Nothing to modify
 				continue;
 			}
-			
+
 			// TODO: shall we skip it if attribute is null and isTransferIfNull=false
 
 			huAttribute.setValue(attributeWithValues.getValueString());
@@ -311,9 +339,9 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		{
 			this.attributeId = attributeId;
 			this.transferWhenNull = transferWhenNull;
-			
+
 			this.stickWithNullValue = stickWithNullValue;
-			if(this.stickWithNullValue)
+			if (this.stickWithNullValue)
 			{
 				this.valueString = null;
 				this.valueNumber = null;
@@ -327,11 +355,11 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		private AttributeWithValue toStickyNull()
 		{
-			if(isStickWithNullValue())
+			if (isStickWithNullValue())
 			{
 				return this;
 			}
-			
+
 			final boolean stickWithNullValue = true;
 			final String valueString = null;
 			final BigDecimal valueNumber = null;
