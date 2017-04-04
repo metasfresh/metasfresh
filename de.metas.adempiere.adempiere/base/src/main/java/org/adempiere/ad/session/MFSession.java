@@ -203,17 +203,19 @@ public class MFSession
 	{
 		final String hostKey = sessionPO.getHostKey();
 
-		if (HOSTKEY_NOT_YET_DETERMINED.equals(hostKey))
+		if (!HOSTKEY_NOT_YET_DETERMINED.equals(hostKey))
 		{
-			// now get the session's HostKey
-			final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-			final String newHostKey = hostKeyBL.getCreateHostKey();
-			log.info("Setting AD_Session.HostKey={} for sessionPO={}", hostKey, sessionPO);
-
-			sessionPO.setHostKey(newHostKey);
-			InterfaceWrapperHelper.save(sessionPO);
+			return hostKey; // the host key was already determined. Nothing more to do.
 		}
-		return hostKey;
+		
+		// get the session's host key
+		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
+		final String newHostKey = hostKeyBL.getCreateHostKey();
+		log.info("Setting AD_Session.HostKey={} for sessionPO={}", hostKey, sessionPO);
+
+		sessionPO.setHostKey(newHostKey);
+		InterfaceWrapperHelper.save(sessionPO);
+		return newHostKey;
 	}
 
 	public void setWebSessionId(final String webSessionId)
