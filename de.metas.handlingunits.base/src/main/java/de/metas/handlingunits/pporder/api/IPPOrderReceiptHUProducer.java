@@ -63,7 +63,7 @@ public interface IPPOrderReceiptHUProducer
 	 *
 	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
-	List<I_M_HU> createPlanningHUs(BigDecimal qtyToReceive, I_C_UOM uom);
+	List<I_M_HU> createReceiptCandidatesAndPlanningHUs(BigDecimal qtyToReceive, I_C_UOM uom);
 
 	/**
 	 * Create manufacturing receipt candidate(s) for an already existing planning HU.

@@ -194,7 +194,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 		//
 		// Receive new HUs, update their attributes, and automatically assign them to PP_Order/PP_Order_BOMLine
 		final IPPOrderReceiptHUProducer producer = productKey.createReceiptCandidatesProducer();
-		createdHUs = producer.createPlanningHUs(qtyToReceive, qtyToReceiveUOM);
+		createdHUs = producer.createReceiptCandidatesAndPlanningHUs(qtyToReceive, qtyToReceiveUOM);
 	}
 
 }
