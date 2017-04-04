@@ -57,8 +57,6 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_M_Product;
 import org.compiere.model.X_M_Warehouse;
 import org.compiere.model.X_S_Resource;
-import org.compiere.util.Env;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
@@ -382,7 +380,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 
 		if (qty == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return qty;
 	}
@@ -492,9 +490,12 @@ import org.eevolution.mrp.api.MRPFirmType;
 			return InterfaceWrapperHelper.getContextAware(_contextProvider);
 		}
 
-		Check.assumeNotNull(_mrpContext, LiberoException.class, "contextProvider shall be set");
-		return _mrpContext;
-
+		if(_mrpContext != null)
+		{
+			return _mrpContext;
+		}
+		
+		return PlainContextAware.newWithThreadInheritedTrx();
 	}
 
 	@Override
