@@ -105,13 +105,13 @@ public class WEBUI_PP_Order_Receipt
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		createHUs();
+		createPlanningHUs();
 
 		getView().invalidateAll();
 		return MSG_OK;
 	}
 
-	public Collection<I_M_HU> createHUs()
+	private Collection<I_M_HU> createPlanningHUs()
 	{
 		final IPPOrderReceiptHUProducer receiptProducer;
 		final I_M_HU_LUTU_Configuration lutuConfigTemplate;
@@ -157,8 +157,8 @@ public class WEBUI_PP_Order_Receipt
 
 		//
 		// Generate the HUs and return them
-		final List<I_M_HU> hus = receiptProducer.createReceiptCandidatesAndPlanningHUs(qtyCUsTotal.getQty(), qtyCUsTotal.getUOM());
-		return hus;
+		final List<I_M_HU> planningHUs = receiptProducer.createReceiptCandidatesAndPlanningHUs(qtyCUsTotal.getQty(), qtyCUsTotal.getUOM());
+		return planningHUs;
 	}
 
 	private I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template)
