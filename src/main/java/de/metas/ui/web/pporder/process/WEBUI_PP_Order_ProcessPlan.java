@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
 
-import de.metas.handlingunits.pporder.api.HUPPOrderQtyProcessor;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -62,8 +62,8 @@ public class WEBUI_PP_Order_ProcessPlan
 				.map(row -> row.getPP_Order_Qty_ID())
 				.collect(GuavaCollectors.toImmutableList());
 
-		HUPPOrderQtyProcessor.newInstance()
-				.setRecordsToProcessByPPOrderId(ppOrderId, ppOrderQtyIds)
+		HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+				.setCandidatesToProcessByPPOrderId(ppOrderId, ppOrderQtyIds)
 				.process();
 
 		getView().invalidateAll();

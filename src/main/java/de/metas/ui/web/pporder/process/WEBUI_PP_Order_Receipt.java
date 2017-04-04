@@ -157,7 +157,7 @@ public class WEBUI_PP_Order_Receipt
 
 		//
 		// Generate the HUs and return them
-		final List<I_M_HU> hus = receiptProducer.receiveHUs(qtyCUsTotal.getQty(), qtyCUsTotal.getUOM());
+		final List<I_M_HU> hus = receiptProducer.createPlanningHUs(qtyCUsTotal.getQty(), qtyCUsTotal.getUOM());
 		return hus;
 	}
 
