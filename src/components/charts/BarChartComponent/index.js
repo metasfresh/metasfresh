@@ -69,6 +69,10 @@ class BarChartComponent extends Component {
         const { data, groupBy } = this.props;
         const { dimensions, ranges } = this.prepare();
 
+        // console.log('----componentDraw----');
+        // console.log(prev);
+        // console.log(data);
+
         drawData(this.svg, dimensions, ranges, data, groupBy.fieldName, initialAnimmation, prev);
     }
 
