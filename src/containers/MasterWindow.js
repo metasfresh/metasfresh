@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import {push} from 'react-router-redux';
 
 import {
     findRowByPropName,
@@ -51,6 +52,7 @@ class MasterWindow extends Component {
 
     componentWillUnmount() {
         const { master, dispatch } = this.props;
+        const {pathname} = this.props.location;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
         window.removeEventListener('beforeunload', this.confirm);
@@ -59,7 +61,7 @@ class MasterWindow extends Component {
             const result = window.confirm('Do you really want to leave?');
 
             if(!result){
-                this.context.router.goBack();
+                dispatch(push(pathname));
             }
         }
 
