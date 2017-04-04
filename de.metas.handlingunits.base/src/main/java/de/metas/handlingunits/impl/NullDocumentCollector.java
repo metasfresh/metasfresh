@@ -26,6 +26,8 @@ package de.metas.handlingunits.impl;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IDocumentCollector;
 
 /**
@@ -58,6 +60,6 @@ public final class NullDocumentCollector implements IDocumentCollector
 	@Override
 	public <T> List<T> getDocuments(final Class<T> documentType)
 	{
-		return Collections.emptyList();
+		return ImmutableList.of();
 	}
 }
