@@ -39,6 +39,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.terminal.IContainer;
@@ -62,6 +63,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUFilterPropertiesModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
+import de.metas.handlingunits.client.terminal.editor.model.impl.ReturnsWarehouseModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssignTULUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
@@ -169,6 +171,18 @@ public class HUEditorPanel
 	 */
 	private final ITerminalButton bPrintLabel;
 	private static final String ACTION_PrintLabel = "PrintLabel";
+
+	/**
+	 * button for moving HUs to quality Warehouse (task #1065)
+	 */
+	protected ITerminalButton bMoveToQualityWarehouse;
+	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; // TODO: Translate
+
+	/**
+	 * button to create Vendor Return inout (task #1062)
+	 */
+	protected ITerminalButton bCreateVendorReturn;
+	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; // TODO: Translate
 
 	/**
 	 * Barcode search field
@@ -369,27 +383,106 @@ public class HUEditorPanel
 					}
 				});
 			}
-		}
 
-		modelListener = new PropertyChangeListener()
+			// task #1065
+			// MoveToQualityWarehouse button
+			{
+				this.bMoveToQualityWarehouse = factory.createButton(ACTION_MoveToQualityWarehouse);
+
+				this.bMoveToQualityWarehouse.setTextAndTranslate(ACTION_MoveToQualityWarehouse);
+				bMoveToQualityWarehouse.setEnabled(true);
+				bMoveToQualityWarehouse.setVisible(true);
+				bMoveToQualityWarehouse.addListener(new UIPropertyChangeListener(factory, bMoveToQualityWarehouse)
+				{
+					@Override
+					public void propertyChangeEx(final PropertyChangeEvent evt)
+					{
+						doMoveToQualityWarehouse();
+					}
+				});
+
+			}
+
+			// task #1062
+			// CreateVendorReturn button
+			{
+				this.bCreateVendorReturn = factory.createButton(ACTION_CreateVendorReturn);
+
+				this.bCreateVendorReturn.setTextAndTranslate(ACTION_CreateVendorReturn);
+				bCreateVendorReturn.setEnabled(true);
+				bCreateVendorReturn.setVisible(true);
+				bCreateVendorReturn.addListener(new UIPropertyChangeListener(factory, bCreateVendorReturn)
+				{
+					@Override
+					public void propertyChangeEx(final PropertyChangeEvent evt)
+					{
+						doCreateVendorReturn();
+					}
+				});
+
+			}
+
+			modelListener = new PropertyChangeListener()
+			{
+				@Override
+				public void propertyChange(final PropertyChangeEvent evt)
+				{
+					load();
+				}
+			};
+			model.addPropertyChangeListener(HUEditorModel.PROPERTY_CurrentKey, modelListener);
+
+			//
+			// Init Layout
+			initLayout();
+
+			//
+			// Load from model (initially)
+			load();
+
+			terminalContext.addToDisposableComponents(this);
+		}
+	}
+
+	protected void doMoveToQualityWarehouse()
+	{
+		model.doSelectWarehouse(new Predicate<ReturnsWarehouseModel>()
 		{
 			@Override
-			public void propertyChange(final PropertyChangeEvent evt)
+			public boolean evaluate(final ReturnsWarehouseModel returnWarehouseModel)
 			{
-				load();
+				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
+
+				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final ITerminalDialog selectWarehouseDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_MoveToQualityWarehouse, returnsWarehousePanel);
+
+				//
+				// Activate TU->LU Assignment Dialog and wait for user answer
+				selectWarehouseDialog.activate();
+
+				//
+				// Return true if user really pressed OK
+				final boolean edited = !selectWarehouseDialog.isCanceled();
+				return edited;
 			}
-		};
-		model.addPropertyChangeListener(HUEditorModel.PROPERTY_CurrentKey, modelListener);
+		}, 
+		getCurrentWarehouse());
 
-		//
-		// Init Layout
-		initLayout();
+		load(); // refresh window (i.e toggle select) after operation
+	}
 
-		//
-		// Load from model (initially)
-		load();
+	/**
+	 * task #1062
+	 * Create vendor return for the selected HUs
+	 */
+	private void doCreateVendorReturn()
+	{
+		getHUEditorModel().createVendorReturn(getCurrentWarehouse());
 
-		terminalContext.addToDisposableComponents(this);
 	}
 
 	protected final ITerminalFactory getTerminalFactory()
@@ -496,6 +589,12 @@ public class HUEditorPanel
 	protected void updateActionButtonsStatus()
 	{
 		// nothing on this level
+	}
+
+	protected I_M_Warehouse getCurrentWarehouse()
+	{
+		// nothing on this level
+		return null;
 	}
 
 	/**
@@ -1173,4 +1272,5 @@ public class HUEditorPanel
 
 		updateMarkAsQualityInspectionButton();
 	}
+
 }

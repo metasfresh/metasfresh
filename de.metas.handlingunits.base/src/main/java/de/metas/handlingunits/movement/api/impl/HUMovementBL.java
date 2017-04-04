@@ -50,6 +50,8 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -320,6 +322,49 @@ public class HUMovementBL implements IHUMovementBL
 	{
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
+	}
+
+	@Override
+	public I_M_Movement moveToQualityWarehouse(final ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo, final List<I_M_HU> hus)
+	{
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouseFrom);
+
+		// final List<de.metas.handlingunits.model.I_M_Warehouse> qualityWarehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(ctx);
+
+		// if (Check.isEmpty(qualityWarehouses))
+		// {
+		// // TODO: Define message
+		// throw new TerminalException("@NoQualityReturnsWarehouse@");
+		// }
+
+		// TODO: Decide how to select the right quality warehouse
+		// final I_M_Warehouse warehouseTo = qualityWarehouses.get(0);
+
+		return doDirectMoveToWarehouse(ctxAware, warehouseFrom, warehouseTo, hus);
+	}
+
+	@Override
+	public I_M_Movement doDirectMoveToWarehouse(
+			final ITerminalContext ctxAware,
+			final I_M_Warehouse warehouseFrom,
+			final I_M_Warehouse warehouseTo,
+			final List<I_M_HU> hus)
+	{
+		// services
+		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+
+		// make the movement-creating API call
+		final List<I_M_Movement> movements = huMovementBL.generateMovementsToWarehouse(warehouseTo, hus, ctxAware);
+		Check.assume(movements.size() <= 1, "We called the API with HUs {} that are all in the same warehouse {}, so there is just one movement created", hus, warehouseFrom);
+
+		if (movements.isEmpty())
+		{
+			throw new TerminalException("@NotCreated@ @M_Movement_ID@");
+		}
+		final I_M_Movement movement = movements.get(0);
+
+		return movement;
 	}
 
 }
