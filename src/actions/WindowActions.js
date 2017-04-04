@@ -422,7 +422,7 @@ function updateRow(row, scope){
             if(key === 'fields'){
                 row.fields.map(field => {
                     dispatch(updateRowFieldProperty(
-                        field.field, field, row.tabid, row.rowid, scope
+                        field.field, field, row.tabid, row.rowId, scope
                     ))
                 });
             }else{
@@ -437,7 +437,7 @@ function updateRow(row, scope){
 function mapDataToState(data, isModal, rowId, id, windowType) {
     return (dispatch) => {
         let staleTabIds = [];
-        
+
         data.map((item, index) => {
             // Merging staleTabIds
             item.includedTabsInfo && item.includedTabsInfo.map(tabInfo => {
@@ -453,17 +453,21 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             if(!parsedItem.fields.length){
                 delete parsedItem.fields;
             }
-            
+
+            // First item in response is direct one for action that called it.
             if(index === 0 && rowId === 'NEW'){
-                dispatch(addNewRow(parsedItem, parsedItem.tabid, parsedItem.rowId, getScope(false)))
+                dispatch(addNewRow(
+                    parsedItem, parsedItem.tabid, parsedItem.rowId, 'master'
+                ))
             }else{
                 if (item.rowId && !isModal) {
-                    dispatch(updateRow(parsedItem, getScope(isModal)));
+                    dispatch(updateRow(parsedItem, 'master'));
                 } else {
-                    item.rowId &&
-                        dispatch(updateRow(parsedItem, getScope(isModal)));
+                    item.rowId && dispatch(updateRow(parsedItem, 'master'));
 
-                    dispatch(updateData(parsedItem, getScope(isModal)));
+                    dispatch(updateData(
+                        parsedItem, getScope(isModal && index === 0)
+                    ));
                 }
             }
         })
@@ -503,15 +507,23 @@ function updateStatus(responseData) {
     }
 }
 
+/*
+ * It updates store for single field value modification, like handleChange
+ * in MasterWidget
+ */
 export function updatePropertyValue(property, value, tabid, rowid, isModal) {
     return dispatch => {
         if (tabid && rowid) {
-            dispatch(updateRowProperty(property, value, tabid, rowid, 'master'))
+            dispatch(updateRowFieldProperty(
+                property, {value}, tabid, rowid, 'master'
+            ))
             if (isModal) {
                 dispatch(updateDataFieldProperty(property, {value}, 'modal'))
             }
         } else {
-            dispatch(updateDataFieldProperty(property, {value}, getScope(isModal)))
+            dispatch(updateDataFieldProperty(
+                property, {value}, getScope(isModal)
+            ))
             if (isModal) {
                 //update the master field too if exist
                 dispatch(updateDataFieldProperty(property, {value}, 'master'))

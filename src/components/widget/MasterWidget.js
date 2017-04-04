@@ -119,7 +119,9 @@ class MasterWidget extends Component {
             if(rowId === 'NEW'){
                 currRowId = relativeDocId;
             }
-            dispatch(updatePropertyValue(property, val, tabId, currRowId, isModal));
+            dispatch(updatePropertyValue(
+                property, val, tabId, currRowId, isModal
+            ));
         });
     }
 
