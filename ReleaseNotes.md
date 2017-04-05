@@ -32,6 +32,7 @@ Here come the actual release notes:
   * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
+  * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
   * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
   
 ## Fixes
