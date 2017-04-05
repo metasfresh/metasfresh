@@ -81,10 +81,13 @@ export default class App extends Component {
         super();
 
         store.dispatch(getAvailableLang()).then(response => {
-            if(response.data.values.indexOf(navigator.language)){
+            const {defaultValue, values} = response.data;
+            const valuesFlatten = values.map(item => Object.keys(item)[0]);
+
+            if(valuesFlatten.indexOf(navigator.language)){
                 Moment.locale(navigator.language);
             }else{
-                Moment.locale(response.data.defaultValue);
+                Moment.locale(defaultValue);
             }
         });
     }
