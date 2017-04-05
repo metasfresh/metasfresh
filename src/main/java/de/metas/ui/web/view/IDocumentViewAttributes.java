@@ -3,9 +3,9 @@ package de.metas.ui.web.view;
 import java.util.List;
 
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.view.json.JSONDocumentViewAttributes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 
 /*
@@ -42,6 +42,6 @@ public interface IDocumentViewAttributes
 
 	LookupValuesList getAttributeDropdown(String attributeName);
 
-	JSONDocument toJSONDocument();
+	JSONDocumentViewAttributes toJSONDocument();
 
 }

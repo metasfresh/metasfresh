@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.view.json.JSONDocumentViewAttributes;
 import de.metas.ui.web.view.json.JSONDocumentViewAttributesLayout;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -80,7 +81,7 @@ public class DocumentViewAttributesRestController
 	}
 
 	@GetMapping
-	public JSONDocument getData(
+	public JSONDocumentViewAttributes getData(
 			@PathVariable(PARAM_ViewId) final String viewId //
 			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 	)

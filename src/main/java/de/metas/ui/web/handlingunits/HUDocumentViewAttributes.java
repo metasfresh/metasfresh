@@ -22,12 +22,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.view.json.JSONDocumentViewAttributes;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
@@ -141,9 +141,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public JSONDocument toJSONDocument()
+	public JSONDocumentViewAttributes toJSONDocument()
 	{
-		final JSONDocument jsonDocument = new JSONDocument(documentPath);
+		final JSONDocumentViewAttributes jsonDocument = new JSONDocumentViewAttributes(documentPath);
 
 		final List<JSONDocumentField> jsonFields = attributesStorage.getAttributeValues()
 				.stream()
