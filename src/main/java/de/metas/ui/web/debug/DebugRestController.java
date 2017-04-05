@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.Check;
@@ -55,7 +52,6 @@ import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
@@ -137,23 +133,25 @@ public class DebugRestController
 	@RequestMapping(value = "/showColumnNamesForCaption", method = RequestMethod.PUT)
 	public void setShowColumnNamesForCaption(@RequestBody final String showColumnNamesForCaptionStr)
 	{
-		final boolean showColumnNamesForCaption = DisplayType.toBoolean(showColumnNamesForCaptionStr);
-		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
-		logResourceValueChanged("showColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
+		final boolean showColumnNamesForCaption_Old = userSession.isShowColumnNamesForCaption();
+		userSession.setShowColumnNamesForCaption(DisplayType.toBoolean(showColumnNamesForCaptionStr));
+		final boolean showColumnNamesForCaption_New = userSession.isShowColumnNamesForCaption();
+		logResourceValueChanged("showColumnNamesForCaption", showColumnNamesForCaption_New, showColumnNamesForCaption_Old);
 	}
 
-	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.PUT)
-	public void setDisableDeprecatedRestAPI(@RequestBody final String disableDeprecatedRestAPIStr)
+	@RequestMapping(value = "/allowDeprecatedRestAPI", method = RequestMethod.PUT)
+	public void setAllowDeprecatedRestAPI(@RequestBody final String allowDeprecatedRestAPI)
 	{
-		final boolean disableDeprecatedRestAPI = DisplayType.toBoolean(disableDeprecatedRestAPIStr);
-		final Object disableDeprecatedRestAPIOldObj = userSession.setProperty(UserSession.PARAM_DisableDeprecatedRestAPI, disableDeprecatedRestAPI);
-		logResourceValueChanged(UserSession.PARAM_DisableDeprecatedRestAPI, disableDeprecatedRestAPI, disableDeprecatedRestAPIOldObj);
+		final boolean allowDeprecatedRestAPI_Old = userSession.isAllowDeprecatedRestAPI();
+		userSession.setAllowDeprecatedRestAPI(DisplayType.toBoolean(allowDeprecatedRestAPI));
+		final boolean allowDeprecatedRestAPI_New = userSession.isAllowDeprecatedRestAPI();
+		logResourceValueChanged("Allow Deprecated REST API", allowDeprecatedRestAPI_New, allowDeprecatedRestAPI_Old);
 	}
 
 	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.GET)
-	public boolean isDisableDeprecatedRestAPI()
+	public boolean isAllowDeprecatedRestAPI()
 	{
-		return userSession.getPropertyAsBoolean(UserSession.PARAM_DisableDeprecatedRestAPI, false);
+		return userSession.isAllowDeprecatedRestAPI();
 	}
 
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
@@ -315,14 +313,6 @@ public class DebugRestController
 		public String getLoggerName()
 		{
 			return loggerName;
-		}
-
-		public static final LoggingModule forLoggerName(final String loggerName)
-		{
-			return Stream.of(values())
-					.filter(value -> Objects.equals(value.loggerName, loggerName))
-					.findFirst()
-					.orElseThrow(() -> new NoSuchElementException(loggerName));
 		}
 	}
 

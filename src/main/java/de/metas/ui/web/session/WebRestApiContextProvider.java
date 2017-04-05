@@ -10,10 +10,13 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.WebRestApiApplication;
 
 /*
  * #%L
@@ -38,6 +41,8 @@ import de.metas.logging.LogManager;
  */
 
 @SuppressWarnings("serial")
+@Component
+@Profile(WebRestApiApplication.PROFILE_Webui)
 public final class WebRestApiContextProvider implements ContextProvider, Serializable
 {
 	private static final Logger logger = LogManager.getLogger(WebRestApiContextProvider.class);
