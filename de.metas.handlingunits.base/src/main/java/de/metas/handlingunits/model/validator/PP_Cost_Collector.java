@@ -30,6 +30,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.I_C_UOM;
@@ -46,6 +47,8 @@ import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -202,7 +205,37 @@ public class PP_Cost_Collector
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
 
-		// TODO: reverse PP_Order_Qty records
+		final int costCollectorId = cc.getPP_Cost_Collector_ID();
+
+		//
+		// Un-process the candidate
+		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+		final I_PP_Order_Qty candidate = huPPOrderQtyDAO
+				.retrieveOrderQtys(cc.getPP_Order_ID())
+				.stream()
+				.filter(cand -> cand.getPP_Cost_Collector_ID() == costCollectorId)
+				.peek(cand -> Check.assume(cand.isProcessed(), "Candidate was expected to be processed: {}", cand))
+				.reduce((cand1, cand2) -> {
+					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
+				})
+				.orElse(null);
+		if(candidate != null)
+		{
+			final I_M_HU hu = candidate.getM_HU();
+			if(!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+			{
+				throw new HUException("Expected the HU to be active again but it wasn't")
+					.setParameter("HU", hu)
+					.setParameter("HUStatus", hu.getHUStatus())
+					.setParameter("candidate", candidate)
+					.setParameter("costCollector", cc)
+					.appendParametersToMessage();
+			}
+			
+			candidate.setPP_Cost_Collector(null);
+			candidate.setProcessed(false);
+			huPPOrderQtyDAO.save(candidate);
+		}
 	}
 
 	@DocValidate(timings = {
