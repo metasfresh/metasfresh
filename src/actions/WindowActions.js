@@ -86,7 +86,6 @@ export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     }
 }
 
-
 export function updateDataProperty(property, value, scope) {
     return {
         type: types.UPDATE_DATA_PROPERTY,
@@ -111,7 +110,6 @@ export function updateDataValidStatus(scope, validStatus) {
         validStatus
     }
 }
-
 
 export function updateRowProperty(property, item, tabid, rowid, scope) {
     return {

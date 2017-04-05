@@ -289,6 +289,13 @@ class Subheader extends Component {
                 <div
                     className="subheader-item js-subheader-item"
                     tabIndex={0}
+                    onClick={()=> redirect('/settings')}
+                >
+                    <i className="meta-icon-settings" /> Settings
+                </div>
+                <div
+                    className="subheader-item js-subheader-item"
+                    tabIndex={0}
                     onClick={()=> redirect('/logout')}
                 >
                     <i className="meta-icon-logout" /> Log out
