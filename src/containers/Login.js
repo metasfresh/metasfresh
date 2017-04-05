@@ -16,6 +16,9 @@ class Login extends Component {
     }
 
     userBrowser = () => {
+        let opr;
+        let safari;
+
         const isChrome = !!window.chrome && !!window.chrome.webstore;
 
         const isFirefox = typeof InstallTrigger !== 'undefined';
