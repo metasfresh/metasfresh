@@ -433,9 +433,10 @@ class Lookup extends Component {
                     ((validStatus &&
                         (
                             !validStatus.valid &&
-                            !validStatus.initialValue
+                            (!validStatus.initialValue ||
+                            this.inputSearch && this.inputSearch.value)
                         )
-                    ) ? 'input-error ' : '')
+                    ) ? ' input-error ' : '')
                 }>
                     <div className={
                         'input-editable ' +
