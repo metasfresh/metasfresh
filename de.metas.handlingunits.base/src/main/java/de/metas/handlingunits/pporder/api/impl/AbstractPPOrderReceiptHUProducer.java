@@ -160,7 +160,7 @@ import lombok.Data;
 		//
 		// Create receipt candidates
 		ppOrderReceiptCandidateCollector
-				.streamReceiptCandidates()
+				.streamRequests()
 				.forEach(this::createReceiptCandidateFromRequest);
 
 		//
@@ -333,7 +333,7 @@ import lombok.Data;
 	{
 		private final Map<Integer, CreateReceiptCandidateRequest> requestsByTopLevelHUId = new HashMap<>();
 
-		public Stream<CreateReceiptCandidateRequest> streamReceiptCandidates()
+		public Stream<CreateReceiptCandidateRequest> streamRequests()
 		{
 			return requestsByTopLevelHUId.values()
 					.stream()
@@ -356,19 +356,18 @@ import lombok.Data;
 				return;
 			}
 
-			final I_M_Product product = huTransaction.getProduct();
-			if (product == null)
+			final Quantity quantity = huTransaction.getQuantity();
+			if(quantity.isZero())
 			{
-				return; // shall not happen
+				return;
 			}
 
-			final Quantity quantity = huTransaction.getQuantity();
 			final I_M_HU topLevelHU = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
 
 			final CreateReceiptCandidateRequest request = requestsByTopLevelHUId.computeIfAbsent(topLevelHU.getM_HU_ID(), topLevelHUId -> CreateReceiptCandidateRequest.builder()
 					.locatorId(huTransaction.getM_Locator().getM_Locator_ID())
 					.topLevelHUId(topLevelHUId)
-					.productId(product.getM_Product_ID())
+					.productId(huTransaction.getProductId())
 					.build());
 			request.addQty(quantity);
 		}
