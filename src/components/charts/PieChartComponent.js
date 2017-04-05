@@ -168,7 +168,9 @@ class PieChartComponent extends Component {
 
     clearChart = () => {
         const {chartClass} = this.props;
-        document.getElementsByClassName(chartClass)[0].childNodes[0].remove();
+        const chart = document.getElementsByClassName(chartClass)[0];
+
+        chart && chart.childNodes[0].remove();
     };
 
     render() {
