@@ -95,6 +95,6 @@ public class ReceiptCorrectHUEditorPanel extends HUEditorPanel
 	protected I_M_Warehouse getCurrentWarehouse()
 	{
 		
-		return super.getCurrentWarehouse();
+		return getHUEditorModel().getM_Warehouse();
 	}
 }

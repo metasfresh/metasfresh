@@ -37,6 +37,11 @@ public class ReceiptCorrectHUEditorModel extends HUEditorModel
 
 	private I_M_Warehouse _warehouse;
 
+	public I_M_Warehouse getM_Warehouse()
+	{
+		return _warehouse;
+	}
+
 	public ReceiptCorrectHUEditorModel(final ITerminalContext terminalContext, final int warehouseID)
 	{
 		super(terminalContext);
