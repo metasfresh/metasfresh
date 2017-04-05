@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -122,8 +124,10 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	@Override
 	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
 	{
-		final String viewId = UUID.randomUUID().toString();
+		Preconditions.checkArgument(jsonRequest.getAD_Window_ID() == WEBUI_HU_Constants.WEBUI_HU_Window_ID, "Invalid windowId in %s", jsonRequest);
 		final int adWindowId = jsonRequest.getAD_Window_ID();
+		
+		final String viewId = UUID.randomUUID().toString();
 
 		//
 		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
