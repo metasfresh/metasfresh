@@ -43,10 +43,10 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
 
 
             if(d.valuePrev === d.value){
-                console.log('true');
+                // console.log('true');
                 return ranges.y(d.valuePrev)
             } else {
-                console.log('false');
+                // console.log('false');
                 return dimensions.height;
             }
 
@@ -70,10 +70,10 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
 
 
             if(d.valuePrev === d.value){
-                console.log('true');
+                // console.log('true');
                 return dimensions.height - ranges.y(d.valuePrev);
             } else {
-                console.log('false');
+                // console.log('false');
                 return 0;
             }
 
