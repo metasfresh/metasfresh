@@ -179,7 +179,7 @@ import de.metas.logging.LogManager;
 
 	private Date getMovementDate()
 	{
-		if(movementDate == null)
+		if (movementDate == null)
 		{
 			movementDate = SystemTime.asDayTimestamp();
 		}
@@ -193,7 +193,7 @@ import de.metas.logging.LogManager;
 		targetOrderBOMLines.forEach(bomLine -> {
 			if (!ppOrderBOMBL.isIssue(bomLine))
 			{
-				throw new HUException("Cannot issue on " + targetOrderBOMLines);
+				throw new IllegalArgumentException("Not an issue BOM line: " + bomLine);
 			}
 		});
 

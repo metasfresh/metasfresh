@@ -53,7 +53,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -74,7 +73,6 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
 import lombok.Builder;
 import lombok.Data;
 
@@ -133,7 +131,7 @@ import lombok.Data;
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 		//
 		final CreateReceiptCandidateRequestCollector ppOrderReceiptCandidateCollector = new CreateReceiptCandidateRequestCollector();
-		huContext.getTrxListeners().addListener(ppOrderReceiptCandidateCollector);
+		huContext.getTrxListeners().callAfterLoad(ppOrderReceiptCandidateCollector::addAllocationResults);
 
 		//
 		// Create Allocation Source
@@ -327,9 +325,9 @@ import lombok.Data;
 	}
 
 	/**
-	 * Listens on after load {@link HUTransaction}s, aggregates them and creates manufacturing receipt candidates.
+	 * Aggregates {@link HUTransaction}s and creates manufacturing receipt candidates requests.
 	 */
-	private static final class CreateReceiptCandidateRequestCollector implements IHUTrxListener
+	private static final class CreateReceiptCandidateRequestCollector
 	{
 		private final Map<Integer, CreateReceiptCandidateRequest> requestsByTopLevelHUId = new HashMap<>();
 
@@ -340,15 +338,14 @@ import lombok.Data;
 					.filter(candidate -> !candidate.isZeroQty());
 		}
 
-		@Override
-		public void afterLoad(final IHUContext huContext, final List<IAllocationResult> loadResults)
+		public void addAllocationResults(final IHUContext huContext, final List<IAllocationResult> loadResults)
 		{
 			loadResults.stream()
 					.flatMap(loadResult -> loadResult.getTransactions().stream())
-					.forEach(huTransaction -> afterLoad(huContext, huTransaction));
+					.forEach(this::addHUTransaction);
 		}
 
-		private void afterLoad(final IHUContext huContext, final IHUTransaction huTransaction)
+		private void addHUTransaction(final IHUTransaction huTransaction)
 		{
 			final I_M_HU hu = huTransaction.getM_HU();
 			if (hu == null)
