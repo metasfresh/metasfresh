@@ -37,8 +37,8 @@ public class HUMovementBL implements IHUMovementBL
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
 	{
 		HUPackingMaterialMovementLineAggregateBuilder.newInstance()
-			.setM_Movement(movement)
-			.createPackingMaterialMovementLines();
+				.setM_Movement(movement)
+				.createPackingMaterialMovementLines();
 	}
 
 	@Override
@@ -155,27 +155,14 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public I_M_Movement moveToQualityWarehouse(final ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo, final List<I_M_HU> hus)
+	public List<I_M_Movement> moveToQualityWarehouse(final ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo, final List<I_M_HU> hus)
 	{
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouseFrom);
-
-		// final List<de.metas.handlingunits.model.I_M_Warehouse> qualityWarehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(ctx);
-
-		// if (Check.isEmpty(qualityWarehouses))
-		// {
-		// // TODO: Define message
-		// throw new TerminalException("@NoQualityReturnsWarehouse@");
-		// }
-
-		// TODO: Decide how to select the right quality warehouse
-		// final I_M_Warehouse warehouseTo = qualityWarehouses.get(0);
 
 		return doDirectMoveToWarehouse(ctxAware, warehouseFrom, warehouseTo, hus);
 	}
 
 	@Override
-	public I_M_Movement doDirectMoveToWarehouse(
+	public List <I_M_Movement> doDirectMoveToWarehouse(
 			final ITerminalContext ctxAware,
 			final I_M_Warehouse warehouseFrom,
 			final I_M_Warehouse warehouseTo,
@@ -192,9 +179,9 @@ public class HUMovementBL implements IHUMovementBL
 		{
 			throw new TerminalException("@NotCreated@ @M_Movement_ID@");
 		}
-		final I_M_Movement movement = movements.get(0);
+		
 
-		return movement;
+		return movements;
 	}
 
 }

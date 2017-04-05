@@ -141,8 +141,8 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		Check.assumeNotNull(warehouseTo, "warehouseTo not null"); // shall not happen, because if it's null the action button shall be hidden
 	
 		final List<I_M_HU> hus = getSelectedHUs(warehouseFrom);
-		final I_M_Movement movement = huMovementBL.doDirectMoveToWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
-		if (movement == null)
+		final List<I_M_Movement> movements = huMovementBL.doDirectMoveToWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
+		if (movements.isEmpty())
 		{
 			return;
 		}
@@ -154,7 +154,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		// Inform the user about which movement was created
 		final ITerminalFactory terminalFactory = getTerminalFactory();
 		final Properties ctx = getTerminalContext().getCtx();
-		final String message = msgBL.parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
+		final String message = msgBL.parseTranslation(ctx, "@M_Movement_ID@ #" + movements.get(0).getDocumentNo());
 		terminalFactory.showInfo(this, "Created", message);
 	}
 

@@ -473,6 +473,16 @@ public class HUEditorPanel
 		getCurrentWarehouse());
 
 		load(); // refresh window (i.e toggle select) after operation
+		
+//		//
+//		// Inform the user about which movement was created
+//		final ITerminalFactory terminalFactory = getTerminalFactory();
+//		final Properties ctx = getTerminalContext().getCtx();
+//		
+//	
+//		final String message = Services.get(IMsgBL.class).parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
+//		terminalFactory.showInfo(getTerminalContext().get"Created", message);
+
 	}
 
 	/**

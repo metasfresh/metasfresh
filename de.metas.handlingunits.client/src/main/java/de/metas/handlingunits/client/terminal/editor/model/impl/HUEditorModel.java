@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -85,6 +86,7 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.logging.LogManager;
 
 public class HUEditorModel implements IDisposable
@@ -1296,6 +1298,12 @@ public class HUEditorModel implements IDisposable
 				clearCache();
 			}
 
+			//
+			// Send notifications
+			ReturnInOutProcessedEventBus.newInstance()
+					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
+					.notify(inOut);
+			
 			// not needed TODO
 			// // zoom into the created vendor return (return to customer not implemented yet)
 			// AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);

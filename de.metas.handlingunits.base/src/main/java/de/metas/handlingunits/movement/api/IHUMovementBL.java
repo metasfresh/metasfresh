@@ -100,8 +100,8 @@ public interface IHUMovementBL extends ISingletonService
 	 * @param hus
 	 * @return
 	 */
-	I_M_Movement doDirectMoveToWarehouse(ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, I_M_Warehouse warehouseTo, List<I_M_HU> hus);
+	List<I_M_Movement> doDirectMoveToWarehouse(ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, I_M_Warehouse warehouseTo, List<I_M_HU> hus);
 
-	I_M_Movement moveToQualityWarehouse(ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, I_M_Warehouse warehouseTo, List<I_M_HU> hus);
+	List<I_M_Movement> moveToQualityWarehouse(ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, I_M_Warehouse warehouseTo, List<I_M_HU> hus);
 
 }

@@ -1,11 +1,5 @@
 package de.metas.handlingunits.client.terminal.editor.view;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Warehouse;
-
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -16,9 +10,6 @@ import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.editor.model.impl.ReturnsWarehouseModel;
 import de.metas.handlingunits.client.terminal.mmovement.view.impl.AbstractMaterialMovementPanel;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.interfaces.I_M_Movement;
 
 /*
  * #%L
@@ -44,37 +35,36 @@ import de.metas.interfaces.I_M_Movement;
 
 public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<ReturnsWarehouseModel>
 {
-	private static transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	
-	private ITerminalContext terminalContext;
-	private ReturnsWarehouseModel model;
+
+
 
 	public ReturnsWarehousePanel(final ITerminalContext terminalContext, final ReturnsWarehouseModel model)
 	{
 		super(model);
-		this.setModel(model);
-		this.terminalContext = terminalContext;
+
+
+		initComponents();
+		initLayout();
 
 	}
 
 	protected ITerminalKeyPanel warehousePanel;
 
-//	@Override
-//	protected void initLayout(final ITerminalFactory factory)
-//	{
-//		addReturnWarehouseLane();
-//	}
-//
-//	private void initComponents()
-//	{
-//		final ITerminalFactory factory = getTerminalFactory();
-//
-//		final ReturnsWarehouseModel model = getModel();
-//		//
-//		// warehouse
-//		final IKeyLayout warehouseKeyLayout = model.getWarehouseKeyLayout();
-//		warehousePanel = factory.createTerminalKeyPanel(warehouseKeyLayout);
-//	}
+	protected void initLayout()
+	{
+		addReturnWarehouseLane();
+	}
+
+	private void initComponents()
+	{
+		final ITerminalFactory factory = getTerminalFactory();
+
+		final ReturnsWarehouseModel model = getModel();
+		//
+		// warehouse
+		final IKeyLayout warehouseKeyLayout = model.getWarehouseKeyLayout();
+		warehousePanel = factory.createTerminalKeyPanel(warehouseKeyLayout);
+	}
 
 	private void addReturnWarehouseLane()
 	{
@@ -93,29 +83,6 @@ public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<Returns
 		return card;
 	}
 
-	/**
-	 * task #1065
-	 * Move the selected HUs to the quality returns warehouse
-	 */
-	private void doMoveToQualityWarehouse()
-	{
-		// Move from the selected warehouse
-		final I_M_Warehouse warehouseFrom = model.getM_WarehouseFrom(); // shall not be null
-		final I_M_Warehouse warehouseTo = getModel().getM_WarehouseTo();
-		final List<I_M_HU> hus = model.getHUs();
-		final I_M_Movement movement = huMovementBL.moveToQualityWarehouse(terminalContext, warehouseFrom, warehouseTo, hus);
-		
-	
-
-		//
-		// Inform the user about which movement was created
-//		final ITerminalFactory terminalFactory = getTerminalFactory();
-//		final Properties ctx = getTerminalContext().getCtx();
-//		final String message = msgBL.parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
-//		terminalFactory.showInfo(this, "Created", message);
-
-	}
-
 	@Override
 	protected void loadFromModel()
 	{
@@ -131,10 +98,5 @@ public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<Returns
 	}
 
 	
-
-	public void setModel(ReturnsWarehouseModel model)
-	{
-		this.model = model;
-	}
 
 }
