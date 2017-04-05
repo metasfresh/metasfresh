@@ -588,8 +588,11 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
 
             if (preparedData.length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
-                    dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
+                }).catch(err => {
+                    throw err;
+                }).then(() => {
+                    dispatch(setProcessSaved());
                 });
                 throw new Error('close_modal');
             }else{
@@ -598,8 +601,11 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })
-                    dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
+                }).catch(err => {
+                    throw err;
+                }).then(() => {
+                    dispatch(setProcessSaved());
                 });
             }
         })
