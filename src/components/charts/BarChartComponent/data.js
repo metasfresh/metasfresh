@@ -3,7 +3,7 @@ const mapDataset = (dataset, prevData, labelField) => Object.keys(dataset)
     .map(key => ({
         key,
         value: dataset[key],
-        valuePrev: prevData[key]
+        valuePrev: prevData[key] ? prevData[key] : 0
     }));
 
 export const drawData = (svg, dimensions, ranges, data, labelField, initialAnimation, prev) => {
@@ -11,10 +11,10 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
     // console.log('----Draw----');
         // console.log(prev);
         // console.log(data);
-        console.log('**************************************');
+        // console.log('**************************************');
         let chartData = [];
         data.map((item, index) => {
-            // console.log(item);
+
             // console.log(index);
             chartData.push({data: item, prevData: prev ? prev[index] : 0});
         });
@@ -39,13 +39,24 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
         .attr('width', ranges.x1.bandwidth())
 
         .attr('y', initialAnimation ? dimensions.height : d => {   
-            console.log(d.value);
+            // console.log(d.valuePrev);
+
+
+            if(d.valuePrev === d.value){
+                console.log('true');
+                return ranges.y(d.valuePrev)
+            } else {
+                console.log('false');
+                return dimensions.height;
+            }
 
 
             // console.log(dimensions.height);
      
 
-            return ranges.y(d.value)
+// return ranges.y(d.valuePrev)
+
+            
             // return dimensions.height - ranges.y(d.value)
             // ranges.y(d.value)
         }
@@ -54,9 +65,20 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
         .attr('height', initialAnimation ? 0 : d => {
             // console.log(ranges.y(d.value));
 
-            console.log('--------------------------');
+            // console.log('--------------------------');
+            // console.log(dimensions.height - ranges.y(d.valuePrev));
 
-            return dimensions.height - ranges.y(d.value);
+
+            if(d.valuePrev === d.value){
+                console.log('true');
+                return dimensions.height - ranges.y(d.valuePrev);
+            } else {
+                console.log('false');
+                return 0;
+            }
+
+
+// return dimensions.height - ranges.y(d.valuePrev);
             // return ranges.y(d.value)
             // dimensions.height - ranges.y(d.value)
             
@@ -66,7 +88,7 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
         .transition()
         .duration(6000)
         .attr('y', d => {
-            console.log(d.value);
+            // console.log(d.value);
             return ranges.y(d.value);
         } )
         .attr('height', d => dimensions.height - ranges.y(d.value))
