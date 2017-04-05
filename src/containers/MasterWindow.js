@@ -222,6 +222,7 @@ class MasterWindow extends Component {
                     data={master.data}
                     layout={master.layout}
                     rowData={master.rowData}
+                    tabsInfo={master.includedTabsInfo}
                     dataId={dataId}
                     isModal={false}
                     newRow={newRow}

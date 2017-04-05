@@ -48,14 +48,17 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope, docId, saveStatus, validStatus) {
+export function initDataSuccess(
+    data, scope, docId, saveStatus, validStatus, includedTabsInfo
+) {
     return {
         type: types.INIT_DATA_SUCCESS,
         data,
         scope,
         docId,
         saveStatus,
-        validStatus
+        validStatus,
+        includedTabsInfo
     }
 }
 
@@ -83,6 +86,7 @@ export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     }
 }
 
+
 export function updateDataProperty(property, value, scope) {
     return {
         type: types.UPDATE_DATA_PROPERTY,
@@ -108,6 +112,7 @@ export function updateDataValidStatus(scope, validStatus) {
     }
 }
 
+
 export function updateRowProperty(property, item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_PROPERTY,
@@ -116,6 +121,14 @@ export function updateRowProperty(property, item, tabid, rowid, scope) {
         tabid,
         rowid,
         scope
+    }
+}
+
+export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
+    return {
+        type: types.UPDATE_DATA_INCLUDED_TABS_INFO,
+        scope,
+        includedTabsInfo
     }
 }
 
@@ -258,11 +271,12 @@ export function createWindow(
                 }
 
                 docId = response.data[elem].id;
-                const preparedData = parseToDisplay(response.data[elem].fields);
 
                 dispatch(initDataSuccess(
-                    preparedData, getScope(isModal), docId,
-                    response.data[0].saveStatus, response.data[0].validStatus
+                    parseToDisplay(response.data[elem].fields),
+                    getScope(isModal), docId,
+                    response.data[0].saveStatus, response.data[0].validStatus,
+                    response.data[0].includedTabsInfo
                 ));
 
                 if (isModal) {
@@ -270,6 +284,7 @@ export function createWindow(
                         dispatch(mapDataToState(
                             response.data, false, 'NEW', docId, windowType
                         ));
+                        dispatch(updateStatus(response.data))
                         dispatch(updateModal(response.data[0].rowId));
                     }
                 }else{
@@ -279,34 +294,36 @@ export function createWindow(
                 dispatch(initLayout(
                     'window', windowType, tabId, null, null, isAdvanced
                 )).then(response =>
-                        dispatch(initLayoutSuccess(
-                            response.data, getScope(isModal)
-                        ))
-                    ).then(response => {
-                        let tabTmp = {};
-
-                        response.layout.tabs &&
-                        response.layout.tabs.map((tab, index) => {
-                            tabTmp[tab.tabid] = {};
-
-                            if(index === 0 || !tab.queryOnActivate){
-                                dispatch(
-                                    getTab(tab.tabid, windowType, docId)
-                                ).then(res => {
-                                    tabTmp[tab.tabid] = res;
-                                    dispatch(
-                                        addRowData(tabTmp, getScope(isModal))
-                                    );
-                                })
-                            }
-                        }
-                    )
-            }).catch((err) => {
-                dispatch(addNotification(
-                    'Error', err.response.data.error, 5000, 'error'
-                ));
-            });
+                    dispatch(initLayoutSuccess(
+                        response.data, getScope(isModal)
+                    ))
+                ).then(response => {
+                    dispatch(initTabs(
+                        response.layout.tabs, windowType, docId, isModal
+                    ))
+                })
         });
+    }
+}
+
+function initTabs(layout, windowType, docId, isModal) {
+    return dispatch => {
+        let tabTmp = {};
+
+        layout && layout.map((tab, index) => {
+            tabTmp[tab.tabid] = {};
+
+            if(index === 0 || !tab.queryOnActivate){
+                dispatch(
+                    getTab(tab.tabid, windowType, docId)
+                ).then(res => {
+                    tabTmp[tab.tabid] = res;
+                    dispatch(
+                        addRowData(tabTmp, getScope(isModal))
+                    );
+                })
+            }
+        })
     }
 }
 
@@ -490,10 +507,15 @@ function updateStatus(responseData) {
                     'master', item.tabid, item.rowId, item.saveStatus
                 ));
             }else{
+
                 item.validStatus &&
                     dispatch(updateDataValidStatus('master', item.validStatus));
                 item.saveStatus &&
                     dispatch(updateDataSaveStatus('master', item.saveStatus));
+                item.includedTabsInfo &&
+                    dispatch(updateDataIncludedTabsInfo(
+                        'master', item.includedTabsInfo
+                    ));
             }
         }
 

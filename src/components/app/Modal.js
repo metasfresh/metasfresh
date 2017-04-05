@@ -225,6 +225,7 @@ class Modal extends Component {
                         rowId={rowId}
                         isModal={true}
                         isAdvanced={isAdvanced}
+                        tabsInfo={null}
                     />
                 )
             case 'process':
