@@ -37,6 +37,7 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
+import lombok.NonNull;
 
 /**
  * Links a PP_Order to the <code>M_Material_Tracking</code> of the <code>PP_Order_BOMLine</code>'s HU.<br>
@@ -48,15 +49,8 @@ import de.metas.materialtracking.model.I_PP_Order;
 public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 {
 	@Override
-	public void linkPPOrderToMaterialTracking(final IHUContext huContext, final I_PP_Order_BOMLine ppOrderBOMLine, final I_M_HU hu)
+	public void linkPPOrderToMaterialTracking(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final I_M_Material_Tracking materialTracking)
 	{
-		//
-		// Get material tracking
-		final I_M_Material_Tracking materialTracking = extractMaterialTrackingIfAny(huContext, hu);
-		if(materialTracking == null)
-		{
-			return; // no material tracking
-		}
 		// Make sure the material tracking is compatible with BOM line
 		if (ppOrderBOMLine.getM_Product_ID() != materialTracking.getM_Product_ID())
 		{
@@ -90,7 +84,8 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 						.build());
 	}
 	
-	private I_M_Material_Tracking extractMaterialTrackingIfAny(final IHUContext huContext, final I_M_HU hu)
+	@Override
+	public I_M_Material_Tracking extractMaterialTrackingIfAny(final IHUContext huContext, final I_M_HU hu)
 	{
 		// Do nothing if material tracking module is not activated
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
