@@ -645,7 +645,8 @@ body {
 
 #root,
 #root>div,
-#root>div>div {
+.root-children,
+.root-children>div {
     height: 100%;
 }
 
