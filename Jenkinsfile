@@ -309,7 +309,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				final String mavenUpdatePropertyParam;
 				if(params.MF_UPSTREAM_VERSION)
 				{
-					final inSquaresIfNeeded = { String version -> return "LATEST" ? version: "[${version}]"; }
+					final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
 
 					// update the property, use the metasfresh version that we were given by the upstream job.
 					// the square brackets are required if we have a conrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
