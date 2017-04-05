@@ -49,7 +49,8 @@ public class SessionRemoteHostStorage implements IHostKeyStorage
 	}
 
 	/**
-	 * @return the current session's {@code Remote_Addr} value. Thorw an exception if the current session cant be obtained or if the current session has an empty {@code Remote_Addr} value.
+	 * @return the current session's {@code Remote_Host} value.
+	 * @throws an exception if the current session can't be obtained or if the current session has an empty {@code Remote_Host} value.
 	 */
 	@Override
 	public String getHostKey()
@@ -61,8 +62,8 @@ public class SessionRemoteHostStorage implements IHostKeyStorage
 		final MFSession currentSession = sessionBL.getCurrentSession(ctx);
 		Check.errorIf(currentSession == null, "the current session is null; ctx={}", ctx);
 
-		final String result = currentSession.getRemote_Addr();
-		Check.errorIf(Check.isEmpty(result, true), "the current session's Remote_Addr value is empty; currentSession={}; Env.getCtx()={}", currentSession, ctx);
+		final String result = currentSession.getRemote_Host();
+		Check.errorIf(Check.isEmpty(result, true), "the current session's Remote_Host value is empty; currentSession={}; Env.getCtx()={}", currentSession, ctx);
 
 		return result;
 	}
