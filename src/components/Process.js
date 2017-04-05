@@ -28,6 +28,7 @@ export class Process extends Component {
                     widgetData={widgetData}
                     isModal={true}
                     disabled={disabled}
+                    autoFocus={id === 0}
                     {...elem}
                 />
             )
