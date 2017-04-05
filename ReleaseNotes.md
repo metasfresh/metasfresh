@@ -39,6 +39,7 @@ Here come the actual release notes:
     * Adding the initial Windows Layout for material movements in WebUI.
   * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
   * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
+  * [#1277](https://github.com/metasfresh/metasfresh/issues/1277) Migrate current WebUI Menu from Development to master
 
 * metasfresh-webui-frontend  
   * [#541](https://github.com/metasfresh/metasfresh-webui-frontend/issues/541) Hide new and delete included documents when they are not available.
