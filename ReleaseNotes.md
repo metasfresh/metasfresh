@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 5.4 (2017-14)
 
-**upcoming**
+**this week's RC**
 
 ## Features
 * metasfresh-backend
@@ -50,6 +50,7 @@ Here come the actual release notes:
     
 * metasfresh-webui-api
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+  * [#283](https://github.com/metasfresh/metasfresh-webui-api/issues/283) Build does not use the specified parent version
   
 * metasfresh-webui-frontend
   * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
