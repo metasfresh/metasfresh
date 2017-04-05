@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-04T14:09:18 -->
+<!-- 2017-04-05T14:00:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/receiptlabel/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -40,7 +40,7 @@
 	<field name="zusatz" class="java.lang.String"/>
 	<field name="tracking" class="java.lang.String"/>
 	<field name="mhd" class="java.lang.String"/>
-	<field name="mhd_date" class="java.sql.Timestamp"/>
+	<field name="mhd_date" class="java.lang.String"/>
 	<field name="receiptdocno" class="java.lang.String"/>
 	<field name="packinginstruction" class="java.lang.String"/>
 	<field name="deliverydate" class="java.sql.Timestamp"/>
