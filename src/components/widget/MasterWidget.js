@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import {
     patch,
-    updateProperty,
+    updatePropertyValue,
     openModal
 } from '../../actions/WindowActions';
 
@@ -76,7 +76,7 @@ class MasterWidget extends Component {
         }
 
         if(widgetType !== 'Button'){
-            dispatch(updateProperty(
+            dispatch(updatePropertyValue(
                 property, value, tabId, currRowId, isModal)
             );
         }
@@ -119,7 +119,9 @@ class MasterWidget extends Component {
             if(rowId === 'NEW'){
                 currRowId = relativeDocId;
             }
-            dispatch(updateProperty(property, val, tabId, currRowId, isModal));
+            dispatch(updatePropertyValue(
+                property, val, tabId, currRowId, isModal
+            ));
         });
     }
 
