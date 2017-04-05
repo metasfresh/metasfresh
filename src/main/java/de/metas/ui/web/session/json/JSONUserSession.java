@@ -1,5 +1,7 @@
 package de.metas.ui.web.session.json;
 
+import org.compiere.util.Language;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -7,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -50,7 +53,7 @@ public class JSONUserSession
 	private final String rolename;
 
 	@JsonProperty("language")
-	private final String language;
+	private final JSONLookupValue language;
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
@@ -71,7 +74,8 @@ public class JSONUserSession
 			rolename = null;
 		}
 
-		language = userSession.getAD_Language();
+		final Language language = userSession.getLanguage();
+		this.language = JSONLookupValue.of(language.getAD_Language(), language.getName());
 
 		timeZone = JSONDate.getCurrentTimeZoneAsJson();
 	}

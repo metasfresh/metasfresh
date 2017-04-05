@@ -27,6 +27,7 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -363,6 +364,16 @@ public class DebugRestController
 		{
 			throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
 		}
+	}
+
+	@PutMapping("/language")
+	public String setAD_Language(@RequestBody final String adLanguage)
+	{
+		final String adLanguageOld = userSession.setAD_Language(adLanguage);
+		final String adLanguageNew = userSession.getAD_Language();
+		logResourceValueChanged("AD_Language", adLanguageNew, adLanguageOld);
+
+		return adLanguageNew;
 	}
 
 }

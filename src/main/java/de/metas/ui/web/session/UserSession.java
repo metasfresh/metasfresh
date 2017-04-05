@@ -284,6 +284,11 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		return Env.getAD_Language(getCtx());
 	}
+	
+	public Language getLanguage()
+	{
+		return Env.getLanguage(getCtx());
+	}
 
 	public Locale getLocale()
 	{
