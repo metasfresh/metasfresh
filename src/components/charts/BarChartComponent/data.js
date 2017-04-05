@@ -41,7 +41,6 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
         .attr('y', initialAnimation ? dimensions.height : d => {   
             // console.log(d.valuePrev);
 
-
             if(d.valuePrev === d.value){
                 // console.log('true');
                 return ranges.y(d.valuePrev)

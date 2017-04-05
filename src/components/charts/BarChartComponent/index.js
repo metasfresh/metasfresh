@@ -68,7 +68,7 @@ class BarChartComponent extends Component {
     draw(initialAnimmation, prev){
         const { data, groupBy } = this.props;
         const { dimensions, ranges } = this.prepare();
-        console.log(ranges);
+        // console.log(ranges);
 
         // console.log('----componentDraw----');
         // console.log(prev);

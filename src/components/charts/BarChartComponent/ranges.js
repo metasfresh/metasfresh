@@ -17,6 +17,16 @@ export const getX1Range = (width, fields) => {
 export const getYRange = (height, data, fields) => {
     const keys = fields.map(field => field.fieldName);
 
+console.log(
+    
+    ([0, d3.max(data, d => {
+            return d3.max(keys, key => {
+                return d[key];
+            });
+        })])
+        
+);
+
     return d3.scaleLinear()
         .range([height, 0])
         .domain([0, d3.max(data, d => {
