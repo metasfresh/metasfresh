@@ -1732,13 +1732,10 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				continue;
 			}
-			
-			if (periodsOverlap(newTerm, term))
+
+			if (periodsOverlap(newTerm, term) && productsOverlap(newTerm, term))
 			{
-				if (productsOverlap(newTerm, term))
-				{
-					return true;
-				}
+				return true;
 			}
 
 		}
@@ -1775,13 +1772,10 @@ public class FlatrateBL implements IFlatrateBL
 					return true;
 				}
 
-				if (matching.getM_Product() == null)
+				if (matching.getM_Product() == null && (newProduct.getM_Product_Category_ID() == matching.getM_Product_Category_Matching_ID()))
 				{
-					if (newProduct.getM_Product_Category_ID() == matching.getM_Product_Category_Matching_ID())
-					{
-						// there is one matching with the same category as the given product
-						return true;
-					}
+					// there is one matching with the same category as the given product
+					return true;
 				}
 			}
 		}
@@ -1799,14 +1793,11 @@ public class FlatrateBL implements IFlatrateBL
 					return true;
 				}
 
-				if (matching.getM_Product() == null)
+				if (matching.getM_Product() == null && (product.getM_Product_Category_ID() == matching.getM_Product_Category_Matching_ID()))
 				{
 
-					if (product.getM_Product_Category_ID() == matching.getM_Product_Category_Matching_ID())
-					{
-						// there is one matching with the same category as the given product
-						return true;
-					}
+					// there is one matching with the same category as the given product
+					return true;
 				}
 			}
 		}
@@ -1831,14 +1822,11 @@ public class FlatrateBL implements IFlatrateBL
 							return true;
 						}
 
-						if (flatrateMatching.getM_Product() == null)
+						if (flatrateMatching.getM_Product() == null && (newFMProduct.getM_Product_Category_ID() == flatrateMatching.getM_Product_Category_Matching_ID()))
 						{
-							if (newFMProduct.getM_Product_Category_ID() == flatrateMatching.getM_Product_Category_Matching_ID())
-							{
-								// there is a matching for the category if the given products
+							// there is a matching for the category if the given products
 
-								return true;
-							}
+							return true;
 						}
 					}
 				}
@@ -1851,13 +1839,14 @@ public class FlatrateBL implements IFlatrateBL
 					{
 						final org.compiere.model.I_M_Product matchingProduct = flatrateMatching.getM_Product();
 
+						if (flatrateMatching.getM_Product() != null && (matchingProduct.getM_Product_Category_ID() == newFMProductCategory.getM_Product_Category_ID()))
+						{
+							// the term is for a product that matches the given product category
+							return true;
+						}
+
 						if (flatrateMatching.getM_Product() != null)
 						{
-							if (matchingProduct.getM_Product_Category_ID() == newFMProductCategory.getM_Product_Category_ID())
-							{
-								// the term is for a product that matches the given product category
-								return true;
-							}
 							// the matching is only for the product set. Doesn't fit the new matching product.
 							continue;
 						}

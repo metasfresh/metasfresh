@@ -7,7 +7,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -46,8 +45,6 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 
 	// services
 	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
-	private static String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
 
 	private Timestamp startDate;
 	private Timestamp endDate;
@@ -146,20 +143,7 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 
 		InterfaceWrapperHelper.save(newTerm);
 
-		// task #1169
-		// in case the term to be created will overlap with other term regarding time period and product
-		// the user must be announced about this and the new term shall not be completed
-		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(newTerm);
-
-		if (hasOverlappingTerms)
-		{
-			addLog(Services.get(IMsgBL.class).getMsg(
-					InterfaceWrapperHelper.getCtx(newTerm),
-					MSG_HasOverlapping_Term,
-					new Object[] { newTerm.getC_Flatrate_Term_ID(), newTerm.getBill_BPartner().getValue() }));
-		}
-
-		if (completeIt && !hasOverlappingTerms)
+		if (completeIt)
 		{
 			flatrateBL.complete(newTerm);
 		}
