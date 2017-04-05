@@ -23,6 +23,7 @@ SET default_with_oids = false;
 -- Name: webui_ad_menu; Type: TABLE; Schema: backup; Owner: metasfresh
 --
 
+DROP table if exists webui_ad_menu;
 CREATE TABLE webui_ad_menu (
     ad_menu_id numeric(10,0),
     ad_client_id numeric(10,0),
