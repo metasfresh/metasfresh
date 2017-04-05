@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableSet;
@@ -77,12 +76,10 @@ public interface IHUPPOrderIssueProducer
 	IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines);
 
 	/**
-	 * Consider all BOM lines of given manufacturing order, when issuing.
+	 * Sets all issue BOM lines of given manufacturing order, when issuing.
 	 *
 	 * @param ppOrder
 	 */
-	IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrder(I_PP_Order ppOrder);
-	
 	IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrderId(int ppOrderId);
 
 	/**

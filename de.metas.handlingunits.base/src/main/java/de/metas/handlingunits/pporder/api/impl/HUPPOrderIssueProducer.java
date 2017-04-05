@@ -23,7 +23,6 @@ package de.metas.handlingunits.pporder.api.impl;
  */
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -189,7 +188,7 @@ import de.metas.logging.LogManager;
 	@Override
 	public IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines)
 	{
-		Check.assumeNotNull(targetOrderBOMLines, "Parameter targetOrderBOMLines is not null");
+		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		targetOrderBOMLines.forEach(bomLine -> {
 			if (!ppOrderBOMBL.isIssue(bomLine))
 			{
@@ -200,25 +199,29 @@ import de.metas.logging.LogManager;
 		this.targetOrderBOMLines = targetOrderBOMLines;
 		return this;
 	}
+	
+	private List<I_PP_Order_BOMLine> getTargetOrderBOMLines()
+	{
+		if (targetOrderBOMLines == null || targetOrderBOMLines.isEmpty())
+		{
+			throw new HUException("No BOM lines were configured");
+		}
+
+		return targetOrderBOMLines;
+	}
+
 
 	@Override
 	public IHUPPOrderIssueProducer setTargetOrderBOMLine(final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
 		Check.assumeNotNull(targetOrderBOMLine, "targetOrderBOMLine not null");
-		return setTargetOrderBOMLines(Collections.singletonList(targetOrderBOMLine));
+		return setTargetOrderBOMLines(ImmutableList.of(targetOrderBOMLine));
 	}
 
 	@Override
 	public IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrderId(final int ppOrderId)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
-		setTargetOrderBOMLinesByPPOrder(ppOrder);
-		return this;
-	}
-
-	@Override
-	public IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrder(final I_PP_Order ppOrder)
-	{
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
 
 		final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
@@ -229,16 +232,6 @@ import de.metas.logging.LogManager;
 				.collect(GuavaCollectors.toImmutableList());
 
 		return setTargetOrderBOMLines(ppOrderBOMLines);
-	}
-
-	private List<I_PP_Order_BOMLine> getTargetOrderBOMLines()
-	{
-		if (targetOrderBOMLines == null || targetOrderBOMLines.isEmpty())
-		{
-			throw new HUException("No BOM lines were configured");
-		}
-
-		return targetOrderBOMLines;
 	}
 
 	private I_PP_Order_BOMLine getTargetOrderBOMLine(final int productId)
