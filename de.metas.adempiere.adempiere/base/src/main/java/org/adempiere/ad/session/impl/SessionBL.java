@@ -41,7 +41,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.hostkey.api.IHostKeyBL;
 
 public class SessionBL implements ISessionBL
 {
@@ -105,9 +104,9 @@ public class SessionBL implements ISessionBL
 		sessionPO.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		sessionPO.setLoginDate(Env.getDate(ctx));
 		
-		// Session's HostKey
-		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-		sessionPO.setHostKey(hostKeyBL.getCreateHostKey());
+		// gh #1274: don't invoke hostkeyBL now, because depending on the host key storage
+		// we might not yet be ready to get the host key from the storage
+		sessionPO.setHostKey(MFSession.HOSTKEY_NOT_YET_DETERMINED);
 		
 		return new MFSession(sessionPO);
 	}
