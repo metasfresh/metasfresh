@@ -6,6 +6,9 @@ import java.util.Set;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -31,6 +34,8 @@ import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 
 public interface IDocumentViewsRepository
 {
+	JSONDocumentViewLayout getViewLayout(int adWindowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
+	
 	IDocumentViewSelection getView(String viewId);
 
 	default <T extends IDocumentViewSelection> T getView(final String viewId, final Class<T> type)
@@ -50,5 +55,4 @@ public interface IDocumentViewsRepository
 	 * Notify all views that given records was changed.
 	 */
 	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
-
 }

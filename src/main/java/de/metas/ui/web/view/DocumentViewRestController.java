@@ -19,8 +19,8 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentView;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -74,9 +74,6 @@ public class DocumentViewRestController
 	private UserSession userSession;
 
 	@Autowired
-	private CompositeDocumentViewSelectionFactory factory;
-
-	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
 
 	private JSONOptions newJSONOptions()
@@ -92,7 +89,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		return factory.getViewLayout(adWindowId, viewDataType, newJSONOptions());
+		return documentViewsRepo.getViewLayout(adWindowId, viewDataType, newJSONOptions());
 	}
 
 	@PostMapping
