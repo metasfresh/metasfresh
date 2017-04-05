@@ -1,8 +1,8 @@
 --
 -- Backup
-create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459624 as select * from AD_TreeNodeMM;
-create table backup.AD_Menu_BKP_BeforeImportWebUI_5459624 as select * from AD_Menu;
-create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459624 as select * from AD_Menu_Trl;
+create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621 as select * from AD_TreeNodeMM;
+create table backup.AD_Menu_BKP_BeforeImportWebUI_5459621 as select * from AD_Menu;
+create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459621 as select * from AD_Menu_Trl;
 
 --
 -- Expected input tables:
@@ -74,4 +74,29 @@ select
 ad_menu_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, istranslated, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb
 from backup.WEBUI_AD_Menu_Trl t
 where not exists (select 1 from AD_Menu_Trl m where m.AD_Menu_ID=t.AD_Menu_ID and m.AD_Language=t.AD_Language);
+
+
+
+
+--
+-- Delete orphan trees of webui AD_Tree_ID
+delete from AD_TreeNodeMM n
+where n.Node_ID in (
+	select t.Node_ID
+	from get_AD_TreeNodeMM_Paths(1000039, null) t
+	where not IsCycle and t.Root_ID <> 0
+	-- order by Path
+);
+
+--
+-- Remove the Node_ID=1000007 (the webui subtree in AD_Tree_ID=10),
+-- and move it's direct children to Parent_ID=0
+delete from AD_TreeNodeMM where AD_Tree_ID=1000039 and node_id=1000007;
+update AD_TreeNodeMM set Parent_ID=0 where AD_Tree_ID=1000039 and Parent_ID=1000007;
+
+
+-- Check the webui menu
+/*
+select * from get_AD_TreeNodeMM_Paths(1000039, null) order by Path;
+*/
 
