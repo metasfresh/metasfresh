@@ -45,6 +45,9 @@ Here come the actual release notes:
   * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) ITrxListener.afterCommit is fired twice with TrxPropagation.REQUIRES_NEW
   * [#1272](https://github.com/metasfresh/metasfresh/issues/1272) Vendor ADR configuration not initially considered in Orderline
   
+* metasfresh-webui-api
+  * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+  
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes
