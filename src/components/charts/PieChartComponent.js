@@ -14,7 +14,7 @@ class PieChartComponent extends Component {
 
         const dimensions = this.setDimensions();
 
-        this.drawChart(
+        dimensions && this.drawChart(
             dimensions.wrapperWidth, dimensions.width, dimensions.height,
             dimensions.pie, dimensions.arc, data, color, dimensions.radius
         );
@@ -36,8 +36,8 @@ class PieChartComponent extends Component {
         const color = d3.scaleOrdinal()
             .range(colors);
         this.clearChart();
-        const dimensions = this.setDimensions(chartWrapp.offsetWidth);
-        this.drawChart(
+        const dimensions = chartWrapp && this.setDimensions(chartWrapp.offsetWidth);
+        dimensions && this.drawChart(
             dimensions.wrapperWidth, dimensions.width, dimensions.height,
             dimensions.pie, dimensions.arc, data, color
         );
@@ -49,10 +49,10 @@ class PieChartComponent extends Component {
         let chartWidth = width;
         let chartHeight = height;
 
+        const chartWrapper = document.getElementsByClassName(chartClass + '-wrapper')[0];
+
         if(responsive) {
-            wrapperWidth =
-                document.getElementsByClassName(chartClass + '-wrapper')[0]
-                    .offsetWidth;
+            wrapperWidth = chartWrapper && chartWrapper.offsetWidth;
             chartWidth = wrapperWidth;
         }
         const radius = Math.min(chartWidth, 0.66*chartHeight) / 2;
@@ -157,8 +157,8 @@ class PieChartComponent extends Component {
         d3.select(window)
             .on('resize.'+chartClass, () => {
                 this.clearChart();
-                const dimensions = this.setDimensions(chartWrap.offsetWidth);
-                this.drawChart(
+                const dimensions = chartWrap && this.setDimensions(chartWrap.offsetWidth);
+                dimensions && this.drawChart(
                     dimensions.wrapperWidth, dimensions.width,
                     dimensions.height, dimensions.pie, dimensions.arc, data,
                     color
