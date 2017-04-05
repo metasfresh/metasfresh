@@ -50,6 +50,10 @@ Here come the actual release notes:
     
 * metasfresh-webui-api
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+  
+* metasfresh-webui-frontend
+  * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
+    * Fix for the 100% height Layout of windows with included Tab. Subtab Shall always expand to 100% of screen resolution height until available spave is used. After that exceeding page size.
 
 # metasfresh 5.3 (2017-13)
 
