@@ -23,6 +23,7 @@ package de.metas.hostkey.api.impl;
  */
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
@@ -36,22 +37,20 @@ public class HostKeyBL implements IHostKeyBL
 {
 	private static final transient Logger logger = LogManager.getLogger(HostKeyBL.class);
 
-	private IHostKeyStorage _hostKeyStorage = new IniBasedHostKeyStorage();
+	private Supplier<IHostKeyStorage> _hostKeyStorage = () -> new IniBasedHostKeyStorage();
 
 	@Override
-	public void setHostKeyStorage(final IHostKeyStorage hostKeyStorage)
+	public void setHostKeyStorage(final Supplier<IHostKeyStorage> hostKeyStorage)
 	{
 		Check.assumeNotNull(hostKeyStorage, "Parameter hostKeyStorage is not null");
-		final IHostKeyStorage hostKeyStorageOld = _hostKeyStorage;
+
 		_hostKeyStorage = hostKeyStorage;
-		
-		logger.info("Changed HostKeyStorage: {} - > {}", hostKeyStorageOld, hostKeyStorage);
 	}
 
 	private IHostKeyStorage getHostKeyStorage()
 	{
 		Check.assumeNotNull(_hostKeyStorage, "hostKeyStorage shall be configured"); // shall not happen
-		return _hostKeyStorage;
+		return _hostKeyStorage.get();
 	}
 
 	@Override

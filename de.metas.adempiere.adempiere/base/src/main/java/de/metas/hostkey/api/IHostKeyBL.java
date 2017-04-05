@@ -1,5 +1,7 @@
 package de.metas.hostkey.api;
 
+import java.util.function.Supplier;
+
 import org.adempiere.util.ISingletonService;
 
 import de.metas.hostkey.spi.IHostKeyStorage;
@@ -17,7 +19,7 @@ public interface IHostKeyBL extends ISingletonService
 	 * 
 	 * @param hostKeyStorage
 	 */
-	void setHostKeyStorage(IHostKeyStorage hostKeyStorage);
+	void setHostKeyStorage(Supplier<IHostKeyStorage> hostKeyStorage);
 
 	/**
 	 * Get HostKey from configured storage (see {@link #setHostKeyStorage(IHostKeyStorage)}).

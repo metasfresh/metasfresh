@@ -383,39 +383,6 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeSetInstance copy(final I_M_AttributeSetInstance asi)
-	{
-		final int overrideM_AttributeSet_ID = -1;
-		return copy(asi, overrideM_AttributeSet_ID);
-	}
-
-	@Override
-	public I_M_AttributeSetInstance copy(final I_M_AttributeSetInstance asi, final int overrideM_AttributeSet_ID)
-	{
-		Check.assumeNotNull(asi, "asi not null");
-
-		final I_M_AttributeSetInstance asiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class, asi);
-		InterfaceWrapperHelper.copyValues(asi, asiNew, true); // honorIsCalculated=true
-		if(overrideM_AttributeSet_ID > 0)
-		{
-			asiNew.setM_AttributeSet_ID(overrideM_AttributeSet_ID);
-		}
-		
-		InterfaceWrapperHelper.save(asiNew);
-
-		for (final I_M_AttributeInstance ai : retrieveAttributeInstances(asi))
-		{
-			final I_M_AttributeInstance aiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asiNew);
-			InterfaceWrapperHelper.copyValues(ai, aiNew, true); // honorIsCalculated=true
-			aiNew.setAD_Org_ID(asiNew.getAD_Org_ID());
-			aiNew.setM_AttributeSetInstance(asiNew);
-			InterfaceWrapperHelper.save(aiNew);
-		}
-
-		return asiNew;
-	}
-
-	@Override
 	@Cached(cacheName = I_M_AttributeSet.Table_Name + "#ID=0")
 	public I_M_AttributeSet retrieveNoAttributeSet(@CacheCtx final Properties ctx)
 	{

@@ -24,6 +24,7 @@ package de.metas.printing.api.impl;
 
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.session.MFSession;
@@ -130,7 +131,7 @@ public class PrintPackageBL implements IPrintPackageBL
 			final String trxName)
 	{
 		final String jobInstructionsTrxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
-		Check.assume(Check.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
+		Check.assume(Objects.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
 				trxName, jobInstructionsTrxName, jobInstructions);
 
 		printPackage.setCopies(jobInstructions.getCopies());
