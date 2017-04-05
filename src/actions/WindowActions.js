@@ -608,6 +608,9 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     dispatch(setProcessSaved());
                 });
             }
+        }).catch(err => {
+            dispatch(setProcessSaved());
+            throw err;
         })
     }
 }
