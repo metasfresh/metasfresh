@@ -27,12 +27,13 @@ Here come the actual release notes:
     * Adding the initial Layout for vendor Invoice Window in WebUI.
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
+  * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
+  * [#1240](https://github.com/metasfresh/metasfresh/issues/1240) Number-of-copies parameter is ignored in direct print
   * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
-  * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
-  * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt
-    
+  * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
+  
 ## Fixes
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
