@@ -17,7 +17,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 
 /*
@@ -79,7 +78,7 @@ public final class JSONDocumentViewResult implements Serializable
 	// 
 	@JsonProperty(value = "result", index = 1000)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final List<JSONDocument> result;
+	private final List<JSONDocumentView> result;
 
 	@JsonProperty(value = "firstRow", index = 40)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -122,7 +121,7 @@ public final class JSONDocumentViewResult implements Serializable
 		// Page informations
 		if (viewResult.isPageLoaded())
 		{
-			result = JSONDocument.ofDocumentViewList(viewResult.getPage());
+			result = JSONDocumentView.ofDocumentViewList(viewResult.getPage());
 			firstRow = viewResult.getFirstRow();
 			pageLength = viewResult.getPageLength();
 		}
@@ -158,7 +157,7 @@ public final class JSONDocumentViewResult implements Serializable
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
 			, @JsonProperty("orderBy") final List<JSONDocumentViewOrderBy> orderBy //
 			//
-			, @JsonProperty("result") final List<JSONDocument> result //
+			, @JsonProperty("result") final List<JSONDocumentView> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
 			, @JsonProperty("pageLength") final Integer pageLength //
 			//

@@ -16,7 +16,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 
 /*
  * #%L
@@ -58,7 +58,7 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
+	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
 	{
 		final IDocumentViewSelection view = documentViewSelectionFactory.createView(jsonRequest);
 		views.put(view.getViewId(), view);

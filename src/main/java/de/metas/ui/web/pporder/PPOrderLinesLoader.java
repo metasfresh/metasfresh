@@ -28,7 +28,7 @@ import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -56,7 +56,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public class PPOrderLinesLoader
 {
-	public static final PPOrderLinesLoader of(final JSONCreateDocumentViewRequest request)
+	public static final PPOrderLinesLoader of(final JSONDocumentViewCreateRequest request)
 	{
 		return new PPOrderLinesLoader(request);
 	}
@@ -68,7 +68,7 @@ public class PPOrderLinesLoader
 	private final int _adWindowId;
 	private int _ppOrderId;
 
-	public PPOrderLinesLoader(final JSONCreateDocumentViewRequest request)
+	public PPOrderLinesLoader(final JSONDocumentViewCreateRequest request)
 	{
 		_adWindowId = request.getAD_Window_ID();
 

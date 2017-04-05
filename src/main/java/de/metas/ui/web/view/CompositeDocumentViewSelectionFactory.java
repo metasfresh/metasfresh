@@ -14,10 +14,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 
 /*
  * #%L
@@ -107,7 +107,7 @@ public class CompositeDocumentViewSelectionFactory
 		return getFactory(adWindowId, viewDataType).getViewLayout(adWindowId, viewDataType, jsonOpts);
 	}
 
-	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
+	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
 	{
 		final int adWindowId = jsonRequest.getAD_Window_ID();
 		final JSONViewDataType viewType = jsonRequest.getViewType();

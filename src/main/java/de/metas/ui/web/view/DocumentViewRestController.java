@@ -19,14 +19,14 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
+import de.metas.ui.web.view.json.JSONDocumentView;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -98,7 +98,7 @@ public class DocumentViewRestController
 	@PostMapping
 	public JSONDocumentViewResult createView(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @RequestBody final JSONCreateDocumentViewRequest jsonRequest //
+			, @RequestBody final JSONDocumentViewCreateRequest jsonRequest //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -157,7 +157,7 @@ public class DocumentViewRestController
 	}
 
 	@GetMapping("/{viewId}/byIds")
-	public List<JSONDocument> getByIds(
+	public List<JSONDocumentView> getByIds(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
 			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr)
@@ -169,7 +169,7 @@ public class DocumentViewRestController
 		final List<IDocumentView> result = documentViewsRepo.getView(viewId)
 				.assertWindowIdMatches(adWindowId)
 				.getByIds(documentIds);
-		return JSONDocument.ofDocumentViewList(result);
+		return JSONDocumentView.ofDocumentViewList(result);
 	}
 	
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")

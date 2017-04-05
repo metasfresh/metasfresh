@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewDataType;
 
 /*
  * #%L

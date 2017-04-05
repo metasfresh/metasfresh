@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -93,7 +93,7 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
+	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
 	{
 		if (!jsonRequest.getFilterOnlyIds().isEmpty())
 		{

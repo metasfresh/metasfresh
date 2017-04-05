@@ -41,14 +41,14 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest.JSONReferencing;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest.JSONReferencing;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -378,11 +378,11 @@ public final class ProcessInstance
 
 		//
 		// Create view create request builders from current records
-		final Map<Integer, JSONCreateDocumentViewRequest.Builder> viewRequestBuilders = new HashMap<>();
+		final Map<Integer, JSONDocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
 			final int recordWindowId = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
-			final JSONCreateDocumentViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> JSONCreateDocumentViewRequest.builder(recordWindowId, JSONViewDataType.grid));
+			final JSONDocumentViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> JSONDocumentViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
 		}
@@ -398,7 +398,7 @@ public final class ProcessInstance
 		{
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
-		final JSONCreateDocumentViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
+		final JSONDocumentViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
 				.setReferencing(extractJSONReferencing(processInfo))
 				.build();
 

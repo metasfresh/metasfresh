@@ -11,10 +11,10 @@ import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -52,7 +52,7 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 	
 	@Override
-	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
+	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
 	{
 		return PPOrderLinesView.builder()
 				.setViewId(UUID.randomUUID().toString())

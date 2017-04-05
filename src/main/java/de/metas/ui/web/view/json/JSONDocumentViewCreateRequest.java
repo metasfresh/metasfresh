@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
@@ -48,7 +47,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONCreateDocumentViewRequest implements Serializable
+public final class JSONDocumentViewCreateRequest implements Serializable
 {
 	public static final Builder builder(final String documentType, final JSONViewDataType viewType)
 	{
@@ -85,7 +84,7 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 	@JsonProperty("queryPageLength")
 	private final int queryPageLength;
 
-	private JSONCreateDocumentViewRequest(final Builder builder)
+	private JSONDocumentViewCreateRequest(final Builder builder)
 	{
 		super();
 		documentType = builder.getDocumentType();
@@ -100,7 +99,7 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 	}
 
 	@JsonCreator
-	private JSONCreateDocumentViewRequest(
+	private JSONDocumentViewCreateRequest(
 			@JsonProperty("documentType") final String documentType //
 			, @JsonProperty("viewType") final JSONViewDataType viewType //
 			, @JsonProperty("referencing") final JSONReferencing referencing //
@@ -303,9 +302,9 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 			this.viewType = viewType;
 		}
 
-		public JSONCreateDocumentViewRequest build()
+		public JSONDocumentViewCreateRequest build()
 		{
-			return new JSONCreateDocumentViewRequest(this);
+			return new JSONDocumentViewCreateRequest(this);
 		}
 
 		private String getDocumentType()
