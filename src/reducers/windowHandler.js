@@ -250,7 +250,9 @@ export default function windowHandler(state = initialState, action) {
         case types.UPDATE_DATA_INCLUDED_TABS_INFO:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    includedTabsInfo: action.includedTabsInfo
+                    includedTabsInfo: Object.assign({}, 
+                        state[action.scope].includedTabsInfo,
+                        action.includedTabsInfo)
                 })
             })
         // END OF SCOPED ACTIONS
