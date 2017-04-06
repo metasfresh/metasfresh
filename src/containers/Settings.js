@@ -15,7 +15,8 @@ class Settings extends Component {
 
         this.state={
             langs: [],
-            value: ''
+            value: '',
+            hideHeader: false
         }
     }
 
@@ -46,14 +47,27 @@ class Settings extends Component {
         dispatch(setUserLang(value)).then(() => {
             this.setState({
                 value: value
+            }, () => {
+                this.refresh();
             });
         });
     }
 
+    refresh = () => {
+        this.setState({
+            hideHeader: true
+        }, () => {
+            this.setState({
+                hideHeader: false
+            })
+        })
+    }
+
     render() {
-        const {langs, value} = this.state;
+        const {langs, value, hideHeader} = this.state;
         return (
             <Container
+                hideHeader={hideHeader}
                 siteName="Settings"
             >
                 <div className="window-wrapper">
