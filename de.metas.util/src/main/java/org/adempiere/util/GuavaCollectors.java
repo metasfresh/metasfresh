@@ -239,10 +239,26 @@ public final class GuavaCollectors
 	 *
 	 * @param keyMapper
 	 * @return immutable map collector
+	 * @see #toImmutableMapByKeyKeepFirstDuplicate(Function)
 	 */
 	public static <K, V> Collector<V, ?, ImmutableMap<K, V>> toImmutableMapByKey(final Function<? super V, ? extends K> keyMapper)
 	{
+		// NOTE: before changing the "duplicates" behavior please check the callers first!
 		return ImmutableMap.toImmutableMap(keyMapper, value -> value, (valuePrev, valueNow) -> valueNow);
+	}
+
+	/**
+	 * Collects to {@link ImmutableMap}.
+	 *
+	 * If duplicate key was found, the first provided item will be used.
+	 *
+	 * @param keyMapper
+	 * @return immutable map collector
+	 * @see #toImmutableMapByKey(Function)
+	 */
+	public static <K, V> Collector<V, ?, ImmutableMap<K, V>> toImmutableMapByKeyKeepFirstDuplicate(final Function<? super V, ? extends K> keyMapper)
+	{
+		return ImmutableMap.toImmutableMap(keyMapper, value -> value, (valuePrev, valueNow) -> valuePrev);
 	}
 
 	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toMap(final Supplier<Map<K, V>> mapSupplier)

@@ -1,7 +1,6 @@
 package org.adempiere.server.rpl.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 
@@ -51,15 +50,11 @@ public class ReplicationException extends AdempiereException
 		final StringBuilder sb = new StringBuilder();
 		sb.append(Services.get(IMsgBL.class).translate(getCtx(), adMessage));
 		
-		final String sbParams = buildParametersString();
-		if (!Check.isEmpty(sbParams, true))
-		{
-			sb.append(" (").append(sbParams).append(")");
-		}
-
+		appendParameters(sb);
+		
 		if (cause != null)
 		{
-			sb.append(" ").append(cause.getLocalizedMessage());
+			sb.append("\nCause: ").append(cause.getLocalizedMessage());
 		}
 
 		return sb.toString();

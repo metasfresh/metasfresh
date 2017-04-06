@@ -313,6 +313,31 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * Loads given model, out of transaction.
+	 * NOTE: to be used, mainly for loading master data models.
+	 * 
+	 * @param id model's ID
+	 * @param modelClass
+	 * @return loaded model
+	 */
+	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
+	{
+		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
+	}
+	
+	/**
+	 * Loads given model, using thread inherited transaction.
+	 * 
+	 * @param id model's ID
+	 * @param modelClass
+	 * @return loaded model
+	 */
+	public static <T> T load(final int id, final Class<T> modelClass)
+	{
+		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	/**
 	 * Converts given list to target type by calling {@link #create(Object, Class)} for each item.
 	 *
 	 * @param list list to be converted

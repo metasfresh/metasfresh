@@ -57,7 +57,8 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	I_M_HU_LUTU_Configuration copy(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	/**
-	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface. 
+	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface.
+	 * 
 	 * @param lutuConfiguration1
 	 * @param lutuConfiguration2
 	 * @return
@@ -116,6 +117,14 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyCUsTotal, I_C_UOM qtyCUsTotalUOM);
 
 	/**
+	 * Calculates how many CUs (in total).
+	 * 
+	 * @param lutuConfiguration
+	 * @return quantity; could be infinite or zero.
+	 */
+	Quantity calculateQtyCUsTotal(I_M_HU_LUTU_Configuration lutuConfiguration);
+
+	/**
 	 * Converts given quantity to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 * 
 	 * @param qty
@@ -124,4 +133,5 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
 	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);
+
 }

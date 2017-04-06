@@ -51,9 +51,10 @@ public class AProcessModel
 		Check.assumeNotNull(role, "No role found for {}", ctx);
 
 		final int AD_Table_ID = gridTab.getAD_Table_ID();
+		final int AD_Window_ID = gridTab.getAD_Window_ID();
 		final IProcessPreconditionsContext preconditionsContext = gridTab.toPreconditionsContext();
 
-		return Services.get(IADProcessDAO.class).retrieveRelatedProcessesForTableIndexedByProcessId(ctx, AD_Table_ID)
+		return Services.get(IADProcessDAO.class).retrieveRelatedProcessesForTableIndexedByProcessId(ctx, AD_Table_ID, AD_Window_ID)
 				.values().stream()
 				.filter(relatedProcess -> isExecutionGrantedOrLog(relatedProcess, role))
 				.map(relatedProcess -> createSwingRelatedProcess(relatedProcess, preconditionsContext))

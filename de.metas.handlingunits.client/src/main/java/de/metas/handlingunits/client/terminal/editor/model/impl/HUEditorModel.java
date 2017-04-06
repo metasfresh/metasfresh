@@ -1140,7 +1140,7 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * Save changes (if any) to database. This methods starts by calling {@link #saveHUProperties()}.
 	 */
-	public void save()
+	public final void save()
 	{
 		saveHUProperties();
 

@@ -34,7 +34,9 @@ import org.compiere.util.KeyNamePair;
  * Holds the needed data from PP Order BOM Line
  * @author cg
  *
+ * @deprecated Planning to remove this model and move the functionality to some other models which could be used in more places, because this one has very limited use-cases where we can use it.
  */
+@Deprecated
 public class PPOrderBOMLineModel
 {
 	final KeyNamePair knp;

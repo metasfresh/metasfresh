@@ -474,6 +474,61 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
+	public Quantity calculateQtyCUsTotal(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		final I_C_UOM uom = lutuConfiguration.getC_UOM();
+		
+		//
+		// CU
+		if(lutuConfiguration.isInfiniteQtyCU())
+		{
+			return Quantity.infinite(uom);
+		}
+		
+		final BigDecimal qtyCU = lutuConfiguration.getQtyCU();
+		if(qtyCU.signum() <= 0)
+		{
+			return Quantity.zero(uom);
+		}
+		
+		//
+		// TU
+		if (lutuConfiguration.isInfiniteQtyTU())
+		{
+			return Quantity.infinite(uom);
+		}
+		final BigDecimal qtyTU = lutuConfiguration.getQtyTU();
+		if(qtyTU.signum() <= 0)
+		{
+			return Quantity.zero(uom);
+		}
+		
+		//
+		//
+		final BigDecimal qtyCUsPerLU = qtyCU.multiply(qtyTU);
+
+		//
+		// LU
+		if(isNoLU(lutuConfiguration))
+		{
+			return new Quantity(qtyCUsPerLU, uom);
+		}
+		else
+		{
+			final BigDecimal qtyLU = lutuConfiguration.getQtyLU();
+			if(qtyLU.signum() <= 0)
+			{
+				return Quantity.zero(uom);
+			}
+			else
+			{
+				final BigDecimal qtyCUsTotal = qtyCUsPerLU.multiply(qtyLU);
+				return new Quantity(qtyCUsTotal, uom);
+			}
+		}
+	}
+
+	@Override
 	public Quantity convertQtyToLUTUConfigurationUOM(final BigDecimal qtyValue, final I_C_UOM qtyUOM, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

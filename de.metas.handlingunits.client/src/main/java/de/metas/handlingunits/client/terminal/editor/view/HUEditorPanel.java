@@ -925,6 +925,7 @@ public class HUEditorPanel
 	 *
 	 * @param dialog
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
 	{
 		if (!model.hasSelectedKeys())
@@ -986,14 +987,7 @@ public class HUEditorPanel
 	{
 		// NOTE: we are doing it in a long operation because it could take a while
 		// and we want to prevent user from clicking other things or user to believe the interface is frozen
-		getTerminalFactory().executeLongOperation(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				model.save();
-			}
-		});
+		getTerminalFactory().executeLongOperation(this, model::save);
 	}
 
 	@Override
