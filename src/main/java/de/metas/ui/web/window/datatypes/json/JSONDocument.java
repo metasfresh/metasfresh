@@ -208,9 +208,10 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentSaveStatus saveStatus;
 
+	/** {@link JSONIncludedTabInfo}s indexed by tabId */
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
+	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
 
 	public JSONDocument(final DocumentPath documentPath)
