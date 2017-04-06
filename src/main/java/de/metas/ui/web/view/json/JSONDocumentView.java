@@ -81,16 +81,16 @@ public class JSONDocumentView extends JSONDocumentBase
 			// Document view record specific attributes
 			if (documentView.isProcessed())
 			{
-				jsonDocument.putOtherProperty("processed", true);
+				jsonDocument.processed = true;
 			}
 			if (documentView.hasAttributes())
 			{
-				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);
+				jsonDocument.supportAttributes = true;
 			}
 			if (documentView.getType() != null)
 			{
 				// NOTE: mainly used by frontend to decide which Icon to show for this line
-				jsonDocument.putOtherProperty("type", documentView.getType().getIconName());
+				jsonDocument.type = documentView.getType().getIconName();
 			}
 		}
 
@@ -110,6 +110,24 @@ public class JSONDocumentView extends JSONDocumentBase
 
 		return jsonDocument;
 	}
+
+	@JsonProperty("processed")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean processed;
+	
+	@JsonProperty(value = JSONDocumentViewLayout.PROPERTY_supportAttributes)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean supportAttributes;
+	
+	/**
+	 * Record type.
+	 * 
+	 * NOTE: mainly used by frontend to decide which Icon to show for this line
+	 */
+	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String type;
+
 
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
