@@ -1841,6 +1841,7 @@ public final class Document
 			//
 			// Update document's valid status
 			document.checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
+			document.updateIncludedDetailsStatus();
 
 			//
 			// Update document's save status
