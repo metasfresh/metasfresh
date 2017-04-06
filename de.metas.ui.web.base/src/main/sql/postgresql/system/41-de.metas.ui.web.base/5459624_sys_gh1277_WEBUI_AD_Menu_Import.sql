@@ -1,8 +1,14 @@
 --
 -- Backup
-create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621 as select * from AD_TreeNodeMM;
-create table backup.AD_Menu_BKP_BeforeImportWebUI_5459621 as select * from AD_Menu;
-create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459621 as select * from AD_Menu_Trl;
+create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621a as select * from AD_TreeNodeMM;
+create table backup.AD_Menu_BKP_BeforeImportWebUI_5459621a as select * from AD_Menu;
+create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459621a as select * from AD_Menu_Trl;
+
+--
+-- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
+delete from AD_TreeNodeMM;
+insert into AD_TreeNodeMM select * from backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621;
+-- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
 
 --
 -- Expected input tables:
@@ -81,7 +87,9 @@ where not exists (select 1 from AD_Menu_Trl m where m.AD_Menu_ID=t.AD_Menu_ID an
 --
 -- Delete orphan trees of webui AD_Tree_ID
 delete from AD_TreeNodeMM n
-where n.Node_ID in (
+where 
+n.AD_Tree_ID=1000039
+and n.Node_ID in (
 	select t.Node_ID
 	from get_AD_TreeNodeMM_Paths(1000039, null) t
 	where not IsCycle and t.Root_ID <> 0
