@@ -111,7 +111,7 @@ export class DraggableWrapper extends Component {
 
                     cards.map((item, id) => {
                     return (
-                        <DraggableWidget
+                        id==3 && <DraggableWidget
                             key={item.id}
                             id={item.id}
                             index={id}
