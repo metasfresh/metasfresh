@@ -3,10 +3,8 @@ package de.metas.ui.web.pporder;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 
 import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
@@ -122,7 +120,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	public I_C_UOM getC_UOM()
 	{
 		final int uomId = getC_UOM_ID();
-		return InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
+		return InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
 	}
 
 	public BigDecimal getQty()
