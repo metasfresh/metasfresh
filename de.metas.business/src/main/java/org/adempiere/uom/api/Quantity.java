@@ -458,7 +458,7 @@ public final class Quantity
 	}
 
 	/**
-	 * Adds given quantity to this quantity
+	 * Adds given quantity and returns the result.
 	 * 
 	 * @param qtyToAdd
 	 * @return new {@link Quantity}

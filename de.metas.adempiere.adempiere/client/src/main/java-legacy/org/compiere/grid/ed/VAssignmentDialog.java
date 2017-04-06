@@ -327,11 +327,12 @@ public class VAssignmentDialog extends CDialog
 	{
 		log.info("");
 		//	Set AssignDateTo
-		Timestamp assignDateFrom = fDateFrom.getTimestamp();
-		BigDecimal qty = (BigDecimal)fQty.getValue();
-		KeyNamePair uom = m_lookup.get(fResource.getSelectedItem());
-		int minutes = MUOMConversion.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
-		Timestamp assignDateTo = TimeUtil.addMinutess(assignDateFrom, minutes);
+		final Timestamp assignDateFrom = fDateFrom.getTimestamp();
+		final BigDecimal qty = (BigDecimal)fQty.getValue();
+		final KeyNamePair uom = m_lookup.get(fResource.getSelectedItem());
+		final int minutes = MUOMConversion.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
+		
+		final Timestamp assignDateTo = TimeUtil.addMinutes(assignDateFrom, minutes);
 		m_mAssignment.setAssignDateTo (assignDateTo);
 		//
 	//	m_mAssignment.dump();
