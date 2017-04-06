@@ -109,9 +109,9 @@ public class WebRestApiApplication
 	private ApplicationContext applicationContext;
 
 	@Bean
-	public Adempiere adempiere()
+	public Adempiere adempiere(final WebRestApiContextProvider webuiContextProvider)
 	{
-		Env.setContextProvider(new WebRestApiContextProvider());
+		Env.setContextProvider(webuiContextProvider);
 
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 
