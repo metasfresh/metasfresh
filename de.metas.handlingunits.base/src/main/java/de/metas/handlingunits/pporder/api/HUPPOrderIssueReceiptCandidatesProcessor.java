@@ -18,7 +18,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -55,6 +54,7 @@ import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
@@ -572,7 +572,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
-			final Quantity qtyToIssueToAddConv = qtyToIssueToAdd.convertTo(uomConversionCtx, uom);
+			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
 
 			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getQty());
 			husToAssign.add(huToAssign);
