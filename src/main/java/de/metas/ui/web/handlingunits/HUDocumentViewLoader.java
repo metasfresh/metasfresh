@@ -32,8 +32,8 @@ import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -62,7 +62,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public class HUDocumentViewLoader
 {
-	public static final HUDocumentViewLoader of(final JSONDocumentViewCreateRequest request, final String referencingTableName)
+	public static final HUDocumentViewLoader of(final DocumentViewCreateRequest request, final String referencingTableName)
 	{
 		return new HUDocumentViewLoader(request, referencingTableName);
 	}
@@ -75,7 +75,7 @@ public class HUDocumentViewLoader
 
 	private final IDocumentViewAttributesProvider _attributesProvider;
 
-	private HUDocumentViewLoader(final JSONDocumentViewCreateRequest request, final String referencingTableName)
+	private HUDocumentViewLoader(final DocumentViewCreateRequest request, final String referencingTableName)
 	{
 		super();
 

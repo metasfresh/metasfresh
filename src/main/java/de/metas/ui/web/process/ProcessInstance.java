@@ -39,11 +39,10 @@ import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest.JSONReferencing;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -193,7 +192,7 @@ public final class ProcessInstance
 	{
 		return new ProcessInstance(this, copyMode);
 	}
-	
+
 	public IAutoCloseable activate()
 	{
 		return JavaProcess.temporaryChangeCurrentInstance(processClassInstance);
@@ -378,11 +377,11 @@ public final class ProcessInstance
 
 		//
 		// Create view create request builders from current records
-		final Map<Integer, JSONDocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
+		final Map<Integer, DocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
 			final int recordWindowId = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
-			final JSONDocumentViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> JSONDocumentViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
+			final DocumentViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> DocumentViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
 		}
@@ -398,8 +397,8 @@ public final class ProcessInstance
 		{
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
-		final JSONDocumentViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
-				.setReferencing(extractJSONReferencing(processInfo))
+		final DocumentViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
+				.setReferencingDocumentPaths(extractReferencingDocumentPaths(processInfo))
 				.build();
 
 		//
@@ -408,18 +407,19 @@ public final class ProcessInstance
 		return view;
 	}
 
-	private static final JSONReferencing extractJSONReferencing(final ProcessInfo processInfo)
+	private static final Set<DocumentPath> extractReferencingDocumentPaths(final ProcessInfo processInfo)
 	{
 		final String tableName = processInfo.getTableNameOrNull();
 		if (tableName == null)
 		{
-			return null;
+			return ImmutableSet.of();
 		}
 		final TableRecordReference sourceRecordRef = processInfo.getRecordRefOrNull();
 
 		final IQueryFilter<Object> selectionQueryFilter = processInfo.getQueryFilterOrElse(null);
 		if (selectionQueryFilter != null)
 		{
+			// TODO: hardcoded limit. It shall be much more obvious!!!
 			final int maxRecordAllowedToSelect = 200;
 			final List<Integer> recordIds = Services.get(IQueryBL.class).createQueryBuilder(tableName, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.filter(selectionQueryFilter)
@@ -428,7 +428,7 @@ public final class ProcessInstance
 					.listIds();
 			if (recordIds.isEmpty())
 			{
-				return null;
+				return ImmutableSet.of();
 			}
 			else if (recordIds.size() > maxRecordAllowedToSelect)
 			{
@@ -437,16 +437,19 @@ public final class ProcessInstance
 
 			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
 			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef); // assume all records are from same window
-			return JSONReferencing.of(adWindowId, recordIds);
+			return recordIds.stream()
+					.map(recordId -> DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, recordId))
+					.collect(ImmutableSet.toImmutableSet());
 		}
 		else if (sourceRecordRef != null)
 		{
 			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
-			return JSONReferencing.of(adWindowId, sourceRecordRef.getRecord_ID());
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, sourceRecordRef.getRecord_ID());
+			return ImmutableSet.of(documentPath);
 		}
 		else
 		{
-			return null;
+			return ImmutableSet.of();
 		}
 	}
 
@@ -531,7 +534,7 @@ public final class ProcessInstance
 
 		public ProcessInstance build()
 		{
-			
+
 			return new ProcessInstance(this);
 		}
 

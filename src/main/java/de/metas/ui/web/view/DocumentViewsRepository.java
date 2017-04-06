@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -118,16 +117,16 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
-		final int adWindowId = jsonRequest.getAD_Window_ID();
-		final JSONViewDataType viewType = jsonRequest.getViewType();
+		final int adWindowId = request.getAD_Window_ID();
+		final JSONViewDataType viewType = request.getViewType();
 		final IDocumentViewSelectionFactory factory = getFactory(adWindowId, viewType);
-		final IDocumentViewSelection view = factory.createView(jsonRequest);
+		final IDocumentViewSelection view = factory.createView(request);
 		if (view == null)
 		{
 			throw new AdempiereException("Failed creating view")
-					.setParameter("request", jsonRequest)
+					.setParameter("request", request)
 					.setParameter("factory", factory.toString());
 		}
 

@@ -7,11 +7,11 @@ import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -52,7 +52,7 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 	
 	@Override
-	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest jsonRequest)
 	{
 		return PPOrderLinesView.builder()
 				.setViewId(UUID.randomUUID().toString())

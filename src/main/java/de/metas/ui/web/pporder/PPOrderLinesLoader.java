@@ -27,8 +27,8 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
 import de.metas.ui.web.view.DocumentView;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -56,7 +56,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public class PPOrderLinesLoader
 {
-	public static final PPOrderLinesLoader of(final JSONDocumentViewCreateRequest request)
+	public static final PPOrderLinesLoader of(final DocumentViewCreateRequest request)
 	{
 		return new PPOrderLinesLoader(request);
 	}
@@ -68,7 +68,7 @@ public class PPOrderLinesLoader
 	private final int _adWindowId;
 	private int _ppOrderId;
 
-	public PPOrderLinesLoader(final JSONDocumentViewCreateRequest request)
+	public PPOrderLinesLoader(final DocumentViewCreateRequest request)
 	{
 		_adWindowId = request.getAD_Window_ID();
 

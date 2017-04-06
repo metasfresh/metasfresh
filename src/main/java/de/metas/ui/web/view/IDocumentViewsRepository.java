@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -45,7 +44,7 @@ public interface IDocumentViewsRepository
 		return view;
 	}
 
-	IDocumentViewSelection createView(JSONDocumentViewCreateRequest jsonRequest);
+	IDocumentViewSelection createView(DocumentViewCreateRequest request);
 
 	void deleteView(String viewId);
 

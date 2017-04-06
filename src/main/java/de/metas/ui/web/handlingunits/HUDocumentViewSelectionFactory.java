@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -122,16 +122,16 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
-		Preconditions.checkArgument(jsonRequest.getAD_Window_ID() == WEBUI_HU_Constants.WEBUI_HU_Window_ID, "Invalid windowId in %s", jsonRequest);
-		final int adWindowId = jsonRequest.getAD_Window_ID();
+		Preconditions.checkArgument(request.getAD_Window_ID() == WEBUI_HU_Constants.WEBUI_HU_Window_ID, "Invalid windowId in %s", request);
+		final int adWindowId = request.getAD_Window_ID();
 		
 		final String viewId = UUID.randomUUID().toString();
 
 		//
 		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
-		final Set<DocumentPath> referencingDocumentPaths = jsonRequest.getReferencingDocumentPaths();
+		final Set<DocumentPath> referencingDocumentPaths = request.getReferencingDocumentPaths();
 		final String referencingTableName;
 		if (!referencingDocumentPaths.isEmpty())
 		{
@@ -144,7 +144,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 			referencingTableName = null;
 		}
 
-		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.of(jsonRequest, referencingTableName);
+		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.of(request, referencingTableName);
 
 		return HUDocumentViewSelection.builder()
 				.setViewId(viewId)

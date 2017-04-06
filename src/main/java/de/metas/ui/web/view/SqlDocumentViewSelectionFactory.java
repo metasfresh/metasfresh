@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -93,21 +92,21 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final JSONDocumentViewCreateRequest jsonRequest)
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
-		if (!jsonRequest.getFilterOnlyIds().isEmpty())
+		if (!request.getFilterOnlyIds().isEmpty())
 		{
-			throw new IllegalArgumentException("Filtering by Ids are not supported: " + jsonRequest);
+			throw new IllegalArgumentException("Filtering by Ids are not supported: " + request);
 		}
 
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(jsonRequest.getAD_Window_ID());
+		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(request.getAD_Window_ID());
 		return SqlDocumentViewSelection.builder(entityDescriptor)
 				.setServices(processDescriptorsFactory, documentReferencesService)
 				//
-				.setViewFieldsByCharacteristic(jsonRequest.getViewTypeRequiredFieldCharacteristic())
+				.setViewFieldsByCharacteristic(request.getViewTypeRequiredFieldCharacteristic())
 				//
-				.setStickyFilterByReferencedDocument(jsonRequest.getReferencingDocumentPathOrNull())
-				.setFiltersFromJSON(jsonRequest.getFilters())
+				.setStickyFilterByReferencedDocument(request.getSingleReferencingDocumentPathOrNull())
+				.setFiltersFromJSON(request.getFilters())
 				//
 				.build();
 	}

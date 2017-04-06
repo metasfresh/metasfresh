@@ -1,6 +1,5 @@
 package de.metas.ui.web.view;
 
-import de.metas.ui.web.view.json.JSONDocumentViewCreateRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -31,5 +30,5 @@ public interface IDocumentViewSelectionFactory
 {
 	JSONDocumentViewLayout getViewLayout(int adWindowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
 
-	IDocumentViewSelection createView(JSONDocumentViewCreateRequest jsonRequest);
+	IDocumentViewSelection createView(DocumentViewCreateRequest jsonRequest);
 }

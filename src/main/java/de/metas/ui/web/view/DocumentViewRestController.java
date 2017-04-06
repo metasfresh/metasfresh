@@ -100,7 +100,14 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		int adWindowIdEffective = jsonRequest.getAD_Window_ID();
+		final DocumentViewCreateRequest request = DocumentViewCreateRequest.builder(jsonRequest.getDocumentType(), jsonRequest.getViewType())
+				.setReferencingDocumentPaths(jsonRequest.getReferencingDocumentPaths())
+				.setFilters(jsonRequest.getFilters())
+				.setFilterOnlyIds(jsonRequest.getFilterOnlyIds())
+				.setFetchPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength())
+				.build();
+
+		int adWindowIdEffective = request.getAD_Window_ID();
 		if (adWindowIdEffective <= 0)
 		{
 			adWindowIdEffective = adWindowId;
@@ -110,15 +117,15 @@ public class DocumentViewRestController
 			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
 		}
 
-		final IDocumentViewSelection view = documentViewsRepo.createView(jsonRequest);
+		final IDocumentViewSelection view = documentViewsRepo.createView(request);
 
 		//
 		// Fetch result if requested
 		final DocumentViewResult result;
-		if (jsonRequest.getQueryPageLength() > 0)
+		if (request.getQueryPageLength() > 0)
 		{
 			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
-			result = view.getPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength(), orderBys);
+			result = view.getPage(request.getQueryFirstRow(), request.getQueryPageLength(), orderBys);
 		}
 		else
 		{
@@ -143,7 +150,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
@@ -168,7 +175,7 @@ public class DocumentViewRestController
 				.getByIds(documentIds);
 		return JSONDocumentView.ofDocumentViewList(result);
 	}
-	
+
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
@@ -176,7 +183,7 @@ public class DocumentViewRestController
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
@@ -192,7 +199,7 @@ public class DocumentViewRestController
 			, @PathVariable("viewId") final String viewId//
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
@@ -207,7 +214,7 @@ public class DocumentViewRestController
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
@@ -224,7 +231,7 @@ public class DocumentViewRestController
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
