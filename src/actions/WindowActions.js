@@ -461,9 +461,9 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 }
             })
 
-            const parsedItem = Object.assign({}, item, {
+            const parsedItem = item.fields ? Object.assign({}, item, {
                 fields: parseToDisplay(item.fields)
-            });
+            }) : item;
 
             // First item in response is direct one for action that called it.
             if(index === 0 && rowId === 'NEW'){

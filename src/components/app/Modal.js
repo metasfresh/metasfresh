@@ -93,8 +93,9 @@ class Modal extends Component {
             case 'window':
                 dispatch(createWindow(
                     windowType, dataId, tabId, rowId, true, isAdvanced
-                )).catch(() => {
+                )).catch(err => {
                     this.handleClose();
+                    throw err;
                 });
                 break;
             case 'process':
@@ -108,8 +109,9 @@ class Modal extends Component {
                         modalViewDocumentIds || (dataId ? [dataId] : selected),
                         tabId, rowId
                     )
-                ).catch(() => {
+                ).catch(err => {
                     this.handleClose();
+                    throw err;
                 });
                 break;
         }
