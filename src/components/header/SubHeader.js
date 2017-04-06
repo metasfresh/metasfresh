@@ -219,6 +219,7 @@ class Subheader extends Component {
 
         const docLinks = dataId && [
             <div
+                key={0}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => {
@@ -232,6 +233,7 @@ class Subheader extends Component {
                 </span>
             </div>,
             <div
+                key={1}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => {
@@ -244,6 +246,7 @@ class Subheader extends Component {
                 </span>
             </div>,
             <div
+                key={2}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => handleClone(windowType, dataId)}
@@ -251,6 +254,7 @@ class Subheader extends Component {
                 <i className="meta-icon-duplicate" /> Clone
             </div>,
             <div
+                key={3}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => handleDelete()}
@@ -282,6 +286,13 @@ class Subheader extends Component {
                     </span>
                 </div>}
                 {docLinks}
+                <div
+                    className="subheader-item js-subheader-item"
+                    tabIndex={0}
+                    onClick={()=> redirect('/settings')}
+                >
+                    <i className="meta-icon-settings" /> Settings
+                </div>
                 <div
                     className="subheader-item js-subheader-item"
                     tabIndex={0}

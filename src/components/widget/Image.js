@@ -151,10 +151,6 @@ class Image extends Component{
         this.uploadBlob(this.imageInput.files[0]);
     }
 
-    renderImagePreview(src){
-        return <img src={src} alt="image" className="img-fluid" />
-    }
-
     renderVideoPreview(){
         const {isLoading} = this.state;
         return <div
@@ -163,12 +159,6 @@ class Image extends Component{
                 <video ref={c => this.camera = c} />
                 {isLoading && <div className="preview-loader"></div>}
             </div>
-    }
-
-    renderImagePlaceholder(text){
-        return <div className="image-placeholder">
-            <div className="placeholder-value">{text}</div>
-        </div>
     }
 
     renderUsingCameraControls(){
@@ -206,46 +196,58 @@ class Image extends Component{
 
     render(){
         const { imageSrc, usingCamera } = this.state;
-        const { fields } = this.props;
+        const { fields, readonly } = this.props;
 
-        return <div className="row">
-            <div className="col-sm-4 form-control-label">
-                {imageSrc ?
-                    this.renderImagePreview(imageSrc) :
-                    this.renderImagePlaceholder(fields[0].emptyText)
-                }
-            </div>
-
-            {usingCamera && this.renderVideoPreview()}
-
-            <div className="col-sm-4 form-control-label image-source-options">
-                <div className="row">
-                    <div className="col-sm-12">
-                        <label
-                            className="btn btn-meta-outline-secondary btn-sm"
-                        >
-                            <input
-                                className="input"
-                                type="file"
-                                onChange={(e) => this.handleUploadFile(e)}
-                                ref={c => this.imageInput = c}
-                            />
-                            <div className="text-content">
-                                <i className="meta-icon-upload" />
-                                Upload a photo
-                            </div>
-                        </label>
-                    </div>
-                    {
-                        this.isCameraAvailable() &&
-                        (usingCamera ?
-                            this.renderUsingCameraControls() :
-                            this.renderRegularCameraControl()
-                        )
+        return(
+            <div className="row">
+                <div className="col-sm-4 form-control-label">
+                    {imageSrc ?
+                        <img
+                            src={imageSrc}
+                            alt="image"
+                            className="img-fluid"
+                        /> :
+                        <div className="image-placeholder">
+                            <div
+                                className="placeholder-value"
+                            >{fields[0].emptyText}</div>
+                        </div>
                     }
                 </div>
+
+                {usingCamera && this.renderVideoPreview()}
+
+                {!readonly && <div
+                    className="col-sm-4 form-control-label image-source-options"
+                >
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <label
+                                className="btn btn-meta-outline-secondary btn-sm"
+                            >
+                                <input
+                                    className="input"
+                                    type="file"
+                                    onChange={(e) => this.handleUploadFile(e)}
+                                    ref={c => this.imageInput = c}
+                                />
+                                <div className="text-content">
+                                    <i className="meta-icon-upload" />
+                                    Upload a photo
+                                </div>
+                            </label>
+                        </div>
+                        {
+                            this.isCameraAvailable() &&
+                            (usingCamera ?
+                                this.renderUsingCameraControls() :
+                                this.renderRegularCameraControl()
+                            )
+                        }
+                    </div>
+                </div>}
             </div>
-        </div>
+        )
     }
 }
 

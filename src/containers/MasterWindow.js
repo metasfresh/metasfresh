@@ -1,9 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import {push} from 'react-router-redux';
 
 import {
     findRowByPropName,
-    attachFileAction
+    attachFileAction,
+    clearMasterData
 } from '../actions/WindowActions';
 
 import {
@@ -49,7 +51,8 @@ class MasterWindow extends Component {
     }
 
     componentWillUnmount() {
-        const { master } = this.props;
+        const { master, dispatch } = this.props;
+        const {pathname} = this.props.location;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
         window.removeEventListener('beforeunload', this.confirm);
@@ -58,9 +61,11 @@ class MasterWindow extends Component {
             const result = window.confirm('Do you really want to leave?');
 
             if(!result){
-                this.context.router.goBack();
+                dispatch(push(pathname));
             }
         }
+
+        dispatch(clearMasterData());
     }
 
     confirm = (e) => {
@@ -190,8 +195,8 @@ class MasterWindow extends Component {
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
                         modalSaveStatus={
-                            modal.saveStatus && 
-                            modal.saveStatus.saved !== undefined ? 
+                            modal.saveStatus &&
+                            modal.saveStatus.saved !== undefined ?
                                 modal.saveStatus.saved : true
                         }
                         isDocumentNotSaved={modal.saveStatus ?
@@ -217,6 +222,7 @@ class MasterWindow extends Component {
                     data={master.data}
                     layout={master.layout}
                     rowData={master.rowData}
+                    tabsInfo={master.includedTabsInfo}
                     dataId={dataId}
                     isModal={false}
                     newRow={newRow}

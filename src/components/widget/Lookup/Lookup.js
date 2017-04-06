@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 
 import {
     autocompleteRequest,
@@ -433,9 +433,10 @@ class Lookup extends Component {
                     ((validStatus &&
                         (
                             !validStatus.valid &&
-                            !validStatus.initialValue
+                            (!validStatus.initialValue ||
+                            this.inputSearch && this.inputSearch.value)
                         )
-                    ) ? 'input-error ' : '')
+                    ) ? ' input-error ' : '')
                 }>
                     <div className={
                         'input-editable ' +

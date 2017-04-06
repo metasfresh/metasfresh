@@ -19,7 +19,8 @@ const initialState = {
         viewDocumentIds: null,
         triggerField: null,
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        includedTabsInfo: {}
     },
     rawModal: {
         visible: false,
@@ -31,7 +32,9 @@ const initialState = {
         data: [],
         rowData: {},
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        includedTabsInfo: {},
+        docId: undefined
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -103,9 +106,19 @@ export default function windowHandler(state = initialState, action) {
                     layout: {},
                     rowData: {},
                     saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
+                    validStatus: action.validStatus,
+                    includedTabsInfo: action.includedTabsInfo
                 })
         })
+
+        case types.CLEAR_MASTER_DATA:
+            return Object.assign({}, state, {
+                master: Object.assign({}, state.master, {
+                    data: [],
+                    rowData: {},
+                    docId: undefined
+                })
+            })
 
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
@@ -120,9 +133,9 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {$set: action.item}
-                        }
+                        [action.tabid]: {$merge: {
+                            [action.rowid]: action.item
+                        }}
                     }
                 }
             })
@@ -146,22 +159,62 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
-        case types.UPDATE_ROW_SUCCESS:
+        case types.UPDATE_DATA_FIELD_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    data: {$set: state[action.scope].data.map(item =>
+                        item.field === action.property ?
+                        Object.assign({}, item, action.item) :
+                        item
+                    )}
+                }
+            })
+
+        case types.UPDATE_DATA_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    [action.property]: {$set:
+                        typeof action.value === 'string' ?
+                            action.value :
+                            Object.assign({},
+                                state[action.scope] ?
+                                    state[action.scope][action.property] : {},
+                                action.value
+                            )
+                    }
+                }
+            })
+
+        case types.UPDATE_ROW_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
                             [action.rowid]: {
-                                fields: {$set: state[action.scope]
-                                    .rowData[action.tabid][action.rowid]
-                                    .fields.map(item =>
-                                        item.field === action.item.field ?
+                                fields: {$set:
+                                    state[action.scope]
+                                        .rowData[action.tabid][action.rowid]
+                                        .fields.map(item =>
+                                        item.field === action.property ?
                                             Object.assign(
                                                 {}, item, action.item
                                             ) : item
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+            })
+
+        case types.UPDATE_ROW_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    rowData: {
+                        [action.tabid]: {
+                            [action.rowid]: {$merge: {
+                                [action.property]: action.item
+                            }}
                         }
                     }
                 }
@@ -194,52 +247,17 @@ export default function windowHandler(state = initialState, action) {
                 })
             })
 
-        case types.UPDATE_DATA_SUCCESS:
+        case types.UPDATE_DATA_INCLUDED_TABS_INFO:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    data: state[action.scope].data.map(item =>
-                        item.field === action.item.field ?
-                            Object.assign({}, item, action.item) :
-                            item
-                    ),
-                    saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
+                    includedTabsInfo:
+                        action.includedTabsInfo &&
+                            action.includedTabsInfo.reduce((acc, cur) => {
+                                acc[cur.tabid] = cur;
+                                return acc;
+                            }, {})
                 })
-        })
-
-        case types.UPDATE_DATA_PROPERTY:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    data: state[action.scope].data.map(item =>
-                        item.field === action.property ?
-                        Object.assign({}, item, { value: action.value }) :
-                        item
-                    )
-                })
-        })
-
-        case types.UPDATE_ROW_PROPERTY:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {
-                                fields: {$set:
-                                    state[action.scope]
-                                        .rowData[action.tabid][action.rowid]
-                                        .fields.map(item =>
-                                        item.field === action.property ?
-                                            Object.assign({}, item, {
-                                                value: action.value
-                                            }) : item
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
             })
-
         // END OF SCOPED ACTIONS
 
         // INDICATOR ACTIONS

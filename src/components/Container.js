@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Header from './header/Header';
 import ErrorScreen from './app/ErrorScreen';
-import NotificationHandler from './notifications/NotificationHandler';
 
 class Container extends Component {
     constructor(props){
@@ -14,35 +13,34 @@ class Container extends Component {
             docActionElem, docStatusData, docNoElement, docNoData,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
-            query, attachments, showIndicator, isDocumentNotSaved,
-            dontShowNotifications
+            query, attachments, showIndicator, isDocumentNotSaved, hideHeader
         } = this.props;
 
         return (
             <div>
-                <Header
-                    entity={entity}
-                    docStatus = {docActionElem}
-                    docStatusData = {docStatusData}
-                    docNo = {docNoElement}
-                    docNoData = {docNoData}
-                    docSummaryData = {docSummaryData}
-                    dataId={dataId}
-                    windowType={windowType}
-                    breadcrumb={breadcrumb}
-                    references={references}
-                    actions={actions}
-                    attachments={attachments}
-                    showSidelist={showSidelist}
-                    siteName = {siteName}
-                    query={query}
-                    showIndicator={showIndicator}
-                    isDocumentNotSaved={isDocumentNotSaved}
-                />
+                {
+                    // Forcing refresh component
+                    !hideHeader && <Header
+                        entity={entity}
+                        docStatus = {docActionElem}
+                        docStatusData = {docStatusData}
+                        docNo = {docNoElement}
+                        docNoData = {docNoData}
+                        docSummaryData = {docSummaryData}
+                        dataId={dataId}
+                        windowType={windowType}
+                        breadcrumb={breadcrumb}
+                        references={references}
+                        actions={actions}
+                        attachments={attachments}
+                        showSidelist={showSidelist}
+                        siteName = {siteName}
+                        query={query}
+                        showIndicator={showIndicator}
+                        isDocumentNotSaved={isDocumentNotSaved}
+                    />
+                }
                 {connectionError && <ErrorScreen />}
-                <NotificationHandler
-                    dontShowNotifications={dontShowNotifications}
-                />
                 <div
                     className={
                         'header-sticky-distance js-unselect ' +
