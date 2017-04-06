@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 **upcoming**
 
+## Fixes
+* metasfresh-backend
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+
 # metasfresh 5.4 (2017-14)
 
 **this week's RC**
