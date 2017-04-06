@@ -455,10 +455,13 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
 
         data.map((item, index) => {
             // Merging staleTabIds
-            item.includedTabsInfo && 
+            item.includedTabsInfo &&
                 Object.keys(item.includedTabsInfo).map(tabId => {
                     const tabInfo = item.includedTabsInfo[tabId];
-                    if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
+                    if(
+                        tabInfo.stale &&
+                        staleTabIds.indexOf(tabInfo.tabid) === -1
+                      ){
                         staleTabIds.push(tabInfo.tabid);
                     }
                 })

@@ -274,7 +274,7 @@ class Lookup extends Component {
                 this.setState({
                     list: response.data.values,
                     loading: false,
-                    validLocal: response.data.values.length === 0 ? false : true 
+                    validLocal: response.data.values.length === 0 ? false : true
                 });
             });
 
@@ -410,7 +410,7 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            propertiesCopy, isInputEmpty, list, query, loading, selected, 
+            propertiesCopy, isInputEmpty, list, query, loading, selected,
             isOpen, validLocal
         } = this.state;
 
@@ -432,7 +432,9 @@ class Lookup extends Component {
                     (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
-                    (mandatory && (isInputEmpty || (validStatus.initialValue && !validStatus.valid)) ? ' input-mandatory ' : '') +
+                    (mandatory && (isInputEmpty ||
+                        (validStatus.initialValue && !validStatus.valid)) ?
+                        ' input-mandatory ' : '') +
                     ((validStatus &&
                         (
                             (!validStatus.valid && !validStatus.initialValue) ||
