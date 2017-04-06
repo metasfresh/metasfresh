@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 /*
  * #%L
@@ -38,8 +39,8 @@ import org.springframework.context.annotation.Bean;
  * @author metas-dev <dev@metasfresh.com>
  */
 @SpringBootApplication( //
-scanBasePackages = { "de.metas", "org.adempiere" },  //
-excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
+		scanBasePackages = { "de.metas", "org.adempiere" },  //
+		excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
 )
 public class ServerBoot
 {
@@ -48,7 +49,7 @@ public class ServerBoot
 
 	public static void main(final String[] args)
 	{
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
+		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.BACKEND);
 
 		new SpringApplicationBuilder(ServerBoot.class)
@@ -57,9 +58,8 @@ public class ServerBoot
 				.run(args);
 	}
 
-	
-
 	@Bean
+	@Profile("!test")
 	public Adempiere adempiere()
 	{
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
