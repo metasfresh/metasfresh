@@ -423,11 +423,13 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         let staleTabIds = [];
         data.map(item => {
             // Merging staleTabIds
-            item.includedTabsInfo && item.includedTabsInfo.map(tabInfo => {
-                if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
-                    staleTabIds.push(tabInfo.tabid);
-                }
-            })
+            item.includedTabsInfo && 
+                Object.keys(item.includedTabsInfo).map(tabId => {
+                    const tabInfo = item.includedTabsInfo[tabId];
+                    if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
+                        staleTabIds.push(tabInfo.tabid);
+                    }
+                })
 
             // Mapping fields property
             item.fields = parseToDisplay(item.fields);

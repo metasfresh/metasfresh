@@ -107,11 +107,7 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {},
                     saveStatus: action.saveStatus,
                     validStatus: action.validStatus,
-                    includedTabsInfo: action.includedTabsInfo &&
-                        action.includedTabsInfo.reduce((acc, cur) => {
-                            acc[cur.tabid] = cur;
-                            return acc;
-                        }, {})
+                    includedTabsInfo: action.includedTabsInfo
                 })
         })
 
