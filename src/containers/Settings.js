@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import Moment from 'moment';
 
 import {
     getAvailableLang,
@@ -43,11 +44,12 @@ class Settings extends Component {
 
     patch = (value) => {
         const {dispatch} = this.props;
-
+        
         dispatch(setUserLang(value)).then(() => {
             this.setState({
                 value: value
             }, () => {
+                Moment.locale(Object.keys(value)[0]);
                 this.refresh();
             });
         });
