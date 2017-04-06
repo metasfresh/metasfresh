@@ -465,10 +465,6 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 fields: parseToDisplay(item.fields)
             });
 
-            if(!parsedItem.fields.length){
-                delete parsedItem.fields;
-            }
-
             // First item in response is direct one for action that called it.
             if(index === 0 && rowId === 'NEW'){
                 dispatch(addNewRow(
