@@ -3,11 +3,11 @@ package de.metas.manufacturing.dispo;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

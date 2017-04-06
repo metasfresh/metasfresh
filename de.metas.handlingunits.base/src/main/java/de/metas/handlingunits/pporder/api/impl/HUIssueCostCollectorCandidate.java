@@ -30,7 +30,6 @@ import java.util.TreeSet;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -40,6 +39,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.quantity.Quantity;
 
 /**
  * POJO used to accumulate quantity (see {@link #addQtyToIssue(I_M_Product, BigDecimal, I_C_UOM)}) and then later generate in Issue Cost Collector from it.
@@ -92,7 +92,7 @@ import de.metas.handlingunits.util.HUByIdComparator;
 		}
 
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
-		final Quantity qtyToIssueToAddConv = qtyToIssueToAdd.convertTo(uomConversionCtx, uom);
+		final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
 
 		qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getQty());
 

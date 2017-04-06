@@ -24,9 +24,10 @@ package de.metas.handlingunits;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+
+import de.metas.quantity.Quantity;
 
 /**
  * Implementors are used to specify how much of a given product fits into "something", such as TU.

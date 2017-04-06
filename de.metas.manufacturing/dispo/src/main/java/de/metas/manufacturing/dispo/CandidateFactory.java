@@ -3,13 +3,13 @@ package de.metas.manufacturing.dispo;
 import java.util.Date;
 import java.util.Optional;
 
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L

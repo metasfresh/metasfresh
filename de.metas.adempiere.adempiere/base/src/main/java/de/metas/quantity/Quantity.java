@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.quantity;
 
 /*
  * #%L
@@ -26,9 +26,7 @@ package org.adempiere.uom.api;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.uom.exceptions.QuantitiesUOMNotMatchingExpection;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
@@ -351,49 +349,6 @@ public final class Quantity
 		}
 
 		return negate();
-	}
-
-	/**
-	 * Creates a new {@link Quantity} object by converting this one to given UOM.
-	 * 
-	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
-	 * 
-	 * @param conversionCtx conversion context.
-	 * @param uomTo
-	 * @return new Quantity converted to given <code>uom</code>.
-	 */
-	public Quantity convertTo(final IUOMConversionContext conversionCtx, final I_C_UOM uomTo)
-	{
-		// NOTE: we are checking if conversionCtx is null as late as possible because maybe it won't be needed
-		Check.assumeNotNull(uomTo, "uomTo not null");
-		final int uomToId = uomTo.getC_UOM_ID();
-
-		// If the Source UOM of this quantity is the same as the UOM to which we need to convert
-		// we just need to return the Quantity with current/source switched
-		if (getSourceUOM().getC_UOM_ID() == uomToId)
-		{
-			return switchToSource();
-		}
-
-		// If current UOM is the same as the UOM to which we need to convert, we shall do nothing
-		final I_C_UOM currentUOM = getUOM();
-		if (currentUOM.getC_UOM_ID() == uomToId)
-		{
-			return this;
-		}
-
-		//
-		// Convert current quantity to "uomTo"
-		final BigDecimal sourceQtyNew = getQty();
-		final I_C_UOM sourceUOMNew = currentUOM;
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyNew = uomConversionBL.convertQty(conversionCtx,
-				sourceQtyNew,
-				sourceUOMNew, // From UOM
-				uomTo // To UOM
-				);
-		// Create an return the new quantity
-		return new Quantity(qtyNew, uomTo, sourceQtyNew, sourceUOMNew);
 	}
 
 	/**

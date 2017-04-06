@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -47,6 +46,7 @@ import de.metas.handlingunits.materialtracking.IHUPPOrderMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
+import de.metas.quantity.Quantity;
 
 /**
  * Aggregates {@link IHUTransaction}s and creates {@link I_PP_Cost_Collector}s for issuing materials to manufacturing order

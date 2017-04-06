@@ -9,7 +9,6 @@ import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -24,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L

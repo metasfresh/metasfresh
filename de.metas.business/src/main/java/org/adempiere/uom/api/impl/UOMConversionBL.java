@@ -51,6 +51,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 
 public class UOMConversionBL implements IUOMConversionBL
 {
@@ -97,6 +98,52 @@ public class UOMConversionBL implements IUOMConversionBL
 		return convertQty(product, qty, uomFrom, uomTo);
 	}
 
+	/**
+	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
+	 * 
+	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
+	 * 
+	 * @param quantity the quantity to convert
+	 * @param conversionCtx conversion context.
+	 * @param uomTo
+	 * 
+	 * @return new Quantity converted to given <code>uom</code>.
+	 */
+	@Override
+	public Quantity convertQuantityTo(final Quantity quantity, final IUOMConversionContext conversionCtx, final I_C_UOM uomTo)
+	{
+		// NOTE: we are checking if conversionCtx is null as late as possible because maybe it won't be needed
+		Check.assumeNotNull(uomTo, "uomTo not null");
+		final int uomToId = uomTo.getC_UOM_ID();
+
+		// If the Source UOM of this quantity is the same as the UOM to which we need to convert
+		// we just need to return the Quantity with current/source switched
+		if (quantity.getSourceUOM().getC_UOM_ID() == uomToId)
+		{
+			return quantity.switchToSource();
+		}
+
+		// If current UOM is the same as the UOM to which we need to convert, we shall do nothing
+		final I_C_UOM currentUOM = quantity.getUOM();
+		if (currentUOM.getC_UOM_ID() == uomToId)
+		{
+			return quantity;
+		}
+
+		//
+		// Convert current quantity to "uomTo"
+		final BigDecimal sourceQtyNew = quantity.getQty();
+		final I_C_UOM sourceUOMNew = currentUOM;
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final BigDecimal qtyNew = uomConversionBL.convertQty(conversionCtx,
+				sourceQtyNew,
+				sourceUOMNew, // From UOM
+				uomTo // To UOM
+				);
+		// Create an return the new quantity
+		return new Quantity(qtyNew, uomTo, sourceQtyNew, sourceUOMNew);
+	}
+	
 	@Override
 	public BigDecimal convertQtyToProductUOM(final IUOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom)
 	{

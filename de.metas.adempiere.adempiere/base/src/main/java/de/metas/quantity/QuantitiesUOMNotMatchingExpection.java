@@ -1,4 +1,4 @@
-package org.adempiere.uom.exceptions;
+package de.metas.quantity;
 
 /*
  * #%L

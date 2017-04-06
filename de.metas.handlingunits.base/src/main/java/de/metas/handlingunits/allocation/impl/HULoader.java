@@ -31,7 +31,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
@@ -61,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.quantity.Quantity;
 
 public class HULoader
 {
@@ -68,7 +68,7 @@ public class HULoader
 	{
 		return new HULoader(source, destination);
 	}
-	
+
 	private final IAllocationSource source;
 	private final IAllocationDestination destination;
 
@@ -460,10 +460,12 @@ public class HULoader
 
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product);
 
-		final Quantity qtyUnloadPartial = loadTrx
-				.getQuantity()
-				.negate()
-				.convertTo(uomConversionCtx, qtyUnloadFull.getUOM());
+		final Quantity qtyUnloadPartial = uomConversionBL.convertQuantityTo(
+				loadTrx
+						.getQuantity()
+						.negate(),
+				uomConversionCtx,
+				qtyUnloadFull.getUOM());
 
 		return new HUTransaction(
 				unloadTrx.getReferencedModel(),
