@@ -117,8 +117,6 @@ public class UserSession
 	@Autowired
 	public UserSession(final ApplicationEventPublisher eventPublisher)
 	{
-		super();
-
 		this.eventPublisher = eventPublisher;
 	}
 
