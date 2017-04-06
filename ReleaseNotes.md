@@ -29,6 +29,7 @@ Here come the actual release notes:
     * Adding the initial Layout for the User window into WebUI.
   * [#1185](https://github.com/metasfresh/metasfresh/issues/1185) Initial Layout for vendor Invoices in WebUI
     * Adding the initial Layout for vendor Invoice Window in WebUI.
+  * [#1205](https://github.com/metasfresh/metasfresh/issues/1205) Provide Default KPI Config
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
@@ -39,6 +40,7 @@ Here come the actual release notes:
     * Adding the initial Windows Layout for material movements in WebUI.
   * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
   * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
+  * [#1277](https://github.com/metasfresh/metasfresh/issues/1277) Migrate current WebUI Menu from Development to master
 
 * metasfresh-webui-frontend  
   * [#541](https://github.com/metasfresh/metasfresh-webui-frontend/issues/541) Hide new and delete included documents when they are not available.
