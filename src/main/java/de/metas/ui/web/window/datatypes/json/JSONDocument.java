@@ -308,9 +308,10 @@ public final class JSONDocument implements Serializable
 	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
 	private Map<String, JSONDocumentField> fieldsByName;
 
+	/** {@link JSONIncludedTabInfo}s indexed by tabId */
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
+	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
 
 	@JsonProperty("includedDocuments")
