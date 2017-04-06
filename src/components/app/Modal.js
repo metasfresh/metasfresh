@@ -111,7 +111,10 @@ class Modal extends Component {
                     )
                 ).catch(err => {
                     this.handleClose();
-                    throw err;
+
+                    if(err.toString() !== 'Error: close_modal'){
+                        throw err;
+                    }
                 });
                 break;
         }
