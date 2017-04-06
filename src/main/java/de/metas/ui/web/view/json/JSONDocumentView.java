@@ -111,14 +111,6 @@ public class JSONDocumentView extends JSONDocumentBase
 		return jsonDocument;
 	}
 
-	@JsonProperty("processed")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Boolean processed;
-	
-	@JsonProperty(value = JSONDocumentViewLayout.PROPERTY_supportAttributes)
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Boolean supportAttributes;
-	
 	/**
 	 * Record type.
 	 * 
@@ -128,7 +120,14 @@ public class JSONDocumentView extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String type;
 
-
+	@JsonProperty("processed")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean processed;
+	
+	@JsonProperty(value = JSONDocumentViewLayout.PROPERTY_supportAttributes)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean supportAttributes;
+	
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<JSONDocumentView> includedDocuments;
