@@ -3,6 +3,8 @@ package de.metas.manufacturing.dispo;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -89,5 +91,43 @@ public class Candidate
 				.supplyType(supplyType)
 				.quantity(quantity)
 				.build();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return new HashcodeBuilder()
+				.append(type)
+				.append(supplyType)
+				.append(quantity)
+				.append(product.getM_Product_ID())
+				.append(locator)
+				.append(projectedDate.getTime())
+				.append(referencedRecord)
+				.toHashcode();
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		final Candidate other = EqualsBuilder.getOther(this, obj);
+		if (other == null)
+		{
+			return false;
+		}
+
+		return new EqualsBuilder()
+				.append(type, other.type)
+				.append(supplyType, other.supplyType)
+				.append(quantity, other.quantity)
+				.append(product.getM_Product_ID(), other.product.getM_Product_ID())
+				.append(locator.getM_Locator_ID(), other.locator.getM_Locator_ID())
+				.append(projectedDate.getTime(), other.projectedDate.getTime())
+				.append(referencedRecord, other.referencedRecord)
+				.isEqual();
 	}
 }

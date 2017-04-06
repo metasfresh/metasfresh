@@ -16,7 +16,6 @@
 	<properties>
 		<start-class>de.metas.manufacturing.dispo.ServerBoot</start-class>
 		<migration-sql-basedir>75-manufacturing-dispo</migration-sql-basedir>
-		<version>1.5.2.RELEASE</version>
 	</properties>
 
 	<dependencyManagement>
@@ -66,20 +65,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- todo: see if we really need this one. -->
-		<dependency>
-			<groupId>de.metas.async</groupId>
-			<artifactId>de.metas.async</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<!-- todo: see if we really need this one...maybe move Quantity from business to base -->
-		<dependency>
-			<groupId>de.metas.business</groupId>
-			<artifactId>de.metas.business</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125

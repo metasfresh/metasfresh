@@ -85,8 +85,6 @@ public class CandidateChangeHandlerTests
 	@Test
 	public void test()
 	{
-		candidateRepository.reset();
-
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
 				.product(product)

@@ -11,13 +11,16 @@ import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,6 +58,10 @@ import de.metas.quantity.Quantity;
 public class CandiateRepositoryTests
 {
 
+	/** Watches current test and dumps the database to console in case of failure */
+	@Rule
+	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+
 	private final Date now = SystemTime.asDate();
 	private final Date earlier = TimeUtil.addMinutes(now, -10);
 	private final Date later = TimeUtil.addMinutes(now, +10);
@@ -85,14 +92,12 @@ public class CandiateRepositoryTests
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
 
-		candidateRepository.reset();
-
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.product(product)
 				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.quantity(new Quantity(new BigDecimal("11"), uom))
 				.projectedDate(now)
 				.build();
 		candidateRepository.add(someOtherCandidate);
@@ -120,7 +125,7 @@ public class CandiateRepositoryTests
 	 * Verifies that a candidate can be replaced with another candidate that has the same product, type, timestamp and locator.
 	 */
 	@Test
-	public void add()
+	public void add_update()
 	{
 		// guard
 		assertThat(candidateRepository.retrieveStockAt(mkQuery(now)).get(), is(stockCandidate));

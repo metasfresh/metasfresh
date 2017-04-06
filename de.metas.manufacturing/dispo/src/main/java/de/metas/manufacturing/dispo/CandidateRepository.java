@@ -1,17 +1,22 @@
 package de.metas.manufacturing.dispo;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.manufacturing.dispo.Candidate.Type;
+import de.metas.manufacturing.dispo.model.I_MD_Candidate;
+import de.metas.manufacturing.dispo.model.X_MD_Candidate;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,28 +42,56 @@ import de.metas.manufacturing.dispo.Candidate.Type;
 @Service
 public class CandidateRepository
 {
-	private final List<Candidate> candidates = new ArrayList<>();
-
-	public void add(final Candidate candidate)
+	public void add(@NonNull final Candidate candidate)
 	{
-		final Optional<Candidate> retrieveExact = retrieveExact(candidate);
-		if (retrieveExact.isPresent())
-		{
-			candidates.remove(retrieveExact.get());
-		}
-		candidates.add(candidate);
+		final I_MD_Candidate candidadteRecord = retrieveExact(candidate);
+		syncToRecord(candidadteRecord, candidate);
+		InterfaceWrapperHelper.save(candidadteRecord);
 	}
 
-	private Optional<Candidate> retrieveExact(final Candidate candidate)
+	private I_MD_Candidate retrieveExact(@NonNull final Candidate candidate)
 	{
-		return candidates.stream()
-				.filter(c -> c.getLocator().getM_Locator_ID() == candidate.getLocator().getM_Locator_ID()
-						&& c.getProduct().getM_Product_ID() == candidate.getProduct().getM_Product_ID()
-						&& Objects.equals(c.getProjectedDate(), candidate.getProjectedDate())
-						&& c.getType() == candidate.getType()
-						&& Objects.equals(c.getSupplyType(), candidate.getSupplyType()))
-				.findFirst();
+		final I_MD_Candidate candidateRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, candidate.getType().toString())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, candidate.getLocator().getM_Locator_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, candidate.getProduct().getM_Product_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getProjectedDate())
+				.create()
+				.firstOnly(I_MD_Candidate.class); // note that we have a UC to make sure there is just one
 
+		if (candidateRecord == null)
+		{
+			return InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
+		}
+		return candidateRecord;
+	}
+
+	private void syncToRecord(final I_MD_Candidate candidateRecord, final Candidate candidate)
+	{
+		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
+		candidateRecord.setM_Locator(candidate.getLocator());
+		candidateRecord.setM_Product(candidate.getProduct());
+		candidateRecord.setC_UOM(candidate.getQuantity().getUOM());
+		candidateRecord.setQty(candidate.getQuantity().getQty());
+		candidateRecord.setDateProjected(new Timestamp(candidate.getProjectedDate().getTime()));
+	}
+
+	private Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecord)
+	{
+		if (candidateRecord == null)
+		{
+			return Optional.empty();
+		}
+		return Optional
+				.of(Candidate.builder()
+						.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
+						.locator(candidateRecord.getM_Locator())
+						.product(candidateRecord.getM_Product())
+						.projectedDate(candidateRecord.getDateProjected())
+						.quantity(new Quantity(candidateRecord.getQty(), candidateRecord.getC_UOM()))
+						.build());
 	}
 
 	/**
@@ -67,40 +100,35 @@ public class CandidateRepository
 	 * @param query
 	 * @return
 	 */
-	public Optional<Candidate> retrieveStockAt(final CandidatesSegment query)
+	public Optional<Candidate> retrieveStockAt(@NonNull final CandidatesSegment query)
 	{
-		final Optional<Candidate> firstCandiateAfterQueryDate = candidates.stream()
-				.filter(c -> c.getType() == Type.STOCK
-						&& c.getProduct().getM_Product_ID() == query.getProduct().getM_Product_ID()
-						&& c.getLocator().getM_Locator_ID() == query.getLocator().getM_Locator_ID())
+		final I_MD_Candidate candidateRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, query.getLocator().getM_Locator_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getProduct().getM_Product_ID())
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, query.getProjectedDate())
+				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, false).endOrderBy()
+				.create()
+				.first();
 
-				.filter(c -> !c.getProjectedDate().after(query.getProjectedDate())) // no candidates that are after the date!
-				.max(Comparator.comparing(Candidate::getProjectedDate));
-
-		return firstCandiateAfterQueryDate;
+		return fromCandidateRecord(candidateRecord);
 	}
 
-	public List<Candidate> retrieveStockFrom(final CandidatesSegment query)
+	public List<Candidate> retrieveStockFrom(@NonNull final CandidatesSegment query)
 	{
-		final List<Candidate> candiatesAfterQueryDate = candidates.stream()
-				.filter(c -> c.getType() == Type.STOCK
-						&& c.getProduct().getM_Product_ID() == query.getProduct().getM_Product_ID()
-						&& c.getLocator().getM_Locator_ID() == query.getLocator().getM_Locator_ID())
+		final Stream<I_MD_Candidate> candidateRecords = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, query.getLocator().getM_Locator_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getProduct().getM_Product_ID())
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, query.getProjectedDate())
+				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, true).endOrderBy()
+				.create()
+				.stream();
 
-				.sorted(Comparator.comparing(Candidate::getProjectedDate))
-				.filter(c -> !c.getProjectedDate().before(query.getProjectedDate())) // no candidates that are before the date!
-				.sorted(Comparator.comparing(Candidate::getProjectedDate))
+		return candidateRecords
+				.map(record -> fromCandidateRecord(record).get())
 				.collect(Collectors.toList());
-
-		return candiatesAfterQueryDate;
-	}
-
-	/**
-	 * simple method to clear the repo between tests.
-	 */
-	@VisibleForTesting
-	/* package */ void reset()
-	{
-		candidates.clear();
 	}
 }
