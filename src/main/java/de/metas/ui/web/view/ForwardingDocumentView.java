@@ -118,6 +118,18 @@ public class ForwardingDocumentView implements IDocumentView
 	{
 		return getDelegate().getAttributes();
 	}
+	
+	@Override
+	public boolean hasIncludedView()
+	{
+		return getDelegate().hasIncludedView();
+	}
+	
+	@Override
+	public IDocumentViewSelection getCreateIncludedView(IDocumentViewsRepository viewsRepo)
+	{
+		return getDelegate().getCreateIncludedView(viewsRepo);
+	}
 
 	@Override
 	public List<? extends IDocumentView> getIncludedDocuments()

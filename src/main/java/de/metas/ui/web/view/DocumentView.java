@@ -171,6 +171,18 @@ public final class DocumentView implements IDocumentView
 	}
 
 	@Override
+	public boolean hasIncludedView()
+	{
+		return false;
+	}
+
+	@Override
+	public IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo)
+	{
+		throw new EntityNotFoundException("Row " + this + " does not support included view");
+	}
+
+	@Override
 	public List<IDocumentView> getIncludedDocuments()
 	{
 		return includedDocuments;
@@ -217,7 +229,7 @@ public final class DocumentView implements IDocumentView
 
 		public Builder setDocumentId(final DocumentId documentId)
 		{
-			this._documentId = documentId;
+			_documentId = documentId;
 			return this;
 		}
 
@@ -265,7 +277,7 @@ public final class DocumentView implements IDocumentView
 			return type;
 		}
 
-		public Builder setType(IDocumentViewType type)
+		public Builder setType(final IDocumentViewType type)
 		{
 			this.type = type;
 			return this;
@@ -321,14 +333,13 @@ public final class DocumentView implements IDocumentView
 			this.attributesKey = attributesKey;
 			return this;
 		}
-		
+
 		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
-			this.attributesKey = null; // will be auto-detected (i.e. the documentId will be used)
+			attributesKey = null; // will be auto-detected (i.e. the documentId will be used)
 			return this;
 		}
-
 
 		public Builder addIncludedDocument(final IDocumentView includedDocument)
 		{

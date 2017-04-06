@@ -14,6 +14,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import lombok.AccessLevel;
 
 /*
  * #%L
@@ -58,7 +59,6 @@ public final class DocumentViewCreateRequest
 	}
 
 	private final String documentType;
-	private transient Integer _adWindowId; // lazy
 	private final JSONViewDataType viewType;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
@@ -67,6 +67,11 @@ public final class DocumentViewCreateRequest
 
 	private final int queryFirstRow;
 	private final int queryPageLength;
+
+	@lombok.Setter(AccessLevel.NONE)
+	@lombok.Getter(AccessLevel.NONE)
+	private transient Integer _adWindowId; // lazy
+
 
 	private DocumentViewCreateRequest(final Builder builder)
 	{

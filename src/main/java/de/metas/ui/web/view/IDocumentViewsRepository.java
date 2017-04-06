@@ -34,7 +34,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 public interface IDocumentViewsRepository
 {
 	JSONDocumentViewLayout getViewLayout(int adWindowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
+
+	boolean hasView(String viewId);
 	
+	IDocumentViewSelection getViewIfExists(String viewId);
+
 	IDocumentViewSelection getView(String viewId);
 
 	default <T extends IDocumentViewSelection> T getView(final String viewId, final Class<T> type)

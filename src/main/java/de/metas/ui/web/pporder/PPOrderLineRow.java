@@ -3,11 +3,22 @@ package de.metas.ui.web.pporder;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
+import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.ToString;
 
@@ -50,6 +61,8 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	private final int ppOrderId;
 	private final int ppOrderBOMLineId;
 	private final int ppOrderQtyId;
+
+	private volatile String husToIssueViewId = null; // lazy
 
 	private PPOrderLineRow(final Builder builder)
 	{
@@ -137,17 +150,74 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	{
 		return getType().canReceive();
 	}
-	
+
 	public boolean isIssue()
 	{
 		return getType().canIssue();
 	}
 
-
 	@Override
 	public List<PPOrderLineRow> getIncludedDocuments()
 	{
 		return getIncludedDocuments(PPOrderLineRow.class);
+	}
+
+	@Override
+	public boolean hasIncludedView()
+	{
+		return isIssue();
+	}
+
+	@Override
+	public IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo)
+	{
+		if (isIssue())
+		{
+			return getCreateHUsToIssueView(viewsRepo);
+		}
+		else
+		{
+			throw new EntityNotFoundException("Line " + this + " does not have an included view");
+		}
+	}
+
+	private synchronized IDocumentViewSelection getCreateHUsToIssueView(final IDocumentViewsRepository viewsRepo)
+	{
+		if (husToIssueViewId != null)
+		{
+			final IDocumentViewSelection existingView = viewsRepo.getViewIfExists(husToIssueViewId);
+			if (existingView != null)
+			{
+				return existingView;
+			}
+		}
+
+		//
+		// Create new view
+		final IDocumentViewSelection newView = createHUsToIssueView(viewsRepo);
+		husToIssueViewId = newView.getViewId();
+		return newView;
+	}
+
+	private IDocumentViewSelection createHUsToIssueView(final IDocumentViewsRepository viewsRepo)
+	{
+		// TODO: move it to DAO/Repository
+		// TODO: rewrite the whole shit, this is just prototyping
+		final List<Integer> huIdsToAvailableToIssue = Services.get(IHandlingUnitsDAO.class)
+				.createHUQueryBuilder()
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				//
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.addOnlyWithProductId(getM_Product_ID())
+				.setOnlyTopLevelHUs()
+				//
+				.createQuery()
+				.listIds();
+
+		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.grid)
+				// .setParentViewId(parentViewId) // TODO: implement
+				.setFilterOnlyIds(huIdsToAvailableToIssue)
+				.build());
 	}
 
 	public static final class Builder
