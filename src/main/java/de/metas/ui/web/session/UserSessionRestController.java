@@ -1,5 +1,6 @@
 package de.metas.ui.web.session;
 
+import org.compiere.util.Language;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.json.JSONUserSession;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -41,13 +43,6 @@ public class UserSessionRestController
 	@Autowired
 	private UserSession userSession;
 
-	private static final void logResourceValueChanged(final String name, final Object value, final Object valueOld)
-	{
-		System.out.println("*********************************************************************************************");
-		System.out.println("Changed " + name + " " + valueOld + " -> " + value);
-		System.out.println("*********************************************************************************************");
-	}
-
 	@GetMapping
 	public JSONUserSession getAll()
 	{
@@ -55,18 +50,18 @@ public class UserSessionRestController
 	}
 
 	@PutMapping("/language")
-	public String setAD_Language(@RequestBody final String adLanguage)
+	public JSONLookupValue setLanguage(@RequestBody final JSONLookupValue value)
 	{
-		final String adLanguageOld = userSession.setAD_Language(adLanguage);
-		final String adLanguageNew = userSession.getAD_Language();
-		logResourceValueChanged("AD_Language", adLanguageNew, adLanguageOld);
-
-		return adLanguageNew;
+		final String adLanguage = value.getKey();
+		userSession.setAD_Language(adLanguage);
+		
+		return getLanguage();
 	}
 
 	@GetMapping("/language")
-	public String getAD_Language()
+	public JSONLookupValue getLanguage()
 	{
-		return userSession.getAD_Language();
+		final Language language = userSession.getLanguage();
+		return JSONLookupValue.of(language.getAD_Language(), language.getName());
 	}
 }

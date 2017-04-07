@@ -58,8 +58,6 @@ public final class JSONOptions
 
 	public static final String DEBUG_ATTRNAME = "json-options";
 
-	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONOptions.class.getName() + ".ShowColumnNamesForCaption";
-
 	private final String adLanguage;
 	private final boolean showAdvancedFields;
 	private final String dataFieldsListStr;
@@ -231,7 +229,7 @@ public final class JSONOptions
 		adLanguage = builder.getAD_Language();
 		showAdvancedFields = builder.showAdvancedFields;
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
-		debugShowColumnNamesForCaption = builder.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
+		debugShowColumnNamesForCaption = builder.isShowColumnNamesForCaption(false);
 		
 		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
 	}
@@ -381,11 +379,11 @@ public final class JSONOptions
 			return this;
 		}
 		
-		private boolean getPropertyAsBoolean(final String propertyName, final boolean defaultValue)
+		private boolean isShowColumnNamesForCaption(final boolean defaultValue)
 		{
 			if(_userSession != null)
 			{
-				return _userSession.getPropertyAsBoolean(propertyName, defaultValue);
+				return _userSession.isShowColumnNamesForCaption();
 			}
 			
 			return defaultValue;
