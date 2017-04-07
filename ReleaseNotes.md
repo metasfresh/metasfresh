@@ -82,12 +82,17 @@ Here come the actual release notes:
   * [#1274](https://github.com/metasfresh/metasfresh/issues/1274) webui - allow using the session's remote host name or IP as hostkey
     * New feature that allows to use the sessions host name or IP Address as hostkey for printing rounting and configuration.
   * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+    * Fixes a Bug in Splitting HU action. Now also allowing splitting action with compressed Handling Units that don't have a Unit of measure Type.
   
 * metasfresh-webui-api
   * [#277](https://github.com/metasfresh/metasfresh-webui-api/issues/277) Don't export JSONDocument.fields if empty
+    * Fixes a Bug that exported empty JSON Document Fields
   * [#283](https://github.com/metasfresh/metasfresh-webui-api/issues/283) Build does not use the specified parent version
+    * Fix for maven/ build system to fetch the specified parent version for build.
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+    * Now also standalone Transport Units can be received and processed in Material Receipt.
   * [#289](https://github.com/metasfresh/metasfresh-webui-api/issues/289) New/Delete buttons missing when a document was initially loaded
+    * Now showing the New and Delete Buttons in Subtabs/ included Tabs, when initially loaded.
   
 * metasfresh-webui-frontend
   * [#594](https://github.com/metasfresh/metasfresh-webui-frontend/issues/594) inform users that only Chrome is currently supported on login screen
