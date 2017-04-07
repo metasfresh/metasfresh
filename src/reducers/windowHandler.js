@@ -211,10 +211,15 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     includedTabsInfo:
-                        action.includedTabsInfo &&
-                            action.includedTabsInfo.reduce((acc, cur) => {
-                                acc[cur.tabid] = cur;
-                                return acc;
+                        Object.keys(state[action.scope].includedTabsInfo)
+                            .reduce((result, current) => {
+                                result[current] = Object.assign({},
+                                    state[action.scope]
+                                        .includedTabsInfo[current],
+                                    action.includedTabsInfo[current] ?
+                                        action.includedTabsInfo[current] : {}
+                                );
+                                return result;
                             }, {})
                 })
             })

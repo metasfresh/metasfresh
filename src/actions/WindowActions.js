@@ -418,6 +418,44 @@ export function patch(
     }
 }
 
+function updateData(doc, scope){
+    return dispatch => {
+        Object.keys(doc).map(key => {
+            if(key === 'fields'){
+                doc.fields.map(field => {
+                    dispatch(updateDataFieldProperty(
+                        field.field, field, scope
+                    ))
+                })
+            }else if(key === 'includedTabsInfo'){
+                dispatch(updateDataIncludedTabsInfo(
+                    'master', doc[key]
+                ));
+            }else{
+                dispatch(updateDataProperty(key, doc[key], scope))
+            }
+        })
+    }
+}
+
+function updateRow(row, scope){
+    return dispatch => {
+        Object.keys(row).map(key => {
+            if(key === 'fields'){
+                row.fields.map(field => {
+                    dispatch(updateRowFieldProperty(
+                        field.field, field, row.tabid, row.rowId, scope
+                    ))
+                });
+            }else{
+                dispatch(updateRowProperty(
+                    key, row[key], row.tabid, row.rowId, scope
+                ));
+            }
+        })
+    }
+}
+
 function mapDataToState(data, isModal, rowId, id, windowType) {
     return (dispatch) => {
         let staleTabIds = [];
