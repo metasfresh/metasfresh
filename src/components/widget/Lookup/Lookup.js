@@ -34,7 +34,8 @@ class Lookup extends Component {
             mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
-            shouldBeFocused: true
+            shouldBeFocused: true,
+            validLocal: true
         }
     }
 
@@ -272,7 +273,8 @@ class Lookup extends Component {
             )).then((response)=>{
                 this.setState({
                     list: response.data.values,
-                    loading: false
+                    loading: false,
+                    validLocal: response.data.values.length === 0 ? false : true
                 });
             });
 
@@ -408,7 +410,8 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
+            propertiesCopy, isInputEmpty, list, query, loading, selected,
+            isOpen, validLocal
         } = this.state;
 
         return (
@@ -429,12 +432,13 @@ class Lookup extends Component {
                     (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
-                    (mandatory && isInputEmpty ? ' input-mandatory ' : '') +
+                    (mandatory && (isInputEmpty ||
+                        (validStatus.initialValue && !validStatus.valid)) ?
+                        ' input-mandatory ' : '') +
                     ((validStatus &&
                         (
-                            !validStatus.valid &&
-                            (!validStatus.initialValue ||
-                            this.inputSearch && this.inputSearch.value)
+                            (!validStatus.valid && !validStatus.initialValue) ||
+                             !validLocal
                         )
                     ) ? ' input-error ' : '')
                 }>

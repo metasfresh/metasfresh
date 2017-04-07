@@ -424,6 +424,10 @@ function updateData(doc, scope){
                         field.field, field, scope
                     ))
                 })
+            }else if(key === 'includedTabsInfo'){
+                dispatch(updateDataIncludedTabsInfo(
+                    'master', doc[key]
+                ));
             }else{
                 dispatch(updateDataProperty(key, doc[key], scope))
             }
@@ -455,10 +459,13 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
 
         data.map((item, index) => {
             // Merging staleTabIds
-            item.includedTabsInfo && 
+            item.includedTabsInfo &&
                 Object.keys(item.includedTabsInfo).map(tabId => {
                     const tabInfo = item.includedTabsInfo[tabId];
-                    if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
+                    if(
+                        tabInfo.stale &&
+                        staleTabIds.indexOf(tabInfo.tabid) === -1
+                      ){
                         staleTabIds.push(tabInfo.tabid);
                     }
                 })
