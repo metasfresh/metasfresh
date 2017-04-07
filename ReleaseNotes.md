@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 **upcoming**
 
+## Features
+* metasfresh-backend
+  * [#1169](https://github.com/metasfresh/metasfresh/issues/1169) Prevent C_Flatrate_Terms with overlapping dates
+
 ## Fixes
 * metasfresh-backend
   * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
