@@ -424,6 +424,10 @@ function updateData(doc, scope){
                         field.field, field, scope
                     ))
                 })
+            }else if(key === 'includedTabsInfo'){
+                dispatch(updateDataIncludedTabsInfo(
+                    'master', doc[key]
+                ));
             }else{
                 dispatch(updateDataProperty(key, doc[key], scope))
             }

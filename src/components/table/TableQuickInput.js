@@ -118,7 +118,8 @@ class TableQuickInput extends Component {
                 'window', docType, docId, tabId, null, prop, value,
                 'quickInput', id
             )).then(response => {
-                response.data[0] && response.data[0].fields.map(item => {
+                response.data[0] && response.data[0].fields &&
+                response.data[0].fields.map(item => {
                     this.setState({
                         data: this.state.data.map(field => {
                             if (field.field !== item.field){
