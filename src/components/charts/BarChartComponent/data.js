@@ -8,92 +8,53 @@ const mapDataset = (dataset, prevData, labelField) => Object.keys(dataset)
         valuePrev: prevData && prevData[key] ? prevData[key] : 0
     }));
 
-export const drawData = (svg, dimensions, ranges, data, labelField, initialAnimation, prev, fields) => {
-    
-    // console.log('----Draw----');
-        // console.log(prev);
-        console.log(data);
-        console.log('**************************************');
+export const isYRangeChanged = (data, prevData, fields) => {
+    const keys = fields.map(field => field.fieldName);
 
-        
-
-        let chartData = [];
-        data.map((item, index) => {
-
-            // console.log(index);
-            chartData.push({data: item, prevData: prev ? prev[index] : 0});
+    const yprev = prevData && d3.max(prevData, d => {
+        return d3.max(keys, key => {
+            return d[key];
         });
+    });
 
-        
-        const keys = fields.map(field => field.fieldName);
+    const ynext = d3.max(data, d => {
+        return d3.max(keys, key => {
+            return d[key];
+        });
+    });
 
+    return yprev !== ynext;
+}
 
-        // max y
-        // console.log(
-        //     d3.max(data, d => {
-        //         return d3.max(keys, key => {
-        //             return d[key];
-        //         });
-        //     })
-        // );
+export const isXRangeChanged = (data, prevData, svg) => {
 
-        // console.log('-');
+    if(data.length!==(prevData && prevData.length)){
+        svg.select('g.datasets').selectAll('g').remove();
+    } else {
+        data.map((item, index) => {
+            if (prevData && JSON.stringify(Object.keys(data[index])) !==
+                JSON.stringify(Object.keys(prevData[index])) ) {
+                svg.select('g.datasets').selectAll('g').remove();
+            }
+        });
+    }
+}
 
-        // console.log(
-        //    prev && d3.max(prev, d => {
-        //         return d3.max(keys, key => {
-        //             return d[key];
-        //         });
-        //     })
-        // );
+export const drawData = (
+    svg, dimensions, ranges, data, labelField, prev, fields, reRender) => {
 
-        const yprev = prev && d3.max(prev, d => {
-                return d3.max(keys, key => {
-                    return d[key];
-                });
-            });
+    if(reRender){
+        svg.select('g.datasets').selectAll('g').remove();
+    }
 
-        const ynext = d3.max(data, d => {
-                return d3.max(keys, key => {
-                    return d[key];
-                });
-            });
+    let chartData = [];
+    data.map((item, index) => {
+        chartData.push({data: item, prevData: prev ? prev[index] : 0});
+    });
 
-        // console.log(yprev === ynext);
+    const yChanged = isYRangeChanged(data, prev, fields);
+    isXRangeChanged(data, prev, svg);
 
-        // console.log('---------');
-
-        const xprev = prev && prev.map(value => value[labelField]);
-        const xnext = data.map(value => value[labelField]);
-
-        // console.log(JSON.stringify(xprev) === JSON.stringify(xnext));
-
-        // console.log(data.map(value => value[labelField]));
-
-        const xequal = JSON.stringify(xprev) === JSON.stringify(xnext);
-        const yequal = yprev === ynext;
-
-
-
-
-        JSON.stringify(Object.keys(data[0])) === JSON.stringify(Object.keys(prev[0]))
-
-        if(data.length!==(prev && prev.length)){
-            // const chart = document.getElementsByClassName('datasets')[0].childNodes[0];
-            // while (chart && chart.firstChild) {
-            //     chart.removeChild(chart.firstChild);
-            // }
-            svg.select('g.datasets').selectAll('g').remove();
-        } else {
-            data.map((item, index) => {
-                console.log(item);
-                console.log(index);
-            });
-        }
-        
-        // chart && chart.remove();
-
-        // console.log(chartData);
     const groups = svg.select('g.datasets')
         .selectAll('g')
         .data(chartData);
@@ -112,94 +73,25 @@ export const drawData = (svg, dimensions, ranges, data, labelField, initialAnima
         .attr('x', d => ranges.x1(d.key))
         .attr('width', ranges.x1.bandwidth())
 
-        .attr('y', initialAnimation ? dimensions.height : d => {   
-            // console.log(d.valuePrev);
-
-            // if(d.valuePrev === d.value){
-            //     // console.log('true');
-            //     return ranges.y(d.valuePrev)
-            // } else {
-            //     // console.log('false');
-            //     return dimensions.height;
-            // }
-
-            if(xequal && yequal){
-                // console.log('y prev');
-                // console.log(ranges.y(d.valuePrev));
-
-
-                return ranges.y(d.valuePrev);
-            } else {
-                // console.log('else y');
-                // console.log(dimensions.height);
-                return dimensions.height;
-            }
-
-
-            // console.log(dimensions.height);
-     
-
-// return ranges.y(d.valuePrev)
-
-            
-            // return dimensions.height - ranges.y(d.value)
-            // ranges.y(d.value)
-        }
-            
-        )
-        .attr('height', initialAnimation ? 0 : d => {
-            // console.log(ranges.y(d.value));
-
-            // console.log('--------------------------');
-            // console.log(dimensions.height - ranges.y(d.valuePrev));
-
-
-            // if(d.valuePrev === d.value){
-            //     // console.log('true');
-            //     return dimensions.height - ranges.y(d.valuePrev);
-            // } else {
-            //     // console.log('false');
-            //     return 0;
-            // }
-
-            if(xequal && yequal){
-                // console.log('height prev');
-                // console.log(dimensions.height - ranges.y(d.valuePrev));
-                return dimensions.height - ranges.y(d.valuePrev);
-            } else {
-                return 0;
-            }
-
-
-// return dimensions.height - ranges.y(d.valuePrev);
-            // return ranges.y(d.value)
-            // dimensions.height - ranges.y(d.value)
-            
-            }
-        )
-
-        .transition()
-        .duration(6000)
         .attr('y', d => {
-            // console.log('y next');
-            // console.log(ranges.y(d.value));
-            return ranges.y(d.value);
-        } )
-        .attr('height', d => {
-            // console.log('height next');
-            // console.log(dimensions.height - ranges.y(d.value));
-            return dimensions.height - ranges.y(d.value);
+
+            if(yChanged || reRender){
+                return dimensions.height;
+            } else {
+                return ranges.y(d.valuePrev);
+            }
         })
+        .attr('height', d => {
 
-        
-        // .attr('y', initialAnimation ?  d => ranges.y(d.value) : d => 40)
-        // .attr('height', initialAnimation ? d => dimensions.height - ranges.y(d.value) : d => dimensions.height - 40)
-
+            if(yChanged || reRender){
+                return 0;
+            } else {
+                return dimensions.height - ranges.y(d.valuePrev);
+            }
+        })
+        .transition()
+        .duration(1000)
+        .attr('y', d => ranges.y(d.value))
+        .attr('height', d => dimensions.height - ranges.y(d.value))
         .attr('fill', d => ranges.z(d.key))
-
-
-
-        // console.log("============================");
-        // console.log(prev);
-
 };

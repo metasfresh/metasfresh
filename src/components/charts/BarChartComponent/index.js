@@ -65,16 +65,14 @@ class BarChartComponent extends Component {
         }
     }
 
-    draw(initialAnimmation, prev){
+    draw(prev, reRender){
         const { data, groupBy, fields } = this.props;
         const { dimensions, ranges } = this.prepare();
-        // console.log(ranges);
 
-        // console.log('----componentDraw----');
-        // console.log(prev);
-        // console.log(data);
-
-        drawData(this.svg, dimensions, ranges, data, groupBy.fieldName, initialAnimmation, prev, fields);
+        drawData(
+            this.svg, dimensions, ranges, data, groupBy.fieldName,
+            prev, fields, reRender
+        );
     }
 
     addResponsive = () => {
@@ -88,7 +86,7 @@ class BarChartComponent extends Component {
 
     componentDidMount() {
         this.setSvg();
-        this.draw(true);
+        this.draw();
         this.addResponsive();
     }
 
@@ -97,7 +95,8 @@ class BarChartComponent extends Component {
     }
 
     componentDidUpdate(prevProps){
-        this.draw(false, prevProps.data);
+        const { reRender } = this.props;
+        this.draw(prevProps.data, reRender);
     }
 
     render() {

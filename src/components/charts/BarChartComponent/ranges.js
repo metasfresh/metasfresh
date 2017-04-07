@@ -2,9 +2,6 @@ import * as d3 from 'd3';
 
 export const getX0Range = (width, data, groupBy) => {
 
-    // console.log(data.map(value => value[groupBy.fieldName]));
-
-
     return d3.scaleBand()
         .range([0, width])
         .padding(0.2)
@@ -20,16 +17,6 @@ export const getX1Range = (width, fields) => {
 
 export const getYRange = (height, data, fields) => {
     const keys = fields.map(field => field.fieldName);
-
-// console.log(
-    
-//      d3.max(data, d => {
-//             return d3.max(keys, key => {
-//                 return d[key];
-//             });
-//         })
-        
-// );
 
     return d3.scaleLinear()
         .range([height, 0])
