@@ -44,7 +44,7 @@ class Settings extends Component {
 
     patch = (value) => {
         const {dispatch} = this.props;
-        
+
         dispatch(setUserLang(value)).then(() => {
             this.setState({
                 value: value
