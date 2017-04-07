@@ -4,7 +4,9 @@ import Moment from 'moment';
 
 import {
     getAvailableLang,
-    setUserLang
+    setUserLang,
+    getNotifications,
+    getNotificationsSuccess
 } from '../actions/AppActions';
 
 import Container from '../components/Container';
@@ -56,6 +58,7 @@ class Settings extends Component {
     }
 
     refresh = () => {
+        const {dispatch} = this.props;
         this.setState({
             hideHeader: true
         }, () => {
@@ -63,6 +66,13 @@ class Settings extends Component {
                 hideHeader: false
             })
         })
+
+        dispatch(getNotifications()).then(response => {
+            dispatch(getNotificationsSuccess(
+                response.data.notifications,
+                response.data.unreadCount
+            ));
+        });
     }
 
     render() {
