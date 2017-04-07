@@ -62,7 +62,10 @@ class PieChartComponent extends Component {
             d3.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
         const pie = d3.pie()
             .sort(null)
-            .value( d => d[fields[0].fieldName]);
+            .value( d => {
+                console.log(d[fields[0].fieldName]);
+                return 80;
+            });
 
         return {
                 wrapperWidth: wrapperWidth,
@@ -75,6 +78,8 @@ class PieChartComponent extends Component {
     }
     drawChart = (wrapperWidth, width, height, pie, arc, data, color) => {
         const {chartClass, fields} = this.props;
+
+        console.log(arc);
 
         const svg = d3.select('.' + chartClass)
             .attr('width', width)
@@ -103,9 +108,20 @@ class PieChartComponent extends Component {
             .attr('class', 'arc');
 
         g.append('path')
+            .style('fill', d => color(d.data[fields[0].fieldName]))
             .attr('d', arc)
+            .transition()
+            .duration(2000)
             .attr('class', 'pie-path')
-            .style('fill', d => color(d.data[fields[0].fieldName]));
+            .attrTween('d', d=>{
+                var start = {
+                    startAngle: 0,
+                    endAngle: 0
+                };
+                var interpolator = d3.interpolate(start, finish);
+                return function(d) { return arc(interpolator(d)); };
+            });
+            // .attr('d', arc);
 
         this.drawLegend(svg, width, height, color);
     };
