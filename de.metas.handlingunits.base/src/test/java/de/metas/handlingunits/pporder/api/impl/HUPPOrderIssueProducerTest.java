@@ -292,8 +292,10 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertNotNull("HU's locator shall be set", newHU.getM_Locator());
 
 			Services.get(IHandlingUnitsBL.class).setHUStatusActive(newHUs);
+			
 			return newHU;
 		});
+		InterfaceWrapperHelper.setThreadInheritedTrxName(hu); // DEBUGGING useless
 
 		//
 		// Issue created HU to Folie Order BOM Line

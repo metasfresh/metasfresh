@@ -476,27 +476,11 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Set current thread inerited transaction name to given model.
-	 *
-	 * @param model
-	 */
-	public static void setThreadInheritedTrxName(final Object model)
-	{
-		final ITrxManager trxManager = getTrxManager();
-		String trxName = trxManager.getThreadInheritedTrxName();
-		if (trxName == null)
-		{
-			trxName = ITrx.TRXNAME_None;
-		}
-		setTrxName(model, trxName);
-	}
-
-	/**
 	 * Sets trxName to {@link ITrx#TRXNAME_ThreadInherited}.
 	 *
 	 * @param model
 	 */
-	public static void setThreadInheritedTrxNameMarker(final Object model)
+	public static void setThreadInheritedTrxName(final Object model)
 	{
 		setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -513,16 +497,9 @@ public class InterfaceWrapperHelper
 			return;
 		}
 
-		final ITrxManager trxManager = getTrxManager();
-		String trxName = trxManager.getThreadInheritedTrxName();
-		if (trxName == null)
-		{
-			trxName = ITrx.TRXNAME_None;
-		}
-
 		for (final Object model : models)
 		{
-			setTrxName(model, trxName);
+			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
