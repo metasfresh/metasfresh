@@ -56,6 +56,10 @@ export function getUserLang() {
     return () => axios.get(config.API_URL + '/userSession/language');
 }
 
+export function setUserLang(payload) {
+    return () => axios.put(config.API_URL + '/userSession/language', payload);
+}
+
 export function getAvailableLang() {
     return () => axios.get(config.API_URL + '/login/availableLanguages');
 }

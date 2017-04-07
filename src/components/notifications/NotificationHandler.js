@@ -23,7 +23,9 @@ class NotificationHandler extends Component {
                         />
                     )}
                 </div>
-                {children}
+                <div className="root-children">
+                    {children}
+                </div>
             </div>
         )
     }

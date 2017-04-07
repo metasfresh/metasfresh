@@ -13,30 +13,33 @@ class Container extends Component {
             docActionElem, docStatusData, docNoElement, docNoData,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
-            query, attachments, showIndicator, isDocumentNotSaved
+            query, attachments, showIndicator, isDocumentNotSaved, hideHeader
         } = this.props;
 
         return (
             <div>
-                <Header
-                    entity={entity}
-                    docStatus = {docActionElem}
-                    docStatusData = {docStatusData}
-                    docNo = {docNoElement}
-                    docNoData = {docNoData}
-                    docSummaryData = {docSummaryData}
-                    dataId={dataId}
-                    windowType={windowType}
-                    breadcrumb={breadcrumb}
-                    references={references}
-                    actions={actions}
-                    attachments={attachments}
-                    showSidelist={showSidelist}
-                    siteName = {siteName}
-                    query={query}
-                    showIndicator={showIndicator}
-                    isDocumentNotSaved={isDocumentNotSaved}
-                />
+                {
+                    // Forcing refresh component
+                    !hideHeader && <Header
+                        entity={entity}
+                        docStatus = {docActionElem}
+                        docStatusData = {docStatusData}
+                        docNo = {docNoElement}
+                        docNoData = {docNoData}
+                        docSummaryData = {docSummaryData}
+                        dataId={dataId}
+                        windowType={windowType}
+                        breadcrumb={breadcrumb}
+                        references={references}
+                        actions={actions}
+                        attachments={attachments}
+                        showSidelist={showSidelist}
+                        siteName = {siteName}
+                        query={query}
+                        showIndicator={showIndicator}
+                        isDocumentNotSaved={isDocumentNotSaved}
+                    />
+                }
                 {connectionError && <ErrorScreen />}
                 <div
                     className={

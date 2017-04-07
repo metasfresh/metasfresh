@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
 export const getX0Range = (width, data, groupBy) => {
+
     return d3.scaleBand()
         .range([0, width])
         .padding(0.2)
