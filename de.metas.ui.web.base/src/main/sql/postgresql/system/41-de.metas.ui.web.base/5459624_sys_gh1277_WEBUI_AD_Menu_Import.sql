@@ -7,7 +7,7 @@ create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459621a as select * from 
 --
 -- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
 delete from AD_TreeNodeMM;
-insert into AD_TreeNodeMM select * from backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621;
+insert into AD_TreeNodeMM select * from backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621a;
 -- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
 
 --
