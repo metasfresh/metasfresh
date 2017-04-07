@@ -64,7 +64,9 @@ Here come the actual release notes:
   * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
     * Maintainance of Jasper Document SQL. Removing legace SQL that's not needed anymore.
   * [#1240](https://github.com/metasfresh/metasfresh/issues/1240) Number-of-copies parameter is ignored in direct print
+    * Fixes the document printing copies configuration. The number of copies parameter is now also considered in direct print.
   * [#1244](https://github.com/metasfresh/metasfresh/issues/1244) Shipment Schedule's QtyDeliveredTU is not updated correctly
+    * Fixed a minor bug that prevented the update of the QtyDelivered TU Field in Shipment schdules.
   * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
     * Fixing a bug that did not create movements for empties receive documents after completion.
   * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
@@ -72,9 +74,13 @@ Here come the actual release notes:
   * [#1260](https://github.com/metasfresh/metasfresh/issues/1260) DocumentNo not generated for manual invoices in WebUI
     * Adding a minor fix to the customer Invoice Window in WebUI, that prevented the creation of manual Invoices for customers.
   * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) ITrxListener.afterCommit is fired twice with TrxPropagation.REQUIRES_NEW
+    * Fixes the double tap of ITrxListener.afterCommit.
   * [#1267](https://github.com/metasfresh/metasfresh/issues/1267) Cannot open ASI editor in Swing
+    * The Attrubute Set Instance Widget could not be opened in Swing Client anymore. This Bugfix now enables that again.
   * [#1272](https://github.com/metasfresh/metasfresh/issues/1272) Vendor ADR configuration not initially considered in Orderline
+    * Fixing a Bug that prevented the default settings of vendor attributes in orderline.
   * [#1274](https://github.com/metasfresh/metasfresh/issues/1274) webui - allow using the session's remote host name or IP as hostkey
+    * New feature that allows to use the sessions host name or IP Address as hostkey for printing rounting and configuration.
     
 * metasfresh-webui-api
   * [#277](https://github.com/metasfresh/metasfresh-webui-api/issues/277) Don't export JSONDocument.fields if empty
