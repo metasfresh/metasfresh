@@ -38,7 +38,7 @@ MAIN_CLASSNAME=org.springframework.boot.loader.PropertiesLauncher
 #get the path of our executable jar file. Note the wildcards, they are here mostly because we like this to also work with feature builds.
 JAR_FILE=$(ls $METASFRESH_HOME/lib/de.metas.endcustomer.*.swingui-*.jar)
 
-CLASSPATH=%JAR_FILE%
+CLASSPATH=$JAR_FILE
 
 # NOTE: line is commented out because we want to allow developers to specify their own "REMOTE_DEBUG_OPTS" before running metasfresh... so they can remote debug 
 #REMOTE_DEBUG_OPTS=
@@ -58,14 +58,17 @@ SECURE=
 # Comma-separated Classpath for (additional) external libraries, e.g. lib,${HOME}/app/lib. 
 # see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
 # see https://github.com/metasfresh/metasfresh/issues/695
-EXPORT LOADER_PATH=~/metasfresh/userlib
-EXPORT PATH=~/metasfresh/userlib-x64
+LOADER_PATH=~/metasfresh/userlib
+PATH=$PATH:~/metasfresh/userlib-x64
+
+export LOADER_PATH
+export PATH
 
 MEMORY_OPTS="-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"
 
 # -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
 # -Dsun.java2d.xrender=false is related to http://stackoverflow.com/questions/34188495/how-can-i-work-around-the-classcastexception-in-java2d-bug-id-7172749 . The problem happens in some X environments
-JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dsun.java2d.xrender=false -DMETASFRESH_HOME=$METASFRESH_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
+JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dsun.java2d.xrender=false -DMETASFRESH_HOME=$METASFRESH_HOME $PROP $SECURE"
 
 echo "JAVA=$JAVA"
 echo "JAVA_OPTS = $JAVA_OPTS"
@@ -78,8 +81,8 @@ echo "PATH=$PATH"
 
 echo "================================"
 echo "about to execute"
-echo "$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $PROP $SECURE -classpath "$CLASSPATH" $MAIN_CLASSNAME"
+echo "$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath \"$CLASSPATH\" $MAIN_CLASSNAME"
 echo "================================"
 
-$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$"METASFRESH_HOME" $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath "$CLASSPATH" $MAIN_CLASSNAME
+$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath "$CLASSPATH" $MAIN_CLASSNAME
 
