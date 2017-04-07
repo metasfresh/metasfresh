@@ -17,6 +17,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#1169](https://github.com/metasfresh/metasfresh/issues/1169) Prevent C_Flatrate_Terms with overlapping dates
+  * [#1224](https://github.com/metasfresh/metasfresh/issues/1224) hide HU related data where is not used
   * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document "old" best before date missing
 
 ## Fixes
