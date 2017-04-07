@@ -16,7 +16,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-backend
-  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
 
 # metasfresh 5.4 (2017-14)
 
@@ -81,7 +81,8 @@ Here come the actual release notes:
     * Fixing a Bug that prevented the default settings of vendor attributes in orderline.
   * [#1274](https://github.com/metasfresh/metasfresh/issues/1274) webui - allow using the session's remote host name or IP as hostkey
     * New feature that allows to use the sessions host name or IP Address as hostkey for printing rounting and configuration.
-    
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+  
 * metasfresh-webui-api
   * [#277](https://github.com/metasfresh/metasfresh-webui-api/issues/277) Don't export JSONDocument.fields if empty
   * [#283](https://github.com/metasfresh/metasfresh-webui-api/issues/283) Build does not use the specified parent version
