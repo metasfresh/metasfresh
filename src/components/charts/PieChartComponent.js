@@ -63,8 +63,7 @@ class PieChartComponent extends Component {
         const pie = d3.pie()
             .sort(null)
             .value( d => {
-                console.log(d[fields[0].fieldName]);
-                return 80;
+                return d[fields[0].fieldName];
             });
 
         return {
@@ -78,8 +77,6 @@ class PieChartComponent extends Component {
     }
     drawChart = (wrapperWidth, width, height, pie, arc, data, color) => {
         const {chartClass, fields} = this.props;
-
-        console.log(arc);
 
         const svg = d3.select('.' + chartClass)
             .attr('width', width)
@@ -111,15 +108,15 @@ class PieChartComponent extends Component {
             .style('fill', d => color(d.data[fields[0].fieldName]))
             .attr('d', arc)
             .transition()
-            .duration(2000)
+            .duration(6000)
             .attr('class', 'pie-path')
             .attrTween('d', d=>{
-                var start = {
-                    startAngle: 0,
-                    endAngle: 0
-                };
-                var interpolator = d3.interpolate(start, finish);
-                return function(d) { return arc(interpolator(d)); };
+
+                var i = d3.interpolate({startAngle: 0, endAngle: 0}, d);
+                return function(t) {
+                    console.log(arc(i(t)));
+                    return arc(i(t)); 
+                }
             });
             // .attr('d', arc);
 
