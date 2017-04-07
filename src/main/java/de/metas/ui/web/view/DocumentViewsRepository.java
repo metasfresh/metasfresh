@@ -136,6 +136,21 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	}
 
 	@Override
+	public boolean hasView(final String viewId)
+	{
+		Preconditions.checkNotNull(viewId, "viewId cannot be null");
+		final IDocumentViewSelection view = views.getIfPresent(viewId);
+		return view != null;
+	}
+
+	@Override
+	public IDocumentViewSelection getViewIfExists(final String viewId)
+	{
+		Preconditions.checkNotNull(viewId, "viewId cannot be null");
+		return views.getIfPresent(viewId);
+	}
+
+	@Override
 	public IDocumentViewSelection getView(final String viewId)
 	{
 		Preconditions.checkNotNull(viewId, "viewId cannot be null");

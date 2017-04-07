@@ -7,13 +7,16 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import lombok.AccessLevel;
 
 /*
  * #%L
@@ -46,19 +49,17 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 @lombok.Data
 public final class DocumentViewCreateRequest
 {
-	public static final Builder builder(final String documentType, final JSONViewDataType viewType)
+	public static final Builder builder(final DocumentId documentTypeId, final JSONViewDataType viewType)
 	{
-		return new Builder(documentType, viewType);
+		return new Builder(documentTypeId, viewType);
 	}
 
 	public static final Builder builder(final int adWindowId, final JSONViewDataType viewType)
 	{
-		final String documentType = String.valueOf(adWindowId);
-		return new Builder(documentType, viewType);
+		return new Builder(DocumentId.of(adWindowId), viewType);
 	}
 
-	private final String documentType;
-	private transient Integer _adWindowId; // lazy
+	private final DocumentId documentTypeId;
 	private final JSONViewDataType viewType;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
@@ -68,9 +69,14 @@ public final class DocumentViewCreateRequest
 	private final int queryFirstRow;
 	private final int queryPageLength;
 
+	@lombok.Setter(AccessLevel.NONE)
+	@lombok.Getter(AccessLevel.NONE)
+	private transient Integer _adWindowId; // lazy
+
+
 	private DocumentViewCreateRequest(final Builder builder)
 	{
-		documentType = builder.getDocumentType();
+		documentTypeId = builder.getDocumentTypeId();
 		viewType = builder.getViewType();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
@@ -83,11 +89,7 @@ public final class DocumentViewCreateRequest
 
 	public int getAD_Window_ID()
 	{
-		if(_adWindowId == null)
-		{
-			_adWindowId = Integer.parseInt(documentType);
-		}
-		return _adWindowId;
+		return documentTypeId.toInt();
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -114,7 +116,7 @@ public final class DocumentViewCreateRequest
 	//
 	public static final class Builder
 	{
-		private final String documentType;
+		private final DocumentId documentTypeId;
 		private final JSONViewDataType viewType;
 
 		private Set<DocumentPath> referencingDocumentPaths;
@@ -124,11 +126,11 @@ public final class DocumentViewCreateRequest
 		private int queryFirstRow = -1;
 		private int queryPageLength = -1;
 
-		private Builder(final String documentType, final JSONViewDataType viewType)
+		private Builder(final DocumentId documentTypeId, final JSONViewDataType viewType)
 		{
 			super();
-			Check.assumeNotEmpty(documentType, "documentType is not empty");
-			this.documentType = documentType;
+			Preconditions.checkNotNull(documentTypeId, "documentTypeId is null");
+			this.documentTypeId = documentTypeId;
 
 			Check.assumeNotNull(viewType, "Parameter viewType is not null");
 			this.viewType = viewType;
@@ -139,9 +141,9 @@ public final class DocumentViewCreateRequest
 			return new DocumentViewCreateRequest(this);
 		}
 
-		private String getDocumentType()
+		private DocumentId getDocumentTypeId()
 		{
-			return documentType;
+			return documentTypeId;
 		}
 
 		private JSONViewDataType getViewType()

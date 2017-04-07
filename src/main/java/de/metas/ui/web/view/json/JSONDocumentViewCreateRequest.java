@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
@@ -47,7 +48,7 @@ import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 public final class JSONDocumentViewCreateRequest implements Serializable
 {
 	@JsonProperty("documentType")
-	private final String documentType;
+	private final DocumentId documentType;
 
 	@JsonProperty("viewType")
 	private final JSONViewDataType viewType;
@@ -72,7 +73,7 @@ public final class JSONDocumentViewCreateRequest implements Serializable
 
 	@JsonCreator
 	private JSONDocumentViewCreateRequest(
-			@JsonProperty("documentType") final String documentType //
+			@JsonProperty("documentType") final DocumentId documentType //
 			, @JsonProperty("viewType") final JSONViewDataType viewType //
 			, @JsonProperty("referencing") final JSONReferencing referencing //
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //

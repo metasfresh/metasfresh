@@ -26,12 +26,12 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 
 /**
  * Base class for all "Document"-ish JSONs
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -69,6 +69,7 @@ public abstract class JSONDocumentBase
 	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
 	private Map<String, JSONDocumentField> fieldsByName;
 
+	/** Any other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	public JSONDocumentBase(final DocumentPath documentPath)
@@ -99,51 +100,36 @@ public abstract class JSONDocumentBase
 		}
 	}
 
-	public String getId()
+	public final void setDeleted()
 	{
-		return id;
-	}
-
-	public String getTabid()
-	{
-		return tabid;
-	}
-
-	public String getRowId()
-	{
-		return rowId;
-	}
-
-	public void setDeleted()
-	{
-		this.deleted = Boolean.TRUE;
+		deleted = Boolean.TRUE;
 	}
 
 	@JsonAnyGetter
-	public Map<String, Object> getOtherProperties()
+	private final Map<String, Object> getOtherProperties()
 	{
 		return otherProperties;
 	}
 
 	@JsonAnySetter
-	public void putOtherProperty(final String name, final Object jsonValue)
+	private final void putOtherProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put(name, jsonValue);
 	}
 
-	public JSONDocumentBase putDebugProperty(final String name, final Object jsonValue)
+	protected final JSONDocumentBase putDebugProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put("debug-" + name, jsonValue);
 		return this;
 	}
 
-	public void setFields(final Collection<JSONDocumentField> fields)
+	public final void setFields(final Collection<JSONDocumentField> fields)
 	{
 		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
 	}
 
 	@JsonIgnore
-	public int getFieldsCount()
+	protected final int getFieldsCount()
 	{
 		return fieldsByName == null ? 0 : fieldsByName.size();
 	}

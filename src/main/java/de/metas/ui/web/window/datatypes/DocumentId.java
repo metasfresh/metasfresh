@@ -14,6 +14,8 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
@@ -45,12 +47,13 @@ import de.metas.printing.esb.base.util.Check;
 @SuppressWarnings("serial")
 public abstract class DocumentId implements Serializable
 {
-	private static final int NEW_ID = -1;
-	public static final String NEW_ID_STRING = "NEW";
-	private static final DocumentId NEW = new IntDocumentId(NEW_ID);
+	private static final transient int NEW_ID = -1;
+	public static final transient String NEW_ID_STRING = "NEW";
+	private static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
 
-	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+	private static final transient Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
+	@JsonCreator
 	public static final DocumentId of(final String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
@@ -82,6 +85,7 @@ public abstract class DocumentId implements Serializable
 		return of(idInt);
 	}
 
+	@JsonCreator
 	public static final DocumentId of(final int idInt)
 	{
 		if (idInt == NEW_ID)
@@ -204,6 +208,7 @@ public abstract class DocumentId implements Serializable
 		return toJson();
 	}
 
+	@JsonValue
 	public abstract String toJson();
 
 	@Override

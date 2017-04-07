@@ -176,6 +176,23 @@ public class DocumentViewRestController
 		return JSONDocumentView.ofDocumentViewList(result);
 	}
 
+	@GetMapping("/{viewId}/rows/{documentId}/includedView")
+	public JSONDocumentViewResult getIncludedView(
+			@PathVariable(PARAM_WindowId) final int adWindowId //
+			, @PathVariable("viewId") final String viewId//
+			, @PathVariable("documentId") final DocumentId documentId//
+			)
+	{
+		userSession.assertLoggedIn();
+
+		final IDocumentView row = documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.getById(documentId);
+
+		final IDocumentViewSelection includedView = row.getCreateIncludedView(documentViewsRepo);
+		return JSONDocumentViewResult.of(DocumentViewResult.ofView(includedView));
+	}
+
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final int adWindowId //

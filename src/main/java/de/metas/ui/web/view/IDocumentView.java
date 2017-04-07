@@ -32,26 +32,39 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 
 public interface IDocumentView
 {
+	//
+	// Document info
+	// @formatter:off
 	DocumentPath getDocumentPath();
-
 	DocumentId getDocumentId();
-	
 	IDocumentViewType getType();
-	
 	boolean isProcessed();
+	// @formatter:on
 
+	//
+	// Fields
+	// @formatter:off
 	String getIdFieldNameOrNull();
-
 	Set<String> getFieldNames();
-
 	Object getFieldValueAsJson(final String fieldName);
-
 	Map<String, Object> getFieldNameAndJsonValues();
+	// @formatter:on
 
-	boolean hasAttributes();
-
-	IDocumentViewAttributes getAttributes() throws EntityNotFoundException;
-
+	//
+	// Included documents (children)
 	List<? extends IDocumentView> getIncludedDocuments();
 
+	//
+	// Attributes
+	// @formatter:off
+	boolean hasAttributes();
+	IDocumentViewAttributes getAttributes() throws EntityNotFoundException;
+	// @formatter:on
+
+	//
+	// Attributes
+	// @formatter:off
+	boolean hasIncludedView();
+	IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo);
+	// @formatter:on
 }

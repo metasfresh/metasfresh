@@ -51,9 +51,20 @@ public class JSONDocumentView extends JSONDocumentBase
 				.collect(Collectors.toList());
 	}
 
-	public static JSONDocumentView ofDocumentView(final IDocumentView documentView)
+	public static JSONDocumentView ofDocumentView(final IDocumentView row)
 	{
-		final JSONDocumentView jsonDocument = new JSONDocumentView(documentView.getDocumentPath());
+		//
+		// Document view record
+		final JSONDocumentView jsonRow = new JSONDocumentView(row.getDocumentPath());
+		if (row.isProcessed())
+		{
+			jsonRow.processed = true;
+		}
+		if (row.getType() != null)
+		{
+			// NOTE: mainly used by frontend to decide which Icon to show for this line
+			jsonRow.type = row.getType().getIconName();
+		}
 
 		//
 		// Fields
@@ -61,55 +72,73 @@ public class JSONDocumentView extends JSONDocumentBase
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
 			// Add pseudo "ID" field first
-			final String idFieldName = documentView.getIdFieldNameOrNull();
+			final String idFieldName = row.getIdFieldNameOrNull();
 			if (idFieldName != null)
 			{
-				final Object id = documentView.getDocumentId().toJson();
+				final Object id = row.getDocumentId().toJson();
 				jsonFields.add(0, JSONDocumentField.idField(id));
 			}
 
 			// Append the other fields
-			documentView.getFieldNameAndJsonValues()
+			row.getFieldNameAndJsonValues()
 					.entrySet()
 					.stream()
 					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
 					.forEach(jsonFields::add);
 
-			jsonDocument.setFields(jsonFields);
-
-			//
-			// Document view record specific attributes
-			if (documentView.isProcessed())
-			{
-				jsonDocument.putOtherProperty("processed", true);
-			}
-			if (documentView.hasAttributes())
-			{
-				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);
-			}
-			if (documentView.getType() != null)
-			{
-				// NOTE: mainly used by frontend to decide which Icon to show for this line
-				jsonDocument.putOtherProperty("type", documentView.getType().getIconName());
-			}
+			jsonRow.setFields(jsonFields);
 		}
 
 		//
 		// Included documents if any
 		{
-			final List<? extends IDocumentView> includedDocuments = documentView.getIncludedDocuments();
+			final List<? extends IDocumentView> includedDocuments = row.getIncludedDocuments();
 			if (!includedDocuments.isEmpty())
 			{
-				final List<JSONDocumentView> jsonIncludedDocuments = includedDocuments
+				jsonRow.includedDocuments = includedDocuments
 						.stream()
 						.map(JSONDocumentView::ofDocumentView)
 						.collect(GuavaCollectors.toImmutableList());
-				jsonDocument.setIncludedDocuments(jsonIncludedDocuments);
 			}
 		}
 
-		return jsonDocument;
+		//
+		// Attributes
+		if (row.hasAttributes())
+		{
+			jsonRow.supportAttributes = true;
+		}
+		
+		//
+		// Included views
+		if(row.hasIncludedView())
+		{
+			jsonRow.supportIncludedViews = true;
+		}
+
+		return jsonRow;
 	}
+
+	/**
+	 * Record type.
+	 * 
+	 * NOTE: mainly used by frontend to decide which Icon to show for this line
+	 */
+	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String type;
+
+	@JsonProperty("processed")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean processed;
+
+	@JsonProperty(value = JSONDocumentViewLayout.PROPERTY_supportAttributes)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean supportAttributes;
+
+	@JsonProperty(value = "supportIncludedViews")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean supportIncludedViews;
 
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -118,10 +147,5 @@ public class JSONDocumentView extends JSONDocumentBase
 	private JSONDocumentView(final DocumentPath documentPath)
 	{
 		super(documentPath);
-	}
-
-	private void setIncludedDocuments(final List<JSONDocumentView> includedDocuments)
-	{
-		this.includedDocuments = includedDocuments;
 	}
 }
