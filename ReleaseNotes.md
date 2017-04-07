@@ -14,6 +14,16 @@ Here come the actual release notes:
 
 **upcoming**
 
+## Features
+* metasfresh-backend
+  * [#1169](https://github.com/metasfresh/metasfresh/issues/1169) Prevent C_Flatrate_Terms with overlapping dates
+  * [#1224](https://github.com/metasfresh/metasfresh/issues/1224) hide HU related data where is not used
+  * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document "old" best before date missing
+
+## Fixes
+* metasfresh-backend
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+
 # metasfresh 5.4 (2017-14)
 
 **this week's RC**
@@ -29,6 +39,7 @@ Here come the actual release notes:
     * Adding the initial Layout for the User window into WebUI.
   * [#1185](https://github.com/metasfresh/metasfresh/issues/1185) Initial Layout for vendor Invoices in WebUI
     * Adding the initial Layout for vendor Invoice Window in WebUI.
+  * [#1205](https://github.com/metasfresh/metasfresh/issues/1205) Provide Default KPI Config
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
@@ -39,6 +50,7 @@ Here come the actual release notes:
     * Adding the initial Windows Layout for material movements in WebUI.
   * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
   * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
+  * [#1277](https://github.com/metasfresh/metasfresh/issues/1277) Migrate current WebUI Menu from Development to master
 
 * metasfresh-webui-frontend  
   * [#541](https://github.com/metasfresh/metasfresh-webui-frontend/issues/541) Hide new and delete included documents when they are not available.
@@ -64,6 +76,7 @@ Here come the actual release notes:
   * [#277](https://github.com/metasfresh/metasfresh-webui-api/issues/277) Don't export JSONDocument.fields if empty
   * [#283](https://github.com/metasfresh/metasfresh-webui-api/issues/283) Build does not use the specified parent version
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+  * [#289](https://github.com/metasfresh/metasfresh-webui-api/issues/289) New/Delete buttons missing when a document was initially loaded
   
 * metasfresh-webui-frontend
   * [#594](https://github.com/metasfresh/metasfresh-webui-frontend/issues/594) inform users that only Chrome is currently supported on login screen
@@ -71,7 +84,8 @@ Here come the actual release notes:
   * [#597](https://github.com/metasfresh/metasfresh-webui-frontend/issues/597) cancel on "Do you really want to leave?" sends you 2 steps back
   * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
     * Fix for the 100% height Layout of windows with included Tab. Subtab Shall always expand to 100% of screen resolution height until available spave is used. After that exceeding page size.
-
+  * [#616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/616) delete option missing after add new
+  
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes
