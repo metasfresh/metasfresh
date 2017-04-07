@@ -16,13 +16,9 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
-  * [#1169](https://github.com/metasfresh/metasfresh/issues/1169) Prevent C_Flatrate_Terms with overlapping dates
-  * [#1224](https://github.com/metasfresh/metasfresh/issues/1224) hide HU related data where is not used
-  * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document "old" best before date missing
 
 ## Fixes
 * metasfresh-backend
-  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
 
 # metasfresh 5.4 (2017-14)
 
@@ -39,22 +35,33 @@ Here come the actual release notes:
     * Adding the initial Layout for the User window into WebUI.
   * [#1185](https://github.com/metasfresh/metasfresh/issues/1185) Initial Layout for vendor Invoices in WebUI
     * Adding the initial Layout for vendor Invoice Window in WebUI.
+  * [#1169](https://github.com/metasfresh/metasfresh/issues/1169) Prevent C_Flatrate_Terms with overlapping dates
   * [#1205](https://github.com/metasfresh/metasfresh/issues/1205) Provide Default KPI Config
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
+  * [#1224](https://github.com/metasfresh/metasfresh/issues/1224) hide HU related data where is not used
   * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
   * [#1247](https://github.com/metasfresh/metasfresh/issues/1247) Don't try to create empties movements if empties warehouse same as current warehouse
   * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
   * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
+  * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document "old" best before date missing
   * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
   * [#1277](https://github.com/metasfresh/metasfresh/issues/1277) Migrate current WebUI Menu from Development to master
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+
+* metasfresh-webui-api
+  * [#286](https://github.com/metasfresh/metasfresh-webui-api/issues/286) UserSession language endpoint shall always work with JSON values
 
 * metasfresh-webui-frontend  
   * [#541](https://github.com/metasfresh/metasfresh-webui-frontend/issues/541) Hide new and delete included documents when they are not available.
-  
+  * [#587](https://github.com/metasfresh/metasfresh-webui-frontend/issues/587) Language Switcher for WebUI
+  * [#604](https://github.com/metasfresh/metasfresh-webui-frontend/issues/604) Mandatory lookup fields are not marked as error
+  * [#605](https://github.com/metasfresh/metasfresh-webui-frontend/issues/605) When opening a process panel, the first field shall be focus by default
+  * [#614](https://github.com/metasfresh/metasfresh-webui-frontend/issues/614) When the language is switched widgets shall be invalidated/refreshed
+
 ## Fixes
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
@@ -71,28 +78,32 @@ Here come the actual release notes:
   * [#1267](https://github.com/metasfresh/metasfresh/issues/1267) Cannot open ASI editor in Swing
   * [#1272](https://github.com/metasfresh/metasfresh/issues/1272) Vendor ADR configuration not initially considered in Orderline
   * [#1274](https://github.com/metasfresh/metasfresh/issues/1274) webui - allow using the session's remote host name or IP as hostkey
-    
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+
 * metasfresh-webui-api
   * [#277](https://github.com/metasfresh/metasfresh-webui-api/issues/277) Don't export JSONDocument.fields if empty
   * [#283](https://github.com/metasfresh/metasfresh-webui-api/issues/283) Build does not use the specified parent version
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+  * [#287](https://github.com/metasfresh/metasfresh-webui-api/issues/287) Update current notifications when user language was changed
   * [#289](https://github.com/metasfresh/metasfresh-webui-api/issues/289) New/Delete buttons missing when a document was initially loaded
-  
+
 * metasfresh-webui-frontend
   * [#594](https://github.com/metasfresh/metasfresh-webui-frontend/issues/594) inform users that only Chrome is currently supported on login screen
   * [#595](https://github.com/metasfresh/metasfresh-webui-frontend/issues/595) kpi disappears when minimize
   * [#597](https://github.com/metasfresh/metasfresh-webui-frontend/issues/597) cancel on "Do you really want to leave?" sends you 2 steps back
+  * [#599](https://github.com/metasfresh/metasfresh-webui-frontend/issues/599) Action button remains gray if the process execution fails
   * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
     * Fix for the 100% height Layout of windows with included Tab. Subtab Shall always expand to 100% of screen resolution height until available spave is used. After that exceeding page size.
   * [#616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/616) delete option missing after add new
-  
+  * [#618](https://github.com/metasfresh/metasfresh-webui-frontend/issues/618) Done button is not responding
+
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes
 * metasfresh-backend
   * [#1199](https://github.com/metasfresh/metasfresh/issues/1199) user credentials of "SuperUser" are renamed to metasfresh
     * Changing the default login credentials to the vanilla system to metasfresh/ metasfresh.
-  
+
 ## Features
 * metasfresh-backend
   * [#1197](https://github.com/metasfresh/metasfresh/issues/1197) Introduce AdempiereException setParameter/getParameters
@@ -116,7 +127,7 @@ Here come the actual release notes:
     * New functionality to Copy-Paste Grid view content in webUI. This was an activly used functionality in Swing User Interface now ported to the new WebUI.
   * [#442](https://github.com/metasfresh/metasfresh-webui-frontend/issues/442) Image Widget from Attachment in User Window
     * New Image widget for WebUI. Will be able to used to include images/ phots for record which are attached to a record.
-  
+
 ## Fixes
 * metasfresh-backend
   * [#1194](https://github.com/metasfresh/metasfresh/issues/1194) HU "Herkunft" HU_Attribute is not propagated from LU to VHU
@@ -137,7 +148,7 @@ Here come the actual release notes:
     * Color Adjustment of selected Text. Now allowing the user to see what is selected.
   * [#593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/593) DocAction bug when opening a document from references of another
     * Fixes a Bug that appeared when jumping to referenced documents without a valid docaction.
-  
+
 # metasfresh 5.2 (2017-12)
 
 ## Features
@@ -190,7 +201,7 @@ Here come the actual release notes:
     * Now it is possible for the user to select and confirm autocomplete entries in the grid view of included tabs.
   * [#545](https://github.com/metasfresh/metasfresh-webui-frontend/issues/545) View's windowId is not matching the expected one
     * This is fixing a Bug which mixed up the viewID's when navigating fast via browser forth and back through the screens.
-  * [#547](https://github.com/metasfresh/metasfresh-webui-frontend/issues/547) Menu's first element is hidden behind on mobile 
+  * [#547](https://github.com/metasfresh/metasfresh-webui-frontend/issues/547) Menu's first element is hidden behind on mobile
     * Fixing an issue in mobile responsive navigation design. Now also showing the first link on mobile size resolution.
   * [#550](https://github.com/metasfresh/metasfresh-webui-frontend/issues/550) Clicking on grid view breadcrumb item does not work
     * Bugfix for the breadcrumb navigaion on griwd view items.
@@ -219,7 +230,7 @@ Here come the actual release notes:
     * Although the price was deactivated in Product Price it was used in Order Line Candidates. This is now fixed.
   * [#1192](https://github.com/metasfresh/metasfresh/issues/1192) Pricing: IsDefault was not properly migrated
     * Fixing a Bug with the product price migration after price refactoring.
-  
+
 # metasfresh 5.1 (2017-11)
 
 ## Features
@@ -236,13 +247,13 @@ Here come the actual release notes:
     * Adjustment of the Migration Scripts handling. Now saving the migration scripts in a dedicated folder called migration_scripts instead of tmp folder.
   * [#1161](https://github.com/metasfresh/metasfresh/issues/1161) Picking Terminal add Packing Material to Picking Slot takes too long
     * Large Performance Improvement of Picking processing duration when adding Packing Material to a picking Slot. This solution improves the overall performance of the picking workflow.
-    
+
 * metasfresh-webui-api
   * [#244](https://github.com/metasfresh/metasfresh-webui-api/issues/244) KPIs: Introduce TimeRange ending offset
     * Extended functionalitie for KPI definition. Now allowing to set an offet that is used for a ofsetted timerange dataset used for comparison in bar charts.
   * [#246](https://github.com/metasfresh/metasfresh-webui-api/issues/246) Row is not always marked as not saved
     * Extended Functionality to mark rows as saved, allowing the front-end save indicator to react on that.
-  
+
 * metasfresh-webui-frontend
   * [#200](https://github.com/metasfresh/metasfresh-webui-frontend/issues/200) D3JS API definition
     * Integration of D3JS into the webui frontend. D3JS is used for the generation of Barchart and Piechart KPI on the metasfresh Dashboard.
@@ -250,7 +261,7 @@ Here come the actual release notes:
     * Implementation of the Number Indicator/ comparator widget for the Target KPI in Dashboard.
   * [#459](https://github.com/metasfresh/metasfresh-webui-frontend/issues/459) If quick input fails then don't show the quick input fields
     * Improvement of User Experience. Not showing Quick Input Fields only if these are configured in the application dictionary.
-  
+
 ## Fixes
 * metasfresh-backend
   * [#1140](https://github.com/metasfresh/metasfresh/issues/1140) too many prices in pricelist report
@@ -271,7 +282,7 @@ Here come the actual release notes:
     * Housekeeping task to cleanup the metasfresh-webui repository, getting rid of discontinued stuff.
   * [#238](https://github.com/metasfresh/metasfresh-webui/issues/238) Attributes propagated on everything in TU
     * Fixes a Bug that allowed to propoagate Attribute Values on a whole Handling Unit just through moving a low level HU into the Handling Unit.
-  
+
 * metasfresh-webui-frontend
   * [#524](https://github.com/metasfresh/metasfresh-webui-frontend/issues/524) Location Editor cannot read property bug
     * Fixing a Bug that broke the functionality of the Location Editor.
@@ -292,7 +303,7 @@ Here come the actual release notes:
     * Enhancing the processing of flatrate Terms after recording in orderline. Now also transferring the price into the flatrate term data after order completion.
   * [#1071](https://github.com/metasfresh/metasfresh/issues/1071) Empties document Jasper takes very long to generate
     * Improving the performance of empties document generation.
-  * [#1075](https://github.com/metasfresh/metasfresh/issues/1075) Create Window for Material Tracking in WebUI 
+  * [#1075](https://github.com/metasfresh/metasfresh/issues/1075) Create Window for Material Tracking in WebUI
     * New Window "Material Tracking" in WebUI, allowing the creation and maintenance of material Tracking datasets in preparation for usage in procurement, receipt and manufacuring. Material Tracking is important for the retraceability of products in metasfresh.
   * [#1079](https://github.com/metasfresh/metasfresh/issues/1079) Refine the Material Receipt Candidates Grid View
     * Adding detailes Layout to material Receipts Candidates Grid view to allow the receipt user to have a better overview.
@@ -321,7 +332,7 @@ Here come the actual release notes:
   * [#1135](https://github.com/metasfresh/metasfresh/issues/1135) Translation de_DE for Process Empties receive
     * Adding a new Translation for "Empties receive" action in Material Receipt Candidates Window in WebUI.
 
-  
+
 * metasfresh-webui-api
   * [#181](https://github.com/metasfresh/metasfresh-webui/issues/181) Transforming HU in Handling Unit Editor
     * New Functionality in Handling Unit Management. Possibility to apply different actions on Handling Units to transform the Packing, Quantities and Hierarchy easily.
@@ -345,7 +356,7 @@ Here come the actual release notes:
     * Providing an action to transform Handling Units into other Handling Unit combinations in Handling Unit Editor.
   * [#236](https://github.com/metasfresh/metasfresh-webui/issues/236) Remaining TU Qty in Receive HUs window
     * Automatically calculating the remaining TU Quantity to receive in Material Receipt Canddate Window.
-  
+
 * metasfresh-webui-frontend
   * [#126](https://github.com/metasfresh/metasfresh-webui-frontend/issues/126) Add new Business Partner functionality in search Field
     * New Feature that allows to create a new customer Business Partner on the fly when editing a sales Order. This new functionality automatically is suggested to the user when the businesspartner search does not find a result.
@@ -367,7 +378,7 @@ Here come the actual release notes:
     * Nice improvement for the design of the "not saved" indicator. It is now a thin red line instead of the "progress and save" indicator.
   * [#1073](https://github.com/metasfresh/metasfresh/issues/1073) Material Receipt Candidates order by Purchase Order ID desc
     * New Order by criteria for the Grid view in the Material Receipt Candidates Window.
-  
+
 ## Fixes
 * metasfresh-backend
   * [#936](https://github.com/metasfresh/metasfresh/issues/936) Logfile on application-server gets flooded
@@ -387,9 +398,9 @@ Here come the actual release notes:
   * [#1094](https://github.com/metasfresh/metasfresh/issues/1094) Drop deprecated and confusing I_AD_User get/setFirstName methods
     * Dropping lagacy getter/ setter for FirstName LastName of User data.
   * [#1097](https://github.com/metasfresh/metasfresh/issues/1097) field too small in jasper document for invoice
-    * Enhancing a field size in JasperReports Invoice Document. 
+    * Enhancing a field size in JasperReports Invoice Document.
   * [#1099](https://github.com/metasfresh/metasfresh/issues/1099) Fix Materialentnahme movement creation
-    * Includes a fix for the Material Movement creation for used products in Swing Handling Unit editor. 
+    * Includes a fix for the Material Movement creation for used products in Swing Handling Unit editor.
   * [#1103](https://github.com/metasfresh/metasfresh/issues/1103) TU Ordered Qty in Material Receipt Schedule shows movedQty
     * Fix in the virtual column Ordered Quantitity TU that showed the moved Quantity instead.
   * [#1106](https://github.com/metasfresh/metasfresh/issues/1106) inactive org still selectable on login
@@ -398,7 +409,7 @@ Here come the actual release notes:
     * Fixing an error that prohibited the editing of Subproducers in the Material Receipt Handling Unit Editor.
   * [#1121](https://github.com/metasfresh/metasfresh/issues/1121) TU receipt label is just a white sheet of paper
     * Fixes an error in the printing process of Material Receipts and Labels via the standalone printing client and WebUI Interface.
-  
+
 * metasfresh-webui-api
   * [#159](https://github.com/metasfresh/metasfresh-webui/issues/159) Error opening the "Report & Process" window
     * Fixes a Bug that prevented the preview of reports via Chrome new Tab.
@@ -414,7 +425,7 @@ Here come the actual release notes:
     * Fixes the save process when taking a photo via webcam in material Receipt Candidates. The Photo is automatically uploaded and saved as attachment to the candidate record.
   * [#237](https://github.com/metasfresh/metasfresh-webui/issues/237) Transform CU on existing TU not working
     * Fixes an error when trying to transform a CU Handling Unit to an already existing TU.
-  
+
 * metasfresh-webui-frontend
   * [#214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/214) Global shortcuts are not working when focused in inputs
     * Fixing some of the global shortcuts when the focus is on an input field.
@@ -443,7 +454,7 @@ Here come the actual release notes:
     * Included the new Request Type "Opportunity". First step preparing data structure for our new Opportunity Dashboard in WebUI.
   * [#1049](https://github.com/metasfresh/metasfresh/issues/1049) inDispute Fields and Quality% missing in main Invoice Candidate Window
     * Adjustments in Invoice Candidates Window of WebUI. Included Fields with infomration about the Dispute Status and Quality Inspection information of Material Receipt.
-  
+
 * metasfresh-webui-api
   * [#171](https://github.com/metasfresh/metasfresh-webui/issues/171) No packing item selectable for M_HU_PI_Item_Product
     * Now allowing the recording/ editing of Packing Items in CU:TU Configuration of Product.
@@ -485,7 +496,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#140](https://github.com/metasfresh/metasfresh-webui/issues/140) Failed retrieving included documents when one of them is no longer in repository
-    * Fixed a Bug that occured in one time situation and restricted the retrieving of included documents. 
+    * Fixed a Bug that occured in one time situation and restricted the retrieving of included documents.
   * [#160](https://github.com/metasfresh/metasfresh-webui/issues/160) Don't load documents when dealing with attachments API
     * Fix Material Receipt in WebUI to avoid interfering attachments api that cause error in minor cases when receiving HU.
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
@@ -494,16 +505,16 @@ Here come the actual release notes:
     * Harmonized the date ranges selected in WebUI Frontend with the Parameter Date Ranges used for filtering of data in Backend.
   * [#194](https://github.com/metasfresh/metasfresh-webui/issues/194) Quality discount not considered when receipving HUs
     * Now the Quality discount is considered in Material Receipt WebUI.
- 
+
 * metasfresh-webui-frontend
   * [#404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/404) Wrong viewId used when running "Create material receipt" using keyboard shotcuts
     * Fixes an issue that connected the wrong viewID in "created material receipt" workflow using keyboard navigation and selection.
- 
+
 
 # metasfresh 4.57.56 (2017-08)
 
 ## Features
-* metasfresh 
+* metasfresh
   * [#739](https://github.com/metasfresh/metasfresh/issues/739) remove X_BPartner_Stats_MV
     * Removing the legacy DB Table with Business Partner statistics, because of big performance penalty. Will be replaces later via modern data storage and KPI in webUI.
   * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
@@ -526,7 +537,7 @@ Here come the actual release notes:
     * Process to allow to archive during operational time for large chunks of data. This is a spacial migration process to prepare environments for the usage of metasfresh Data Life-cycle Management.
   * [#975](https://github.com/metasfresh/metasfresh/issues/975) Set DLM_Level via properties/preferences UI
     * Allows the user to set if his client shall work with archived data or only show operational data (highly improved performance).
-  * [#993](https://github.com/metasfresh/metasfresh/issues/993) New ProductPrice Window for Price Maintenance 
+  * [#993](https://github.com/metasfresh/metasfresh/issues/993) New ProductPrice Window for Price Maintenance
     * A new Windows called Product Price which allows the easy filtering and maintenance of all product prices. The user filters the data via preset Price List version and is able to maintain the data vie Grid view or single view/ advanced edit.
   * [#981](https://github.com/metasfresh/metasfresh/issues/981) Introduce AD_PInstance(AD_Pinstance_ID, ColumnName) unique index
     * Minor improvement to raise the reading performance of Process Instances.
@@ -536,7 +547,7 @@ Here come the actual release notes:
     * Allows now fallback scenarios (for example retry) for the Persistance Object to retry in case of thrown exceptions during record loading.
   * [#1018](https://github.com/metasfresh/metasfresh/issues/1018) support description fields in shipment
     * Add the fields description bottom and description to metasfresh client in Shipment Window and displays the field content also on Shipment Jasperreports.
-  
+
 * webUI
   * [#146](https://github.com/metasfresh/metasfresh-webui/issues/146) Receipt schedules: show empties receive/return actions only when only one row is selected
     * Possible actions are now only shown when at least 1 Grid View row is selected. if none are selected then the actions menu is shown, but actions are not able to be started.
@@ -564,7 +575,7 @@ Here come the actual release notes:
     * Reducing the amount of predefined filter selections per window to saved filter sets created by special user.
   * [#1014](https://github.com/metasfresh/metasfresh/issues/1014) Window Layout Purchase Order: Warehouse
     * This is an Feature List Item that is part of an Feature List. Notice the connector between the three graphics to show that they are related.
-  
+
 ## Fixes
 
 * metasfresh
@@ -588,7 +599,7 @@ Here come the actual release notes:
     * Fix to allow the usage of buttons in the advanced edit overlays of WebUI (for example Button for location editor or Attributes Editor)
   * [#145](https://github.com/metasfresh/metasfresh-webui/issues/145) HU editor - Create material receipt not enabled when the whole palet is selected
     * Fix that enables the QuickAction in Handling Unit Editor of Material Receipt when selecting an HU with LU Level (e.g. Pallet)
-  * [#150](https://github.com/metasfresh/metasfresh-webui/issues/150) Material Receipt Candidates not updated after receive HU 
+  * [#150](https://github.com/metasfresh/metasfresh-webui/issues/150) Material Receipt Candidates not updated after receive HU
     * Fixed a Bug that occured when doing mass enqueing of invoice candidate lines of different business partner.
   * [#155](https://github.com/metasfresh/metasfresh-webui/issues/155) Error in invoice candidate enqueuing
     * Fixed a Bug that occured when doing mass enqueing of invoice candidate lines of different business partners.
@@ -622,7 +633,7 @@ Here come the actual release notes:
     * Now evaluating the mandatory false parameter in Quick Batch entry functionality.
   * [#330](https://github.com/metasfresh/metasfresh-webui-frontend/issues/330) HUEditor displays HUs which are destroyed
     * The Handling Unit is now not showing Handling Units anymore which are destroyed (e.g. after reversing the creation of an already active Handling Unit).
-  * [#331](https://github.com/metasfresh/metasfresh-webui-frontend/issues/331) Debug/fix: if a PATCH operation fails some wrong calls are performed 
+  * [#331](https://github.com/metasfresh/metasfresh-webui-frontend/issues/331) Debug/fix: if a PATCH operation fails some wrong calls are performed
     * Bugfix for Patch Operation that lead into wrong calls to REST API.
   * [#333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/333) The whole process parameters content vanished
     * Process Panel fix in Handling Unit Editor that caused the initialization of the whole panel and left it empty.
@@ -644,14 +655,14 @@ Here come the actual release notes:
     * Fix for minor issue in Pulse effect when updating document rows.
   * [#176](https://github.com/metasfresh/metasfresh-webui/issues/176) Attributes editor problems
     * Now the editing of all listed attributes are allowed in Attribute editor when displayed.
-  
+
 # metasfresh 4.56.55 (2017-07)
 
 ## Features
 * metasfresh
   * #913 include branch name in build version string
     * Added the branch name into the build version string to be able to distinguish between builds & rollouts in development branches.
-  
+
 * webUI
   * #112 On login page, deactivate the fields while logging in
     * Now making the login fields read-only as soon ad the authentication process is triggered.
@@ -692,11 +703,11 @@ Here come the actual release notes:
   * #966 Provide WebUI Default Role
     * Add a default role and permission to use the already implemented functionalities for the new Web User Interface.
 
-## Fixes 
+## Fixes
 * metasfresh
   * #797 Zoom does not open new document
     * Fix that allows to open a referenced document record in metasfresh via the reference action and zoom accross.
-  
+
 * webUI
   * #119 Error when Pressing the Attribute Button
     * Fixes an error that occured in sales order advancededit and grid view edit when trying to record product attributes.
@@ -731,7 +742,7 @@ Here come the actual release notes:
     * Add new Field in Request window to allow the storage of an explicit Vendor Businesspartner.
   * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
     * Adjust the customs report to fit for swiss requirements in customs reporting. The gross weight is now calculated as Handling Units weight minus weight Logistics Unit Package Item.
-  
+
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
     * Add and arrange the customer and vendor subtab in Businesspartner Window in Web User Interface.
@@ -741,9 +752,9 @@ Here come the actual release notes:
     * Add the Layout for the Price window in WebUI.
   * #896 Dunning Window WebUI
     * Add the Layout for the Dunning Window in WebUI.
-  * #194 Open views from process execution result 
+  * #194 Open views from process execution result
     * Add a new functionality that allows process results to receive a Window ID and open the corresponding Window after finishing the process execution.
-     
+
 
 ## Fixes
 * metasfresh
@@ -754,7 +765,7 @@ Here come the actual release notes:
   * #879 Fix "ValueType not supported: D" when HU attributes are generated
     * Minor Fix for Value Type of generated HU Attributes.
   * #781 ESR scan processing returns improper bpartner
-    * Fix and Enhancement of ESR Scan functionality in Purchase Invoices. Now allowing to select alternative Business Partner for on the Fly Bank Account generation. 
+    * Fix and Enhancement of ESR Scan functionality in Purchase Invoices. Now allowing to select alternative Business Partner for on the Fly Bank Account generation.
   * #783 DocAction on Sales Order not available although permission existing
     * Sysconfig to certrally enable/ disable the Document Action Close.
   * #813 hide packing instruction and qty when null
@@ -808,7 +819,7 @@ Here come the actual release notes:
     * Include the Purchase Order Window in WebUI.
 
 ## Fixes
-* metasfresh 
+* metasfresh
   * #782 Focus on the first process parameter
     * Fix to allow the first recordable Field having focus when opening a process paramater window.
   * #864 Adjust C_Country Location Print generation DE
@@ -840,10 +851,10 @@ Here come the actual release notes:
     * Setup for the Advanced Edit Mode of Shipment Scheule in WebUI.
   * #108 Create Callout for DocNo in Request
     * Adjustment/ Enhancement of the DocumentNo Generation in non Document datastrucures of WebUI
-  
+
 
 ## Fixes
-* metasfresh 
+* metasfresh
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
     * Adjust the flag isInvoiceCandidate to be calculated for M_InoutLine records.
   * #808 DocActionBL.retrieveString method is broken
@@ -864,7 +875,7 @@ Here come the actual release notes:
 # metasfresh 4.52.51 (2017-03)
 
 ## Features
-* metasfresh 
+* metasfresh
   * #774 show address on all docs so it fits the letter window
     * Adjust all Documents so that the address fits into the letter window od envelops C5/ C6 according to ISO 269 und DIN 678.
   * #773 show delivery address on sales order
@@ -877,14 +888,14 @@ Here come the actual release notes:
     * Undisplayed the prices on shipment documents.
 
 ## Fixes
-* metasfresh 
+* metasfresh
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
     * Addresses the possible case of different procurement products that have different attributes and still both match equally well.
   * #791 Create Nachbelastung from Invoice Cast exception
     * Fixes a Bug that lead into an exception when creating an adjustment charge to an existing invoice.
   * #761 Reactivating an InOut fails sometimes
     * Now the reactivation of InOuts also works with records that were deleted at the time the async-package is processed
-    
+
 # metasfresh 4.51.50 (2017-02)
 
 ## Features
@@ -904,7 +915,7 @@ Here come the actual release notes:
     * Fix this error shown on server startup. Making DocumentPA not final anymore.
   * #770 When extending a procurement contract, null becomes 0.00
     * Fix an issue that set the price to 0,00 when extending a procurement contract, although the initial price was null which means "not set".
-  
+
 # metasfresh 4.50.49 (2017-01)
 
 ## Features
@@ -930,13 +941,13 @@ Here come the actual release notes:
     * Adjust the Purchase Order control report to have the correct locale for time formatting.
   * #763 material receipt HU label always shown in preview
     * Migrate the Handling Unit label enabling direct print, without print preview.
-  
+
 * webui
   * #89 Adjust DocAction Names
     * Adjust/ migrate DocAction Names for WebUI.
 
 # metasfresh 4.49.48 (2016-51)
- 
+
 ## Features
 * metasfresh
   * #489 Implement DLM within single logical tables
@@ -958,7 +969,7 @@ Here come the actual release notes:
     * Extend the where clause for matching of PO References in Aggregation inout documents. Additional Aggregation matching criteria now are ad_org_id, c_bpartner_id.
   * #713 Marginal Return Report (short version) doubled sums for accounting group
     * Fix a partially double summed up accounting group in marginal return Report.
-  
+
 # metasfresh 4.48.47 (2016-50)
 
 ## Features
@@ -973,17 +984,17 @@ Here come the actual release notes:
     * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
   * #687 webUI bundle
     * Add different Layout changes in a fair amount of windows for Web User Interface.
-    
+
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
-    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build. 
+    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build.
   * #721 Wrong error message displayed when user enters wrong password on login
     * Fix for Bug when entering wrong password in Login. Said "locked" but was just wrong credentials/ password.
 
 # metasfresh 4.47.46 (2016-49)
 
-## Features 
+## Features
 * metasfresh
   * #639 Marginal Return report calculation does not check ad_org_id
     * Extend the marginal return report with ad_org_id parm to allow to seperate user for other organisations.
@@ -1012,7 +1023,7 @@ Here come the actual release notes:
     * Swap Table direct references against search in all R_Request table/ subtable fields to reduce current performance issues.
   * #674 Filter operator "between" broken
     * Fix the operator "between" which is used in filtering/ search criteria.
-  
+
 * webui
   * #67 Error when introducing parameters to report
     * Fix parameters support for report usage in webui.
@@ -1021,7 +1032,7 @@ Here come the actual release notes:
 
 # metasfresh 4.46.45 (2016-48)
 
-## Features 
+## Features
 * webui
   * #425 Kickstart elasticsearch integration
     * Add the first prototype of elasticsearch integration in WebUI environment of metasfresh ERP. Data for elasticsearch index is created via metasfresh async framework.
@@ -1094,7 +1105,7 @@ This week's RC
     * Add a new Quantity value in reports Revenue per week and week Businesspartner.
   * #416 Extended async notification features
     * Prepare the notification features for WebUI exposure in metasfresh nextGen.
- 
+
 ## Fixes
 * metasfresh
   * #578 Request Window Attachment Image too large in viewer
@@ -1119,7 +1130,7 @@ This week's RC
 * metasfresh-webui
   * #40 Account fields are not working
     * Fix in new WebUI Implementation. An exception occured because of Field Type account.
-  
+
 # metasfresh 4.42.41 (2016-44)
 
 ## Features
@@ -1149,7 +1160,7 @@ This week's RC
    * Adapting the sorting machanism in Tabs to allow Layout engines to receive precise Informations which columns are sorted. Initially needed for new WebUI.
  * #424 Migrate spring-boot from 1.3.3 to 1.4.x
    * Updated spring boot-from to to allow the usage of a recent elasticsearch version.
-  
+
 * metasfresh-webui
  * #27 Support for custom order bys in browseView
    * Added new Support for a custom order by criteria in grid-/ browse view.
@@ -1292,7 +1303,7 @@ This week's RC
    - Eliminiating an issue when refreshing after execution of processes.
  * #327 Got NPE when completing a drafted order
    - Fixing a Null Pointer Exception when trying to complete a drafted order document.
- * #337 ERROR: duplicate key value violates unique constraint "c_bpartner_stats_c_bpartner_id_unique" triggered from some callouts 
+ * #337 ERROR: duplicate key value violates unique constraint "c_bpartner_stats_c_bpartner_id_unique" triggered from some callouts
    - Fixing an exception when trying to select a BPartner without valid ship location in Sales Order.
  * FRESH-257 WI1 - rendering a window with tab, one field per field type incl. editor and fieldgroup
    - Initial WebUI Proof of Concept Task. A lot has already done since this one, even more to be expected.
@@ -1312,7 +1323,7 @@ This week's RC
 # metasfresh 4.35.34 (2016-37)
 
 ## Features
- * FRESH-112 metasfresh web 
+ * FRESH-112 metasfresh web
    - Integrated recent backend related changes done for metasfresh REST API Implementation.
  * #359 document Note not displayed on invoice
    - Fixed the issue that c_doctype.documentnote was not shown properly on Jasper invoice documents.
@@ -1390,7 +1401,7 @@ This week's RC
 ## Features
  - #297 Performance problems related to zoom-to
    * improve the documentation, both in that code and in the client
-   
+
 ## Fixes
  - #298 ShipmentSchedule updating fails on missing UOM conversion
    * prevent an NPE on missing master data
@@ -1445,7 +1456,7 @@ This week's RC
    * Added a configuration possibility to be able to switch the conference flitering functionality on-off in MRP Product Info.
  - #226 show accounting currency in open items report
    * Implemented a counter check Open Items Reports (customer, vendor) with Accounting Balance. Open Items in foreign currency now show also the sums in accounting currency.
- 
+
 ## Fixes
  - #153 PaymentRule = S in Invoice
    * Checked Code for direct setting of PaymentRule cheque got rid of it.
@@ -1552,7 +1563,7 @@ This week's RC
     * Note: Not a "fix" because we deliberately deactivated it before and now find that the normal user is better off with the role being available.
  - #125 FRESH-462 enable all entity types
     * Not a fix, the reasoning is similar to #124
- 
+
 ## Fixes
  - #137 FRESH-473 Glitches running metasfresh out of eclipse
     * adding a lauch config to run the client with embedded server
@@ -1572,7 +1583,7 @@ This week's RC
 ## Features
  - FRESH-378 process to close invoice candidates
     * New Feature in Invoice Candidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
- 
+
 ## Fixes
  - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
     * Changed InOut Handler to not create Invoice candidates when DocSubType is "Saldokorrektur".
@@ -1644,7 +1655,7 @@ This week's RC
  - FRESH-344 Move KPI SQL to repository and new DB Schema
     * Fix: KPI SQLs were in the default/public schema
  - FRESH-356 make logo work for any org
- 
+
 ## Documentation
  - Creation of HowTo's
     * You can now find a quickly growing Set of HowTo's in our metasfresh documentation Project. Check the details here : <a href="http://metasfresh.github.io/metasfresh-documentation/">http://metasfresh.github.io/metasfresh-documentation/</a>
@@ -1691,8 +1702,8 @@ This week's RC
  - FRESH-334 Product BPartner Contraint Issue
     * Prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense.
  - FRESH-326 Set the Correct Org in Fact_Acct_Summary
-    * changed the migration script to be more repeatable 
- 
+    * changed the migration script to be more repeatable
+
 ## Fixes
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
     * Fix to avoid multiple updates of same statistical value.
@@ -1757,8 +1768,8 @@ This week's RC
 
 ## Fixes
  - FRESH-318 ESR String Processing not working with multiple partner bank accounts
-    * C_PaySelectionLine: combining two methods into one, to avoid duplicate effort and FUD with their execution order. 
-    * making sure that annotated model interceptor methods are ordered by their method name 
+    * C_PaySelectionLine: combining two methods into one, to avoid duplicate effort and FUD with their execution order.
+    * making sure that annotated model interceptor methods are ordered by their method name
  - FRESH-251 Inout created from Picking-Parm shall only have picked Qty LU-TU too
     * The creation of InOuts shall consider the Picked Quantities of LU-TU via Picking Terminal, when Inout Creations is done from Inout-Candidate Window with Parm PickedQty = 'Y'.
  - FRESH-300 client not starting when config is not completed
@@ -1768,7 +1779,7 @@ This week's RC
  - FRESH-93 Purchase Order 848092, Row Missing in Invoice Candidates
     * Extending/ fixing the views to also find wrong Quantity ordered from Inout Lines referencing Invoice Candidates.
 	* adding the ddl to our repository
-	
+
 # metasfresh 4.17.16
 
 ## Features
@@ -1779,13 +1790,13 @@ This week's RC
     * Possibility to Overwrite the default Packing Instructions/ Handling Units for a reported Product Quantity. The Repor Informations come from Procurement Application.
  - FRESH-286 jenkins envInject plugin overwrites BUILD_URL value
     * DevOps - introducing a new environment variable ROLLOUT_BUILD_URL to be set by the caller. Fallback to BUILD_URL if the new var is not set.
- - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
+ - FRESH-203 Procurement: Mail in BPartner language, other eMail Address
     * CRM - Enhancing and extending mail configuration and functionality to select an eMail configuration by document type or base type.
 
 ## Fixes
- - FRESH-203 Procurement: Mail in BPartner language, other eMail Address	
+ - FRESH-203 Procurement: Mail in BPartner language, other eMail Address
 	* Fixed the formatting and encoding problem in the mails sent by our async processor
-	
+
 # metasfresh 4.16.15
 
 ## Features
@@ -1815,7 +1826,7 @@ This week's RC
   - FRESH-249 hubalance general report missing TU when no carry
      * Small fix in Handling Unit Balance Report.
 
-  
+
 # metasfresh 4.14.13a
 
 ## Features
@@ -1826,7 +1837,7 @@ This week's RC
      * also fixing a problem that the library-version we use only supports a hardcoded 50 columns
   - FRESH-218 Create archives in partner's language
      * adding language info to archive records, so when mailing the PDF, the system can choose a mail template in the correct language
-	 
+
 ## Fixes
  - FRESH-235: User to Role assignment not working with some postgres versions
     * Fix of sql alias Issue. Recognized in User to Role Assignment.
@@ -1840,7 +1851,7 @@ This week's RC
     * Fixing an Issue with the back Button in Process Panel.
  - FRESH-222 QtyDelivered not updated for PMM_Balance
     * The PMM_Balance was not updateing QtyDelivered for contracted PMM_Products correctly. Fixed this Issue.
- 
+
 # metasfresh 4.14.13
 
 ## Features
@@ -1863,7 +1874,7 @@ This week's RC
 ## Fixes
  - FRESH-241 Get rid of com.verisign together with all those legacy payment processors
  - FRESH-215 Procurement WebUI language not updated when changed in bpartner
- - FRESH-219 Procurement: Contract missing in Procurement webUI: 
+ - FRESH-219 Procurement: Contract missing in Procurement webUI:
     * making queue subscriptions durable to make sure data is not lost if a subscriber is not present
  - FRESH-205 Doc Outbound: eMail sent not updated
     * the EMail-sent counter is now correct
@@ -1895,7 +1906,7 @@ This week's RC
  - FRESH-141 Procurement: Procurement Candidates initial qtyToOrder 0
  - FRESH-128 Provide Basic CRM Features
     * adding a simple table to the business partner window that displays related documents etc in cronological order
- - FRESH-71 - extend metasfresh and provide Product-TRLs to the webUI 
+ - FRESH-71 - extend metasfresh and provide Product-TRLs to the webUI
     * exposing a JMX operation to push all products and translations to the webUI
 
 ## Fixes
@@ -1963,18 +1974,18 @@ This week's RC
     * the final settlement invoice didn't have the correct witholding amount
 
 ## Instructions
- - When updateing an existing instalation, the script minor_remote.sh will stop. 
+ - When updateing an existing instalation, the script minor_remote.sh will stop.
    Please read the instructions to update your instalation to the new JBoss free version.
 
 
-# metasfresh 4.10.9 
+# metasfresh 4.10.9
 
 ## Features
  - 09915 procurement conditions jasper process (109344045046)
     * adding jasper, so that a procurement contract can be printed and singned by the vendor
  - 09924 Remove legacy oracle drivers and code (107845685842)
  - 09925 Create Balance Sheet Jasper (107146104064)
- 
+
 ## Fixes
  - 09844 Login Problem: Client level Mandant and Org for System Administrator (102554242797)
  - 09939 Inconsistent ASI in InOutLine (109676742143)
@@ -1992,13 +2003,13 @@ This week's RC
     *  working on having metasfresh also talking to the webUI and communicate various changes instead of just responding to requests
  - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402)
     * when the client inititally starts and tries to connect the server, the timout is reduces from 1 minute to 2 seconds, to not stall the client and give quicker feedback if there is a problem with the server
-	
+
 ## Fixes
  - 09628 procurement management (106716240958)
     * the first event was created with AD_Client_ID=0 and was therefore not processed
 
 # metasfresh 4.9.8
-  
+
 ## Features
  - 09920 Support sending invoice without an order via EDI: send the invoice's POReference if there is no cctop111 record coming from metasfresh
  - 09628 procurement management (106716240958)
@@ -2013,7 +2024,7 @@ This week's RC
  - 09912 AD EntityType ID is not acquired from project ID server (106063434593)
 
 # metasfresh 4.8.7
-  
+
 ## Features
  - 09628 procurement management (106716240958)
      * still a work in progress
@@ -2021,23 +2032,23 @@ This week's RC
 	 * procurement management in metasfresh
 	    * manintain vendor contracts
 		* create purchase orders for the supplies reproced via the web app
-  - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402) 
+  - FRESH-21: 09848 enable metasfresh to provide jax-rs services (101763395402)
     *Moved and extended the AD_JavaClasses framework
-    *Removed javax.jnlp (it was only needed because there was some code wrt WebStart, 
+    *Removed javax.jnlp (it was only needed because there was some code wrt WebStart,
      but that's not done anymore)
     *Removed javax.ejb (we now use jax.rs for the invokations)
-     CConnection now also uses a proxy provided by jax-rs to query the application 
+     CConnection now also uses a proxy provided by jax-rs to query the application
      server state
      The next step can be to change jboss for a less old & heavy environment,
      like tomcat or something else
     *Extracted de.metas.event's JMS coded into de.metas.jms, because it's now also
      used by de.metas.jax.rs
     *Added table AD_JAXRS_Enpoint to manage our endpoints
-    *moving replication and metas-esb folgers into a new ad_menu folder called 
+    *moving replication and metas-esb folgers into a new ad_menu folder called
      "communication". Also moving the new AD_JAXRS_Enpoint windo to that folder
-    *Changed startup-behavior so that when running in embedded-server-mode, the 
+    *Changed startup-behavior so that when running in embedded-server-mode, the
      client always starts a local jms broker and also connects to it
-	 
+
 ## Fixes
  - 09643 Zahlung und Zahlung-Zuordnung Datum unterschiedlich (108395556223)
  - 09894 take email address on inout from contact and not properties (108765877478)
@@ -2098,9 +2109,9 @@ This week's RC
     * making a fix to the work-package processor that is used by the database function "de.metas.async".executeSqlAsync(p_Sql text)
  - 09812 create report for daily packaging material balance (101400050316)
     * minor layouting fixes
- - 09834 adjustment possibility for empties (105285329048)	
+ - 09834 adjustment possibility for empties (105285329048)
     * minor layouting fixes
-	
+
 ## Instructions
 
 # metasfresh 4.4.3
@@ -2139,7 +2150,7 @@ This week's RC
  - 09776 EDI - Receiver without ORDERS (100584995833)
     * we now can specify a default POReference value for orders that is autumatically set by the system, unless there already was another POReference set by a users of from an importnert order
 	* for a DESADV lines with unknown CUperTU, we can now set a default-value such a "1" per C_BPartner.
-	
+
 ## Fixes
 
  - 09829 ESB sends HTTP code 204 to the printing client (108552946334)
@@ -2154,10 +2165,10 @@ This week's RC
 
  - to use the latest printing ESB bundle (tasks 09829 and 09814), one needs to install the jackson-jaxrs-json provider in the OSGI container (smx):
  ```
-bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-base/2.6.3 
+bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-base/2.6.3
 bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
  ```
- 
+
 # metasfresh 4.2.1
 
  - 09281 create report for packaging material balance (106483495857) +it +feature
@@ -2230,4 +2241,4 @@ bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
  - 09704 Migration ADempiere to metasfresh (100169279454) +it +feature
     * making hardcoded endcustomer-feature configurable for all metasfresh users
  - 09752 system creates two printing queue items for gernic reports (107420055849) +it +fix
- - 09764 servicemix update (102943200308): the esb bundles now use 
+ - 09764 servicemix update (102943200308): the esb bundles now use
