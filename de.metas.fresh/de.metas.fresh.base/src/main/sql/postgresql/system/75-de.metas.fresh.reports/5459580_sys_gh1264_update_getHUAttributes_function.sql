@@ -1,4 +1,4 @@
-drop function if exists "de.metas.handlingunits".getHUAttributes(p_M_HU_ID numeric);
+﻿drop function if exists "de.metas.handlingunits".getHUAttributes(p_M_HU_ID numeric);
 drop function if exists "de.metas.handlingunits".getHUAttributes(p_M_HU_ID numeric, p_FillPurchaseDocInfo boolean);
 drop type if exists "de.metas.handlingunits".HUAttributes;
 
