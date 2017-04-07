@@ -391,7 +391,6 @@ final MF_ARTIFACT_VERSIONS = [:];
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
-// TODO: invoke them in parallel
 stage('Invoke downstream jobs')
 {
 	if(params.MF_SKIP_TO_DIST)
@@ -425,20 +424,18 @@ stage('Invoke downstream jobs')
 		MF_ARTIFACT_VERSIONS['metasfresh'] = BUILD_VERSION;
 
 		// params.MF_SKIP_TO_DIST == false, so invoke downstream jobs and get the build versions which came out of them
-
-//		 parallel
-//			"metasfresh-webui" : {
-				// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
+		parallel (
+			metasfresh_webui: {
+				// TODO: rename the build job to metasfresh-webui-api
 				final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 				MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
-//			},
-//			"metasfresh-procurement-webui" : {
+			},
+			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
-//			},
-//			failFast : true
-//		;
+			}
+		);
 
 		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo.
 		// Therefore we will just get the latest webui-frontend later, when we need it.
@@ -453,7 +450,7 @@ stage('Invoke downstream jobs')
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
 
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-	// note: even with "skiptodis=true we do this, because we still want to make the notifcations
+	// note: even with "skiptodist=true we do this, because we still want to make the notifcations
 	echo "Going to notify external systems via zapier webhook"
 	node('linux')
 	{
@@ -487,12 +484,19 @@ stage('Invoke downstream jobs')
 			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])
 		];
 
-	build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
-		parameters: distJobParameters,
-		wait: false;
-
-	build job: getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
-		parameters: distJobParameters,
-		wait: false;
+	// Run the downstream dist jobs in parallel.
+	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
+	parallel (
+		metasfresh_dist: {
+			build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
+			parameters: distJobParameters,
+			wait: true;
+		},
+		metasfresh_dist_orgs: {
+			build job: getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
+			parameters: distJobParameters,
+			wait: true;
+		}
+	)
 }
 } // timestamps
