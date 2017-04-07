@@ -96,11 +96,15 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#594](https://github.com/metasfresh/metasfresh-webui-frontend/issues/594) inform users that only Chrome is currently supported on login screen
+    * The current development for metasfresh WebUI ist done optimized for Chrome browser. Now informing the user about that on login screen, if trying to login with other browser.
   * [#595](https://github.com/metasfresh/metasfresh-webui-frontend/issues/595) kpi disappears when minimize
+    * Fixing a Bug that vanished the KPI widgets after minimizing action.
   * [#597](https://github.com/metasfresh/metasfresh-webui-frontend/issues/597) cancel on "Do you really want to leave?" sends you 2 steps back
+    * Fix for the leave confirmation popup. Now only going back 1 step after confiormation.
   * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
     * Fix for the 100% height Layout of windows with included Tab. Subtab Shall always expand to 100% of screen resolution height until available spave is used. After that exceeding page size.
   * [#616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/616) delete option missing after add new
+    * The delete Button is now available again after starting the add new action.
   
 # metasfresh 5.3 (2017-13)
 
