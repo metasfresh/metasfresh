@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.receipt_label(IN M_HU_ID numeric);
+﻿DROP FUNCTION IF EXISTS report.receipt_label(IN M_HU_ID numeric);
 
 CREATE FUNCTION report.receipt_label(IN M_HU_ID numeric) RETURNS TABLE
 	(
