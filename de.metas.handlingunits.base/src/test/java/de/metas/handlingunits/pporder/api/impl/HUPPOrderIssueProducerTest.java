@@ -51,6 +51,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
@@ -126,7 +127,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				rate_Millimeter_to_Rolle  // divide rate
 		);
 	}
-	
+
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29#Result_of_IT1
 	 * @task http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
@@ -177,7 +178,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Create another VHU with 1Rolle, issue it to manufacturing order and test.
-		// => expect to issue until we hit the qty required (calculated based on finshed goods receipt) of that component,
+		// => expect to issue until we hit the qty required (calculated based on finished goods receipt) of that component,
 		{
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("57200"); // = 200items x 260(mm/item) + 10% scrap [millimeters]
 			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.96"); // = 1.00 - 0.04(57200mm to rolle)
@@ -292,7 +293,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertNotNull("HU's locator shall be set", newHU.getM_Locator());
 
 			Services.get(IHandlingUnitsBL.class).setHUStatusActive(newHUs);
-			
+
 			return newHU;
 		});
 		InterfaceWrapperHelper.setThreadInheritedTrxName(hu); // DEBUGGING useless
@@ -306,17 +307,25 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				.createIssues(hu);
 		System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
 		//
-		final List<I_PP_Cost_Collector> costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-				.setCandidatesToProcess(candidates)
-				.process();
-		System.out.println("Cost collectors: \n" + Joiner.on("\n").join(costCollectors));
+		final List<I_PP_Cost_Collector> costCollectors;
+		if (!candidates.isEmpty())
+		{
+			costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+					.setCandidatesToProcess(candidates)
+					.process();
+			System.out.println("Cost collectors: \n" + Joiner.on("\n").join(costCollectors));
+		}
+		else
+		{
+			costCollectors = ImmutableList.of();
+		}
 
 		//
 		// Validate HU
 		HUAssert.assertStorageLevel(hu, pFolie, expectedHUQtyAfterIssue);
 		//
 		InterfaceWrapperHelper.refresh(hu);
-		if(expectedHUQtyAfterIssue.signum() == 0)
+		if (expectedHUQtyAfterIssue.signum() == 0)
 		{
 			Assert.assertEquals(X_M_HU.HUSTATUS_Destroyed, hu.getHUStatus());
 		}

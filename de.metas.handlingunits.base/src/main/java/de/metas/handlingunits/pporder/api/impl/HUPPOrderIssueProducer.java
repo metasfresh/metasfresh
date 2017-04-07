@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -36,6 +37,7 @@ import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -152,6 +154,7 @@ import de.metas.logging.LogManager;
 			final int targetPPOrderId = targetBOMLine.getPP_Order_ID();
 			final int topLevelHUId = hu.getM_HU_ID();
 			final int locatorId = hu.getM_Locator_ID();
+			final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
 
 			final I_PP_Order_Qty candidate = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
 			candidate.setPP_Order_ID(targetPPOrderId);
@@ -159,14 +162,34 @@ import de.metas.logging.LogManager;
 			candidate.setM_Locator_ID(locatorId);
 			candidate.setM_HU_ID(topLevelHUId);
 			candidate.setM_Product_ID(productId);
-			candidate.setQty(productStorage.getQty());
-			candidate.setC_UOM(productStorage.getC_UOM());
+			candidate.setQty(qtyToIssue.getQty());
+			candidate.setC_UOM(qtyToIssue.getUOM());
 			candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 			candidate.setProcessed(false);
 			huPPOrderQtyDAO.save(candidate);
 
 			return candidate;
 		}
+	}
+	
+	/** @return how much quantity to take "from" and issue it to given BOM line */
+	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
+	{
+		//
+		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
+		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
+		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
+		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
+		final String issueMethod = targetBOMLine.getIssueMethod();
+		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+		{
+			return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
+		}
+		else
+		{
+			return Quantity.of(from.getQty(), from.getC_UOM());
+		}
+
 	}
 
 	@Override
