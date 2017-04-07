@@ -318,7 +318,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
 
-	void setError(I_C_Invoice_Candidate ic, Exception e);
+	void setError(I_C_Invoice_Candidate ic, Throwable e);
 
 	/**
 	 * Update invoice candidate's QtyWithIssues and depending cols by taking it from inout lines. Updates
