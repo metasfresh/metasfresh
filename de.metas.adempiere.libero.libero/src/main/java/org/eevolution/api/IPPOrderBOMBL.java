@@ -26,13 +26,14 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import de.metas.quantity.Quantity;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {

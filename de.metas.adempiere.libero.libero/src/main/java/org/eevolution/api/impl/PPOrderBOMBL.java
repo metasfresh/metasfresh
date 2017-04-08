@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -58,6 +57,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.quantity.Quantity;
 
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
