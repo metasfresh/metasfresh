@@ -36,13 +36,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Shipper;
 
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -83,7 +83,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHULockBL huLockBL = Services.get(IHULockBL.class);
 		for (final I_M_HU hu : hus)
 		{
 			//
@@ -112,8 +112,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 				//
 				// Mark the top level HU as Locked & save it
-				hu.setLocked(true);
-				handlingUnitsDAO.saveHU(hu);
+				huLockBL.lock(hu);
 
 				//
 				// Remove HU from picking slots, if any (07499).
@@ -158,9 +157,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	public void generateShipments(final Properties ctx, final IHUQueryBuilder husQueryBuilder)
 	{
 		Check.assumeNotNull(husQueryBuilder, "husQueryBuilder not null");
-		husQueryBuilder.setOnlyLocked(true);
 
-		final List<I_M_HU> hus = husQueryBuilder.list();
+		final List<I_M_HU> hus = husQueryBuilder.onlyLocked().list();
 		if (hus.isEmpty())
 		{
 			throw new AdempiereException("@NotFound@ @M_HU_ID@ @Locked@");
