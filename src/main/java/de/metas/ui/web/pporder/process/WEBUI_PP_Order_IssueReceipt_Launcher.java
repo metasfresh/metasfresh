@@ -1,6 +1,8 @@
 package de.metas.ui.web.pporder.process;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_Order;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -38,6 +40,12 @@ public class WEBUI_PP_Order_IssueReceipt_Launcher extends JavaProcess implements
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		
+		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
+		if(!X_PP_Order.DOCSTATUS_Completed.equals(ppOrder.getDocStatus()))
+		{
+			return ProcessPreconditionsResolution.reject("not completed");
 		}
 
 		return ProcessPreconditionsResolution.accept();

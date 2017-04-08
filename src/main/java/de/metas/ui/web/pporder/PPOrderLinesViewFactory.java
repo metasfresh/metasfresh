@@ -52,12 +52,13 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 	
 	@Override
-	public IDocumentViewSelection createView(final DocumentViewCreateRequest jsonRequest)
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
 		return PPOrderLinesView.builder()
+				.setParentViewId(request.getParentViewId())
 				.setViewId(UUID.randomUUID().toString())
-				.setAD_Window_ID(jsonRequest.getAD_Window_ID())
-				.setRecords(PPOrderLinesLoader.of(jsonRequest))
+				.setAD_Window_ID(request.getAD_Window_ID())
+				.setRecords(PPOrderLinesLoader.of(request))
 				.setServices(processDescriptorsFactory)
 				.build();
 	}

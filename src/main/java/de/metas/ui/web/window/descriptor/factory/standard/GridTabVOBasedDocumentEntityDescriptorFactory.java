@@ -310,7 +310,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			// and we want to allow the user setting it.
 			else if (!gridFieldVO.isUpdateable() && !gridFieldVO.isParentLink())
 			{
-				readonlyLogic = ConstantLogicExpression.TRUE;
+				readonlyLogic = ConstantLogicExpression.FALSE;
 			}
 			else
 			{

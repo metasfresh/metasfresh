@@ -61,6 +61,8 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	// services
 	private final ProcessDescriptorsFactory processDescriptorsFactory;
 
+	private final String parentViewId;
+	
 	private final String viewId;
 	private final int adWindowId;
 	private final int ppOrderId;
@@ -73,12 +75,20 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	{
 		// services
 		processDescriptorsFactory = builder.getProcessDescriptorFactory();
+		
+		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
 		adWindowId = builder.getAD_Window_ID();
 
 		loader = builder.getLoader();
 		ppOrderId = loader.getPP_Order_ID();
+	}
+	
+	@Override
+	public String getParentViewId()
+	{
+		return parentViewId;
 	}
 
 	@Override
@@ -260,7 +270,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 	private IndexedDocumentViews retrieveRecords()
 	{
-		final List<PPOrderLineRow> recordsList = loader.retrieveRecords();
+		final List<PPOrderLineRow> recordsList = loader.retrieveRecords(viewId);
 		return new IndexedDocumentViews(recordsList);
 	}
 
@@ -356,6 +366,8 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	//
 	public static final class Builder
 	{
+		private String parentViewId;
+		
 		private String viewId;
 		private int adWindowId;
 
@@ -370,6 +382,17 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		public PPOrderLinesView build()
 		{
 			return new PPOrderLinesView(this);
+		}
+		
+		public Builder setParentViewId(String parentViewId)
+		{
+			this.parentViewId = parentViewId;
+			return this;
+		}
+		
+		private String getParentViewId()
+		{
+			return parentViewId;
 		}
 
 		public Builder setViewId(final String viewId)

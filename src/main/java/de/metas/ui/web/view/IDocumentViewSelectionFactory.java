@@ -30,5 +30,5 @@ public interface IDocumentViewSelectionFactory
 {
 	JSONDocumentViewLayout getViewLayout(int adWindowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
 
-	IDocumentViewSelection createView(DocumentViewCreateRequest jsonRequest);
+	IDocumentViewSelection createView(DocumentViewCreateRequest request);
 }

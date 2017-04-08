@@ -89,6 +89,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private static final Logger logger = LogManager.getLogger(SqlDocumentViewSelection.class);
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
+	
+	private final String parentViewId;
 
 	private final int adWindowId;
 	private final String tableName;
@@ -129,6 +131,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private SqlDocumentViewSelection(final Builder builder)
 	{
 		super();
+		
+		parentViewId = builder.getParentViewId();
 
 		adWindowId = builder.getAD_Window_ID();
 		tableName = builder.getTableName();
@@ -177,12 +181,19 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 					.add("viewId", defaultSelection.getUuid())
 					.add("AD_Window_ID", adWindowId)
 					.add("tableName", tableName)
+					.add("parentViewId", parentViewId)
 					.add("defaultSelection", defaultSelection)
 					// .add("sql", sqlSelectPage) // too long..
 					// .add("fieldLoaders", fieldLoaders) // no point to show them because all are lambdas
 					.toString();
 		}
 		return _toString;
+	}
+	
+	@Override
+	public String getParentViewId()
+	{
+		return parentViewId;
 	}
 
 	@Override
@@ -548,6 +559,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private ProcessDescriptorsFactory processDescriptorsFactory;
 		private DocumentReferencesService documentReferencesService;
 
+		private String parentViewId;
+		
 		private final DocumentEntityDescriptor _entityDescriptor;
 		private Set<String> _viewFieldNames;
 		private List<DocumentFilter> _stickyFilters;
@@ -565,6 +578,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		public SqlDocumentViewSelection build()
 		{
 			return new SqlDocumentViewSelection(this);
+		}
+		
+		public Builder setParentViewId(String parentViewId)
+		{
+			this.parentViewId = parentViewId;
+			return this;
+		}
+		
+		private String getParentViewId()
+		{
+			return parentViewId;
 		}
 
 		private SqlDocumentViewFieldValueLoader getDocumentViewFieldValueLoaders()
@@ -598,7 +622,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			return getEntityDescriptor().getFiltersProvider();
 		}
-
+		
 		private Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
 		{
 			_stickyFilters = stickyFilter == null ? ImmutableList.of() : ImmutableList.of(stickyFilter);

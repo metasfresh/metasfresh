@@ -147,6 +147,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.of(request, referencingTableName);
 
 		return HUDocumentViewSelection.builder()
+				.setParentViewId(request.getParentViewId())
 				.setViewId(viewId)
 				.setAD_Window_ID(adWindowId)
 				.setRecords(documentViewsLoader)
