@@ -9,6 +9,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -47,9 +49,9 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBOMLine
 {
-	public static final Builder builder(final IDocumentView delegate)
+	public static final Builder builder(final String viewId, final IDocumentView delegate)
 	{
-		return new Builder(delegate);
+		return new Builder(viewId, delegate);
 	}
 
 	public static final PPOrderLineRow cast(final IDocumentView viewRecord)
@@ -57,6 +59,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 		return (PPOrderLineRow)viewRecord;
 	}
 
+	private final String viewId;
 	private final boolean processed;
 	private final int ppOrderId;
 	private final int ppOrderBOMLineId;
@@ -67,6 +70,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	private PPOrderLineRow(final Builder builder)
 	{
 		super(builder.delegate);
+		viewId = builder.viewId;
 
 		processed = builder.processed;
 
@@ -74,6 +78,11 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 		ppOrderBOMLineId = builder.ppOrderBOMLineId;
 
 		ppOrderQtyId = builder.ppOrderQtyId;
+	}
+	
+	public String getViewId()
+	{
+		return viewId;
 	}
 
 	public int getPP_Order_ID()
@@ -215,29 +224,33 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 				.listIds();
 
 		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.grid)
-				// .setParentViewId(parentViewId) // TODO: implement
+				.setParentViewId(getViewId())
 				.setFilterOnlyIds(huIdsToAvailableToIssue)
 				.build());
 	}
 
 	public static final class Builder
 	{
+		private final String viewId;
 		private final IDocumentView delegate;
+		
 		private int ppOrderId;
 		private int ppOrderBOMLineId;
 		private int ppOrderQtyId;
 		private boolean processed = false;
 
-		private Builder(final IDocumentView delegate)
+		private Builder(final String viewId, final IDocumentView delegate)
 		{
 			this.delegate = delegate;
+			Preconditions.checkNotNull(viewId, "viewId not provided");
+			this.viewId = viewId;
 		}
 
 		public PPOrderLineRow build()
 		{
 			return new PPOrderLineRow(this);
 		}
-
+		
 		public Builder ppOrder(final int ppOrderId)
 		{
 			this.ppOrderId = ppOrderId;

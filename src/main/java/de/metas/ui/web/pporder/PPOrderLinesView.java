@@ -270,7 +270,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 	private IndexedDocumentViews retrieveRecords()
 	{
-		final List<PPOrderLineRow> recordsList = loader.retrieveRecords();
+		final List<PPOrderLineRow> recordsList = loader.retrieveRecords(viewId);
 		return new IndexedDocumentViews(recordsList);
 	}
 
@@ -366,6 +366,8 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	//
 	public static final class Builder
 	{
+		private String parentViewId;
+		
 		private String viewId;
 		private int adWindowId;
 
