@@ -297,7 +297,7 @@ public class EmptiesMovementProducer
 
 		private final int warehouseId;
 		@Getter(lazy = true)
-		private final transient I_M_Warehouse warehouse = retrieveWarehouse();
+		private final I_M_Warehouse warehouse = retrieveWarehouse();
 
 		private I_M_Warehouse retrieveWarehouse()
 		{
