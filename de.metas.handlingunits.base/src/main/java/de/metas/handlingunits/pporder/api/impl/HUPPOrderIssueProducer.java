@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -54,6 +53,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
