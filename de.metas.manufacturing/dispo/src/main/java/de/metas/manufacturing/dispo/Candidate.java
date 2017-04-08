@@ -1,6 +1,5 @@
 package de.metas.manufacturing.dispo;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.util.lang.EqualsBuilder;
@@ -66,10 +65,11 @@ public class Candidate
 	@NonNull
 	private final I_M_Locator locator;
 
+	/**
+	 * The projected overall quantity which we expect at the time of {@link #getDate()}.
+	 */
 	@NonNull
 	private final Quantity quantity;
-
-	private final BigDecimal qtyDelta;
 
 	@NonNull
 	private final Type type;
@@ -78,15 +78,18 @@ public class Candidate
 
 	private final ITableRecordReference referencedRecord;
 
+	/**
+	 * The projected date at which we expect this candidate's {@link #getQuantity()}.
+	 */
 	@NonNull
-	private final Date projectedDate;
+	private final Date date;
 
 	public Candidate withOtherQuantity(final Quantity quantity)
 	{
 		return builder()
 				.locator(locator)
 				.product(product)
-				.projectedDate(projectedDate)
+				.date(date)
 				.type(type)
 				.supplyType(supplyType)
 				.quantity(quantity)
@@ -102,7 +105,7 @@ public class Candidate
 				.append(quantity)
 				.append(product.getM_Product_ID())
 				.append(locator)
-				.append(projectedDate.getTime())
+				.append(date.getTime())
 				.append(referencedRecord)
 				.toHashcode();
 	}
@@ -126,7 +129,7 @@ public class Candidate
 				.append(quantity, other.quantity)
 				.append(product.getM_Product_ID(), other.product.getM_Product_ID())
 				.append(locator.getM_Locator_ID(), other.locator.getM_Locator_ID())
-				.append(projectedDate.getTime(), other.projectedDate.getTime())
+				.append(date.getTime(), other.date.getTime())
 				.append(referencedRecord, other.referencedRecord)
 				.isEqual();
 	}

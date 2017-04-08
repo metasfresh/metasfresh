@@ -88,7 +88,7 @@ public class CandidateFactoryTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("10"), uom))
-				.projectedDate(now)
+				.date(now)
 				.build();
 		candidateRepository.add(stockCandidate);
 	}

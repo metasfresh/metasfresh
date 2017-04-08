@@ -98,7 +98,7 @@ public class CandiateRepositoryTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("11"), uom))
-				.projectedDate(now)
+				.date(now)
 				.build();
 		candidateRepository.add(someOtherCandidate);
 
@@ -107,7 +107,7 @@ public class CandiateRepositoryTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("10"), uom))
-				.projectedDate(now)
+				.date(now)
 				.build();
 		candidateRepository.add(stockCandidate);
 
@@ -116,7 +116,7 @@ public class CandiateRepositoryTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("10"), uom))
-				.projectedDate(later)
+				.date(later)
 				.build();
 		candidateRepository.add(laterStockCandidate);
 	}

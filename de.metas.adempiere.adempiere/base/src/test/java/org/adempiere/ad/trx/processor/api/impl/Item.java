@@ -36,7 +36,7 @@ public class Item
 	private final String groupKey;
 	private final String value;
 
-	private Exception onItemErrorException;
+	private Throwable onItemErrorException;
 	private boolean processed;
 
 	public Item(final String groupKey, final String value)
@@ -61,7 +61,7 @@ public class Item
 		return onItemErrorException != null;
 	}
 
-	public void setOnItemErrorException(final Exception onItemErrorExectption)
+	public void setOnItemErrorException(final Throwable onItemErrorExectption)
 	{
 		this.onItemErrorException = onItemErrorExectption;
 	}

@@ -1,6 +1,5 @@
 package de.metas.manufacturing.dispo;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,17 +32,6 @@ import de.metas.quantity.Quantity;
 @Service
 public class CandidateChangeHandler
 {
-	private static final CandidateChangeHandler INSTANCE = new CandidateChangeHandler();
-
-	private CandidateChangeHandler()
-	{
-	}
-
-	public static CandidateChangeHandler get()
-	{
-		return INSTANCE;
-	}
-
 	@Autowired
 	private CandidateRepository candidateRepository;
 
@@ -56,7 +44,7 @@ public class CandidateChangeHandler
 		// the stock candidate shall be a *child* of the demandCandidate
 		final Candidate stockCandidate = null;
 
-		final BigDecimal delta = null; // computed from the stock candidate's qty before and after the change.
+		// final BigDecimal delta = null; // computed from the stock candidate's qty before and after the change.
 
 		newAndChangedCandidates.add(stockCandidate);
 
@@ -127,6 +115,15 @@ public class CandidateChangeHandler
 		return newAndChangedCandidates;
 	}
 
+	/**
+	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code segment}.
+	 * Iterate them and add the given {@code delta} to their quantity.
+	 * <p>
+	 * That's it for now :-). Don't alter those stock candidates' children or parents.
+	 * 
+	 * @param segment
+	 * @param delta
+	 */
 	public void projectedStockChange(final CandidatesSegment segment, final Quantity delta)
 	{
 		final List<Candidate> candidtesToUpdate = candidateRepository.retrieveStockFrom(segment);
@@ -135,9 +132,5 @@ public class CandidateChangeHandler
 			final Quantity newQty = candidate.getQuantity().add(delta);
 			candidateRepository.add(candidate.withOtherQuantity(newQty));
 		}
-
-		// 1. select all stock candidates which have the same product and locator but a later timestamp than 'stockCandidate'
-		// 2. add the "delta of 'stockCandidate' to their quantity
-		// that's it for now :-). Don't alter those stock candidates' children or parents
 	}
 }

@@ -59,7 +59,7 @@ public class CandidateFactory
 				.type(Type.STOCK)
 				.product(product)
 				.locator(locator)
-				.projectedDate(projectedDate)
+				.date(projectedDate)
 				.quantity(quantity).build();
 	}
 }

@@ -13,19 +13,17 @@ package org.eevolution.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -53,12 +51,9 @@ public class PPOrderBOMBLTest
 	// Other services
 	private IPPOrderBOMDAO ppOrderBOMDAO;
 
-
 	@Before
 	public void init()
 	{
-		POJOWrapper.setDefaultStrictValues(false);
-
 		// NOTE: after this, model validators will be also registered
 		helper = new MRPTestHelper();
 		masterData = new MRPTestDataSimple(helper);
@@ -74,7 +69,7 @@ public class PPOrderBOMBLTest
 	@Test
 	public void qualityMultiplierTest()
 	{
-		// Mocking the AB Alicesalat 250g case from  db
+		// Mocking the AB Alicesalat 250g case from db
 
 		// Defining the needed UOM
 		final I_C_UOM uomKillogram = createUOM("Killogram", 2, 0);

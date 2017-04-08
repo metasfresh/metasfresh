@@ -57,7 +57,7 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, candidate.getType().toString())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, candidate.getLocator().getM_Locator_ID())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, candidate.getProduct().getM_Product_ID())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getProjectedDate())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getDate())
 				.create()
 				.firstOnly(I_MD_Candidate.class); // note that we have a UC to make sure there is just one
 
@@ -75,7 +75,7 @@ public class CandidateRepository
 		candidateRecord.setM_Product(candidate.getProduct());
 		candidateRecord.setC_UOM(candidate.getQuantity().getUOM());
 		candidateRecord.setQty(candidate.getQuantity().getQty());
-		candidateRecord.setDateProjected(new Timestamp(candidate.getProjectedDate().getTime()));
+		candidateRecord.setDateProjected(new Timestamp(candidate.getDate().getTime()));
 	}
 
 	private Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecord)
@@ -89,7 +89,7 @@ public class CandidateRepository
 						.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
 						.locator(candidateRecord.getM_Locator())
 						.product(candidateRecord.getM_Product())
-						.projectedDate(candidateRecord.getDateProjected())
+						.date(candidateRecord.getDateProjected())
 						.quantity(new Quantity(candidateRecord.getQty(), candidateRecord.getC_UOM()))
 						.build());
 	}

@@ -90,7 +90,7 @@ public class CandidateChangeHandlerTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("10"), uom))
-				.projectedDate(now)
+				.date(now)
 				.build();
 		candidateRepository.add(candidate);
 
@@ -99,7 +99,7 @@ public class CandidateChangeHandlerTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("10"), uom))
-				.projectedDate(earlier)
+				.date(earlier)
 				.build();
 		candidateRepository.add(earlierCandidate);
 
@@ -108,7 +108,7 @@ public class CandidateChangeHandlerTests
 				.product(product)
 				.locator(locator)
 				.quantity(new Quantity(new BigDecimal("10"), uom))
-				.projectedDate(later)
+				.date(later)
 				.build();
 		candidateRepository.add(laterCandidate);
 

@@ -21,12 +21,14 @@ import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
+import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -38,7 +40,9 @@ import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
+import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -169,7 +173,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		return ppOrderBOMLine == null || ppOrderBOMBL.isReceipt(ppOrderBOMLine);
 	}
 
-	private final void markProcessed(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
+	private final void markProcessedAndSave(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
 	{
 		Preconditions.checkArgument(!candidate.isProcessed(), "candidate was already processed: %s", candidate);
 		candidate.setPP_Cost_Collector(cc);
@@ -206,7 +210,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.build();
 		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);
 
-		markProcessed(candidate, cc);
+		markProcessedAndSave(candidate, cc);
 
 		return cc;
 	}
@@ -229,6 +233,21 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(candidate.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
 		final Timestamp movementDate = candidate.getMovementDate();
+
+		//
+		// Calculate the quantity to issue.
+		final Quantity qtyToIssue = calculateQtyToIssue(ppOrderBOMLine, candidate);
+		//
+		// Update candidate's qty to issue
+		// NOTE: in case of "IssueOnlyReceived" issue method the qty to issue is calculated just in time. We assume it's saved by caller
+		candidate.setQty(qtyToIssue.getQty());
+		//
+		if (qtyToIssue.isZero())
+		{
+			logger.debug("Skipping candidate ZERO quantity candidate: {}, bomLine={}", candidate, ppOrderBOMLine);
+			return null;
+		}
+
 
 		//
 		// Fully unload the HU
@@ -256,14 +275,21 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			huContext.getTrxListeners().callAfterLoad(issueCostCollectorsBuilder::addAllocationResults);
 
 			//
-			// Create and configure Loader
-			final HULoader loader = HULoader.of(husSource, orderBOMLinesDestination);
-			loader.setAllowPartialLoads(true);
+			// Allocation request
+			final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext //
+					, candidate.getM_Product() // product
+					, qtyToIssue // the quantity to issue
+					, SystemTime.asDayTimestamp() // transaction date
+					, null // referenced model: IMPORTANT to be null, else our build won't detect correctly which is the HU transaction and which is the BOMLine-side transaction
+					, true // forceQtyAllocation: yes, we want to transfer exactly how much we specified in the candidate
+			);
 
 			//
-			// Unload everything from source (our HUs) and move it to manufacturing order BOM lines
-			// NOTE: this will also produce the corresponding cost collectors (see de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineHUTrxListener)
-			loader.unloadAllFromSource(huContext);
+			// Unload from HU and load to BOM line
+			HULoader.of(husSource, orderBOMLinesDestination)
+					.setAllowPartialLoads(false)
+					.setAllowPartialUnloads(false)
+					.load(allocationRequest);
 
 			snapshotId = husSource.getSnapshotId();
 		}
@@ -272,9 +298,27 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		// Create cost collectors and mark the candidate as processed
 		{
 			final I_PP_Cost_Collector cc = issueCostCollectorsBuilder.createSingleCostCollector(snapshotId);
-			markProcessed(candidate, cc);
+			markProcessedAndSave(candidate, cc);
 
 			return cc;
+		}
+	}
+
+	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final I_PP_Order_Qty candidate)
+	{
+		//
+		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
+		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
+		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
+		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
+		final String issueMethod = targetBOMLine.getIssueMethod();
+		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+		{
+			return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, candidate.getC_UOM());
+		}
+		else
+		{
+			return Quantity.of(candidate.getQty(), candidate.getC_UOM());
 		}
 	}
 
@@ -390,6 +434,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			// (because in this transaction we have the Order BOM line)
 			final IHUTransaction huTransactionCounterpart = huTransaction.getCounterpart();
 			final I_M_HU hu = huTransactionCounterpart.getM_HU();
+			Check.assumeNotNull(hu, "HU not found in counterpart transaction. \n trx: {} \n counterpart: {}", huTransaction, huTransactionCounterpart);
 
 			//
 			// Get the Top Level HU of this transaction.
@@ -464,7 +509,14 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		{
 			return candidatesByOrderBOMLineId.values()
 					.stream()
-					.filter(candidate -> !candidate.isZeroQty()) // only those eligible
+					.filter(candidate -> {
+						if (candidate.isZeroQty())
+						{
+							logger.warn("Skipping ZERO quantity candidate: {}", candidate);
+							return false;
+						}
+						return true;
+					}) // only those eligible
 					.collect(ImmutableList.toImmutableList());
 		}
 
@@ -479,17 +531,17 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			{
 				throw new HUException("Cannot create issue cost collector for zero quantity candidate: " + candidate);
 			}
-			
+
 			final BigDecimal qtyToIssue = candidate.getQtyToIssue();
 			final I_C_UOM qtyToIssueUOM = candidate.getUom();
 			final Date movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
 			final int locatorId = ppOrderBOMLine.getM_Locator_ID();
-			
+
 			//
 			// Link this manufacturing order to material tracking, if any
 			I_M_Material_Tracking materialTracking = candidate.getMaterialTracking();
-			if(materialTracking != null)
+			if (materialTracking != null)
 			{
 				huPPOrderMaterialTrackingBL.linkPPOrderToMaterialTracking(ppOrderBOMLine, materialTracking);
 			}
