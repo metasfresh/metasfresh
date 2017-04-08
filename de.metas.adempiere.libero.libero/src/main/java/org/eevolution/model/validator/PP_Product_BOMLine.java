@@ -13,18 +13,19 @@ package org.eevolution.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +43,12 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 @Validator(I_PP_Product_BOMLine.class)
 public class PP_Product_BOMLine
 {
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOMLine());
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_PP_Product_BOMLine bomLine)
 	{
@@ -115,7 +122,7 @@ public class PP_Product_BOMLine
 
 		product.setLowLevel(lowLevel); // update lowlevel
 		InterfaceWrapperHelper.save(product);
-		
-		// TODO: if product's low level changed, we need to update the low level from all bom components where this product is in bom header. 
+
+		// TODO: if product's low level changed, we need to update the low level from all bom components where this product is in bom header.
 	}
 }
