@@ -446,7 +446,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		if (DOCSTATUS_Drafted.equals(getDocStatus())
 				|| DOCSTATUS_InProgress.equals(getDocStatus())
 				|| DOCSTATUS_Invalid.equals(getDocStatus())
-				|| getC_DocType_ID() == 0)
+				|| getC_DocType_ID() <= 0)
 		{
 			setC_DocType_ID(getC_DocTypeTarget_ID());
 		}
