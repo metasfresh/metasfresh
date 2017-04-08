@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 
 /*
  * #%L
@@ -44,23 +45,43 @@ public class WebPPOrderConfig
 	@Autowired
 	public WebPPOrderConfig(final Adempiere adempiere_NOTUSED)
 	{
-		//
-		// Manufacturing Issue / Receipt
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		final Function<Class<?>, RelatedProcessDescriptor.Builder> newDescriptorBuilder = (processClass) -> {
-			final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
-			Preconditions.checkArgument(processId > 0, "No AD_Process_ID foudn for %s", processClass);
-
-			return RelatedProcessDescriptor.builder()
-					.processId(processId)
-					.windowId(AD_WINDOW_ID_IssueReceipt)
-					.anyTable()
-					.webuiQuickAction(true);
-		};
 		//
-		adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ProcessPlan.class).webuiDefaultQuickAction().build());
-		adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Issue.class).build());
-		adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class).build());
+		// Manufacturing Issue / Receipt
+		{
+			final Function<Class<?>, RelatedProcessDescriptor.Builder> newDescriptorBuilder = (processClass) -> {
+				final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+				Preconditions.checkArgument(processId > 0, "No AD_Process_ID foudn for %s", processClass);
+
+				return RelatedProcessDescriptor.builder()
+						.processId(processId)
+						.windowId(AD_WINDOW_ID_IssueReceipt)
+						.anyTable()
+						.webuiQuickAction(true);
+			};
+			//
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ProcessPlan.class).webuiDefaultQuickAction().build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Issue.class).build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class).build());
+		}
+
+		//
+		// HU view actions
+		{
+			final Function<Class<?>, RelatedProcessDescriptor.Builder> newDescriptorBuilder = (processClass) -> {
+				final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+				Preconditions.checkArgument(processId > 0, "No AD_Process_ID foudn for %s", processClass);
+
+				return RelatedProcessDescriptor.builder()
+						.processId(processId)
+						.windowId(WEBUI_HU_Constants.WEBUI_HU_Window_ID)
+						.anyTable()
+						.webuiQuickAction(true);
+			};
+			//
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_M_HU_IssueSelectedHU.class).build());
+		}
+
 	}
 }
