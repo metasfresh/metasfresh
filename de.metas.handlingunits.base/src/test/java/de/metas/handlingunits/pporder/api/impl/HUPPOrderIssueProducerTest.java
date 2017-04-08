@@ -32,8 +32,10 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -431,9 +433,14 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	{
 		final I_M_Product product = productBOM.getM_Product();
 		final I_C_UOM uom = productBOM.getC_UOM();
+		
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		InterfaceWrapperHelper.save(docType);
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), I_PP_Order.class, ITrx.TRXNAME_None);
 		ppOrder.setAD_Org(masterData.adOrg01);
+		ppOrder.setC_DocTypeTarget(docType);
 		ppOrder.setM_Product(product);
 		ppOrder.setPP_Product_BOM(productBOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
