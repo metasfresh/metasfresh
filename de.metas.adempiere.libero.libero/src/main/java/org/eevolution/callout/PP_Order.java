@@ -46,6 +46,9 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
+
 /**
  * Manufacturing order callout
  *
@@ -55,6 +58,33 @@ import org.eevolution.model.I_PP_Product_Planning;
 @Callout(I_PP_Order.class)
 public class PP_Order extends CalloutEngine
 {
+	/**
+	 * When document type (target) is changed, update the DocumentNo.
+	 */
+	@CalloutMethod(columnNames = I_PP_Order.COLUMNNAME_C_DocTypeTarget_ID)
+	public void onC_DocTypeTarget_ID(I_PP_Order ppOrder)
+	{
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(ppOrder.getC_DocTypeTarget())
+				.setOldDocType_ID(ppOrder.getC_DocType_ID())
+				.setOldDocumentNo(ppOrder.getDocumentNo())
+				.setDocumentModel(ppOrder)
+				.buildOrNull();
+		if (documentNoInfo == null)
+		{
+			return;
+		}
+
+		// DocumentNo
+		if (documentNoInfo.isDocNoControlled())
+		{
+			ppOrder.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+
+		return;
+	}
+
 	@CalloutMethod(columnNames = I_PP_Order.COLUMNNAME_M_Product_ID)
 	public void onProductChanged(final I_PP_Order ppOrder)
 	{
