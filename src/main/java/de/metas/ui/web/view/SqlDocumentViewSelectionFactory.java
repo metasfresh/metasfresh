@@ -103,6 +103,8 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 		return SqlDocumentViewSelection.builder(entityDescriptor)
 				.setServices(processDescriptorsFactory, documentReferencesService)
 				//
+				.setParentViewId(request.getParentViewId())
+				//
 				.setViewFieldsByCharacteristic(request.getViewTypeRequiredFieldCharacteristic())
 				//
 				.setStickyFilterByReferencedDocument(request.getSingleReferencingDocumentPathOrNull())

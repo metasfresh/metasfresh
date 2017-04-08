@@ -74,6 +74,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	// services
 	private final ProcessDescriptorsFactory processDescriptorsFactory;
+	
+	private final String parentViewId;
 
 	private final String viewId;
 	private final int adWindowId;
@@ -89,6 +91,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 		// services
 		processDescriptorsFactory = builder.getProcessDescriptorFactory();
+		
+		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
 		adWindowId = builder.getAD_Window_ID();
@@ -96,6 +100,12 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+	}
+	
+	@Override
+	public String getParentViewId()
+	{
+		return parentViewId;
 	}
 
 	@Override
@@ -413,6 +423,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	public static final class Builder
 	{
+		private String parentViewId;
+
 		private String viewId;
 		private int adWindowId;
 		private Set<DocumentPath> referencingDocumentPaths;
@@ -428,6 +440,17 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		public HUDocumentViewSelection build()
 		{
 			return new HUDocumentViewSelection(this);
+		}
+		
+		public Builder setParentViewId(String parentViewId)
+		{
+			this.parentViewId = parentViewId;
+			return this;
+		}
+		
+		private String getParentViewId()
+		{
+			return parentViewId;
 		}
 
 		public Builder setViewId(final String viewId)

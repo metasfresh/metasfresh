@@ -61,6 +61,8 @@ public final class DocumentViewCreateRequest
 
 	private final DocumentId documentTypeId;
 	private final JSONViewDataType viewType;
+	
+	private final String parentViewId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 	private final List<JSONDocumentFilter> filters;
@@ -78,6 +80,8 @@ public final class DocumentViewCreateRequest
 	{
 		documentTypeId = builder.getDocumentTypeId();
 		viewType = builder.getViewType();
+		
+		parentViewId = builder.getParentViewId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		filters = builder.getFilters();
@@ -85,6 +89,11 @@ public final class DocumentViewCreateRequest
 
 		queryFirstRow = builder.getQueryFirstRow();
 		queryPageLength = builder.getQueryPageLength();
+	}
+	
+	public String getParentViewId()
+	{
+		return parentViewId;
 	}
 
 	public int getAD_Window_ID()
@@ -118,6 +127,8 @@ public final class DocumentViewCreateRequest
 	{
 		private final DocumentId documentTypeId;
 		private final JSONViewDataType viewType;
+		
+		private String parentViewId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
 		private List<JSONDocumentFilter> filters;
@@ -149,6 +160,17 @@ public final class DocumentViewCreateRequest
 		private JSONViewDataType getViewType()
 		{
 			return viewType;
+		}
+		
+		public Builder setParentViewId(String parentViewId)
+		{
+			this.parentViewId = parentViewId;
+			return this;
+		}
+		
+		private String getParentViewId()
+		{
+			return parentViewId;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
