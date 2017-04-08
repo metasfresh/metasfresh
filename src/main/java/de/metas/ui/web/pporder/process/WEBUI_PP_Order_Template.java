@@ -28,7 +28,7 @@ import de.metas.ui.web.process.ViewBasedProcessTemplate;
 
 public abstract class WEBUI_PP_Order_Template
 		extends ViewBasedProcessTemplate
-// implements IProcessPrecondition
+// implements IProcessPrecondition // let the extending class to activate this interface
 {
 	@Override
 	protected final PPOrderLinesView getView()
