@@ -16,15 +16,16 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-backend
-  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
+  * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
+    * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
 
 # metasfresh 5.4 (2017-14)
-
-**this week's RC**
 
 ## Features
 * metasfresh-backend
   * [#741](https://github.com/metasfresh/metasfresh/issues/741) packing material product category config
+    * New functionality to be able to define the package material category per organisational unit, so that jasper reports can do the package material groupings because of that.
   * [#995](https://github.com/metasfresh/metasfresh/issues/995) Translation en_US for Material Receipt Candidates Window
     * Adding the initial set of Translation en_US to the material Receipt Candidates Window in WebUI.
   * [#1181](https://github.com/metasfresh/metasfresh/issues/1181) Refine Layout for Attribute Window in WebUI
@@ -34,20 +35,25 @@ Here come the actual release notes:
   * [#1185](https://github.com/metasfresh/metasfresh/issues/1185) Initial Layout for vendor Invoices in WebUI
     * Adding the initial Layout for vendor Invoice Window in WebUI.
   * [#1205](https://github.com/metasfresh/metasfresh/issues/1205) Provide Default KPI Config
+    * Prepared a default KPI Configuration to show an example Dashboard based on elasticsearch and with KPI done with D3JS on the entry screen of metasfresh after login.
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
+    * Enhanced Reports definition, so that orderline desciptions are only shown in the first column, and not overlaying the others anymore.
   * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
+    * New properties file for the footer subreport for Jasper documents. Now allowing to add translations for that.
   * [#1247](https://github.com/metasfresh/metasfresh/issues/1247) Don't try to create empties movements if empties warehouse same as current warehouse
-  * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
+    * Now not creating movements anymore if the source and target warehouse of empty movements are identical.
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
-  * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
-  * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt   
+  * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt
+    * Switching off the automatic label printing in material receipt for default configurations.
   * [#1277](https://github.com/metasfresh/metasfresh/issues/1277) Migrate current WebUI Menu from Development to master
+    * Migration script for the currents metasfresh webUI menu tree, now showing the new windows.
 
 * metasfresh-webui-frontend  
   * [#541](https://github.com/metasfresh/metasfresh-webui-frontend/issues/541) Hide new and delete included documents when they are not available.
+    * New Functionality to show/ not show the new and delete buttons on included tabs/ subtabs if not available.
   
 ## Fixes
 * metasfresh-backend
@@ -58,26 +64,48 @@ Here come the actual release notes:
   * [#1225](https://github.com/metasfresh/metasfresh/issues/1225) Drop legacy jasper sql logic
     * Maintainance of Jasper Document SQL. Removing legace SQL that's not needed anymore.
   * [#1240](https://github.com/metasfresh/metasfresh/issues/1240) Number-of-copies parameter is ignored in direct print
+    * Fixes the document printing copies configuration. The number of copies parameter is now also considered in direct print.
   * [#1244](https://github.com/metasfresh/metasfresh/issues/1244) Shipment Schedule's QtyDeliveredTU is not updated correctly
+    * Fixed a minor bug that prevented the update of the QtyDelivered TU Field in Shipment schdules.
+  * [#1248](https://github.com/metasfresh/metasfresh/issues/1248) Empties movements are not generated from empties shipment/receipt
+    * Fixing a bug that did not create movements for empties receive documents after completion.
+  * [#1256](https://github.com/metasfresh/metasfresh/issues/1256) Database tables are created in wrong schema
+    * Fixes a Bug that created db tables in wrong schema. Now the tables are created in public schema again.
   * [#1260](https://github.com/metasfresh/metasfresh/issues/1260) DocumentNo not generated for manual invoices in WebUI
     * Adding a minor fix to the customer Invoice Window in WebUI, that prevented the creation of manual Invoices for customers.
   * [#1263](https://github.com/metasfresh/metasfresh/issues/1263) ITrxListener.afterCommit is fired twice with TrxPropagation.REQUIRES_NEW
+    * Fixes the double tap of ITrxListener.afterCommit.
   * [#1267](https://github.com/metasfresh/metasfresh/issues/1267) Cannot open ASI editor in Swing
+    * The Attrubute Set Instance Widget could not be opened in Swing Client anymore. This Bugfix now enables that again.
   * [#1272](https://github.com/metasfresh/metasfresh/issues/1272) Vendor ADR configuration not initially considered in Orderline
+    * Fixing a Bug that prevented the default settings of vendor attributes in orderline.
   * [#1274](https://github.com/metasfresh/metasfresh/issues/1274) webui - allow using the session's remote host name or IP as hostkey
-    
+    * New feature that allows to use the sessions host name or IP Address as hostkey for printing rounting and configuration.
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+    * Fixes a Bug in Splitting HU action. Now also allowing splitting action with compressed Handling Units that don't have a Unit of measure Type.
+  
 * metasfresh-webui-api
   * [#277](https://github.com/metasfresh/metasfresh-webui-api/issues/277) Don't export JSONDocument.fields if empty
+    * Fixes a Bug that exported empty JSON Document Fields
   * [#283](https://github.com/metasfresh/metasfresh-webui-api/issues/283) Build does not use the specified parent version
+    * Fix for maven/ build system to fetch the specified parent version for build.
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
+    * Now also standalone Transport Units can be received and processed in Material Receipt.
+  * [#289](https://github.com/metasfresh/metasfresh-webui-api/issues/289) New/Delete buttons missing when a document was initially loaded
+    * Now showing the New and Delete Buttons in Subtabs/ included Tabs, when initially loaded.
   
 * metasfresh-webui-frontend
   * [#594](https://github.com/metasfresh/metasfresh-webui-frontend/issues/594) inform users that only Chrome is currently supported on login screen
+    * The current development for metasfresh WebUI ist done optimized for Chrome browser. Now informing the user about that on login screen, if trying to login with other browser.
   * [#595](https://github.com/metasfresh/metasfresh-webui-frontend/issues/595) kpi disappears when minimize
+    * Fixing a Bug that vanished the KPI widgets after minimizing action.
   * [#597](https://github.com/metasfresh/metasfresh-webui-frontend/issues/597) cancel on "Do you really want to leave?" sends you 2 steps back
+    * Fix for the leave confirmation popup. Now only going back 1 step after confiormation.
   * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
     * Fix for the 100% height Layout of windows with included Tab. Subtab Shall always expand to 100% of screen resolution height until available spave is used. After that exceeding page size.
-
+  * [#616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/616) delete option missing after add new
+    * The delete Button is now available again after starting the add new action.
+  
 # metasfresh 5.3 (2017-13)
 
 ## Important Changes
