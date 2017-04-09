@@ -175,7 +175,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ I_T_Lock.COLUMNNAME_AD_Table_ID + "=" + toSqlParam(adTableId, sqlParams)
 				+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + "=" + toSqlParam(recordId, sqlParams));
 
-		if(lockOwner != null)
+		if (lockOwner != null)
 		{
 			appendLockOwnerWhereClause(lockOwner, sql, sqlParams);
 		}
@@ -620,5 +620,18 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		}
 
 		throw new LockFailedException("No lock found for " + lockOwner);
+	}
+
+	@Override
+	public int removeAutoCleanupLocks()
+	{
+		final String sql = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE " + I_T_Lock.COLUMNNAME_IsAutoCleanup + "=?";
+		final Object[] sqlParams = new Object[] { true };
+		final int countLocksReleased = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
+		if (countLocksReleased > 0)
+		{
+			logger.info("Deleted {} lock records from {} which were flagged with IsAutoCleanup=true", countLocksReleased, I_T_Lock.Table_Name);
+		}
+		return countLocksReleased;
 	}
 }

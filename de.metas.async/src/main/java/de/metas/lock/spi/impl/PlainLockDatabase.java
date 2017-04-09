@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.ToIntFunction;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOInSelectionQueryFilter;
@@ -238,11 +239,11 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 			final boolean removed = recordLock.removeLocks(ownerRequired);
 
-			if(!recordLock.hasLocks())
+			if (!recordLock.hasLocks())
 			{
 				locks.remove(recordLock.getKey());
 			}
-			
+
 			return removed;
 		}
 	}
@@ -253,25 +254,31 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		final LockOwner lockOwner = unlockCommand.getOwner();
 		assertValidLockOwner(lockOwner);
 
+		final int countUnlocked = updateRecordLocks(recordLock -> recordLock.removeLocks(lockOwner) ? 1 : 0);
+		return countUnlocked;
+	}
+
+	private final int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
+	{
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
-			int countUnlocked = 0;
+			int countAffected = 0;
 
 			for (final Iterator<RecordLocks> it = locks.values().iterator(); it.hasNext();)
 			{
 				final RecordLocks recordLocks = it.next();
-				if (recordLocks.removeLocks(lockOwner))
-				{
-					countUnlocked++;
-				}
+				final int count = processor.applyAsInt(recordLocks);
+				countAffected += count;
+
 				if (!recordLocks.hasLocks())
 				{
 					it.remove();
 				}
 			}
 
-			return countUnlocked;
+			return countAffected;
 		}
+
 	}
 
 	@Override
@@ -395,6 +402,17 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		}
 	}
 
+	@Override
+	public int removeAutoCleanupLocks()
+	{
+		return updateRecordLocks(recordLock -> recordLock.removeAutoCleanupLocks());
+	}
+
+	//
+	//
+	//
+	//
+	//
 	private static class RecordLocks
 	{
 		private final Map<LockOwner, LockInfo> locksByLockOwner = new HashMap<>();
@@ -412,7 +430,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 					.addValue(Joiner.on("\n").join(locksByLockOwner.values()))
 					.toString();
 		}
-		
+
 		public ArrayKey getKey()
 		{
 			return key;
@@ -521,6 +539,23 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		{
 			return locksByLockOwner.get(lockOwner);
 		}
+
+		public int removeAutoCleanupLocks()
+		{
+			int countRemoved = 0;
+			for (Iterator<LockInfo> it = locksByLockOwner.values().iterator(); it.hasNext();)
+			{
+				LockInfo lockInfo = it.next();
+				if (lockInfo.isAutoCleanup())
+				{
+					it.remove();
+					countRemoved++;
+				}
+			}
+
+			return countRemoved;
+		}
+
 	}
 
 	private static class LockInfo

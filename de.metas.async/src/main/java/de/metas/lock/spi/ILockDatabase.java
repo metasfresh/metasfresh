@@ -79,4 +79,6 @@ public interface ILockDatabase
 	 * @return
 	 */
 	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
+
+	int removeAutoCleanupLocks();
 }

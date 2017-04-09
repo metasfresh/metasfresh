@@ -163,4 +163,10 @@ public class LockManager implements ILockManager
 	{
 		return getLockDatabase().getLockedRecordsQueryBuilder(modelClass, contextProvider);
 	}
+	
+	@Override
+	public int removeAutoCleanupLocks()
+	{
+		return getLockDatabase().removeAutoCleanupLocks();
+	}
 }

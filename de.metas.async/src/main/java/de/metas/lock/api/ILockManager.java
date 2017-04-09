@@ -164,4 +164,6 @@ public interface ILockManager extends ISingletonService
 	 * @return
 	 */
 	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
+	
+	int removeAutoCleanupLocks();
 }
