@@ -17,10 +17,10 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-backend
   * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
+  * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
+    * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
 
 # metasfresh 5.4 (2017-14)
-
-**this week's RC**
 
 ## Features
 * metasfresh-backend
