@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +44,7 @@ import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.lock.api.LockOwner;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.interfaces.I_M_Package;
@@ -53,6 +53,8 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
+	private static final LockOwner transportationLockOwner = LockOwner.forOwnerName(HUShipperTransportationBL.class.getName());
+
 	@Override
 	public void addHUsToShipperTransportation(final IContextAware contextProvider, final int shipperTransportationId, final Collection<I_M_HU> hus)
 	{
@@ -112,7 +114,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 				//
 				// Mark the top level HU as Locked & save it
-				huLockBL.lock(hu);
+				huLockBL.lock(hu, transportationLockOwner);
 
 				//
 				// Remove HU from picking slots, if any (07499).
@@ -139,7 +141,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		}
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		//
 		// Only Top Level HUs can be added to shipper transportation
 		//

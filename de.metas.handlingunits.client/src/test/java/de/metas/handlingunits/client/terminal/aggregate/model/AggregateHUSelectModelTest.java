@@ -43,6 +43,7 @@ import de.metas.handlingunits.client.terminal.inventory.view.BPartnerLocationKey
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.lock.api.LockOwner;
 
 /**
  * Test {@link AggregateHUSelectModel}
@@ -300,11 +301,13 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 
 		// Create our locked HUs
 		{
+			final LockOwner lockOwner = LockOwner.forOwnerName("test");
+			
 			final I_M_HU hu_bp03loc02_wh01_activeButLocked01 = createHU(bpartner03, bpartner03_loc02, warehouse01_loc01, X_M_HU.HUSTATUS_Active);
-			huLockBL.lock(hu_bp03loc02_wh01_activeButLocked01);
+			huLockBL.lock(hu_bp03loc02_wh01_activeButLocked01, lockOwner);
 			//
 			final I_M_HU hu_bp03loc02_wh01_activeButLocked02 = createHU(bpartner03, bpartner03_loc02, warehouse01_loc01, X_M_HU.HUSTATUS_Active);
-			huLockBL.lock(hu_bp03loc02_wh01_activeButLocked02);
+			huLockBL.lock(hu_bp03loc02_wh01_activeButLocked02, lockOwner);
 		}
 
 		// Configure HU Select Panel

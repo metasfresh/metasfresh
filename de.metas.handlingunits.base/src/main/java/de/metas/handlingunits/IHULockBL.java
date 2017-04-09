@@ -4,6 +4,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.lock.api.LockOwner;
 
 /*
  * #%L
@@ -35,10 +36,38 @@ import de.metas.handlingunits.model.I_M_HU;
  */
 public interface IHULockBL extends ISingletonService
 {
-
+	/** @return true if given HU is locked by any {@link LockOwner} */
 	boolean isLocked(I_M_HU hu);
 
-	void lock(I_M_HU hu);
+	/**
+	 * @param hu
+	 * @param lockOwner lock owner; {@link LockOwner#ANY} is accepted
+	 * @return true if given HU is locked by given owner
+	 */
+	boolean isLockedBy(I_M_HU hu, LockOwner lockOwner);
 
+	/**
+	 * Locks the HU using given lock owner.
+	 * 
+	 * If the HU was already locked by same owner, this method does nothing.
+	 * 
+	 * @param hu
+	 * @param lockOwner
+	 */
+	void lock(I_M_HU hu, LockOwner lockOwner);
+
+	/**
+	 * Unlock the HU from given lock owner.
+	 * 
+	 * If the HU is not locked by that owner, this method does nothing.
+	 * 
+	 * @param hu
+	 * @param lockOwner
+	 */
+	void unlock(I_M_HU hu, LockOwner lockOwner);
+
+	/**
+	 * @return filter which accepts only those HUs which are not locked for any owner
+	 */
 	IQueryFilter<I_M_HU> isLockedFilter();
 }
