@@ -63,7 +63,7 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.inout.InOut.ProcessedEvents")
+			.setName("de.metas.inout.ReturnInOut.ProcessedEvents")
 			.setType(Type.REMOTE)
 			.build();
 	
