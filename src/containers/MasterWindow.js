@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
@@ -291,7 +292,7 @@ function mapStateToProps(state) {
 }
 
 MasterWindow.contextTypes = {
-    router: React.PropTypes.object.isRequired
+    router: PropTypes.object.isRequired
 }
 
 MasterWindow = connect(mapStateToProps)(MasterWindow)
