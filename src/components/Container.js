@@ -13,7 +13,8 @@ class Container extends Component {
             docActionElem, docStatusData, docNoElement, docNoData,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
-            query, attachments, showIndicator, isDocumentNotSaved, hideHeader
+            query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
+            handleDeletedStatus
         } = this.props;
 
         return (
@@ -38,6 +39,7 @@ class Container extends Component {
                         query={query}
                         showIndicator={showIndicator}
                         isDocumentNotSaved={isDocumentNotSaved}
+                        handleDeletedStatus={handleDeletedStatus}
                     />
                 }
                 {connectionError && <ErrorScreen />}

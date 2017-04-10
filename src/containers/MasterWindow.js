@@ -24,7 +24,8 @@ class MasterWindow extends Component {
 
         this.state = {
             newRow: false,
-            modalTitle: null
+            modalTitle: null,
+            isDeleted: false
         }
     }
 
@@ -52,12 +53,13 @@ class MasterWindow extends Component {
 
     componentWillUnmount() {
         const { master, dispatch } = this.props;
+        const { isDeleted } = this.state;
         const {pathname} = this.props.location;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
         window.removeEventListener('beforeunload', this.confirm);
 
-        if(isDocumentNotSaved){
+        if(isDocumentNotSaved && !isDeleted){
             const result = window.confirm('Do you really want to leave?');
 
             if(!result){
@@ -123,6 +125,12 @@ class MasterWindow extends Component {
         })
     }
 
+    handleDeletedStatus = (param) => {
+        this.setState({
+                isDeleted: param
+            })
+    }
+
     render() {
         const {
             master, modal, breadcrumb, references, actions, attachments,
@@ -168,6 +176,7 @@ class MasterWindow extends Component {
                 attachments={attachments}
                 showSidelist={true}
                 showIndicator={!modal.visible}
+                handleDeletedStatus={this.handleDeletedStatus}
                 isDocumentNotSaved={
                     !master.saveStatus.saved &&
                     !master.validStatus.initialValue
