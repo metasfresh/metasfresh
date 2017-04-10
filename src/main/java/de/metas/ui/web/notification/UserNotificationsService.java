@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 
 /*
  * #%L
@@ -27,11 +29,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,6 +50,16 @@ public class UserNotificationsService
 
 	private final AtomicBoolean subscribedToEventBus = new AtomicBoolean(false);
 
+	@EventListener
+	private void onUserLanguageChanged(final LanguagedChangedEvent event)
+	{
+		final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(event.getAdUserId());
+		if(notificationsQueue != null)
+		{
+			notificationsQueue.setLanguage(event.getAdLanguage());
+		}
+	}
+
 	private void subscribeToEventTopicsIfNeeded()
 	{
 		if (!subscribedToEventBus.getAndSet(true))
@@ -63,7 +75,7 @@ public class UserNotificationsService
 	public synchronized void enableForSession(final String sessionId, final int adUserId, final String adLanguage)
 	{
 		logger.trace("Enabling for sessionId={}, adUserId={}, adLanguage={}", sessionId, adUserId, adLanguage);
-		
+
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId,
 				theSessionId -> new UserNotificationsQueue(adUserId, adLanguage, websocketMessagingTemplate));
 		notificationsQueue.addActiveSessionId(sessionId);
@@ -99,7 +111,7 @@ public class UserNotificationsService
 	private void forwardEventToNotificationsQueues(final IEventBus eventBus, final Event event)
 	{
 		logger.trace("Got event from {}: {}", eventBus, event);
-		
+
 		final UserNotification notification = UserNotification.of(event);
 		if (event.isAllRecipients())
 		{
@@ -112,12 +124,12 @@ public class UserNotificationsService
 			for (final int recipientUserId : event.getRecipientUserIds())
 			{
 				final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(recipientUserId);
-				if(notificationsQueue == null)
+				if (notificationsQueue == null)
 				{
 					logger.trace("No notification queue was found for recipientUserId={}", recipientUserId);
 					continue;
 				}
-				
+
 				notificationsQueue.addNotification(notification.copy());
 			}
 		}

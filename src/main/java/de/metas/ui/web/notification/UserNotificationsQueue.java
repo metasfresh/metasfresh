@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -46,7 +47,7 @@ public class UserNotificationsQueue
 	private static final Logger logger = LogManager.getLogger(UserNotificationsQueue.class);
 
 	private final int adUserId;
-	private final String adLanguage;
+	private String adLanguage;
 	private final SimpMessagingTemplate websocketMessagingTemplate;
 	private final String websocketEndpoint;
 
@@ -197,6 +198,12 @@ public class UserNotificationsQueue
 	public int getUnreadCount()
 	{
 		return unreadCount.get();
+	}
+
+	public void setLanguage(final String adLanguage)
+	{
+		Preconditions.checkNotNull(adLanguage, "language");
+		this.adLanguage = adLanguage;
 	}
 
 }

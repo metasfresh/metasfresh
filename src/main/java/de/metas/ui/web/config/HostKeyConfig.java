@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestAttributes;
@@ -11,7 +12,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import de.metas.hostkey.api.IHostKeyBL;
+import de.metas.hostkey.spi.IHostKeyStorage;
 import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
+import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.ui.web.base.util.IHttpSessionProvider;
 
 /*
@@ -45,12 +48,40 @@ import de.metas.ui.web.base.util.IHttpSessionProvider;
 @Configuration
 public class HostKeyConfig
 {
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/1274
+	 */
+	private static final String PRINTING_WEBUI_HOST_KEY_STORAGE_MODE = "de.metas.printing.webui.HostKeyStorageMode";
+
 	@PostConstruct
 	public void setupHostKeyStorage()
 	{
 		Services.registerService(IHttpSessionProvider.class, new SpringHttpSessionProvider());
 
-		Services.get(IHostKeyBL.class).setHostKeyStorage(new HttpCookieHostKeyStorage());
+		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
+
+		// when this method is called, there is not DB connection yet.
+		// so provide the storage implementation as a supplier when it's actually needed and when (hopefully)
+		// the system is ready
+		hostKeyBL.setHostKeyStorage(() -> {
+
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+			final IHostKeyStorage hostKeyStorageImpl;
+
+			final String hostKeyStorage = sysConfigBL.getValue(PRINTING_WEBUI_HOST_KEY_STORAGE_MODE, "cookies");
+			if (hostKeyStorage.toLowerCase().startsWith("cookie".toLowerCase()))
+			{
+				hostKeyStorageImpl = new HttpCookieHostKeyStorage();
+			}
+			else
+			{
+				// https://github.com/metasfresh/metasfresh/issues/1274
+				hostKeyStorageImpl = new SessionRemoteHostStorage();
+			}
+
+			return hostKeyStorageImpl;
+		});
 	}
 
 	private static final class SpringHttpSessionProvider implements IHttpSessionProvider

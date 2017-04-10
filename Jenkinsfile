@@ -10,7 +10,7 @@
 def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String version, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
-	
+
 	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
 	//
 	// Here i'm not checking if the build job exists but if the respective branch on github exists. If the branch is there, then I assume that the multibranch plugin also created the job
@@ -22,7 +22,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		// Perhaps you forgot to surround the code with a step that provides this, such as: node
 		// ...
 		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
-		
+
 		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
 	}
 
@@ -31,24 +31,24 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
 		jobName = jobFolderName + "/" + upstreamBranch
 	}
-	else 
+	else
 	{
 		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
 		jobName = jobFolderName + "/master"
 	}
-	
+
 	// I also tried
-	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name] 
+	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name]
 	// which worked from chrome, also for metas-dev.
 	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
 	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
 	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
-	
-	// and I also tried inspecting the list returned by 
+
+	// and I also tried inspecting the list returned by
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
-	
-	build job: jobName, 
+
+	build job: jobName,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId),
@@ -102,9 +102,9 @@ def createRepo(String repoId)
 		// # nexus ignored application/json
 		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
-		
+
 		echo "Create the repository-group ${repoId}";
-		
+
 		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
 <repo-group>
   <data>
@@ -138,7 +138,7 @@ def createRepo(String repoId)
 		sh "${createGroupCommand}"
 
 		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
-		
+
 final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 <scheduled-task>
   <data>
@@ -165,10 +165,10 @@ final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 	</properties>
   </data>
 </scheduled-task>"""
-	
+
 		// # nexus ignored application/json
 		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
-		sh "${createScheduleCommand}"		
+		sh "${createScheduleCommand}"
 	} // withCredentials
 }
 
@@ -177,13 +177,13 @@ def deleteRepo(String repoId)
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
 		echo "Delete the repository ${repoId}";
-		
+
 		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
 		sh "${deleteGroupCommand}"
-		
+
 		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
 		sh "${deleteRepoCommand}"
-		
+
 		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
 		sh "${deleteScheduleCommand}"
 	}
@@ -197,22 +197,22 @@ def deleteRepo(String repoId)
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-		string(defaultValue: '', 
+		string(defaultValue: '',
 			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
+<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
-		string(defaultValue: '', 
-			description: 'Build number of the upstream job that called us, if any.', 
+		string(defaultValue: '',
+			description: 'Build number of the upstream job that called us, if any.',
 			name: 'MF_UPSTREAM_BUILDNO'),
-		string(defaultValue: '', 
-			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.', 
+		string(defaultValue: '',
+			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
-		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere', 
+		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
-	]), 
+	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_UPSTREAM_BUILDNO in each snapshot artifact's version
@@ -275,7 +275,7 @@ echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 // note: going to set currentBuild.description after we deployed
 
-timestamps 
+timestamps
 {
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -283,22 +283,22 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	{
 		// checkout our code
 		checkout([
-			$class: 'GitSCM', 
-			branches: [[name: "${env.BRANCH_NAME}"]], 
-			doGenerateSubmoduleConfigurations: false, 
+			$class: 'GitSCM',
+			branches: [[name: "${env.BRANCH_NAME}"]],
+			doGenerateSubmoduleConfigurations: false,
 			extensions: [
 				[$class: 'CleanCheckout']
-			], 
-			submoduleCfg: [], 
+			],
+			submoduleCfg: [],
 			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-webui.git']]
 		])
 	}
 
-    configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+    configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
-        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
+        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
-			stage('Set versions and build metasfresh-webui-api') 
+			stage('Set versions and build metasfresh-webui-api')
             {
 				if(!isRepoExists(MF_MAVEN_REPO_NAME))
 				{
@@ -309,30 +309,33 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				final String mavenUpdatePropertyParam;
 				if(params.MF_UPSTREAM_VERSION)
 				{
-					// mavenUpdateParentParam="-DparentVersion=${params.MF_UPSTREAM_VERSION}"
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${params.MF_UPSTREAM_VERSION}"; // update the property, use the metasfresh version that we were given by the upstream job
+					final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
+
+					// update the property, use the metasfresh version that we were given by the upstream job.
+					// the square brackets are required if we have a conrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(params.MF_UPSTREAM_VERSION)}";
 				}
 				else
 				{
-					// mavenUpdateParentParam=''; 
-					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // still update the property, but use the latest version
+					// still update the property, but use the latest version
+					mavenUpdatePropertyParam='-Dproperty=metasfresh.version';
 				}
 
 				// update the parent pom version
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
 
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
-		
+				sh "mvn --debug --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
+
 				// set the artifact version of everything below the webui's pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				
+
 				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
 				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
-				
+
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
@@ -354,13 +357,13 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
-	stage('Invoke downstream job') 
+	stage('Invoke downstream job')
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, BUILD_VERSION, false); // wait=false 
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, BUILD_VERSION, false); // wait=false
 	}
 }
 else
 {
 	echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
 }
-} // timestamps   
+} // timestamps

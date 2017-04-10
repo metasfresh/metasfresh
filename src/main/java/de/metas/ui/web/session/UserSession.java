@@ -1,11 +1,8 @@
 package de.metas.ui.web.session;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
@@ -16,23 +13,17 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,24 +38,28 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Component
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class UserSession implements InitializingBean, Serializable
+/**
+ * User Session service
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
+@Service
+public class UserSession
 {
-	private static final long serialVersionUID = -1478300848154458479L;
-
 	/**
 	 * Gets current {@link UserSession} if any
 	 * 
+	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
+	 *
 	 * @return {@link UserSession} or null
 	 */
 	public static UserSession getCurrentOrNull()
@@ -78,20 +73,28 @@ public class UserSession implements InitializingBean, Serializable
 		}
 
 		//
-		UserSession userSession = _userSession;
+		UserSession userSession = _staticUserSession;
 		if (userSession == null)
 		{
 			synchronized (UserSession.class)
 			{
-				if (_userSession == null)
+				if (_staticUserSession == null)
 				{
-					userSession = _userSession = Adempiere.getSpringApplicationContext().getBean(UserSession.class);
+					userSession = _staticUserSession = Adempiere.getSpringApplicationContext().getBean(UserSession.class);
 				}
 			}
 		}
 		return userSession;
 	}
-	
+
+	/**
+	 * Gets current {@link UserSession}.
+	 * 
+	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
+	 * 
+	 * @return user session; never returns null
+	 * @throws NotLoggedInException
+	 */
 	public static UserSession getCurrent() throws NotLoggedInException
 	{
 		final UserSession userSession = getCurrentOrNull();
@@ -102,88 +105,26 @@ public class UserSession implements InitializingBean, Serializable
 		return userSession;
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(UserSession.class);
+	// services
+	static final transient Logger logger = LogManager.getLogger(UserSession.class);
+	private final transient ApplicationEventPublisher eventPublisher;
 
-	private static UserSession _userSession = null;
+	private static UserSession _staticUserSession = null;
 
-	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
-	private String sessionId = null;
-	private UserPreference userPreference;
-	private boolean loggedIn;
-	private Locale locale;
+	@Autowired
+	private InternalUserSessionData data; // session scoped
 
-	private final Map<String, Object> properties = new ConcurrentHashMap<>();
-
-	@Value("${metasfresh.webui.debug.showColumnNamesForCaption:false}")
-	private boolean default_showColumnNamesForCaption;
-
-	public static final String PARAM_DisableDeprecatedRestAPI = "metasfresh.webui.debug.DisableDeprecatedRestAPI";
-	@Value("${" + PARAM_DisableDeprecatedRestAPI + ":true}")
-	private boolean default_disableDeprecatedRestAPI;
-
-	public UserSession()
+	@Autowired
+	public UserSession(final ApplicationEventPublisher eventPublisher)
 	{
 		super();
-		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		sessionId = requestAttributes.getSessionId();
 
-		userPreference = new UserPreference();
-		loggedIn = false;
-
-		//
-		// Set initial language
-		try
-		{
-			final Locale locale = LocaleContextHolder.getLocale();
-			final Language language = Language.getLanguage(locale);
-			setLanguage(language);
-		}
-		catch (final Exception e)
-		{
-			logger.warn("Failed setting the language, but moving on", e);
-		}
-
-		logger.trace("User session created: {}", this);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("sessionId", sessionId)
-				.add("loggedIn", loggedIn)
-				.add("locale", locale)
-				.add("userPreferences", userPreference)
-				.toString();
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception
-	{
-		//
-		// Set initial properties
-		properties.put(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, default_showColumnNamesForCaption);
-		properties.put(PARAM_DisableDeprecatedRestAPI, default_disableDeprecatedRestAPI);
-	}
-
-	private void writeObject(final java.io.ObjectOutputStream out) throws IOException
-	{
-		out.defaultWriteObject();
-
-		logger.trace("User session serialized: {}", this);
-	}
-
-	private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
-	{
-		in.defaultReadObject();
-
-		logger.trace("User session deserialized: {}", this);
+		this.eventPublisher = eventPublisher;
 	}
 
 	public String getSessionId()
 	{
-		return sessionId;
+		return data.getSessionId();
 	}
 
 	/**
@@ -192,48 +133,49 @@ public class UserSession implements InitializingBean, Serializable
 	 */
 	public Properties getCtx()
 	{
-		return Env.getCtx();
+		return data.getCtx();
 	}
 
 	public Evaluatee toEvaluatee()
 	{
-		return Evaluatees.ofCtx(getCtx());
+		return Evaluatees.ofCtx(data.getCtx());
 	}
 
 	public UserPreference getUserPreference()
 	{
-		return userPreference;
+		return data.getUserPreference();
 	}
 
 	public boolean isLoggedIn()
 	{
-		return loggedIn;
+		return data.isLoggedIn();
 	}
 
 	public void setLoggedIn(final boolean loggedIn)
 	{
-		if (this.loggedIn == loggedIn)
+		final boolean currentlyLoggedIn = data.isLoggedIn();
+		if (currentlyLoggedIn == loggedIn)
 		{
 			return;
 		}
 
 		if (loggedIn)
 		{
-			this.loggedIn = true;
-			userPreference.loadPreference(getCtx());
-			logger.trace("User session logged in: {}", this);
+			data.setLoggedIn(true);
+			data.getUserPreference().loadPreference(data.getCtx());
+			logger.trace("User session logged in: {}", data);
 		}
 		else
 		{
-			this.loggedIn = false;
-			userPreference = new UserPreference();
-			logger.trace("User session logged out: {}", this);
+			data.setLoggedIn(false);
+			data.setUserPreference(new UserPreference());
+			logger.trace("User session logged out: {}", data);
 		}
 	}
 
 	public void assertLoggedIn()
 	{
-		if (!isLoggedIn())
+		if (!data.isLoggedIn())
 		{
 			throw new NotLoggedInException();
 		}
@@ -241,13 +183,17 @@ public class UserSession implements InitializingBean, Serializable
 
 	public void assertNotLoggedIn()
 	{
-		if (isLoggedIn())
+		if (data.isLoggedIn())
 		{
 			throw new AlreadyLoggedInException();
 		}
 	}
 
 	/**
+	 * Sets user preferred language.
+	 * 
+	 * Fires {@link LanguagedChangedEvent}.
+	 * 
 	 * @param adLanguage
 	 * @return old AD_Language
 	 */
@@ -255,94 +201,105 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);
-		return setLanguage(lang);
-	}
-
-	private String setLanguage(final Language lang)
-	{
-		final Properties ctx = getCtx();
-		Check.assumeNotNull(ctx, "Parameter ctx is not null");
-
-		final String adLanguageOld = Env.getContext(ctx, Env.CTXNAME_AD_Language);
-
-		Env.verifyLanguage(lang);
-		final String adLanguageNew = lang.getAD_Language();
-
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, adLanguageNew);
-		locale = lang.getLocale();
+		final String adLanguageOld = data.verifyLanguageAndSet(lang);
+		final String adLanguageNew = data.getAdLanguage();
 		logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, lang);
+
+		// Fire event
+		if (!Objects.equals(adLanguageOld, adLanguageNew))
+		{
+			eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, getAD_User_ID()));
+		}
 
 		return adLanguageOld;
 	}
 
 	public int getAD_Client_ID()
 	{
-		return Env.getAD_Client_ID(getCtx());
+		return data.getAD_Client_ID();
 	}
 
 	public String getAD_Language()
 	{
-		return Env.getAD_Language(getCtx());
+		return data.getAdLanguage();
+	}
+
+	public Language getLanguage()
+	{
+		return data.getLanguage();
 	}
 
 	public Locale getLocale()
 	{
-		return locale;
+		return data.getLocale();
 	}
 
 	public int getAD_User_ID()
 	{
-		return Env.getAD_User_ID(getCtx());
+		return data.getAD_User_ID();
 	}
 
 	public String getUserName()
 	{
-		return Env.getContext(getCtx(), Env.CTXNAME_AD_User_Name);
+		return data.getUserName();
 	}
-	
+
 	public String getRoleName()
 	{
-		return Env.getContext(getCtx(), Env.CTXNAME_AD_Role_Name);
+		return data.getRoleName();
 	}
 
 	public UserRolePermissionsKey getUserRolePermissionsKey()
 	{
 		// TODO: cache the permissions key
-		return UserRolePermissionsKey.of(getCtx());
+		return UserRolePermissionsKey.of(data.getCtx());
 	}
 
 	public IUserRolePermissions getUserRolePermissions()
 	{
-		return Env.getUserRolePermissions(getCtx());
-	}
-
-	public <T extends Serializable> Object setProperty(final String name, final T value)
-	{
-		return properties.put(name, value);
-	}
-
-	public <T> T getProperty(final String name)
-	{
-		final Object valueObj = properties.get(name);
-
-		@SuppressWarnings("unchecked")
-		final T valueConv = (T)valueObj;
-
-		return valueConv;
-	}
-
-	public boolean getPropertyAsBoolean(final String name, final boolean defaultValue)
-	{
-		final Boolean value = getProperty(name);
-		return value != null ? value : defaultValue;
+		return Env.getUserRolePermissions(data.getCtx());
 	}
 
 	public void assertDeprecatedRestAPIAllowed()
 	{
-		final boolean disableDeprecatedRestAI = getPropertyAsBoolean(PARAM_DisableDeprecatedRestAPI, false);
-		if (disableDeprecatedRestAI)
+		if (!data.isAllowDeprecatedRestAPI())
 		{
 			throw new DeprecatedRestAPINotAllowedException();
 		}
+	}
+
+	public boolean isAllowDeprecatedRestAPI()
+	{
+		return data.isAllowDeprecatedRestAPI();
+	}
+
+	public void setAllowDeprecatedRestAPI(final boolean allowDeprecatedRestAPI)
+	{
+		data.setAllowDeprecatedRestAPI(allowDeprecatedRestAPI);
+	}
+
+	public boolean isShowColumnNamesForCaption()
+	{
+		return data.isShowColumnNamesForCaption();
+	}
+
+	public void setShowColumnNamesForCaption(final boolean showColumnNamesForCaption)
+	{
+		data.setShowColumnNamesForCaption(showColumnNamesForCaption);
+	}
+
+	/**
+	 * Event fired when the user language was changed.
+	 * Usually it is user triggered.
+	 * 
+	 * @author metas-dev <dev@metasfresh.com>
+	 *
+	 */
+	@lombok.Value
+	public static class LanguagedChangedEvent
+	{
+		@NonNull
+		private final String adLanguage;
+		private final int adUserId;
 	}
 }
