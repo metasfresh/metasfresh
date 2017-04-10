@@ -42,6 +42,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -49,8 +50,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -69,7 +72,13 @@ import de.metas.adempiere.form.terminal.PropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IDocumentCollector;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.InventoryAllocationDestination;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -81,12 +90,14 @@ import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssi
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplitModel;
+import de.metas.handlingunits.impl.DocumentCollector;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
+import de.metas.inventory.event.InventoryProcessedEventBus;
 import de.metas.logging.LogManager;
 
 public class HUEditorModel implements IDisposable
@@ -96,6 +107,7 @@ public class HUEditorModel implements IDisposable
 	// services
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private static final String SYSCONFIG_HUKeyFilterEnabled = "de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel.HUKeyFilterEnabled";
 	private static final boolean DEFAULT_HUKeyFilterEnabled = false;
@@ -1303,10 +1315,75 @@ public class HUEditorModel implements IDisposable
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 					.notify(inOut);
-			
+
 			// not needed TODO
 			// // zoom into the created vendor return (return to customer not implemented yet)
 			// AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
+		}
+	}
+
+	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
+	{
+		final Set<I_M_HU> selectedHUs = getSelectedHUs();
+
+		// Make sure all HUs have ThreadInherited transaction (in order to use caching)
+		selectedHUs.stream().forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited));
+
+		//
+		// Allocation Source: our HUs
+		final HUListAllocationSourceDestination husSource = HUListAllocationSourceDestination.of(selectedHUs);
+
+		husSource.setCreateHUSnapshots(true);
+		husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
+
+		//
+		// Create and setup context
+		final IDocumentCollector documentsCollector = new DocumentCollector();
+		final IContextAware context = getTerminalContext();
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
+		huContext.setDocumentCollector(documentsCollector);
+
+		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
+		huContext.setDate(movementDate);
+
+		// Inventory allocation destination
+		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouseFrom);
+		//
+		// Create and configure Loader
+		final HULoader loader = HULoader.of(husSource, inventoryAllocationDestination);
+		loader.setAllowPartialLoads(true);
+
+		//
+		// Unload everything from source (our HUs)
+		loader.unloadAllFromSource(huContext);
+
+		final I_M_Inventory inventory = inventoryAllocationDestination.getInventory();
+
+		if (inventory != null)
+		{
+			//
+			// Refresh the HUKeys
+			{
+				// Remove huKeys from their parents
+				for (final HUKey huKey : getSelectedHUKeys())
+				{
+					removeHUKeyFromParentRecursivelly(huKey);
+				}
+
+				// Move back to Root HU Key
+				setRootHUKey(getRootHUKey());
+
+				//
+				// Clear (attribute) cache (because it could be that we changed the attributes too)
+				clearCache();
+			}
+
+			//
+			// Send notifications
+			InventoryProcessedEventBus.newInstance()
+					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
+					.notify(inventory);
+
 		}
 	}
 
@@ -1417,16 +1494,15 @@ public class HUEditorModel implements IDisposable
 		return returnInOut;
 	}
 
-
 	public void doSelectWarehouse(Predicate<ReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
 	{
 		Check.assumeNotNull(editorCallback, "editorCallback not null");
-		
+
 		final List<I_M_HU> hus = new ArrayList<>();
 		hus.addAll(getSelectedHUs());
-		
+
 		final de.metas.handlingunits.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(warehouseFrom, de.metas.handlingunits.model.I_M_Warehouse.class);
-		final ReturnsWarehouseModel returnsWarehouseModel = new ReturnsWarehouseModel(_terminalContext, warehouse, hus );
+		final ReturnsWarehouseModel returnsWarehouseModel = new ReturnsWarehouseModel(_terminalContext, warehouse, hus);
 
 		//
 		// Do nothing & keep selection if the user cancelled
@@ -1443,10 +1519,9 @@ public class HUEditorModel implements IDisposable
 		//
 		// Navigate back to root
 		setCurrentHUKey(getRootHUKey());
-		
+
 	}
 
-	
 	@Override
 	public String toString()
 	{
@@ -1473,6 +1548,5 @@ public class HUEditorModel implements IDisposable
 
 		return stringBuilder.toString();
 	}
-
 
 }

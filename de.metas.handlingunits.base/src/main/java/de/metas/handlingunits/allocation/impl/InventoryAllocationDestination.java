@@ -136,6 +136,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventory;
 	}
 
+	public I_M_Inventory getInventory()
+	{
+		return inventory;
+	}
+
 	private I_M_InventoryLine getCreateInventoryLine(final IAllocationRequest request)
 	{
 		final int productId = request.getProduct().getM_Product_ID();

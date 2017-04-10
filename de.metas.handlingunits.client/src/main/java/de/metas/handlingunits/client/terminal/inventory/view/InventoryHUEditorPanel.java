@@ -100,6 +100,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 
 		buttonsPanel.add(bMoveToQualityWarehouse, "newline");
 		buttonsPanel.add(bCreateVendorReturn, "");
+		buttonsPanel.add(bMoveToGarbage, "");
 	}
 
 	@Override

@@ -185,6 +185,12 @@ public class HUEditorPanel
 	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; // TODO: Translate
 
 	/**
+	 * boton to move HUs + products to garbage (task #1064)
+	 */
+	protected ITerminalButton bMoveToGarbage;
+	private static final String ACTION_MoveToGarbage = "MoveToGarbage"; // TODO: Translate
+
+	/**
 	 * Barcode search field
 	 */
 	private ITerminalTextField barcodeField;
@@ -422,6 +428,27 @@ public class HUEditorPanel
 
 			}
 
+			// task #1064
+			// Create MoveToGarbage button
+			{
+				this.bMoveToGarbage = factory.createButton(ACTION_MoveToGarbage);
+
+				this.bMoveToGarbage.setTextAndTranslate(ACTION_MoveToGarbage);
+				bMoveToGarbage.setEnabled(true);
+				bMoveToGarbage.setVisible(true);
+				bMoveToGarbage.addListener(new UIPropertyChangeListener(factory, bMoveToGarbage)
+				{
+
+					@Override
+					protected void propertyChangeEx(PropertyChangeEvent evt)
+					{
+						doMoveToGarbage();
+
+					}
+				});
+
+			}
+
 			modelListener = new PropertyChangeListener()
 			{
 				@Override
@@ -442,6 +469,25 @@ public class HUEditorPanel
 
 			terminalContext.addToDisposableComponents(this);
 		}
+	}
+
+	/**
+	 * task #1062
+	 * Create vendor return for the selected HUs
+	 */
+	private void doCreateVendorReturn()
+	{
+		getHUEditorModel().createVendorReturn(getCurrentWarehouse());
+
+	}
+
+	/**
+	 * #1064 
+	 * Move products to garbage (waste disposal). Internal use M_Inventory will be created
+	 */
+	protected void doMoveToGarbage()
+	{
+		getHUEditorModel().doMoveToGarbage(getCurrentWarehouse());
 	}
 
 	protected void doMoveToQualityWarehouse()
@@ -469,30 +515,12 @@ public class HUEditorPanel
 				final boolean edited = !selectWarehouseDialog.isCanceled();
 				return edited;
 			}
-		}, 
-		getCurrentWarehouse());
+		},
+				getCurrentWarehouse());
 
 		load(); // refresh window (i.e toggle select) after operation
+
 		
-//		//
-//		// Inform the user about which movement was created
-//		final ITerminalFactory terminalFactory = getTerminalFactory();
-//		final Properties ctx = getTerminalContext().getCtx();
-//		
-//	
-//		final String message = Services.get(IMsgBL.class).parseTranslation(ctx, "@M_Movement_ID@ #" + movement.getDocumentNo());
-//		terminalFactory.showInfo(getTerminalContext().get"Created", message);
-
-	}
-
-	/**
-	 * task #1062
-	 * Create vendor return for the selected HUs
-	 */
-	private void doCreateVendorReturn()
-	{
-		getHUEditorModel().createVendorReturn(getCurrentWarehouse());
-
 	}
 
 	protected final ITerminalFactory getTerminalFactory()
