@@ -23,6 +23,7 @@ Here come the actual release notes:
   * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
   * [#1057](https://github.com/metasfresh/metasfresh/issues/1057) Role window WebUI
     * Initial Layout configuration for Role maintenance Window.
+  * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
   * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
     * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
 
