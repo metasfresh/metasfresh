@@ -482,7 +482,7 @@ public class HUEditorPanel
 	}
 
 	/**
-	 * #1064 
+	 * #1064
 	 * Move products to garbage (waste disposal). Internal use M_Inventory will be created
 	 */
 	protected void doMoveToGarbage()
@@ -490,6 +490,10 @@ public class HUEditorPanel
 		getHUEditorModel().doMoveToGarbage(getCurrentWarehouse());
 	}
 
+	/**
+	 * #1065
+	 * Move the HUs to a quality warehouse
+	 */
 	protected void doMoveToQualityWarehouse()
 	{
 		model.doSelectWarehouse(new Predicate<ReturnsWarehouseModel>()
@@ -518,9 +522,12 @@ public class HUEditorPanel
 		},
 				getCurrentWarehouse());
 
-		load(); // refresh window (i.e toggle select) after operation
+		//
+		// Refresh the HUKeys
+		{
+			model.refreshSelectedHUKeys();
+		}
 
-		
 	}
 
 	protected final ITerminalFactory getTerminalFactory()

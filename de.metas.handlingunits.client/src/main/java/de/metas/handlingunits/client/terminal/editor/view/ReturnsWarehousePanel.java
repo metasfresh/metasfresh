@@ -36,18 +36,18 @@ import de.metas.handlingunits.client.terminal.mmovement.view.impl.AbstractMateri
 public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<ReturnsWarehouseModel>
 {
 
-
-
 	public ReturnsWarehousePanel(final ITerminalContext terminalContext, final ReturnsWarehouseModel model)
 	{
 		super(model);
-
 
 		initComponents();
 		initLayout();
 
 	}
 
+	/**
+	 * panel for all the warehouses eligible for quality returns
+	 */
 	protected ITerminalKeyPanel warehousePanel;
 
 	protected void initLayout()
@@ -86,17 +86,12 @@ public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<Returns
 	@Override
 	protected void loadFromModel()
 	{
-		// TODO Auto-generated method stub
-
+		// nothing for now
 	}
 
 	@Override
 	protected void doOnDialogCanceling(ITerminalDialog dialog)
 	{
-		// nothing
-
+		// nothing for now
 	}
-
-	
-
 }

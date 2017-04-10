@@ -53,7 +53,6 @@ import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -1322,6 +1321,12 @@ public class HUEditorModel implements IDisposable
 		}
 	}
 
+	/**
+	 * Move products from the warehouse to garbage (waste disposal)
+	 * After this process an internal use inventory is created.
+	 * 
+	 * @param warehouseFrom
+	 */
 	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
 	{
 		final Set<I_M_HU> selectedHUs = getSelectedHUs();
@@ -1363,20 +1368,7 @@ public class HUEditorModel implements IDisposable
 		{
 			//
 			// Refresh the HUKeys
-			{
-				// Remove huKeys from their parents
-				for (final HUKey huKey : getSelectedHUKeys())
-				{
-					removeHUKeyFromParentRecursivelly(huKey);
-				}
-
-				// Move back to Root HU Key
-				setRootHUKey(getRootHUKey());
-
-				//
-				// Clear (attribute) cache (because it could be that we changed the attributes too)
-				clearCache();
-			}
+			refreshSelectedHUKeys();
 
 			//
 			// Send notifications
@@ -1387,24 +1379,24 @@ public class HUEditorModel implements IDisposable
 		}
 	}
 
+	/**
+	 * Refresh selected hu keys
+	 */
 	public void refreshSelectedHUKeys()
 	{
-		//
-		// Refresh the HUKeys
+
+		// Remove huKeys from their parents
+		for (final HUKey huKey : getSelectedHUKeys())
 		{
-			// Remove huKeys from their parents
-			for (final HUKey huKey : getSelectedHUKeys())
-			{
-				removeHUKeyFromParentRecursivelly(huKey);
-			}
-
-			// Move back to Root HU Key
-			setRootHUKey(getRootHUKey());
-
-			//
-			// Clear (attribute) cache (because it could be that we changed the attributes too)
-			clearCache();
+			removeHUKeyFromParentRecursivelly(huKey);
 		}
+
+		// Move back to Root HU Key
+		setRootHUKey(getRootHUKey());
+
+		//
+		// Clear (attribute) cache (because it could be that we changed the attributes too)
+		clearCache();
 	}
 
 	protected final void removeHUKeyFromParentRecursivelly(final IHUKey huKey)
@@ -1482,9 +1474,6 @@ public class HUEditorModel implements IDisposable
 			final I_M_HU hu = huKey.getM_HU();
 			hus.add(hu);
 		}
-
-		// warehouse of inout
-		// final I_M_Warehouse warehouse = getc
 
 		// movement date for inout
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date

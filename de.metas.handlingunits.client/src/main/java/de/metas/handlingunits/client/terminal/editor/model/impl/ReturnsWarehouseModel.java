@@ -1,7 +1,6 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -10,10 +9,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.TrxRunnable2;
 
-import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -25,8 +22,6 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inout.event.InOutProcessedEventBus;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementProcessedEventBus;
 
@@ -56,7 +51,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 {
 
 	private I_M_Warehouse warehouseFrom;
-	private I_M_Warehouse warehouseTo;
+
 	private List<I_M_HU> hus;
 
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -196,6 +191,11 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		});
 	}
 
+	/**
+	 * Warehouse that was selected to move the quality HUs to
+	 * 
+	 * @return
+	 */
 	@OverridingMethodsMustInvokeSuper
 	public I_M_Warehouse getM_WarehouseTo()
 	{
