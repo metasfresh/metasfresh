@@ -282,7 +282,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 	 * </ul>
 	 */
 	@Override
-	public IDeliverRequest createDeliverReques(final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
 	{
 		return new IDeliverRequest()
 		{
