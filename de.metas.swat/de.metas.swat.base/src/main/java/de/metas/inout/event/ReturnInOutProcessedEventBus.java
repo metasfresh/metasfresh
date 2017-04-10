@@ -46,11 +46,6 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 	// OPEN THE RIGHT RETURN WINDOW!!!!!!!!!
 
 	/**
-	 * M_InOut SO
-	 */
-	private static final int WINDOW_CUSTOMER_RETURN = 53097; // FIXME: HARDCODED
-
-	/**
 	 * M_InOut PO
 	 */
 	private static final int WINDOW_RETURN_TO_VENDOR = 53098; // FIXME: HARDCODED
@@ -153,6 +148,7 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId)
 				.setRecord(TableRecordReference.of(inout))
+				.setSuggestedWindowId(WINDOW_RETURN_TO_VENDOR)
 				.build();
 		return event;
 	}

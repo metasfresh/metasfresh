@@ -41,11 +41,19 @@ import de.metas.event.Type;
 
 public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 {
+	/**
+	 * M_Inventory internal use
+	 */
+	private static final int WINDOW_INTERNAL_INVENTORY = 341; // FIXME: HARDCODED
+
+	
 	public static final InventoryProcessedEventBus newInstance()
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
 		return new InventoryProcessedEventBus(eventBus);
 	}
+	
+
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
@@ -134,6 +142,7 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 				.setDetailADMessage(adMessage, TableRecordReference.of(inventory))
 				.addRecipient_User_ID(recipientUserId)
 				.setRecord(TableRecordReference.of(inventory))
+				.setSuggestedWindowId(WINDOW_INTERNAL_INVENTORY)
 				.build();
 		return event;
 	}

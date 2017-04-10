@@ -87,6 +87,12 @@ public class RecordZoomWindowFinder
 		return new RecordZoomWindowFinder(query);
 	}
 	
+	public static final RecordZoomWindowFinder newInstance(final MQuery query, final int windowIdToUse)
+	{
+		return new RecordZoomWindowFinder(query, windowIdToUse);
+		
+	}
+	
 	private static final Logger logger = LogManager.getLogger(RecordZoomWindowFinder.class);
 
 	//
@@ -141,6 +147,30 @@ public class RecordZoomWindowFinder
 		//
 		// Load additional infos from given query
 		_isSOTrx_Provided = query.isSOTrxOrNull();
+		
+		
+	}
+	
+	private RecordZoomWindowFinder(final MQuery query, final int adWindowId)
+	{
+		super();
+
+		Check.assumeNotNull(query, "Parameter query is not null");
+
+		final String tableName = query.getTableName();
+		Check.assumeNotEmpty(tableName, "tableName is not empty for {}", query);
+		_tableName = tableName;
+		_recordId = -1;
+		_query_Provided = query;
+
+		//
+		// Load additional infos from given query
+		_isSOTrx_Provided = query.isSOTrxOrNull();
+		
+		// task #1062
+		// suggested window is for both trx
+		// to be extended if we need 2 windows later
+		_windowIdsEffective = WindowIds.of(adWindowId, adWindowId);
 	}
 
 	@Override
