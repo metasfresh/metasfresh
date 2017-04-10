@@ -485,30 +485,6 @@ public class MProduct extends X_M_Product
 	}	// isOneAssetPerUOM
 
 	/**
-	 * Product is Item
-	 *
-	 * @return true if item
-	 * @deprecated please use {@link IProductBL#isItem(I_M_Product)}
-	 */
-	@Deprecated
-	public boolean isItem()
-	{
-		return Services.get(IProductBL.class).isItem(this);
-	}	// isItem
-
-	/**
-	 * Is Service
-	 *
-	 * @return true if service (resource, online)
-	 * @deprecated Please use {@link IProductBL#isService(I_M_Product)}
-	 */
-	@Deprecated
-	public boolean isService()
-	{
-		return Services.get(IProductBL.class).isService(this);
-	}	// isService
-
-	/**
 	 * Get UOM Symbol
 	 *
 	 * @return UOM Symbol

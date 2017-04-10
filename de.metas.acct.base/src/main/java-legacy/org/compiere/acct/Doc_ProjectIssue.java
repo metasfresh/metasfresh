@@ -20,10 +20,9 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.ProductAcctType;
+import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
@@ -31,6 +30,8 @@ import org.compiere.model.MProjectIssue;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.product.IProductBL;
 
 /**
  *	Project Issue.
@@ -155,8 +156,10 @@ public class Doc_ProjectIssue extends Doc
 		//  Inventory               CR
 		{
 			ProductAcctType acctType = ProductCost.ACCTTYPE_P_Asset;
-			if (product.isService())
+			if (Services.get(IProductBL.class).isService(product))
+			{
 				acctType = ProductCost.ACCTTYPE_P_Expense;
+			}
 			cr = fact.createLine(m_line,
 				m_line.getAccount(acctType, as),
 				as.getC_Currency_ID(), null, cost);

@@ -14,13 +14,20 @@ Here come the actual release notes:
 
 **upcoming**
 
+## Features
+* metasfresh-backend
+  * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
+
 ## Fixes
 * metasfresh-backend
   * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
   * [#1057](https://github.com/metasfresh/metasfresh/issues/1057) Role window WebUI
     * Initial Layout configuration for Role maintenance Window.
+  * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
   * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
     * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
+  * [#1294](https://github.com/metasfresh/metasfresh/issues/1294) Report with Attribute Set Parameter cannot be started anymore
+    * Fixing an exception when calling the Attribute Editor in Process Parameters.
 
 # metasfresh 5.4 (2017-14)
 
