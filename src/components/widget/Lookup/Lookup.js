@@ -244,11 +244,11 @@ class Lookup extends Component {
         })
 
         if(!isInputEmpty && property === ''){
-            this.handleChange();
+            this.handleChange(true);
         }
     }
 
-    handleChange = () => {
+    handleChange = (handleChangeOnFocus) => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
             tabId, rowId, entity, subentity, subentityId, viewId
@@ -275,7 +275,8 @@ class Lookup extends Component {
                 this.setState({
                     list: response.data.values,
                     loading: false,
-                    validLocal: response.data.values.length === 0 ? false : true
+                    validLocal: response.data.values.length === 0 &&
+                                handleChangeOnFocus!==true ? false : true
                 });
             });
 
@@ -386,7 +387,8 @@ class Lookup extends Component {
 
                 this.setState({
                     oldValue: inputValue,
-                    isInputEmpty: false
+                    isInputEmpty: false,
+                    validLocal: true
                 });
             }
 
