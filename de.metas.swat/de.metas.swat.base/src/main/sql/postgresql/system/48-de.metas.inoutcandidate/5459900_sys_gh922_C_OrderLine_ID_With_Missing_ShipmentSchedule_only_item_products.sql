@@ -1,6 +1,4 @@
 
-
-drop VIEW IF EXISTS C_OrderLine_ID_With_Missing_ShipmentSchedule; -- ad-hoc view, wrong name
 CREATE OR REPLACE VIEW C_OrderLine_ID_With_Missing_ShipmentSchedule_v AS
 SELECT ol.C_OrderLine_id
 FROM C_OrderLine ol

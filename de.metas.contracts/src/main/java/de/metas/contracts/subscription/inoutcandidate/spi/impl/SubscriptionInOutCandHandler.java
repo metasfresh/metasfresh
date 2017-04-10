@@ -208,7 +208,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 	}
 
 	@Override
-	public IDeliverRequest createDeliverReques(final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(sched);
 		final TableRecordReference ref = new TableRecordReference(sched.getAD_Table_ID(), sched.getRecord_ID());
