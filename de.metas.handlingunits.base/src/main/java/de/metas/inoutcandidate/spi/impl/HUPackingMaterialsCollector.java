@@ -39,14 +39,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -96,7 +96,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = new HashMap<>();
 	private int countTUs = 0;
 
-	@ToStringBuilder(skip = true)
 	private final IHUContext huContext;
 	private HUPackingMaterialsCollector parent;
 	private boolean collectIfOwnPackingMaterialsOnly = false;
@@ -117,7 +116,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("key2candidates", key2candidates)
+				.add("countTUs", countTUs)
+				.add("collectIfOwnPackingMaterialsOnly", collectIfOwnPackingMaterialsOnly)
+				.add("parent", parent)
+				.toString();
 	}
 
 	@Override

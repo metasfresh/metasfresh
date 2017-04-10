@@ -44,8 +44,7 @@ FROM
 				SELECT 	iol.M_InOut_ID,
 					p.M_Product_Category_ID =
 					(
-						SELECT value::numeric FROM AD_SysConfig
-						WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y'
+						 getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 					) as IsHULine,
 					COALESCE(ic.PriceEntered_Override, ic.PriceEntered) AS PriceEntered,
 					COALESCE(ic.Discount_Override, ic.Discount) AS Discount,

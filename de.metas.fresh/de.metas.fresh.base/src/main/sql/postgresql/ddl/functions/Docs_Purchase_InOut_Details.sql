@@ -125,8 +125,8 @@ FROM
 					FROM 	Report.fresh_Attributes att
 					INNER JOIN M_InOutLine iol ON att.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
 					INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID and ol.isActive = 'Y'
-					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), MHD, M_Material_Tracking_ID
-						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', '1000021', 'M_Material_Tracking_ID')
+					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), HU_BestBeforeDate, MHD, M_Material_Tracking_ID
+						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', 'HU_BestBeforeDate', '1000021', 'M_Material_Tracking_ID')
 						/* currently those flags are set to be correct for purchase invoices. we need something
 						 * more flexible for all kinds of documents
 						 * att.at_IsAttrDocumentRelevant = 'Y' */
@@ -139,7 +139,7 @@ FROM
 		LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
 		LEFT OUTER JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 	WHERE
-		pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+		pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 	) iol
 GROUP BY
 	Attributes,

@@ -48,6 +48,8 @@ CREATE TYPE "de.metas.handlingunits".HUAttributes AS
   , QualityInspectionCycle_Attribute_id numeric(10)
   , QualityInspectionCycle_Value character varying(255)
   , QualityInspectionCycle_Name character varying(60)
+  , HU_BestBeforeDate_Attribute_id numeric(10)
+  , HU_BestBeforeDate_Value timestamp without time zone
 );
 
 create or replace function "de.metas.handlingunits".getHUAttributes(p_M_HU_ID numeric, p_FillPurchaseDocInfo boolean default false)
@@ -137,6 +139,12 @@ begin
 			v_result.QualityInspectionCycle_Attribute_id = v_hua.M_Attribute_ID;
 			v_result.QualityInspectionCycle_Value = v_hua.Value;
 			v_result.QualityInspectionCycle_Name = v_hua.ValueName;
+		--
+		-- 	
+		elsif (v_hua.AttributeCode = 'HU_BestBeforeDate') then
+			v_result.HU_BestBeforeDate_Attribute_id = v_hua.M_Attribute_ID;
+			v_result.HU_BestBeforeDate_Value = v_hua.ValueDate;
+		
 		end if;
 	end loop;
 	
