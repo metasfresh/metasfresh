@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 
 import {
     openModal,
@@ -702,7 +702,7 @@ class Table extends Component {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
-            queryLimitHit, supportQuickInput
+            queryLimitHit, supportQuickInput, tabInfo
         } = this.props;
 
         const {
@@ -730,9 +730,9 @@ class Table extends Component {
                             this.handleAdvancedEdit(type, tabid, selected)
                         }
                         handleOpenNewTab={() => this.handleOpenNewTab(selected)}
-                        handleDelete={
-                            !isModal ? () => this.handleDelete() : null
-                        }
+                        handleDelete={(
+                            !isModal && (tabInfo && tabInfo.allowDelete)) ?
+                                () => this.handleDelete() : null}
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
@@ -751,6 +751,9 @@ class Table extends Component {
                                     this.handleBatchEntryToggle
                                 }
                                 supportQuickInput={supportQuickInput}
+                                allowCreateNew={
+                                    tabInfo && tabInfo.allowCreateNew
+                                }
                             />
                         </div>
                     </div>}

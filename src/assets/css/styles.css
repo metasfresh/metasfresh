@@ -644,7 +644,9 @@ body {
 }
 
 #root,
-#root>div {
+#root>div,
+.root-children,
+.root-children>div {
     height: 100%;
 }
 
@@ -773,7 +775,7 @@ td.pulse-off input {
     display: flex;
     width: 100%;
     height: 100%;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -1027,4 +1029,15 @@ td.pulse-off input {
 
 .progress-leave.slidein-leave-active {
     width: 0;
+}
+
+.browser-warning {
+    color: $brand-color-secondary;
+    padding-top: 10px;
+    max-width: 300px;
+    text-align: center;
+}
+
+.browser-warning p {
+    margin: 0;
 }
