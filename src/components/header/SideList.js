@@ -1,16 +1,22 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
+
 import Attachments from './Attachments';
 import Referenced from './Referenced';
 import DocumentList from '../app/DocumentList';
 import onClickOutside from 'react-onclickoutside';
+import Tooltips from '../tooltips/Tooltips';
+import keymap from '../../keymap.js';
 
 class SideList extends Component {
     constructor(props) {
         super(props);
 
+        const {defaultTab} = this.props;
+
         this.state = {
-            tab: 0
+            tab: defaultTab ? defaultTab : 0,
+            tooltipOpen: false
         }
     }
 
@@ -66,13 +72,21 @@ class SideList extends Component {
         }
     }
 
+    toggleTooltip = (id) => {
+        this.setState({
+            tooltipOpen: id
+        })
+    }
+
     render() {
         const {
-            tab
+            tab, tooltipOpen
         } = this.state;
 
         const tabs = [
-            'meta-icon-list', 'meta-icon-share', 'meta-icon-attachments'
+            {icon: 'meta-icon-list', title: 'Document list'},
+            {icon: 'meta-icon-share', title: 'Referenced documents'},
+            {icon: 'meta-icon-attachments', title: 'Attachments'}
         ]
 
         return (
@@ -84,12 +98,29 @@ class SideList extends Component {
                     <div className="order-list-nav">
                         {tabs.map((item, index) => <div
                             key={index}
-                            className={'order-list-btn ' +
+                            className={'order-list-btn tooltip-parent ' +
                                 (index === tab ? 'active ' : '')
                             }
                             onClick={() => this.changeTab(index)}
+                            onMouseEnter={() =>
+                                this.toggleTooltip(index)
+                            }
+                            onMouseLeave={() =>
+                                this.toggleTooltip()
+                            }
                         >
-                            <i className={item} />
+                            <i className={item.icon} />
+                            { tooltipOpen === index &&
+                                <Tooltips
+                                    name={
+                                        keymap
+                                            .GLOBAL_CONTEXT
+                                            ['OPEN_SIDEBAR_MENU_' + index]
+                                    }
+                                    action={item.title}
+                                    type={''}
+                                />
+                            }
                         </div>)}
                     </div>
                     {this.renderBody()}
