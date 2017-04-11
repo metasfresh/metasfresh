@@ -39,6 +39,7 @@ class Header extends Component {
         this.state = {
             isSubheaderShow: false,
             isSideListShow: false,
+            sideListTab: null,
             isMenuOverlayShow: false,
             menuOverlay: null,
             scrolled: false,
@@ -203,23 +204,30 @@ class Header extends Component {
         }
     }
 
+    handleSidelistToggle = (id = null) => {
+        const {sideListTab} = this.state;
+
+        this.toggleScrollScope(id !== null);
+
+        this.setState({
+            isSideListShow: id !== sideListTab,
+            sideListTab: id !== sideListTab ? id : null
+        });
+    }
+
     closeOverlays = (clickedItem, callback) => {
-        const {isSideListShow, isSubheaderShow} = this.state;
+        const {isSubheaderShow} = this.state;
 
         this.setState({
             menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
-            isSideListShow:
-                (clickedItem == 'isSideListShow' ? !isSideListShow : false),
+            isSideListShow: false,
             isSubheaderShow:
                 (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
             tooltipOpen: ''
         }, callback);
 
-        if(clickedItem == 'isSideListShow') {
-            this.toggleScrollScope(!isSideListShow);
-        }
         if(
             document.getElementsByClassName('js-dropdown-toggler')[0] &&
             (clickedItem != 'dropdown')
@@ -244,7 +252,7 @@ class Header extends Component {
 
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
-            isMenuOverlayShow, tooltipOpen, prompt
+            isMenuOverlayShow, tooltipOpen, prompt, sideListTab
         } = this.state;
 
         return (
@@ -442,14 +450,15 @@ class Header extends Component {
                                                 'btn-header-open'
                                                 : 'btn-meta-primary')
                                         }
-                                        onClick={() =>
-                                            this.closeOverlays('isSideListShow')
-                                        }
+                                        onClick={() => {
+                                            this.closeOverlays();
+                                            this.handleSidelistToggle(0);
+                                        }}
                                         onMouseEnter={() =>
                                             this.toggleTooltip(
                                                 keymap
                                                     .GLOBAL_CONTEXT
-                                                    .OPEN_SIDEBAR_MENU
+                                                    .OPEN_SIDEBAR_MENU_0
                                             )
                                         }
                                         onMouseLeave={() =>
@@ -460,12 +469,12 @@ class Header extends Component {
                                         { tooltipOpen ===
                                             keymap
                                                 .GLOBAL_CONTEXT
-                                                .OPEN_SIDEBAR_MENU &&
+                                                .OPEN_SIDEBAR_MENU_0 &&
                                             <Tooltips
                                                 name={
                                                     keymap
                                                         .GLOBAL_CONTEXT
-                                                        .OPEN_SIDEBAR_MENU
+                                                        .OPEN_SIDEBAR_MENU_0
                                                 }
                                                 action={'Side list'}
                                                 type={''}
@@ -507,16 +516,17 @@ class Header extends Component {
                     isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
                     docId={dataId}
+                    defaultTab={sideListTab}
                 />}
 
                 <GlobalContextShortcuts
+                    handleSidelistToggle={this.handleSidelistToggle}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
                             ()=> this.handleMenuOverlay('', homemenu.nodeId)
                         )
                     }
-                    handleSideList = {showSidelist  ? showSidelist : ''}
                     handleInboxOpen = {isInboxOpen ?
                         () => this.handleInboxOpen(false) :
                         () => this.handleInboxOpen(true)
