@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
+  * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
+    * Adding the initial window setup for Unit of measure window in WebUI.
 
 ## Fixes
 * metasfresh-backend
