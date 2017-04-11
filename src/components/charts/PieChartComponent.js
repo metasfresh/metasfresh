@@ -38,7 +38,7 @@ class PieChartComponent extends Component {
         this.clearChart();
         const dimensions =
             chartWrapp && this.setDimensions(chartWrapp.offsetWidth);
-        dimensions && this.drawChart(
+        dimensions && this.updateChart(
             dimensions.wrapperWidth, dimensions.width, dimensions.height,
             dimensions.pie, dimensions.arc, data, color
         );
@@ -119,6 +119,45 @@ class PieChartComponent extends Component {
                 }
             });
             // .attr('d', arc);
+
+        this.drawLegend(svg, width, height, color);
+    };
+
+    updateChart = (wrapperWidth, width, height, pie, arc, data, color) => {
+        const {chartClass, fields} = this.props;
+
+        const svg = d3.select('.' + chartClass)
+            .attr('width', width)
+            .attr('height', height)
+            .append('g');
+
+        const chart = svg
+            .attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('class', 'chart')
+            .attr('transform',
+                'translate(' + wrapperWidth / 2 + ',' + 0.66*height + ')'
+            );
+
+        chart.append('g')
+            .attr('class', 'slices');
+        chart.append('g')
+            .attr('class', 'labels');
+        chart.append('g')
+            .attr('class', 'lines');
+
+        const g = d3.select('.slices').selectAll('.arc')
+            .data(pie(data))
+            .enter().append('g')
+            .attr('class', 'arc');
+
+        g.append('path')
+            .style('fill', d => color(d.data[fields[0].fieldName]))
+            .transition()
+            .duration(6000)
+            .attr('class', 'pie-path')
+            .attr('d', arc);
 
         this.drawLegend(svg, width, height, color);
     };
