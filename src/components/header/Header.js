@@ -173,7 +173,7 @@ class Header extends Component {
     }
 
     handlePromptSubmitClick = (windowType, docId) => {
-        const {dispatch} = this.props;
+        const {dispatch, handleDeletedStatus} = this.props;
 
         this.setState({
             prompt: Object.assign({}, this.state.prompt, {
@@ -182,6 +182,7 @@ class Header extends Component {
         }, () => {
             dispatch(deleteRequest('window', windowType, null, null, [docId]))
                 .then(() => {
+                    handleDeletedStatus(true);
                     dispatch(push('/window/' + windowType));
                 });
             }
