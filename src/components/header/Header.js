@@ -237,7 +237,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
-            references, actions, viewId, inbox, homemenu, selected, entity,
+            references, actions, inbox, homemenu, selected, entity,
             query, attachments, showIndicator, isDocumentNotSaved,
             selectedWindowType
         } = this.props;
@@ -486,7 +486,6 @@ class Header extends Component {
                     attachments={attachments}
                     actions={actions}
                     windowType={windowType}
-                    viewId={viewId}
                     closeSubheader={() => this.closeOverlays('isSubheaderShow')}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
@@ -507,6 +506,7 @@ class Header extends Component {
                     closeSideList={this.handleCloseSideList}
                     isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
+                    docId={dataId}
                 />}
 
                 <GlobalContextShortcuts
@@ -550,19 +550,12 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array.isRequired,
-    viewId: PropTypes.string,
     homemenu: PropTypes.object.isRequired,
     inbox: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler, listHandler, appHandler, menuHandler} = state;
-
-    const {
-        viewId
-    } = listHandler || {
-        viewId: ''
-    }
+    const {windowHandler, appHandler, menuHandler} = state;
 
     const {
         inbox
@@ -586,7 +579,6 @@ function mapStateToProps(state) {
 
     return {
         selected,
-        viewId,
         inbox,
         homemenu,
         selectedWindowType

@@ -435,8 +435,6 @@ class Subheader extends Component {
                         <div className="subheader-row">
                             {this.renderNavColumn()}
                             {this.renderActionsColumn()}
-                            {this.renderRefColumn()}
-                            {this.renderAttColumn()}
                         </div>
                     </div>
                 </div>
