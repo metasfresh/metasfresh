@@ -26,6 +26,8 @@ Here come the actual release notes:
   * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
   * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
     * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
+  * [#1294](https://github.com/metasfresh/metasfresh/issues/1294) Report with Attribute Set Parameter cannot be started anymore
+    * Fixing an exception when calling the Attribute Editor in Process Parameters.
 
 # metasfresh 5.4 (2017-14)
 
