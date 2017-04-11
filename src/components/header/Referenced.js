@@ -15,12 +15,12 @@ import {
 class Referenced extends Component {
     constructor(props) {
         super(props);
-        
+
         this.state = {
             data: null
         }
     }
-    
+
     componentDidMount = () => {
         const {dispatch, windowType, docId} = this.props;
 
@@ -32,7 +32,7 @@ class Referenced extends Component {
             })
         });
     }
-    
+
     handleReferenceClick = (type, filter) => {
         const {
             dispatch, windowType, docId
@@ -44,10 +44,10 @@ class Referenced extends Component {
             '&refId=' + docId
         ));
     }
-    
+
     renderLoader = () => {
         return (
-            <div 
+            <div
                 className="order-list-loader text-xs-center"
             >
                 <ReactCSSTransitionGroup
@@ -61,10 +61,10 @@ class Referenced extends Component {
                 </ReactCSSTransitionGroup>
             </div>)
     }
-    
+
     renderData = () => {
         const {data} = this.state;
-        
+
         return (data && data.length) ?
             data.map((item, key) =>
                 <div
@@ -88,7 +88,7 @@ class Referenced extends Component {
         const {data} = this.state;
         return (
             <div>
-                {!data ? 
+                {!data ?
                     this.renderLoader() :
                     this.renderData()
                 }

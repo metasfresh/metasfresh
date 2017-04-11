@@ -11,16 +11,16 @@ import {
 class Attachments extends Component {
     constructor(props) {
         super(props);
-        
+
         this.state = {
             data: null,
             attachmentHovered: null
         }
     }
-    
+
     componentDidMount = () => {
         const {dispatch, windowType, docId} = this.props;
-        
+
         dispatch(
             attachmentsRequest('window', windowType, docId)
         ).then(response => {
@@ -35,7 +35,7 @@ class Attachments extends Component {
             attachmentHovered: value
         })
     }
-    
+
     handleAttachmentClick = (id) => {
         const {dispatch, windowType, docId} = this.props;
         dispatch(openFile(
@@ -47,7 +47,7 @@ class Attachments extends Component {
     handleAttachmentDelete = (e, id) => {
         const {dispatch, windowType, docId} = this.props;
         e.stopPropagation();
-        
+
         dispatch(deleteRequest(
             'window', windowType, docId, null, null, 'attachments', id
         )).then(() => {
@@ -60,10 +60,10 @@ class Attachments extends Component {
             })
         });
     }
-    
+
     renderLoader = () => {
         return (
-            <div 
+            <div
                 className="order-list-loader text-xs-center"
             >
                 <ReactCSSTransitionGroup
@@ -77,10 +77,10 @@ class Attachments extends Component {
                 </ReactCSSTransitionGroup>
             </div>)
     }
-    
+
     renderData = () => {
         const {data, attachmentHovered} = this.state;
-        
+
         return (data && data.length) ?
             data.map((item, key) =>
                 <div
@@ -115,10 +115,10 @@ class Attachments extends Component {
     }
 
     render() {
-        const {data, attachmentHovered} = this.state;
+        const {data} = this.state;
         return (
             <div>
-                {!data ? 
+                {!data ?
                     this.renderLoader() :
                     this.renderData()
                 }

@@ -8,7 +8,7 @@ import onClickOutside from 'react-onclickoutside';
 class SideList extends Component {
     constructor(props) {
         super(props);
-        
+
         this.state = {
             tab: 0
         }
@@ -18,37 +18,49 @@ class SideList extends Component {
         const {closeSideList} = this.props;
         closeSideList();
     }
-    
+
     changeTab = (index) => {
         this.setState({
             tab: index
         })
     }
-    
+
     renderBody = () => {
         const {
             open, windowType, closeOverlays, closeSideList, isSideListShow,
-            docId
+            docId, pagination, sorting, viewId
         } = this.props;
-        
+
         const {
             tab
         } = this.state;
-        
+
         switch (tab) {
             case 0:
                 return <DocumentList
                     type="list"
                     readonly={true}
-                    {...{open, windowType, closeOverlays, closeSideList, 
+                    defaultViewId={
+                        (viewId && viewId.windowType === windowType) ?
+                            viewId.id : null
+                    }
+                    defaultSort={
+                        (sorting && sorting.windowType === windowType) ?
+                            sorting.sort : null
+                    }
+                    defaultPage={
+                        (pagination && pagination.windowType === windowType) ?
+                            pagination.page : null
+                    }
+                    {...{open, windowType, closeOverlays, closeSideList,
                     isSideListShow}}
                 />
             case 1:
-                return <Referenced 
+                return <Referenced
                     {...{windowType, docId}}
                 />
             case 2:
-                return <Attachments 
+                return <Attachments
                     {...{windowType, docId}}
                 />
         }
@@ -58,7 +70,7 @@ class SideList extends Component {
         const {
             tab
         } = this.state;
-        
+
         const tabs = [
             'meta-icon-list', 'meta-icon-share', 'meta-icon-attachments'
         ]
@@ -87,6 +99,23 @@ class SideList extends Component {
     }
 }
 
-SideList = connect()(onClickOutside(SideList))
+function mapStateToProps(state) {
+    const { listHandler } = state;
+    const {
+        sorting,
+        pagination,
+        viewId
+    } = listHandler || {
+        sorting: {},
+        pagination: {},
+        viewId: ''
+    }
+
+    return {
+        sorting, pagination, viewId
+    }
+}
+
+SideList = connect(mapStateToProps)(onClickOutside(SideList))
 
 export default SideList;
