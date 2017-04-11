@@ -1,20 +1,13 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
+import Attachments from './Attachments';
+import Referenced from './Referenced';
 import DocumentList from '../app/DocumentList';
 import onClickOutside from 'react-onclickoutside';
 
 class SideList extends Component {
     constructor(props) {
         super(props);
-        
-        // <DocumentList
-        //     windowType={windowType}
-        //     type="list"
-        //     open={open}
-        //     closeOverlays={closeOverlays}
-        //     closeSideList={closeSideList}
-        //     isSideListShow={isSideListShow}
-        // />
         
         this.state = {
             tab: 0
@@ -31,20 +24,43 @@ class SideList extends Component {
             tab: index
         })
     }
-
-    render() {
+    
+    renderBody = () => {
         const {
-            open, windowType, closeOverlays, closeSideList, isSideListShow
+            open, windowType, closeOverlays, closeSideList, isSideListShow,
+            docId
         } = this.props;
         
         const {
             tab
         } = this.state;
         
+        switch (tab) {
+            case 0:
+                return <DocumentList
+                    type="list"
+                    readonly={true}
+                    {...{open, windowType, closeOverlays, closeSideList, 
+                    isSideListShow}}
+                />
+            case 1:
+                return <Referenced 
+                    {...{windowType, docId}}
+                />
+            case 2:
+                return <Attachments 
+                    {...{windowType, docId}}
+                />
+        }
+    }
+
+    render() {
+        const {
+            tab
+        } = this.state;
+        
         const tabs = [
-            'meta-icon-list',
-            'meta-icon-share',
-            'meta-icon-attachments'
+            'meta-icon-list', 'meta-icon-share', 'meta-icon-attachments'
         ]
 
         return (
@@ -64,8 +80,8 @@ class SideList extends Component {
                             <i className={item} />
                         </div>)}
                     </div>
+                    {this.renderBody()}
                 </div>
-                
             </div>
         )
     }

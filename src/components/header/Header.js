@@ -507,6 +507,7 @@ class Header extends Component {
                     closeSideList={this.handleCloseSideList}
                     isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
+                    docId={dataId}
                 />}
 
                 <GlobalContextShortcuts

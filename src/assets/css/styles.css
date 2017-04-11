@@ -201,6 +201,10 @@ body {
     border-right: 1px solid $brand-light-color;
 }
 
+.order-list-loader {
+    margin: 1rem;
+}
+
 .sm {
     font-size: 0.75rem;
 }

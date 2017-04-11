@@ -331,7 +331,7 @@ class DocumentList extends Component {
         const {
             dispatch, windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, isSideListShow,
-            closeSideList
+            closeSideList, readonly
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);
@@ -339,7 +339,7 @@ class DocumentList extends Component {
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
-                    <div
+                    {!readonly && <div
                         className="panel panel-primary panel-spaced panel-inline document-list-header"
                     >
                         <div>
@@ -370,7 +370,7 @@ class DocumentList extends Component {
                             fetchOnInit={fetchQuickActionsOnInit}
                             processStatus={processStatus}
                         />
-                    </div>
+                    </div>}
                     <div className="document-list-body">
                         <Table
                             entity="documentView"
