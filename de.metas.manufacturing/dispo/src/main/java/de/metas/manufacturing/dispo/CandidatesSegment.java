@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -47,8 +48,13 @@ public class CandidatesSegment
 	private final I_M_Product product;
 
 	@NonNull
-	private final I_M_Locator locator;
+	private final I_M_Warehouse warehouse;
 
+	/**
+	 * The locator within a warehouse might be unspecified.
+	 */
+	private final I_M_Locator locator;
+	
 	@NonNull
 	private final Date projectedDate;
 }

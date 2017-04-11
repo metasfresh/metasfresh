@@ -52,7 +52,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.event.EventUtil;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 
@@ -235,5 +237,13 @@ public class M_ShipmentSchedule
 		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), new MOrderLine[] { orderLinePO });
 
 		InterfaceWrapperHelper.save(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
+			afterCommit = false // afterCommit = false because we do want to post after the commit, but we need to collect the changed columns before the commit
+	)
+	public void fireEvent(final I_M_ReceiptSchedule schedule, final int timing)
+	{
+		EventUtil.get().fireEventAfterCommit(schedule, timing);
 	}
 }

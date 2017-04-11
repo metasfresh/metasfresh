@@ -112,7 +112,7 @@ public class CandidateChangeHandlerTests
 				.build();
 		candidateRepository.add(laterCandidate);
 
-		testee.projectedStockChange(
+		testee.onStockCandidateChange(
 				mkSegment(now),
 				new Quantity(new BigDecimal("3"), uom));
 

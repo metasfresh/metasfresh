@@ -13,7 +13,6 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<spring-cloud-stream.version>Brooklyn.SR3</spring-cloud-stream.version>
 		<start-class>de.metas.manufacturing.dispo.ServerBoot</start-class>
 		<migration-sql-basedir>75-manufacturing-dispo</migration-sql-basedir>
 	</properties>
@@ -21,7 +20,7 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Import dependency management from Spring Boot -->
-			<!-- 
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -29,63 +28,30 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			 -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-dependencies</artifactId>
-				<version>${spring-cloud-stream.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
 	
 		<!-- Spring -->
-		<!-- 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
--->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-stream</artifactId>
-		</dependency>
 
-	<!-- This artifact is included in the repo https://repo.spring.io/libs-snapshot	which we added to https://repo.metasfresh.com as "mvn-spring-snapshots" -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-stream-binder-jms-activemq</artifactId>
-			
-			<!--  pick some fixed version to avoid a moving target. 
-			      pick this particular fixed version because it is the latest right now -->
-			<version>1.0.0.BUILD-20170407.172722-39</version>
-			<!-- <version>1.0.0.BUILD-SNAPSHOT</version> -->
-			<!-- org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.0 -->
-			<exclusions>
-				<exclusion>
-				<!-- excluding this because the enforcer won't have it:
-					 spring-cloud-stream-binder-jms-common pulls 1.0
-					 spring-cloud-stream-binder-jms-activemq pull 1.1.1 -->
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_1.1_spec</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-<!-- org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1 -->
-		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<version>1.1.1</version>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
 		</dependency>
 
 		<!-- metasfresh -->
@@ -106,6 +72,12 @@
 			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>metasfresh-manufacturing-event-api</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!--

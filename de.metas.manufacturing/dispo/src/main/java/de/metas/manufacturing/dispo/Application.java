@@ -1,5 +1,6 @@
 package de.metas.manufacturing.dispo;
 
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
@@ -10,6 +11,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+
+import de.metas.event.IEventBusFactory;
+import de.metas.manufacturing.dispo.event.ReceiptScheduleEventListener;
+import de.metas.manufacturing.dispo.event.ShipmentScheduleEventListener;
+import de.metas.manufacturing.event.ReceiptScheduleEventBus;
+import de.metas.manufacturing.event.ShipmentScheduleEventBus;
 
 /*
  * #%L
@@ -42,7 +49,7 @@ import org.springframework.context.annotation.Profile;
 		scanBasePackages = { "de.metas", "org.adempiere" },  //
 		excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
 )
-public class ServerBoot
+public class Application
 {
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -52,12 +59,18 @@ public class ServerBoot
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.BACKEND);
 
-		new SpringApplicationBuilder(ServerBoot.class)
+		new SpringApplicationBuilder(Application.class)
 				.headless(true)
 				.web(true)
 				.run(args);
 	}
 
+	@Autowired
+	ShipmentScheduleEventListener shipmentScheduleEventListener;
+	
+	@Autowired
+	ReceiptScheduleEventListener receiptScheduleEventListener;
+	
 	@Bean
 	@Profile("!test")
 	public Adempiere adempiere()
@@ -65,6 +78,11 @@ public class ServerBoot
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
+		
+		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+		eventBusFactory.registerGlobalEventListener(ShipmentScheduleEventBus.EVENTBUS_TOPIC, shipmentScheduleEventListener);
+		eventBusFactory.registerGlobalEventListener(ReceiptScheduleEventBus.EVENTBUS_TOPIC, receiptScheduleEventListener);
+		
 		return adempiere;
 	}
 

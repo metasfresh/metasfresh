@@ -1,8 +1,11 @@
 package de.metas.manufacturing.dispo;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.lang.ITableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +38,7 @@ public class CandidateChangeHandler
 	@Autowired
 	private CandidateRepository candidateRepository;
 
-	public List<Candidate> onDemandCandidate(final Candidate demandCandidate)
+	public List<Candidate> onDemandCandidateNew(final Candidate demandCandidate)
 	{
 		// have some collector to collect all records we create and change
 		final List<Candidate> newAndChangedCandidates = new ArrayList<>();
@@ -93,7 +96,7 @@ public class CandidateChangeHandler
 	 * @param supplyCandidte
 	 * @return
 	 */
-	public List<Candidate> onSupplyCandidate(final Candidate supplyCandidte)
+	public List<Candidate> onSupplyCandidateNew(final Candidate supplyCandidte)
 	{
 		// have some collector to collect all records we create and change
 		final List<Candidate> newAndChangedCandidates = new ArrayList<>();
@@ -124,7 +127,7 @@ public class CandidateChangeHandler
 	 * @param segment
 	 * @param delta
 	 */
-	public void projectedStockChange(final CandidatesSegment segment, final Quantity delta)
+	public void onStockCandidateChange(final CandidatesSegment segment, final Quantity delta)
 	{
 		final List<Candidate> candidtesToUpdate = candidateRepository.retrieveStockFrom(segment);
 		for (final Candidate candidate : candidtesToUpdate)
@@ -133,4 +136,69 @@ public class CandidateChangeHandler
 			candidateRepository.add(candidate.withOtherQuantity(newQty));
 		}
 	}
+
+	public void onDemandCandidateChange(ITableRecordReference record, BigDecimal qtyOrdered, Date preparationDate)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onDemandCandidateDelete(ITableRecordReference record)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onSupplyCandidateChange(ITableRecordReference record, BigDecimal qtyOrdered, Date datePromised)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onSupplyCandidateDelete(ITableRecordReference record)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStockCandidateNew(Candidate candidate)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStockCandidateChange(ITableRecordReference record, BigDecimal movementQty, Date movementDate)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStockCandidateDelete(ITableRecordReference record)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+//	public void projectedStockChange(final TableRecordReference reference, final Quantity quantity)
+//	{
+//		final Optional<Candidate> candidate = candidateRepository.retrieveStockFor(reference);
+//		final Quantity oldQuantity;
+//		if (candidate.isPresent())
+//		{
+//			oldQuantity = candidate.get().getQuantity();
+//		}
+//		else
+//		{
+//			oldQuantity = Quantity.zero(quantity.getUOM());
+//			Candidate.builder().
+//		}
+//
+//		
+//		final List<Candidate> candidtesToUpdate = candidateRepository.retrieveStockFrom(segment);
+//		for (final Candidate candidate : candidtesToUpdate)
+//		{
+//			final Quantity newQty = candidate.getQuantity().add(delta);
+//			candidateRepository.add(candidate.withOtherQuantity(newQty));
+//		}
+//	}
 }

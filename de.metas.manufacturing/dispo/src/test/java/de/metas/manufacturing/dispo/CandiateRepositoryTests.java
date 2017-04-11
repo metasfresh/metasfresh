@@ -12,6 +12,8 @@ import java.util.Optional;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -202,4 +204,10 @@ public class CandiateRepositoryTests
 				.build();
 	}
 
+	@Test public void retrieveStockViaReference()
+	{
+		TableRecordReference reference = TableRecordReference.of("tableName", 123);
+		candidateRepository.retrieveStockFor(reference);
+	}
+	
 }

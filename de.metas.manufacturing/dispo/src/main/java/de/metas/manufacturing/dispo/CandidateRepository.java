@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
@@ -51,13 +53,19 @@ public class CandidateRepository
 
 	private I_MD_Candidate retrieveExact(@NonNull final Candidate candidate)
 	{
-		final I_MD_Candidate candidateRecord = Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_MD_Candidate candidateRecord = queryBL
 				.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, candidate.getType().toString())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, candidate.getLocator().getM_Locator_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, candidate.getWarehouse().getM_Warehouse_ID())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, candidate.getProduct().getM_Product_ID())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getDate())
+
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID,
+						candidate.getLocator() == null ? null : candidate.getLocator().getM_Locator_ID())
+
 				.create()
 				.firstOnly(I_MD_Candidate.class); // note that we have a UC to make sure there is just one
 
@@ -72,6 +80,7 @@ public class CandidateRepository
 	{
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecord.setM_Locator(candidate.getLocator());
+		candidateRecord.setM_Warehouse(candidate.getWarehouse());
 		candidateRecord.setM_Product(candidate.getProduct());
 		candidateRecord.setC_UOM(candidate.getQuantity().getUOM());
 		candidateRecord.setQty(candidate.getQuantity().getQty());
@@ -87,27 +96,37 @@ public class CandidateRepository
 		return Optional
 				.of(Candidate.builder()
 						.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
+						.warehouse(candidateRecord.getM_Warehouse())
 						.locator(candidateRecord.getM_Locator())
 						.product(candidateRecord.getM_Product())
 						.date(candidateRecord.getDateProjected())
 						.quantity(new Quantity(candidateRecord.getQty(), candidateRecord.getC_UOM()))
+						.referencedRecord(TableRecordReference.ofReferenced(candidateRecord))
 						.build());
 	}
 
 	/**
-	 * Returns the "oldest" stock candidate that is not after the given query's date.
 	 *
-	 * @param query
-	 * @return
+	 * @param segment
+	 * @return the "oldest" stock candidate that is <b>not</b> after the given {@code segment}'s date.
 	 */
-	public Optional<Candidate> retrieveStockAt(@NonNull final CandidatesSegment query)
+	public Optional<Candidate> retrieveStockAt(@NonNull final CandidatesSegment segment)
 	{
-		final I_MD_Candidate candidateRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, query.getLocator().getM_Locator_ID())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getProduct().getM_Product_ID())
-				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, query.getProjectedDate())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouse())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProduct().getM_Product_ID())
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, segment.getProjectedDate());
+
+		if (segment.getLocator() != null)
+		{
+			queryBuilder.addInArrayFilter(I_MD_Candidate.COLUMN_M_Locator_ID, null, segment.getLocator().getM_Locator_ID());
+		}
+
+		final I_MD_Candidate candidateRecord = queryBuilder
 				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, false).endOrderBy()
 				.create()
 				.first();
@@ -115,14 +134,19 @@ public class CandidateRepository
 		return fromCandidateRecord(candidateRecord);
 	}
 
-	public List<Candidate> retrieveStockFrom(@NonNull final CandidatesSegment query)
+	/**
+	 *
+	 * @param segment
+	 * @return the "youngest" stock candidate that is <b>before</b> after the given {@code segment}'s date.
+	 */
+	public List<Candidate> retrieveStockFrom(@NonNull final CandidatesSegment segment)
 	{
 		final Stream<I_MD_Candidate> candidateRecords = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, query.getLocator().getM_Locator_ID())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getProduct().getM_Product_ID())
-				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, query.getProjectedDate())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouse().getM_Warehouse_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProduct().getM_Product_ID())
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, segment.getProjectedDate())
 				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, true).endOrderBy()
 				.create()
 				.stream();
@@ -130,5 +154,18 @@ public class CandidateRepository
 		return candidateRecords
 				.map(record -> fromCandidateRecord(record).get())
 				.collect(Collectors.toList());
+	}
+
+	public Optional<Candidate> retrieveStockFor(@NonNull final TableRecordReference reference)
+	{
+		final I_MD_Candidate candidateRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, reference.getAD_Table_ID())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, reference.getRecord_ID())
+				.create()
+				.firstOnly(I_MD_Candidate.class);
+
+		return fromCandidateRecord(candidateRecord);
 	}
 }

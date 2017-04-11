@@ -13,8 +13,4 @@
 	<artifactId>metasfresh-manufacturing</artifactId>
 	<packaging>pom</packaging>
 
-	<modules>
-		<module>dispo</module>
-	</modules>
-
 </project>

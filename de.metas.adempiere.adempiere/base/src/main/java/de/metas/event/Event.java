@@ -216,6 +216,11 @@ public final class Event
 		return recipientUserIds.isEmpty();
 	}
 
+	/**
+	 * 
+	 * @param name
+	 * @return tje propertiy with the given name or {@code null}
+	 */
 	public <T> T getProperty(final String name)
 	{
 		@SuppressWarnings("unchecked")

@@ -1,10 +1,9 @@
-package de.metas.manufacturing.dispo.event;
+package de.metas.manufacturing.event;
 
 import org.adempiere.util.Services;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
-import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 
@@ -30,22 +29,23 @@ import de.metas.event.Type;
  * #L%
  */
 
-public class CandidateEventBus extends QueueableForwardingEventBus
-{
+public class InOutEventBus extends ManufactoringEventBus
+{	
+	private static final String EVENTBUS_TOPIC_NAME = "de.metas.inout.InOut";
 
-	public static final CandidateEventBus newInstance()
+	public static final InOutEventBus newInstance()
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new CandidateEventBus(eventBus);
+		return new InOutEventBus(eventBus);
 	}
 
 	/** Topic used to send notifications about sales and purchase orders that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.order.Order.ProcessedEvents")
+			.setName(EVENTBUS_TOPIC_NAME)
 			.setType(Type.REMOTE)
 			.build();
 
-	private CandidateEventBus(final IEventBus delegate)
+	private InOutEventBus(final IEventBus delegate)
 	{
 		super(delegate);
 	}

@@ -7,6 +7,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -54,16 +55,19 @@ public class Candidate
 	 */
 	public enum SupplyType
 	{
-		DISTRIBUTION, PRODUCTION
-
-		/* PURCHASE this comes later */
+		DISTRIBUTION, PRODUCTION, RECEIPT
 	};
 
 	@NonNull
 	private final I_M_Product product;
 
-	@NonNull
+	/**
+	 * The particular locator within a warehouse might remain unspecified for a candidate.
+	 */
 	private final I_M_Locator locator;
+
+	@NonNull
+	private final I_M_Warehouse warehouse;
 
 	/**
 	 * The projected overall quantity which we expect at the time of {@link #getDate()}.
@@ -87,11 +91,12 @@ public class Candidate
 	public Candidate withOtherQuantity(final Quantity quantity)
 	{
 		return builder()
-				.locator(locator)
-				.product(product)
-				.date(date)
 				.type(type)
 				.supplyType(supplyType)
+				.warehouse(warehouse)
+				.product(product)
+				.date(date)
+				.referencedRecord(referencedRecord)
 				.quantity(quantity)
 				.build();
 	}
@@ -102,11 +107,11 @@ public class Candidate
 		return new HashcodeBuilder()
 				.append(type)
 				.append(supplyType)
-				.append(quantity)
+				.append(warehouse)
 				.append(product.getM_Product_ID())
-				.append(locator)
 				.append(date.getTime())
 				.append(referencedRecord)
+				.append(quantity)
 				.toHashcode();
 	}
 
@@ -128,7 +133,7 @@ public class Candidate
 				.append(supplyType, other.supplyType)
 				.append(quantity, other.quantity)
 				.append(product.getM_Product_ID(), other.product.getM_Product_ID())
-				.append(locator.getM_Locator_ID(), other.locator.getM_Locator_ID())
+				.append(warehouse.getM_Warehouse_ID(), other.warehouse.getM_Warehouse_ID())
 				.append(date.getTime(), other.date.getTime())
 				.append(referencedRecord, other.referencedRecord)
 				.isEqual();
