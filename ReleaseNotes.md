@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Adding Tour maintenance Window in new Webui.
   * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
     * Adding the initial window setup for Unit of measure window in WebUI.
+  * [#1303](https://github.com/metasfresh/metasfresh/issues/1303) Tour Version Window in WebUI
+    * Adding the new Window Tour Version to WebUI, allowing Tour maintenance for Businesspartner, Locations and delivers Days.
 
 ## Fixes
 * metasfresh-backend
