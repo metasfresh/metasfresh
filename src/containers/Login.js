@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 import LoginForm from '../components/app/LoginForm';
@@ -16,19 +17,18 @@ class Login extends Component {
     }
 
     userBrowser = () => {
-        let opr;
-        let safari;
 
         const isChrome = !!window.chrome && !!window.chrome.webstore;
 
         const isFirefox = typeof InstallTrigger !== 'undefined';
 
-        const isSafari = /constructor/i.test(window.HTMLElement) ||
-                    (function (p) { return p.toString() ===
-                    '[object SafariRemoteNotification]'; })(!window['safari'] ||
-                    safari.pushNotification);
-        const isOpera = (!!window.opr && !!opr.addons) || !!window.opera ||
-                        navigator.userAgent.indexOf(' OPR/') >= 0;
+        const isSafari = navigator.vendor &&
+                        navigator.vendor.indexOf('Apple') > -1 &&
+                        navigator.userAgent &&
+                        !navigator.userAgent.match('CriOS');
+
+        const isOpera = (!!window.opr && !!window.opr.addons) ||
+                    !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
 
         const isIE = /*@cc_on!@*/false || !!document.documentMode; // IE 6-11
 

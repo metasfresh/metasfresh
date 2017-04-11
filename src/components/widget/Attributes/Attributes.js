@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import AttributesDropdown from './AttributesDropdown';
@@ -125,7 +126,10 @@ class Attributes extends Component {
 
         //there are required values that are not set. just close
         if (mandatory.length && !valid){
-            return this.handleToggle(false);
+            if(window.confirm('Do you really want to leave?')){
+                this.handleToggle(false);
+            }
+            return;
         }
 
         dispatch(completeRequest(attributeType, attrId)).then(response => {
