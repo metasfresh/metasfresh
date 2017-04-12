@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,7 +58,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private Properties _ctx;
 	protected boolean executed = false;
@@ -85,7 +86,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return _ctx;
 	}
 
-	private IContextAware getContextProvider()
+	protected IContextAware getContextProvider()
 	{
 		final Properties ctx = getCtx();
 
@@ -97,6 +98,26 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 
 	@Override
 	public I_M_InOut create()
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(new TrxCallable<I_M_InOut>()
+		{
+
+			@Override
+			public I_M_InOut call() throws Exception
+			{
+				return createInTrx();
+			}
+
+			@Override
+			public boolean doCatch(Throwable e) throws Throwable
+			{
+				throw e;
+			}
+		});
+	}
+
+	private I_M_InOut createInTrx()
 	{
 		Check.assume(!executed, "inout not already created");
 		executed = true;
@@ -110,6 +131,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			// Create document lines
 			// NOTE: as a side effect the document header will be created, if there was at least one line
 			createLines();
+
 			if (!inoutRef.isInitialized())
 			{
 				// nothing created
@@ -135,13 +157,14 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			InterfaceWrapperHelper.save(inout);
 			return inout;
 		}
+
 	}
 
 	protected abstract void createLines();
 
 	@Override
 	public abstract boolean isEmpty();
-	
+
 	@Override
 	public abstract IReturnsInOutProducer addPackingMaterial(I_M_HU_PackingMaterial packingMaterial, int qty);
 
@@ -153,7 +176,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	 * @return true if empty.
 	 */
 
-	private I_M_InOut createInOutHeader()
+	protected I_M_InOut createInOutHeader()
 	{
 		final IContextAware contextProvider = getContextProvider();
 
@@ -166,7 +189,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			final boolean isSOTrx = inOutBL.getSOTrxFromMovementType(movementType);
 			// isSOTrx = 'Y' means packing material coming back from the customer -> incoming -> Receipt
 			// isSOTrx = 'N' means packing material is returned to the vendor -> outgoing -> Delivery
-			final String docBaseType = isSOTrx ?  X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
+			final String docBaseType = isSOTrx ? X_C_DocType.DOCBASETYPE_MaterialReceipt : X_C_DocType.DOCBASETYPE_MaterialDelivery;
 
 			inout.setMovementType(movementType);
 			inout.setIsSOTrx(isSOTrx);
@@ -351,4 +374,3 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return _complete;
 	}
 }
-

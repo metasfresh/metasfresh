@@ -31,7 +31,9 @@ import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeDAO extends ISingletonService
 {
-	String DOCSUBTYPE_Any = null;
+	String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
+	
+	String DOCSUBTYPE_NONE = null;
 
 	/**
 	 *

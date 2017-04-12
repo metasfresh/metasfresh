@@ -191,7 +191,7 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 	protected int getReturnsDocTypeId(final IContextAware contextProvider, final boolean isSOTrx, final I_M_InOut inout, final String docBaseType)
 	{
 		// in the case of returns the docSubType is null
-		final String docSubType = null;
+		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
 
 		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
 				.getDocTypeOrNullForSOTrx(
