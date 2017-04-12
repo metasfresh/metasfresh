@@ -8,34 +8,6 @@ export function setBreadcrumb(breadcrumb){
     }
 }
 
-export function setHomeMenu(homemenu){
-    return {
-        type: types.SET_HOMEMENU,
-        homemenu: homemenu
-    }
-}
-
-export function setReferences(references){
-    return {
-        type: types.SET_REFERENCES,
-        references: references
-    }
-}
-
-export function setAttachments(attachments){
-    return {
-        type: types.SET_ATTACHMENTS,
-        attachments: attachments
-    }
-}
-
-export function setActions(actions){
-    return {
-        type: types.SET_ACTIONS,
-        actions: actions
-    }
-}
-
 // THUNK ACTIONS
 export function pathRequest(nodeId) {
     return () => axios.get(
@@ -80,11 +52,10 @@ export function rootRequest(limit, depth=0) {
 }
 
 export function getRootBreadcrumb() {
-    return (dispatch) => {
+    return (dispatch) =>
         dispatch(rootRequest(6, 10)).then(root => {
-            dispatch(setHomeMenu({nodeId: '0', children: root.data}));
+            return {nodeId: '0', children: root.data.children};
         });
-    }
 }
 
 export function getWindowBreadcrumb(id){
