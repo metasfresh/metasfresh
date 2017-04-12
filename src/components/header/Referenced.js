@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
+import Loader from '../app/Loader';
 
 import {
     referencesRequest
@@ -45,23 +46,6 @@ class Referenced extends Component {
         ));
     }
 
-    renderLoader = () => {
-        return (
-            <div
-                className="order-list-loader text-xs-center"
-            >
-                <ReactCSSTransitionGroup
-                    transitionName="rotate"
-                    transitionEnterTimeout={1000}
-                    transitionLeaveTimeout={1000}
-                >
-                    <div className="rotate icon-rotate">
-                        <i className="meta-icon-settings"/>
-                    </div>
-                </ReactCSSTransitionGroup>
-            </div>)
-    }
-
     renderData = () => {
         const {data} = this.state;
 
@@ -89,7 +73,7 @@ class Referenced extends Component {
         return (
             <div>
                 {!data ?
-                    this.renderLoader() :
+                    <Loader /> :
                     this.renderData()
                 }
             </div>

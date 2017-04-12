@@ -134,7 +134,7 @@ class MasterWindow extends Component {
 
     render() {
         const {
-            master, modal, breadcrumb, actions, rawModal, selected, indicator, 
+            master, modal, breadcrumb, rawModal, selected, indicator,
             params
         } = this.props;
 
@@ -172,7 +172,6 @@ class MasterWindow extends Component {
                 dataId={dataId}
                 windowType={params.windowType}
                 breadcrumb={breadcrumb}
-                actions={actions}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
@@ -248,7 +247,6 @@ MasterWindow.propTypes = {
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
-    actions: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array,
     rawModal: PropTypes.object.isRequired,
@@ -272,18 +270,15 @@ function mapStateToProps(state) {
     }
 
     const {
-        breadcrumb,
-        actions
+        breadcrumb
     } = menuHandler || {
-        breadcrumb: [],
-        actions: []
+        breadcrumb: []
     }
 
     return {
         master,
         breadcrumb,
         modal,
-        actions,
         selected,
         rawModal,
         indicator

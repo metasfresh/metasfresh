@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
+import Loader from '../app/Loader';
 
 import {
     attachmentsRequest,
@@ -61,23 +62,6 @@ class Attachments extends Component {
         });
     }
 
-    renderLoader = () => {
-        return (
-            <div
-                className="order-list-loader text-xs-center"
-            >
-                <ReactCSSTransitionGroup
-                    transitionName="rotate"
-                    transitionEnterTimeout={1000}
-                    transitionLeaveTimeout={1000}
-                >
-                    <div className="rotate icon-rotate">
-                        <i className="meta-icon-settings"/>
-                    </div>
-                </ReactCSSTransitionGroup>
-            </div>)
-    }
-
     renderData = () => {
         const {data, attachmentHovered} = this.state;
 
@@ -119,7 +103,7 @@ class Attachments extends Component {
         return (
             <div>
                 {!data ?
-                    this.renderLoader() :
+                    <Loader /> :
                     this.renderData()
                 }
             </div>

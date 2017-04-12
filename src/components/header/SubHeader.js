@@ -3,15 +3,9 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 
+import Actions from './Actions';
+
 import keymap from '../../keymap.js';
-
-import {
-    setActions
-} from '../../actions/MenuActions';
-
-import {
-    actionsRequest,
-} from '../../actions/GenericActions';
 
 class Subheader extends Component {
     constructor(props){
@@ -23,23 +17,7 @@ class Subheader extends Component {
     }
 
     componentDidMount() {
-        const {
-            dispatch, windowType, dataId, selected, selectedWindowType, entity,
-            query
-        } = this.props;
-
-        dispatch(setActions([]));
-
         document.getElementsByClassName('js-subheader-column')[0].focus();
-
-        if(windowType){
-            dispatch(actionsRequest(
-                entity, windowType, dataId ? dataId : query && query.viewId,
-                (selectedWindowType === windowType ? selected: []))
-            ).then((response) => {
-                dispatch(setActions(response.data.actions));
-            });
-        }
     }
 
     handleKeyDown = (e) => {
@@ -226,8 +204,10 @@ class Subheader extends Component {
 
     renderActionsColumn = () => {
         const {
-            openModal, closeSubheader, actions
+            windowType, dataId, selected, selectedWindowType, entity, query,
+            openModal, closeSubheader
         } = this.props;
+
         return (
             <div
                 className="subheader-column js-subheader-column"
@@ -235,25 +215,11 @@ class Subheader extends Component {
             >
                 <div className="subheader-header">Actions</div>
                 <div className="subheader-break" />
-                {actions && !!actions.length ? actions.map((item, key) =>
-                    <div
-                        className="subheader-item js-subheader-item"
-                        onClick={() => {
-                            openModal(
-                                item.processId + '', 'process', item.caption
-                            );
-                            closeSubheader()
-                        }}
-                        key={key}
-                        tabIndex={0}
-                    >
-                        {item.caption}
-                    </div>
-                ) :
-                    <div className="subheader-item subheader-item-disabled">
-                        There is no actions
-                    </div>
-                }
+                <Actions
+                    {...{windowType, entity, openModal, closeSubheader}}
+                    docId={dataId ? dataId : query && query.viewId}
+                    rowId={selectedWindowType === windowType ? selected : []}
+                />
             </div>
         )
     }
