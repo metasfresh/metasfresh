@@ -61,8 +61,8 @@ class DocList extends Component {
 
     render() {
         const {
-            windowType, breadcrumb, query, actions, modal, selected, references,
-            rawModal, attachments, indicator, processStatus
+            windowType, breadcrumb, query, modal, selected, rawModal,
+            indicator, processStatus
         } = this.props;
 
         const {
@@ -74,9 +74,6 @@ class DocList extends Component {
                 entity="documentView"
                 breadcrumb={breadcrumb}
                 windowType={windowType}
-                actions={actions}
-                references={references}
-                attachments={attachments}
                 query={query}
                 showIndicator={!modal.visible && !rawModal.visible}
             >
@@ -145,11 +142,8 @@ DocList.propTypes = {
     modal: PropTypes.object.isRequired,
     rawModal: PropTypes.object.isRequired,
     selected: PropTypes.array,
-    actions: PropTypes.array.isRequired,
-    attachments: PropTypes.array.isRequired,
     indicator: PropTypes.string.isRequired,
-    processStatus: PropTypes.string.isRequired,
-    references: PropTypes.array.isRequired
+    processStatus: PropTypes.string.isRequired
 }
 
 function mapStateToProps(state) {
@@ -176,15 +170,9 @@ function mapStateToProps(state) {
     }
 
     const {
-        actions,
-        references,
-        attachments,
         breadcrumb
     } = menuHandler || {
-        actions: [],
-        refereces: [],
-        breadcrumb: [],
-        attachments: []
+        breadcrumb: []
     }
 
     const {
@@ -194,8 +182,8 @@ function mapStateToProps(state) {
     }
 
     return {
-        modal, breadcrumb, pathname, actions, selected, indicator,
-        latestNewDocument, references, rawModal, attachments, processStatus
+        modal, breadcrumb, pathname, selected, indicator,
+        latestNewDocument, rawModal, processStatus
     }
 }
 

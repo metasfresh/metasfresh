@@ -1,131 +1,23 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import {push} from 'react-router-redux';
 import onClickOutside from 'react-onclickoutside';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import {
-    setFilter
-} from '../../actions/ListActions';
+import Actions from './Actions';
 
 import keymap from '../../keymap.js';
-
-import {
-    setReferences,
-    setActions,
-    setAttachments
-} from '../../actions/MenuActions';
-
-import {
-    actionsRequest,
-    referencesRequest,
-    attachmentsRequest,
-    openFile,
-    deleteRequest
-} from '../../actions/GenericActions';
 
 class Subheader extends Component {
     constructor(props){
         super(props);
 
         this.state = {
-            pdfSrc: null,
-            attachmentHovered: null
+            pdfSrc: null
         }
-    }
-
-    handleClickOutside = () => {
-        const { closeSubheader } = this.props;
-        closeSubheader();
     }
 
     componentDidMount() {
-        const {
-            dispatch, windowType, dataId, selected, selectedWindowType, entity,
-            query
-        } = this.props;
-
-        dispatch(setActions([]));
-
         document.getElementsByClassName('js-subheader-column')[0].focus();
-
-        if(windowType){
-            if(selected.length === 1 || dataId){
-                const id = dataId ?
-                    dataId :
-                    (selectedWindowType == windowType ? selected[0]: null);
-
-                if(!id){
-                    dispatch(setAttachments([]));
-                    dispatch(setReferences([]));
-                    return;
-                }
-
-                /*
-                 * These actions always are called in window context
-                 * because it is or window, or anywhere else but
-                 * with some selection on particular document
-                 */
-                dispatch(
-                    referencesRequest('window', windowType, id)
-                ).then((response) => {
-                    dispatch(setReferences(response.data.references));
-                });
-
-                dispatch(
-                    attachmentsRequest('window', windowType, id)
-                ).then((response) => {
-                    dispatch(setAttachments(response.data));
-                });
-            }else{
-                dispatch(setAttachments([]));
-                dispatch(setReferences([]));
-            }
-
-            dispatch(actionsRequest(
-                entity, windowType, dataId ? dataId : query && query.viewId,
-                (selectedWindowType === windowType ? selected: []))
-            ).then((response) => {
-                dispatch(setActions(response.data.actions));
-            });
-        }
-    }
-
-    handleAttachmentClick = (id) => {
-        const {dispatch, windowType, dataId, selected} = this.props;
-        dispatch(openFile(
-            'window', windowType, dataId ? dataId : selected[0], 'attachments',
-            id
-        ));
-    }
-
-    handleAttachmentDelete = (e, id) => {
-        const {dispatch, windowType, dataId, selected} = this.props;
-        e.stopPropagation();
-        dispatch(deleteRequest(
-            'window', windowType, dataId ? dataId : selected[0], null, null,
-            'attachments', id
-        )).then(() => {
-            return dispatch(attachmentsRequest(
-                'window', windowType, dataId ? dataId : selected[0]
-            ))
-        }).then((response) => {
-            dispatch(setAttachments(response.data));
-        });
-    }
-
-    handleReferenceClick = (type, filter) => {
-        const {
-            dispatch, closeSubheader, windowType, dataId, selected
-        } = this.props;
-        dispatch(setFilter(filter, type));
-        dispatch(push(
-            '/window/' + type +
-            '?refType=' + windowType +
-            '&refId=' + (dataId ? dataId : selected)
-        ));
-        closeSubheader();
     }
 
     handleKeyDown = (e) => {
@@ -179,6 +71,11 @@ class Subheader extends Component {
                 closeSubheader();
                 break;
         }
+    }
+
+    handleClickOutside = () => {
+        const { closeSubheader } = this.props;
+        closeSubheader();
     }
 
     toggleAttachmentDelete = (value) => {
@@ -307,8 +204,10 @@ class Subheader extends Component {
 
     renderActionsColumn = () => {
         const {
-            openModal, closeSubheader, actions
+            windowType, dataId, selected, selectedWindowType, entity, query,
+            openModal, closeSubheader
         } = this.props;
+
         return (
             <div
                 className="subheader-column js-subheader-column"
@@ -316,108 +215,11 @@ class Subheader extends Component {
             >
                 <div className="subheader-header">Actions</div>
                 <div className="subheader-break" />
-                {actions && !!actions.length ? actions.map((item, key) =>
-                    <div
-                        className="subheader-item js-subheader-item"
-                        onClick={() => {
-                            openModal(
-                                item.processId + '', 'process', item.caption
-                            );
-                            closeSubheader()
-                        }}
-                        key={key}
-                        tabIndex={0}
-                    >
-                        {item.caption}
-                    </div>
-                ) :
-                    <div className="subheader-item subheader-item-disabled">
-                        There is no actions
-                    </div>
-                }
-            </div>
-        )
-    }
-
-    renderRefColumn = () => {
-        const {references, closeSubheader} = this.props;
-        return (
-            <div
-                className="subheader-column js-subheader-column"
-                tabIndex={0}
-            >
-                <div className="subheader-header">Referenced documents</div>
-                <div className="subheader-break" />
-                { references && !!references.length ?
-                    references.map((item, key) =>
-                        <div
-                            className="subheader-item js-subheader-item"
-                            onClick={() => {
-                                this.handleReferenceClick(
-                                    item.documentType, item.filter
-                                ); closeSubheader()
-                            }}
-                            key={key}
-                            tabIndex={0}
-                        >
-                            {item.caption}
-                        </div>
-                ) : <div className="subheader-item subheader-item-disabled">
-                    There is no referenced document
-                </div>}
-            </div>
-        )
-    }
-
-    renderAttColumn = () => {
-        const {attachments} = this.props;
-        const {attachmentHovered} = this.state;
-
-        return (
-            <div
-                className="subheader-column js-subheader-column"
-                tabIndex={0}
-            >
-                <div className="subheader-header">Attachments</div>
-                <div className="subheader-break " />
-                {(attachments && attachments.length) ?
-                    attachments.map((item, key) =>
-                        <div
-                            className="subheader-item subheader-item-ellipsis js-subheader-item"
-                            key={key}
-                            tabIndex={0}
-                            onMouseEnter={() =>
-                                this.toggleAttachmentDelete(item.id)}
-                            onMouseLeave={() =>
-                                this.toggleAttachmentDelete(null)}
-                            onClick={() =>
-                                this.handleAttachmentClick(item.id)}
-                        >
-                            {item.name}
-                            <ReactCSSTransitionGroup
-                                transitionName="slidein"
-                                transitionEnterTimeout={1000}
-                                transitionLeaveTimeout={0}
-                            >
-                                {attachmentHovered === item.id &&
-                                    <div
-                                        className="subheader-additional-box"
-                                        onClick={(e) =>
-                                            this.handleAttachmentDelete(
-                                                e, item.id
-                                            )
-                                        }
-                                    >
-                                        <i className="meta-icon-delete"/>
-                                    </div>
-                                }
-                            </ReactCSSTransitionGroup>
-                        </div>
-                    ) :
-                        <div
-                            className="subheader-item subheader-item-disabled"
-                        >There is no attachment</div>
-                }
+                <Actions
+                    {...{windowType, entity, openModal, closeSubheader}}
+                    docId={dataId ? dataId : query && query.viewId}
+                    rowId={selectedWindowType === windowType ? selected : []}
+                />
             </div>
         )
     }
@@ -435,8 +237,6 @@ class Subheader extends Component {
                         <div className="subheader-row">
                             {this.renderNavColumn()}
                             {this.renderActionsColumn()}
-                            {this.renderRefColumn()}
-                            {this.renderAttColumn()}
                         </div>
                     </div>
                 </div>

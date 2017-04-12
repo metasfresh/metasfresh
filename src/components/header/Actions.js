@@ -1,0 +1,81 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import {connect} from 'react-redux';
+
+import Loader from '../app/Loader';
+
+import {
+    actionsRequest,
+} from '../../actions/GenericActions';
+
+class Actions extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            data: []
+        }
+    }
+
+    componentDidMount = () => {
+        const {dispatch, windowType, entity, docId, rowId} = this.props;
+
+        dispatch(actionsRequest(
+            entity, windowType, docId, rowId
+        )).then((response) => {
+            this.setState({
+                data: response.data.actions
+            });
+        });
+    }
+
+    renderData = () => {
+        const {closeSubheader, openModal} = this.props;
+        const {data} = this.state;
+
+        return (
+            <div>
+                {data && data.length ? data.map((item, key) =>
+                    <div
+                        className="subheader-item js-subheader-item"
+                        onClick={() => {
+                            openModal(
+                                item.processId + '', 'process', item.caption
+                            );
+                            closeSubheader()
+                        }}
+                        key={key}
+                        tabIndex={0}
+                    >
+                        {item.caption}
+                    </div>
+                ) :
+                    <div className="subheader-item subheader-item-disabled">
+                        There is no actions
+                    </div>
+                }
+            </div>
+        );
+    }
+
+    render() {
+        const {data} = this.state;
+        return (
+            <div>
+                {!data ?
+                    <Loader /> :
+                    this.renderData()
+                }
+            </div>
+        );
+    }
+}
+
+Actions.propTypes = {
+    windowType: PropTypes.string.isRequired,
+    dispatch: PropTypes.func.isRequired
+}
+
+Actions = connect()(Actions);
+
+export default Actions;
