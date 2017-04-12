@@ -37,6 +37,9 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
@@ -285,17 +288,43 @@ public final class ProcessInstance
 					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
 					.setSummary(summary)
 					.setError(processExecutionResult.isError());
-			//
-			// Result: report
-			final File reportTempFile = saveReportToDiskIfAny(processExecutionResult);
-			if (reportTempFile != null)
-			{
-				resultBuilder.setReportData(processExecutionResult.getReportFilename(), processExecutionResult.getReportContentType(), reportTempFile);
-			}
 
 			//
-			// Result: records to select
-			updateRecordsToOpen(resultBuilder, processExecutor.getProcessInfo(), processExecutionResult.getRecordsToOpen());
+			// Create result post process actions
+			{
+				final File reportTempFile = saveReportToDiskIfAny(processExecutionResult);
+				final RecordsToOpen recordsToOpen = processExecutionResult.getRecordsToOpen();
+
+				//
+				// Result: report
+				if (reportTempFile != null)
+				{
+					resultBuilder.setAction(OpenReportAction.builder()
+							.filename(processExecutionResult.getReportFilename())
+							.contentType(processExecutionResult.getReportContentType())
+							.tempFile(reportTempFile)
+							.build());
+				}
+				//
+				// View
+				else if (recordsToOpen != null && recordsToOpen.isGridView())
+				{
+					final IDocumentViewSelection view = createView(processExecutor.getProcessInfo(), recordsToOpen);
+					resultBuilder.setAction(OpenViewAction.builder()
+							.windowId(view.getAD_Window_ID())
+							.viewId(view.getViewId())
+							.build());
+				}
+				//
+				// Single document
+				else if (recordsToOpen != null && !recordsToOpen.isGridView())
+				{
+					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
+					resultBuilder.setAction(OpenSingleDocument.builder()
+							.documentPath(documentPath)
+							.build());
+				}
+			}
 
 			//
 			final ProcessInstanceResult result = resultBuilder.build();
@@ -340,29 +369,6 @@ public final class ProcessInstance
 		Util.writeBytes(reportFile, reportData);
 
 		return reportFile;
-	}
-
-	private void updateRecordsToOpen(final ProcessInstanceResult.Builder resultBuilder, final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
-	{
-		if (recordsToOpen == null)
-		{
-			return;
-		}
-		//
-		// View
-		else if (recordsToOpen.isGridView())
-		{
-			final IDocumentViewSelection view = createView(processInfo, recordsToOpen);
-			resultBuilder.openView(view.getAD_Window_ID(), view.getViewId());
-		}
-		//
-		// Single document
-		else
-		{
-			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
-			resultBuilder.openSingleDocument(documentPath);
-		}
-
 	}
 
 	private final IDocumentViewSelection createView(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)

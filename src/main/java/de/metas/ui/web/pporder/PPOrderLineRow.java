@@ -222,6 +222,10 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 				//
 				.createQuery()
 				.listIds();
+		if(huIdsToAvailableToIssue.isEmpty())
+		{
+			throw new EntityNotFoundException("No HUs to issue found");
+		}
 
 		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.grid)
 				.setParentViewId(getViewId())

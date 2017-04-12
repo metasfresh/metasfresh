@@ -9,8 +9,11 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -46,17 +49,7 @@ public final class ProcessInstanceResult implements Serializable
 	private final int adPInstanceId;
 	private final String summary;
 	private final boolean error;
-
-	// Report to open (optional)
-	private final String reportFilename;
-	private final String reportContentType;
-	private final File reportTempFile;
-
-	// View or single document to open (optional)
-	private final int openViewWindowId;
-	private final String openViewId;
-	//
-	private final DocumentPath openSingleDocumentPath;
+	private final ResultAction action;
 
 	private ProcessInstanceResult(final Builder builder)
 	{
@@ -65,13 +58,7 @@ public final class ProcessInstanceResult implements Serializable
 		summary = builder.summary;
 		error = builder.error;
 
-		reportFilename = builder.reportFilename;
-		reportContentType = builder.reportContentType;
-		reportTempFile = builder.reportTempFile;
-
-		openViewWindowId = builder.openViewWindowId;
-		openViewId = builder.openViewId;
-		openSingleDocumentPath = builder.openSingleDocumentPath;
+		action = builder.action;
 	}
 
 	@Override
@@ -82,15 +69,7 @@ public final class ProcessInstanceResult implements Serializable
 				.add("adPInstanceId", adPInstanceId)
 				.add("summary", summary)
 				.add("error", error)
-				//
-				.add("reportFilename", reportFilename)
-				.add("reportContentType", reportContentType)
-				.add("reportTempFile", reportTempFile)
-				//
-				.add("openViewWindowId", openViewWindowId > 0 ? openViewWindowId : null)
-				.add("openViewId", openViewId)
-				.add("openSingleDocumentPath", openSingleDocumentPath)
-				//
+				.add("action", action)
 				.toString();
 	}
 
@@ -114,34 +93,75 @@ public final class ProcessInstanceResult implements Serializable
 		return error;
 	}
 
-	public String getReportFilename()
+	/** @return action or null */
+	public ResultAction getAction()
 	{
-		return reportFilename;
+		return action;
 	}
 
-	public String getReportContentType()
+	/** @return action of given type; never returns null */
+	public <T extends ResultAction> T getAction(final Class<T> actionType)
 	{
-		return reportContentType;
+		final ResultAction action = getAction();
+		if (action == null)
+		{
+			throw new IllegalStateException("No action defined");
+		}
+		if (!actionType.isAssignableFrom(action.getClass()))
+		{
+			throw new IllegalStateException("Action is not of type " + actionType + " but " + action.getClass());
+		}
+		@SuppressWarnings("unchecked")
+		final T actionCasted = (T)action;
+		return actionCasted;
 	}
 
-	public byte[] getReportData()
+	//
+	//
+	//
+	//
+	//
+
+	/** Base interface for all post-process actions */
+	public static interface ResultAction
 	{
-		return Util.readBytes(reportTempFile);
 	}
 
-	public int getOpenViewWindowId()
+	@lombok.Value
+	@lombok.Builder
+	public static final class OpenReportAction implements ResultAction
 	{
-		return openViewWindowId;
+		@NonNull
+		private final String filename;
+		@NonNull
+		private final String contentType;
+		@NonNull
+		@Setter(AccessLevel.NONE)
+		@Getter(AccessLevel.NONE)
+		private final File tempFile;
+
+		public byte[] getReportData()
+		{
+			return Util.readBytes(tempFile);
+		}
+
 	}
 
-	public String getOpenViewId()
+	@lombok.Value
+	@lombok.Builder
+	public static final class OpenViewAction implements ResultAction
 	{
-		return openViewId;
+		private final int windowId;
+		@NonNull
+		private final String viewId;
 	}
 
-	public DocumentPath getOpenSingleDocumentPath()
+	@lombok.Value
+	@lombok.Builder
+	public static final class OpenSingleDocument implements ResultAction
 	{
-		return openSingleDocumentPath;
+		@NonNull
+		private final DocumentPath documentPath;
 	}
 
 	public static final class Builder
@@ -150,16 +170,7 @@ public final class ProcessInstanceResult implements Serializable
 		private String summary;
 		private boolean error;
 
-		// Report to open (optional)
-		private String reportFilename;
-		private String reportContentType;
-		private File reportTempFile;
-
-		// View or single document to open (optional)
-		private int openViewWindowId;
-		private String openViewId;
-		//
-		private DocumentPath openSingleDocumentPath;
+		private ResultAction action;
 
 		private Builder()
 		{
@@ -189,43 +200,9 @@ public final class ProcessInstanceResult implements Serializable
 			return this;
 		}
 
-		public Builder setReportData(final String reportFileName, final String reportContentType, final File reportTempFile)
+		public Builder setAction(final ResultAction action)
 		{
-			reportFilename = reportFileName;
-			this.reportContentType = reportContentType;
-			this.reportTempFile = reportTempFile;
-			return this;
-		}
-
-		public Builder openView(final int viewWindowId, final String viewId)
-		{
-			if (viewWindowId > 0)
-			{
-				openViewWindowId = viewWindowId;
-
-				Check.assumeNotEmpty(viewId, "viewId is not empty");
-				openViewId = viewId;
-			}
-			else
-			{
-				openViewWindowId = -1;
-				openViewId = null;
-			}
-
-			// reset the single document to open
-			openSingleDocumentPath = null;
-
-			return this;
-		}
-
-		public Builder openSingleDocument(final DocumentPath documentPath)
-		{
-			openSingleDocumentPath = documentPath;
-
-			// reset the view to open
-			openViewWindowId = -1;
-			openViewId = null;
-
+			this.action = action;
 			return this;
 		}
 	}

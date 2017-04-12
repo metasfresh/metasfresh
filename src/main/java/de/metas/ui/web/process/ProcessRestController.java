@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.process.json.JSONProcessInstance;
@@ -159,9 +160,10 @@ public class ProcessRestController
 	{
 		final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
 
-		final String reportFilename = executionResult.getReportFilename();
-		final String reportContentType = executionResult.getReportContentType();
-		final byte[] reportData = executionResult.getReportData();
+		final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
+		final String reportFilename = action.getFilename();
+		final String reportContentType = action.getContentType();
+		final byte[] reportData = action.getReportData();
 
 		final String reportFilenameEffective = Util.coalesce(filename, reportFilename, "");
 
