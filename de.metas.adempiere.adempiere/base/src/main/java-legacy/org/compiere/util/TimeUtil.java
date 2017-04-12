@@ -650,7 +650,7 @@ public class TimeUtil
 	 */
 	public static Timestamp addMinutes(final Timestamp dateTime, final int offset)
 	{
-		return new Timestamp(addMinutes(dateTime, offset).getTime());
+		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
 	}
 
 	/**

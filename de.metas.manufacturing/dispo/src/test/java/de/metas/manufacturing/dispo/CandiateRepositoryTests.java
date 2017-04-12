@@ -8,16 +8,17 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +31,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
-import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -60,7 +60,7 @@ import de.metas.quantity.Quantity;
 public class CandiateRepositoryTests
 {
 
-	/** Watches current test and dumps the database to console in case of failure */
+	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -88,7 +88,11 @@ public class CandiateRepositoryTests
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		InterfaceWrapperHelper.save(product);
 
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.save(warehouse);
+
 		locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		locator.setM_Warehouse(warehouse);
 		InterfaceWrapperHelper.save(locator);
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
@@ -97,30 +101,33 @@ public class CandiateRepositoryTests
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("11"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("11"))
 				.date(now)
 				.build();
-		candidateRepository.add(someOtherCandidate);
+		candidateRepository.addOrReplace(someOtherCandidate);
 
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.add(stockCandidate);
+		candidateRepository.addOrReplace(stockCandidate);
 
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
-		candidateRepository.add(laterStockCandidate);
+		candidateRepository.addOrReplace(laterStockCandidate);
 	}
 
 	/**
@@ -130,18 +137,19 @@ public class CandiateRepositoryTests
 	public void add_update()
 	{
 		// guard
-		assertThat(candidateRepository.retrieveStockAt(mkQuery(now)).get(), is(stockCandidate));
-		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveStockFrom(mkQuery(now));
+		assertThat(candidateRepository.retrieveStockAt(mkQueryWithLocator(now)).isPresent(), is(true));
+		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkQueryWithLocator(now)).get()), is(stockCandidate));
+		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveStockFrom(mkQueryWithLocator(now));
 		assertThat(stockBeforeReplacement.size(), is(2));
-		assertThat(stockBeforeReplacement, contains(stockCandidate, laterStockCandidate));
+		assertThat(stockBeforeReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
 
-		final Candidate replacementCandidate = stockCandidate.withOtherQuantity(new Quantity(BigDecimal.ONE, uom));
-		candidateRepository.add(replacementCandidate);
+		final Candidate replacementCandidate = stockCandidate.withQuantity(BigDecimal.ONE);
+		candidateRepository.addOrReplace(replacementCandidate);
 
-		assertThat(candidateRepository.retrieveStockAt(mkQuery(now)).get(), is(replacementCandidate));
-		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveStockFrom(mkQuery(now));
+		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkQueryWithLocator(now)).get()), is(replacementCandidate));
+		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveStockFrom(mkQueryWithLocator(now));
 		assertThat(stockAfterReplacement.size(), is(2));
-		assertThat(stockAfterReplacement, contains(replacementCandidate, laterStockCandidate));
+		assertThat(stockAfterReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
 	}
 
 	/**
@@ -150,64 +158,84 @@ public class CandiateRepositoryTests
 	@Test
 	public void retrieveStockAt()
 	{
-		final CandidatesSegment earlierQuery = mkQuery(earlier);
+		final CandidatesSegment earlierQuery = mkQueryWithLocator(earlier);
 		final Optional<Candidate> earlierStock = candidateRepository.retrieveStockAt(earlierQuery);
 		assertThat(earlierStock.isPresent(), is(false));
 
-		final CandidatesSegment sameTimeQuery = mkQuery(now);
+		final CandidatesSegment sameTimeQuery = mkQueryWithLocator(now);
 		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveStockAt(sameTimeQuery);
 		assertThat(sameTimeStock.isPresent(), is(true));
-		assertThat(sameTimeStock.get(), is(stockCandidate));
+		assertThat(toCandidateWithoutIds(sameTimeStock.get()), is(stockCandidate));
 
-		final CandidatesSegment laterQuery = mkQuery(later);
+		final CandidatesSegment laterQuery = mkQueryWithLocator(later);
 		final Optional<Candidate> laterStock = candidateRepository.retrieveStockAt(laterQuery);
 		assertThat(laterStock.isPresent(), is(true));
-		assertThat(laterStock.get(), is(laterStockCandidate));
+		assertThat(toCandidateWithoutIds(laterStock.get()), is(laterStockCandidate));
+	}
+
+	/**
+	 * 
+	 * @param laterStock
+	 * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
+	 */
+	private Candidate toCandidateWithoutIds(final Candidate laterStock)
+	{
+		return laterStock.withId(null).withParentId(null);
 	}
 
 	@Test
 	public void retrieveStockFrom()
 	{
 		{
-			final CandidatesSegment earlierQuery = mkQuery(earlier);
+			final CandidatesSegment earlierQuery = mkQueryWithLocator(earlier);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(earlierQuery);
 			assertThat(stockFrom.size(), is(2));
-			assertThat(stockFrom.contains(stockCandidate), is(true));
-			assertThat(stockFrom.contains(laterStockCandidate), is(true));
+
+			// what we retrieved, but without the IDs. To be used to compare with our "originals"
+			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> from.withId(null).withParentId(null)).collect(Collectors.toList());
+
+			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
+			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 		{
-			final CandidatesSegment sameTimeQuery = mkQuery(now);
+			final CandidatesSegment sameTimeQuery = mkQueryWithLocator(now);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(sameTimeQuery);
 			assertThat(stockFrom.size(), is(2));
-			assertThat(stockFrom.contains(stockCandidate), is(true));
-			assertThat(stockFrom.contains(laterStockCandidate), is(true));
+
+			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> toCandidateWithoutIds(from)).collect(Collectors.toList());
+			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
+			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 
 		{
-			final CandidatesSegment laterQuery = mkQuery(later);
+			final CandidatesSegment laterQuery = mkQueryWithLocator(later);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(laterQuery);
 			assertThat(stockFrom.size(), is(1));
-			assertThat(stockFrom.contains(stockCandidate), is(false));
-			assertThat(stockFrom.contains(laterStockCandidate), is(true));
+
+			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> from.withId(null).withParentId(null)).collect(Collectors.toList());
+			assertThat(stockFromWithOutIds.contains(stockCandidate), is(false));
+			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 	}
 
-	private CandidatesSegment mkQuery(final Date later)
+	private CandidatesSegment mkQueryWithLocator(final Date later)
 	{
 		return CandidatesSegment.builder()
-				.product(product)
-				.locator(locator)
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
 				.projectedDate(later)
 				.build();
 	}
 
-	@Test public void retrieveStockViaReference()
+	@Test
+	public void retrieveStockViaReference()
 	{
-		TableRecordReference reference = TableRecordReference.of("tableName", 123);
+		final TableRecordReference reference = TableRecordReference.of("tableName", 123);
 		candidateRepository.retrieveStockFor(reference);
 	}
-	
+
 }

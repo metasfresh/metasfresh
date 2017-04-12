@@ -156,5 +156,4 @@ public class M_InOut
 		// Note: The request creation will be done async
 		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
 	}
-
 }

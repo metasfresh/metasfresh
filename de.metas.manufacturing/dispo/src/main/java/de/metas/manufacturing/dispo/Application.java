@@ -1,8 +1,10 @@
 package de.metas.manufacturing.dispo;
 
-import org.adempiere.util.Services;
+import java.util.Collections;
+
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +14,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.event.IEventBusFactory;
-import de.metas.manufacturing.dispo.event.ReceiptScheduleEventListener;
-import de.metas.manufacturing.dispo.event.ShipmentScheduleEventListener;
-import de.metas.manufacturing.event.ReceiptScheduleEventBus;
-import de.metas.manufacturing.event.ShipmentScheduleEventBus;
+import de.metas.manufacturing.dispo.event.MDEventListener;
+import de.metas.manufacturing.event.ManufacturingEventService;
 
 /*
  * #%L
@@ -66,23 +65,21 @@ public class Application
 	}
 
 	@Autowired
-	ShipmentScheduleEventListener shipmentScheduleEventListener;
-	
-	@Autowired
-	ReceiptScheduleEventListener receiptScheduleEventListener;
-	
+	MDEventListener eventListener;
+
 	@Bean
 	@Profile("!test")
 	public Adempiere adempiere()
 	{
+		// as of right now, we are not interested in loading any model validator whatsoever within this service
+		ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
+
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
-		
-		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-		eventBusFactory.registerGlobalEventListener(ShipmentScheduleEventBus.EVENTBUS_TOPIC, shipmentScheduleEventListener);
-		eventBusFactory.registerGlobalEventListener(ReceiptScheduleEventBus.EVENTBUS_TOPIC, receiptScheduleEventListener);
-		
+
+		ManufacturingEventService.get().registerListener(eventListener);
+
 		return adempiere;
 	}
 

@@ -1,14 +1,19 @@
-package de.metas.manufacturing.dispo;
+package de.metas.manufacturing.event;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-manufacturing-dispo
+ * metasfresh-manufacturing-event-api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -27,33 +32,34 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-/**
- * Identifies a set of candidates.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Builder
 @Data
-public class CandidatesSegment
+@AllArgsConstructor // used by jackson when it deserializes a string
+@Builder // used by devs to make sure they know with parameter-value goes into which property
+public class TransactionEvent implements ManufacturingEvent
 {
+	public static final String TYPE = "TransactionEvent";
+
 	@NonNull
-	private final Integer productId;
+	private Instant when;
+
+	@NonNull
+	private final TableRecordReference reference;
+
+	@NonNull
+	private final Date movementDate;
 
 	@NonNull
 	private final Integer warehouseId;
 
-	/**
-	 * The locator within a warehouse might be unspecified.
-	 */
+	@NonNull
 	private final Integer locatorId;
 
 	@NonNull
-	private final Date projectedDate;
+	private final BigDecimal qty;
 
-	public int getLocatorIdNotNull()
-	{
-		return locatorId == null ? 0 : locatorId;
-	}
+	@NonNull
+	private final Integer productId;
+
+	private final boolean transactionDeleted;
+
 }

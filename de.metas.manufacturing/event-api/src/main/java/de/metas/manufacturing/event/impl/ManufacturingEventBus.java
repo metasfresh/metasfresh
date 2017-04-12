@@ -1,15 +1,16 @@
-package de.metas.manufacturing.event;
+package de.metas.manufacturing.event.impl;
 
 import org.adempiere.util.Services;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
+import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 
 /*
  * #%L
- * metasfresh-manufacturing-dispo
+ * metasfresh-manufacturing-event-api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -29,15 +30,9 @@ import de.metas.event.Type;
  * #L%
  */
 
-public class InOutEventBus extends ManufactoringEventBus
-{	
-	private static final String EVENTBUS_TOPIC_NAME = "de.metas.inout.InOut";
-
-	public static final InOutEventBus newInstance()
-	{
-		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new InOutEventBus(eventBus);
-	}
+public class ManufacturingEventBus extends QueueableForwardingEventBus
+{
+	private static final String EVENTBUS_TOPIC_NAME = "de.metas.manufacturing.dispo";
 
 	/** Topic used to send notifications about sales and purchase orders that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
@@ -45,9 +40,14 @@ public class InOutEventBus extends ManufactoringEventBus
 			.setType(Type.REMOTE)
 			.build();
 
-	private InOutEventBus(final IEventBus delegate)
+	public static final ManufacturingEventBus newInstance()
+	{
+		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
+		return new ManufacturingEventBus(eventBus);
+	}
+
+	private ManufacturingEventBus(final IEventBus delegate)
 	{
 		super(delegate);
 	}
-
 }

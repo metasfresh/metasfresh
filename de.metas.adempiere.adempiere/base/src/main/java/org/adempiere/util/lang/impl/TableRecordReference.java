@@ -134,7 +134,7 @@ public final class TableRecordReference implements ITableRecordReference
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
 
-		return new TableRecordReference(adTableId.or(-1), recordId.or(-1));
+		return new TableRecordReference(adTableId.or(-1), recordId.or(-1)); // the -1 shall cause an exception to be thrown
 	}
 
 	/**

@@ -9,13 +9,17 @@ import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
-import de.metas.quantity.Quantity;
+import de.metas.manufacturing.dispo.model.I_MD_Candidate;
 
 /*
  * #%L
@@ -51,13 +55,20 @@ import de.metas.quantity.Quantity;
 @ActiveProfiles("test")
 public class CandidateChangeHandlerTests
 {
-	final Date now = SystemTime.asDate();
-	final Date earlier = TimeUtil.addMinutes(now, -10);
-	final Date later = TimeUtil.addMinutes(now, 10);
+	/** Watches the current tests and dumps the database to console in case of failure */
+	@Rule
+	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+
+	private final Date now = SystemTime.asDate();
+	private final Date earlier = TimeUtil.addMinutes(now, -10);
+	private final Date later = TimeUtil.addMinutes(now, 10);
+	private final Date evenLater = TimeUtil.addMinutes(later, 10);
 
 	private I_M_Product product;
 
 	private I_M_Locator locator;
+
+	private I_M_Locator otherLocator;
 
 	private I_C_UOM uom;
 
@@ -75,63 +86,107 @@ public class CandidateChangeHandlerTests
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		InterfaceWrapperHelper.save(product);
 
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.save(warehouse);
+
 		locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		locator.setM_Warehouse(warehouse);
 		InterfaceWrapperHelper.save(locator);
+
+		otherLocator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		otherLocator.setM_Warehouse(warehouse);
+		InterfaceWrapperHelper.save(otherLocator);
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
 	}
 
+	/**
+	 * Verifies that {@link CandidateChangeHandler#applyDeltaToLaterStockCandidates(CandidatesSegment, BigDecimal)} applied the given delta to the right records.
+	 * In particular, both records with a matching M_Locator_ID and without any M_Locator_ID shall be updated.
+	 * Only records that have a <i>different</i> M_Locator_ID shall not be touched.
+	 */
 	@Test
-	public void test()
+	public void testOnStockCandidateChange()
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.add(candidate);
+		candidateRepository.addOrReplace(candidate);
 
 		final Candidate earlierCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("10"))
 				.date(earlier)
 				.build();
-		candidateRepository.add(earlierCandidate);
+		candidateRepository.addOrReplace(earlierCandidate);
 
 		final Candidate laterCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
-		candidateRepository.add(laterCandidate);
+		candidateRepository.addOrReplace(laterCandidate);
 
-		testee.onStockCandidateChange(
-				mkSegment(now),
-				new Quantity(new BigDecimal("3"), uom));
+		final Candidate evenLaterCandidateWithoutLocator = Candidate.builder()
+				.type(Type.STOCK)
+				.productId(product.getM_Product_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("12"))
+				.date(evenLater)
+				.build();
+		candidateRepository.addOrReplace(evenLaterCandidateWithoutLocator);
 
-		final Optional<Candidate> earlierCandidateAfterChange = candidateRepository.retrieveStockAt(mkSegment(earlier));
+		final Candidate evenLaterCandidateWithDifferentLocator = Candidate.builder()
+				.type(Type.STOCK)
+				.productId(product.getM_Product_ID())
+				.locatorId(otherLocator.getM_Locator_ID())
+				.warehouseId(otherLocator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("12"))
+				.date(evenLater)
+				.build();
+		candidateRepository.addOrReplace(evenLaterCandidateWithDifferentLocator);
+
+		testee.applyDeltaToLaterStockCandidates(
+				mkSegmentWithLocatorId(now, locator),
+				new BigDecimal("3"));
+
+		final Optional<Candidate> earlierCandidateAfterChange = candidateRepository.retrieveStockAt(mkSegmentWithLocatorId(earlier, locator));
 		assertThat(earlierCandidateAfterChange.isPresent(), is(true));
 		assertThat(earlierCandidateAfterChange.get().getQuantity(), is(earlierCandidate.getQuantity())); // quantity shall be unchanged
 
-		final Optional<Candidate> candidateAfterChange = candidateRepository.retrieveStockAt(mkSegment(now));
-		assertThat(candidateAfterChange.isPresent(), is(true));
-		assertThat(candidateAfterChange.get().getQuantity(), is(new Quantity(new BigDecimal("13"), uom))); // quantity shall be plus 3
+		final I_MD_Candidate candidateRecordAfterChange = candidateRepository.retrieveExact(candidate).get();
+		assertThat(candidateRecordAfterChange.getQty(), is(new BigDecimal("10"))); // quantity shall be unchanged, because that method shall only update *later* records
 
-		final Optional<Candidate> laterCandidateAfterChange = candidateRepository.retrieveStockAt(mkSegment(later));
+		final Optional<Candidate> laterCandidateAfterChange = candidateRepository.retrieveStockAt(mkSegmentWithLocatorId(later, locator));
 		assertThat(laterCandidateAfterChange.isPresent(), is(true));
-		assertThat(laterCandidateAfterChange.get().getQuantity(), is(new Quantity(new BigDecimal("13"), uom))); // quantity shall be plus 3
+		assertThat(laterCandidateAfterChange.get().getQuantity(), is(new BigDecimal("13"))); // quantity shall be plus 3
 
+		final I_MD_Candidate evenLaterCandidateWithOutLocatorRecordAfterChange = candidateRepository.retrieveExact(evenLaterCandidateWithoutLocator).get();
+		assertThat(evenLaterCandidateWithOutLocatorRecordAfterChange.getQty(), is(new BigDecimal("15"))); // quantity shall be plus 3 too, because this candidate without a locator should have been matched and updated too
+
+		final I_MD_Candidate evenLaterCandidateWithDifferentLocatorRecordAfterChange = candidateRepository.retrieveExact(evenLaterCandidateWithDifferentLocator).get();
+		assertThat(evenLaterCandidateWithDifferentLocatorRecordAfterChange.getQty(), is(new BigDecimal("12"))); // quantity shall be unchanged, because we changed another locator and this one should not have been matched
 	}
 
-	private CandidatesSegment mkSegment(final Date timestamp)
+	private CandidatesSegment mkSegmentWithLocatorId(final Date timestamp, final I_M_Locator locator)
 	{
-		return CandidatesSegment.builder().product(product).locator(locator).projectedDate(timestamp).build();
+		return CandidatesSegment.builder()
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.projectedDate(timestamp)
+				.build();
 	}
 }

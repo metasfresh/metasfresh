@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.modelvalidator;
  */
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -30,19 +31,23 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
-import de.metas.inoutcandidate.event.EventUtil;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.manufacturing.event.ManufacturingEventService;
+import de.metas.manufacturing.event.ReceiptScheduleEvent;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
 			I_M_ReceiptSchedule.COLUMNNAME_Processed, // on line close we want to recalculate Qty Over/Under Delivery
 
 			// https://github.com/metasfresh/metasfresh/issues/315:
@@ -57,7 +62,10 @@ public class M_ReceiptSchedule
 		receiptScheduleQtysHandler.onReceiptScheduleChanged(sched);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = {
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE,
+			ModelValidator.TYPE_AFTER_DELETE
+	}, ifColumnsChanged = {
 			I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder
 	})
 	public void propagateQtysToOrderLine(final I_M_ReceiptSchedule sched, final int timing)
@@ -140,13 +148,5 @@ public class M_ReceiptSchedule
 		final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
 		final String headerAggregationKey = headerAggregationKeyBuilder.buildKey(sched);
 		sched.setHeaderAggregationKey(headerAggregationKey);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
-			afterCommit = false // afterCommit = false because we do want to post after the commit, but we need to collect the changed columns before the commit
-	)
-	public void fireEvent(final I_M_ReceiptSchedule schedule, final int timing)
-	{
-		EventUtil.get().fireEventAfterCommit(schedule, timing);
 	}
 }

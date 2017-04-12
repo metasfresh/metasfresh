@@ -1,14 +1,11 @@
-package de.metas.manufacturing.dispo;
+package de.metas.manufacturing.event;
 
-import java.util.Date;
-
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /*
  * #%L
- * metasfresh-manufacturing-dispo
+ * metasfresh-manufacturing-event-api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -29,31 +26,18 @@ import lombok.NonNull;
  */
 
 /**
- * Identifies a set of candidates.
+ * These are the high-level event pojos. We serialize and deserialize them and let them ride inside {@link de.metas.event.Event} instances.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Builder
-@Data
-public class CandidatesSegment
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+		@JsonSubTypes.Type(name = ShipmentScheduleEvent.TYPE, value = ShipmentScheduleEvent.class),
+		@JsonSubTypes.Type(name = ReceiptScheduleEvent.TYPE, value = ReceiptScheduleEvent.class),
+		@JsonSubTypes.Type(name = TransactionEvent.TYPE, value = TransactionEvent.class)
+})
+public interface ManufacturingEvent
 {
-	@NonNull
-	private final Integer productId;
 
-	@NonNull
-	private final Integer warehouseId;
-
-	/**
-	 * The locator within a warehouse might be unspecified.
-	 */
-	private final Integer locatorId;
-
-	@NonNull
-	private final Date projectedDate;
-
-	public int getLocatorIdNotNull()
-	{
-		return locatorId == null ? 0 : locatorId;
-	}
 }

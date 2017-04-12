@@ -1,7 +1,6 @@
 package de.metas.manufacturing.dispo;
 
 import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -13,6 +12,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
-import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -80,17 +79,22 @@ public class CandidateFactoryTests
 		product.setC_UOM(uom);
 		InterfaceWrapperHelper.save(product);
 
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.save(warehouse);
+
 		locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		locator.setM_Warehouse(warehouse);
 		InterfaceWrapperHelper.save(locator);
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.quantity(new Quantity(new BigDecimal("10"), uom))
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.add(stockCandidate);
+		candidateRepository.addOrReplace(stockCandidate);
 	}
 
 	/**
@@ -99,9 +103,15 @@ public class CandidateFactoryTests
 	@Test
 	public void createStockCandidate_before_existing()
 	{
-		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(product, locator, earlier);
-		assertThat(newCandidateBefore.getQuantity().getQty(), comparesEqualTo(new BigDecimal("0")));
-		assertThat(newCandidateBefore.getQuantity().getUOM(), is(uom));
+		final CandidatesSegment segment = CandidatesSegment.builder()
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.projectedDate(earlier)
+				.build();
+
+		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(segment);
+		assertThat(newCandidateBefore.getQuantity(), comparesEqualTo(new BigDecimal("0")));
 	}
 
 	/**
@@ -110,8 +120,14 @@ public class CandidateFactoryTests
 	@Test
 	public void createStockCandidate_after_existing()
 	{
-		final Candidate newCandidateAfter = candidateFactory.createStockCandidate(product, locator, later);
-		assertThat(newCandidateAfter.getQuantity().getQty(), comparesEqualTo(new BigDecimal("10")));
-		assertThat(newCandidateAfter.getQuantity().getUOM(), is(uom));
+		final CandidatesSegment segment = CandidatesSegment.builder()
+				.productId(product.getM_Product_ID())
+				.locatorId(locator.getM_Locator_ID())
+				.warehouseId(locator.getM_Warehouse_ID())
+				.projectedDate(later)
+				.build();
+
+		final Candidate newCandidateAfter = candidateFactory.createStockCandidate(segment);
+		assertThat(newCandidateAfter.getQuantity(), comparesEqualTo(new BigDecimal("10")));
 	}
 }

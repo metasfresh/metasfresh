@@ -1,15 +1,12 @@
 package de.metas.manufacturing.dispo;
 
-import java.util.Date;
+import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.manufacturing.dispo.Candidate.Type;
-import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -48,18 +45,21 @@ public class CandidateFactory
 	 * @param projectedDate
 	 * @return
 	 */
-	public Candidate createStockCandidate(final I_M_Product product, final I_M_Locator locator, final Date projectedDate)
+	public Candidate createStockCandidate(final CandidatesSegment segment)
 	{
-		final Optional<Candidate> stock = candidateRepository.retrieveStockAt(CandidatesSegment.builder().product(product).locator(locator).projectedDate(projectedDate).build());
-		final Quantity quantity = stock.isPresent()
+		final Optional<Candidate> stock = candidateRepository.retrieveStockAt(segment);
+
+		final BigDecimal quantity = stock.isPresent()
 				? stock.get().getQuantity()
-				: Quantity.zero(product.getC_UOM());
+				: BigDecimal.ZERO;
 
 		return Candidate.builder()
 				.type(Type.STOCK)
-				.product(product)
-				.locator(locator)
-				.date(projectedDate)
-				.quantity(quantity).build();
+				.productId(segment.getProductId())
+				.warehouseId(segment.getWarehouseId())
+				.locatorId(segment.getLocatorId())
+				.date(segment.getProjectedDate())
+				.quantity(quantity)
+				.build();
 	}
 }

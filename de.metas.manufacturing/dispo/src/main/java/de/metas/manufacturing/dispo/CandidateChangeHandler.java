@@ -2,14 +2,16 @@ package de.metas.manufacturing.dispo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.quantity.Quantity;
+import com.google.common.annotations.VisibleForTesting;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,7 +40,10 @@ public class CandidateChangeHandler
 	@Autowired
 	private CandidateRepository candidateRepository;
 
-	public List<Candidate> onDemandCandidateNew(final Candidate demandCandidate)
+	@Autowired
+	private CandidateFactory candidateFactory;
+
+	public List<Candidate> onDemandCandidateNewOrChange(final Candidate demandCandidate)
 	{
 		// have some collector to collect all records we create and change
 		final List<Candidate> newAndChangedCandidates = new ArrayList<>();
@@ -91,21 +96,40 @@ public class CandidateChangeHandler
 	}
 
 	/**
-	 * Call this one if the system was notified about a new or changed or deleted supply candidate
+	 * Call this one if the system was notified about a new or changed or deleted supply candidate.
+	 * <p>
+	 * Create a new stock candidate or retrieve an existing one and set its qty to the value of the supply candidate's qty.<br>
+	 * The new stock candidate shall be the <i>parent</i> of the supplyCandidate.<br>
+	 * When creating a new candidate, then compute its qty by getting the qty from that stockCandidate that has the same product and locator and is "before" it and add the supply candidate's qty
 	 *
-	 * @param supplyCandidte
+	 * @param supplyCandidate
 	 * @return
 	 */
-	public List<Candidate> onSupplyCandidateNew(final Candidate supplyCandidte)
+	public void onSupplyCandidateNewOrChange(final Candidate supplyCandidate)
 	{
-		// have some collector to collect all records we create and change
-		final List<Candidate> newAndChangedCandidates = new ArrayList<>();
+		final Optional<Candidate> existingSupplyCandidate = candidateRepository.retrieve(supplyCandidate);
 
-		// create a new stock candidate or retrieve an existing one and set its qty to the negated value of the demand candidate's qty.
-		// the stock candidate shall be a *parent* of the supplyCandidate
-		// when creating a new candidate, then compute its qty by getting the qty from that stockCandidate that has the same product and locator and is "before" it and add the supply candidate's qty
-		final Candidate stockCandidate = null;
-		newAndChangedCandidates.add(stockCandidate);
+		final Candidate parentStockCandidate;
+		if (existingSupplyCandidate.isPresent())
+		{
+			// if our supply candidate existed, then it also has a parent, because we never create them without a parent
+			parentStockCandidate = candidateRepository
+					.retrieve(
+							existingSupplyCandidate.get().getParentId());
+		}
+		else
+		{
+			parentStockCandidate = candidateFactory
+					.createStockCandidate(
+							supplyCandidate.mkSegment())
+					.withReferencedRecord(
+							supplyCandidate.getReferencedRecord());
+		}
+
+		final BigDecimal newStockQty = parentStockCandidate.getQuantity().add(supplyCandidate.getQuantity());
+		final Candidate parentStockCandidateWithId = onStockCandidateNewOrChanged(parentStockCandidate.withQuantity(newStockQty));
+
+		candidateRepository.addOrReplace(supplyCandidate.withParentId(parentStockCandidateWithId.getId()));
 
 		// e.g.
 		// supply-candidate with 23 (i.e. +23)
@@ -114,8 +138,44 @@ public class CandidateChangeHandler
 
 		// notify the system about the stock candidate
 		// this notification shall lead to all "later" stock candidates with the same product and locator being notified
+	}
 
-		return newAndChangedCandidates;
+	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
+	{
+		candidateRepository.deleteForReference(recordReference);
+	}
+
+	/**
+	 * This method adds or replaces the given candidate.
+	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
+	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
+	 *
+	 * @param candidate
+	 * @param the given candidate or a new one. At any rate, the returned candidate will have an id!
+	 */
+	public Candidate onStockCandidateNewOrChanged(@NonNull final Candidate candidate)
+	{
+
+		final Optional<Candidate> previousCandidate = candidateRepository.retrieve(candidate);
+		final Candidate savedCandidate = candidateRepository.addOrReplace(candidate);
+
+		// if there was not pre-existing candidate, then subtract zero.
+		final BigDecimal delta = candidate.getQuantity()
+				.subtract(
+						previousCandidate
+								.orElse(
+										candidate.withQuantity(BigDecimal.ZERO))
+								.getQuantity());
+
+		final CandidatesSegment segment = CandidatesSegment.builder()
+				.productId(candidate.getProductId())
+				.warehouseId(candidate.getWarehouseId())
+				.locatorId(candidate.getLocatorId())
+				.projectedDate(candidate.getDate())
+				.build();
+
+		applyDeltaToLaterStockCandidates(segment, delta);
+		return savedCandidate;
 	}
 
 	/**
@@ -123,82 +183,18 @@ public class CandidateChangeHandler
 	 * Iterate them and add the given {@code delta} to their quantity.
 	 * <p>
 	 * That's it for now :-). Don't alter those stock candidates' children or parents.
-	 * 
+	 *
 	 * @param segment
 	 * @param delta
 	 */
-	public void onStockCandidateChange(final CandidatesSegment segment, final Quantity delta)
+	@VisibleForTesting
+	/* package */ void applyDeltaToLaterStockCandidates(final CandidatesSegment segment, final BigDecimal delta)
 	{
-		final List<Candidate> candidtesToUpdate = candidateRepository.retrieveStockFrom(segment);
-		for (final Candidate candidate : candidtesToUpdate)
+		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveStockAfter(segment);
+		for (final Candidate candidate : candidatesToUpdate)
 		{
-			final Quantity newQty = candidate.getQuantity().add(delta);
-			candidateRepository.add(candidate.withOtherQuantity(newQty));
+			final BigDecimal newQty = candidate.getQuantity().add(delta);
+			candidateRepository.addOrReplace(candidate.withQuantity(newQty));
 		}
 	}
-
-	public void onDemandCandidateChange(ITableRecordReference record, BigDecimal qtyOrdered, Date preparationDate)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onDemandCandidateDelete(ITableRecordReference record)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onSupplyCandidateChange(ITableRecordReference record, BigDecimal qtyOrdered, Date datePromised)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onSupplyCandidateDelete(ITableRecordReference record)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onStockCandidateNew(Candidate candidate)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onStockCandidateChange(ITableRecordReference record, BigDecimal movementQty, Date movementDate)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onStockCandidateDelete(ITableRecordReference record)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-//	public void projectedStockChange(final TableRecordReference reference, final Quantity quantity)
-//	{
-//		final Optional<Candidate> candidate = candidateRepository.retrieveStockFor(reference);
-//		final Quantity oldQuantity;
-//		if (candidate.isPresent())
-//		{
-//			oldQuantity = candidate.get().getQuantity();
-//		}
-//		else
-//		{
-//			oldQuantity = Quantity.zero(quantity.getUOM());
-//			Candidate.builder().
-//		}
-//
-//		
-//		final List<Candidate> candidtesToUpdate = candidateRepository.retrieveStockFrom(segment);
-//		for (final Candidate candidate : candidtesToUpdate)
-//		{
-//			final Quantity newQty = candidate.getQuantity().add(delta);
-//			candidateRepository.add(candidate.withOtherQuantity(newQty));
-//		}
-//	}
 }
