@@ -620,21 +620,30 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
 export function handleProcessResponse(response, type, id, successCallback) {
     return (dispatch) => {
         const {
-            error, summary, openDocumentId, openDocumentWindowId,
-            reportFilename, openViewId, openViewWindowId
+            error, summary, action
         } = response.data;
 
         if(error){
             dispatch(addNotification('Process error', summary, 5000, 'error'));
         }else{
-            if(openViewId && openViewWindowId){
-                dispatch(openRawModal(openViewWindowId, openViewId));
-            }else if(openDocumentWindowId && openDocumentId){
-                dispatch(push(
-                    '/window/' + openDocumentWindowId + '/' + openDocumentId
-                ));
-            }else if(reportFilename){
-                dispatch(openFile('process', type, id, 'print', reportFilename))
+            if(action){
+                switch(action.type){
+                    case 'openView':
+                        dispatch(openRawModal(action.windowId, action.viewId));
+                        break;
+                    case 'openReport':
+                        dispatch(openFile(
+                            'process', action.contentType, id, 'print',
+                            action.filename
+                        ));
+                        break;
+                    case 'openDocument':
+                        dispatch(push(
+                            '/window/' + action.windowId +
+                            '/' + action.documentId
+                        ));
+                        break;
+                }
             }
 
             if(summary){
