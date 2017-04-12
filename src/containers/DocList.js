@@ -61,8 +61,8 @@ class DocList extends Component {
 
     render() {
         const {
-            windowType, breadcrumb, query, actions, modal, selected, references,
-            rawModal, attachments, indicator, processStatus
+            windowType, breadcrumb, query, actions, modal, selected, rawModal, 
+            indicator, processStatus
         } = this.props;
 
         const {
