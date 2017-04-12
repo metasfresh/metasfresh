@@ -19,10 +19,6 @@ import {
 } from '../../actions/WindowActions';
 
 import {
-    getRootBreadcrumb
-} from '../../actions/MenuActions';
-
-import {
     deleteRequest,
     openFile
 } from '../../actions/GenericActions';
@@ -52,8 +48,6 @@ class Header extends Component {
     }
 
     componentDidMount() {
-        const {dispatch} = this.props;
-        dispatch(getRootBreadcrumb());
         document.addEventListener('scroll', this.handleScroll);
     }
 
@@ -245,8 +239,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
-            references, actions, inbox, homemenu, selected, entity,
-            query, attachments, showIndicator, isDocumentNotSaved,
+            inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
             selectedWindowType
         } = this.props;
 
@@ -316,7 +309,6 @@ class Header extends Component {
                                 </div>
 
                                 <Breadcrumb
-                                    homemenu={homemenu}
                                     breadcrumb={breadcrumb}
                                     windowType={windowType}
                                     docNo={docNo}
@@ -491,9 +483,6 @@ class Header extends Component {
 
                 {isSubheaderShow && <Subheader
                     dataId={dataId}
-                    references={references}
-                    attachments={attachments}
-                    actions={actions}
                     windowType={windowType}
                     closeSubheader={() => this.closeOverlays('isSubheaderShow')}
                     docNo={docNoData && docNoData.value}
@@ -524,7 +513,7 @@ class Header extends Component {
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
-                            ()=> this.handleMenuOverlay('', homemenu.nodeId)
+                            ()=> this.handleMenuOverlay('', 0)
                         )
                     }
                     handleInboxOpen = {isInboxOpen ?
@@ -560,23 +549,16 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array.isRequired,
-    homemenu: PropTypes.object.isRequired,
     inbox: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler, appHandler, menuHandler} = state;
+    const {windowHandler, appHandler} = state;
 
     const {
         inbox
     } = appHandler || {
         inbox: {}
-    }
-
-    const {
-        homemenu
-    } = menuHandler || {
-        homemenu: []
     }
 
     const {
@@ -590,7 +572,6 @@ function mapStateToProps(state) {
     return {
         selected,
         inbox,
-        homemenu,
         selectedWindowType
     }
 }
