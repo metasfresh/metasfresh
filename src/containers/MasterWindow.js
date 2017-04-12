@@ -172,9 +172,7 @@ class MasterWindow extends Component {
                 dataId={dataId}
                 windowType={params.windowType}
                 breadcrumb={breadcrumb}
-                references={references}
                 actions={actions}
-                attachments={attachments}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
@@ -250,9 +248,7 @@ MasterWindow.propTypes = {
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
-    references: PropTypes.array.isRequired,
     actions: PropTypes.array.isRequired,
-    attachments: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array,
     rawModal: PropTypes.object.isRequired,
@@ -277,23 +273,17 @@ function mapStateToProps(state) {
 
     const {
         breadcrumb,
-        references,
-        actions,
-        attachments
+        actions
     } = menuHandler || {
-        references: [],
         breadcrumb: [],
-        actions: [],
-        attachments: []
+        actions: []
     }
 
     return {
         master,
         breadcrumb,
-        references,
         modal,
         actions,
-        attachments,
         selected,
         rawModal,
         indicator

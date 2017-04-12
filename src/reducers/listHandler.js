@@ -21,13 +21,13 @@ export default function listHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 filters: action.filter != null ? [action.filter] : [],
                 filtersWindowType: action.windowType
-            })
+            });
 
         case types.SET_LIST_ID:
             return Object.assign({}, state, {
                 viewId: action.viewId,
                 windowType: action.windowType
-            })
+            });
 
         case types.SET_LIST_PAGINATION:
             return Object.assign({}, state, {
@@ -35,7 +35,7 @@ export default function listHandler(state = initialState, action) {
                     page: action.page,
                     windowType: action.windowType
                 })
-            })
+            });
 
         case types.SET_LIST_SORTING:
             return Object.assign({}, state, {
@@ -43,7 +43,7 @@ export default function listHandler(state = initialState, action) {
                     sort: action.sort,
                     windowType: action.windowType
                 })
-            })
+            });
 
         case types.CLEAR_LIST_PROPS:
             return Object.assign({}, state, {
@@ -51,9 +51,9 @@ export default function listHandler(state = initialState, action) {
                 sorting: {},
                 windowType: null,
                 pagination: null
-            })
+            });
 
         default:
-            return state
+            return state;
     }
 }
