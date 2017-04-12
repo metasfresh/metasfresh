@@ -110,7 +110,7 @@ public final class JSONMenuNode implements Serializable
 	
 	@JsonProperty("elementId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer elementId;
+	private final String elementId;
 
 	@JsonProperty("children")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -128,7 +128,7 @@ public final class JSONMenuNode implements Serializable
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
-		elementId = normalizeElementId(node.getElementId());
+		elementId = node.getElementId();
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
 
 		if (depth <= 0)
@@ -160,14 +160,9 @@ public final class JSONMenuNode implements Serializable
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
-		elementId = normalizeElementId(node.getElementId());
+		elementId = node.getElementId();
 		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
-	}
-
-	private static final Integer normalizeElementId(final int elementId)
-	{
-		return elementId <= 0 ? null : elementId;
 	}
 
 	@JsonCreator
@@ -177,7 +172,7 @@ public final class JSONMenuNode implements Serializable
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("captionBreadcrumb") final String captionBreadcrumb //
 			, @JsonProperty("type") final JSONMenuNodeType type //
-			, @JsonProperty("elementId") final Integer elementId //
+			, @JsonProperty("elementId") final String elementId //
 			, @JsonProperty("children") final List<JSONMenuNode> children //
 			, @JsonProperty("matched") final Boolean matchedByFilter //
 	)
@@ -228,7 +223,7 @@ public final class JSONMenuNode implements Serializable
 		return type;
 	}
 
-	public Integer getElementId()
+	public String getElementId()
 	{
 		return elementId;
 	}

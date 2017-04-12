@@ -32,6 +32,7 @@ import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -82,8 +83,8 @@ public class ProcessDescriptorsFactory
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = new DefaultValueExpressionsFactory(false);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-	private final CCache<Integer, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
+	
+	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
 	@Autowired
 	private UserSession userSession;
@@ -106,23 +107,23 @@ public class ProcessDescriptorsFactory
 
 	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
 	{
-		final int adProcessId = relatedProcess.getProcessId();
-		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcess.getProcessId());
+		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
 		return WebuiRelatedProcessDescriptor.of(relatedProcess, processDescriptor, preconditionsResolutionSupplier);
 	}
 
-	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
+	public ProcessDescriptor getProcessDescriptor(final ProcessId processId)
 	{
-		return processDescriptorsByProcessId.getOrLoad(adProcessId, () -> retrieveProcessDescriptor(adProcessId));
+		return processDescriptorsByProcessId.getOrLoad(processId, () -> retrieveProcessDescriptor(processId));
 	}
 
-	private ProcessDescriptor retrieveProcessDescriptor(final int adProcessId)
+	private ProcessDescriptor retrieveProcessDescriptor(final ProcessId processId)
 	{
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
+		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), processId.getProcessIdAsInt(), I_AD_Process.class, ITrx.TRXNAME_None);
 		if (adProcess == null)
 		{
-			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + adProcessId + ")");
+			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
 		}
 
 		final WebuiProcessClassInfo webuiProcesClassInfo = WebuiProcessClassInfo.of(adProcess.getClassname());
@@ -130,12 +131,12 @@ public class ProcessDescriptorsFactory
 		final IModelTranslationMap adProcessTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
-				.setAD_Process_ID(adProcessId)
+				.setProcessId(processId)
 				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
 				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()));
 
 		final DocumentEntityDescriptor.Builder parametersDescriptor = DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.Process, adProcessId)
+				.setDocumentType(DocumentType.Process, processId.getProcessIdAsInt())
 				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
 				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
 				.setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
@@ -150,7 +151,7 @@ public class ProcessDescriptorsFactory
 				});
 
 		return ProcessDescriptor.builder()
-				.setAD_Process_ID(adProcessId)
+				.setProcessId(processId)
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
 				.setParametersDescriptor(parametersDescriptor.build())

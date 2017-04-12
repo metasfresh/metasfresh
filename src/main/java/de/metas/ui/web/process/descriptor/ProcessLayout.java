@@ -7,10 +7,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 
 /*
@@ -42,7 +44,7 @@ public class ProcessLayout
 		return new Builder();
 	}
 
-	private final int AD_Process_ID;
+	private final ProcessId processId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
@@ -51,7 +53,9 @@ public class ProcessLayout
 	private ProcessLayout(final Builder builder)
 	{
 		super();
-		AD_Process_ID = builder.AD_Process_ID;
+		
+		Preconditions.checkNotNull(builder.processId, "processId not set: %s", builder);
+		processId = builder.processId;
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
 		elements = ImmutableList.copyOf(builder.buildElements());
@@ -62,15 +66,10 @@ public class ProcessLayout
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_Process_ID", AD_Process_ID)
+				.add("processId", processId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
-	}
-
-	public int getAD_Window_ID()
-	{
-		return AD_Process_ID;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -90,7 +89,7 @@ public class ProcessLayout
 
 	public static final class Builder
 	{
-		public Integer AD_Process_ID;
+		public ProcessId processId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
@@ -118,15 +117,15 @@ public class ProcessLayout
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("AD_Process_ID", AD_Process_ID)
+					.add("processId", processId)
 					.add("caption", caption)
 					.add("elements-count", elementBuilders.size())
 					.toString();
 		}
 
-		public Builder setAD_Process_ID(final int AD_Process_ID)
+		public Builder setProcessId(ProcessId processId)
 		{
-			this.AD_Process_ID = AD_Process_ID;
+			this.processId = processId;
 			return this;
 		}
 

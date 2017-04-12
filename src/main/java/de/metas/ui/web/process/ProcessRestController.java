@@ -75,31 +75,32 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public JSONProcessLayout getLayout(
-			@PathVariable("processId") final int adProcessId //
+			@PathVariable("processId") final String adProcessIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final ProcessLayout layout = instancesRepository.getProcessDescriptor(adProcessId).getLayout();
+		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
+		final ProcessLayout layout = instancesRepository.getProcessDescriptor(processId).getLayout();
 		return JSONProcessLayout.of(layout, newJsonOpts());
 	}
 
 	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
-	public JSONProcessInstance createInstanceFromRequest(
-			@PathVariable("processId") final int adProcessId, @RequestBody final JSONCreateProcessInstanceRequest request //
-	)
+	public JSONProcessInstance createInstanceFromRequest(@PathVariable("processId") final String processIdStr, @RequestBody final JSONCreateProcessInstanceRequest request)
 	{
 		userSession.assertLoggedIn();
+		
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(adProcessId, request);
+			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processId, request);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
 	public JSONProcessInstance getInstance(
-			@PathVariable("processId") final int processId_NOTUSED //
+			@PathVariable("processId") final String processIdStr_NOTUSED //
 			, @PathVariable("pinstanceId") final int pinstanceId //
 	)
 	{
@@ -108,18 +109,9 @@ public class ProcessRestController
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}/parameters", method = RequestMethod.PATCH)
-	public List<JSONDocument> processParametersChangeEvents_DEPRECATED(
-			@PathVariable("pinstanceId") final int pinstanceId //
-			, @RequestBody final List<JSONDocumentChangedEvent> events //
-	)
-	{
-		return processParametersChangeEvents(-1, pinstanceId, events);
-	}
-
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.PATCH)
 	public List<JSONDocument> processParametersChangeEvents(
-			@PathVariable("processId") final int processId_NOTUSED //
+			@PathVariable("processId") final String processIdStr_NOTUSED //
 			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
@@ -137,7 +129,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/start", method = RequestMethod.GET)
 	public JSONProcessInstanceResult startProcess(
-			@PathVariable("processId") final int processId_NOTUSED //
+			@PathVariable("processId") final String processIdStr_NOTUSED //
 			, @PathVariable("pinstanceId") final int pinstanceId //
 	)
 	{
@@ -153,7 +145,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/print/{filename:.*}", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getReport(
-			@PathVariable("processId") final int processId_NOTUSED //
+			@PathVariable("processId") final String processIdStr_NOTUSED //
 			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @PathVariable("filename") final String filename //
 	)
@@ -177,7 +169,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterTypeahead(
-			@PathVariable("processId") final int processId_NOTUSED //
+			@PathVariable("processId") final String processIdStr_NOTUSED //
 			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -191,7 +183,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterDropdown(
-			@PathVariable("processId") final int processId_NOTUSED //
+			@PathVariable("processId") final String processIdStr_NOTUSED //
 			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @PathVariable("parameterName") final String parameterName //
 	)

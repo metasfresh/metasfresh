@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.process.ProcessId;
 
 /*
  * #%L
@@ -66,16 +67,16 @@ public final class WebuiRelatedProcessDescriptor
 
 		Check.assumeNotNull(relatedProcessDescriptor, "Parameter relatedProcessDescriptor is not null");
 		Check.assumeNotNull(processDescriptor, "Parameter processDescriptor is not null");
-		Check.assume(relatedProcessDescriptor.getProcessId() == processDescriptor.getAD_Process_ID(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
+		Check.assume(relatedProcessDescriptor.getProcessId() == processDescriptor.getProcessId().getProcessIdAsInt(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
 
 		this.relatedProcessDescriptor = relatedProcessDescriptor;
 		this.processDescriptor = processDescriptor;
 		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(preconditionsResolutionSupplier);
 	}
 
-	public int getAD_Process_ID()
+	public ProcessId getProcessId()
 	{
-		return processDescriptor.getAD_Process_ID();
+		return processDescriptor.getProcessId();
 	}
 
 	public String getCaption(final String adLanguage)

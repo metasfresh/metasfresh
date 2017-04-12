@@ -1,5 +1,6 @@
 package de.metas.ui.web.process;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -37,6 +38,7 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -91,16 +93,16 @@ public class ProcessInstancesRepository
 		processInstances.cleanUp();
 	}
 
-	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
+	public ProcessDescriptor getProcessDescriptor(final ProcessId processId)
 	{
-		return processDescriptorFactory.getProcessDescriptor(adProcessId);
+		return processDescriptorFactory.getProcessDescriptor(processId);
 	}
 
-	public ProcessInstance createNewProcessInstance(final int adProcessId, final JSONCreateProcessInstanceRequest request)
+	public ProcessInstance createNewProcessInstance(final ProcessId processId, final JSONCreateProcessInstanceRequest request)
 	{
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
-		final ProcessInfo processInfo = createProcessInfo(adProcessId, request);
+		final ProcessInfo processInfo = createProcessInfo(processId, request);
 		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
 		final DocumentId adPInstanceId = DocumentId.of(processInfo.getAD_PInstance_ID());
 
@@ -109,7 +111,7 @@ public class ProcessInstancesRepository
 		{
 			//
 			// Build the parameters document
-			final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+			final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
 			final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
 			final int windowNo = parametersDoc.getWindowNo();
@@ -135,16 +137,16 @@ public class ProcessInstancesRepository
 		}
 	}
 
-	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
+	private ProcessInfo createProcessInfo(@NonNull final ProcessId processId, @NonNull final JSONCreateProcessInstanceRequest request)
 	{
 		// Validate request's AD_Process_ID
 		// (we are not using it, but just for consistency)
-		if (request.getAD_Process_ID() > 0 && request.getAD_Process_ID() != adProcessId)
+		if(!Objects.equals(request.getProcessId(), processId))
 		{
-			throw new IllegalArgumentException("Request's AD_Process_ID is not valid. It shall be " + adProcessId + " or none but it was " + request.getAD_Process_ID());
+			throw new IllegalArgumentException("Request's processId is not valid. It shall be " + processId + " but it was " + request.getProcessId());
 		}
 
-		Check.assume(adProcessId > 0, "adProcessId > 0");
+		//Check.assume(adProcessId > 0, "adProcessId > 0");
 
 		final String tableName;
 		final int recordId;
@@ -207,7 +209,7 @@ public class ProcessInstancesRepository
 		return ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
-				.setAD_Process_ID(adProcessId)
+				.setAD_Process_ID(processId.getProcessIdAsInt())
 				.setRecord(tableName, recordId)
 				.setWhereClause(sqlWhereClause)
 				//
@@ -236,8 +238,8 @@ public class ProcessInstancesRepository
 		{
 			//
 			// Build the parameters document
-			final int adProcessId = processInfo.getAD_Process_ID();
-			final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+			final ProcessId processId = ProcessId.ofAD_Process_ID(processInfo.getAD_Process_ID());
+			final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 
 			//
 			// Build the parameters (as document)

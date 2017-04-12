@@ -20,7 +20,6 @@ import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
@@ -115,8 +114,6 @@ public final class ProcessInstance
 	/** New instance constructor */
 	private ProcessInstance(final Builder builder)
 	{
-		Adempiere.autowire(this);
-
 		processDescriptor = builder.processDescriptor;
 		adPInstanceId = builder.adPInstanceId;
 		parameters = builder.parameters;
@@ -256,15 +253,25 @@ public final class ProcessInstance
 		}
 
 		//
+		executionResult = executeADProcess(getAD_PInstance_ID(), getDescriptor(), viewsRepo);
+		if (executionResult.isSuccess())
+		{
+			executed = false;
+		}
+		return executionResult;
+	}
+
+	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, IDocumentViewsRepository viewsRepo)
+	{
+		//
 		// Create the process info and execute the process synchronously
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
-		final ProcessDescriptor processDescriptor = getDescriptor();
 		final String adLanguage = Env.getAD_Language(ctx);
 		final String name = processDescriptor.getCaption(adLanguage);
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(getAD_PInstance_ID().toInt())
+				.setAD_PInstance_ID(adPInstanceId.toInt())
 				.setTitle(name)
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
@@ -309,7 +316,8 @@ public final class ProcessInstance
 				// View
 				else if (recordsToOpen != null && recordsToOpen.isGridView())
 				{
-					final IDocumentViewSelection view = createView(processExecutor.getProcessInfo(), recordsToOpen);
+					final DocumentViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
+					final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
 							.windowId(view.getAD_Window_ID())
 							.viewId(view.getViewId())
@@ -326,15 +334,10 @@ public final class ProcessInstance
 				}
 			}
 
-			//
 			final ProcessInstanceResult result = resultBuilder.build();
-			executionResult = result;
-			if (result.isSuccess())
-			{
-				executed = false;
-			}
 			return result;
 		}
+
 	}
 
 	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
@@ -371,7 +374,7 @@ public final class ProcessInstance
 		return reportFile;
 	}
 
-	private final IDocumentViewSelection createView(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
+	private static final DocumentViewCreateRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
 	{
 		final List<TableRecordReference> recordRefs = recordsToOpen.getRecords();
 		if (recordRefs.isEmpty())
@@ -406,11 +409,7 @@ public final class ProcessInstance
 		final DocumentViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
 				.setReferencingDocumentPaths(extractReferencingDocumentPaths(processInfo))
 				.build();
-
-		//
-		// Create the view and set its ID to our process result.
-		final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
-		return view;
+		return viewRequest;
 	}
 
 	private static final Set<DocumentPath> extractReferencingDocumentPaths(final ProcessInfo processInfo)
