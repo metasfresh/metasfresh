@@ -114,8 +114,9 @@ class SideList extends Component {
                                 <Tooltips
                                     name={
                                         keymap
-                                            .GLOBAL_CONTEXT
-                                            ['OPEN_SIDEBAR_MENU_' + index]
+                                            .GLOBAL_CONTEXT[
+                                                'OPEN_SIDEBAR_MENU_' + index
+                                            ]
                                     }
                                     action={item.title}
                                     type={''}
