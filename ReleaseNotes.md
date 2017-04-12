@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
   * [#1287](https://github.com/metasfresh/metasfresh/issues/1287) Search for name in product window in webUI
+  * [#1301](https://github.com/metasfresh/metasfresh/issues/1301) DeliveryDays Window for WebUI
+    * Adding the Window Layout for Delivery Days in WebUI.
   * [#1302](https://github.com/metasfresh/metasfresh/issues/1302) Tour Window in WebUI
     * Adding Tour maintenance Window in new Webui.
   * [#1303](https://github.com/metasfresh/metasfresh/issues/1303) Tour Version Window in WebUI
