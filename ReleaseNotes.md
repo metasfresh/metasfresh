@@ -53,26 +53,37 @@ Here come the actual release notes:
     * Adding the initial Layout for the User window into WebUI.
   * [#1185](https://github.com/metasfresh/metasfresh/issues/1185) Initial Layout for vendor Invoices in WebUI
     * Adding the initial Layout for vendor Invoice Window in WebUI.
+  * [#1169](https://github.com/metasfresh/metasfresh/issues/1169) Prevent C_Flatrate_Terms with overlapping dates
   * [#1205](https://github.com/metasfresh/metasfresh/issues/1205) Provide Default KPI Config
     * Prepared a default KPI Configuration to show an example Dashboard based on elasticsearch and with KPI done with D3JS on the entry screen of metasfresh after login.
   * [#1206](https://github.com/metasfresh/metasfresh/issues/1206) Remove Gebinderückgabe from Shipment Note for mf15 endcustomer
     * Removing the Text for "empties return" in Shipment Documents for default Jasper Docuiment. The Text does not make sense for companies that don't use the empties management functionality.
   * [#1222](https://github.com/metasfresh/metasfresh/issues/1222) Show orderline description only in the first column of the Jasper
     * Enhanced Reports definition, so that orderline desciptions are only shown in the first column, and not overlaying the others anymore.
+  * [#1224](https://github.com/metasfresh/metasfresh/issues/1224) hide HU related data where is not used
   * [#1228](https://github.com/metasfresh/metasfresh/issues/1228) create translate properties for footer report
     * New properties file for the footer subreport for Jasper documents. Now allowing to add translations for that.
   * [#1247](https://github.com/metasfresh/metasfresh/issues/1247) Don't try to create empties movements if empties warehouse same as current warehouse
     * Now not creating movements anymore if the source and target warehouse of empty movements are identical.
   * [#1249](https://github.com/metasfresh/metasfresh/issues/1249) Initial Layout for Material Movement Window WebUI
     * Adding the initial Windows Layout for material movements in WebUI.
+  * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document "old" best before date missing
   * [#1268](https://github.com/metasfresh/metasfresh/issues/1268) Do not print label automatically by default on material receipt
     * Switching off the automatic label printing in material receipt for default configurations.
   * [#1277](https://github.com/metasfresh/metasfresh/issues/1277) Migrate current WebUI Menu from Development to master
     * Migration script for the currents metasfresh webUI menu tree, now showing the new windows.
+  * [#1282](https://github.com/metasfresh/metasfresh/issues/1282) Exception splitting aggregate HU with UOM that has no UOMType
+
+* metasfresh-webui-api
+  * [#286](https://github.com/metasfresh/metasfresh-webui-api/issues/286) UserSession language endpoint shall always work with JSON values
 
 * metasfresh-webui-frontend  
   * [#541](https://github.com/metasfresh/metasfresh-webui-frontend/issues/541) Hide new and delete included documents when they are not available.
     * New Functionality to show/ not show the new and delete buttons on included tabs/ subtabs if not available.
+  * [#587](https://github.com/metasfresh/metasfresh-webui-frontend/issues/587) Language Switcher for WebUI
+  * [#604](https://github.com/metasfresh/metasfresh-webui-frontend/issues/604) Mandatory lookup fields are not marked as error
+  * [#605](https://github.com/metasfresh/metasfresh-webui-frontend/issues/605) When opening a process panel, the first field shall be focus by default
+  * [#614](https://github.com/metasfresh/metasfresh-webui-frontend/issues/614) When the language is switched widgets shall be invalidated/refreshed
   
 ## Fixes
 * metasfresh-backend
@@ -110,6 +121,7 @@ Here come the actual release notes:
     * Fix for maven/ build system to fetch the specified parent version for build.
   * [#284](https://github.com/metasfresh/metasfresh-webui-api/issues/284) HU editor: Cannot receive stand alone TUs by default
     * Now also standalone Transport Units can be received and processed in Material Receipt.
+  * [#287](https://github.com/metasfresh/metasfresh-webui-api/issues/287) Update current notifications when user language was changed
   * [#289](https://github.com/metasfresh/metasfresh-webui-api/issues/289) New/Delete buttons missing when a document was initially loaded
     * Now showing the New and Delete Buttons in Subtabs/ included Tabs, when initially loaded.
   
@@ -120,10 +132,12 @@ Here come the actual release notes:
     * Fixing a Bug that vanished the KPI widgets after minimizing action.
   * [#597](https://github.com/metasfresh/metasfresh-webui-frontend/issues/597) cancel on "Do you really want to leave?" sends you 2 steps back
     * Fix for the leave confirmation popup. Now only going back 1 step after confiormation.
+  * [#599](https://github.com/metasfresh/metasfresh-webui-frontend/issues/599) Action button remains gray if the process execution fails
   * [#609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/609) Included subtab height 100% broken again
     * Fix for the 100% height Layout of windows with included Tab. Subtab Shall always expand to 100% of screen resolution height until available spave is used. After that exceeding page size.
   * [#616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/616) delete option missing after add new
     * The delete Button is now available again after starting the add new action.
+  * [#618](https://github.com/metasfresh/metasfresh-webui-frontend/issues/618) Done button is not responding
   
 # metasfresh 5.3 (2017-13)
 
