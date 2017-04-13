@@ -34,6 +34,7 @@ Here come the actual release notes:
   * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
     * Adding the initial window setup for Unit of measure window in WebUI.
   * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
+  * [#1324](https://github.com/metasfresh/metasfresh/issues/1324) Take out pwd Field from AD_User in WebUI
   
 * metasfresh-webui-api
   * [#294](https://github.com/metasfresh/metasfresh-webui-api/issues/294) Refactor /process/start response
