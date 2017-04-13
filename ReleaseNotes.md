@@ -56,6 +56,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#619](https://github.com/metasfresh/metasfresh-webui-frontend/issues/619) Address editor silently ignores changes if the mandatory fields are not filled
   * [#620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/620) When deleting a newly created document, frontend shall not ask the user if he/she wants to leave the page
+  * [#637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/637) CTRL+1 and keyboard navigation left-right not working anymore
 
 # metasfresh 5.4 (2017-14)
 
