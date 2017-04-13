@@ -171,6 +171,10 @@ body {
     font-size: 12px;
 }
 
+.order-list-panel-body .subheader-item {
+    font-size: 14px;
+}
+
 .order-list-nav {
     width: 100%;
     display: flex;
