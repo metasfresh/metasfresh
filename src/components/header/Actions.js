@@ -20,6 +20,10 @@ class Actions extends Component {
     componentDidMount = () => {
         const {dispatch, windowType, entity, docId, rowId} = this.props;
 
+        if(!windowType){
+            return;
+        }
+
         dispatch(actionsRequest(
             entity, windowType, docId, rowId
         )).then((response) => {
@@ -71,7 +75,7 @@ class Actions extends Component {
 }
 
 Actions.propTypes = {
-    windowType: PropTypes.string.isRequired,
+    windowType: PropTypes.string,
     dispatch: PropTypes.func.isRequired
 }
 

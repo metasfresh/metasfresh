@@ -513,7 +513,7 @@ class Header extends Component {
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
-                            ()=> this.handleMenuOverlay('', 0)
+                            ()=> this.handleMenuOverlay('', '0')
                         )
                     }
                     handleInboxOpen = {isInboxOpen ?
