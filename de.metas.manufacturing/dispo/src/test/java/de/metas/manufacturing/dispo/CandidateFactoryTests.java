@@ -10,7 +10,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
@@ -59,7 +58,7 @@ public class CandidateFactoryTests
 
 	private I_M_Product product;
 
-	private I_M_Locator locator;
+	private I_M_Warehouse warehouse;
 
 	@Autowired
 	private CandidateRepository candidateRepository;
@@ -79,18 +78,13 @@ public class CandidateFactoryTests
 		product.setC_UOM(uom);
 		InterfaceWrapperHelper.save(product);
 
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
 		InterfaceWrapperHelper.save(warehouse);
-
-		locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
-		locator.setM_Warehouse(warehouse);
-		InterfaceWrapperHelper.save(locator);
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
@@ -98,36 +92,38 @@ public class CandidateFactoryTests
 	}
 
 	/**
-	 * Verifies that if a new stock candidate is created with a time before any existing candidates, then that candidate is creates with a zero quantity.
+	 * Verifies that if a new stock candidate is created with a time before any existing candidates, then that candidate is created with a zero quantity.
 	 */
 	@Test
 	public void createStockCandidate_before_existing()
 	{
-		final CandidatesSegment segment = CandidatesSegment.builder()
+		final Candidate candidate = Candidate.builder()
+				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
-				.projectedDate(earlier)
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.date(earlier)
+				.quantity(BigDecimal.ONE)
 				.build();
 
-		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(segment);
-		assertThat(newCandidateBefore.getQuantity(), comparesEqualTo(new BigDecimal("0")));
+		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(candidate);
+		assertThat(newCandidateBefore.getQuantity(), comparesEqualTo(new BigDecimal("1")));
 	}
-
+	
 	/**
 	 * Verifies that if a new stock candidate is created with a time after and existing candidates, then that candidate is creates with the predecessor's quantity.
 	 */
 	@Test
 	public void createStockCandidate_after_existing()
 	{
-		final CandidatesSegment segment = CandidatesSegment.builder()
+		final Candidate candidate = Candidate.builder()
+				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
-				.projectedDate(later)
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.date(later)
+				.quantity(BigDecimal.ONE)
 				.build();
 
-		final Candidate newCandidateAfter = candidateFactory.createStockCandidate(segment);
-		assertThat(newCandidateAfter.getQuantity(), comparesEqualTo(new BigDecimal("10")));
+		final Candidate newCandidateAfter = candidateFactory.createStockCandidate(candidate);
+		assertThat(newCandidateAfter.getQuantity(), comparesEqualTo(new BigDecimal("11")));
 	}
 }

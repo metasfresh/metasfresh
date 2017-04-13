@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.manufacturing.dispo.Candidate;
-import de.metas.manufacturing.dispo.Candidate.SupplyType;
+import de.metas.manufacturing.dispo.Candidate.SubType;
 import de.metas.manufacturing.dispo.Candidate.Type;
 import de.metas.manufacturing.dispo.CandidateChangeHandler;
 import de.metas.manufacturing.event.ManufacturingEvent;
@@ -67,16 +67,15 @@ public class MDEventListener implements ManufacturingEventListener
 			return;
 		}
 		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK) // yes it's "stock". not demand or supply, because a user doesn't need those. this event creates a "fact", not a "planning" item
+				.type(Type.STOCK)
 				.warehouseId(event.getWarehouseId())
-				.locatorId(event.getLocatorId())
 				.date(event.getMovementDate())
 				.productId(event.getProductId())
 				.quantity(event.getQty())
 				.referencedRecord(event.getReference())
 				.build();
 
-		candidateChangeHandler.onStockCandidateNewOrChanged(candidate);
+		candidateChangeHandler.updateStock(candidate);
 	}
 
 	private void handleReceiptScheduleEvent(@NonNull final ReceiptScheduleEvent event)
@@ -89,7 +88,7 @@ public class MDEventListener implements ManufacturingEventListener
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
-				.supplyType(SupplyType.RECEIPT)
+				.subType(SubType.RECEIPT)
 				.date(event.getPromisedDate())
 				.warehouseId(event.getWarehouseId())
 				.productId(event.getProductId())

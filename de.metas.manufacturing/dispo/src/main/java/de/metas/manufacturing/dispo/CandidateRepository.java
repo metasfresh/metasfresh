@@ -81,7 +81,15 @@ public class CandidateRepository
 	}
 
 	/**
-	 * retrieves the record that matches the given candidate's type, warehouse, locator, product and date
+	 * Retrieves the <b>one</b>record that matches the given candidate's
+	 * <ul>
+	 * <li>type</li>
+	 * <li>warehouse</li>
+	 * <li>locator?</li>
+	 * <li>product</li>
+	 * <li>date</li>
+	 * <li>tableId and record?</li>
+	 * </ul>
 	 *
 	 * @param candidate
 	 * @return
@@ -98,15 +106,6 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, candidate.getWarehouseId())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, candidate.getProductId())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getDate());
-
-		if (candidate.getLocatorIdNotNull() > 0)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Locator_ID, candidate.getLocatorIdNotNull());
-		}
-		else
-		{
-			builder.addInArrayFilter(I_MD_Candidate.COLUMN_M_Locator_ID, 0, null); // at least in unit test mode, the value might be both 0 and null
-		}
 
 		final ITableRecordReference referencedRecord = candidate.getReferencedRecord();
 		if (referencedRecord != null)
@@ -133,7 +132,7 @@ public class CandidateRepository
 		Preconditions.checkState(
 				!candidateRecord.isPresent()
 						|| InterfaceWrapperHelper.isNew(candidateRecord.get())
-						|| candidate.getId() == null 
+						|| candidate.getId() == null
 						|| Objects.equals(candidateRecord.get().getMD_Candidate_ID(), candidate.getId()),
 				"Param candidateRecord=%s is not new and its ID is different from the ID of param candidate=%s",
 				candidateRecord, candidate);
@@ -141,7 +140,7 @@ public class CandidateRepository
 		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(InterfaceWrapperHelper.newInstance(I_MD_Candidate.class));
 
 		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecordToUse.setM_Locator_ID(candidate.getLocatorIdNotNull());
+		candidateRecordToUse.setMD_Candidate_SubType(candidate.getSubType().toString());
 		candidateRecordToUse.setM_Warehouse_ID(candidate.getWarehouseId());
 		candidateRecordToUse.setM_Product_ID(candidate.getProductId());
 		candidateRecordToUse.setQty(candidate.getQuantity());
@@ -172,7 +171,6 @@ public class CandidateRepository
 
 		CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.get().getMD_Candidate_ID())
-				.locatorId(candidateRecord.get().getM_Locator_ID())
 				.parentId(candidateRecord.get().getMD_Candidate_Parent_ID())
 				.productId(candidateRecord.get().getM_Product_ID())
 				.quantity(candidateRecord.get().getQty())
@@ -204,12 +202,7 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouseId())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProductId())
-				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, segment.getProjectedDate());
-
-		if (segment.getLocatorIdNotNull() > 0)
-		{
-			builder.addInArrayFilter(I_MD_Candidate.COLUMN_M_Locator_ID, null, 0, segment.getLocatorIdNotNull());
-		}
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, segment.getDate());
 
 		final I_MD_Candidate candidateRecord = builder
 				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, false).endOrderBy()
@@ -249,12 +242,7 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProductId())
 				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected,
 						from ? Operator.GREATER_OR_EQUAL : Operator.GREATER,
-						segment.getProjectedDate());
-
-		if (segment.getLocatorIdNotNull() > 0)
-		{
-			builder.addInArrayFilter(I_MD_Candidate.COLUMN_M_Locator_ID, null, 0, segment.getLocatorIdNotNull());
-		}
+						segment.getDate());
 
 		final Stream<I_MD_Candidate> candidateRecords = builder
 				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, true).endOrderBy()
@@ -266,22 +254,30 @@ public class CandidateRepository
 				.collect(Collectors.toList());
 	}
 
-	public Optional<Candidate> retrieveStockFor(@NonNull final TableRecordReference reference)
+	public Optional<Candidate> retrieveSingleStockFor(@NonNull final TableRecordReference reference)
 	{
-		final I_MD_Candidate candidateRecord = retrieveRecordForReference(reference);
-		return fromCandidateRecord(Optional.ofNullable(candidateRecord));
-	}
 
-	private I_MD_Candidate retrieveRecordForReference(final TableRecordReference reference)
-	{
-		final I_MD_Candidate candidateRecord = mkRecordViaReferenceFilter(reference)
+		final I_MD_Candidate candidateRecord = mkReferencedRecordFilter(reference)
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
 				.create()
 				.firstOnly(I_MD_Candidate.class);
-		return candidateRecord;
+
+		return fromCandidateRecord(Optional.ofNullable(candidateRecord));
 	}
 
-	private IQueryBuilder<I_MD_Candidate> mkRecordViaReferenceFilter(final TableRecordReference reference)
+	/**
+	 * Deletes all records that reference the given {@code referencedRecord}.
+	 * 
+	 * @param reference
+	 */
+	public void deleteForReference(@NonNull final TableRecordReference referencedRecord)
+	{
+		mkReferencedRecordFilter(referencedRecord)
+				.create()
+				.delete();
+	}
+
+	private IQueryBuilder<I_MD_Candidate> mkReferencedRecordFilter(final TableRecordReference reference)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -289,12 +285,5 @@ public class CandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, reference.getAD_Table_ID())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, reference.getRecord_ID());
-	}
-
-	public void deleteForReference(@NonNull final TableRecordReference reference)
-	{
-		mkRecordViaReferenceFilter(reference)
-				.create()
-				.delete();
 	}
 }

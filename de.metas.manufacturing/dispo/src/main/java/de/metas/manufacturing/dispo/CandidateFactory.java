@@ -37,7 +37,7 @@ public class CandidateFactory
 	private CandidateRepository candidateRepository;
 
 	/**
-	 * Creates and returns a new stock candidate which takes its quantity from the next-younger stock candidate that has the same product and locator.
+	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger stock candidate that has the same product and locator.
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
 	 * @param product
@@ -45,21 +45,22 @@ public class CandidateFactory
 	 * @param projectedDate
 	 * @return
 	 */
-	public Candidate createStockCandidate(final CandidatesSegment segment)
+	public Candidate createStockCandidate(final Candidate candidate)
 	{
-		final Optional<Candidate> stock = candidateRepository.retrieveStockAt(segment);
+		final Optional<Candidate> stock = candidateRepository.retrieveStockAt(candidate.mkSegment());
 
-		final BigDecimal quantity = stock.isPresent()
+		final BigDecimal formerQuantity = stock.isPresent()
 				? stock.get().getQuantity()
 				: BigDecimal.ZERO;
 
 		return Candidate.builder()
 				.type(Type.STOCK)
-				.productId(segment.getProductId())
-				.warehouseId(segment.getWarehouseId())
-				.locatorId(segment.getLocatorId())
-				.date(segment.getProjectedDate())
-				.quantity(quantity)
+				.productId(candidate.getProductId())
+				.warehouseId(candidate.getWarehouseId())
+				.date(candidate.getDate())
+				.quantity(formerQuantity.add(candidate.getQuantity()))
+				.referencedRecord(candidate.getReferencedRecord())
+				.parentId(candidate.getParentId())
 				.build();
 	}
 }

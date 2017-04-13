@@ -16,7 +16,6 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
@@ -70,7 +69,7 @@ public class CandiateRepositoryTests
 
 	private I_M_Product product;
 
-	private I_M_Locator locator;
+	private I_M_Warehouse warehouse;
 
 	private I_C_UOM uom;
 
@@ -88,12 +87,8 @@ public class CandiateRepositoryTests
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		InterfaceWrapperHelper.save(product);
 
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
 		InterfaceWrapperHelper.save(warehouse);
-
-		locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
-		locator.setM_Warehouse(warehouse);
-		InterfaceWrapperHelper.save(locator);
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
@@ -102,8 +97,7 @@ public class CandiateRepositoryTests
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("11"))
 				.date(now)
 				.build();
@@ -112,8 +106,7 @@ public class CandiateRepositoryTests
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
@@ -122,8 +115,7 @@ public class CandiateRepositoryTests
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
@@ -137,17 +129,17 @@ public class CandiateRepositoryTests
 	public void add_update()
 	{
 		// guard
-		assertThat(candidateRepository.retrieveStockAt(mkQueryWithLocator(now)).isPresent(), is(true));
-		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkQueryWithLocator(now)).get()), is(stockCandidate));
-		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveStockFrom(mkQueryWithLocator(now));
+		assertThat(candidateRepository.retrieveStockAt(mkSegment(now)).isPresent(), is(true));
+		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkSegment(now)).get()), is(stockCandidate));
+		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveStockFrom(mkSegment(now));
 		assertThat(stockBeforeReplacement.size(), is(2));
 		assertThat(stockBeforeReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
 
 		final Candidate replacementCandidate = stockCandidate.withQuantity(BigDecimal.ONE);
 		candidateRepository.addOrReplace(replacementCandidate);
 
-		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkQueryWithLocator(now)).get()), is(replacementCandidate));
-		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveStockFrom(mkQueryWithLocator(now));
+		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkSegment(now)).get()), is(replacementCandidate));
+		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveStockFrom(mkSegment(now));
 		assertThat(stockAfterReplacement.size(), is(2));
 		assertThat(stockAfterReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
 	}
@@ -158,16 +150,16 @@ public class CandiateRepositoryTests
 	@Test
 	public void retrieveStockAt()
 	{
-		final CandidatesSegment earlierQuery = mkQueryWithLocator(earlier);
+		final CandidatesSegment earlierQuery = mkSegment(earlier);
 		final Optional<Candidate> earlierStock = candidateRepository.retrieveStockAt(earlierQuery);
 		assertThat(earlierStock.isPresent(), is(false));
 
-		final CandidatesSegment sameTimeQuery = mkQueryWithLocator(now);
+		final CandidatesSegment sameTimeQuery = mkSegment(now);
 		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveStockAt(sameTimeQuery);
 		assertThat(sameTimeStock.isPresent(), is(true));
 		assertThat(toCandidateWithoutIds(sameTimeStock.get()), is(stockCandidate));
 
-		final CandidatesSegment laterQuery = mkQueryWithLocator(later);
+		final CandidatesSegment laterQuery = mkSegment(later);
 		final Optional<Candidate> laterStock = candidateRepository.retrieveStockAt(laterQuery);
 		assertThat(laterStock.isPresent(), is(true));
 		assertThat(toCandidateWithoutIds(laterStock.get()), is(laterStockCandidate));
@@ -187,7 +179,7 @@ public class CandiateRepositoryTests
 	public void retrieveStockFrom()
 	{
 		{
-			final CandidatesSegment earlierQuery = mkQueryWithLocator(earlier);
+			final CandidatesSegment earlierQuery = mkSegment(earlier);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(earlierQuery);
 			assertThat(stockFrom.size(), is(2));
@@ -199,7 +191,7 @@ public class CandiateRepositoryTests
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 		{
-			final CandidatesSegment sameTimeQuery = mkQueryWithLocator(now);
+			final CandidatesSegment sameTimeQuery = mkSegment(now);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(sameTimeQuery);
 			assertThat(stockFrom.size(), is(2));
@@ -210,7 +202,7 @@ public class CandiateRepositoryTests
 		}
 
 		{
-			final CandidatesSegment laterQuery = mkQueryWithLocator(later);
+			final CandidatesSegment laterQuery = mkSegment(later);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(laterQuery);
 			assertThat(stockFrom.size(), is(1));
@@ -221,13 +213,12 @@ public class CandiateRepositoryTests
 		}
 	}
 
-	private CandidatesSegment mkQueryWithLocator(final Date later)
+	private CandidatesSegment mkSegment(final Date later)
 	{
 		return CandidatesSegment.builder()
 				.productId(product.getM_Product_ID())
-				.locatorId(locator.getM_Locator_ID())
-				.warehouseId(locator.getM_Warehouse_ID())
-				.projectedDate(later)
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.date(later)
 				.build();
 	}
 
@@ -235,7 +226,7 @@ public class CandiateRepositoryTests
 	public void retrieveStockViaReference()
 	{
 		final TableRecordReference reference = TableRecordReference.of("tableName", 123);
-		candidateRepository.retrieveStockFor(reference);
+		candidateRepository.retrieveSingleStockFor(reference);
 	}
 
 }

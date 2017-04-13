@@ -1,7 +1,6 @@
 package de.metas.manufacturing.dispo;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.manufacturing.dispo.Candidate.Type;
 import lombok.NonNull;
 
 /*
@@ -45,29 +45,10 @@ public class CandidateChangeHandler
 
 	public void onDemandCandidateNewOrChange(final Candidate demandCandidate)
 	{
-		final Optional<Candidate> existingDemandCandidate = candidateRepository.retrieve(demandCandidate);
-
-		final Candidate childStockCandidate;
-		if (existingDemandCandidate.isPresent())
-		{
-			// if there is a demand candidate, then it must have a child stock candidate
-			childStockCandidate = null; // TODO candidateRepository.retrieveSingleChild(existingDemandCandidate.get());
-		}
-		else
-		{
-			childStockCandidate = candidateFactory
-					.createStockCandidate(
-							demandCandidate.mkSegment())
-					.withReferencedRecord( // augment our newly created stock candidate with the supply candidate's reference
-							demandCandidate.getReferencedRecord());
-
-		}
-
 		final Candidate demandCandidateWithId = candidateRepository.addOrReplace(demandCandidate);
 
-		final BigDecimal newStockQty = childStockCandidate.getQuantity().subtract(demandCandidate.getQuantity());
-		final Candidate childStockCandidateWithId = onStockCandidateNewOrChanged(childStockCandidate
-				.withQuantity(newStockQty)
+		updateStock(demandCandidate
+				.withQuantity(demandCandidate.getQuantity().negate())
 				.withParentId(demandCandidateWithId.getId()));
 
 		{
@@ -117,27 +98,7 @@ public class CandidateChangeHandler
 	 */
 	public void onSupplyCandidateNewOrChange(final Candidate supplyCandidate)
 	{
-		final Optional<Candidate> existingSupplyCandidate = candidateRepository.retrieve(supplyCandidate);
-
-		final Candidate parentStockCandidate;
-		if (existingSupplyCandidate.isPresent())
-		{
-			// if our supply candidate existed, then it also has a parent, because we never create them without a parent
-			parentStockCandidate = candidateRepository
-					.retrieve(
-							existingSupplyCandidate.get().getParentId());
-		}
-		else
-		{
-			parentStockCandidate = candidateFactory
-					.createStockCandidate(
-							supplyCandidate.mkSegment())
-					.withReferencedRecord( // augment our newly created stock candidate with the supply candidate's reference
-							supplyCandidate.getReferencedRecord());
-		}
-
-		final BigDecimal newStockQty = parentStockCandidate.getQuantity().add(supplyCandidate.getQuantity());
-		final Candidate parentStockCandidateWithId = onStockCandidateNewOrChanged(parentStockCandidate.withQuantity(newStockQty));
+		final Candidate parentStockCandidateWithId = updateStock(supplyCandidate);
 
 		candidateRepository.addOrReplace(supplyCandidate.withParentId(parentStockCandidateWithId.getId()));
 
@@ -160,14 +121,17 @@ public class CandidateChangeHandler
 	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
 	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
 	 *
-	 * @param candidate
-	 * @param the given candidate or a new one. At any rate, the returned candidate will have an id!
+	 * @param candidate a candidate with type being {@link Type#STOCK} and a quantity being a <b>delta</b>, i.e. a quantity that is add or removed at the candidate's date.
+	 * 
+	 * @return a new candidate that reflects what was persisted in the DB. The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.
 	 */
-	public Candidate onStockCandidateNewOrChanged(@NonNull final Candidate candidate)
+	public Candidate updateStock(@NonNull final Candidate candidate)
 	{
-
 		final Optional<Candidate> previousCandidate = candidateRepository.retrieve(candidate);
-		final Candidate savedCandidate = candidateRepository.addOrReplace(candidate);
+
+		final Candidate candidateToPersist = candidateFactory.createStockCandidate(candidate);
+
+		final Candidate savedCandidate = candidateRepository.addOrReplace(candidateToPersist);
 
 		// if there was not pre-existing candidate, then subtract zero.
 		final BigDecimal delta = candidate.getQuantity()
@@ -180,8 +144,7 @@ public class CandidateChangeHandler
 		final CandidatesSegment segment = CandidatesSegment.builder()
 				.productId(candidate.getProductId())
 				.warehouseId(candidate.getWarehouseId())
-				.locatorId(candidate.getLocatorId())
-				.projectedDate(candidate.getDate())
+				.date(candidate.getDate())
 				.build();
 
 		applyDeltaToLaterStockCandidates(segment, delta);

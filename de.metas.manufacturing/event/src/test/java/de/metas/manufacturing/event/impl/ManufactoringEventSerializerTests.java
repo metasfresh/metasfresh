@@ -96,7 +96,6 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = TransactionEvent
 				.builder()
-				.locatorId(10)
 				.movementDate(SystemTime.asDate())
 				.productId(14)
 				.qty(BigDecimal.TEN)

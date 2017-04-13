@@ -52,9 +52,6 @@ public class TransactionEvent implements ManufacturingEvent
 	private final Integer warehouseId;
 
 	@NonNull
-	private final Integer locatorId;
-
-	@NonNull
 	private final BigDecimal qty;
 
 	@NonNull

@@ -48,7 +48,7 @@ public class Candidate
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
-	public enum SupplyType
+	public enum SubType
 	{
 		DISTRIBUTION, PRODUCTION, RECEIPT
 	};
@@ -56,16 +56,13 @@ public class Candidate
 	@NonNull
 	private final Integer productId;
 
-	/**
-	 * The particular locator within a warehouse might remain unspecified for a candidate.
-	 */
-	private final Integer locatorId;
-
 	@NonNull
 	private final Integer warehouseId;
 
 	/**
-	 * The projected overall quantity which we expect at the time of {@link #getDate()}.
+	 * The meaning of this field might differ.
+	 * It can be the absolute stock quantity at a given time (if the type is "stock") or it can be a supply, demand or stock related <b>delta</b>,
+	 * i.e. one addition or removal that occurs at a particular time.
 	 */
 	@NonNull
 	private final BigDecimal quantity;
@@ -74,9 +71,9 @@ public class Candidate
 	private final Type type;
 
 	/**
-	 * Can be {@code null}, unless {@link #getType()} is {@link Type#SUPPLY}.
+	 * Currently this can be {@code null}, unless {@link #getType()} is {@link Type#SUPPLY}.
 	 */
-	private final SupplyType supplyType;
+	private final SubType subType;
 
 	private final ITableRecordReference referencedRecord;
 
@@ -90,17 +87,11 @@ public class Candidate
 	@NonNull
 	private final Date date;
 
-	public int getLocatorIdNotNull()
-	{
-		return locatorId == null ? 0 : locatorId;
-	}
-
 	public CandidatesSegment mkSegment()
 	{
 		return CandidatesSegment.builder()
-				.locatorId(locatorId)
 				.productId(productId)
-				.projectedDate(date)
+				.date(date)
 				.warehouseId(warehouseId)
 				.build();
 	}

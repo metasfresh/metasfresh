@@ -44,16 +44,6 @@ public class CandidatesSegment
 	@NonNull
 	private final Integer warehouseId;
 
-	/**
-	 * The locator within a warehouse might be unspecified.
-	 */
-	private final Integer locatorId;
-
 	@NonNull
-	private final Date projectedDate;
-
-	public int getLocatorIdNotNull()
-	{
-		return locatorId == null ? 0 : locatorId;
-	}
+	private final Date date;
 }

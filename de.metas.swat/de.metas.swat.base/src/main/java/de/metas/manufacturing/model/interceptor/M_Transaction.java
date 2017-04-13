@@ -57,7 +57,6 @@ public class M_Transaction
 
 		final TransactionEvent event = TransactionEvent.builder()
 				.transactionDeleted(timing == ModelValidator.TYPE_BEFORE_DELETE)
-				.locatorId(transaction.getM_Locator_ID())
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.movementDate(transaction.getMovementDate())
 				.productId(transaction.getM_Product_ID())
