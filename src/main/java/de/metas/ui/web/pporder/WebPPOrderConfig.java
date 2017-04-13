@@ -61,8 +61,6 @@ public class WebPPOrderConfig
 						.webuiQuickAction(true);
 			};
 			//
-			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ProcessPlan.class).webuiDefaultQuickAction().build());
-			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Issue.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class).build());
 		}
 

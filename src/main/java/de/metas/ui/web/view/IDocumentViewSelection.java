@@ -11,7 +11,6 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -89,38 +88,7 @@ public interface IDocumentViewSelection
 
 	String getSqlWhereClause(Collection<DocumentId> viewDocumentIds);
 
-	/**
-	 * @return stream of actions which can be executed on this view
-	 */
-	Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds);
-
-	/**
-	 * @return stream of quick actions which can be executed on this view
-	 */
-	default Stream<WebuiRelatedProcessDescriptor> streamQuickActions(final Collection<DocumentId> selectedDocumentIds)
-	{
-		return streamActions(selectedDocumentIds).filter(WebuiRelatedProcessDescriptor::isQuickAction);
-	}
-
 	boolean hasAttributesSupport();
-
-	default IDocumentViewSelection assertWindowIdMatches(final int expectedWindowId)
-	{
-		// NOTE: for now, if the windowId is not provided, let's not validate it because deprecate API cannot provide the windowId
-		if (expectedWindowId <= 0)
-		{
-			return this;
-		}
-
-		if (expectedWindowId != getAD_Window_ID())
-		{
-			throw new IllegalArgumentException("View's windowId is not matching the expected one."
-					+ "\n Expected windowId: " + expectedWindowId
-					+ "\n View: " + this);
-		}
-
-		return this;
-	}
 
 	<T> List<T> retrieveModelsByIds(Collection<DocumentId> documentIds, Class<T> modelClass);
 

@@ -6,23 +6,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
+import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -58,11 +61,13 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		return new Builder();
 	}
 
-	// services
-	private final ProcessDescriptorsFactory processDescriptorsFactory;
+	public static PPOrderLinesView cast(final IDocumentViewSelection view)
+	{
+		return (PPOrderLinesView)view;
+	}
 
 	private final String parentViewId;
-	
+
 	private final String viewId;
 	private final int adWindowId;
 	private final int ppOrderId;
@@ -70,12 +75,8 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	private final PPOrderLinesLoader loader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
 
-
 	private PPOrderLinesView(final Builder builder)
 	{
-		// services
-		processDescriptorsFactory = builder.getProcessDescriptorFactory();
-		
 		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
@@ -84,7 +85,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		loader = builder.getLoader();
 		ppOrderId = loader.getPP_Order_ID();
 	}
-	
+
 	@Override
 	public String getParentViewId()
 	{
@@ -102,13 +103,13 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	{
 		return adWindowId;
 	}
-	
+
 	@Override
 	public String getTableName()
 	{
 		return null; // no particular table (i.e. we have more)
 	}
-	
+
 	public int getPP_Order_ID()
 	{
 		return ppOrderId;
@@ -193,33 +194,6 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@Override
-	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
-	{
-		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, getTableName(), selectedDocumentIds);
-		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
-		
-//		if (selectedDocumentIds.isEmpty())
-//		{
-//			return Stream.empty();
-//		}
-//
-//		if (selectedDocumentIds.size() != 1)
-//		{
-//			return Stream.empty();
-//		}
-//
-//		final DocumentId selectedDocumentId = selectedDocumentIds.iterator().next();
-//		final PPOrderLineRow record = getById(selectedDocumentId);
-//		if (record == null)
-//		{
-//			return Stream.empty();
-//		}
-//
-//		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, record.getTableName(), ImmutableSet.of(record.getDocumentId()));
-//		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
-	}
-
-	@Override
 	public boolean hasAttributesSupport()
 	{
 		return false;
@@ -236,13 +210,12 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	{
 		return getRecords().streamByIds(documentIds);
 	}
-	
+
 	/** @return top level rows and included rows recursive stream */
 	public Stream<PPOrderLineRow> streamAllRecursive()
 	{
 		return getRecords().streamRecursive();
 	}
-
 
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
@@ -272,6 +245,73 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	{
 		final List<PPOrderLineRow> recordsList = loader.retrieveRecords(viewId);
 		return new IndexedDocumentViews(recordsList);
+	}
+
+	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
+	public OpenIncludedViewAction openViewsToIssue(final Set<DocumentId> selectedDocumentIds)
+	{
+		final DocumentId selectedRowId = ListUtils.singleElement(selectedDocumentIds);
+		final PPOrderLineRow row = getById(selectedRowId);
+		final IDocumentViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IDocumentViewsRepository.class); // TODO dirty workaround
+		final IDocumentViewSelection husToIssueView = row.getCreateIncludedView(viewsRepo);
+
+		return OpenIncludedViewAction.builder()
+				.windowId(husToIssueView.getAD_Window_ID())
+				.viewId(husToIssueView.getViewId())
+				.build();
+	}
+
+	@ViewAction(caption = "PPOrderLinesView.processPlan", precondition = HasCandidatesToProcess.class)
+	public void processPlan()
+	{
+		final int ppOrderId = getPP_Order_ID();
+		final List<Integer> ppOrderQtyIds = streamAllRecursive()
+				.filter(PPOrderLineRow::isNotProcessedCandidate)
+				.map(row -> row.getPP_Order_Qty_ID())
+				.collect(GuavaCollectors.toImmutableList());
+
+		HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+				.setCandidatesToProcessByPPOrderId(ppOrderId, ppOrderQtyIds)
+				.process();
+
+		invalidateAll();
+	}
+
+	public static final class IsSingleIssueLine implements ViewAction.Precondition
+	{
+		@Override
+		public ProcessPreconditionsResolution matches(final IDocumentViewSelection view, final Set<DocumentId> selectedDocumentIds)
+		{
+			if (selectedDocumentIds.size() != 1)
+			{
+				return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			}
+
+			final DocumentId selectedDocumentId = ListUtils.singleElement(selectedDocumentIds);
+			final PPOrderLineRow ppOrderLine = cast(view).getById(selectedDocumentId);
+			if (!ppOrderLine.isIssue())
+			{
+				return ProcessPreconditionsResolution.reject("not an issue line");
+			}
+			return ProcessPreconditionsResolution.accept();
+		}
+	}
+
+	public static final class HasCandidatesToProcess implements ViewAction.Precondition
+	{
+		@Override
+		public ProcessPreconditionsResolution matches(final IDocumentViewSelection view, final Set<DocumentId> selectedDocumentIds)
+		{
+			final boolean hasNotProcessedCandidates = cast(view)
+					.streamAllRecursive()
+					.anyMatch(PPOrderLineRow::isNotProcessedCandidate);
+			if (!hasNotProcessedCandidates)
+			{
+				return ProcessPreconditionsResolution.reject("Nothing to process");
+			}
+			return ProcessPreconditionsResolution.accept();
+		}
+
 	}
 
 	//
@@ -313,12 +353,12 @@ public class PPOrderLinesView implements IDocumentViewSelection
 					.map(documentId -> allRecordsById.get(documentId))
 					.filter(document -> document != null);
 		}
-		
+
 		public Stream<PPOrderLineRow> stream()
 		{
 			return records.stream();
 		}
-		
+
 		public Stream<PPOrderLineRow> streamRecursive()
 		{
 			return records.stream()
@@ -327,14 +367,13 @@ public class PPOrderLinesView implements IDocumentViewSelection
 					.orElse(Stream.of());
 		}
 
-		private Stream<PPOrderLineRow> streamIncludedRowsRecursive(PPOrderLineRow row)
+		private Stream<PPOrderLineRow> streamIncludedRowsRecursive(final PPOrderLineRow row)
 		{
 			return row.getIncludedDocuments()
 					.stream()
 					.map(includedRow -> streamIncludedRowsRecursive(includedRow))
 					.reduce(Stream.of(row), Stream::concat);
 		}
-
 
 		public long size()
 		{
@@ -367,11 +406,10 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	public static final class Builder
 	{
 		private String parentViewId;
-		
+
 		private String viewId;
 		private int adWindowId;
 
-		private ProcessDescriptorsFactory processDescriptorsFactory;
 		private PPOrderLinesLoader loader;
 
 		private Builder()
@@ -383,13 +421,13 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		{
 			return new PPOrderLinesView(this);
 		}
-		
-		public Builder setParentViewId(String parentViewId)
+
+		public Builder setParentViewId(final String parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
+
 		private String getParentViewId()
 		{
 			return parentViewId;
@@ -427,18 +465,6 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		{
 			Preconditions.checkNotNull(loader, "loader is null");
 			return loader;
-		}
-
-		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory)
-		{
-			this.processDescriptorsFactory = processDescriptorsFactory;
-			return this;
-		}
-
-		private ProcessDescriptorsFactory getProcessDescriptorFactory()
-		{
-			Check.assumeNotNull(processDescriptorsFactory, "Parameter processDescriptorsFactory is not null");
-			return processDescriptorsFactory;
 		}
 	}
 }

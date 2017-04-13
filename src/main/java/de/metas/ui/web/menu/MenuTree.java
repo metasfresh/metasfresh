@@ -83,7 +83,7 @@ public final class MenuTree
 		nodesByMainTableName = nodesByMainTableNameBuilder.build();
 	}
 
-	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final int elementId)
+	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final String elementId)
 	{
 		return Util.mkKey(type, elementId);
 	}
@@ -111,7 +111,7 @@ public final class MenuTree
 		return node;
 	}
 
-	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final int elementId)
+	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final String elementId)
 	{
 		final ArrayKey key = mkTypeAndElementIdKey(type, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
@@ -125,7 +125,8 @@ public final class MenuTree
 
 	public Optional<MenuNode> getNewRecordNodeForWindowId(final int adWindowId)
 	{
-		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, adWindowId);
+		final String elementId = String.valueOf(adWindowId);
+		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())
 		{
@@ -150,7 +151,7 @@ public final class MenuTree
 		return getPath(node);
 	}
 
-	public List<MenuNode> getPath(final MenuNodeType type, final int elementId)
+	public List<MenuNode> getPath(final MenuNodeType type, final String elementId)
 	{
 		final MenuNode node = getFirstNodeByElementId(type, elementId);
 		return getPath(node);

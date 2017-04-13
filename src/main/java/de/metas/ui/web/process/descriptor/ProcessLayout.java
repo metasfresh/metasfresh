@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 
 /*
@@ -42,7 +43,7 @@ public class ProcessLayout
 		return new Builder();
 	}
 
-	private final int AD_Process_ID;
+	private final ProcessId processId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
@@ -51,10 +52,12 @@ public class ProcessLayout
 	private ProcessLayout(final Builder builder)
 	{
 		super();
-		AD_Process_ID = builder.AD_Process_ID;
+		
+		Preconditions.checkNotNull(builder.processId, "processId not set: %s", builder);
+		processId = builder.processId;
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
-		elements = ImmutableList.copyOf(builder.buildElements());
+		elements = ImmutableList.copyOf(builder.elements);
 	}
 
 	@Override
@@ -62,20 +65,25 @@ public class ProcessLayout
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_Process_ID", AD_Process_ID)
+				.add("processId", processId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
 
-	public int getAD_Window_ID()
+	public ITranslatableString getCaption()
 	{
-		return AD_Process_ID;
+		return caption;
 	}
 
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
+	}
+	
+	public ITranslatableString getDescription()
+	{
+		return description;
 	}
 
 	public String getDescription(final String adLanguage)
@@ -90,11 +98,11 @@ public class ProcessLayout
 
 	public static final class Builder
 	{
-		public Integer AD_Process_ID;
+		public ProcessId processId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
-		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
 
 		private Builder()
 		{
@@ -106,27 +114,19 @@ public class ProcessLayout
 			return new ProcessLayout(this);
 		}
 
-		private List<DocumentLayoutElementDescriptor> buildElements()
-		{
-			return elementBuilders
-					.stream()
-					.map(elementBuilder -> elementBuilder.build())
-					.collect(GuavaCollectors.toImmutableList());
-		}
-
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("AD_Process_ID", AD_Process_ID)
+					.add("processId", processId)
 					.add("caption", caption)
-					.add("elements-count", elementBuilders.size())
+					.add("elements-count", elements.size())
 					.toString();
 		}
 
-		public Builder setAD_Process_ID(final int AD_Process_ID)
+		public Builder setProcessId(ProcessId processId)
 		{
-			this.AD_Process_ID = AD_Process_ID;
+			this.processId = processId;
 			return this;
 		}
 
@@ -142,10 +142,10 @@ public class ProcessLayout
 			return this;
 		}
 
-		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
+		public Builder addElement(final DocumentLayoutElementDescriptor element)
 		{
-			Check.assumeNotNull(elementBuilder, "Parameter elementBuilder is not null");
-			elementBuilders.add(elementBuilder);
+			Check.assumeNotNull(element, "Parameter element is not null");
+			elements.add(element);
 			return this;
 		}
 	}

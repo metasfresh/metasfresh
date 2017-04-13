@@ -4,12 +4,9 @@ import java.util.Collection;
 import java.util.UUID;
 
 import org.compiere.util.CCache;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
-import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
@@ -46,20 +43,16 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 @DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt, viewType = JSONViewDataType.grid)
 public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 {
-	@Autowired
-	private ProcessDescriptorsFactory processDescriptorsFactory;
-
 	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
-	
+
 	@Override
-	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
+	public PPOrderLinesView createView(final DocumentViewCreateRequest request)
 	{
 		return PPOrderLinesView.builder()
 				.setParentViewId(request.getParentViewId())
 				.setViewId(UUID.randomUUID().toString())
 				.setAD_Window_ID(request.getAD_Window_ID())
 				.setRecords(PPOrderLinesLoader.of(request))
-				.setServices(processDescriptorsFactory)
 				.build();
 	}
 

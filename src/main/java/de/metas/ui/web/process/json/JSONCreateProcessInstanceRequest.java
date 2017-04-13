@@ -13,6 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -40,11 +41,13 @@ import de.metas.ui.web.window.datatypes.DocumentType;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONCreateProcessInstanceRequest implements Serializable
 {
 	@JsonProperty("processId")
-	private final int processId;
+	private final String processIdStr;
+	@JsonIgnore
+	private final ProcessId processId;
 
 	//
 	// Called from single row
@@ -84,7 +87,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 
 	@JsonCreator
 	private JSONCreateProcessInstanceRequest( //
-			@JsonProperty("processId") final int processId //
+			@JsonProperty("processId") final String processIdStr //
 			//
 			, @JsonProperty("documentType") final String documentType //
 			, @JsonProperty("documentId") final String documentId //
@@ -96,7 +99,8 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	)
 	{
 		super();
-		this.processId = processId;
+		this.processIdStr = processIdStr;
+		this.processId = ProcessId.fromJson(processIdStr);
 
 		//
 		// Called from single row
@@ -148,7 +152,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		return null;
 	}
 
-	public int getAD_Process_ID()
+	public ProcessId getProcessId()
 	{
 		return processId;
 	}

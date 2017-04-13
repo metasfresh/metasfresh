@@ -26,7 +26,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
@@ -95,7 +95,7 @@ public class WindowRestController
 	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	@Autowired
-	private ProcessDescriptorsFactory processDescriptorFactory;
+	private ProcessRestController processRestController;
 
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
@@ -432,7 +432,7 @@ public class WindowRestController
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
 
-			return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext)
+			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 					.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
