@@ -13,26 +13,23 @@ package de.metas.lock.housekeeping.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Loggables;
-import org.compiere.util.DB;
+import org.adempiere.util.Services;
 
-import de.metas.lock.model.I_T_Lock;
+import de.metas.lock.api.ILockManager;
 
 /**
- * Deletes {@link I_T_Lock} records which have {@link I_T_Lock#COLUMNNAME_IsAutoCleanup} set to <code>true</code>.
- * Those records become stale if the server shuts down in mid-processing.
+ * Deletes lock records which were flagged with "auto-cleanup".
  *
  * @author ts
  * @author tsa
@@ -43,10 +40,8 @@ public class ClearLocks implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		final String sql = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE " + I_T_Lock.COLUMNNAME_IsAutoCleanup + "=?";
-		final Object[] sqlParams = new Object[] { true };
-		final int countLocksReleased = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
-		Loggables.get().addLog("Deleted " + countLocksReleased + " stale " + I_T_Lock.Table_Name + " records");
+		final int countLocksReleased = Services.get(ILockManager.class).removeAutoCleanupLocks();
+		Loggables.get().addLog("Deleted " + countLocksReleased + " stale records");
 	}
 
 }

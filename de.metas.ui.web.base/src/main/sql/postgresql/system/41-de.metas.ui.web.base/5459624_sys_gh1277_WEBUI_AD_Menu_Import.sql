@@ -5,12 +5,6 @@ create table backup.AD_Menu_BKP_BeforeImportWebUI_5459621a as select * from AD_M
 create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459621a as select * from AD_Menu_Trl;
 
 --
--- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
-delete from AD_TreeNodeMM;
-insert into AD_TreeNodeMM select * from backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621a;
--- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
-
---
 -- Expected input tables:
 -- backup.WEBUI_AD_TreeNodeMM
 -- backup.WEBUI_AD_Menu
@@ -89,7 +83,6 @@ where
 
 
 
-
 --
 -- Delete orphan trees of webui AD_Tree_ID
 delete from AD_TreeNodeMM n
@@ -113,4 +106,3 @@ update AD_TreeNodeMM set Parent_ID=0 where AD_Tree_ID=1000039 and Parent_ID=1000
 /*
 select * from get_AD_TreeNodeMM_Paths(1000039, null) order by Path;
 */
-

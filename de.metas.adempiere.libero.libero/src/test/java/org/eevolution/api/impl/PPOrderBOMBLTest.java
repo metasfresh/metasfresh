@@ -28,7 +28,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
@@ -206,6 +208,7 @@ public class PPOrderBOMBLTest
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
 		ppOrder.setM_Product(product);
 		ppOrder.setPP_Product_BOM(productBOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);

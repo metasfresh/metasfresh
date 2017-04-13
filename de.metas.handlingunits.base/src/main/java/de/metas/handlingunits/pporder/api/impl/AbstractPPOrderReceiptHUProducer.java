@@ -74,6 +74,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
 import de.metas.quantity.Quantity;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -378,7 +379,7 @@ import lombok.Data;
 		private final int locatorId;
 		private final int topLevelHUId;
 		private final int productId;
-		private Quantity qty = null;
+		private Quantity qty;
 
 		public CreateReceiptCandidateRequest addQty(final Quantity qtyToAdd)
 		{

@@ -33,6 +33,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.product.IProductBL;
 
 /**
  * InOut Line
@@ -209,7 +210,7 @@ public class MInOutLine extends X_M_InOutLine
 				setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
 			}
 			//
-			if (product.isItem())
+			if (Services.get(IProductBL.class).isItem(product))
 			{
 				if (M_Locator_ID == 0)
 					setM_Locator_ID(Qty);	// requires warehouse, product, asi

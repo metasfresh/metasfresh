@@ -13,15 +13,14 @@ package de.metas.async;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
@@ -53,6 +52,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.logging.LogManager;
 
 /**
  * Misc helper used when testing ASync module
@@ -81,15 +81,17 @@ public class Helper
 	{
 		final PlainLockManager lockManager = (PlainLockManager)Services.get(ILockManager.class);
 		final PlainLockDatabase lockDatabase = lockManager.getLockDatabase();
-		Assert.assertTrue("No locks expecteded\n" + lockDatabase.getLockedObjectsInfo(), lockDatabase.getLocks().isEmpty());
+		if (!lockDatabase.getLocks().isEmpty())
+		{
+			lockDatabase.dump();
+			Assert.fail("No locks were expected but we found some."
+					+ "\n Locked objects info: " + lockDatabase.getLockedObjectsInfo());
+		}
 	}
 
 	public I_C_Queue_Processor createQueueProcessor(
-			final String name,
-			final int poolSize,
-			final int maxPoolSize,
-			final int keepAliveTimeMillis
-			)
+			final String name, final int poolSize, final int maxPoolSize, final int keepAliveTimeMillis
+	)
 	{
 		final I_C_Queue_Processor queueProcessorDef = InterfaceWrapperHelper.create(ctx, I_C_Queue_Processor.class, ITrx.TRXNAME_None);
 		queueProcessorDef.setName(name);
@@ -164,14 +166,14 @@ public class Helper
 		}
 	}
 
-	public void markReadyForProcessing(I_C_Queue_WorkPackage ... workpackages)
+	public void markReadyForProcessing(I_C_Queue_WorkPackage... workpackages)
 	{
 		Check.assumeNotNull(workpackages, "workpackages not null");
 		if (workpackages.length == 0)
 		{
 			return;
 		}
-		
+
 		markReadyForProcessing(Arrays.asList(workpackages));
 	}
 
@@ -217,7 +219,7 @@ public class Helper
 	public void waitUntilSize(final List<?> list, final int targetSize, final long timeoutMillis) throws InterruptedException, TimeoutException
 	{
 		Thread.sleep(100); // wait a bit, because the processor need not only to increase list.size(), but also flag the package as "processed"
-		
+
 		int retryCount = 0;
 
 		final long beginTS = SystemTime.millis();
