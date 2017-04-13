@@ -30,6 +30,8 @@ class Referenced extends Component {
         ).then(response => {
             this.setState({
                 data: response.data.references
+            }, () => {
+                this.referenced && this.referenced.focus();
             })
         });
     }
@@ -44,6 +46,33 @@ class Referenced extends Component {
             '?refType=' + windowType +
             '&refId=' + docId
         ));
+    }
+
+    handleKeyDown = (e) => {
+        const active = document.activeElement;
+
+        const keyHandler = (e, dir) => {
+            const sib = dir ? 'nextSibling' : 'previousSibling';
+            e.preventDefault();
+            if(active.classList.contains('js-subheader-item')){
+                active[sib] && active[sib].focus();
+            }else{
+                active.childNodes[0].focus();
+            }
+        }
+
+        switch(e.key){
+            case 'ArrowDown':
+                keyHandler(e, true);
+                break
+            case 'ArrowUp':
+                keyHandler(e, false);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                document.activeElement.click();
+                break;
+        }
     }
 
     renderData = () => {
@@ -71,7 +100,11 @@ class Referenced extends Component {
     render() {
         const {data} = this.state;
         return (
-            <div>
+            <div
+                onKeyDown={this.handleKeyDown}
+                ref={c => this.referenced = c}
+                tabIndex={0}
+            >
                 {!data ?
                     <Loader /> :
                     this.renderData()

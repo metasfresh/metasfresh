@@ -108,6 +108,7 @@ class SideList extends Component {
                             onMouseLeave={() =>
                                 this.toggleTooltip()
                             }
+                            tabIndex={0}
                         >
                             <i className={item.icon} />
                             { tooltipOpen === index &&
