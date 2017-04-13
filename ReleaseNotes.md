@@ -33,7 +33,8 @@ Here come the actual release notes:
   * [#1307](https://github.com/metasfresh/metasfresh/issues/1307) Only show Partner Name fields needed for case company
   * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
     * Adding the initial window setup for Unit of measure window in WebUI.
-
+  * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
+  
 * metasfresh-webui-api
   * [#294](https://github.com/metasfresh/metasfresh-webui-api/issues/294) Refactor /process/start response
 
