@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
@@ -49,18 +50,18 @@ public final class JSONProcessInstanceResult implements Serializable
 	{
 		return new JSONProcessInstanceResult(result);
 	}
-	
+
 	private static final Logger logger = LogManager.getLogger(JSONProcessInstanceResult.class);
 
 	@JsonProperty("pinstanceId")
-	private final int pinstanceId;
+	private final String pinstanceId;
 
 	@JsonProperty("summary")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String summary;
 	@JsonProperty("error")
 	private final boolean error;
-	
+
 	@JsonProperty("action")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONResultAction action;
@@ -102,32 +103,32 @@ public final class JSONProcessInstanceResult implements Serializable
 
 	private JSONProcessInstanceResult(final ProcessInstanceResult result)
 	{
-		pinstanceId = result.getAD_PInstance_ID();
+		pinstanceId = result.getInstanceId().toJson();
 
 		summary = result.getSummary();
 		error = result.isError();
-		
+
 		action = toJSONResultAction(result.getAction());
-		
+
 		//
 		// Update action related deprecated fields:
-		if(action == null)
+		if (action == null)
 		{
 			// nothing
 		}
 		else if (action instanceof JSONOpenReportAction)
 		{
-			JSONOpenReportAction openReportAction = (JSONOpenReportAction)action;
-			this.reportFilename = openReportAction.getFilename();
-			this.reportContentType = openReportAction.getContentType();
+			final JSONOpenReportAction openReportAction = (JSONOpenReportAction)action;
+			reportFilename = openReportAction.getFilename();
+			reportContentType = openReportAction.getContentType();
 		}
-		else if(action instanceof JSONOpenViewAction)
+		else if (action instanceof JSONOpenViewAction)
 		{
-			JSONOpenViewAction openViewAction = (JSONOpenViewAction)action;
+			final JSONOpenViewAction openViewAction = (JSONOpenViewAction)action;
 			openViewWindowId = openViewAction.getWindowId() > 0 ? openViewAction.getWindowId() : 0;
 			openViewId = openViewAction.getViewId();
 		}
-		else if(action instanceof JSONOpenSingleDocumentAction)
+		else if (action instanceof JSONOpenSingleDocumentAction)
 		{
 			final JSONOpenSingleDocumentAction openSingleDocumentAction = (JSONOpenSingleDocumentAction)action;
 			openDocumentWindowId = openSingleDocumentAction.getWindowId();
@@ -135,35 +136,10 @@ public final class JSONProcessInstanceResult implements Serializable
 		}
 	}
 
-	public int getPinstanceId()
-	{
-		return pinstanceId;
-	}
-
-	public String getSummary()
-	{
-		return summary;
-	}
-
-	public boolean isError()
-	{
-		return error;
-	}
-
-	public String getReportFilename()
-	{
-		return reportFilename;
-	}
-
-	public String getReportContentType()
-	{
-		return reportContentType;
-	}
-
 	/** Converts {@link ResultAction} to JSON */
 	private static final JSONResultAction toJSONResultAction(final ResultAction resultAction)
 	{
-		if(resultAction == null)
+		if (resultAction == null)
 		{
 			return null;
 		}
@@ -172,12 +148,17 @@ public final class JSONProcessInstanceResult implements Serializable
 			final OpenReportAction openReportAction = (OpenReportAction)resultAction;
 			return new JSONOpenReportAction(openReportAction.getFilename(), openReportAction.getContentType());
 		}
-		else if(resultAction instanceof OpenViewAction)
+		else if (resultAction instanceof OpenViewAction)
 		{
-			OpenViewAction openViewAction = (OpenViewAction)resultAction;
+			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
 			return new JSONOpenViewAction(openViewAction.getWindowId(), openViewAction.getViewId());
 		}
-		else if(resultAction instanceof OpenSingleDocument)
+		else if (resultAction instanceof OpenIncludedViewAction)
+		{
+			final OpenIncludedViewAction openIncludedViewAction = (OpenIncludedViewAction)resultAction;
+			return new JSONOpenIncludedViewAction(openIncludedViewAction.getWindowId(), openIncludedViewAction.getViewId());
+		}
+		else if (resultAction instanceof OpenSingleDocument)
 		{
 			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
@@ -197,7 +178,7 @@ public final class JSONProcessInstanceResult implements Serializable
 	//
 
 	@Getter
-	public static abstract class JSONResultAction
+	protected static abstract class JSONResultAction
 	{
 		@JsonProperty("type")
 		private final String type;
@@ -216,14 +197,14 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final String filename;
 		private final String contentType;
 
-		public JSONOpenReportAction(String filename, String contentType)
+		public JSONOpenReportAction(final String filename, final String contentType)
 		{
 			super("openReport");
 			this.filename = filename;
 			this.contentType = contentType;
 		}
 	}
-	
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Getter
 	public static class JSONOpenViewAction extends JSONResultAction
@@ -231,9 +212,24 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final int windowId;
 		private final String viewId;
 
-		public JSONOpenViewAction(int windowId, String viewId)
+		public JSONOpenViewAction(final int windowId, final String viewId)
 		{
 			super("openView");
+			this.windowId = windowId;
+			this.viewId = viewId;
+		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONOpenIncludedViewAction extends JSONResultAction
+	{
+		private final int windowId;
+		private final String viewId;
+
+		public JSONOpenIncludedViewAction(final int windowId, final String viewId)
+		{
+			super("openIncludedView");
 			this.windowId = windowId;
 			this.viewId = viewId;
 		}
@@ -246,7 +242,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final int windowId;
 		private final String documentId;
 
-		public JSONOpenSingleDocumentAction(int windowId, String documentId)
+		public JSONOpenSingleDocumentAction(final int windowId, final String documentId)
 		{
 			super("openDocument");
 			this.windowId = windowId;

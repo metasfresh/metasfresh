@@ -36,15 +36,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFieldValueLoader;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
 import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
@@ -52,8 +48,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 
@@ -113,10 +107,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final List<DocumentFilter> filters;
 
 	//
-	// Related actions
-	private final transient ProcessDescriptorsFactory processDescriptorFactory;
-
-	//
 	// Attributes
 	private final transient IDocumentViewAttributesProvider attributesProvider;
 
@@ -151,10 +141,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		filterDescriptors = builder.getFilterDescriptors();
 		stickyFilters = ImmutableList.copyOf(builder.getStickyFilters());
 		filters = ImmutableList.copyOf(builder.getFilters());
-
-		//
-		// Related actions
-		processDescriptorFactory = builder.getProcessDescriptorFactory();
 
 		//
 		// Attributes
@@ -478,15 +464,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
-	{
-		assertNotClosed();
-
-		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, getTableName(), selectedDocumentIds);
-		return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext);
-	}
-
-	@Override
 	public boolean hasAttributesSupport()
 	{
 		return attributesProvider != null;
@@ -555,10 +532,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	public static final class Builder
 	{
-		// services
-		private ProcessDescriptorsFactory processDescriptorsFactory;
-		private DocumentReferencesService documentReferencesService;
-
 		private String parentViewId;
 		
 		private final DocumentEntityDescriptor _entityDescriptor;
@@ -623,24 +596,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return getEntityDescriptor().getFiltersProvider();
 		}
 		
-		private Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
+		public Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
 		{
 			_stickyFilters = stickyFilter == null ? ImmutableList.of() : ImmutableList.of(stickyFilter);
-			return this;
-		}
-
-		public Builder setStickyFilterByReferencedDocument(@Nullable final DocumentPath referencedDocumentPath)
-		{
-			if (referencedDocumentPath == null)
-			{
-				setStickyFilter(null);
-			}
-			else
-			{
-				final int targetWindowId = getEntityDescriptor().getAD_Window_ID();
-				final DocumentReference reference = getDocumentReferencesService().getDocumentReference(referencedDocumentPath, targetWindowId);
-				setStickyFilter(reference.getFilter());
-			}
 			return this;
 		}
 
@@ -741,25 +699,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
 			return getBinding().createOrderedSelection(queryBuilder);
-		}
-
-		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory, final DocumentReferencesService documentReferencesService)
-		{
-			this.processDescriptorsFactory = processDescriptorsFactory;
-			this.documentReferencesService = documentReferencesService;
-			return this;
-		}
-
-		private ProcessDescriptorsFactory getProcessDescriptorFactory()
-		{
-			Check.assumeNotNull(processDescriptorsFactory, "Parameter processDescriptorsFactory is not null");
-			return processDescriptorsFactory;
-		}
-
-		private DocumentReferencesService getDocumentReferencesService()
-		{
-			Check.assumeNotNull(documentReferencesService, "Parameter documentReferencesService is not null");
-			return documentReferencesService;
 		}
 	}
 }

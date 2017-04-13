@@ -6,17 +6,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -47,8 +49,6 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
-	@Autowired
-	private ProcessDescriptorsFactory processDescriptorsFactory;
 	@Autowired
 	private MenuTreeRepository menuTreeRepo;
 
@@ -101,16 +101,28 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(request.getAD_Window_ID());
 		return SqlDocumentViewSelection.builder(entityDescriptor)
-				.setServices(processDescriptorsFactory, documentReferencesService)
 				//
 				.setParentViewId(request.getParentViewId())
 				//
 				.setViewFieldsByCharacteristic(request.getViewTypeRequiredFieldCharacteristic())
 				//
-				.setStickyFilterByReferencedDocument(request.getSingleReferencingDocumentPathOrNull())
+				.setStickyFilter(extractReferencedDocumentFilter(entityDescriptor.getAD_Window_ID(), request.getSingleReferencingDocumentPathOrNull()))
 				.setFiltersFromJSON(request.getFilters())
 				//
 				.build();
+	}
+	
+	private final DocumentFilter extractReferencedDocumentFilter(final int targetWindowId, final DocumentPath referencedDocumentPath)
+	{
+		if (referencedDocumentPath == null)
+		{
+			return null;
+		}
+		else
+		{
+			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
+			return reference.getFilter();
+		}
 	}
 
 }

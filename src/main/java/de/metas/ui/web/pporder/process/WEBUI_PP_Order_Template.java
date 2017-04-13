@@ -2,7 +2,7 @@ package de.metas.ui.web.pporder.process;
 
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.process.ViewBasedProcessTemplate;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L

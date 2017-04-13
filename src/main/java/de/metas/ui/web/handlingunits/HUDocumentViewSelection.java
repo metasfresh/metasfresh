@@ -25,9 +25,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -72,9 +69,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return (HUDocumentViewSelection)view;
 	}
 
-	// services
-	private final ProcessDescriptorsFactory processDescriptorsFactory;
-	
 	private final String parentViewId;
 
 	private final String viewId;
@@ -89,9 +83,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		super();
 
-		// services
-		processDescriptorsFactory = builder.getProcessDescriptorFactory();
-		
 		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
@@ -236,13 +227,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		final Set<Integer> huIds = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds);
 
 		return I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
-	}
-
-	@Override
-	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
-	{
-		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, getTableName(), selectedDocumentIds);
-		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 
 	@Override
@@ -429,7 +413,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private int adWindowId;
 		private Set<DocumentPath> referencingDocumentPaths;
 
-		private ProcessDescriptorsFactory processDescriptorsFactory;
 		private HUDocumentViewLoader documentViewsLoader;
 
 		private Builder()
@@ -485,18 +468,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			Check.assumeNotNull(documentViewsLoader, "Parameter documentViewsLoader is not null");
 			return documentViewsLoader;
-		}
-
-		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory)
-		{
-			this.processDescriptorsFactory = processDescriptorsFactory;
-			return this;
-		}
-
-		private ProcessDescriptorsFactory getProcessDescriptorFactory()
-		{
-			Check.assumeNotNull(processDescriptorsFactory, "Parameter processDescriptorsFactory is not null");
-			return processDescriptorsFactory;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)

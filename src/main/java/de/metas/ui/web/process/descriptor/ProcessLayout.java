@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -58,7 +57,7 @@ public class ProcessLayout
 		processId = builder.processId;
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
-		elements = ImmutableList.copyOf(builder.buildElements());
+		elements = ImmutableList.copyOf(builder.elements);
 	}
 
 	@Override
@@ -72,9 +71,19 @@ public class ProcessLayout
 				.toString();
 	}
 
+	public ITranslatableString getCaption()
+	{
+		return caption;
+	}
+
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
+	}
+	
+	public ITranslatableString getDescription()
+	{
+		return description;
 	}
 
 	public String getDescription(final String adLanguage)
@@ -93,7 +102,7 @@ public class ProcessLayout
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
-		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
 
 		private Builder()
 		{
@@ -105,21 +114,13 @@ public class ProcessLayout
 			return new ProcessLayout(this);
 		}
 
-		private List<DocumentLayoutElementDescriptor> buildElements()
-		{
-			return elementBuilders
-					.stream()
-					.map(elementBuilder -> elementBuilder.build())
-					.collect(GuavaCollectors.toImmutableList());
-		}
-
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
 					.add("processId", processId)
 					.add("caption", caption)
-					.add("elements-count", elementBuilders.size())
+					.add("elements-count", elements.size())
 					.toString();
 		}
 
@@ -141,10 +142,10 @@ public class ProcessLayout
 			return this;
 		}
 
-		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
+		public Builder addElement(final DocumentLayoutElementDescriptor element)
 		{
-			Check.assumeNotNull(elementBuilder, "Parameter elementBuilder is not null");
-			elementBuilders.add(elementBuilder);
+			Check.assumeNotNull(element, "Parameter element is not null");
+			elements.add(element);
 			return this;
 		}
 	}

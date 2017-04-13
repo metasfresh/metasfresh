@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -53,8 +52,6 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 {
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
-	@Autowired
-	private ProcessDescriptorsFactory processDescriptorsFactory;
 
 	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
 
@@ -152,7 +149,6 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setAD_Window_ID(adWindowId)
 				.setRecords(documentViewsLoader)
 				.setReferencingDocumentPaths(referencingDocumentPaths)
-				.setServices(processDescriptorsFactory)
 				.build();
 	}
 }

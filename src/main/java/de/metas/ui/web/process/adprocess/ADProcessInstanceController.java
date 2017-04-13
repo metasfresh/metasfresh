@@ -1,4 +1,4 @@
-package de.metas.ui.web.process;
+package de.metas.ui.web.process.adprocess;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +36,8 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.process.IProcessInstanceController;
+import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
@@ -79,24 +81,21 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 /**
- * WEBUI Process instance.
+ * WEBUI AD_Process based process instance controller
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class ProcessInstance
+/* package */final class ADProcessInstanceController implements IProcessInstanceController
 {
-	private static final transient Logger logger = LogManager.getLogger(ProcessInstance.class);
-
-	public static final String PARAM_ViewId = "$WEBUI_ViewId";
-	public static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
+	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	private final DocumentId adPInstanceId;
+	private final DocumentId instanceId;
 
 	private final ProcessDescriptor processDescriptor;
 	private final Document parameters;
@@ -112,10 +111,10 @@ public final class ProcessInstance
 	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
-	private ProcessInstance(final Builder builder)
+	private ADProcessInstanceController(final Builder builder)
 	{
 		processDescriptor = builder.processDescriptor;
-		adPInstanceId = builder.adPInstanceId;
+		instanceId = builder.instanceId;
 		parameters = builder.parameters;
 		processClassInstance = builder.processClassInstance;
 
@@ -130,11 +129,11 @@ public final class ProcessInstance
 	}
 
 	/** Copy constructor */
-	private ProcessInstance(final ProcessInstance from, final CopyMode copyMode)
+	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode)
 	{
 		super();
 
-		adPInstanceId = from.adPInstanceId;
+		instanceId = from.instanceId;
 
 		processDescriptor = from.processDescriptor;
 		parameters = from.parameters.copy(copyMode);
@@ -155,27 +154,29 @@ public final class ProcessInstance
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_PInstance_ID", adPInstanceId)
+				.add("AD_PInstance_ID", instanceId)
 				.add("executed", "executed")
 				.add("executionResult", executionResult)
 				.add("processDescriptor", processDescriptor)
 				.toString();
 	}
 
+	@Override
 	public void destroy()
 	{
 		// TODO Auto-generated method stub
 
 	}
 
-	public ProcessDescriptor getDescriptor()
+	private ProcessDescriptor getDescriptor()
 	{
 		return processDescriptor;
 	}
 
-	public DocumentId getAD_PInstance_ID()
+	@Override
+	public DocumentId getInstanceId()
 	{
-		return adPInstanceId;
+		return instanceId;
 	}
 
 	private Document getParametersDocument()
@@ -183,14 +184,15 @@ public final class ProcessInstance
 		return parameters;
 	}
 
+	@Override
 	public Collection<IDocumentFieldView> getParameters()
 	{
 		return parameters.getFieldViews();
 	}
 
-	public ProcessInstance copy(final CopyMode copyMode)
+	public ADProcessInstanceController copy(final CopyMode copyMode)
 	{
-		return new ProcessInstance(this, copyMode);
+		return new ADProcessInstanceController(this, copyMode);
 	}
 
 	public IAutoCloseable activate()
@@ -198,25 +200,26 @@ public final class ProcessInstance
 		return JavaProcess.temporaryChangeCurrentInstance(processClassInstance);
 	}
 
+	@Override
 	public LookupValuesList getParameterLookupValues(final String parameterName)
 	{
 		return parameters.getFieldLookupValues(parameterName);
 	}
 
+	@Override
 	public LookupValuesList getParameterLookupValuesForQuery(final String parameterName, final String query)
 	{
 		return parameters.getFieldLookupValuesForQuery(parameterName, query);
 	}
 
+	@Override
 	public void processParameterValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
 		assertNotExecuted();
 		parameters.processValueChanges(events, reason);
 	}
 
-	/**
-	 * @return execution result or throws exception if the process was not already executed
-	 */
+	@Override
 	public ProcessInstanceResult getExecutionResult()
 	{
 		final ProcessInstanceResult executionResult = this.executionResult;
@@ -240,6 +243,7 @@ public final class ProcessInstance
 		}
 	}
 
+	@Override
 	public ProcessInstanceResult startProcess()
 	{
 		assertNotExecuted();
@@ -253,7 +257,7 @@ public final class ProcessInstance
 		}
 
 		//
-		executionResult = executeADProcess(getAD_PInstance_ID(), getDescriptor(), viewsRepo);
+		executionResult = executeADProcess(getInstanceId(), getDescriptor(), viewsRepo);
 		if (executionResult.isSuccess())
 		{
 			executed = false;
@@ -267,7 +271,7 @@ public final class ProcessInstance
 		// Create the process info and execute the process synchronously
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
 		final String adLanguage = Env.getAD_Language(ctx);
-		final String name = processDescriptor.getCaption(adLanguage);
+		final String name = processDescriptor.getCaption().translate(adLanguage);
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
@@ -291,8 +295,7 @@ public final class ProcessInstance
 				summary = null;
 			}
 
-			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
-					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
+			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder(DocumentId.of(processExecutionResult.getAD_PInstance_ID()))
 					.setSummary(summary)
 					.setError(processExecutionResult.isError());
 
@@ -472,13 +475,7 @@ public final class ProcessInstance
 		return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
 	}
 
-	/**
-	 * Save
-	 *
-	 * @param throwEx <code>true</code> if we shall throw an exception if document it's not valid or it's not saved
-	 * @return true if valid and saved
-	 */
-	public boolean saveIfValidAndHasChanges(final boolean throwEx)
+	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
 	{
 		final Document parametersDocument = getParametersDocument();
 		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges();
@@ -525,7 +522,7 @@ public final class ProcessInstance
 	public static class Builder
 	{
 		private ProcessDescriptor processDescriptor;
-		private DocumentId adPInstanceId;
+		private DocumentId instanceId;
 		private Document parameters;
 
 		private IDocumentViewsRepository viewsRepo;
@@ -537,10 +534,10 @@ public final class ProcessInstance
 		{
 		}
 
-		public ProcessInstance build()
+		public ADProcessInstanceController build()
 		{
 
-			return new ProcessInstance(this);
+			return new ADProcessInstanceController(this);
 		}
 
 		public Builder setProcessDescriptor(final ProcessDescriptor processDescriptor)
@@ -549,9 +546,9 @@ public final class ProcessInstance
 			return this;
 		}
 
-		public Builder setAD_PInstance_ID(final DocumentId adPInstanceId)
+		public Builder setInstanceId(final DocumentId instanceId)
 		{
-			this.adPInstanceId = adPInstanceId;
+			this.instanceId = instanceId;
 			return this;
 		}
 

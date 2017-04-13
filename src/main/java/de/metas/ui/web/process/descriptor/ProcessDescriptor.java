@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPreconditionsContext;
@@ -89,14 +90,14 @@ public final class ProcessDescriptor
 		return processId;
 	}
 
-	public String getCaption(final String adLanguage)
+	public ITranslatableString getCaption()
 	{
-		return getLayout().getCaption(adLanguage);
+		return getLayout().getCaption();
 	}
 
-	public String getDescription(final String adLanguage)
+	public ITranslatableString getDescription()
 	{
-		return getLayout().getDescription(adLanguage);
+		return getLayout().getDescription();
 	}
 
 	public ProcessDescriptorType getType()
@@ -159,6 +160,7 @@ public final class ProcessDescriptor
 
 	public DocumentEntityDescriptor getParametersDescriptor()
 	{
+		Check.assumeNotNull(parametersDescriptor, "Parameter parametersDescriptor is not null");
 		return parametersDescriptor;
 	}
 
@@ -276,7 +278,6 @@ public final class ProcessDescriptor
 
 		private DocumentEntityDescriptor getParametersDescriptor()
 		{
-			Check.assumeNotNull(parametersDescriptor, "Parameter parametersDescriptor is not null");
 			return parametersDescriptor;
 		}
 

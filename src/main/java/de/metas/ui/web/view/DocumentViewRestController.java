@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
+import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
@@ -58,7 +62,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping(value = DocumentViewRestController.ENDPOINT)
 public class DocumentViewRestController
 {
-	private static final String PARAM_WindowId = "windowId";
+	static final String PARAM_WindowId = "windowId";
 
 	/* package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
 
@@ -75,6 +79,9 @@ public class DocumentViewRestController
 
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
+
+	@Autowired
+	private ProcessRestController processRestController;
 
 	private JSONOptions newJSONOptions()
 	{
@@ -154,8 +161,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentViewResult result = documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
+		final DocumentViewResult result = documentViewsRepo.getView(adWindowId, viewId)
 				.getPage(firstRow, pageLength, orderBysListStr);
 		return JSONDocumentViewResult.of(result);
 	}
@@ -170,8 +176,7 @@ public class DocumentViewRestController
 
 		final Set<DocumentId> documentIds = DocumentId.ofCommaSeparatedString(idsListStr);
 
-		final List<IDocumentView> result = documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
+		final List<IDocumentView> result = documentViewsRepo.getView(adWindowId, viewId)
 				.getByIds(documentIds);
 		return JSONDocumentView.ofDocumentViewList(result);
 	}
@@ -185,9 +190,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentView row = documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
-				.getById(documentId);
+		final IDocumentView row = documentViewsRepo.getView(adWindowId, viewId).getById(documentId);
 
 		final IDocumentViewSelection includedView = row.getCreateIncludedView(documentViewsRepo);
 		return JSONDocumentViewResult.of(DocumentViewResult.ofView(includedView));
@@ -204,8 +207,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
+		return documentViewsRepo.getView(adWindowId, viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
@@ -220,10 +222,17 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
+		return documentViewsRepo.getView(adWindowId, viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
 				.transform(JSONLookupValuesList::ofLookupValuesList);
+	}
+
+	private Stream<WebuiRelatedProcessDescriptor> streamAllViewActions(final int adWindowId, final String viewId, final String selectedIdsListStr)
+	{
+		final Set<DocumentId> selectedDocumentIds = DocumentId.ofCommaSeparatedString(selectedIdsListStr);
+		final IDocumentViewSelection view = documentViewsRepo.getView(adWindowId, viewId);
+		final IProcessPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(view, selectedDocumentIds);
+		return processRestController.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 
 	@GetMapping("/{viewId}/actions")
@@ -235,10 +244,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentViewSelection view = documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId);
-
-		return view.streamActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
+		return streamAllViewActions(adWindowId, viewId, selectedIdsListStr)
 				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
@@ -252,9 +258,8 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
-				.streamQuickActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
+		return streamAllViewActions(adWindowId, viewId, selectedIdsListStr)
+				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
 				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}

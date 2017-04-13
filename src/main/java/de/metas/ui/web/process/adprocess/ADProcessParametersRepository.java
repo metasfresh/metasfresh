@@ -1,4 +1,4 @@
-package de.metas.ui.web.process.descriptor;
+package de.metas.ui.web.process.adprocess;
 
 import java.util.List;
 import java.util.Map;
@@ -42,15 +42,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * #L%
  */
 
-public class ProcessParametersRepository implements DocumentsRepository
+/* package */ class ADProcessParametersRepository implements DocumentsRepository
 {
-	public static final transient ProcessParametersRepository instance = new ProcessParametersRepository();
+	public static final transient ADProcessParametersRepository instance = new ADProcessParametersRepository();
 
 	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	private static final String VERSION_DEFAULT = "0";
 
-	private ProcessParametersRepository()
+	private ADProcessParametersRepository()
 	{
 		super();
 	}

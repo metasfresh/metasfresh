@@ -48,7 +48,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.notification.UserNotification.TargetType;
-import de.metas.ui.web.process.ProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentViewsRepository;
@@ -101,7 +101,7 @@ public class DebugRestController
 
 	@Autowired
 	@Lazy
-	private ProcessInstancesRepository pinstancesRepo;
+	private ProcessRestController processesController;
 
 	@Autowired
 	@Lazy
@@ -117,7 +117,7 @@ public class DebugRestController
 		CacheMgt.get().reset();
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
-		pinstancesRepo.cacheReset();
+		processesController.cacheReset();
 
 		System.gc();
 	}

@@ -164,6 +164,11 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	{
 		return getType().canIssue();
 	}
+	
+	public boolean isNotProcessedCandidate()
+	{
+		return !isProcessed() && getPP_Order_Qty_ID() > 0;
+	}
 
 	@Override
 	public List<PPOrderLineRow> getIncludedDocuments()

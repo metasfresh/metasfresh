@@ -1,4 +1,4 @@
-package de.metas.ui.web.process.descriptor;
+package de.metas.ui.web.process.adprocess;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -21,8 +21,6 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
@@ -33,8 +31,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
-import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -74,8 +74,13 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  * #L%
  */
 
-@Service
-public class ProcessDescriptorsFactory
+/**
+ * Creates {@link ProcessDescriptor}s from {@link I_AD_Process} based processes
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+/* package */ class ADProcessDescriptorsFactory
 {
 	// services
 	// private static final transient Logger logger = LogManager.getLogger(ProcessDescriptorsFactory.class);
@@ -83,21 +88,16 @@ public class ProcessDescriptorsFactory
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = new DefaultValueExpressionsFactory(false);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	
+
 	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
-	@Autowired
-	private UserSession userSession;
-
-	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext, final IUserRolePermissions userRolePermissions)
 	{
 		final String tableName = preconditionsContext.getTableName();
 		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
-		
+
 		final int adWindowId = preconditionsContext.getAD_Window_ID();
-		
-		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
-		
+
 		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
 				.values()
 				.stream()
@@ -117,7 +117,7 @@ public class ProcessDescriptorsFactory
 	{
 		return processDescriptorsByProcessId.getOrLoad(processId, () -> retrieveProcessDescriptor(processId));
 	}
-
+	
 	private ProcessDescriptor retrieveProcessDescriptor(final ProcessId processId)
 	{
 		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), processId.getProcessIdAsInt(), I_AD_Process.class, ITrx.TRXNAME_None);
@@ -164,7 +164,7 @@ public class ProcessDescriptorsFactory
 		final IModelTranslationMap adProcessParaTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcessParam);
 		final String parameterName = adProcessParam.getColumnName();
 		final boolean isParameterTo = false; // TODO: implement range parameters support
-		
+
 		//
 		// Ask the provider if it has some custom lookup descriptor
 		LookupDescriptorProvider lookupDescriptorProvider = webuiProcesClassInfo.getLookupDescriptorProviderOrNull(parameterName);
@@ -215,11 +215,11 @@ public class ProcessDescriptorsFactory
 		;
 
 		// Add a callout to forward process parameter value (UI) to current process instance
-		if(webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName, isParameterTo))
+		if (webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName, isParameterTo))
 		{
 			paramDescriptor.addCallout(calloutField -> forwardValueToCurrentProcessInstance(calloutField, isParameterTo));
 		}
-		
+
 		return paramDescriptor;
 	}
 
@@ -232,7 +232,7 @@ public class ProcessDescriptorsFactory
 		//
 		// Build up our value source
 		Object parameterValue = calloutField.getValue();
-		if(parameterValue instanceof LookupValue)
+		if (parameterValue instanceof LookupValue)
 		{
 			parameterValue = ((LookupValue)parameterValue).getId();
 		}
@@ -242,7 +242,7 @@ public class ProcessDescriptorsFactory
 		processInstance.loadParameterValueNoFail(parameterName, isParameterTo, source);
 	}
 
-	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final DocumentFieldDescriptor.Builder processParaDescriptor)
+	private static DocumentLayoutElementDescriptor createLayoutElement(final DocumentFieldDescriptor.Builder processParaDescriptor)
 	{
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(processParaDescriptor.getCaption())
@@ -250,7 +250,8 @@ public class ProcessDescriptorsFactory
 				.setWidgetType(processParaDescriptor.getWidgetType())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
 						.setLookupSource(processParaDescriptor.getLookupSourceType())
-						.setPublicField(true));
+						.setPublicField(true))
+				.build();
 	}
 
 	private static final ProcessDescriptorType extractType(final I_AD_Process adProcess)
@@ -302,7 +303,7 @@ public class ProcessDescriptorsFactory
 			@Override
 			public DocumentsRepository getDocumentsRepository()
 			{
-				return ProcessParametersRepository.instance;
+				return ADProcessParametersRepository.instance;
 			}
 
 		};

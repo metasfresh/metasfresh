@@ -1,9 +1,14 @@
 package de.metas.ui.web.process;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,21 +20,27 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.logging.LogManager;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import io.swagger.annotations.Api;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,27 +71,65 @@ public class ProcessRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/process";
 
+	private static final Logger logger = LogManager.getLogger(ProcessRestController.class);
+
 	@Autowired
 	private UserSession userSession;
 
-	@Autowired
-	private ProcessInstancesRepository instancesRepository;
+	private final ConcurrentHashMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType = new ConcurrentHashMap<>();
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
+
+	public ProcessRestController(final ApplicationContext context)
+	{
+		//
+		// Discover and register process instance repositories
+		context.getBeansOfType(IProcessInstancesRepository.class)
+				.values().stream()
+				.forEach(processInstanceRepo -> {
+					final String processHandlerType = processInstanceRepo.getProcessHandlerType();
+					pinstancesRepositoriesByHandlerType.put(processHandlerType, processInstanceRepo);
+					logger.info("Registered process instances repository for '{}': {}", processHandlerType, processInstanceRepo);
+				});
+	}
 
 	private JSONOptions newJsonOpts()
 	{
 		return JSONOptions.of(userSession);
 	}
 
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
+	{
+		return getAllRepositories()
+				.stream()
+				.flatMap(repo -> repo.streamDocumentRelatedProcesses(preconditionsContext));
+	}
+
+	private final IProcessInstancesRepository getRepository(@NonNull final ProcessId processId)
+	{
+		final String processHandlerType = processId.getProcessHandlerType();
+		final IProcessInstancesRepository processInstanceRepo = pinstancesRepositoriesByHandlerType.get(processHandlerType);
+		if (processInstanceRepo == null)
+		{
+			throw new EntityNotFoundException("No pinstances repository found for processHandlerType=" + processHandlerType);
+		}
+		return processInstanceRepo;
+	}
+
+	private Collection<IProcessInstancesRepository> getAllRepositories()
+	{
+		return pinstancesRepositoriesByHandlerType.values();
+	}
+
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public JSONProcessLayout getLayout(
 			@PathVariable("processId") final String adProcessIdStr //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
 		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 		final ProcessLayout layout = instancesRepository.getProcessDescriptor(processId).getLayout();
 		return JSONProcessLayout.of(layout, newJsonOpts());
 	}
@@ -89,34 +138,45 @@ public class ProcessRestController
 	public JSONProcessInstance createInstanceFromRequest(@PathVariable("processId") final String processIdStr, @RequestBody final JSONCreateProcessInstanceRequest request)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processId, request);
+			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(processId, request);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
 	public JSONProcessInstance getInstance(
-			@PathVariable("processId") final String processIdStr_NOTUSED //
-			, @PathVariable("pinstanceId") final int pinstanceId //
-	)
+			@PathVariable("processId") final String processIdStr //
+			, @PathVariable("pinstanceId") final String pinstanceIdStr //
+			)
 	{
 		userSession.assertLoggedIn();
+
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.PATCH)
 	public List<JSONDocument> processParametersChangeEvents(
-			@PathVariable("processId") final String processIdStr_NOTUSED //
-			, @PathVariable("pinstanceId") final int pinstanceId //
+			@PathVariable("processId") final String processIdStr //
+			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
+
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
 			instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
@@ -129,11 +189,16 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/start", method = RequestMethod.GET)
 	public JSONProcessInstanceResult startProcess(
-			@PathVariable("processId") final String processIdStr_NOTUSED //
-			, @PathVariable("pinstanceId") final int pinstanceId //
-	)
+			@PathVariable("processId") final String processIdStr //
+			, @PathVariable("pinstanceId") final String pinstanceIdStr //
+			)
 	{
 		userSession.assertLoggedIn();
+
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
 			return instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
@@ -145,11 +210,17 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/print/{filename:.*}", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getReport(
-			@PathVariable("processId") final String processIdStr_NOTUSED //
-			, @PathVariable("pinstanceId") final int pinstanceId //
+			@PathVariable("processId") final String processIdStr //
+			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("filename") final String filename //
-	)
+			)
 	{
+		userSession.assertLoggedIn();
+		
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 		final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
 
 		final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
@@ -169,13 +240,18 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterTypeahead(
-			@PathVariable("processId") final String processIdStr_NOTUSED //
-			, @PathVariable("pinstanceId") final int pinstanceId //
+			@PathVariable("processId") final String processIdStr //
+			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
+
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
@@ -183,14 +259,24 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterDropdown(
-			@PathVariable("processId") final String processIdStr_NOTUSED //
-			, @PathVariable("pinstanceId") final int pinstanceId //
+			@PathVariable("processId") final String processIdStr //
+			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("parameterName") final String parameterName //
-	)
+			)
 	{
 		userSession.assertLoggedIn();
 
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
+		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
+	}
+
+	public void cacheReset()
+	{
+		getAllRepositories().forEach(IProcessInstancesRepository::cacheReset);
 	}
 }

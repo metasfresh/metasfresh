@@ -26,7 +26,7 @@ import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
-import de.metas.ui.web.process.ProcessInstance;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -113,7 +113,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	@Param(parameterName = ProcessInstance.PARAM_ViewId, mandatory = true)
+	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewId, mandatory = true)
 	private String p_WebuiViewId;
 
 	public WEBUI_M_HU_ReverseReceipt()

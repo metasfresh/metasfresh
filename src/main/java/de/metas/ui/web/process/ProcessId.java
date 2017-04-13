@@ -38,6 +38,12 @@ public final class ProcessId
 	{
 		return new ProcessId(processHandlerType, processId);
 	}
+	
+	public static ProcessId of(final String processHandlerType, final String processId)
+	{
+		return new ProcessId(processHandlerType, processId);
+	}
+
 
 	public static final ProcessId ofAD_Process_ID(final int adProcessId)
 	{
@@ -76,6 +82,16 @@ public final class ProcessId
 		this.processHandlerType = processHandlerType;
 		processId = String.valueOf(processIdAsInt);
 		this.processIdAsInt = processIdAsInt;
+	}
+
+	private ProcessId(final String processHandlerType, final String processId)
+	{
+		Preconditions.checkArgument(processHandlerType != null && !processHandlerType.isEmpty(), "invalid processHandlerType: %s", processHandlerType);
+		Preconditions.checkArgument(processId != null && !processId.isEmpty(), "invalid processId: %s", processId);
+
+		json = processHandlerType + "_" + processId;
+		this.processHandlerType = processHandlerType;
+		this.processId = processId;
 	}
 
 	@Override

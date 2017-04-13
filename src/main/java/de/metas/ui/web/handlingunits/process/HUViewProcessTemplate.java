@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
-import de.metas.ui.web.process.ViewBasedProcessTemplate;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L

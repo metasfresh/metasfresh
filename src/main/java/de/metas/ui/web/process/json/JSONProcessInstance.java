@@ -7,7 +7,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.process.ProcessInstance;
+import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -36,20 +36,20 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @SuppressWarnings("serial")
 public class JSONProcessInstance implements Serializable
 {
-	public static JSONProcessInstance of(final ProcessInstance pinstance, final JSONOptions jsonOpts)
+	public static JSONProcessInstance of(final IProcessInstanceController pinstance, final JSONOptions jsonOpts)
 	{
 		return new JSONProcessInstance(pinstance, jsonOpts);
 	}
 
 	@JsonProperty("pinstanceId")
-	private final int pinstanceId;
+	private final String pinstanceId;
 	@JsonProperty("parameters")
 	private final List<JSONDocumentField> parameters;
 
-	private JSONProcessInstance(final ProcessInstance pinstance, final JSONOptions jsonOpts)
+	private JSONProcessInstance(final IProcessInstanceController pinstance, final JSONOptions jsonOpts)
 	{
 		super();
-		pinstanceId = pinstance.getAD_PInstance_ID().toInt();
+		pinstanceId = pinstance.getInstanceId().toJson();
 
 		parameters = pinstance.getParameters()
 				.stream()

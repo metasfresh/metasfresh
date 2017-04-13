@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Functions;
 import org.adempiere.util.Functions.MemoizingFunction;
+import org.adempiere.util.collections.ListUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -61,9 +62,9 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 		}
 	}
 
-	public static final DocumentViewAsPreconditionsContext newInstance(final IDocumentViewSelection view, final String tableName, final Collection<DocumentId> selectedDocumentIds)
+	public static final DocumentViewAsPreconditionsContext newInstance(final IDocumentViewSelection view, final Collection<DocumentId> selectedDocumentIds)
 	{
-		return new DocumentViewAsPreconditionsContext(view, tableName, selectedDocumentIds);
+		return new DocumentViewAsPreconditionsContext(view, selectedDocumentIds);
 	}
 
 	private static final Logger logger = LogManager.getLogger(DocumentViewAsPreconditionsContext.class);
@@ -76,12 +77,12 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
 
-	private DocumentViewAsPreconditionsContext(final IDocumentViewSelection view, final String tableName, final Collection<DocumentId> selectedDocumentIds)
+	private DocumentViewAsPreconditionsContext(final IDocumentViewSelection view, final Collection<DocumentId> selectedDocumentIds)
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
 		this.adWindowId = view.getAD_Window_ID();
-		this.tableName = tableName;
+		this.tableName = view.getTableName();
 		this.selectedDocumentIds = ImmutableSet.copyOf(selectedDocumentIds);
 	}
 
@@ -123,6 +124,11 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 	public Set<DocumentId> getSelectedDocumentIds()
 	{
 		return selectedDocumentIds;
+	}
+	
+	public DocumentId getSingleSelectedDocumentId()
+	{
+		return ListUtils.singleElement(selectedDocumentIds);
 	}
 
 	@Override

@@ -1,13 +1,16 @@
-package de.metas.ui.web.process;
+package de.metas.ui.web.process.adprocess;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,13 +25,17 @@ import com.google.common.cache.RemovalNotification;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.process.IProcessInstanceController;
+import de.metas.ui.web.process.IProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.process.descriptor.ProcessParametersRepository;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -62,43 +69,66 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * {@link IProcessInstancesRepository} implementation for metasfresh {@link I_AD_Process}s.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
 @Component
-public class ProcessInstancesRepository
+public class ADProcessInstancesRepository implements IProcessInstancesRepository
 {
 	//
 	// Services
 	@Autowired
-	private ProcessDescriptorsFactory processDescriptorFactory;
+	private UserSession userSession;
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
+	//
+	private final ADProcessDescriptorsFactory processDescriptorFactory = new ADProcessDescriptorsFactory();
 
-	private final LoadingCache<DocumentId, ProcessInstance> processInstances = CacheBuilder.newBuilder()
+	private final LoadingCache<DocumentId, ADProcessInstanceController> processInstances = CacheBuilder.newBuilder()
 			.expireAfterAccess(10, TimeUnit.MINUTES)
-			.removalListener(new RemovalListener<DocumentId, ProcessInstance>()
+			.removalListener(new RemovalListener<DocumentId, ADProcessInstanceController>()
 			{
 				@Override
-				public void onRemoval(final RemovalNotification<DocumentId, ProcessInstance> notification)
+				public void onRemoval(final RemovalNotification<DocumentId, ADProcessInstanceController> notification)
 				{
-					final ProcessInstance pinstance = notification.getValue();
+					final IProcessInstanceController pinstance = notification.getValue();
 					pinstance.destroy();
 				}
 			})
 			.build(CacheLoader.from(adPInstanceId -> retrieveProcessInstance(adPInstanceId)));
 
+	@Override
+	public String getProcessHandlerType()
+	{
+		return ProcessId.PROCESSHANDLERTYPE_AD_Process;
+	}
+
+	@Override
 	public void cacheReset()
 	{
 		processInstances.invalidateAll();
 		processInstances.cleanUp();
 	}
 
+	@Override
 	public ProcessDescriptor getProcessDescriptor(final ProcessId processId)
 	{
 		return processDescriptorFactory.getProcessDescriptor(processId);
 	}
 
-	public ProcessInstance createNewProcessInstance(final ProcessId processId, final JSONCreateProcessInstanceRequest request)
+	@Override
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
+	{
+		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
+		return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext, userRolePermissions);
+	}
+
+	@Override
+	public IProcessInstanceController createNewProcessInstance(final ProcessId processId, final JSONCreateProcessInstanceRequest request)
 	{
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
@@ -113,7 +143,7 @@ public class ProcessInstancesRepository
 			// Build the parameters document
 			final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-			final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
+			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
 			final int windowNo = parametersDoc.getWindowNo();
 
 			// Set parameters's default values
@@ -124,9 +154,9 @@ public class ProcessInstancesRepository
 
 			//
 			// Create (webui) process instance and add it to our internal cache.
-			final ProcessInstance pinstance = ProcessInstance.builder()
+			final ADProcessInstanceController pinstance = ADProcessInstanceController.builder()
 					.setProcessDescriptor(processDescriptor)
-					.setAD_PInstance_ID(adPInstanceId)
+					.setInstanceId(adPInstanceId)
 					.setParameters(parametersDoc)
 					.setViewsRepo(documentViewsRepo)
 					.setView(request.getViewId(), request.getViewDocumentIds())
@@ -141,12 +171,12 @@ public class ProcessInstancesRepository
 	{
 		// Validate request's AD_Process_ID
 		// (we are not using it, but just for consistency)
-		if(!Objects.equals(request.getProcessId(), processId))
+		if (!Objects.equals(request.getProcessId(), processId))
 		{
 			throw new IllegalArgumentException("Request's processId is not valid. It shall be " + processId + " but it was " + request.getProcessId());
 		}
 
-		//Check.assume(adProcessId > 0, "adProcessId > 0");
+		// Check.assume(adProcessId > 0, "adProcessId > 0");
 
 		final String tableName;
 		final int recordId;
@@ -181,7 +211,7 @@ public class ProcessInstancesRepository
 		else if (singleDocumentPath != null)
 		{
 			viewSelectedIdsAsStr = null;
-			
+
 			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(singleDocumentPath);
 			tableName = entityDescriptor.getTableNameOrNull();
 			if (singleDocumentPath.isRootDocument())
@@ -214,13 +244,13 @@ public class ProcessInstancesRepository
 				.setWhereClause(sqlWhereClause)
 				//
 				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
-				.addParameter(ProcessInstance.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
+				.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewId) // internal parameter
+				.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
 				//
 				.build();
 	}
 
-	private ProcessInstance retrieveProcessInstance(final DocumentId adPInstanceId)
+	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceId)
 	{
 		Check.assumeNotNull(adPInstanceId, "Parameter adPInstanceId is not null");
 		Check.assume(adPInstanceId.toInt() > 0, "adPInstanceId > 0");
@@ -255,14 +285,14 @@ public class ProcessInstancesRepository
 			//
 			// View informations
 			final IRangeAwareParams processInfoParams = processInfo.getParameterAsIParams();
-			final String viewId = processInfoParams.getParameterAsString(ProcessInstance.PARAM_ViewId);
-			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ProcessInstance.PARAM_ViewSelectedIds);
+			final String viewId = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewId);
+			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewSelectedIds);
 			final Set<DocumentId> viewSelectedIds = DocumentId.ofCommaSeparatedString(viewSelectedIdsStr);
 
 			//
-			return ProcessInstance.builder()
+			return ADProcessInstanceController.builder()
 					.setProcessDescriptor(processDescriptor)
-					.setAD_PInstance_ID(adPInstanceId)
+					.setInstanceId(adPInstanceId)
 					.setParameters(parametersDoc)
 					.setViewsRepo(documentViewsRepo)
 					.setView(viewId, viewSelectedIds)
@@ -271,13 +301,12 @@ public class ProcessInstancesRepository
 		}
 	}
 
-	public <R> R forProcessInstanceReadonly(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
+	@Override
+	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
 	{
-		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
-
 		try (final IAutoCloseable readLock = processInstances.getUnchecked(pinstanceId).lockForReading())
 		{
-			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId);
+			final ADProcessInstanceController processInstance = processInstances.getUnchecked(pinstanceId);
 			try (final IAutoCloseable c = processInstance.activate())
 			{
 				return processor.apply(processInstance);
@@ -285,13 +314,12 @@ public class ProcessInstancesRepository
 		}
 	}
 
-	public <R> R forProcessInstanceWritable(final int pinstanceIdAsInt, final Function<ProcessInstance, R> processor)
+	@Override
+	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
 	{
-		final DocumentId pinstanceId = DocumentId.of(pinstanceIdAsInt);
-
 		try (final IAutoCloseable writeLock = processInstances.getUnchecked(pinstanceId).lockForWriting())
 		{
-			final ProcessInstance processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
+			final ADProcessInstanceController processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
 
 			// Make sure the process was not already executed.
 			// If it was executed we are not allowed to change it.

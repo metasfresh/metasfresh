@@ -1,4 +1,4 @@
-package de.metas.ui.web.process;
+package de.metas.ui.web.process.adprocess;
 
 import org.compiere.util.Env;
 
