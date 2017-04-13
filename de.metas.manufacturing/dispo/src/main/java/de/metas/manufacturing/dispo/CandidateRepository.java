@@ -140,11 +140,15 @@ public class CandidateRepository
 		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(InterfaceWrapperHelper.newInstance(I_MD_Candidate.class));
 
 		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecordToUse.setMD_Candidate_SubType(candidate.getSubType().toString());
 		candidateRecordToUse.setM_Warehouse_ID(candidate.getWarehouseId());
 		candidateRecordToUse.setM_Product_ID(candidate.getProductId());
 		candidateRecordToUse.setQty(candidate.getQuantity());
 		candidateRecordToUse.setDateProjected(new Timestamp(candidate.getDate().getTime()));
+
+		if (candidate.getSubType() != null)
+		{
+			candidateRecordToUse.setMD_Candidate_SubType(candidate.getSubType().toString());
+		}
 
 		if (candidate.getParentId() != null)
 		{
