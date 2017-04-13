@@ -33,35 +33,34 @@ class Actions extends Component {
         const {closeSubheader, openModal} = this.props;
         const {data} = this.state;
 
-        return (
-            <div>
-                {data && data.length ? data.map((item, key) =>
-                    <div
-                        className="subheader-item js-subheader-item"
-                        onClick={() => {
-                            openModal(
-                                item.processId + '', 'process', item.caption
-                            );
-                            closeSubheader()
-                        }}
-                        key={key}
-                        tabIndex={0}
-                    >
-                        {item.caption}
-                    </div>
-                ) :
-                    <div className="subheader-item subheader-item-disabled">
-                        There is no actions
-                    </div>
-                }
+        return (data && data.length) ? data.map((item, key) =>
+            <div
+                className="subheader-item js-subheader-item"
+                onClick={() => {
+                    openModal(
+                        item.processId + '', 'process', item.caption
+                    );
+                    closeSubheader()
+                }}
+                key={key}
+                tabIndex={0}
+            >
+                {item.caption}
             </div>
-        );
+        ) : <div className="subheader-item subheader-item-disabled">
+            There is no actions
+        </div>
     }
 
     render() {
         const {data} = this.state;
         return (
-            <div>
+            <div
+                className="subheader-column js-subheader-column"
+                tabIndex={0}
+            >
+                <div className="subheader-header">Actions</div>
+                <div className="subheader-break" />
                 {!data ?
                     <Loader /> :
                     this.renderData()

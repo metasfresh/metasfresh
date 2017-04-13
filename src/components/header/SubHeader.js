@@ -209,18 +209,11 @@ class Subheader extends Component {
         } = this.props;
 
         return (
-            <div
-                className="subheader-column js-subheader-column"
-                tabIndex={0}
-            >
-                <div className="subheader-header">Actions</div>
-                <div className="subheader-break" />
-                <Actions
-                    {...{windowType, entity, openModal, closeSubheader}}
-                    docId={dataId ? dataId : query && query.viewId}
-                    rowId={selectedWindowType === windowType ? selected : []}
-                />
-            </div>
+            <Actions
+                {...{windowType, entity, openModal, closeSubheader}}
+                docId={dataId ? dataId : query && query.viewId}
+                rowId={selectedWindowType === windowType ? selected : []}
+            />
         )
     }
 
