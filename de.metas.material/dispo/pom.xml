@@ -3,18 +3,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.manufacturing</groupId>
-		<artifactId>metasfresh-manufacturing</artifactId>
+		<groupId>de.metas.material</groupId>
+		<artifactId>metasfresh-material</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>metasfresh-manufacturing-dispo</artifactId>
+	<artifactId>metasfresh-material-dispo</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
-		<start-class>de.metas.manufacturing.dispo.ServerBoot</start-class>
-		<migration-sql-basedir>75-manufacturing-dispo</migration-sql-basedir>
+		<start-class>de.metas.material.dispo.ServerBoot</start-class>
+		<migration-sql-basedir>75-material-dispo</migration-sql-basedir>
 	</properties>
 
 	<dependencyManagement>
@@ -83,8 +83,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.manufacturing</groupId>
-			<artifactId>metasfresh-manufacturing-event</artifactId>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

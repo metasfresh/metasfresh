@@ -69,10 +69,10 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- used by shipment and receipt schedules -->
+		<!-- metasfresh/metasfresh#523 -->
 		<dependency>
-			<groupId>de.metas.manufacturing</groupId>
-			<artifactId>metasfresh-manufacturing-event</artifactId>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

@@ -9,8 +9,8 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.manufacturing</groupId>
-	<artifactId>metasfresh-manufacturing</artifactId>
+	<groupId>de.metas.material</groupId>
+	<artifactId>metasfresh-material</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>

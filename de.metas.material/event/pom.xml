@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.manufacturing</groupId>
-		<artifactId>metasfresh-manufacturing</artifactId>
+		<groupId>de.metas.material</groupId>
+		<artifactId>metasfresh-material</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>metasfresh-manufacturing-event</artifactId>
+	<artifactId>metasfresh-material-event</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
