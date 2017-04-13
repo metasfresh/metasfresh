@@ -498,12 +498,12 @@
 
 .header-item.icon-sm {
     font-size: .875rem;
-    vertical-align: middle;
+    padding-top: 0;
 }
 
 .header-item.icon-sm i {
-    vertical-align: middle;
-    line-height: 56px;
+    vertical-align: text-bottom;
+    line-height: 0.9;
 }
 
 .header-item-container {
