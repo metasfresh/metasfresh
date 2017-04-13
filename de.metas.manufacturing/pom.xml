@@ -14,8 +14,8 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>metasfresh-manufacturing-dispo</module>
-		<module>metasfresh-manufacturing-event</module>
+		<module>dispo</module>
+		<module>event</module>
 	</modules>
 
 </project>
