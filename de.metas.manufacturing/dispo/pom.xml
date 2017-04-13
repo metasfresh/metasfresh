@@ -84,7 +84,7 @@
 
 		<dependency>
 			<groupId>de.metas.manufacturing</groupId>
-			<artifactId>metasfresh-manufacturing-event-api</artifactId>
+			<artifactId>metasfresh-manufacturing-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

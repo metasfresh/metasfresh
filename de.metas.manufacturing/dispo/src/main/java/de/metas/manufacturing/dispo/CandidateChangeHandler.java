@@ -43,18 +43,32 @@ public class CandidateChangeHandler
 	@Autowired
 	private CandidateFactory candidateFactory;
 
-	public List<Candidate> onDemandCandidateNewOrChange(final Candidate demandCandidate)
+	public void onDemandCandidateNewOrChange(final Candidate demandCandidate)
 	{
-		// have some collector to collect all records we create and change
-		final List<Candidate> newAndChangedCandidates = new ArrayList<>();
+		final Optional<Candidate> existingDemandCandidate = candidateRepository.retrieve(demandCandidate);
 
-		// create a new stock candidate or retrieve an existing one and set its qty to the negated value of the demand candidate's qty.
-		// the stock candidate shall be a *child* of the demandCandidate
-		final Candidate stockCandidate = null;
+		final Candidate childStockCandidate;
+		if (existingDemandCandidate.isPresent())
+		{
+			// if there is a demand candidate, then it must have a child stock candidate
+			childStockCandidate = null; // TODO candidateRepository.retrieveSingleChild(existingDemandCandidate.get());
+		}
+		else
+		{
+			childStockCandidate = candidateFactory
+					.createStockCandidate(
+							demandCandidate.mkSegment())
+					.withReferencedRecord( // augment our newly created stock candidate with the supply candidate's reference
+							demandCandidate.getReferencedRecord());
 
-		// final BigDecimal delta = null; // computed from the stock candidate's qty before and after the change.
+		}
 
-		newAndChangedCandidates.add(stockCandidate);
+		final Candidate demandCandidateWithId = candidateRepository.addOrReplace(demandCandidate);
+
+		final BigDecimal newStockQty = childStockCandidate.getQuantity().subtract(demandCandidate.getQuantity());
+		final Candidate childStockCandidateWithId = onStockCandidateNewOrChanged(childStockCandidate
+				.withQuantity(newStockQty)
+				.withParentId(demandCandidateWithId.getId()));
 
 		{
 			// see if we can react "locally" to the new or changed stock candidate
@@ -66,12 +80,10 @@ public class CandidateChangeHandler
 				// create a candidate with type "supply" according to the product-planning infos if there is no candidate yet.
 				// If there is already a candidate, then verify if it is still a fit (product) for 'stockCandidate'. if no, then recreate it according to the planning. if yes, then update it's qty according to 'delta'
 				final Candidate supplyCandidate = null;
-				newAndChangedCandidates.add(supplyCandidate);
 
 				// the demand candidates for the supplyCandidate have the the same locator, but different products (PP_Order) or the same product but a different locator (DD_Order)
 				// if they already exist, then update them according to the supply candidate's qty change
 				final List<Candidate> demandCandidates = null;
-				newAndChangedCandidates.addAll(demandCandidates);
 
 				// the negative qty of stockCandidate could be balanced. We have e.g.
 				// demand-candidate with 23 (i.e. -23)
@@ -91,8 +103,6 @@ public class CandidateChangeHandler
 				// this notification shall lead to all "later" stock candidates with the same product and locator being notified
 			}
 		}
-
-		return newAndChangedCandidates;
 	}
 
 	/**
@@ -122,7 +132,7 @@ public class CandidateChangeHandler
 			parentStockCandidate = candidateFactory
 					.createStockCandidate(
 							supplyCandidate.mkSegment())
-					.withReferencedRecord(
+					.withReferencedRecord( // augment our newly created stock candidate with the supply candidate's reference
 							supplyCandidate.getReferencedRecord());
 		}
 

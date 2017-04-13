@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>metasfresh-manufacturing-event-api</artifactId>
+	<artifactId>metasfresh-manufacturing-event</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>

@@ -13,4 +13,9 @@
 	<artifactId>metasfresh-manufacturing</artifactId>
 	<packaging>pom</packaging>
 
+	<modules>
+		<module>metasfresh-manufacturing-dispo</module>
+		<module>metasfresh-manufacturing-event</module>
+	</modules>
+
 </project>
