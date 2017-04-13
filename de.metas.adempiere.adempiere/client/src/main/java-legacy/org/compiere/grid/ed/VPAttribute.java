@@ -35,6 +35,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
@@ -363,8 +364,21 @@ public class VPAttribute extends JComponent
 
 	private int getM_AttributeSetInstance_ID()
 	{
-		final Integer value = (Integer)getValue();
-		return value == null ? 0 : value.intValue();
+		final Object valueObj = getValue();
+		if (valueObj == null
+				|| (valueObj.getClass().equals(Object.class)) // initial value
+		)
+		{
+			return IAttributeDAO.M_AttributeSetInstance_ID_None;
+		}
+
+		if (valueObj instanceof Number)
+		{
+			return ((Number)valueObj).intValue();
+		}
+
+		log.warn("Invalid M_AttributeSetInstance_ID value '{}'. Returning {}.", valueObj, IAttributeDAO.M_AttributeSetInstance_ID_None);
+		return IAttributeDAO.M_AttributeSetInstance_ID_None;
 	}
 
 	@Override

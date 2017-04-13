@@ -14,13 +14,30 @@ Here come the actual release notes:
 
 **upcoming**
 
+## Features
+* metasfresh-backend
+  * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
+  * [#1287](https://github.com/metasfresh/metasfresh/issues/1287) Search for name in product window in webUI
+  * [#1301](https://github.com/metasfresh/metasfresh/issues/1301) DeliveryDays Window for WebUI
+    * Adding the Window Layout for Delivery Days in WebUI.
+  * [#1302](https://github.com/metasfresh/metasfresh/issues/1302) Tour Window in WebUI
+    * Adding Tour maintenance Window in new Webui.
+  * [#1303](https://github.com/metasfresh/metasfresh/issues/1303) Tour Version Window in WebUI
+    * Adding the new Window Tour Version to WebUI, allowing Tour maintenance for Businesspartner, Locations and delivers Days.
+  * [#1307](https://github.com/metasfresh/metasfresh/issues/1307) Only show Partner Name fields needed for case company
+  * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
+    * Adding the initial window setup for Unit of measure window in WebUI.
+  
 ## Fixes
 * metasfresh-backend
   * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
   * [#1057](https://github.com/metasfresh/metasfresh/issues/1057) Role window WebUI
     * Initial Layout configuration for Role maintenance Window.
+  * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
   * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
     * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
+  * [#1294](https://github.com/metasfresh/metasfresh/issues/1294) Report with Attribute Set Parameter cannot be started anymore
+    * Fixing an exception when calling the Attribute Editor in Process Parameters.
 
 # metasfresh 5.4 (2017-14)
 

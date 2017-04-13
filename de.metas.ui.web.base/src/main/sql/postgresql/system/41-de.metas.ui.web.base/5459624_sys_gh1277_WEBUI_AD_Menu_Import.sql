@@ -5,12 +5,6 @@ create table backup.AD_Menu_BKP_BeforeImportWebUI_5459621a as select * from AD_M
 create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5459621a as select * from AD_Menu_Trl;
 
 --
--- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
-delete from AD_TreeNodeMM;
-insert into AD_TreeNodeMM select * from backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5459621a;
--- !!!Only done for adjustment reasons. Can be taken out in next menu Migration!!!!
-
---
 -- Expected input tables:
 -- backup.WEBUI_AD_TreeNodeMM
 -- backup.WEBUI_AD_Menu
@@ -72,15 +66,20 @@ insert into AD_Menu
 select
 ad_menu_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, issummary, issotrx, isreadonly, action, ad_window_id, ad_workflow_id, ad_task_id, ad_process_id, ad_form_id, ad_workbench_id, entitytype, internalname, iscreatenew, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb
 from backup.WEBUI_AD_Menu t
-where not exists (select 1 from AD_Menu m where m.AD_Menu_ID=t.AD_Menu_ID);
+where
+	not exists (select 1 from AD_Menu m where m.AD_Menu_ID=t.AD_Menu_ID)
+	and (t.AD_Form_ID is null or exists(select 1 from AD_Form z where z.AD_Form_ID=t.AD_Form_ID))
+;
 --
 insert into AD_Menu_Trl
 (ad_menu_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, istranslated, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
 select
 ad_menu_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, istranslated, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb
 from backup.WEBUI_AD_Menu_Trl t
-where not exists (select 1 from AD_Menu_Trl m where m.AD_Menu_ID=t.AD_Menu_ID and m.AD_Language=t.AD_Language);
-
+where
+	not exists (select 1 from AD_Menu_Trl m where m.AD_Menu_ID=t.AD_Menu_ID and m.AD_Language=t.AD_Language)
+	and exists (select 1 from AD_Menu z where z.AD_Menu_ID=t.AD_Menu_ID)
+;
 
 
 
@@ -107,4 +106,3 @@ update AD_TreeNodeMM set Parent_ID=0 where AD_Tree_ID=1000039 and Parent_ID=1000
 /*
 select * from get_AD_TreeNodeMM_Paths(1000039, null) order by Path;
 */
-
