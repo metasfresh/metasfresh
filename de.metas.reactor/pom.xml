@@ -76,7 +76,7 @@
 
 		<module>../de.metas.materialtracking</module>
 
-		<module>../de.metas.manufacturing</module>
+		<module>../de.metas.material</module>
 
 		<module>../de.metas.handlingunits.base</module>
 		<module>../de.metas.handlingunits.client</module>
