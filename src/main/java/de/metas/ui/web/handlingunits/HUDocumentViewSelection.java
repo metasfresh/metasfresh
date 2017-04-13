@@ -312,7 +312,46 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		final List<HUDocumentView> recordsList = documentViewsLoader.retrieveDocumentViews();
 		return new IndexedDocumentViews(recordsList);
 	}
+	
 
+	@Override
+	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
+	{
+		return getRecords().streamByIds(documentIds);
+	}
+
+	/** @return top level rows and included rows recursive stream */
+	public Stream<HUDocumentView> streamAllRecursive()
+	{
+		return getRecords().streamRecursive();
+	}
+
+	@Override
+	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
+	{
+		final Set<Integer> huIds = getRecords()
+				.streamByIds(documentIds)
+				.filter(HUDocumentView::isPureHU)
+				.map(HUDocumentView::getM_HU_ID)
+				.collect(GuavaCollectors.toImmutableSet());
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<I_M_HU> hus = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.list(I_M_HU.class);
+
+		return InterfaceWrapperHelper.createList(hus, modelClass);
+	}
+
+
+	//
+	//
+	//
 	private static final class IndexedDocumentViews
 	{
 		/** Top level records list */
@@ -480,39 +519,5 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
-	}
-
-	@Override
-	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
-	{
-		return getRecords().streamByIds(documentIds);
-	}
-
-	/** @return top level rows and included rows recursive stream */
-	public Stream<HUDocumentView> streamAllRecursive()
-	{
-		return getRecords().streamRecursive();
-	}
-
-	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
-	{
-		final Set<Integer> huIds = getRecords()
-				.streamByIds(documentIds)
-				.filter(HUDocumentView::isPureHU)
-				.map(HUDocumentView::getM_HU_ID)
-				.collect(GuavaCollectors.toImmutableSet());
-		if (huIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<I_M_HU> hus = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
-				.create()
-				.list(I_M_HU.class);
-
-		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 }
