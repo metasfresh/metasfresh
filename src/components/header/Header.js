@@ -65,13 +65,6 @@ class Header extends Component {
         });
     }
 
-    handleCloseSideList = (callback) => {
-        this.setState({
-                isSideListShow: false
-            }, callback);
-        this.toggleScrollScope(false);
-    }
-
     handleMenuOverlay = (e, nodeId) => {
         const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
@@ -204,7 +197,7 @@ class Header extends Component {
         this.toggleScrollScope(id !== null);
 
         this.setState({
-            isSideListShow: id !== sideListTab,
+            isSideListShow: id !== null && id !== sideListTab,
             sideListTab: id !== sideListTab ? id : null
         });
     }
@@ -501,7 +494,7 @@ class Header extends Component {
                 {showSidelist && isSideListShow && <SideList
                     windowType={windowType ? parseInt(windowType) : ''}
                     closeOverlays={this.closeOverlays}
-                    closeSideList={this.handleCloseSideList}
+                    closeSideList={this.handleSidelistToggle}
                     isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
                     docId={dataId}
