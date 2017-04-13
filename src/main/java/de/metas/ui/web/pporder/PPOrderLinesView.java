@@ -248,7 +248,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
-	public OpenIncludedViewAction openViewsToIssue(final Set<DocumentId> selectedDocumentIds)
+	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final Set<DocumentId> selectedDocumentIds)
 	{
 		final DocumentId selectedRowId = ListUtils.singleElement(selectedDocumentIds);
 		final PPOrderLineRow row = getById(selectedRowId);
@@ -262,7 +262,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.processPlan", precondition = HasCandidatesToProcess.class)
-	public void processPlan()
+	public void actionProcessPlan()
 	{
 		final int ppOrderId = getPP_Order_ID();
 		final List<Integer> ppOrderQtyIds = streamAllRecursive()
@@ -276,7 +276,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 		invalidateAll();
 	}
-
+	
 	public static final class IsSingleIssueLine implements ViewAction.Precondition
 	{
 		@Override
