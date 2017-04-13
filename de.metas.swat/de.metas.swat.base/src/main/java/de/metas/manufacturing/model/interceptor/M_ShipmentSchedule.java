@@ -11,8 +11,8 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.manufacturing.event.ManufacturingEventService;
-import de.metas.manufacturing.event.ShipmentScheduleEvent;
+import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.ShipmentScheduleEvent;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule

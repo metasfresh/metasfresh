@@ -9,8 +9,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.manufacturing.event.ManufacturingEventService;
-import de.metas.manufacturing.event.ReceiptScheduleEvent;
+import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.ReceiptScheduleEvent;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule

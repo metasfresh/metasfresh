@@ -57,8 +57,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.manufacturing.event.ManufacturingEventService;
-import de.metas.manufacturing.event.ShipmentScheduleEvent;
+import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.ShipmentScheduleEvent;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule

@@ -9,8 +9,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
-import de.metas.manufacturing.event.ManufacturingEventService;
-import de.metas.manufacturing.event.TransactionEvent;
+import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.TransactionEvent;
 
 /*
  * #%L

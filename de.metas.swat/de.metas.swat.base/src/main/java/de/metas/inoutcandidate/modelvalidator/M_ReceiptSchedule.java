@@ -38,8 +38,8 @@ import org.compiere.model.ModelValidator;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.manufacturing.event.ManufacturingEventService;
-import de.metas.manufacturing.event.ReceiptScheduleEvent;
+import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.ReceiptScheduleEvent;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
