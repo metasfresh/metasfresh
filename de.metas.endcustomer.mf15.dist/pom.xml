@@ -130,18 +130,17 @@ Since we now work with a range, we now declare the dependencies here where range
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.webui</artifactId>
-			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
-			<type>jar</type>
-		</dependency>
-		
-		<!-- metasfresh/metasfresh#523 -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo</artifactId>
 			<version>${metasfresh-procurement-webui.version}</version>
 			<type>jar</type>
 		</dependency>
 		
+		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo</artifactId>
+			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->			
+			<type>jar</type>
+		</dependency>
 
 <!-- 
 SQL and jasper dependencies:
