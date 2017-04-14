@@ -41,14 +41,21 @@ Here come the actual release notes:
   
 * metasfresh-webui-api
   * [#294](https://github.com/metasfresh/metasfresh-webui-api/issues/294) Refactor /process/start response
+    * Massive technical improvement about Processes and Documents in metasfresh. Now refactored and called actions. This refactoring was needed to meet new requirements in WebUI in a better way.
 
 * metasfresh-webui-frontend
   * [#88](https://github.com/metasfresh/metasfresh-webui-frontend/issues/88) Special Place for Record dependent content
+    * Record dependant content and references are now moved from action menu to the extended sidelist menu. Each reference area has become its own keyboard shortcut so that navigation to that content is easy and fast.
   * [#110](https://github.com/metasfresh/metasfresh-webui-frontend/issues/110) Don't fetch the side list when it's not needed
+    * Performance improvement. Only fetching the sidelist initially when the user opens it first time.
   * [#267](https://github.com/metasfresh/metasfresh-webui-frontend/issues/267) Sidelist refactor
+    * Refactoring of sidelist, now including other document references (zoom accross, record attachements)
   * [#628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/628) frontend: refactor /process/start response
+    * Frontend work for the refactoring of Processes and Douments in metasfresh.
   * [#631](https://github.com/metasfresh/metasfresh-webui-frontend/issues/631) Minor grid view layout tweaks
+    * Minor UX improvements/ prettyfying to Grid View in WebUI.
   * [#636](https://github.com/metasfresh/metasfresh-webui-frontend/issues/636) Sidelist Fontsize too small
+    * Raising the fon size in Sidelist to match the Fontsize in other menues.
   * [#639](https://github.com/metasfresh/metasfresh-webui-frontend/issues/639) Navigation shortcut ctrl+2 is broken
     * Fixing the shortcut for Navigation Menu.
 
