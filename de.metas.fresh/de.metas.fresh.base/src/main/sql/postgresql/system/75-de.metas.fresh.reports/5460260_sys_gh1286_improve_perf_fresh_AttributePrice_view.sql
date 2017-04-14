@@ -1,4 +1,4 @@
---DROP VIEW IF EXISTS rv_fresh_pricelist ;
+﻿--DROP VIEW IF EXISTS rv_fresh_pricelist ;
 --DROP VIEW IF EXISTS rv_fresh_pricelist_comparison;
 --DROP VIEW IF EXISTS report.fresh_AttributePrice;
 
