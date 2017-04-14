@@ -43,8 +43,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory;
@@ -117,7 +115,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 	{
 		return processDescriptorsByProcessId.getOrLoad(processId, () -> retrieveProcessDescriptor(processId));
 	}
-	
+
 	private ProcessDescriptor retrieveProcessDescriptor(final ProcessId processId)
 	{
 		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), processId.getProcessIdAsInt(), I_AD_Process.class, ITrx.TRXNAME_None);
@@ -130,31 +128,41 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 
 		final IModelTranslationMap adProcessTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 
+		//
+		// Parameters document descriptor
+		final DocumentEntityDescriptor parametersDescriptor;
+		{
+			final DocumentEntityDescriptor.Builder parametersDescriptorBuilder = DocumentEntityDescriptor.builder()
+					.setDocumentType(DocumentType.Process, processId.toDocumentId())
+					.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
+					.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
+					.setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
+					.disableDefaultTableCallouts();
+
+			// Get AD_Process_Para(s) and populate the entity descriptor
+			adProcessDAO.retrieveProcessParameters(adProcess)
+					.stream()
+					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
+					.forEach(processParaDescriptor -> parametersDescriptorBuilder.addField(processParaDescriptor));
+
+			parametersDescriptor = parametersDescriptorBuilder.build();
+		}
+
+		//
+		// Parameters layout
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setProcessId(processId)
-				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
-				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()));
+				.setCaption(parametersDescriptor.getCaption())
+				.setDescription(parametersDescriptor.getDescription())
+				.addElements(parametersDescriptor);
 
-		final DocumentEntityDescriptor.Builder parametersDescriptor = DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.Process, processId.getProcessIdAsInt())
-				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
-				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
-				.setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
-				.disableDefaultTableCallouts();
-
-		// Get AD_Process_Para(s) and populate the entity descriptor and the layout
-		adProcessDAO.retrieveProcessParameters(adProcess)
-				.forEach(adProcessParam -> {
-					final DocumentFieldDescriptor.Builder processParaDescriptor = createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam);
-					parametersDescriptor.addField(processParaDescriptor);
-					layout.addElement(createLayoutElement(processParaDescriptor));
-				});
-
+		//
+		// Process descriptor
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
-				.setParametersDescriptor(parametersDescriptor.build())
+				.setParametersDescriptor(parametersDescriptor)
 				.setLayout(layout.build())
 				.build();
 	}
@@ -240,18 +248,6 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 
 		// Ask the instance to load the parameter
 		processInstance.loadParameterValueNoFail(parameterName, isParameterTo, source);
-	}
-
-	private static DocumentLayoutElementDescriptor createLayoutElement(final DocumentFieldDescriptor.Builder processParaDescriptor)
-	{
-		return DocumentLayoutElementDescriptor.builder()
-				.setCaption(processParaDescriptor.getCaption())
-				.setDescription(processParaDescriptor.getDescription())
-				.setWidgetType(processParaDescriptor.getWidgetType())
-				.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
-						.setLookupSource(processParaDescriptor.getLookupSourceType())
-						.setPublicField(true))
-				.build();
 	}
 
 	private static final ProcessDescriptorType extractType(final I_AD_Process adProcess)
