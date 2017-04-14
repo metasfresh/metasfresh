@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
@@ -119,6 +120,10 @@ import lombok.ToString;
 	@Override
 	public Collection<IDocumentFieldView> getParameters()
 	{
+		if(parametersDocument == null)
+		{
+			return ImmutableList.of();
+		}
 		return parametersDocument.getFieldViews();
 	}
 
