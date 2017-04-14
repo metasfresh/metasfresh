@@ -363,8 +363,7 @@ class DocumentList extends Component {
 
         const {
             windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus, readonly,
-            includedView, children
+            fetchQuickActionsOnInit, isModal, processStatus, readonly
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);

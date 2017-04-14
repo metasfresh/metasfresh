@@ -150,7 +150,9 @@ DocList.propTypes = {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler, listHandler, appHandler, routing } = state;
+    const {
+        windowHandler, menuHandler, listHandler, appHandler, routing
+    } = state;
 
     const {
         modal,
@@ -165,13 +167,13 @@ function mapStateToProps(state) {
         latestNewDocument: null,
         indicator: ''
     }
-    
+
     const {
         includedView
     } = listHandler || {
         includedView: {}
     }
-    
+
     const {
         processStatus
     } = appHandler || {

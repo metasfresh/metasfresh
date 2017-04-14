@@ -28,7 +28,7 @@ export default function listHandler(state = initialState, action) {
                     windowType: action.windowType
                 })
             });
-            
+
         case types.SET_LIST_FILTERS:
             return Object.assign({}, state, {
                 filters: action.filter != null ? [action.filter] : [],
@@ -50,7 +50,7 @@ export default function listHandler(state = initialState, action) {
                     windowType: action.windowType
                 })
             });
-            
+
         case types.SET_LIST_INCLUDED_VIEW:
             return Object.assign({}, state, {
                 includedView: Object.assign({}, state.includedView, {
