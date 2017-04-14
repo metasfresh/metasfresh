@@ -55,7 +55,7 @@ Here come the actual release notes:
   * [#631](https://github.com/metasfresh/metasfresh-webui-frontend/issues/631) Minor grid view layout tweaks
     * Minor UX improvements/ prettyfying to grid view in WebUI.
   * [#636](https://github.com/metasfresh/metasfresh-webui-frontend/issues/636) Sidelist Fontsize too small
-    * Raising the fon size in sidelist to match the fontsize in other menues.
+    * Raising the font size in sidelist to match the fontsize in other menues.
   * [#639](https://github.com/metasfresh/metasfresh-webui-frontend/issues/639) Navigation shortcut ctrl+2 is broken
     * Fixing the shortcut for navigation menu.
 
