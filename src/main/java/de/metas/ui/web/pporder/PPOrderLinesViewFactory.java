@@ -1,17 +1,16 @@
 package de.metas.ui.web.pporder;
 
 import java.util.Collection;
-import java.util.UUID;
 
 import org.compiere.util.CCache;
 
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -40,35 +39,38 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt, viewType = JSONViewDataType.grid)
+@DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewType = JSONViewDataType.grid)
 public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 {
-	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
+	private final transient CCache<WindowId, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	@Override
 	public PPOrderLinesView createView(final DocumentViewCreateRequest request)
 	{
+		final ViewId viewId = ViewId.random(request.getWindowId());
 		return PPOrderLinesView.builder()
 				.setParentViewId(request.getParentViewId())
-				.setViewId(UUID.randomUUID().toString())
-				.setAD_Window_ID(request.getAD_Window_ID())
+				.setViewId(viewId)
 				.setRecords(PPOrderLinesLoader.of(request))
 				.build();
 	}
 
 	@Override
-	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType_NOTUSED, final JSONOptions jsonOpts)
+	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
 	{
-		final DocumentViewLayout viewLayout = layouts.getOrLoad(adWindowId, () -> createViewLayout(adWindowId));
-		final Collection<DocumentFilterDescriptor> filters = null; // filters are not supported yet
-
-		return JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+		return layouts.getOrLoad(windowId, () -> createViewLayout(windowId));
 	}
 
-	private final DocumentViewLayout createViewLayout(final int adWindowId)
+	@Override
+	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
+	{
+		return null; // not supported
+	}
+
+	private final DocumentViewLayout createViewLayout(final WindowId windowId)
 	{
 		return DocumentViewLayout.builder()
-				.setAD_Window_ID(adWindowId)
+				.setWindowId(windowId)
 				.setCaption("PP Order Issue/Receipt")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)

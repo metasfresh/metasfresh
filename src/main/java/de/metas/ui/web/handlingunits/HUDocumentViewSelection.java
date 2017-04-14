@@ -32,6 +32,7 @@ import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -74,10 +75,9 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return (HUDocumentViewSelection)view;
 	}
 
-	private final String parentViewId;
+	private final ViewId parentViewId;
 
-	private final String viewId;
-	private final int adWindowId;
+	private final ViewId viewId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 
@@ -91,7 +91,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
-		adWindowId = builder.getAD_Window_ID();
 
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
@@ -99,21 +98,15 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public String getParentViewId()
+	public ViewId getParentViewId()
 	{
 		return parentViewId;
 	}
 
 	@Override
-	public String getViewId()
+	public ViewId getViewId()
 	{
 		return viewId;
-	}
-
-	@Override
-	public int getAD_Window_ID()
-	{
-		return adWindowId;
 	}
 
 	@Override
@@ -375,7 +368,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 				.build();
 
 		return SelectViewRowsAction.builder()
-				.windowId(getAD_Window_ID())
 				.viewId(getViewId())
 				.rowIds(rowIds)
 				.build();
@@ -479,10 +471,9 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	public static final class Builder
 	{
-		private String parentViewId;
-
-		private String viewId;
-		private int adWindowId;
+		private ViewId parentViewId;
+		private ViewId viewId;
+		
 		private Set<DocumentPath> referencingDocumentPaths;
 
 		private HUDocumentViewLoader documentViewsLoader;
@@ -497,37 +488,26 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return new HUDocumentViewSelection(this);
 		}
 
-		public Builder setParentViewId(final String parentViewId)
+		public Builder setParentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
 
-		private String getParentViewId()
+		private ViewId getParentViewId()
 		{
 			return parentViewId;
 		}
 
-		public Builder setViewId(final String viewId)
+		public Builder setViewId(final ViewId viewId)
 		{
 			this.viewId = viewId;
 			return this;
 		}
 
-		public String getViewId()
+		public ViewId getViewId()
 		{
 			return viewId;
-		}
-
-		public Builder setAD_Window_ID(final int adWindowId)
-		{
-			this.adWindowId = adWindowId;
-			return this;
-		}
-
-		private int getAD_Window_ID()
-		{
-			return adWindowId;
 		}
 
 		public Builder setRecords(final HUDocumentViewLoader documentViewsLoader)

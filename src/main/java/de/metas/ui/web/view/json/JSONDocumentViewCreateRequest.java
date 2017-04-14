@@ -15,9 +15,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 
 /*
@@ -48,7 +47,7 @@ import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 public final class JSONDocumentViewCreateRequest implements Serializable
 {
 	@JsonProperty("documentType")
-	private final DocumentId documentType;
+	private final WindowId windowId;
 
 	@JsonProperty("viewType")
 	private final JSONViewDataType viewType;
@@ -73,7 +72,7 @@ public final class JSONDocumentViewCreateRequest implements Serializable
 
 	@JsonCreator
 	private JSONDocumentViewCreateRequest(
-			@JsonProperty("documentType") final DocumentId documentType //
+			@JsonProperty("documentType") final WindowId windowId //
 			, @JsonProperty("viewType") final JSONViewDataType viewType //
 			, @JsonProperty("referencing") final JSONReferencing referencing //
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
@@ -83,7 +82,7 @@ public final class JSONDocumentViewCreateRequest implements Serializable
 	)
 	{
 		super();
-		this.documentType = documentType;
+		this.windowId = windowId;
 		this.viewType = viewType;
 
 		this.referencing = referencing;
@@ -107,9 +106,9 @@ public final class JSONDocumentViewCreateRequest implements Serializable
 			return ImmutableSet.of();
 		}
 
-		final int adWindowId = Integer.parseInt(referencing.getDocumentType());
+		final WindowId windowId = WindowId.fromJson(referencing.getDocumentType());
 		return documentIds.stream()
-				.map(id -> DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, id))
+				.map(id -> DocumentPath.rootDocumentPath(windowId, id))
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 

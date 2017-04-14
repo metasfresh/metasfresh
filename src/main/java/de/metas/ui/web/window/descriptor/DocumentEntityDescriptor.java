@@ -39,6 +39,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
@@ -206,10 +207,10 @@ public class DocumentEntityDescriptor
 		return documentTypeId;
 	}
 
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
 		Check.assume(documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, documentType);
-		return documentTypeId.toInt();
+		return WindowId.of(documentTypeId);
 	}
 
 	public ITranslatableString getCaption()

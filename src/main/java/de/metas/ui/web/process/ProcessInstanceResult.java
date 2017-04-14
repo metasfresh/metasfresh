@@ -10,6 +10,7 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.AccessLevel;
@@ -153,17 +154,15 @@ public final class ProcessInstanceResult implements Serializable
 	@lombok.Builder
 	public static final class OpenViewAction implements ResultAction
 	{
-		private final int windowId;
 		@NonNull
-		private final String viewId;
+		private final ViewId viewId;
 	}
 	
 	@lombok.Value
 	@lombok.Builder
 	public static class OpenIncludedViewAction implements ResultAction
 	{
-		private final int windowId;
-		private final String viewId;
+		private final ViewId viewId;
 	}
 
 
@@ -179,8 +178,7 @@ public final class ProcessInstanceResult implements Serializable
 	@lombok.Builder
 	public static final class SelectViewRowsAction implements ResultAction
 	{
-		private final int windowId; 
-		private final String viewId;
+		private final ViewId viewId;
 		private final Set<DocumentId> rowIds;
 	}
 

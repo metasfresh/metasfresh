@@ -29,6 +29,7 @@ import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentView;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -65,24 +66,16 @@ public class PPOrderLinesLoader
 	private final transient IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient HUDocumentViewLoader _huViewRecordLoader;
 
-	private final int _adWindowId;
 	private int _ppOrderId;
 
 	public PPOrderLinesLoader(final DocumentViewCreateRequest request)
 	{
-		_adWindowId = request.getAD_Window_ID();
-
 		_huViewRecordLoader = HUDocumentViewLoader.of(request, I_PP_Order.Table_Name);
 
 		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
 		final int ppOrderId = ListUtils.singleElement(filterOnlyIds);
 		Preconditions.checkArgument(ppOrderId > 0, "No manufacturing order ID found in %s", request);
 		this._ppOrderId = ppOrderId;
-	}
-
-	private int getAD_Window_ID()
-	{
-		return _adWindowId;
 	}
 
 	int getPP_Order_ID()
@@ -100,7 +93,7 @@ public class PPOrderLinesLoader
 	 * 
 	 * @param viewId viewId to be set to newly created {@link PPOrderLineRow}s.
 	 */
-	public List<PPOrderLineRow> retrieveRecords(final String viewId)
+	public List<PPOrderLineRow> retrieveRecords(final ViewId viewId)
 	{
 		final int ppOrderId = getPP_Order_ID();
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_None);
@@ -123,7 +116,7 @@ public class PPOrderLinesLoader
 		return records.build();
 	}
 
-	private PPOrderLineRow createForMainProduct(final String viewId, final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
+	private PPOrderLineRow createForMainProduct(final ViewId viewId, final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
 		final DocumentId documentId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
 
@@ -131,7 +124,7 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlanTotal = ppOrder.getQtyOrdered();
 		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 
-		final DocumentView.Builder builder = DocumentView.builder(getAD_Window_ID())
+		final DocumentView.Builder builder = DocumentView.builder(viewId.getWindowId())
 				.setDocumentId(documentId)
 				.setType(PPOrderLineType.MainProduct)
 				//
@@ -155,7 +148,7 @@ public class PPOrderLinesLoader
 				.build();
 	}
 
-	private PPOrderLineRow createForBOMLine(final String viewId, final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
+	private PPOrderLineRow createForBOMLine(final ViewId viewId, final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
 		final DocumentId documentId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBOMLine.getPP_Order_BOMLine_ID());
 
@@ -175,7 +168,7 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlanTotal = ppOrderBOMLine.getQtyRequiered();
 		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 
-		final DocumentView.Builder builder = DocumentView.builder(getAD_Window_ID())
+		final DocumentView.Builder builder = DocumentView.builder(viewId.getWindowId())
 				.setDocumentId(documentId)
 				.setType(lineType)
 				//
@@ -198,13 +191,13 @@ public class PPOrderLinesLoader
 				.build();
 	}
 
-	private IDocumentView createForQty(final String viewId, final I_PP_Order_Qty ppOrderQty)
+	private IDocumentView createForQty(final ViewId viewId, final I_PP_Order_Qty ppOrderQty)
 	{
 		final HUDocumentView huViewRecord = getHUViewRecordLoader().retrieveForHUId(ppOrderQty.getM_HU_ID());
 		return createForHUViewRecordRecursivelly(viewId, ppOrderQty, huViewRecord);
 	}
 
-	private PPOrderLineRow createForHUViewRecordRecursivelly(final String viewId, final I_PP_Order_Qty ppOrderQty, final HUDocumentView huViewRecord)
+	private PPOrderLineRow createForHUViewRecordRecursivelly(final ViewId viewId, final I_PP_Order_Qty ppOrderQty, final HUDocumentView huViewRecord)
 	{
 		final PPOrderLineType type = PPOrderLineType.ofHUDocumentViewType(huViewRecord.getType());
 
@@ -221,7 +214,7 @@ public class PPOrderLinesLoader
 			qty = BigDecimal.ZERO;
 		}
 
-		final DocumentView.Builder builder = DocumentView.builder(getAD_Window_ID())
+		final DocumentView.Builder builder = DocumentView.builder(viewId.getWindowId())
 				.setDocumentId(huViewRecord.getDocumentId())
 				.setType(type)
 				//

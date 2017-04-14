@@ -20,6 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -71,7 +72,7 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 
 	private final IDocumentViewSelection view;
 	private final String tableName;
-	private final int adWindowId;
+	private final WindowId windowId;
 	private final Set<DocumentId> selectedDocumentIds;
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
@@ -81,7 +82,7 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
-		this.adWindowId = view.getAD_Window_ID();
+		this.windowId = view.getViewId().getWindowId();
 		this.tableName = view.getTableName();
 		this.selectedDocumentIds = ImmutableSet.copyOf(selectedDocumentIds);
 	}
@@ -112,7 +113,7 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 	@Override
 	public int getAD_Window_ID()
 	{
-		return adWindowId;
+		return windowId.toInt();
 	}
 
 	@Override

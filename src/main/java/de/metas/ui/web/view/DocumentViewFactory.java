@@ -42,7 +42,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 @Service
 public @interface DocumentViewFactory
 {
-	int windowId();
+	String windowId();
 
 	JSONViewDataType viewType();
 }

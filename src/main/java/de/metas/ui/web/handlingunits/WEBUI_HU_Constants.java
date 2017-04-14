@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import de.metas.ui.web.window.datatypes.WindowId;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -24,7 +26,8 @@ package de.metas.ui.web.handlingunits;
 
 public final class WEBUI_HU_Constants
 {
-	public static final int WEBUI_HU_Window_ID = 540189;
+	public static final String WEBUI_HU_Window_ID_String = "540189"; // FIXME: hardcoded
+	public static final WindowId WEBUI_HU_Window_ID = WindowId.fromJson(WEBUI_HU_Window_ID_String);
 	
 	private WEBUI_HU_Constants()
 	{

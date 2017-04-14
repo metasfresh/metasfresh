@@ -54,6 +54,7 @@ import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
@@ -202,7 +203,7 @@ public class DebugRestController
 			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
 			//
 			, @RequestParam(name = "targetType", required = false) final String targetTypeStr//
-			, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final int targetDocumentType//
+			, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final String targetDocumentType//
 			, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
 			)
 	{
@@ -224,7 +225,7 @@ public class DebugRestController
 		if (targetType == TargetType.Window)
 		{
 			final String targetTableName = documentCollection.getDocumentDescriptorFactory()
-					.getDocumentDescriptor(targetDocumentType)
+					.getDocumentDescriptor(WindowId.fromJson(targetDocumentType))
 					.getEntityDescriptor()
 					.getTableName();
 

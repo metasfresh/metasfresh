@@ -38,6 +38,7 @@ import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -184,10 +185,10 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 		//
 		// View
-		final String viewId = Strings.emptyToNull(request.getViewId());
+		final ViewId viewId = request.getViewId();
 		final String viewSelectedIdsAsStr;
 		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
-		if (!Check.isEmpty(viewId))
+		if (viewId != null)
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
@@ -244,7 +245,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				.setWhereClause(sqlWhereClause)
 				//
 				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewId) // internal parameter
+				.addParameter(ViewBasedProcessTemplate.PARAM_ViewWindowId, viewId == null ? null : viewId.getWindowId().toJson()) // internal parameter
+				.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewId == null ? null : viewId.getViewId()) // internal parameter
 				.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
 				//
 				.build();
@@ -285,7 +287,10 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			// View informations
 			final IRangeAwareParams processInfoParams = processInfo.getParameterAsIParams();
-			final String viewId = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewId);
+			final String viewWindowId = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewWindowId);
+			final String viewIdStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewId);
+			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.of(viewWindowId, viewIdStr);
+			//
 			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewSelectedIds);
 			final Set<DocumentId> viewSelectedIds = DocumentId.ofCommaSeparatedString(viewSelectedIdsStr);
 

@@ -60,6 +60,10 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	//
 	// View (internal) parameters
+	public static final String PARAM_ViewWindowId = "$WEBUI_ViewWindowId";
+	@Param(parameterName = PARAM_ViewWindowId, mandatory = true)
+	private String p_WebuiViewWindowId;
+	//
 	public static final String PARAM_ViewId = "$WEBUI_ViewId";
 	@Param(parameterName = PARAM_ViewId, mandatory = true)
 	private String p_WebuiViewId;

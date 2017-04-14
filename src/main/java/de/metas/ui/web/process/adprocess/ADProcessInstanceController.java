@@ -46,11 +46,12 @@ import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -102,7 +103,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	private final Object processClassInstance;
 
 	private final IDocumentViewsRepository viewsRepo;
-	private final String viewId;
+	private final ViewId viewId;
 	private final Set<DocumentId> viewSelectedDocumentIds;
 
 	private boolean executed = false;
@@ -322,7 +323,6 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 					final DocumentViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
 					final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
-							.windowId(view.getAD_Window_ID())
 							.viewId(view.getViewId())
 							.build());
 				}
@@ -389,10 +389,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		//
 		// Create view create request builders from current records
-		final Map<Integer, DocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
+		final Map<WindowId, DocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final int recordWindowId = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			final int recordWindowIdInt = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			final WindowId recordWindowId = WindowId.of(recordWindowIdInt);
 			final DocumentViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> DocumentViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
@@ -444,15 +445,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			}
 
 			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
-			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef); // assume all records are from same window
+			final WindowId windowId = WindowId.of(RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef)); // assume all records are from same window
 			return recordIds.stream()
-					.map(recordId -> DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, recordId))
+					.map(recordId -> DocumentPath.rootDocumentPath(windowId, recordId))
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		else if (sourceRecordRef != null)
 		{
-			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, sourceRecordRef.getRecord_ID());
+			final WindowId windowId = WindowId.of(RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef));
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, sourceRecordRef.getRecord_ID());
 			return ImmutableSet.of(documentPath);
 		}
 		else
@@ -472,7 +473,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
 		}
 
-		return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+		return DocumentPath.rootDocumentPath(WindowId.of(adWindowId), documentId);
 	}
 
 	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
@@ -526,7 +527,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		private Document parameters;
 
 		private IDocumentViewsRepository viewsRepo;
-		private String viewId;
+		private ViewId viewId;
 		private Set<DocumentId> viewSelectedDocumentIds;
 		private Object processClassInstance;
 
@@ -564,7 +565,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			return this;
 		}
 
-		public Builder setView(final String viewId, final Set<DocumentId> selectedDocumentIds)
+		public Builder setView(final ViewId viewId, final Set<DocumentId> selectedDocumentIds)
 		{
 			this.viewId = viewId;
 			viewSelectedDocumentIds = selectedDocumentIds;
