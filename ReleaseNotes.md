@@ -17,11 +17,13 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
-    * thanks @homebeaver
+    * Adding a possibility to provide user jars and dlls at runtime for swing client, thanks to @homebeaver
   * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
+    * Allowing to use subsriptions for services that are not "shipped" and therfor will not be shown in shipment schedule.
   * [#1057](https://github.com/metasfresh/metasfresh/issues/1057) Role window WebUI
     * Initial Layout configuration for Role maintenance Window.
   * [#1287](https://github.com/metasfresh/metasfresh/issues/1287) Search for name in product window in webUI
+    * Now its possible to search and filter by Product name in Product Window in WebUI.
   * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
     * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
   * [#1301](https://github.com/metasfresh/metasfresh/issues/1301) DeliveryDays Window for WebUI
@@ -31,10 +33,11 @@ Here come the actual release notes:
   * [#1303](https://github.com/metasfresh/metasfresh/issues/1303) Tour Version Window in WebUI
     * Adding the new Window Tour Version to WebUI, allowing Tour maintenance for Businesspartner, Locations and delivers Days.
   * [#1307](https://github.com/metasfresh/metasfresh/issues/1307) Only show Partner Name fields needed for case company
+    * Now switching between Company Name Field and Person Name Field depending on isCompany flag in Window BusinessPartner in WebUI.
   * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
     * Adding the initial window setup for Unit of measure window in WebUI.
-  * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
   * [#1324](https://github.com/metasfresh/metasfresh/issues/1324) Take out pwd Field from AD_User in WebUI
+    * Not showinf the pwd Field anymore un User Window WebUI.
   
 * metasfresh-webui-api
   * [#294](https://github.com/metasfresh/metasfresh-webui-api/issues/294) Refactor /process/start response
@@ -56,6 +59,8 @@ Here come the actual release notes:
   * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
   * [#1294](https://github.com/metasfresh/metasfresh/issues/1294) Report with Attribute Set Parameter cannot be started anymore
     * Fixing an exception when calling the Attribute Editor in Process Parameters.
+  * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
+    * Fixing an Exception which popped up when adding a new System Language.
 
 * metasfresh-webui-frontend
   * [#619](https://github.com/metasfresh/metasfresh-webui-frontend/issues/619) Address editor silently ignores changes if the mandatory fields are not filled
