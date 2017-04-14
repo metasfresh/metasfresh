@@ -529,6 +529,11 @@ public class DocumentEntityDescriptor
 		{
 			return _fieldBuilders.values();
 		}
+		
+		public int getFieldsCount()
+		{
+			return _fieldBuilders.size();
+		}
 
 		private final void updateFieldBuilders(final Consumer<DocumentFieldDescriptor.Builder> fieldUpdater)
 		{
