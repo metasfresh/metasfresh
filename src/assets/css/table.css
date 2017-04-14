@@ -217,6 +217,18 @@
     text-align: center;
 }
 
+.page-link-compressed{
+    border:0;
+    background-color: transparent;
+    padding: .1rem .3rem;
+}
+
+.page-item.active .page-link-compressed {
+    background-color: transparent;
+    font-weight: bold;
+    color: $brand-font-color;
+}
+
 th {
     font-weight: 500;
     position: relative;

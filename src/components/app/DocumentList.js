@@ -363,15 +363,21 @@ class DocumentList extends Component {
 
         const {
             windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus, readonly
+            fetchQuickActionsOnInit, isModal, processStatus, readonly,
+            includedView, children, isIncluded
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);
 
         if(layout && data) {
             return (
-                <div className="document-list-wrapper">
-                    {!readonly && <div
+                <div 
+                    className={
+                        'document-list-wrapper ' + 
+                        (isIncluded ? 'document-list-included ' : '')
+                    }
+                >
+                    {(!readonly && !isIncluded) && <div
                         className="panel panel-primary panel-spaced panel-inline document-list-header"
                     >
                         <div>
@@ -420,6 +426,7 @@ class DocumentList extends Component {
                             keyProperty="id"
                             onDoubleClick={(id) => this.redirectToDocument(id)}
                             isModal={isModal}
+                            isIncluded={isIncluded}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
@@ -437,7 +444,7 @@ class DocumentList extends Component {
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
                         >
-                            {layout.supportAttributes &&
+                            {layout.supportAttributes && !isIncluded &&
                                 <DataLayoutWrapper
                                     className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
@@ -457,6 +464,14 @@ class DocumentList extends Component {
                                         }
                                     />
                                 </DataLayoutWrapper>
+                            }
+                            {!layout.supportIncludedView && includedView && 
+                            includedView.windowType && includedView.viewId &&
+                                <div
+                                    className="table-flex-wrapper document-list-included js-not-unselect"
+                                >
+                                    {children}
+                                </div>
                             }
                         </Table>
                     </div>

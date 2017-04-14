@@ -114,6 +114,12 @@ class DocList extends Component {
                              processStatus={processStatus}
                              includedView={includedView}
                          >
+                             <DocumentList
+                                 type="grid"
+                                 windowType={includedView.windowType}
+                                 defaultViewId={includedView.viewId}
+                                 isIncluded={true}
+                             />
                          </DocumentList>
                      </RawModal>
                  }
@@ -167,13 +173,13 @@ function mapStateToProps(state) {
         latestNewDocument: null,
         indicator: ''
     }
-
+    
     const {
         includedView
     } = listHandler || {
         includedView: {}
     }
-
+    
     const {
         processStatus
     } = appHandler || {
