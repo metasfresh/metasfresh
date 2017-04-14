@@ -13,11 +13,11 @@ package de.metas.flatrate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,14 +50,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.flatrate.ContractsTestBase;
 import de.metas.flatrate.api.IFlatrateBL;
+import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.flatrate.model.I_C_Flatrate_Data;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
+import de.metas.flatrate.model.I_C_Flatrate_Matching;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
+import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -70,6 +75,13 @@ public class FlatrateBLTest extends ContractsTestBase
 
 	I_C_Flatrate_Transition transition = null;
 	I_C_Flatrate_Term term = null;
+
+	I_C_BPartner partner = null;
+	I_M_Product product = null;
+	I_M_Product_Category productCategory = null;
+	I_C_Flatrate_Conditions conditions1 = null;
+	I_C_Flatrate_Conditions conditions2 = null;
+	I_C_Flatrate_Term overlappingTerm = null;
 
 	// periods:
 	I_C_Period period1 = null;
@@ -208,19 +220,9 @@ public class FlatrateBLTest extends ContractsTestBase
 				final boolean isSOTrx = true;
 
 				taxBL.getTax(
-						ctx
-						, currentTerm
-						, taxCategoryId
-						, currentTerm.getM_Product_ID()
-						, -1 // chargeId
-						, dataEntry.getDate_Reported()
-						, dataEntry.getDate_Reported()
-						, dataEntry.getAD_Org_ID()
-						, warehouse
-						, currentTerm.getBill_BPartner_ID()
-						, -1 // ship location ID
-						, isSOTrx
-						, trxName);
+						ctx, currentTerm, taxCategoryId, currentTerm.getM_Product_ID(), -1 // chargeId
+				, dataEntry.getDate_Reported(), dataEntry.getDate_Reported(), dataEntry.getAD_Org_ID(), warehouse, currentTerm.getBill_BPartner_ID(), -1 // ship location ID
+				, isSOTrx, trxName);
 				minTimes = 0;
 				result = 3;
 			}
@@ -381,5 +383,104 @@ public class FlatrateBLTest extends ContractsTestBase
 		term.setC_Flatrate_Transition(transition);
 		term.setC_Flatrate_Conditions(conditions);
 		InterfaceWrapperHelper.save(term);
+	}
+
+	@Test
+	public void testhasOverlappingTerms()
+	{
+		// calendar
+		final I_C_Calendar calendar = InterfaceWrapperHelper.newInstance(I_C_Calendar.class, getContext());
+		InterfaceWrapperHelper.save(calendar);
+
+		// first year
+		final I_C_Year year1 = InterfaceWrapperHelper.newInstance(I_C_Year.class, getContext());
+		year1.setC_Calendar_ID(calendar.getC_Calendar_ID());
+		InterfaceWrapperHelper.save(year1);
+
+		// create transition
+		transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
+		transition.setTermDuration(1);
+		transition.setDeliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_WocheN);
+		transition.setDeliveryInterval(1);
+		transition.setTermOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_WocheN);
+		transition.setTermOfNotice(1);
+		transition.setC_Calendar_Contract(calendar);
+		InterfaceWrapperHelper.save(transition);
+
+		// product category is mandatofy in matchings
+		productCategory = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
+		InterfaceWrapperHelper.save(productCategory);
+
+		// product
+		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setM_Product_Category(productCategory);
+		InterfaceWrapperHelper.save(product);
+
+		// first conditions
+		conditions1 = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
+		conditions1.setC_Flatrate_Transition(transition);
+		InterfaceWrapperHelper.save(conditions1);
+
+		// matchings linked to the first conditions
+		final I_C_Flatrate_Matching matching1 = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Matching.class);
+		matching1.setSeqNo(10);
+		matching1.setM_Product_Category_Matching(productCategory);
+		matching1.setC_Flatrate_Transition(transition);
+		matching1.setC_Flatrate_Conditions(conditions1);
+		InterfaceWrapperHelper.save(matching1);
+
+		// second conditions
+		conditions2 = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
+		conditions2.setC_Flatrate_Transition(transition);
+		InterfaceWrapperHelper.save(conditions2);
+
+		// matchings linked with the second conditions
+		final I_C_Flatrate_Matching matching2 = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Matching.class);
+		matching2.setSeqNo(10);
+		matching2.setM_Product_Category_Matching(productCategory);
+		matching2.setM_Product(product);
+		matching2.setC_Flatrate_Transition(transition);
+		matching2.setC_Flatrate_Conditions(conditions2);
+		InterfaceWrapperHelper.save(matching2);
+
+		// terms must be for the same partner
+		partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setName("Partner1");
+		InterfaceWrapperHelper.save(partner);
+
+		// terms must be for the same flatrate data
+		final I_C_Flatrate_Data flatrateData = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Data.class);
+		flatrateData.setC_BPartner(partner);
+		InterfaceWrapperHelper.save(flatrateData);
+
+		// first term: first conditions, March 15 - April 14
+		term = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
+		term.setBill_BPartner(partner);
+		term.setStartDate(TimeUtil.getDay(2017, 3, 15));
+		term.setEndDate(TimeUtil.getDay(2017, 4, 14));
+		term.setC_Flatrate_Conditions(conditions1);
+		term.setC_Flatrate_Transition(transition);
+		term.setC_Flatrate_Data(flatrateData);
+		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		InterfaceWrapperHelper.save(term);
+
+		// second term: second conditions, March 14 - April 13 => Overlapping: March 15, April 14
+		overlappingTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
+		overlappingTerm.setBill_BPartner(partner);
+		overlappingTerm.setStartDate(TimeUtil.getDay(2017, 3, 14));
+		overlappingTerm.setEndDate(TimeUtil.getDay(2017, 4, 13));
+		overlappingTerm.setC_Flatrate_Conditions(conditions2);
+		overlappingTerm.setC_Flatrate_Transition(transition);
+		overlappingTerm.setC_Flatrate_Data(flatrateData);
+		overlappingTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		InterfaceWrapperHelper.save(overlappingTerm);
+
+		boolean hasOverlappingTerms = Services.get(IFlatrateBL.class).hasOverlappingTerms(term);
+		Assert.assertTrue("Term has overlapping terms", hasOverlappingTerms);
+
+		// test the other way around
+		hasOverlappingTerms = Services.get(IFlatrateBL.class).hasOverlappingTerms(overlappingTerm);
+		Assert.assertTrue("Term has overlapping terms", hasOverlappingTerms);
 	}
 }

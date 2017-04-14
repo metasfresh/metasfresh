@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-03-23T11:58:50 -->
+<!-- 2017-04-05T16:02:08 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,21 +19,12 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	i.AD_Org_ID,
-	i.DocStatus,
-	dt.PrintName
-FROM
-	C_Invoice i
-	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
-	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language} AND dtt.isActive = 'Y'
-WHERE
-	i.C_Invoice_ID = $P{RECORD_ID} AND i.isActive = 'Y'
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root($P{RECORD_ID}, $P{ad_language});]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
+	<field name="displayhu" class="java.lang.String"/>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="false">
@@ -164,6 +155,9 @@ WHERE
 				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="displayhu">
+					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_details_v2.jasper"]]></subreportExpression>
