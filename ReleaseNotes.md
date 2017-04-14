@@ -15,6 +15,9 @@ Here come the actual release notes:
 **upcoming release for week 2017-16**
 
 ## Features
+* metasfresh-frontend-api
+  * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
+    * Adding animation to dashboard charts (pie and bar charts).
 
 ## Fixes
 
