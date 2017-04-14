@@ -61,9 +61,10 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-backend
-  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
   * [#886](https://github.com/metasfresh/metasfresh/issues/886) GrandTotal missing in GridView of Purchase Order
+    * Adding column GrandTotal to GridView of Purchase Orders in WebUI.
   * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
+    * Fix for procurement WebUI when automatically prolonging new procurement contracts
   * [#1294](https://github.com/metasfresh/metasfresh/issues/1294) Report with Attribute Set Parameter cannot be started anymore
     * Fixing an exception when calling the Attribute Editor in Process Parameters.
   * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
@@ -71,8 +72,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#619](https://github.com/metasfresh/metasfresh-webui-frontend/issues/619) Address editor silently ignores changes if the mandatory fields are not filled
-  * [#620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/620) When deleting a newly created document, frontend shall not ask the user if he/she wants to leave the page
+    * Usability Fix for the Location editor in WebUI. Improvement of user interaction possibility when mandatory fields are not filled in location editor.
+  * [#620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/620) When deleting a newly created document, frontend shall not ask the user if the user wants to leave the page
+    * Usability Fix. After deleting a document the user is now not asked anymore if the page shall be left altought it does not exist anymore, because deleted.
   * [#637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/637) CTRL+1 and keyboard navigation left-right not working anymore
+    * Fix for action menu (ctrl+1) for keyboard arrow navigation.
 
 # metasfresh 5.4 (2017-14)
 
