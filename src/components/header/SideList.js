@@ -141,7 +141,7 @@ function mapStateToProps(state) {
     } = listHandler || {
         sorting: {},
         pagination: {},
-        viewId: ''
+        viewId: {}
     }
 
     return {

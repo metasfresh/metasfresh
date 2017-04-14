@@ -62,7 +62,7 @@ class DocList extends Component {
     render() {
         const {
             windowType, breadcrumb, query, modal, selected, rawModal,
-            indicator, processStatus
+            indicator, processStatus, includedView
         } = this.props;
 
         const {
@@ -112,7 +112,9 @@ class DocList extends Component {
                              setModalTitle={this.setModalTitle}
                              isModal={true}
                              processStatus={processStatus}
-                         />
+                             includedView={includedView}
+                         >
+                         </DocumentList>
                      </RawModal>
                  }
                  <DocumentList
@@ -138,6 +140,7 @@ DocList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired,
     query: PropTypes.object.isRequired,
+    includedView: PropTypes.object.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
     rawModal: PropTypes.object.isRequired,
@@ -147,7 +150,9 @@ DocList.propTypes = {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler, appHandler, routing } = state;
+    const {
+        windowHandler, menuHandler, listHandler, appHandler, routing
+    } = state;
 
     const {
         modal,
@@ -161,6 +166,12 @@ function mapStateToProps(state) {
         selected: [],
         latestNewDocument: null,
         indicator: ''
+    }
+
+    const {
+        includedView
+    } = listHandler || {
+        includedView: {}
     }
 
     const {
@@ -182,7 +193,7 @@ function mapStateToProps(state) {
     }
 
     return {
-        modal, breadcrumb, pathname, selected, indicator,
+        modal, breadcrumb, pathname, selected, indicator, includedView,
         latestNewDocument, rawModal, processStatus
     }
 }

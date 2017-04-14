@@ -17,7 +17,11 @@ import {
     addNotification,
     setProcessSaved,
     setProcessPending
-} from './AppActions'
+} from './AppActions';
+
+import {
+    setListIncludedView
+} from './ListActions';
 
 export function setLatestNewDocument(id) {
     return {
@@ -641,6 +645,11 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         dispatch(push(
                             '/window/' + action.windowId +
                             '/' + action.documentId
+                        ));
+                        break;
+                    case 'openIncludedView':
+                        dispatch(setListIncludedView(
+                            action.windowId, action.viewId
                         ));
                         break;
                 }
