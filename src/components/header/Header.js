@@ -210,6 +210,7 @@ class Header extends Component {
             isMenuOverlayShow: false,
             isInboxOpen: false,
             isSideListShow: false,
+            sideListTab: null,
             isSubheaderShow:
                 (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
             tooltipOpen: ''
