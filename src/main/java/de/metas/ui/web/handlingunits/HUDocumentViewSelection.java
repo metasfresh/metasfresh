@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -25,6 +26,9 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
+import de.metas.ui.web.process.view.ViewAction;
+import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -32,6 +36,7 @@ import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
@@ -63,7 +68,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return new Builder();
 	}
-	
+
 	public static HUDocumentViewSelection cast(final IDocumentViewSelection view)
 	{
 		return (HUDocumentViewSelection)view;
@@ -92,7 +97,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 	}
-	
+
 	@Override
 	public String getParentViewId()
 	{
@@ -110,7 +115,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return adWindowId;
 	}
-	
+
 	@Override
 	public String getTableName()
 	{
@@ -312,7 +317,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		final List<HUDocumentView> recordsList = documentViewsLoader.retrieveDocumentViews();
 		return new IndexedDocumentViews(recordsList);
 	}
-	
 
 	@Override
 	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
@@ -348,6 +352,35 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
+	@ViewAction(caption = "HUEditor.SelectHUsByBarcode")
+	public SelectViewRowsAction actionSelectHUsByBarcode( //
+			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
+			, final Set<DocumentId> selectedDocumentIds //
+	)
+	{
+		// Search for matching rowIds by barcode
+		final Set<DocumentId> matchingRowIds = streamAllRecursive()
+				.filter(row -> row.matchesBarcode(barcode))
+				.map(row -> row.getDocumentId())
+				.collect(ImmutableSet.toImmutableSet());
+		if (matchingRowIds.isEmpty())
+		{
+			throw new AdempiereException("Nothing found for '" + barcode + "'");
+		}
+
+		// Join matching rowIds with currently selected ones
+		final Set<DocumentId> rowIds = ImmutableSet.<DocumentId> builder()
+				.addAll(matchingRowIds)
+				.addAll(selectedDocumentIds)
+				.build();
+
+		return SelectViewRowsAction.builder()
+				.windowId(getAD_Window_ID())
+				.viewId(getViewId())
+				.rowIds(rowIds)
+				.build();
+
+	}
 
 	//
 	//
@@ -407,7 +440,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 					.orElse(Stream.of());
 		}
 
-		private Stream<HUDocumentView> streamRecursive(HUDocumentView row)
+		private Stream<HUDocumentView> streamRecursive(final HUDocumentView row)
 		{
 			return row.getIncludedDocuments()
 					.stream()
@@ -463,13 +496,13 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return new HUDocumentViewSelection(this);
 		}
-		
-		public Builder setParentViewId(String parentViewId)
+
+		public Builder setParentViewId(final String parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
+
 		private String getParentViewId()
 		{
 			return parentViewId;
