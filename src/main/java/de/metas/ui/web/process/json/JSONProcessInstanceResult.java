@@ -1,6 +1,7 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
@@ -17,6 +19,8 @@ import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
+import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Getter;
 
@@ -164,6 +168,11 @@ public final class JSONProcessInstanceResult implements Serializable
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
 			return new JSONOpenSingleDocumentAction(documentPath.getAD_Window_ID(), documentPath.getDocumentId().toJson());
 		}
+		else if (resultAction instanceof SelectViewRowsAction)
+		{
+			final SelectViewRowsAction selectViewRowsAction = (SelectViewRowsAction)resultAction;
+			return new JSONSelectViewRowsAction(selectViewRowsAction.getWindowId(), selectViewRowsAction.getViewId(), selectViewRowsAction.getRowIds());
+		}
 		else
 		{
 			logger.warn("Unknown result action: {}. Ignoring it.", resultAction);
@@ -248,5 +257,34 @@ public final class JSONProcessInstanceResult implements Serializable
 			this.windowId = windowId;
 			this.documentId = documentId;
 		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONSelectViewRowsAction extends JSONResultAction
+	{
+		private final int windowId;
+		private final String viewId;
+		private final Set<String> rowIds;
+
+		public JSONSelectViewRowsAction(final int windowId, final String viewId, final Set<DocumentId> rowIds)
+		{
+			super("selectViewRows");
+			
+			this.windowId = windowId;
+			this.viewId = viewId;
+
+			if (rowIds == null || rowIds.isEmpty())
+			{
+				this.rowIds = ImmutableSet.of();
+			}
+			else
+			{
+				this.rowIds = rowIds.stream()
+						.map(rowId -> rowId.toJson())
+						.collect(ImmutableSet.toImmutableSet());
+			}
+		}
+
 	}
 }

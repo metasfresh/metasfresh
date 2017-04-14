@@ -2,6 +2,7 @@ package de.metas.ui.web.process;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -172,6 +173,15 @@ public final class ProcessInstanceResult implements Serializable
 	{
 		@NonNull
 		private final DocumentPath documentPath;
+	}
+	
+	@lombok.Value
+	@lombok.Builder
+	public static final class SelectViewRowsAction implements ResultAction
+	{
+		private final int windowId; 
+		private final String viewId;
+		private final Set<DocumentId> rowIds;
 	}
 
 	public static final class Builder
