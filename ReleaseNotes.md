@@ -10,13 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.5 (2017-15)
+# metasfresh 5.5 (2017-16)
 
-**this week's RC**
+**upcoming release for week 2017-16**
+
+## Features
+
+## Fixes
+
+# metasfresh 5.5 (2017-15)
 
 ## Features
 * metasfresh-backend
-  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
+  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI provide lib-dirs to access user jars and dlls at runtime
     * Adding a possibility to provide user jars and dlls at runtime for swing client, thanks to @homebeaver
   * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
     * Allowing to use subsriptions for services that are not "shipped" and therfor will not be shown in shipment schedule.
@@ -56,9 +62,7 @@ Here come the actual release notes:
     * Minor UX improvements/ prettyfying to grid view in WebUI.
   * [#636](https://github.com/metasfresh/metasfresh-webui-frontend/issues/636) Sidelist Fontsize too small
     * Raising the font size in sidelist to match the fontsize in other menues.
-  * [#639](https://github.com/metasfresh/metasfresh-webui-frontend/issues/639) Navigation shortcut ctrl+2 is broken
-    * Fixing the shortcut for navigation menu.
-
+  
 ## Fixes
 * metasfresh-backend
   * [#886](https://github.com/metasfresh/metasfresh/issues/886) GrandTotal missing in GridView of Purchase Order
@@ -77,6 +81,8 @@ Here come the actual release notes:
     * Usability fix. After deleting a document the user is now not asked anymore if the page shall be left altough it does not exist anymore, because deleted.
   * [#637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/637) CTRL+1 and keyboard navigation left-right not working anymore
     * Fix for action menu (ctrl+1) for keyboard arrow navigation.
+  * [#639](https://github.com/metasfresh/metasfresh-webui-frontend/issues/639) Navigation shortcut ctrl+2 is broken
+    * Fixing the shortcut for navigation menu.
 
 # metasfresh 5.4 (2017-14)
 
