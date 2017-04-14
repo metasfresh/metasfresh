@@ -33,6 +33,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  * #L%
  */
 
+// TODO: make it package level; extract non-HU logic to another helper
 public final class HUDocumentViewAttributesHelper
 {
 	private HUDocumentViewAttributesHelper()

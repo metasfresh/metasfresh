@@ -1,7 +1,6 @@
 package de.metas.ui.web.process.view;
 
 import java.lang.annotation.Annotation;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
@@ -73,7 +72,7 @@ import lombok.ToString;
 	}
 
 	private final String actionId;
-	private final WeakReference<Method> viewActionMethodRef;
+	private final Method viewActionMethod;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -87,7 +86,7 @@ import lombok.ToString;
 	private ViewActionDescriptor(@NonNull final String actionId, @NonNull final Method viewActionMethod)
 	{
 		this.actionId = actionId;
-		viewActionMethodRef = new WeakReference<>(viewActionMethod);
+		this.viewActionMethod = viewActionMethod; // hard reference, because else it would be too sensible on things like cache reset
 		if (!viewActionMethod.isAccessible())
 		{
 			viewActionMethod.setAccessible(true);
@@ -240,13 +239,7 @@ import lombok.ToString;
 
 	public Method getViewActionMethod()
 	{
-		final Method method = viewActionMethodRef.get();
-		if (method == null)
-		{
-			// usually this happens when the class loader was reset (e.g. JRebel)
-			throw new IllegalStateException("Method no longer available for " + this);
-		}
-		return method;
+		return viewActionMethod;
 	}
 
 	public ProcessInstanceResult.ResultAction convertReturnType(final Object returnValue)
