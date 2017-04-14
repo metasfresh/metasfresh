@@ -6,9 +6,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
@@ -21,6 +22,9 @@ import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.NonNull;
@@ -56,6 +60,8 @@ import lombok.ToString;
 		return new ViewActionInstance(instanceId, view, viewActionDescriptor, request);
 	}
 
+	private static final String VERSION_DEFAULT = "0";
+
 	private final ProcessId processId;
 	private final DocumentId instanceId;
 	private final WeakReference<IDocumentViewSelection> viewRef;
@@ -63,6 +69,9 @@ import lombok.ToString;
 	private final Set<DocumentId> selectedDocumentIds;
 
 	private ProcessInstanceResult result;
+
+	@Nullable
+	private final Document parametersDocument;
 
 	private ViewActionInstance(@NonNull final DocumentId instanceId, @NonNull final IDocumentViewSelection view, @NonNull final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
 	{
@@ -73,6 +82,16 @@ import lombok.ToString;
 		this.viewActionDescriptor = viewActionDescriptor;
 
 		selectedDocumentIds = ImmutableSet.copyOf(request.getViewDocumentIds());
+
+		final DocumentEntityDescriptor parametersDescriptor = viewActionDescriptor.createParametersEntityDescriptor(processId);
+		if (parametersDescriptor != null)
+		{
+			parametersDocument = Document.builder(parametersDescriptor).initializeAsNewDocument(instanceId, VERSION_DEFAULT);
+		}
+		else
+		{
+			parametersDocument = null;
+		}
 	}
 
 	private IDocumentViewSelection getView()
@@ -100,25 +119,25 @@ import lombok.ToString;
 	@Override
 	public Collection<IDocumentFieldView> getParameters()
 	{
-		return ImmutableList.of();
+		return parametersDocument.getFieldViews();
 	}
 
 	@Override
 	public LookupValuesList getParameterLookupValues(final String parameterName)
 	{
-		throw new UnsupportedOperationException();
+		return parametersDocument.getFieldLookupValues(parameterName);
 	}
 
 	@Override
 	public LookupValuesList getParameterLookupValuesForQuery(final String parameterName, final String query)
 	{
-		throw new UnsupportedOperationException();
+		return parametersDocument.getFieldLookupValuesForQuery(parameterName, query);
 	}
 
 	@Override
 	public void processParameterValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
-		throw new UnsupportedOperationException();
+		parametersDocument.processValueChanges(events, reason);
 	}
 
 	@Override
@@ -131,10 +150,24 @@ import lombok.ToString;
 	@Override
 	public ProcessInstanceResult startProcess()
 	{
+		assertNotExecuted();
+
+		//
+		// Validate parameters, if any
+		if (parametersDocument != null)
+		{
+			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus();
+			if (!validStatus.isValid())
+			{
+				throw new AdempiereException(validStatus.getReason());
+			}
+		}
+
+		//
+		// Execute view action's method
 		final IDocumentViewSelection view = getView();
 		final Method viewActionMethod = viewActionDescriptor.getViewActionMethod();
-		final Object[] viewActionParams = viewActionDescriptor.extractMethodArguments(selectedDocumentIds);
-
+		final Object[] viewActionParams = viewActionDescriptor.extractMethodArguments(parametersDocument, selectedDocumentIds);
 		try
 		{
 			final Object resultActionObj = viewActionMethod.invoke(view, viewActionParams);
@@ -143,6 +176,7 @@ import lombok.ToString;
 			final ProcessInstanceResult result = ProcessInstanceResult.builder(instanceId)
 					.setAction(resultAction)
 					.build();
+
 			this.result = result;
 			return result;
 		}
@@ -156,5 +190,4 @@ import lombok.ToString;
 	{
 		Check.assumeNull(result, "view action instance not already executed");
 	}
-
 }

@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.view;
 
+import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -11,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -26,6 +28,11 @@ import de.metas.ui.web.process.view.ViewAction.AlwaysAllowPrecondition;
 import de.metas.ui.web.process.view.ViewAction.Precondition;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.model.Document;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -74,8 +81,8 @@ import lombok.ToString;
 	private final Class<? extends Precondition> preconditionClass;
 	private final Precondition preconditionSharedInstance;
 
+	private final List<ViewActionParamDescriptor> viewActionParamDescriptors;
 	private final ViewActionMethodReturnTypeConverter viewActionReturnTypeConverter;
-	private final List<ViewActionMethodArgumentExtractor> viewActionParameterExtractors;
 
 	private ViewActionDescriptor(@NonNull final String actionId, @NonNull final Method viewActionMethod)
 	{
@@ -109,9 +116,24 @@ import lombok.ToString;
 
 		//
 		// View action method's parameters
-		viewActionParameterExtractors = Stream.of(viewActionMethod.getParameterTypes())
-				.map(parameterType -> createArgumentExtractor(viewActionMethod, parameterType))
-				.collect(ImmutableList.toImmutableList());
+		{
+			final ImmutableList.Builder<ViewActionParamDescriptor> viewActionParamDescriptors = ImmutableList.builder();
+			final Class<?>[] methodParameterTypes = viewActionMethod.getParameterTypes();
+			final Annotation[][] methodParameterAnnotations = viewActionMethod.getParameterAnnotations();
+			for (int parameterIndex = 0; parameterIndex < methodParameterTypes.length; parameterIndex++)
+			{
+				final Class<?> methodParameterType = methodParameterTypes[parameterIndex];
+				final ViewActionParam methodParameterAnnotation = Stream.of(methodParameterAnnotations[parameterIndex])
+						.filter(ann -> ann instanceof ViewActionParam)
+						.map(ann -> (ViewActionParam)ann)
+						.findFirst().orElse(null);
+
+				final ViewActionParamDescriptor paramDescriptor = ViewActionParamDescriptor.of(viewActionMethod, parameterIndex, methodParameterType, methodParameterAnnotation);
+				viewActionParamDescriptors.add(paramDescriptor);
+			}
+
+			this.viewActionParamDescriptors = viewActionParamDescriptors.build();
+		}
 	}
 
 	private static final ViewActionMethodReturnTypeConverter createReturnTypeConverter(final Method method)
@@ -132,30 +154,40 @@ import lombok.ToString;
 
 	}
 
-	private static final ViewActionMethodArgumentExtractor createArgumentExtractor(final Method method, final Class<?> parameterType)
-	{
-		if (Collection.class.isAssignableFrom(parameterType))
-		{
-			return selectedDocumentIds -> selectedDocumentIds;
-		}
-		else
-		{
-			throw new IllegalArgumentException("Action method's parameter " + parameterType + " is not supported: " + method);
-		}
-
-	}
-
 	public String getActionId()
 	{
 		return actionId;
 	}
 
+	public DocumentEntityDescriptor createParametersEntityDescriptor(final ProcessId processId)
+	{
+		final DocumentEntityDescriptor.Builder parametersDescriptor = DocumentEntityDescriptor.builder()
+				.setDocumentType(DocumentType.Process, processId.toDocumentId())
+				// .setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
+				.disableDefaultTableCallouts();
+
+		viewActionParamDescriptors.stream()
+				.filter(ViewActionParamDescriptor::isUserParameter)
+				.map(ViewActionParamDescriptor::getParameterFieldDescriptor)
+				.forEach(parametersDescriptor::addField);
+
+		if (parametersDescriptor.getFieldsCount() == 0)
+		{
+			return null;
+		}
+
+		return parametersDescriptor.build();
+	}
+
 	public ProcessDescriptor getProcessDescriptor(@NonNull final ProcessId processId)
 	{
+		final DocumentEntityDescriptor parametersDescriptor = createParametersEntityDescriptor(processId);
+
 		final ProcessLayout processLayout = ProcessLayout.builder()
 				.setProcessId(processId)
 				.setCaption(caption)
 				.setDescription(description)
+				.addElements(parametersDescriptor)
 				.build();
 
 		return ProcessDescriptor.builder()
@@ -222,10 +254,10 @@ import lombok.ToString;
 		return viewActionReturnTypeConverter.convert(returnValue);
 	}
 
-	public Object[] extractMethodArguments(final Set<DocumentId> selectedDocumentIds)
+	public Object[] extractMethodArguments(final Document processParameters, final Set<DocumentId> selectedDocumentIds)
 	{
-		return viewActionParameterExtractors.stream()
-				.map(parameterExtractor -> parameterExtractor.extractArgument(selectedDocumentIds))
+		return viewActionParamDescriptors.stream()
+				.map(paramDesc -> paramDesc.extractArgument(processParameters, selectedDocumentIds))
 				.toArray();
 	}
 
@@ -238,6 +270,77 @@ import lombok.ToString;
 	@FunctionalInterface
 	private static interface ViewActionMethodArgumentExtractor
 	{
-		Object extractArgument(final Set<DocumentId> selectedDocumentIds);
+		public Object extractArgument(Document processParameters, Set<DocumentId> selectedDocumentIds);
+	}
+
+	private static final class ViewActionParamDescriptor
+	{
+		public static ViewActionParamDescriptor of(final Method method, final int parameterIndex, final Class<?> parameterType, final ViewActionParam annotation)
+		{
+			return new ViewActionParamDescriptor(method, parameterIndex, parameterType, annotation);
+		}
+
+		private final String parameterName;
+		private final Class<?> parameterValueClass;
+		private final ViewActionParam parameterAnnotation;
+
+		private final ViewActionMethodArgumentExtractor methodArgumentExtractor;
+
+		private ViewActionParamDescriptor(final Method method, final int parameterIndex, final Class<?> parameterType, final ViewActionParam annotation)
+		{
+			parameterName = String.valueOf(parameterIndex);
+			parameterValueClass = parameterType;
+			parameterAnnotation = annotation;
+
+			// Process parameter
+			if (annotation != null)
+			{
+				methodArgumentExtractor = (processParameters, selectedDocumentIds) -> processParameters.getFieldView(parameterName).getValueAs(parameterValueClass);
+			}
+			// selectedDocumentIds internal parameter
+			else if (Collection.class.isAssignableFrom(parameterType))
+			{
+				methodArgumentExtractor = (processParameters, selectedDocumentIds) -> selectedDocumentIds;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Action method's parameter " + parameterType + " is not supported: " + method);
+			}
+		}
+
+		public boolean isUserParameter()
+		{
+			return parameterAnnotation != null;
+		}
+
+		public DocumentFieldDescriptor.Builder getParameterFieldDescriptor()
+		{
+			Preconditions.checkState(isUserParameter(), "parameter is internal");
+
+			return DocumentFieldDescriptor.builder(parameterName)
+					.setCaption(parameterAnnotation.caption())
+					// .setDescription(attribute.getDescription())
+					//
+					.setValueClass(parameterValueClass)
+					.setWidgetType(parameterAnnotation.widgetType())
+					// .setLookupDescriptorProvider(lookupDescriptor)
+					//
+					// .setDefaultValueExpression(defaultValueExpr)
+					.setReadonlyLogic(false)
+					.setDisplayLogic(true)
+					.setMandatoryLogic(parameterAnnotation.mandatory())
+					//
+					.addCharacteristic(Characteristic.PublicField)
+			//
+			// .setDataBinding(new ASIAttributeFieldBinding(attributeId, fieldName, attribute.isMandatory(), readMethod, writeMethod))
+			;
+
+		}
+
+		public Object extractArgument(final Document processParameters, final Set<DocumentId> selectedDocumentIds)
+		{
+			return methodArgumentExtractor.extractArgument(processParameters, selectedDocumentIds);
+		}
+
 	}
 }
