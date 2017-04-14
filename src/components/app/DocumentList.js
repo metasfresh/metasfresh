@@ -400,8 +400,13 @@ class DocumentList extends Component {
                             />}
                         </div>
                         <QuickActions
-                            windowType={windowType}
-                            viewId={viewId}
+                            windowType={
+                                (includedView && includedView.windowType) ?
+                                    includedView.windowType : windowType
+                            }
+                            viewId={(includedView && includedView.viewId) ?
+                                includedView.viewId : viewId
+                            }
                             selected={selectionValid ? selected : undefined}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}

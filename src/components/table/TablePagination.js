@@ -246,6 +246,7 @@ class TablePagination extends Component {
         return (
             <div className="pagination-wrapper">
                 <div className="pagination-row">
+                    {compressed && <div />}
                     {!compressed && this.renderSelectAll()}
 
                     <div className="items-row-2 pagination-part">

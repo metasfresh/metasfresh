@@ -63,6 +63,7 @@ class Table extends Component {
             JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
         ){
+            console.log('tabela')
             dispatch(selectTableItems(nextState.selected, type));
         }
     }

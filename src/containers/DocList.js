@@ -113,6 +113,9 @@ class DocList extends Component {
                              isModal={true}
                              processStatus={processStatus}
                              includedView={includedView}
+                             inBackground={
+                                 includedView.windowType && includedView.viewId
+                             }
                          >
                              <DocumentList
                                  type="grid"

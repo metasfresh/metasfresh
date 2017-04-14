@@ -402,8 +402,8 @@ body {
 }
 
 .document-list-included {
-    flex: 1;
-    margin-left: .5rem;
+    flex: 2;
+    margin-left: .1rem;
     overflow: auto;
     overflow-x: hidden;
 }
