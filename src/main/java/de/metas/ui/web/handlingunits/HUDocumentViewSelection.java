@@ -345,7 +345,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
-	@ViewAction(caption = "HUEditor.SelectHUsByBarcode")
+	@ViewAction(caption = "Barcode")
 	public SelectViewRowsAction actionSelectHUsByBarcode( //
 			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
 			, final Set<DocumentId> selectedDocumentIds //
