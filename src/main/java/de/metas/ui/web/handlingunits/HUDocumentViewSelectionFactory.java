@@ -56,7 +56,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		return layouts.getOrLoad(windowId, () -> createHUViewLayout(windowId));
 	}
-	
+
 	@Override
 	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
 	{
@@ -118,8 +118,12 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	@Override
 	public HUDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
-//		Preconditions.checkArgument(request.getAD_Window_ID() == WEBUI_HU_Constants.WEBUI_HU_Window_ID, "Invalid windowId in %s", request);
 		final WindowId windowId = request.getWindowId();
+		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))
+		{
+			throw new IllegalArgumentException("Invalid request's windowId: " + request);
+		}
+
 		final ViewId viewId = ViewId.random(windowId);
 
 		//
