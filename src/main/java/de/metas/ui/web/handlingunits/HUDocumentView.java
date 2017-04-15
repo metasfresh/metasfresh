@@ -10,12 +10,11 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -83,6 +82,12 @@ public final class HUDocumentView extends ForwardingDocumentView
 	public List<HUDocumentView> getIncludedDocuments()
 	{
 		return getIncludedDocuments(HUDocumentView.class);
+	}
+
+	@Override
+	public HUDocumentViewAttributes getAttributes() throws EntityNotFoundException
+	{
+		return HUDocumentViewAttributes.cast(super.getAttributes());
 	}
 
 	/**
@@ -276,15 +281,28 @@ public final class HUDocumentView extends ForwardingDocumentView
 			return null;
 		}
 
-		// TODO: try fetching SSCC first!
+		//
+		// Try fetching SSCC first!
+		final String sscc18 = getAttributes().getSSCC18().orElse(null);
+		if (sscc18 != null)
+		{
+			return sscc18;
+		}
 
+		//
+		// Use HU's code (i.e. M_HU.Value)
 		final String huCode = getValue();
 		return huCode;
 	}
 
 	public boolean matchesBarcode(final String barcodeToMatch)
 	{
-		Preconditions.checkArgument(barcodeToMatch != null && !barcodeToMatch.isEmpty(), "invalid barcodeToMatch: %s", barcodeToMatch);
+		if (Check.isEmpty(barcodeToMatch, true))
+		{
+			throw new IllegalArgumentException("Invalid barcode: " + barcodeToMatch);
+		}
+		
+		final String barcodeToMatchNormalized = barcodeToMatch.trim();
 
 		final String huBarcode = getBarcode();
 		if (huBarcode == null)
@@ -292,7 +310,7 @@ public final class HUDocumentView extends ForwardingDocumentView
 			return false;
 		}
 
-		return Objects.equals(huBarcode, barcodeToMatch);
+		return Objects.equals(huBarcode, barcodeToMatchNormalized);
 	}
 
 }
