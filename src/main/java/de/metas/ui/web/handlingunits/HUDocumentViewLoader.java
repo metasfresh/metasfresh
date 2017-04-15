@@ -176,7 +176,7 @@ public class HUDocumentViewLoader
 		final DocumentView.Builder huViewRecord = DocumentView.builder(windowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId))
+				.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId))
 				.setProcessed(processed)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
@@ -239,6 +239,12 @@ public class HUDocumentViewLoader
 
 		return HUDocumentView.of(huViewRecord.build());
 	}
+	
+	private static final DocumentId createAttributesKey(final int huId)
+	{
+		return DocumentId.of(huId);
+	}
+
 
 	private static final String extractPackingInfo(final I_M_HU hu, final HUDocumentViewType huUnitType)
 	{
@@ -320,7 +326,7 @@ public class HUDocumentViewLoader
 
 		if (huId != parent_HU_ID)
 		{
-			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId));
+			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId));
 		}
 
 		return HUDocumentView.of(storageDocumentBuilder.build());

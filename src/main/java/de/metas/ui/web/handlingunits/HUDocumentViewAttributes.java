@@ -66,7 +66,7 @@ import lombok.NonNull;
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
 
-	private final Supplier<DocumentViewAttributesLayout> layoutSupplier = ExtendedMemorizingSupplier.of(() -> createLayout());
+	private final Supplier<DocumentViewAttributesLayout> layoutSupplier;
 
 	private final Set<String> readonlyAttributeNames;
 
@@ -74,7 +74,8 @@ import lombok.NonNull;
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
-
+		
+		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUDocumentViewAttributesHelper.createLayout(attributesStorage));
 
 		//
 		// Extract readonly attribute names
@@ -122,16 +123,11 @@ import lombok.NonNull;
 				.add("attributesStorage", attributesStorage)
 				.toString();
 	}
-
+	
 	@Override
 	public DocumentViewAttributesLayout getLayout()
 	{
 		return layoutSupplier.get();
-	}
-
-	private DocumentViewAttributesLayout createLayout()
-	{
-		return DocumentViewAttributesLayout.of(attributesStorage);
 	}
 
 	@Override
