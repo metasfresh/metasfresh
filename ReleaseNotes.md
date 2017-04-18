@@ -30,6 +30,7 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
     * fix empty page in sales invoice document
+  * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document best before date missing
     
 # metasfresh 5.5 (2017-15)
 
