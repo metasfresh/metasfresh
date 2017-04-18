@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -99,5 +98,15 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 
 		// no after-picking locator was found => return null
 		return null;
+	}
+
+	@Override
+	public List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouse(final Properties ctx)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(de.metas.handlingunits.model.I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
 	}
 }

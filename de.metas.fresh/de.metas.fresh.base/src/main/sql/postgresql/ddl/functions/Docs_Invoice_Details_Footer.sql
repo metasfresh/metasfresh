@@ -25,7 +25,7 @@ SELECT
 		to_char(i.dateinvoiced::date + pt.discountdays2, 'DD.MM.YYYY')
 	) AS P_Cond,
 	COALESCE( reft.name, ref.name ) AS P_Term,
-	CASE WHEN i.descriptionbottom IS NOT NULL
+	CASE WHEN (i.descriptionbottom IS NOT NULL AND i.descriptionbottom != '')
 			THEN '<br><br><br>'
 			ELSE ''
 		END || COALESCE(dtt.documentnote, dt.documentnote) 	as textcenter

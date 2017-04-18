@@ -19,6 +19,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
@@ -35,8 +37,8 @@ public class HUMovementBL implements IHUMovementBL
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
 	{
 		HUPackingMaterialMovementLineAggregateBuilder.newInstance()
-			.setM_Movement(movement)
-			.createPackingMaterialMovementLines();
+				.setM_Movement(movement)
+				.createPackingMaterialMovementLines();
 	}
 
 	@Override
@@ -150,6 +152,36 @@ public class HUMovementBL implements IHUMovementBL
 	{
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
+	}
+
+	@Override
+	public List<I_M_Movement> moveToQualityWarehouse(final ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo, final List<I_M_HU> hus)
+	{
+
+		return doDirectMoveToWarehouse(ctxAware, warehouseFrom, warehouseTo, hus);
+	}
+
+	@Override
+	public List <I_M_Movement> doDirectMoveToWarehouse(
+			final ITerminalContext ctxAware,
+			final I_M_Warehouse warehouseFrom,
+			final I_M_Warehouse warehouseTo,
+			final List<I_M_HU> hus)
+	{
+		// services
+		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+
+		// make the movement-creating API call
+		final List<I_M_Movement> movements = huMovementBL.generateMovementsToWarehouse(warehouseTo, hus, ctxAware);
+		Check.assume(movements.size() <= 1, "We called the API with HUs {} that are all in the same warehouse {}, so there is just one movement created", hus, warehouseFrom);
+
+		if (movements.isEmpty())
+		{
+			throw new TerminalException("@NotCreated@ @M_Movement_ID@");
+		}
+		
+
+		return movements;
 	}
 
 }

@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -51,8 +52,10 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 
@@ -94,14 +97,14 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, ppOrder);
 		// Set Defaults
 		orderBOMLine.setDescription("");
-		orderBOMLine.setQtyDelivered(Env.ZERO);
-		orderBOMLine.setQtyDeliveredActual(Env.ZERO);
-		orderBOMLine.setQtyUsageVariance(Env.ZERO);
-		orderBOMLine.setQtyPost(Env.ZERO);
-		orderBOMLine.setQtyReject(Env.ZERO);
-		orderBOMLine.setQtyRequiered(Env.ZERO);
-		orderBOMLine.setQtyReserved(Env.ZERO);
-		orderBOMLine.setQtyScrap(Env.ZERO);
+		orderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+		orderBOMLine.setQtyDeliveredActual(BigDecimal.ZERO);
+		orderBOMLine.setQtyUsageVariance(BigDecimal.ZERO);
+		orderBOMLine.setQtyPost(BigDecimal.ZERO);
+		orderBOMLine.setQtyReject(BigDecimal.ZERO);
+		orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
+		orderBOMLine.setQtyReserved(BigDecimal.ZERO);
+		orderBOMLine.setQtyScrap(BigDecimal.ZERO);
 
 		//
 		// Update from PP_Product BOM Line
@@ -231,8 +234,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	 * @param orderBOMLine
 	 * @param qtyFinishedGood
 	 * @param qtyFinishedGoodUOM
-	 * @return quantity required to be issued (standard)
+	 * @return standard quantity required to be issued (standard UOM)
 	 */
+	@VisibleForTesting
 	/* package */BigDecimal calculateQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final BigDecimal qtyFinishedGood, I_C_UOM qtyFinishedGoodUOM)
 	{
 		final BigDecimal multiplier = getQtyMultiplier(orderBOMLine);
@@ -278,12 +282,38 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public BigDecimal calculateQtyRequiredBasedOnFinishedGoodReceipt(final I_PP_Order_BOMLine orderBOMLine)
+	public Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(final I_PP_Order_BOMLine orderBOMLine, final I_C_UOM uom)
 	{
+		assertIssue(orderBOMLine); // only issuing is supported
+		
+		//
+		// Get how much finish goods were delivered
 		final I_PP_Order ppOrder = orderBOMLine.getPP_Order();
 		final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
 		final I_C_UOM qtyDelivered_FinishedGoodUOM = ppOrder.getC_UOM();
-		return calculateQtyRequired(orderBOMLine, qtyDelivered_FinishedGood, qtyDelivered_FinishedGoodUOM);
+		
+		//
+		// Calculate how much we can issue at max, based on how much finish goods we delivered 
+		final BigDecimal qtyToIssueMax_InStdUOM = calculateQtyRequired(orderBOMLine, qtyDelivered_FinishedGood, qtyDelivered_FinishedGoodUOM);
+		if(qtyToIssueMax_InStdUOM.signum() <= 0)
+		{
+			return Quantity.zero(uom);
+		}
+
+		// How much was already issued
+		final I_C_UOM standardUOM = orderBOMLine.getC_UOM();
+		final BigDecimal qtyIssued_InStdUOM = orderBOMLine.getQtyDelivered();
+
+		// Effective qtyToIssue: how much we need to issue (max) - how much we already issued
+		final BigDecimal qtyToIssueEffective_InStdUOM = qtyToIssueMax_InStdUOM.subtract(qtyIssued_InStdUOM);
+		if(qtyToIssueEffective_InStdUOM.signum() <= 0)
+		{
+			return Quantity.zero(uom); // we issued everything that was needed...
+		}
+
+		//
+		final BigDecimal qtyToIssueEffective = Services.get(IUOMConversionBL.class).convertQty(orderBOMLine.getM_Product(), qtyToIssueEffective_InStdUOM, standardUOM, uom);
+		return new Quantity(qtyToIssueEffective, uom, qtyToIssueEffective_InStdUOM, standardUOM);
 	}
 
 	/**
@@ -503,7 +533,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		//
 		// Check if locator was changed. If yes, we need to unreserve first what was reserved before
-		final I_PP_Order_BOMLine orderBOMLineOld = InterfaceWrapperHelper.create(orderBOMLine, I_PP_Order_BOMLine.class, true);
+		final I_PP_Order_BOMLine orderBOMLineOld = InterfaceWrapperHelper.createOld(orderBOMLine, I_PP_Order_BOMLine.class);
 		if (orderBOMLineOld.getM_Locator_ID() != orderBOMLine.getM_Locator_ID())
 		{
 			final BigDecimal qtyReservedNew = reserveStock(orderBOMLineOld, BigDecimal.ZERO);

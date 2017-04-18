@@ -32,8 +32,12 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /**
  * Plain implementation of {@link ITrx}.
@@ -49,11 +53,36 @@ import com.google.common.collect.ImmutableList;
  */
 public class PlainTrx extends AbstractTrx
 {
+	private static final transient Logger logger = LogManager.getLogger(PlainTrx.class);
+
 	private final List<ITrxSavepoint> activeSavepoints = new ArrayList<ITrxSavepoint>();
+
+	/** Debugging: history of transaction important actions like TrxStatus change */
+	private final List<String> debugLog;
+
+	public static enum TrxStatus
+	{
+		NEW, STARTED, ROLLBACK, COMMIT, CLOSED
+	};
+
+	private TrxStatus trxStatus = TrxStatus.NEW;
 
 	public PlainTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
 		super(trxManager, trxName, autoCommit);
+
+		debugLog = getPlainTrxManager().isDebugTrxLog() ? new ArrayList<>() : null;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("trxStatus", trxStatus)
+				.addValue(super.toString())
+				.add("debugLog", debugLog)
+				.toString();
 	}
 
 	public PlainTrxManager getPlainTrxManager()
@@ -66,7 +95,11 @@ public class PlainTrx extends AbstractTrx
 	{
 		// Make sure we are not calling start() twice.
 		assertNotActive("Transaction shall not be started");
-		return super.start();
+		boolean started = super.start();
+
+		setTrxStatus(TrxStatus.STARTED);
+
+		return started;
 	}
 
 	@Override
@@ -76,6 +109,9 @@ public class PlainTrx extends AbstractTrx
 
 		final PlainTrxSavepoint savepoint = new PlainTrxSavepoint(this, name);
 		activeSavepoints.add(savepoint);
+
+		logTrxAction("Savepoint created: " + name);
+
 		return savepoint;
 	}
 
@@ -122,6 +158,8 @@ public class PlainTrx extends AbstractTrx
 
 		removeUntilSavepoint(savepoint);
 
+		logTrxAction("Savepoint released: " + savepoint);
+
 		return true;
 	}
 
@@ -140,6 +178,9 @@ public class PlainTrx extends AbstractTrx
 
 		// Clear all savepoints
 		activeSavepoints.clear();
+
+		setTrxStatus(TrxStatus.ROLLBACK);
+
 		return true;
 	}
 
@@ -152,18 +193,35 @@ public class PlainTrx extends AbstractTrx
 		}
 		removeUntilSavepoint(savepoint);
 
+		logTrxAction("Rollback to savepoint: " + savepoint);
+
 		return true;
 	}
 
 	@Override
 	protected boolean commitNative(final boolean throwException) throws SQLException
 	{
-		if (getPlainTrxManager().isFailCommitIfTrxNotStarted())
+		//
+		// Check if we can commit
+		String commitDetailMsg = null;
+		final TrxStatus trxStatusCurrent = getTrxStatus();
+		if (trxStatusCurrent == TrxStatus.NEW)
 		{
-			assertActive("Transaction shall be started before");
+			// it's OK to just do nothing
+			commitDetailMsg = "empty";
 		}
+		else
+		{
+			if (getPlainTrxManager().isFailCommitIfTrxNotStarted())
+			{
+				assertActive("Transaction shall be started before");
+			}
+		}
+
 		// Clear all savepoints
 		activeSavepoints.clear();
+
+		setTrxStatus(TrxStatus.COMMIT, commitDetailMsg);
 
 		return true;
 	}
@@ -180,6 +238,8 @@ public class PlainTrx extends AbstractTrx
 					+ "\n Trx: " + this
 					+ "\n Active savepoints: " + activeSavepoints);
 		}
+
+		setTrxStatus(TrxStatus.CLOSED);
 
 		return true;
 	}
@@ -210,5 +270,45 @@ public class PlainTrx extends AbstractTrx
 					+ "\n Actual active: " + activeActual
 					+ "\n Trx: " + this);
 		}
+	}
+
+	private TrxStatus getTrxStatus()
+	{
+		return trxStatus;
+	}
+
+	private final void setTrxStatus(final TrxStatus trxStatus)
+	{
+		final String detailMsg = null;
+		setTrxStatus(trxStatus, detailMsg);
+	}
+
+	private final void setTrxStatus(final TrxStatus trxStatus, final String detailMsg)
+	{
+		final TrxStatus trxStatusOld = this.trxStatus;
+		this.trxStatus = trxStatus;
+
+		// Log it
+		if (debugLog != null)
+		{
+			final StringBuilder msg = new StringBuilder();
+			msg.append(trxStatusOld).append("->").append(trxStatus);
+			if (!Check.isEmpty(detailMsg, true))
+			{
+				msg.append(" (").append(detailMsg).append(")");
+			}
+			logTrxAction(msg.toString());
+		}
+	}
+
+	private final void logTrxAction(final String message)
+	{
+		if (debugLog == null)
+		{
+			return;
+		}
+
+		debugLog.add(message);
+		logger.info("{}: trx action: {}", getTrxName(), message);
 	}
 }

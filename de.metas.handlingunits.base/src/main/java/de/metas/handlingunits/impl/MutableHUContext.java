@@ -35,7 +35,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
-import de.metas.handlingunits.IDocumentCollector;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHUTrxBL;
@@ -59,7 +58,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	private IAttributeStorageFactory _attributesStorageFactory = null;
 	private boolean _attributesStorageFactoryInitialized = false;
 	private Date date = null;
-	private IDocumentCollector _documentsCollector = NullDocumentCollector.instance;
 	private CompositeHUTrxListener _trxListeners = null;
 
 	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
@@ -139,7 +137,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 		huContextCopy.setHUStorageFactory(getHUStorageFactory());
 		huContextCopy.setHUAttributeStorageFactory(getHUAttributeStorageFactory());
 		huContextCopy.setDate(getDate());
-		huContextCopy.setDocumentCollector(getDocumentCollector());
 		huContextCopy._destroyedHUPackingMaterialsCollector = _destroyedHUPackingMaterialsCollector;
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
 
@@ -243,19 +240,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 		Check.assumeNotNull(attributesStorageFactory, "attributesStorageFactory not null");
 		Check.assume(!_attributesStorageFactoryInitialized, "attributesStorageFactory not already initialized");
 		_attributesStorageFactory = attributesStorageFactory;
-	}
-
-	@Override
-	public final IDocumentCollector getDocumentCollector()
-	{
-		return _documentsCollector;
-	}
-
-	@Override
-	public final void setDocumentCollector(final IDocumentCollector documentCollector)
-	{
-		Check.assumeNotNull(documentCollector, "documentCollector not null");
-		_documentsCollector = documentCollector;
 	}
 
 	@Override

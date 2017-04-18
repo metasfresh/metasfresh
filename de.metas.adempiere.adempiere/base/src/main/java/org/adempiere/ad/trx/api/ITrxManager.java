@@ -214,6 +214,8 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void run(String trxName, TrxRunnable r);
 
+	void run(String trxName, Runnable runnable);
+
 	/**
 	 * Executes the callable object. Same as calling {@link #call(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
 	 * and to roll back to in case of problems and doesn't commit in case of success.

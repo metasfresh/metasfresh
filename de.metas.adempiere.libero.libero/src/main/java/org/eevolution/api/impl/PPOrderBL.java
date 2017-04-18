@@ -35,7 +35,6 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
@@ -130,7 +129,7 @@ public class PPOrderBL implements IPPOrderBL
 		BigDecimal qtyBatchSize = order.getQtyBatchSize();
 		if (qtyBatchSize.signum() == 0 || override)
 		{
-			int AD_Workflow_ID = order.getAD_Workflow_ID();
+			final int AD_Workflow_ID = order.getAD_Workflow_ID();
 			// No workflow entered, or is just a new record:
 			if (AD_Workflow_ID <= 0)
 			{
@@ -145,7 +144,7 @@ public class PPOrderBL implements IPPOrderBL
 		final BigDecimal qtyBatchs;
 		if (qtyBatchSize.signum() == 0)
 		{
-			qtyBatchs = Env.ONE;
+			qtyBatchs = BigDecimal.ONE;
 		}
 		else
 		{
@@ -160,7 +159,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		//
 		// Check if locator was changed. If yes, we need to unreserve first what was reserved before
-		final I_PP_Order ppOrderOld = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class, true);
+		final I_PP_Order ppOrderOld = InterfaceWrapperHelper.createOld(ppOrder, I_PP_Order.class);
 		if (ppOrderOld.getM_Locator_ID() != ppOrder.getM_Locator_ID())
 		{
 			final BigDecimal qtyReservedNew = orderStock(ppOrderOld, BigDecimal.ZERO);

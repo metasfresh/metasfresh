@@ -108,6 +108,21 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	public I_C_DocType getDocTypeOrNullForSOTrx(
+			final Properties ctx,
+			final String docBaseType,
+			final String docSubType,
+			final boolean isSOTrx,
+			final int adClientId,
+			final int adOrgId,
+			final String trxName)
+	{
+		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
+				.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, isSOTrx)
+				.create().first(I_C_DocType.class);
+	}
+
+	@Override
 	public I_C_DocType getDocTypeOrNull(final Properties ctx,
 			final String docBaseType,
 			final String docSubType,
@@ -139,7 +154,12 @@ public class DocTypeDAO implements IDocTypeDAO
 		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
 
-		if (docSubType != DOCSUBTYPE_Any)
+		if (docSubType == DOCSUBTYPE_NONE)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+
+		else if (docSubType != DOCSUBTYPE_Any)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}
@@ -154,7 +174,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public List<I_C_DocType> retrieveDocTypesByBaseType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final String trxName)
 	{
-		final String docSubType = null;
+		final String docSubType = DOCSUBTYPE_Any;
 		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
 				.create()
 				.list(I_C_DocType.class);

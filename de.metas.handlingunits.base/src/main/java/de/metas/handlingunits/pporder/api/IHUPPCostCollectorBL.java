@@ -13,26 +13,37 @@ package de.metas.handlingunits.pporder.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
+import org.eevolution.api.IReceiptCostCollectorCandidate;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 
 public interface IHUPPCostCollectorBL extends ISingletonService
 {
+	/**
+	 * Creates manufacturing order material receipt.
+	 * 
+	 * Also turns the planning HU to active.
+	 * 
+	 * @param candidate
+	 * @param hu
+	 * @return receipt cost collector; never returns null
+	 */
+	I_PP_Cost_Collector createReceipt(IReceiptCostCollectorCandidate candidate, I_M_HU hu);
+
 	/**
 	 * Assign given HUs to specified cost collector.
 	 *
