@@ -56,7 +56,7 @@ public class WEBUI_PP_Order_IssueReceipt_Launcher extends JavaProcess implements
 	{
 		final TableRecordReference ppOrderRef = TableRecordReference.of(org.eevolution.model.I_PP_Order.Table_Name, getRecord_ID());
 		final boolean gridView = true;
-		getResult().setRecordToOpen(ppOrderRef, WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt, gridView);
+		getResult().setRecordToOpen(ppOrderRef, WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt.toInt(), gridView);
 		return MSG_OK;
 	}
 

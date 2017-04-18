@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -25,13 +26,18 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
+import de.metas.ui.web.process.view.ViewAction;
+import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
@@ -63,16 +69,15 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return new Builder();
 	}
-	
+
 	public static HUDocumentViewSelection cast(final IDocumentViewSelection view)
 	{
 		return (HUDocumentViewSelection)view;
 	}
 
-	private final String parentViewId;
+	private final ViewId parentViewId;
 
-	private final String viewId;
-	private final int adWindowId;
+	private final ViewId viewId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 
@@ -86,31 +91,24 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
-		adWindowId = builder.getAD_Window_ID();
 
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 	}
-	
+
 	@Override
-	public String getParentViewId()
+	public ViewId getParentViewId()
 	{
 		return parentViewId;
 	}
 
 	@Override
-	public String getViewId()
+	public ViewId getViewId()
 	{
 		return viewId;
 	}
 
-	@Override
-	public int getAD_Window_ID()
-	{
-		return adWindowId;
-	}
-	
 	@Override
 	public String getTableName()
 	{
@@ -313,6 +311,72 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return new IndexedDocumentViews(recordsList);
 	}
 
+	@Override
+	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
+	{
+		return getRecords().streamByIds(documentIds);
+	}
+
+	/** @return top level rows and included rows recursive stream */
+	public Stream<HUDocumentView> streamAllRecursive()
+	{
+		return getRecords().streamRecursive();
+	}
+
+	@Override
+	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
+	{
+		final Set<Integer> huIds = getRecords()
+				.streamByIds(documentIds)
+				.filter(HUDocumentView::isPureHU)
+				.map(HUDocumentView::getM_HU_ID)
+				.collect(GuavaCollectors.toImmutableSet());
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<I_M_HU> hus = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.list(I_M_HU.class);
+
+		return InterfaceWrapperHelper.createList(hus, modelClass);
+	}
+
+	@ViewAction(caption = "Barcode")
+	public SelectViewRowsAction actionSelectHUsByBarcode( //
+			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
+			, final Set<DocumentId> selectedDocumentIds //
+	)
+	{
+		// Search for matching rowIds by barcode
+		final Set<DocumentId> matchingRowIds = streamAllRecursive()
+				.filter(row -> row.matchesBarcode(barcode))
+				.map(row -> row.getDocumentId())
+				.collect(ImmutableSet.toImmutableSet());
+		if (matchingRowIds.isEmpty())
+		{
+			throw new AdempiereException("Nothing found for '" + barcode + "'");
+		}
+
+		// Join matching rowIds with currently selected ones
+		final Set<DocumentId> rowIds = ImmutableSet.<DocumentId> builder()
+				.addAll(matchingRowIds)
+				.addAll(selectedDocumentIds)
+				.build();
+
+		return SelectViewRowsAction.builder()
+				.viewId(getViewId())
+				.rowIds(rowIds)
+				.build();
+
+	}
+
+	//
+	//
+	//
 	private static final class IndexedDocumentViews
 	{
 		/** Top level records list */
@@ -368,7 +432,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 					.orElse(Stream.of());
 		}
 
-		private Stream<HUDocumentView> streamRecursive(HUDocumentView row)
+		private Stream<HUDocumentView> streamRecursive(final HUDocumentView row)
 		{
 			return row.getIncludedDocuments()
 					.stream()
@@ -407,10 +471,9 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	public static final class Builder
 	{
-		private String parentViewId;
-
-		private String viewId;
-		private int adWindowId;
+		private ViewId parentViewId;
+		private ViewId viewId;
+		
 		private Set<DocumentPath> referencingDocumentPaths;
 
 		private HUDocumentViewLoader documentViewsLoader;
@@ -424,38 +487,27 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return new HUDocumentViewSelection(this);
 		}
-		
-		public Builder setParentViewId(String parentViewId)
+
+		public Builder setParentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
-		private String getParentViewId()
+
+		private ViewId getParentViewId()
 		{
 			return parentViewId;
 		}
 
-		public Builder setViewId(final String viewId)
+		public Builder setViewId(final ViewId viewId)
 		{
 			this.viewId = viewId;
 			return this;
 		}
 
-		public String getViewId()
+		public ViewId getViewId()
 		{
 			return viewId;
-		}
-
-		public Builder setAD_Window_ID(final int adWindowId)
-		{
-			this.adWindowId = adWindowId;
-			return this;
-		}
-
-		private int getAD_Window_ID()
-		{
-			return adWindowId;
 		}
 
 		public Builder setRecords(final HUDocumentViewLoader documentViewsLoader)
@@ -480,39 +532,5 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
-	}
-
-	@Override
-	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
-	{
-		return getRecords().streamByIds(documentIds);
-	}
-
-	/** @return top level rows and included rows recursive stream */
-	public Stream<HUDocumentView> streamAllRecursive()
-	{
-		return getRecords().streamRecursive();
-	}
-
-	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
-	{
-		final Set<Integer> huIds = getRecords()
-				.streamByIds(documentIds)
-				.filter(HUDocumentView::isPureHU)
-				.map(HUDocumentView::getM_HU_ID)
-				.collect(GuavaCollectors.toImmutableSet());
-		if (huIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<I_M_HU> hus = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
-				.create()
-				.list(I_M_HU.class);
-
-		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 }

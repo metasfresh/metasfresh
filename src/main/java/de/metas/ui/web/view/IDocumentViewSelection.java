@@ -40,15 +40,18 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 public interface IDocumentViewSelection
 {
-	String getViewId();
-	
-	int getAD_Window_ID();
-	
+	ViewId getViewId();
+
 	/** @return table name or null */
 	String getTableName();
-	
+
 	/** @return parent viewId or null */
-	String getParentViewId();
+	ViewId getParentViewId();
+
+	default boolean isIncludedView()
+	{
+		return getParentViewId() != null;
+	}
 
 	long size();
 

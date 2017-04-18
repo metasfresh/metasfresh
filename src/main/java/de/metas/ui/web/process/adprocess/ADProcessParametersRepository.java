@@ -101,7 +101,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		throw new UnsupportedOperationException();
 	}
 
-	public Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
 	{
 		//
 		// Build the parameters (as document)

@@ -3,6 +3,8 @@ package de.metas.ui.web.process.descriptor;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
@@ -12,7 +14,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 
 /*
  * #%L
@@ -27,11 +32,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -52,7 +57,7 @@ public class ProcessLayout
 	private ProcessLayout(final Builder builder)
 	{
 		super();
-		
+
 		Preconditions.checkNotNull(builder.processId, "processId not set: %s", builder);
 		processId = builder.processId;
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
@@ -80,7 +85,7 @@ public class ProcessLayout
 	{
 		return caption.translate(adLanguage);
 	}
-	
+
 	public ITranslatableString getDescription()
 	{
 		return description;
@@ -148,5 +153,33 @@ public class ProcessLayout
 			elements.add(element);
 			return this;
 		}
+
+		public Builder addElement(final DocumentFieldDescriptor processParaDescriptor)
+		{
+			Check.assumeNotNull(processParaDescriptor, "Parameter processParaDescriptor is not null");
+			final DocumentLayoutElementDescriptor element = DocumentLayoutElementDescriptor.builder()
+					.setCaption(processParaDescriptor.getCaption())
+					.setDescription(processParaDescriptor.getDescription())
+					.setWidgetType(processParaDescriptor.getWidgetType())
+					.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
+							.setLookupSource(processParaDescriptor.getLookupSourceType())
+							.setPublicField(true))
+					.build();
+
+			addElement(element);
+
+			return this;
+		}
+
+		public Builder addElements(@Nullable final DocumentEntityDescriptor parametersDescriptor)
+		{
+			if (parametersDescriptor != null)
+			{
+				parametersDescriptor.getFields().forEach(this::addElement);
+			}
+
+			return this;
+		}
+
 	}
 }

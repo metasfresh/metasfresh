@@ -21,6 +21,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -123,9 +124,9 @@ public final class MenuTree
 		return nodes.get(0);
 	}
 
-	public Optional<MenuNode> getNewRecordNodeForWindowId(final int adWindowId)
+	public Optional<MenuNode> getNewRecordNodeForWindowId(final WindowId windowId)
 	{
-		final String elementId = String.valueOf(adWindowId);
+		final String elementId = windowId.toJson();
 		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())

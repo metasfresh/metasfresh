@@ -4,6 +4,7 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
@@ -33,7 +34,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 @Service
 public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
-	private final CCache<Integer, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
+	private final CCache<WindowId, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
 
 	/* package */ DefaultDocumentDescriptorFactory()
 	{
@@ -41,11 +42,11 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	}
 
 	@Override
-	public DocumentDescriptor getDocumentDescriptor(final int AD_Window_ID)
+	public DocumentDescriptor getDocumentDescriptor(final WindowId windowId)
 	{
 		try
 		{
-			return documentDescriptorsByWindowId.getOrLoad(AD_Window_ID, () -> new DefaultDocumentDescriptorLoader(AD_Window_ID).load());
+			return documentDescriptorsByWindowId.getOrLoad(windowId, () -> new DefaultDocumentDescriptorLoader(windowId.toInt()).load());
 		}
 		catch (final Exception e)
 		{

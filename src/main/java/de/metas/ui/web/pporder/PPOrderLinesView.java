@@ -26,6 +26,7 @@ import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -66,10 +67,9 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		return (PPOrderLinesView)view;
 	}
 
-	private final String parentViewId;
+	private final ViewId parentViewId;
 
-	private final String viewId;
-	private final int adWindowId;
+	private final ViewId viewId;
 	private final int ppOrderId;
 
 	private final PPOrderLinesLoader loader;
@@ -80,28 +80,21 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		parentViewId = builder.getParentViewId();
 
 		viewId = builder.getViewId();
-		adWindowId = builder.getAD_Window_ID();
 
 		loader = builder.getLoader();
 		ppOrderId = loader.getPP_Order_ID();
 	}
 
 	@Override
-	public String getParentViewId()
+	public ViewId getParentViewId()
 	{
 		return parentViewId;
 	}
 
 	@Override
-	public String getViewId()
+	public ViewId getViewId()
 	{
 		return viewId;
-	}
-
-	@Override
-	public int getAD_Window_ID()
-	{
-		return adWindowId;
 	}
 
 	@Override
@@ -248,7 +241,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
-	public OpenIncludedViewAction openViewsToIssue(final Set<DocumentId> selectedDocumentIds)
+	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final Set<DocumentId> selectedDocumentIds)
 	{
 		final DocumentId selectedRowId = ListUtils.singleElement(selectedDocumentIds);
 		final PPOrderLineRow row = getById(selectedRowId);
@@ -256,13 +249,12 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		final IDocumentViewSelection husToIssueView = row.getCreateIncludedView(viewsRepo);
 
 		return OpenIncludedViewAction.builder()
-				.windowId(husToIssueView.getAD_Window_ID())
 				.viewId(husToIssueView.getViewId())
 				.build();
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.processPlan", precondition = HasCandidatesToProcess.class)
-	public void processPlan()
+	public void actionProcessPlan()
 	{
 		final int ppOrderId = getPP_Order_ID();
 		final List<Integer> ppOrderQtyIds = streamAllRecursive()
@@ -276,7 +268,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 		invalidateAll();
 	}
-
+	
 	public static final class IsSingleIssueLine implements ViewAction.Precondition
 	{
 		@Override
@@ -405,10 +397,9 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	//
 	public static final class Builder
 	{
-		private String parentViewId;
+		private ViewId parentViewId;
 
-		private String viewId;
-		private int adWindowId;
+		private ViewId viewId;
 
 		private PPOrderLinesLoader loader;
 
@@ -422,37 +413,26 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			return new PPOrderLinesView(this);
 		}
 
-		public Builder setParentViewId(final String parentViewId)
+		public Builder setParentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
 
-		private String getParentViewId()
+		private ViewId getParentViewId()
 		{
 			return parentViewId;
 		}
 
-		public Builder setViewId(final String viewId)
+		public Builder setViewId(final ViewId viewId)
 		{
 			this.viewId = viewId;
 			return this;
 		}
 
-		public String getViewId()
+		public ViewId getViewId()
 		{
 			return viewId;
-		}
-
-		public Builder setAD_Window_ID(final int adWindowId)
-		{
-			this.adWindowId = adWindowId;
-			return this;
-		}
-
-		private int getAD_Window_ID()
-		{
-			return adWindowId;
 		}
 
 		public Builder setRecords(final PPOrderLinesLoader loader)

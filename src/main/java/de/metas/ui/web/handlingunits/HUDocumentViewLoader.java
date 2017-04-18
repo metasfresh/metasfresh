@@ -35,7 +35,7 @@ import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -69,7 +69,7 @@ public class HUDocumentViewLoader
 
 	private static final transient Logger logger = LogManager.getLogger(HUDocumentViewLoader.class);
 
-	private final int adWindowId;
+	private final WindowId windowId;
 	private final String referencingTableName;
 	private final CopyOnWriteArraySet<Integer> huIds = new CopyOnWriteArraySet<>();
 
@@ -79,7 +79,7 @@ public class HUDocumentViewLoader
 	{
 		super();
 
-		adWindowId = request.getAD_Window_ID();
+		windowId = request.getWindowId();
 		this.referencingTableName = referencingTableName;
 
 		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
@@ -93,7 +93,7 @@ public class HUDocumentViewLoader
 			throw new IllegalArgumentException("No filters specified for " + request);
 		}
 
-		_attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(DocumentType.Window, adWindowId);
+		_attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(windowId);
 	}
 
 	public IDocumentViewAttributesProvider getAttributesProvider()
@@ -173,10 +173,10 @@ public class HUDocumentViewLoader
 		final boolean processed = extractProcessed(hu);
 		final int huId = hu.getM_HU_ID();
 
-		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
+		final DocumentView.Builder huViewRecord = DocumentView.builder(windowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId))
+				.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId))
 				.setProcessed(processed)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
@@ -239,6 +239,12 @@ public class HUDocumentViewLoader
 
 		return HUDocumentView.of(huViewRecord.build());
 	}
+	
+	private static final DocumentId createAttributesKey(final int huId)
+	{
+		return DocumentId.of(huId);
+	}
+
 
 	private static final String extractPackingInfo(final I_M_HU hu, final HUDocumentViewType huUnitType)
 	{
@@ -303,7 +309,7 @@ public class HUDocumentViewLoader
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 
-		final DocumentView.Builder storageDocumentBuilder = DocumentView.builder(adWindowId)
+		final DocumentView.Builder storageDocumentBuilder = DocumentView.builder(windowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
 				.setType(HUDocumentViewType.HUStorage)
@@ -320,7 +326,7 @@ public class HUDocumentViewLoader
 
 		if (huId != parent_HU_ID)
 		{
-			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), HUDocumentViewAttributesHelper.createAttributesKey(huId));
+			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId));
 		}
 
 		return HUDocumentView.of(storageDocumentBuilder.build());

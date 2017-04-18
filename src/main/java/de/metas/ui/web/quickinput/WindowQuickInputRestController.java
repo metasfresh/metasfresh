@@ -25,7 +25,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -90,14 +90,15 @@ public class WindowQuickInputRestController
 
 	@RequestMapping(method = RequestMethod.HEAD)
 	public ResponseEntity<Object> checkSupported(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
 			, @PathVariable("tabId") final String tabIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(windowId)
 				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
 
 		if(quickInputDescriptors.hasQuickInputEntityDescriptor(includedDocumentDescriptor))
@@ -113,14 +114,15 @@ public class WindowQuickInputRestController
 
 	@GetMapping("/layout")
 	public JSONQuickInputLayoutDescriptor getLayout(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
 			, @PathVariable("tabId") final String tabIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(windowId)
 				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
 
 		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
@@ -135,14 +137,15 @@ public class WindowQuickInputRestController
 
 	@PostMapping
 	public JSONDocument create(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
 
 		return Execution.callInNewExecution("quickInput.create", () -> {
@@ -207,7 +210,7 @@ public class WindowQuickInputRestController
 
 	@GetMapping("/{quickInputId}")
 	public JSONDocument getById(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
 			, @PathVariable("quickInputId") final String quickInputIdStr //
@@ -215,13 +218,13 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
 		return forQuickInputReadonly(quickInputPath, quickInput -> JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions()));
 	}
 
 	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getFieldTypeaheadValues(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
 			, @PathVariable("quickInputId") final String quickInputIdStr //
@@ -231,13 +234,13 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
 		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldTypeaheadValues(fieldName, query));
 	}
 
 	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getFieldDropdownValues(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
 			, @PathVariable("quickInputId") final String quickInputIdStr //
@@ -246,13 +249,13 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
 		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldDropdownValues(fieldName));
 	}
 
 	@PatchMapping("/{quickInputId}")
 	public List<JSONDocument> processChanges(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
 			, @PathVariable("quickInputId") final String quickInputIdStr //
@@ -260,7 +263,7 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
 
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
 			forQuickInputWritable(quickInputPath, quickInput -> {
@@ -275,7 +278,7 @@ public class WindowQuickInputRestController
 
 	@PostMapping("{quickInputId}/complete")
 	public JSONDocument complete(
-			@PathVariable("windowId") final int adWindowId //
+			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
 			, @PathVariable("quickInputId") final String quickInputIdStr //
@@ -283,7 +286,7 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInputPath quickInputPath = QuickInputPath.of(adWindowId, documentIdStr, tabIdStr, quickInputIdStr);
+		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
 			return forQuickInputWritable(quickInputPath, quickInput -> {
 				final Document document = quickInput.complete();

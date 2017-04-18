@@ -13,6 +13,7 @@ import com.google.common.base.Preconditions;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -39,7 +40,8 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 @Configuration
 public class WebPPOrderConfig
 {
-	public static final int AD_WINDOW_ID_IssueReceipt = 540328; // Manufacturing Issue/Receipt
+	public static final String AD_WINDOW_ID_IssueReceipt_String = "540328"; // Manufacturing Issue/Receipt
+	public static final WindowId AD_WINDOW_ID_IssueReceipt = WindowId.fromJson("540328"); // Manufacturing Issue/Receipt
 
 	// NOTE: we need Adempiere as parameter to make sure it was initialized. Else the DAOs will fail.
 	@Autowired
@@ -56,7 +58,7 @@ public class WebPPOrderConfig
 
 				return RelatedProcessDescriptor.builder()
 						.processId(processId)
-						.windowId(AD_WINDOW_ID_IssueReceipt)
+						.windowId(AD_WINDOW_ID_IssueReceipt.toInt())
 						.anyTable()
 						.webuiQuickAction(true);
 			};
@@ -73,7 +75,7 @@ public class WebPPOrderConfig
 
 				return RelatedProcessDescriptor.builder()
 						.processId(processId)
-						.windowId(WEBUI_HU_Constants.WEBUI_HU_Window_ID)
+						.windowId(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt())
 						.anyTable()
 						.webuiQuickAction(true);
 			};

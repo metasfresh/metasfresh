@@ -2,22 +2,18 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.UUID;
 
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
-import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -47,29 +43,30 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID, viewType = JSONViewDataType.grid)
+@DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewType = JSONViewDataType.grid)
 public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
 {
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
-	private final transient CCache<Integer, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
+	private final transient CCache<WindowId, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
 
 	@Override
-	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType_NOTUSED, final JSONOptions jsonOpts)
+	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
 	{
-		final DocumentViewLayout huViewLayout = layouts.getOrLoad(adWindowId, () -> createHUViewLayout(adWindowId));
-
-		// final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(adWindowId);
-		final Collection<DocumentFilterDescriptor> filters = null; // filters are not supported yet
-
-		return JSONDocumentViewLayout.of(huViewLayout, filters, jsonOpts);
+		return layouts.getOrLoad(windowId, () -> createHUViewLayout(windowId));
 	}
 
-	private final DocumentViewLayout createHUViewLayout(final int adWindowId)
+	@Override
+	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
+	{
+		return null; // not supported
+	}
+
+	private final DocumentViewLayout createHUViewLayout(final WindowId windowId)
 	{
 		return DocumentViewLayout.builder()
-				.setAD_Window_ID(adWindowId)
+				.setWindowId(windowId)
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
@@ -119,12 +116,15 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
+	public HUDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
-		Preconditions.checkArgument(request.getAD_Window_ID() == WEBUI_HU_Constants.WEBUI_HU_Window_ID, "Invalid windowId in %s", request);
-		final int adWindowId = request.getAD_Window_ID();
-		
-		final String viewId = UUID.randomUUID().toString();
+		final WindowId windowId = request.getWindowId();
+		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))
+		{
+			throw new IllegalArgumentException("Invalid request's windowId: " + request);
+		}
+
+		final ViewId viewId = ViewId.random(windowId);
 
 		//
 		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
@@ -132,7 +132,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		final String referencingTableName;
 		if (!referencingDocumentPaths.isEmpty())
 		{
-			final int referencingWindowId = referencingDocumentPaths.iterator().next().getAD_Window_ID(); // assuming all document paths have the same window
+			final WindowId referencingWindowId = referencingDocumentPaths.iterator().next().getWindowId(); // assuming all document paths have the same window
 			referencingTableName = documentDescriptorFactory.getDocumentEntityDescriptor(referencingWindowId)
 					.getTableNameOrNull();
 		}
@@ -146,7 +146,6 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		return HUDocumentViewSelection.builder()
 				.setParentViewId(request.getParentViewId())
 				.setViewId(viewId)
-				.setAD_Window_ID(adWindowId)
 				.setRecords(documentViewsLoader)
 				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.build();

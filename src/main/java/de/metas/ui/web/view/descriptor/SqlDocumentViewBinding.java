@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -36,7 +35,9 @@ import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewOrderedSelection;
 import de.metas.ui.web.view.IDocumentViewOrderedSelectionFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -352,7 +353,8 @@ public class SqlDocumentViewBinding
 
 		final List<DocumentQueryOrderBy> orderBys = queryBuilder.getOrderBysEffective();
 
-		final String uuid = UUID.randomUUID().toString();
+		final WindowId windowId = queryBuilder.getEntityDescriptor().getWindowId();
+		final ViewId viewId = ViewId.random(windowId);
 
 		//
 		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
@@ -383,7 +385,7 @@ public class SqlDocumentViewBinding
 							.append("\n WHERE 1=1 ")
 							.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 			);
-			sqlParams.add(uuid);
+			sqlParams.add(viewId.getViewId());
 		}
 
 		//
@@ -414,10 +416,10 @@ public class SqlDocumentViewBinding
 		final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		stopwatch.stop();
 		final boolean queryLimitHit = queryLimit > 0 && rowsCount >= queryLimit;
-		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", uuid, rowsCount, stopwatch, sql, sqlParams);
+		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", viewId, rowsCount, stopwatch, sql, sqlParams);
 
 		return DocumentViewOrderedSelection.builder()
-				.setUuid(uuid)
+				.setViewId(viewId)
 				.setSize(rowsCount)
 				.setOrderBys(orderBys)
 				.setQueryLimit(queryLimit, queryLimitHit)

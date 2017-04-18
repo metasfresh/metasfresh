@@ -1,11 +1,11 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.process.view;
 
-import java.util.Collection;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -29,12 +29,13 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-public interface IDocumentViewSelectionFactory
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.PARAMETER })
+public @interface ViewActionParam
 {
-	DocumentViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
-
-	Collection<DocumentFilterDescriptor> getViewFilters(WindowId windowId);
-
-	IDocumentViewSelection createView(DocumentViewCreateRequest request);
-
+	String caption();
+	
+	DocumentFieldWidgetType widgetType();
+	
+	boolean mandatory() default true;
 }

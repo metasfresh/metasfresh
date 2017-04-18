@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,9 +23,14 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,6 +62,10 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	private final ConcurrentHashMap<ArrayKey, IDocumentViewSelectionFactory> factories = new ConcurrentHashMap<>();
 	@Autowired
 	private SqlDocumentViewSelectionFactory defaultFactory;
+	
+	@Autowired
+	private MenuTreeRepository menuTreeRepo;
+
 
 	private final Cache<String, IDocumentViewSelection> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
@@ -71,26 +81,26 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 		{
 			final IDocumentViewSelectionFactory factory = (IDocumentViewSelectionFactory)factoryObj;
 			final DocumentViewFactory annotation = factoryObj.getClass().getAnnotation(DocumentViewFactory.class);
-			registerFactory(annotation.windowId(), annotation.viewType(), factory);
+			final WindowId windowId = WindowId.fromJson(annotation.windowId());
+			registerFactory(windowId, annotation.viewType(), factory);
 		}
 	}
 
-	public void registerFactory(final int windowId, final JSONViewDataType viewType, final IDocumentViewSelectionFactory factory)
+	public void registerFactory(final WindowId windowId, final JSONViewDataType viewType, @NonNull final IDocumentViewSelectionFactory factory)
 	{
-		Preconditions.checkNotNull(factory, "factory is null");
 		factories.put(mkFactoryKey(windowId, viewType), factory);
 		logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewType);
 	}
 
-	private final IDocumentViewSelectionFactory getFactory(final int adWindowId, final JSONViewDataType viewType)
+	private final IDocumentViewSelectionFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		IDocumentViewSelectionFactory factory = factories.get(mkFactoryKey(adWindowId, viewType));
+		IDocumentViewSelectionFactory factory = factories.get(mkFactoryKey(windowId, viewType));
 		if (factory != null)
 		{
 			return factory;
 		}
 
-		factory = factories.get(mkFactoryKey(adWindowId, null));
+		factory = factories.get(mkFactoryKey(windowId, null));
 		if (factory != null)
 		{
 			return factory;
@@ -99,15 +109,26 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 		return defaultFactory;
 	}
 
-	private static final ArrayKey mkFactoryKey(final int adWindowId, final JSONViewDataType viewType)
+	private static final ArrayKey mkFactoryKey(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		return ArrayKey.of(adWindowId <= 0 ? 0 : adWindowId, viewType);
+		return ArrayKey.of(windowId, viewType);
 	}
 
 	@Override
-	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
+	public JSONDocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
 	{
-		return getFactory(adWindowId, viewDataType).getViewLayout(adWindowId, viewDataType, jsonOpts);
+		final IDocumentViewSelectionFactory factory = getFactory(windowId, viewDataType);
+		final DocumentViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
+		final Collection<DocumentFilterDescriptor> viewFilters = factory.getViewFilters(windowId);
+		
+		final JSONDocumentViewLayout jsonLayout = JSONDocumentViewLayout.of(viewLayout, viewFilters, jsonOpts);
+		//
+		// Enable new record if supported
+		menuTreeRepo.getUserSessionMenuTree()
+				.getNewRecordNodeForWindowId(viewLayout.getWindowId())
+				.ifPresent(newRecordMenuNode -> jsonLayout.enableNewRecord(newRecordMenuNode.getCaption()));
+
+		return jsonLayout;
 	}
 
 	@Override
@@ -119,9 +140,9 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	@Override
 	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
-		final int adWindowId = request.getAD_Window_ID();
+		final WindowId windowId = request.getWindowId();
 		final JSONViewDataType viewType = request.getViewType();
-		final IDocumentViewSelectionFactory factory = getFactory(adWindowId, viewType);
+		final IDocumentViewSelectionFactory factory = getFactory(windowId, viewType);
 		final IDocumentViewSelection view = factory.createView(request);
 		if (view == null)
 		{
@@ -130,24 +151,16 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 					.setParameter("factory", factory.toString());
 		}
 
-		views.put(view.getViewId(), view);
+		views.put(view.getViewId().getViewId(), view);
 
 		return view;
 	}
 
 	@Override
-	public boolean hasView(final String viewId)
+	public IDocumentViewSelection getViewIfExists(final ViewId viewId)
 	{
 		Preconditions.checkNotNull(viewId, "viewId cannot be null");
-		final IDocumentViewSelection view = views.getIfPresent(viewId);
-		return view != null;
-	}
-
-	@Override
-	public IDocumentViewSelection getViewIfExists(final String viewId)
-	{
-		Preconditions.checkNotNull(viewId, "viewId cannot be null");
-		return views.getIfPresent(viewId);
+		return views.getIfPresent(viewId.getViewId());
 	}
 
 	@Override
@@ -164,9 +177,10 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	}
 
 	@Override
-	public void deleteView(final String viewId)
+	public void deleteView(final ViewId viewId)
 	{
-		views.invalidate(viewId);
+		Preconditions.checkNotNull(viewId, "viewId cannot be null");
+		views.invalidate(viewId.getViewId());
 	}
 
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)

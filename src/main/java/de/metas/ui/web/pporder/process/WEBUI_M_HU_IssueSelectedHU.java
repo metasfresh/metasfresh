@@ -14,6 +14,7 @@ import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.handlingunits.process.HUViewProcessTemplate;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewId;
 
 /*
  * #%L
@@ -99,7 +100,7 @@ public class WEBUI_M_HU_IssueSelectedHU
 	private Optional<PPOrderLinesView> ppOrderView()
 	{
 		final HUDocumentViewSelection husView = getView();
-		final String parentViewId = husView.getParentViewId();
+		final ViewId parentViewId = husView.getParentViewId();
 		if (parentViewId == null)
 		{
 			return Optional.empty();

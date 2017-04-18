@@ -1,6 +1,7 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
@@ -17,7 +19,11 @@ import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
+import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Getter;
 
 /*
@@ -82,7 +88,7 @@ public final class JSONProcessInstanceResult implements Serializable
 	@JsonProperty("openViewWindowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Deprecated
-	private Integer openViewWindowId;
+	private WindowId openViewWindowId;
 	//
 	@JsonProperty("openViewId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -94,7 +100,7 @@ public final class JSONProcessInstanceResult implements Serializable
 	@JsonProperty("openDocumentWindowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Deprecated
-	private Integer openDocumentWindowId;
+	private WindowId openDocumentWindowId;
 	//
 	@JsonProperty("openDocumentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -125,7 +131,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (action instanceof JSONOpenViewAction)
 		{
 			final JSONOpenViewAction openViewAction = (JSONOpenViewAction)action;
-			openViewWindowId = openViewAction.getWindowId() > 0 ? openViewAction.getWindowId() : 0;
+			openViewWindowId = openViewAction.getWindowId();
 			openViewId = openViewAction.getViewId();
 		}
 		else if (action instanceof JSONOpenSingleDocumentAction)
@@ -151,18 +157,23 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (resultAction instanceof OpenViewAction)
 		{
 			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
-			return new JSONOpenViewAction(openViewAction.getWindowId(), openViewAction.getViewId());
+			return new JSONOpenViewAction(openViewAction.getViewId());
 		}
 		else if (resultAction instanceof OpenIncludedViewAction)
 		{
 			final OpenIncludedViewAction openIncludedViewAction = (OpenIncludedViewAction)resultAction;
-			return new JSONOpenIncludedViewAction(openIncludedViewAction.getWindowId(), openIncludedViewAction.getViewId());
+			return new JSONOpenIncludedViewAction(openIncludedViewAction.getViewId());
 		}
 		else if (resultAction instanceof OpenSingleDocument)
 		{
 			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
-			return new JSONOpenSingleDocumentAction(documentPath.getAD_Window_ID(), documentPath.getDocumentId().toJson());
+			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson());
+		}
+		else if (resultAction instanceof SelectViewRowsAction)
+		{
+			final SelectViewRowsAction selectViewRowsAction = (SelectViewRowsAction)resultAction;
+			return new JSONSelectViewRowsAction(selectViewRowsAction.getViewId(), selectViewRowsAction.getRowIds());
 		}
 		else
 		{
@@ -209,14 +220,14 @@ public final class JSONProcessInstanceResult implements Serializable
 	@lombok.Getter
 	public static class JSONOpenViewAction extends JSONResultAction
 	{
-		private final int windowId;
+		private final WindowId windowId;
 		private final String viewId;
 
-		public JSONOpenViewAction(final int windowId, final String viewId)
+		public JSONOpenViewAction(final ViewId viewId)
 		{
 			super("openView");
-			this.windowId = windowId;
-			this.viewId = viewId;
+			this.windowId = viewId.getWindowId();
+			this.viewId = viewId.getViewId();
 		}
 	}
 
@@ -224,14 +235,14 @@ public final class JSONProcessInstanceResult implements Serializable
 	@lombok.Getter
 	public static class JSONOpenIncludedViewAction extends JSONResultAction
 	{
-		private final int windowId;
+		private final WindowId windowId;
 		private final String viewId;
 
-		public JSONOpenIncludedViewAction(final int windowId, final String viewId)
+		public JSONOpenIncludedViewAction(final ViewId viewId)
 		{
 			super("openIncludedView");
-			this.windowId = windowId;
-			this.viewId = viewId;
+			this.windowId = viewId.getWindowId();
+			this.viewId = viewId.getViewId();
 		}
 	}
 
@@ -239,14 +250,43 @@ public final class JSONProcessInstanceResult implements Serializable
 	@lombok.Getter
 	public static class JSONOpenSingleDocumentAction extends JSONResultAction
 	{
-		private final int windowId;
+		private final WindowId windowId;
 		private final String documentId;
 
-		public JSONOpenSingleDocumentAction(final int windowId, final String documentId)
+		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId)
 		{
 			super("openDocument");
 			this.windowId = windowId;
 			this.documentId = documentId;
 		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONSelectViewRowsAction extends JSONResultAction
+	{
+		private final WindowId windowId;
+		private final String viewId;
+		private final Set<String> rowIds;
+
+		public JSONSelectViewRowsAction(final ViewId viewId, final Set<DocumentId> rowIds)
+		{
+			super("selectViewRows");
+			
+			this.windowId = viewId.getWindowId();
+			this.viewId = viewId.getViewId();
+
+			if (rowIds == null || rowIds.isEmpty())
+			{
+				this.rowIds = ImmutableSet.of();
+			}
+			else
+			{
+				this.rowIds = rowIds.stream()
+						.map(rowId -> rowId.toJson())
+						.collect(ImmutableSet.toImmutableSet());
+			}
+		}
+
 	}
 }

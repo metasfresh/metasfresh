@@ -41,7 +41,6 @@ import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFie
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
 import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -84,9 +83,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	
-	private final String parentViewId;
+	private final ViewId parentViewId;
 
-	private final int adWindowId;
 	private final String tableName;
 	private final String keyColumnName;
 
@@ -124,7 +122,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		
 		parentViewId = builder.getParentViewId();
 
-		adWindowId = builder.getAD_Window_ID();
 		tableName = builder.getTableName();
 		keyColumnName = builder.getKeyColumnName();
 
@@ -144,12 +141,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		//
 		// Attributes
-		attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(DocumentType.Window, adWindowId);
+		attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(defaultSelection.getViewId().getWindowId());
 
 		//
 		// Cache
 		cache_documentViewsById = CCache.newLRUCache( //
-				tableName + "#DocumentViewById#viewId=" + defaultSelection.getUuid() // cache name
+				tableName + "#DocumentViewById#viewId=" + defaultSelection.getViewId() // cache name
 				, 100 // maxSize
 				, 2 // expireAfterMinutes
 		);
@@ -164,8 +161,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			_toString = MoreObjects.toStringHelper(this)
 					.omitNullValues()
-					.add("viewId", defaultSelection.getUuid())
-					.add("AD_Window_ID", adWindowId)
+					.add("viewId", defaultSelection.getViewId())
 					.add("tableName", tableName)
 					.add("parentViewId", parentViewId)
 					.add("defaultSelection", defaultSelection)
@@ -177,21 +173,15 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 	
 	@Override
-	public String getParentViewId()
+	public ViewId getParentViewId()
 	{
 		return parentViewId;
 	}
-
+	
 	@Override
-	public String getViewId()
+	public ViewId getViewId()
 	{
-		return defaultSelection.getUuid();
-	}
-
-	@Override
-	public int getAD_Window_ID()
-	{
-		return adWindowId;
+		return defaultSelection.getViewId();
 	}
 
 	@Override
@@ -277,11 +267,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		final DocumentViewOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 		logger.debug("Using: {}", orderedSelection);
 
-		final String uuid = orderedSelection.getUuid();
+		final ViewId viewId = orderedSelection.getViewId();
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + pageLength;
 
-		final Object[] sqlParams = new Object[] { uuid, firstSeqNo, lastSeqNo };
+		final Object[] sqlParams = new Object[] { viewId.getViewId(), firstSeqNo, lastSeqNo };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -407,7 +397,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private IDocumentView loadDocumentView(final ResultSet rs) throws SQLException
 	{
-		final DocumentView.Builder documentViewBuilder = DocumentView.builder(adWindowId);
+		final DocumentView.Builder documentViewBuilder = DocumentView.builder(getViewId().getWindowId());
 		final boolean loaded = sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
 		if (!loaded)
 		{
@@ -428,7 +418,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		sqlWhereClause.append("exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " sel "
 				+ " where "
-				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId())
+				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId().getViewId())
 				+ " and sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
 				+ ")");
 
@@ -532,7 +522,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	public static final class Builder
 	{
-		private String parentViewId;
+		private ViewId parentViewId;
 		
 		private final DocumentEntityDescriptor _entityDescriptor;
 		private Set<String> _viewFieldNames;
@@ -540,6 +530,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private List<DocumentFilter> _filters;
 
 		private SqlDocumentQueryBuilder _queryBuilder;
+
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
@@ -553,13 +544,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return new SqlDocumentViewSelection(this);
 		}
 		
-		public Builder setParentViewId(String parentViewId)
+		public Builder setParentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
 		
-		private String getParentViewId()
+		private ViewId getParentViewId()
 		{
 			return parentViewId;
 		}
@@ -641,11 +632,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			Check.assumeNotEmpty(_viewFieldNames, "viewFieldNames is not empty");
 			return _viewFieldNames;
-		}
-
-		private int getAD_Window_ID()
-		{
-			return getEntityDescriptor().getAD_Window_ID();
 		}
 
 		private String getTableName()

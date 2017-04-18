@@ -2,6 +2,7 @@ package de.metas.ui.web.process;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.EqualsAndHashCode;
 
 /*
@@ -130,5 +131,10 @@ public final class ProcessId
 			this.processIdAsInt = processIdAsInt;
 		}
 		return processIdAsInt;
+	}
+
+	public DocumentId toDocumentId()
+	{
+		return DocumentId.ofString(toJson());
 	}
 }

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -35,12 +35,12 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDocumentPath implements Serializable
 {
 	@JsonProperty("documentType")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String documentType;
+	private final WindowId windowId;
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -60,14 +60,14 @@ public class JSONDocumentPath implements Serializable
 
 	@JsonCreator
 	private JSONDocumentPath(
-			@JsonProperty("documentType") final String documentType //
+			@JsonProperty("documentType") final WindowId windowId //
 			, @JsonProperty("documentId") final String documentId //
 			, @JsonProperty("tabid") final String tabid //
 			, @JsonProperty("rowId") final String rowId //
 			, @JsonProperty("fieldName") final String fieldName)
 	{
 		super();
-		this.documentType = documentType;
+		this.windowId = windowId;
 		this.documentId = documentId;
 		this.tabid = tabid;
 		this.rowId = rowId;
@@ -79,7 +79,7 @@ public class JSONDocumentPath implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("documentType", documentType)
+				.add("windowId", windowId)
 				.add("documentId", documentId)
 				.add("tabid", tabid)
 				.add("rowId", rowId)
@@ -87,43 +87,8 @@ public class JSONDocumentPath implements Serializable
 				.toString();
 	}
 
-	public String getType()
-	{
-		return documentType;
-	}
-
-	public int getAD_Window_ID()
-	{
-		if (Check.isEmpty(documentType, true))
-		{
-			return -1;
-		}
-
-		return Integer.parseInt(documentType.trim());
-	}
-
-	public String getDocumentId()
-	{
-		return documentId;
-	}
-
-	public String getTabid()
-	{
-		return tabid;
-	}
-
-	public String getRowId()
-	{
-		return rowId;
-	}
-
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
 	public DocumentPath toSingleDocumentPath()
 	{
-		return DocumentPath.singleWindowDocumentPath(getAD_Window_ID(), getDocumentId(), getTabid(), getRowId());
+		return DocumentPath.singleWindowDocumentPath(windowId, documentId, tabid, rowId);
 	}
 }

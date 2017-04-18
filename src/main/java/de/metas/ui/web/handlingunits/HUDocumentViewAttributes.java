@@ -1,16 +1,20 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
@@ -18,6 +22,7 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
+import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.view.IDocumentViewAttributes;
@@ -63,10 +68,15 @@ import lombok.NonNull;
 
 /* package */ class HUDocumentViewAttributes implements IDocumentViewAttributes
 {
+	public static final HUDocumentViewAttributes cast(final IDocumentViewAttributes attributes)
+	{
+		return (HUDocumentViewAttributes)attributes;
+	}
+	
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
 
-	private final Supplier<DocumentViewAttributesLayout> layoutSupplier = ExtendedMemorizingSupplier.of(() -> createLayout());
+	private final Supplier<DocumentViewAttributesLayout> layoutSupplier;
 
 	private final Set<String> readonlyAttributeNames;
 
@@ -74,7 +84,8 @@ import lombok.NonNull;
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
-
+		
+		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUDocumentViewAttributesHelper.createLayout(attributesStorage));
 
 		//
 		// Extract readonly attribute names
@@ -122,16 +133,11 @@ import lombok.NonNull;
 				.add("attributesStorage", attributesStorage)
 				.toString();
 	}
-
+	
 	@Override
 	public DocumentViewAttributesLayout getLayout()
 	{
 		return layoutSupplier.get();
-	}
-
-	private DocumentViewAttributesLayout createLayout()
-	{
-		return DocumentViewAttributesLayout.of(attributesStorage);
 	}
 
 	@Override
@@ -246,6 +252,22 @@ import lombok.NonNull;
 				.stream()
 				.map(itemNP -> LookupValue.fromNamePair(itemNP))
 				.collect(LookupValuesList.collect());
+	}
+	
+	public Optional<String> getSSCC18()
+	{
+		final I_M_Attribute sscc18Attribute = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18Attribute(Env.getCtx());
+		if (!attributesStorage.hasAttribute(sscc18Attribute))
+		{
+			return Optional.empty();
+		}
+		final String sscc18 = attributesStorage.getValueAsString(sscc18Attribute);
+		if(Check.isEmpty(sscc18, true))
+		{
+			return Optional.empty();
+		}
+		
+		return Optional.of(sscc18.trim());
 	}
 
 	/**

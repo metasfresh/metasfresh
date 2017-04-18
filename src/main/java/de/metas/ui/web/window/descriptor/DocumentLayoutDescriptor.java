@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 
 /*
@@ -87,7 +88,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		sections = ImmutableList.copyOf(builder.buildSections());
 		gridView = builder.getGridView()
-				.setAD_Window_ID(AD_Window_ID)
+				.setWindowId(WindowId.of(AD_Window_ID))
 				.build();
 		advancedView = builder.getAdvancedView()
 				.setAD_Window_ID(AD_Window_ID)

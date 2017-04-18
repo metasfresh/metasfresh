@@ -23,6 +23,7 @@ import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.view.DocumentViewsRepository;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.ToString;
@@ -104,9 +105,9 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 				.streamDocumentRelatedProcesses(viewContext);
 	}
 
-	static final ProcessId buildProcessId(final String viewId, final String viewActionId)
+	static final ProcessId buildProcessId(final ViewId viewId, final String viewActionId)
 	{
-		return ProcessId.of(PROCESS_HANDLER_TYPE, viewId + "_" + viewActionId);
+		return ProcessId.of(PROCESS_HANDLER_TYPE, viewId.getViewId() + "_" + viewActionId);
 	}
 
 	private static final IPair<String, String> extractViewIdAndActionId(final ProcessId processId)

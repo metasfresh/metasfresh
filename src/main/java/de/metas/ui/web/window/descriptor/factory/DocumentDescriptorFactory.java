@@ -3,10 +3,12 @@ package de.metas.ui.web.window.descriptor.factory;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,11 +34,17 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 public interface DocumentDescriptorFactory
 {
-	DocumentDescriptor getDocumentDescriptor(int AD_Window_ID) throws DocumentLayoutBuildException;
+	DocumentDescriptor getDocumentDescriptor(WindowId windowId) throws DocumentLayoutBuildException;
 
 	default DocumentEntityDescriptor getDocumentEntityDescriptor(final int AD_Window_ID)
 	{
-		return getDocumentDescriptor(AD_Window_ID).getEntityDescriptor();
+		final WindowId windowId = WindowId.of(AD_Window_ID);
+		return getDocumentDescriptor(windowId).getEntityDescriptor();
+	}
+	
+	default DocumentEntityDescriptor getDocumentEntityDescriptor(@NonNull final WindowId windowId)
+	{
+		return getDocumentDescriptor(windowId).getEntityDescriptor();
 	}
 
 	default String getTableNameOrNull(final int AD_Window_ID)
@@ -59,7 +67,7 @@ public interface DocumentDescriptorFactory
 	
 	default DocumentEntityDescriptor getDocumentEntityDescriptor(final DocumentPath documentPath)
 	{
-		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getWindowId());
 
 		if (documentPath.isRootDocument())
 		{
@@ -73,7 +81,7 @@ public interface DocumentDescriptorFactory
 	
 	default TableRecordReference getTableRecordReference(final DocumentPath documentPath)
 	{
-		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getWindowId());
 
 		if (documentPath.isRootDocument())
 		{

@@ -7,16 +7,15 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import lombok.AccessLevel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,20 +48,15 @@ import lombok.AccessLevel;
 @lombok.Data
 public final class DocumentViewCreateRequest
 {
-	public static final Builder builder(final DocumentId documentTypeId, final JSONViewDataType viewType)
+	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		return new Builder(documentTypeId, viewType);
+		return new Builder(windowId, viewType);
 	}
 
-	public static final Builder builder(final int adWindowId, final JSONViewDataType viewType)
-	{
-		return new Builder(DocumentId.of(adWindowId), viewType);
-	}
-
-	private final DocumentId documentTypeId;
+	private final WindowId windowId;
 	private final JSONViewDataType viewType;
 	
-	private final String parentViewId;
+	private final ViewId parentViewId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 	private final List<JSONDocumentFilter> filters;
@@ -71,14 +65,9 @@ public final class DocumentViewCreateRequest
 	private final int queryFirstRow;
 	private final int queryPageLength;
 
-	@lombok.Setter(AccessLevel.NONE)
-	@lombok.Getter(AccessLevel.NONE)
-	private transient Integer _adWindowId; // lazy
-
-
 	private DocumentViewCreateRequest(final Builder builder)
 	{
-		documentTypeId = builder.getDocumentTypeId();
+		windowId = builder.getWindowId();
 		viewType = builder.getViewType();
 		
 		parentViewId = builder.getParentViewId();
@@ -91,14 +80,14 @@ public final class DocumentViewCreateRequest
 		queryPageLength = builder.getQueryPageLength();
 	}
 	
-	public String getParentViewId()
+	public ViewId getParentViewId()
 	{
 		return parentViewId;
 	}
 
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
-		return documentTypeId.toInt();
+		return windowId;
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -125,10 +114,10 @@ public final class DocumentViewCreateRequest
 	//
 	public static final class Builder
 	{
-		private final DocumentId documentTypeId;
+		private final WindowId windowId;
 		private final JSONViewDataType viewType;
 		
-		private String parentViewId;
+		private ViewId parentViewId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
 		private List<JSONDocumentFilter> filters;
@@ -137,13 +126,9 @@ public final class DocumentViewCreateRequest
 		private int queryFirstRow = -1;
 		private int queryPageLength = -1;
 
-		private Builder(final DocumentId documentTypeId, final JSONViewDataType viewType)
+		private Builder(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewType)
 		{
-			super();
-			Preconditions.checkNotNull(documentTypeId, "documentTypeId is null");
-			this.documentTypeId = documentTypeId;
-
-			Check.assumeNotNull(viewType, "Parameter viewType is not null");
+			this.windowId = windowId;
 			this.viewType = viewType;
 		}
 
@@ -152,9 +137,9 @@ public final class DocumentViewCreateRequest
 			return new DocumentViewCreateRequest(this);
 		}
 
-		private DocumentId getDocumentTypeId()
+		private WindowId getWindowId()
 		{
-			return documentTypeId;
+			return windowId;
 		}
 
 		private JSONViewDataType getViewType()
@@ -162,13 +147,13 @@ public final class DocumentViewCreateRequest
 			return viewType;
 		}
 		
-		public Builder setParentViewId(String parentViewId)
+		public Builder setParentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
 		
-		private String getParentViewId()
+		private ViewId getParentViewId()
 		{
 			return parentViewId;
 		}

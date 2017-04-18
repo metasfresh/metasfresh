@@ -20,6 +20,7 @@ import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.ToString;
@@ -49,7 +50,7 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBOMLine
 {
-	public static final Builder builder(final String viewId, final IDocumentView delegate)
+	public static final Builder builder(final ViewId viewId, final IDocumentView delegate)
 	{
 		return new Builder(viewId, delegate);
 	}
@@ -59,13 +60,13 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 		return (PPOrderLineRow)viewRecord;
 	}
 
-	private final String viewId;
+	private final ViewId viewId;
 	private final boolean processed;
 	private final int ppOrderId;
 	private final int ppOrderBOMLineId;
 	private final int ppOrderQtyId;
 
-	private volatile String husToIssueViewId = null; // lazy
+	private volatile ViewId husToIssueViewId = null; // lazy
 
 	private PPOrderLineRow(final Builder builder)
 	{
@@ -80,7 +81,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 		ppOrderQtyId = builder.ppOrderQtyId;
 	}
 	
-	public String getViewId()
+	public ViewId getViewId()
 	{
 		return viewId;
 	}
@@ -240,7 +241,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 
 	public static final class Builder
 	{
-		private final String viewId;
+		private final ViewId viewId;
 		private final IDocumentView delegate;
 		
 		private int ppOrderId;
@@ -248,7 +249,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 		private int ppOrderQtyId;
 		private boolean processed = false;
 
-		private Builder(final String viewId, final IDocumentView delegate)
+		private Builder(final ViewId viewId, final IDocumentView delegate)
 		{
 			this.delegate = delegate;
 			Preconditions.checkNotNull(viewId, "viewId not provided");

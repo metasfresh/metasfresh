@@ -2,7 +2,6 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,6 +13,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.DocumentViewOrderedSelection;
 import de.metas.ui.web.view.IDocumentViewOrderedSelectionFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -62,14 +62,14 @@ class SqlDocumentViewOrderedSelectionFactory implements IDocumentViewOrderedSele
 	@Override
 	public DocumentViewOrderedSelection createFromView(final DocumentViewOrderedSelection fromView, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final String fromUUID = fromView.getUuid();
-		final String newUUID = UUID.randomUUID().toString();
+		final ViewId fromViewId = fromView.getViewId();
+		final ViewId newViewId = ViewId.random(fromViewId.getWindowId());
 		final String sqlOrderBys = buildOrderBys(orderBys); // NOTE: we assume it's not empty!
 		final String sqlFinal = sqlCreateFromViewId.replace(SqlDocumentViewBinding.PLACEHOLDER_OrderBy, sqlOrderBys);
-		final int rowCount = DB.executeUpdateEx(sqlFinal, new Object[] { newUUID, fromUUID }, ITrx.TRXNAME_ThreadInherited);
+		final int rowCount = DB.executeUpdateEx(sqlFinal, new Object[] { newViewId.getViewId(), fromViewId.getViewId() }, ITrx.TRXNAME_ThreadInherited);
 		
 		return DocumentViewOrderedSelection.builder()
-				.setUuid(newUUID)
+				.setViewId(newViewId)
 				.setSize(rowCount)
 				.setOrderBys(orderBys)
 				.setQueryLimit(fromView.getQueryLimit(), fromView.isQueryLimitHit())

@@ -28,6 +28,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
@@ -586,7 +587,7 @@ public class LayoutFactory
 	public final DocumentViewLayout layoutSideListView()
 	{
 		final DocumentViewLayout.Builder layoutBuilder = DocumentViewLayout.builder()
-				.setAD_Window_ID(getAD_Window_ID())
+				.setWindowId(WindowId.of(getAD_Window_ID()))
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 

@@ -14,9 +14,10 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -41,7 +42,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONCreateProcessInstanceRequest implements Serializable
 {
 	@JsonProperty("processId")
@@ -52,9 +53,9 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	//
 	// Called from single row
 	/** Document type (aka AD_Window_ID) */
-	@JsonProperty("documentType")
+	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String documentType;
+	private final WindowId windowId;
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -89,14 +90,14 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	private JSONCreateProcessInstanceRequest( //
 			@JsonProperty("processId") final String processIdStr //
 			//
-			, @JsonProperty("documentType") final String documentType //
+			, @JsonProperty("documentType") final String windowIdStr //
 			, @JsonProperty("documentId") final String documentId //
 			, @JsonProperty("tabId") final String tabId//
 			//
 			, @JsonProperty("rowId") final String rowId //
 			, @JsonProperty("viewId") final String viewId //
 			, @JsonProperty("viewDocumentIds") final Set<String> viewDocumentIds //
-	)
+			)
 	{
 		super();
 		this.processIdStr = processIdStr;
@@ -104,11 +105,12 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 
 		//
 		// Called from single row
-		this.documentType = documentType;
+		// FIXME: atm, the frontend is not providing the windowId. Create a task for that!
+		this.windowId = WindowId.fromNullableJson(windowIdStr);
 		this.documentId = documentId;
 		this.tabId = tabId;
 		this.rowId = rowId;
-		_singleDocumentPath = createDocumentPathOrNull(documentType, documentId, tabId, rowId);
+		_singleDocumentPath = createDocumentPathOrNull(windowId, documentId, tabId, rowId);
 
 		//
 		// Called from view
@@ -123,7 +125,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 				.omitNullValues()
 				.add("processId", processId)
 				//
-				.add("documentType", documentType)
+				.add("documentType", windowId)
 				.add("documentId", documentId)
 				.add("tabId", tabId)
 				.add("rowId", rowId)
@@ -133,19 +135,17 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 				.toString();
 	}
 
-	private static final DocumentPath createDocumentPathOrNull(final String documentType, final String documentId, final String tabId, final String rowIdStr)
+	private static final DocumentPath createDocumentPathOrNull(final WindowId windowId, final String documentId, final String tabId, final String rowIdStr)
 	{
-		if (!Check.isEmpty(documentType) && !Check.isEmpty(documentId))
+		if (windowId != null && !Check.isEmpty(documentId))
 		{
-			final int adWindowId = Integer.parseInt(documentType);
-
 			if (Check.isEmpty(tabId) && Check.isEmpty(rowIdStr))
 			{
-				return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+				return DocumentPath.rootDocumentPath(windowId, documentId);
 			}
 			else
 			{
-				return DocumentPath.includedDocumentPath(DocumentType.Window, adWindowId, documentId, tabId, rowIdStr);
+				return DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowIdStr);
 			}
 		}
 
@@ -162,9 +162,13 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		return _singleDocumentPath;
 	}
 
-	public String getViewId()
+	public ViewId getViewId()
 	{
-		return viewId;
+		if(viewId == null || viewId.isEmpty())
+		{
+			return null;
+		}
+		return ViewId.of(windowId, viewId);
 	}
 
 	public Set<DocumentId> getViewDocumentIds()

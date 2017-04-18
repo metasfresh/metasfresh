@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -29,6 +30,7 @@ import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -88,38 +90,28 @@ public class DocumentViewRestController
 		return JSONOptions.of(userSession);
 	}
 
-	@GetMapping("/layout")
-	public JSONDocumentViewLayout getViewLayout(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-	)
-	{
-		userSession.assertLoggedIn();
-
-		return documentViewsRepo.getViewLayout(adWindowId, viewDataType, newJSONOptions());
-	}
-
 	@PostMapping
 	public JSONDocumentViewResult createView(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @RequestBody final JSONDocumentViewCreateRequest jsonRequest //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentViewCreateRequest request = DocumentViewCreateRequest.builder(jsonRequest.getDocumentType(), jsonRequest.getViewType())
+		final DocumentViewCreateRequest request = DocumentViewCreateRequest.builder(jsonRequest.getWindowId(), jsonRequest.getViewType())
 				.setReferencingDocumentPaths(jsonRequest.getReferencingDocumentPaths())
 				.setFilters(jsonRequest.getFilters())
 				.setFilterOnlyIds(jsonRequest.getFilterOnlyIds())
 				.setFetchPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength())
 				.build();
 
-		int adWindowIdEffective = request.getAD_Window_ID();
-		if (adWindowIdEffective <= 0)
+		final WindowId windowIdParam = WindowId.fromNullableJson(windowIdStr);
+		WindowId windowIdEffective = request.getWindowId();
+		if (windowIdEffective == null)
 		{
-			adWindowIdEffective = adWindowId;
+			windowIdEffective = WindowId.fromJson(windowIdStr);
 		}
-		else if (adWindowId > 0 && adWindowIdEffective != adWindowId)
+		else if (!Objects.equals(windowIdParam, windowIdEffective))
 		{
 			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
 		}
@@ -143,17 +135,18 @@ public class DocumentViewRestController
 	}
 
 	@DeleteMapping("/{viewId}")
-	public void deleteView(@PathVariable("viewId") final String viewId)
+	public void deleteView(@PathVariable(PARAM_WindowId) final String windowId, @PathVariable("viewId") final String viewIdStr)
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		documentViewsRepo.deleteView(viewId);
 	}
 
 	@GetMapping("/{viewId}")
 	public JSONDocumentViewResult getViewData(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr//
 			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
@@ -161,36 +154,82 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentViewResult result = documentViewsRepo.getView(adWindowId, viewId)
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		final DocumentViewResult result = documentViewsRepo.getView(viewId)
 				.getPage(firstRow, pageLength, orderBysListStr);
 		return JSONDocumentViewResult.of(result);
 	}
 
+	@GetMapping("/layout")
+	@Deprecated
+	public JSONDocumentViewLayout getViewLayout_DEPRECATED(
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
+			)
+	{
+		userSession.assertLoggedIn();
+//		userSession.assertDeprecatedRestAPIAllowed();
+
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		return documentViewsRepo.getViewLayout(windowId, viewDataType, newJSONOptions());
+	}
+
+	@GetMapping("/{viewId}/layout")
+	public JSONDocumentViewLayout getViewLayout(
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable("viewId") final String viewIdStr //
+			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
+			)
+	{
+		userSession.assertLoggedIn();
+
+		
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+
+		final JSONDocumentViewLayout viewLayout = documentViewsRepo.getViewLayout(viewId.getWindowId(), viewDataType, newJSONOptions());
+		viewLayout.setViewId(viewId.getViewId());
+		if (view.isIncludedView())
+		{
+			viewLayout.setSupportAttributes(false);
+		}
+		else
+		{
+			viewLayout.setSupportAttributes(view.hasAttributesSupport());
+		}
+
+		return viewLayout;
+	}
+
 	@GetMapping("/{viewId}/byIds")
 	public List<JSONDocumentView> getByIds(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
-			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr)
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr //
+			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr //
+			)
 	{
 		userSession.assertLoggedIn();
 
 		final Set<DocumentId> documentIds = DocumentId.ofCommaSeparatedString(idsListStr);
 
-		final List<IDocumentView> result = documentViewsRepo.getView(adWindowId, viewId)
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		final List<IDocumentView> result = documentViewsRepo.getView(viewId)
 				.getByIds(documentIds);
 		return JSONDocumentView.ofDocumentViewList(result);
 	}
 
 	@GetMapping("/{viewId}/rows/{documentId}/includedView")
 	public JSONDocumentViewResult getIncludedView(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
-			, @PathVariable("documentId") final DocumentId documentId//
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr //
+			, @PathVariable("documentId") final String documentIdStr//
 			)
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentView row = documentViewsRepo.getView(adWindowId, viewId).getById(documentId);
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		final DocumentId documentId = DocumentId.of(documentIdStr);
+		final IDocumentView row = documentViewsRepo.getView(viewId).getById(documentId);
 
 		final IDocumentViewSelection includedView = row.getCreateIncludedView(documentViewsRepo);
 		return JSONDocumentViewResult.of(DocumentViewResult.ofView(includedView));
@@ -198,8 +237,8 @@ public class DocumentViewRestController
 
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr //
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -207,58 +246,61 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentViewsRepo.getView(adWindowId, viewId)
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		return documentViewsRepo.getView(viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr //
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 			)
 	{
 		userSession.assertLoggedIn();
 
-		return documentViewsRepo.getView(adWindowId, viewId)
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		return documentViewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	private Stream<WebuiRelatedProcessDescriptor> streamAllViewActions(final int adWindowId, final String viewId, final String selectedIdsListStr)
+	private Stream<WebuiRelatedProcessDescriptor> streamAllViewActions(final String windowId, final String viewIdStr, final String selectedIdsListStr)
 	{
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final Set<DocumentId> selectedDocumentIds = DocumentId.ofCommaSeparatedString(selectedIdsListStr);
-		final IDocumentViewSelection view = documentViewsRepo.getView(adWindowId, viewId);
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 		final IProcessPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(view, selectedDocumentIds);
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 
 	@GetMapping("/{viewId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr//
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
 			)
 	{
 		userSession.assertLoggedIn();
 
-		return streamAllViewActions(adWindowId, viewId, selectedIdsListStr)
+		return streamAllViewActions(windowId, viewIdStr, selectedIdsListStr)
 				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
 	@GetMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getDocumentQuickActions(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable("viewId") final String viewIdStr //
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
 			)
 	{
 		userSession.assertLoggedIn();
 
-		return streamAllViewActions(adWindowId, viewId, selectedIdsListStr)
+		return streamAllViewActions(windowId, viewIdStr, selectedIdsListStr)
 				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
 				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
