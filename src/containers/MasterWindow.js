@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
@@ -24,7 +25,8 @@ class MasterWindow extends Component {
 
         this.state = {
             newRow: false,
-            modalTitle: null
+            modalTitle: null,
+            isDeleted: false
         }
     }
 
@@ -52,12 +54,13 @@ class MasterWindow extends Component {
 
     componentWillUnmount() {
         const { master, dispatch } = this.props;
+        const { isDeleted } = this.state;
         const {pathname} = this.props.location;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
         window.removeEventListener('beforeunload', this.confirm);
 
-        if(isDocumentNotSaved){
+        if(isDocumentNotSaved && !isDeleted){
             const result = window.confirm('Do you really want to leave?');
 
             if(!result){
@@ -123,10 +126,16 @@ class MasterWindow extends Component {
         })
     }
 
+    handleDeletedStatus = (param) => {
+        this.setState({
+                isDeleted: param
+            })
+    }
+
     render() {
         const {
-            master, modal, breadcrumb, references, actions, attachments,
-            rawModal, selected, indicator, params
+            master, modal, breadcrumb, rawModal, selected, indicator,
+            params
         } = this.props;
 
         const {newRow, modalTitle} = this.state;
@@ -163,11 +172,9 @@ class MasterWindow extends Component {
                 dataId={dataId}
                 windowType={params.windowType}
                 breadcrumb={breadcrumb}
-                references={references}
-                actions={actions}
-                attachments={attachments}
                 showSidelist={true}
                 showIndicator={!modal.visible}
+                handleDeletedStatus={this.handleDeletedStatus}
                 isDocumentNotSaved={
                     !master.saveStatus.saved &&
                     !master.validStatus.initialValue
@@ -240,9 +247,6 @@ MasterWindow.propTypes = {
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
-    references: PropTypes.array.isRequired,
-    actions: PropTypes.array.isRequired,
-    attachments: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array,
     rawModal: PropTypes.object.isRequired,
@@ -266,24 +270,15 @@ function mapStateToProps(state) {
     }
 
     const {
-        breadcrumb,
-        references,
-        actions,
-        attachments
+        breadcrumb
     } = menuHandler || {
-        references: [],
-        breadcrumb: [],
-        actions: [],
-        attachments: []
+        breadcrumb: []
     }
 
     return {
         master,
         breadcrumb,
-        references,
         modal,
-        actions,
-        attachments,
         selected,
         rawModal,
         indicator
@@ -291,7 +286,7 @@ function mapStateToProps(state) {
 }
 
 MasterWindow.contextTypes = {
-    router: React.PropTypes.object.isRequired
+    router: PropTypes.object.isRequired
 }
 
 MasterWindow = connect(mapStateToProps)(MasterWindow)

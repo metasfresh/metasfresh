@@ -9,11 +9,10 @@ export function setFilter(filter, windowType){
     }
 }
 
-export function setSorting(prop, dir, windowType){
+export function setSorting(sort, windowType){
     return {
         type: types.SET_LIST_SORTING,
-        prop: prop,
-        dir: dir,
+        sort: sort,
         windowType: windowType
     }
 }
@@ -32,9 +31,9 @@ export function clearListProps(){
     }
 }
 
-export function initDocumentView(viewId) {
+export function setListId(viewId) {
     return {
-        type: types.INIT_DOC_VIEW,
+        type: types.SET_LIST_ID,
         viewId: viewId
     }
 }

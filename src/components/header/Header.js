@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
@@ -18,10 +19,6 @@ import {
 } from '../../actions/WindowActions';
 
 import {
-    getRootBreadcrumb
-} from '../../actions/MenuActions';
-
-import {
     deleteRequest,
     openFile
 } from '../../actions/GenericActions';
@@ -38,6 +35,7 @@ class Header extends Component {
         this.state = {
             isSubheaderShow: false,
             isSideListShow: false,
+            sideListTab: null,
             isMenuOverlayShow: false,
             menuOverlay: null,
             scrolled: false,
@@ -50,8 +48,6 @@ class Header extends Component {
     }
 
     componentDidMount() {
-        const {dispatch} = this.props;
-        dispatch(getRootBreadcrumb());
         document.addEventListener('scroll', this.handleScroll);
     }
 
@@ -172,7 +168,7 @@ class Header extends Component {
     }
 
     handlePromptSubmitClick = (windowType, docId) => {
-        const {dispatch} = this.props;
+        const {dispatch, handleDeletedStatus} = this.props;
 
         this.setState({
             prompt: Object.assign({}, this.state.prompt, {
@@ -181,6 +177,7 @@ class Header extends Component {
         }, () => {
             dispatch(deleteRequest('window', windowType, null, null, [docId]))
                 .then(() => {
+                    handleDeletedStatus(true);
                     dispatch(push('/window/' + windowType));
                 });
             }
@@ -201,23 +198,30 @@ class Header extends Component {
         }
     }
 
+    handleSidelistToggle = (id = null) => {
+        const {sideListTab} = this.state;
+
+        this.toggleScrollScope(id !== null);
+
+        this.setState({
+            isSideListShow: id !== sideListTab,
+            sideListTab: id !== sideListTab ? id : null
+        });
+    }
+
     closeOverlays = (clickedItem, callback) => {
-        const {isSideListShow, isSubheaderShow} = this.state;
+        const {isSubheaderShow} = this.state;
 
         this.setState({
             menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
-            isSideListShow:
-                (clickedItem == 'isSideListShow' ? !isSideListShow : false),
+            isSideListShow: false,
             isSubheaderShow:
                 (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
             tooltipOpen: ''
         }, callback);
 
-        if(clickedItem == 'isSideListShow') {
-            this.toggleScrollScope(!isSideListShow);
-        }
         if(
             document.getElementsByClassName('js-dropdown-toggler')[0] &&
             (clickedItem != 'dropdown')
@@ -235,14 +239,13 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
-            references, actions, viewId, inbox, homemenu, selected, entity,
-            query, attachments, showIndicator, isDocumentNotSaved,
+            inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
             selectedWindowType
         } = this.props;
 
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
-            isMenuOverlayShow, tooltipOpen, prompt
+            isMenuOverlayShow, tooltipOpen, prompt, sideListTab
         } = this.state;
 
         return (
@@ -306,7 +309,6 @@ class Header extends Component {
                                 </div>
 
                                 <Breadcrumb
-                                    homemenu={homemenu}
                                     breadcrumb={breadcrumb}
                                     windowType={windowType}
                                     docNo={docNo}
@@ -440,14 +442,15 @@ class Header extends Component {
                                                 'btn-header-open'
                                                 : 'btn-meta-primary')
                                         }
-                                        onClick={() =>
-                                            this.closeOverlays('isSideListShow')
-                                        }
+                                        onClick={() => {
+                                            this.closeOverlays();
+                                            this.handleSidelistToggle(0);
+                                        }}
                                         onMouseEnter={() =>
                                             this.toggleTooltip(
                                                 keymap
                                                     .GLOBAL_CONTEXT
-                                                    .OPEN_SIDEBAR_MENU
+                                                    .OPEN_SIDEBAR_MENU_0
                                             )
                                         }
                                         onMouseLeave={() =>
@@ -458,12 +461,12 @@ class Header extends Component {
                                         { tooltipOpen ===
                                             keymap
                                                 .GLOBAL_CONTEXT
-                                                .OPEN_SIDEBAR_MENU &&
+                                                .OPEN_SIDEBAR_MENU_0 &&
                                             <Tooltips
                                                 name={
                                                     keymap
                                                         .GLOBAL_CONTEXT
-                                                        .OPEN_SIDEBAR_MENU
+                                                        .OPEN_SIDEBAR_MENU_0
                                                 }
                                                 action={'Side list'}
                                                 type={''}
@@ -480,11 +483,7 @@ class Header extends Component {
 
                 {isSubheaderShow && <Subheader
                     dataId={dataId}
-                    references={references}
-                    attachments={attachments}
-                    actions={actions}
                     windowType={windowType}
-                    viewId={viewId}
                     closeSubheader={() => this.closeOverlays('isSubheaderShow')}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
@@ -505,16 +504,18 @@ class Header extends Component {
                     closeSideList={this.handleCloseSideList}
                     isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
+                    docId={dataId}
+                    defaultTab={sideListTab}
                 />}
 
                 <GlobalContextShortcuts
+                    handleSidelistToggle={this.handleSidelistToggle}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
-                            ()=> this.handleMenuOverlay('', homemenu.nodeId)
+                            ()=> this.handleMenuOverlay('', '0')
                         )
                     }
-                    handleSideList = {showSidelist  ? showSidelist : ''}
                     handleInboxOpen = {isInboxOpen ?
                         () => this.handleInboxOpen(false) :
                         () => this.handleInboxOpen(true)
@@ -548,30 +549,16 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array.isRequired,
-    viewId: PropTypes.string,
-    homemenu: PropTypes.object.isRequired,
     inbox: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler, listHandler, appHandler, menuHandler} = state;
-
-    const {
-        viewId
-    } = listHandler || {
-        viewId: ''
-    }
+    const {windowHandler, appHandler} = state;
 
     const {
         inbox
     } = appHandler || {
         inbox: {}
-    }
-
-    const {
-        homemenu
-    } = menuHandler || {
-        homemenu: []
     }
 
     const {
@@ -584,9 +571,7 @@ function mapStateToProps(state) {
 
     return {
         selected,
-        viewId,
         inbox,
-        homemenu,
         selectedWindowType
     }
 }

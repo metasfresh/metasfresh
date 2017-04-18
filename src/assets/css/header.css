@@ -252,7 +252,6 @@
     display: flex;
     align-items: stretch;
     flex-flow: row wrap;
-    justify-content: space-around;
 }
 
 .subheader-break {
@@ -499,6 +498,12 @@
 
 .header-item.icon-sm {
     font-size: .875rem;
+    padding-top: 0;
+}
+
+.header-item.icon-sm i {
+    vertical-align: text-bottom;
+    line-height: 0.9;
 }
 
 .header-item-container {

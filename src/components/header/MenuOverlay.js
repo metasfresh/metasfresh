@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import MenuOverlayContainer from './MenuOverlayContainer';
@@ -10,7 +11,8 @@ import {
     queryPathsRequest,
     pathRequest,
     getWindowBreadcrumb,
-    flattenLastElem
+    flattenLastElem,
+    getRootBreadcrumb
 } from '../../actions/MenuActions';
 
 class MenuOverlay extends Component {
@@ -22,8 +24,20 @@ class MenuOverlay extends Component {
             deepNode: null,
             deepSubNode: null,
             path: '',
-            subPath: ''
+            subPath: '',
+            data: {}
         };
+    }
+
+    componentDidMount = () => {
+        const {dispatch, nodeId} = this.props;
+        if(nodeId == '0'){
+            dispatch(getRootBreadcrumb()).then(response => {
+                this.setState({
+                    data: response
+                })
+            })
+        }
     }
 
     browseWholeTree = () => {
@@ -205,7 +219,7 @@ class MenuOverlay extends Component {
                     </p>
                 }
                 <div className="column-wrapper">
-                    {node && node.children.map((item, index) =>
+                    {node && node.children && node.children.map((item, index) =>
                         <MenuOverlayContainer
                             key={index}
                             handleClickOnFolder={this.handleDeeper}
@@ -227,7 +241,8 @@ class MenuOverlay extends Component {
     renderSubnavigation = (nodeData) => {
         return(
             <div>
-                {nodeData && nodeData.children.map((item, index) =>
+                {(nodeData && nodeData.children) &&
+                    nodeData.children.map((item, index) =>
                     <span
                         className="menu-overlay-expanded-link"
                         key={index}
@@ -309,13 +324,12 @@ class MenuOverlay extends Component {
 
     render() {
         const {
-            queriedResults, deepNode, deepSubNode, subPath, query
+            queriedResults, deepNode, deepSubNode, subPath, query, data
         } = this.state;
         const {
             dispatch, nodeId, node, siteName, handleMenuOverlay, openModal
         } = this.props;
-        const nodeData = node.children;
-
+        const nodeData = nodeId == '0' ? data : node.children;
         return (
             <div
                 className="menu-overlay menu-overlay-primary"

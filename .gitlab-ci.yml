@@ -1,13 +1,23 @@
 image: jazzypro/ubuntu-frontend:latest
 
 stages:
+  - analyze
   - build
   - deploy
+
+analyze:
+  stage: analyze
+  script:
+    - ansible-playbook ansible/analyze.yml
+  only:
+    - /^dev-.*$/
+    - master
+  allow_failure: true
 
 build:
   stage: build
   script:
-    - ansible-playbook ansible/build.yml -v
+    - ansible-playbook ansible/build.yml
   artifacts:
     paths:
       - dist/
@@ -18,7 +28,7 @@ build:
 deploy-dev:
   stage: deploy
   script:
-    - ansible-playbook ansible/deploy.yml -v
+    - ansible-playbook ansible/deploy.yml
   dependencies:
     - build
   only:

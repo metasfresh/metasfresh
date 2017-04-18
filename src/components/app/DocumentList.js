@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
@@ -20,6 +21,12 @@ import {
     getItemsByProperty,
     mapIncluded
 } from '../../actions/WindowActions';
+
+import {
+    setSorting,
+    setPagination,
+    setListId
+} from '../../actions/ListActions';
 
 import {
     createViewRequest,
@@ -49,6 +56,15 @@ class DocumentList extends Component {
             cachedSelection: null
         }
         this.fetchLayoutAndData();
+    }
+
+    componentDidMount = () => {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        this.disconnectWS();
     }
 
     componentWillReceiveProps(props) {
@@ -120,10 +136,6 @@ class DocumentList extends Component {
                 })
             }
         }
-    }
-
-    componentWillUnmount() {
-        this.disconnectWS();
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -200,7 +212,7 @@ class DocumentList extends Component {
         dispatch(initLayout(
             'documentView', windowType, null, null, null, null, type, true
         )).then(response => {
-            this.setState({
+            this.mounted && this.setState({
                 layout: response.data
             }, () => {
                 if(viewId && !isNewFilter){
@@ -237,7 +249,7 @@ class DocumentList extends Component {
         dispatch(createViewRequest(
             windowType, type, this.pageLength, filters, refType, refId
         )).then(response => {
-            this.setState({
+            this.mounted && this.setState({
                 data: response.data,
                 viewId: response.data.viewId
             }, () => {
@@ -259,7 +271,7 @@ class DocumentList extends Component {
             id, page, this.pageLength, sortingQuery, windowType
         )).then(response => {
 
-            this.setState(Object.assign({}, {
+            this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters
             }, refresh && {
@@ -322,15 +334,36 @@ class DocumentList extends Component {
 
     // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
 
+    redirectToDocument = (id) => {
+        const {
+            dispatch, isModal, windowType, isSideListShow, closeSideList
+        } = this.props;
+        const {page, viewId, sort} = this.state;
+
+        if(isModal){
+            return;
+        }
+
+        dispatch(push('/window/' + windowType + '/' + id));
+
+        if(isSideListShow) {
+            closeSideList();
+        }else{
+            // Caching last settings
+            dispatch(setPagination(page, windowType));
+            dispatch(setSorting(sort, windowType));
+            dispatch(setListId(viewId, windowType));
+        }
+    }
+
     render() {
         const {
             layout, data, viewId, clickOutsideLock, refresh, page, filters
         } = this.state;
 
         const {
-            dispatch, windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus, isSideListShow,
-            closeSideList
+            windowType, open, closeOverlays, selected, inBackground,
+            fetchQuickActionsOnInit, isModal, processStatus, readonly
         } = this.props;
 
         const selectionValid = this.doesSelectionExist(selected);
@@ -338,7 +371,7 @@ class DocumentList extends Component {
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
-                    <div
+                    {!readonly && <div
                         className="panel panel-primary panel-spaced panel-inline document-list-header"
                     >
                         <div>
@@ -369,7 +402,7 @@ class DocumentList extends Component {
                             fetchOnInit={fetchQuickActionsOnInit}
                             processStatus={processStatus}
                         />
-                    </div>
+                    </div>}
                     <div className="document-list-body">
                         <Table
                             entity="documentView"
@@ -385,15 +418,7 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => {
-                                !isModal &&
-                                dispatch(
-                                    push('/window/' + windowType + '/' + id)
-                                )
-                                if(isSideListShow) {
-                                    closeSideList();
-                                }
-                            }}
+                            onDoubleClick={(id) => this.redirectToDocument(id)}
                             isModal={isModal}
                             size={data.size}
                             pageLength={this.pageLength}

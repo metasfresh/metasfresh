@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {push} from 'react-router-redux';
 
@@ -86,7 +87,7 @@ class Breadcrumb extends Component {
 
     render() {
         const {
-            breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData,
+            breadcrumb, windowType, docNo, docNoData, docSummaryData,
             dataId, siteName
         } = this.props;
 
@@ -103,7 +104,7 @@ class Breadcrumb extends Component {
                     />
                 }
                 <div className="header-breadcrumb">
-                    {this.renderBtn(homemenu, 0)}
+                    {this.renderBtn({nodeId: '0'}, 0)}
 
                     {breadcrumb && breadcrumb.map((item, index) =>
                         this.renderBtn(item, index+1)
