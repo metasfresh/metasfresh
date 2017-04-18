@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.material.dispo.event.MDEventListener;
-import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.MaterialEventService;
 
 /*
  * #%L
@@ -78,7 +78,7 @@ public class Application
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
-		ManufacturingEventService.get().registerListener(eventListener);
+		MaterialEventService.get().registerListener(eventListener);
 
 		return adempiere;
 	}

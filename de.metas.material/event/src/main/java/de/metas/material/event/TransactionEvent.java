@@ -35,7 +35,7 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor // used by jackson when it deserializes a string
 @Builder // used by devs to make sure they know with parameter-value goes into which property
-public class TransactionEvent implements ManufacturingEvent
+public class TransactionEvent implements MaterialEvent
 {
 	public static final String TYPE = "TransactionEvent";
 
@@ -46,16 +46,7 @@ public class TransactionEvent implements ManufacturingEvent
 	private final TableRecordReference reference;
 
 	@NonNull
-	private final Date movementDate;
-
-	@NonNull
-	private final Integer warehouseId;
-
-	@NonNull
-	private final BigDecimal qty;
-
-	@NonNull
-	private final Integer productId;
+	private final MaterialDescriptor materialDescr;
 
 	private final boolean transactionDeleted;
 

@@ -7,8 +7,9 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.CandidateChangeHandler;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.ManufacturingEvent;
-import de.metas.material.event.ManufacturingEventListener;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.TransactionEvent;
@@ -36,14 +37,14 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class MDEventListener implements ManufacturingEventListener
+public class MDEventListener implements MaterialEventListener
 {
 
 	@Autowired
 	private CandidateChangeHandler candidateChangeHandler;
 
 	@Override
-	public void onEvent(@NonNull final ManufacturingEvent event)
+	public void onEvent(@NonNull final MaterialEvent event)
 	{
 		if (event instanceof TransactionEvent)
 		{
@@ -66,12 +67,16 @@ public class MDEventListener implements ManufacturingEventListener
 			candidateChangeHandler.onCandidateDelete(event.getReference());
 			return;
 		}
+		
+		final MaterialDescriptor materialDescr = event.getMaterialDescr();
+		
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
-				.warehouseId(event.getWarehouseId())
-				.date(event.getMovementDate())
-				.productId(event.getProductId())
-				.quantity(event.getQty())
+				.orgId(materialDescr.getOrgId())
+				.warehouseId(materialDescr.getWarehouseId())
+				.date(materialDescr.getDate())
+				.productId(materialDescr.getProductId())
+				.quantity(materialDescr.getQty())
 				.referencedRecord(event.getReference())
 				.build();
 
@@ -86,15 +91,19 @@ public class MDEventListener implements ManufacturingEventListener
 			return;
 		}
 
+		final MaterialDescriptor materialDescr = event.getMaterialDescr();
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.subType(SubType.RECEIPT)
-				.date(event.getPromisedDate())
-				.warehouseId(event.getWarehouseId())
-				.productId(event.getProductId())
-				.quantity(event.getQtyOrdered())
+				.orgId(materialDescr.getOrgId())
+				.date(materialDescr.getDate())
+				.warehouseId(materialDescr.getWarehouseId())
+				.productId(materialDescr.getProductId())
+				.quantity(materialDescr.getQty())
 				.referencedRecord(event.getReference())
 				.build();
+
 		candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
 	}
 
@@ -105,12 +114,16 @@ public class MDEventListener implements ManufacturingEventListener
 			candidateChangeHandler.onCandidateDelete(event.getReference());
 			return;
 		}
+
+		final MaterialDescriptor materialDescr = event.getMaterialDescr();
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.date(event.getPreparationDate())
-				.warehouseId(event.getWarehouseId())
-				.productId(event.getProductId())
-				.quantity(event.getQtyOrdered())
+				.orgId(materialDescr.getOrgId())
+				.date(materialDescr.getDate())
+				.warehouseId(materialDescr.getWarehouseId())
+				.productId(materialDescr.getProductId())
+				.quantity(materialDescr.getQty())
 				.referencedRecord(event.getReference())
 				.build();
 		candidateChangeHandler.onDemandCandidateNewOrChange(candidate);

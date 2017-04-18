@@ -10,8 +10,8 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
-import de.metas.material.event.impl.ManufacturingEventBus;
-import de.metas.material.event.impl.ManufacturingEventSerializer;
+import de.metas.material.event.impl.MaterialEventBus;
+import de.metas.material.event.impl.MaterialEventSerializer;
 
 /*
  * #%L
@@ -35,13 +35,13 @@ import de.metas.material.event.impl.ManufacturingEventSerializer;
  * #L%
  */
 
-public class ManufacturingEventService
+public class MaterialEventService
 {
 	public static final String MANUFACTURING_DISPOSITION_EVENT = "ManufacturingDispositionEvent";
 
-	private static final ManufacturingEventService INSTANCE = new ManufacturingEventService();
+	private static final MaterialEventService INSTANCE = new MaterialEventService();
 
-	private final List<ManufacturingEventListener> listeners = new ArrayList<>();
+	private final List<MaterialEventListener> listeners = new ArrayList<>();
 
 	private final IEventListener internalListener = new IEventListener()
 	{
@@ -49,28 +49,28 @@ public class ManufacturingEventService
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
 			final String lightWeigthEventStr = event.getProperty(MANUFACTURING_DISPOSITION_EVENT);
-			final ManufacturingEvent lightWeightEvent = ManufacturingEventSerializer.get().deserialize(lightWeigthEventStr);
+			final MaterialEvent lightWeightEvent = MaterialEventSerializer.get().deserialize(lightWeigthEventStr);
 
 			listeners.forEach(l -> l.onEvent(lightWeightEvent));
 		}
 	};
 
-	private ManufacturingEventService()
+	private MaterialEventService()
 	{
 		getEventBus().subscribe(internalListener);
 	}
 
-	public static ManufacturingEventService get()
+	public static MaterialEventService get()
 	{
 		return INSTANCE;
 	}
 
-	public void registerListener(final ManufacturingEventListener l)
+	public void registerListener(final MaterialEventListener l)
 	{
 		listeners.add(l);
 	}
 
-	public void fireEventAfterCommit(final ManufacturingEvent event, final String trxName)
+	public void fireEventAfterCommit(final MaterialEvent event, final String trxName)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -79,9 +79,9 @@ public class ManufacturingEventService
 				.onAfterCommit(() -> fireEvent(event));
 	}
 
-	public void fireEvent(final ManufacturingEvent event)
+	public void fireEvent(final MaterialEvent event)
 	{
-		final String eventStr = ManufacturingEventSerializer.get().serialize(event);
+		final String eventStr = MaterialEventSerializer.get().serialize(event);
 
 		final Event realEvent = Event.builder()
 				.putProperty(MANUFACTURING_DISPOSITION_EVENT, eventStr)
@@ -93,7 +93,7 @@ public class ManufacturingEventService
 	private IEventBus getEventBus()
 	{
 		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-		final IEventBus eventBus = eventBusFactory.getEventBus(ManufacturingEventBus.EVENTBUS_TOPIC);
+		final IEventBus eventBus = eventBusFactory.getEventBus(MaterialEventBus.EVENTBUS_TOPIC);
 		return eventBus;
 	}
 

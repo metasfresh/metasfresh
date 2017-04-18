@@ -15,10 +15,10 @@ import org.compiere.model.I_AD_Table;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.ManufacturingEvent;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
-import de.metas.material.event.impl.ManufacturingEventSerializer;
 
 /*
  * #%L
@@ -58,19 +58,22 @@ public class ManufactoringEventSerializerTests
 		InterfaceWrapperHelper.save(someOtherTable);
 
 		final ReceiptScheduleEvent evt = ReceiptScheduleEvent.builder()
-				.productId(24)
-				.promisedDate(SystemTime.asDate())
-				.qtyOrdered(BigDecimal.TEN)
+				.materialDescr(MaterialDescriptor.builder()
+						.date(SystemTime.asDate())
+						.orgId(10)
+						.productId(13)
+						.warehouseId(15)
+						.orgId(67)
+						.qty(BigDecimal.TEN)
+						.build())
 				.receiptScheduleDeleted(false)
 				.reference(TableRecordReference.of("someOtherTable", 100))
-				.warehouseId(23)
 				.when(Instant.now())
 				.build();
+		assertThat(evt.getMaterialDescr().getQty(), comparesEqualTo(BigDecimal.TEN)); // guard
 
-		assertThat(evt.getQtyOrdered(), comparesEqualTo(BigDecimal.TEN)); // guard
-
-		final String serializedEvt = ManufacturingEventSerializer.get().serialize(evt);
-		final ManufacturingEvent deserializedEvt = ManufacturingEventSerializer.get().deserialize(serializedEvt);
+		final String serializedEvt = MaterialEventSerializer.get().serialize(evt);
+		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
 
 		assertThat(deserializedEvt, is(evt));
 	}
@@ -81,11 +84,13 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = createSampleTransactionEvent();
 
-		final String serializedEvt = ManufacturingEventSerializer.get().serialize(evt);
+		final String serializedEvt = MaterialEventSerializer.get().serialize(evt);
 
-		final ManufacturingEvent deserializedEvt = ManufacturingEventSerializer.get().deserialize(serializedEvt);
+		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
 		assertThat(deserializedEvt instanceof TransactionEvent, is(true));
-		assertThat(((TransactionEvent)deserializedEvt).getProductId(), is(14)); // "spot check": picking the productId
+		assertThat(((TransactionEvent)deserializedEvt)
+				.getMaterialDescr()
+				.getProductId(), is(14)); // "spot check": picking the productId
 		assertThat(deserializedEvt, is(evt));
 	}
 
@@ -97,11 +102,14 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = TransactionEvent
 				.builder()
-				.movementDate(SystemTime.asDate())
-				.productId(14)
-				.qty(BigDecimal.TEN)
+				.materialDescr(MaterialDescriptor.builder()
+						.productId(14)
+						.qty(BigDecimal.TEN)
+						.date(SystemTime.asDate())
+						.warehouseId(12)
+						.orgId(66)
+						.build())
 				.reference(TableRecordReference.of(1, 2))
-				.warehouseId(12)
 				.when(Instant.now())
 				.build();
 		return evt;

@@ -30,7 +30,7 @@ import de.metas.event.Type;
  * #L%
  */
 
-public class ManufacturingEventBus extends QueueableForwardingEventBus
+public class MaterialEventBus extends QueueableForwardingEventBus
 {
 	private static final String EVENTBUS_TOPIC_NAME = "de.metas.manufacturing.dispo";
 
@@ -40,13 +40,13 @@ public class ManufacturingEventBus extends QueueableForwardingEventBus
 			.setType(Type.REMOTE)
 			.build();
 
-	public static final ManufacturingEventBus newInstance()
+	public static final MaterialEventBus newInstance()
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new ManufacturingEventBus(eventBus);
+		return new MaterialEventBus(eventBus);
 	}
 
-	private ManufacturingEventBus(final IEventBus delegate)
+	private MaterialEventBus(final IEventBus delegate)
 	{
 		super(delegate);
 	}

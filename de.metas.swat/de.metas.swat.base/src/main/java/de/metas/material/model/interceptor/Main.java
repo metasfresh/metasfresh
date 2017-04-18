@@ -1,4 +1,4 @@
-package de.metas.manufacturing.model.interceptor;
+package de.metas.material.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;

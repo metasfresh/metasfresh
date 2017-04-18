@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import de.metas.material.event.ManufacturingEvent;
+import de.metas.material.event.MaterialEvent;
 
 /*
  * #%L
@@ -32,13 +32,13 @@ import de.metas.material.event.ManufacturingEvent;
  * #L%
  */
 
-public class ManufacturingEventSerializer
+public class MaterialEventSerializer
 {
-	private static final ManufacturingEventSerializer INSTANCE = new ManufacturingEventSerializer();
+	private static final MaterialEventSerializer INSTANCE = new MaterialEventSerializer();
 
 	private final ObjectMapper objectMapper;
 
-	private ManufacturingEventSerializer()
+	private MaterialEventSerializer()
 	{
 		objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -46,12 +46,12 @@ public class ManufacturingEventSerializer
 		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}
 
-	public static ManufacturingEventSerializer get()
+	public static MaterialEventSerializer get()
 	{
 		return INSTANCE;
 	}
 
-	public String serialize(final ManufacturingEvent event)
+	public String serialize(final MaterialEvent event)
 	{
 		try
 		{
@@ -63,11 +63,11 @@ public class ManufacturingEventSerializer
 		}
 	}
 
-	public ManufacturingEvent deserialize(final String eventJson)
+	public MaterialEvent deserialize(final String eventJson)
 	{
 		try
 		{
-			return objectMapper.readValue(eventJson, ManufacturingEvent.class);
+			return objectMapper.readValue(eventJson, MaterialEvent.class);
 		}
 		catch (final IOException e)
 		{

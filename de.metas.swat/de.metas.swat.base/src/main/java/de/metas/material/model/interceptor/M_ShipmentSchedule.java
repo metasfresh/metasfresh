@@ -1,4 +1,4 @@
-package de.metas.manufacturing.model.interceptor;
+package de.metas.material.model.interceptor;
 
 import java.time.Instant;
 
@@ -11,7 +11,8 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ShipmentScheduleEvent;
 
 /**
@@ -39,16 +40,19 @@ public class M_ShipmentSchedule
 
 		final boolean deleted = timing == ModelValidator.TYPE_AFTER_DELETE;
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.preparationDate(shipmentScheduleEffectiveBL.getPreparationDate(schedule))
-				.productId(schedule.getM_Product_ID())
-				.qtyOrdered(shipmentScheduleEffectiveBL.getQtyOrdered(schedule))
+				.materialDescr(MaterialDescriptor.builder()
+						.orgId(schedule.getAD_Org_ID())
+						.date(shipmentScheduleEffectiveBL.getPreparationDate(schedule))
+						.productId(schedule.getM_Product_ID())
+						.warehouseId(schedule.getM_Warehouse_ID())
+						.qty(shipmentScheduleEffectiveBL.getQtyOrdered(schedule))
+						.build())
 				.reference(TableRecordReference.of(schedule))
 				.shipmentScheduleDeleted(deleted)
-				.warehouseId(schedule.getM_Warehouse_ID())
 				.when(Instant.now())
 				.build();
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		ManufacturingEventService.get().fireEventAfterCommit(event, trxName);
+		MaterialEventService.get().fireEventAfterCommit(event, trxName);
 	}
 }

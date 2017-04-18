@@ -1,8 +1,5 @@
 package de.metas.material.event;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 /*
  * #%L
  * metasfresh-manufacturing-event-api
@@ -25,19 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * #L%
  */
 
-/**
- * These are the high-level event pojos. We serialize and deserialize them and let them ride inside {@link de.metas.event.Event} instances.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({
-		@JsonSubTypes.Type(name = ShipmentScheduleEvent.TYPE, value = ShipmentScheduleEvent.class),
-		@JsonSubTypes.Type(name = ReceiptScheduleEvent.TYPE, value = ReceiptScheduleEvent.class),
-		@JsonSubTypes.Type(name = TransactionEvent.TYPE, value = TransactionEvent.class)
-})
-public interface ManufacturingEvent
+public interface MaterialEventListener
 {
-
+	public void onEvent(MaterialEvent event);
 }

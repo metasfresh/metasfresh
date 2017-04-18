@@ -38,7 +38,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ReceiptScheduleEvent;
 
 @Interceptor(I_M_ReceiptSchedule.class)

@@ -1,4 +1,4 @@
-package de.metas.manufacturing.model.interceptor;
+package de.metas.material.model.interceptor;
 
 import java.time.Instant;
 
@@ -9,7 +9,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
 
 /*
@@ -54,18 +55,20 @@ public class M_Transaction
 			ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */ })
 	public void enqueuePurchaseCandidates(final I_M_Transaction transaction, final int timing)
 	{
-
 		final TransactionEvent event = TransactionEvent.builder()
 				.transactionDeleted(timing == ModelValidator.TYPE_BEFORE_DELETE)
-				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
-				.movementDate(transaction.getMovementDate())
-				.productId(transaction.getM_Product_ID())
-				.qty(transaction.getMovementQty())
+				.materialDescr(MaterialDescriptor.builder()
+						.orgId(transaction.getAD_Org_ID())
+						.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
+						.date(transaction.getMovementDate())
+						.productId(transaction.getM_Product_ID())
+						.qty(transaction.getMovementQty())
+						.build())
 				.reference(TableRecordReference.of(transaction))
 				.when(Instant.now())
 				.build();
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
-		ManufacturingEventService.get().fireEventAfterCommit(event, trxName);
+		MaterialEventService.get().fireEventAfterCommit(event, trxName);
 	}
 }

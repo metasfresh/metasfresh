@@ -54,6 +54,9 @@ public class Candidate
 	};
 
 	@NonNull
+	private final Integer orgId;
+	
+	@NonNull
 	private final Integer productId;
 
 	@NonNull

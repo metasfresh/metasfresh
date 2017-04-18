@@ -1,8 +1,6 @@
 package de.metas.material.event;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -35,7 +33,7 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor // used by jackson when it deserializes a string
 @Builder // used by devs to make sure they know with parameter value does into which property
-public class ReceiptScheduleEvent implements ManufacturingEvent
+public class ReceiptScheduleEvent implements MaterialEvent
 {
 	public static final String TYPE = "ReceiptScheduleEvent";
 
@@ -46,16 +44,7 @@ public class ReceiptScheduleEvent implements ManufacturingEvent
 	private final TableRecordReference reference;
 
 	@NonNull
-	private final BigDecimal qtyOrdered;
-
-	@NonNull
-	private final Date promisedDate;
-
-	@NonNull
-	private final Integer warehouseId;
-
-	@NonNull
-	private final Integer productId;
-
+	private MaterialDescriptor materialDescr;
+	
 	private final boolean receiptScheduleDeleted;
 }

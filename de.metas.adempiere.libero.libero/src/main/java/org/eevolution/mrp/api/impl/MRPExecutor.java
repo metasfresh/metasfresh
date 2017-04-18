@@ -83,14 +83,12 @@ import org.eevolution.mrp.api.IMutableMRPResult;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
-/* package */class MRPExecutor implements IMRPExecutor
+public /* package */class MRPExecutor implements IMRPExecutor
 {
 	/**
 	 * MRP-020 - {@link I_PP_Product_Planning#isCreatePlan()} is <code>false</code> but we have a net requirements quantity to satisfy.
@@ -168,7 +166,6 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 
 	public MRPExecutor()
 	{
-		super();
 		_mrpNotesCollector = newMRPNotesCollector();
 	}
 

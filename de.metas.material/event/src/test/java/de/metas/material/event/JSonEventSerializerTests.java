@@ -9,11 +9,11 @@ import org.junit.Test;
 
 import de.metas.event.Event;
 import de.metas.event.jms.JsonEventSerializer;
-import de.metas.material.event.ManufacturingEvent;
-import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.impl.ManufactoringEventSerializerTests;
-import de.metas.material.event.impl.ManufacturingEventSerializer;
+import de.metas.material.event.impl.MaterialEventSerializer;
 
 /*
  * #%L
@@ -58,21 +58,23 @@ public class JSonEventSerializerTests
 	public void test()
 	{
 		final TransactionEvent inOutEvent = ManufactoringEventSerializerTests.createSampleTransactionEvent();
-		final String inOutEventStr = ManufacturingEventSerializer.get().serialize(inOutEvent);
+		final String inOutEventStr = MaterialEventSerializer.get().serialize(inOutEvent);
 
 		final Event event = Event.builder()
-				.putProperty(ManufacturingEventService.MANUFACTURING_DISPOSITION_EVENT, inOutEventStr)
+				.putProperty(MaterialEventService.MANUFACTURING_DISPOSITION_EVENT, inOutEventStr)
 				.build();
 
 		final String eventStr = JsonEventSerializer.instance.toString(event);
 
 		final Event deserialisedEvent = JsonEventSerializer.instance.fromString(eventStr);
-		final String deserializedInOutEventStr = deserialisedEvent.getProperty(ManufacturingEventService.MANUFACTURING_DISPOSITION_EVENT);
+		final String deserializedInOutEventStr = deserialisedEvent.getProperty(MaterialEventService.MANUFACTURING_DISPOSITION_EVENT);
 
-		final ManufacturingEvent deserializedInOutEvent = ManufacturingEventSerializer.get().deserialize(deserializedInOutEventStr);
+		final MaterialEvent deserializedInOutEvent = MaterialEventSerializer.get().deserialize(deserializedInOutEventStr);
 
 		assertThat(deserializedInOutEvent instanceof TransactionEvent, is(true));
-		assertThat(((TransactionEvent)deserializedInOutEvent).getProductId(), is(14)); // "spot check": picking the productId of the 2nd line
+		assertThat(((TransactionEvent)deserializedInOutEvent)
+				.getMaterialDescr()
+				.getProductId(), is(14)); // "spot check": picking the productId of the 2nd line
 		assertThat(deserializedInOutEvent, is(inOutEvent));
 	}
 }

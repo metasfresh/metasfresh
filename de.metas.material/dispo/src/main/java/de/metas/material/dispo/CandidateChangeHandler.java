@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
 
 /*
@@ -47,43 +50,29 @@ public class CandidateChangeHandler
 	{
 		final Candidate demandCandidateWithId = candidateRepository.addOrReplace(demandCandidate);
 
-		updateStock(demandCandidate
+		final Candidate stockWithDemand = updateStock(demandCandidate
 				.withQuantity(demandCandidate.getQuantity().negate())
 				.withParentId(demandCandidateWithId.getId()));
 
+		if (stockWithDemand.getQuantity().signum() >= 0)
 		{
-			// see if we can react "locally" to the new or changed stock candidate
-			// take a look at the product-planning infos and determine if we can make a supply candidate
-			final boolean canMakeSupplyCandidates = false;
-			if (canMakeSupplyCandidates)
-			{
-				// get the children of 'stockCandidate' (if any).
-				// create a candidate with type "supply" according to the product-planning infos if there is no candidate yet.
-				// If there is already a candidate, then verify if it is still a fit (product) for 'stockCandidate'. if no, then recreate it according to the planning. if yes, then update it's qty according to 'delta'
-				final Candidate supplyCandidate = null;
-
-				// the demand candidates for the supplyCandidate have the the same locator, but different products (PP_Order) or the same product but a different locator (DD_Order)
-				// if they already exist, then update them according to the supply candidate's qty change
-				final List<Candidate> demandCandidates = null;
-
-				// the negative qty of stockCandidate could be balanced. We have e.g.
-				// demand-candidate with 23 (i.e. -23)
-				// balanced stock-candidate with 0 (i.e. this candidate is a neutral)
-				// supply-candidate with 23 (i.e. + 23)
-
-				// notify the system about our new demand candidate(s)
-				// this notification shall lead to the onDemandCandidate() method being invoked once again, but probably asynchronously
-			}
-			else
-			{
-				// according to the product planning setup we can't create a supply candidate, so our stock candidate remains unbalanced. We have e.g.
-				// demand-candidate with 23 (i.e. -23)
-				// unbalanced stock-candidate with -23 (i.e. this candidate is *not* a neutral)
-
-				// notify the system about the stock candidate
-				// this notification shall lead to all "later" stock candidates with the same product and locator being notified
-			}
+			// there would still be stock left, so nothing to do
+			return;
 		}
+
+		// notify whoever is in charge that we have a demand to balance
+		final MaterialDemandEvent metarialDemandEvent = MaterialDemandEvent
+				.builder()
+				.descr(MaterialDescriptor.builder()
+						.orgId(demandCandidate.getOrgId())
+						.productId(demandCandidate.getProductId())
+						.date(demandCandidate.getDate())
+						.qty(stockWithDemand.getQuantity().negate())
+						.warehouseId(demandCandidate.getWarehouseId())
+						.build())
+				.build();
+
+		MaterialEventService.get().fireEvent(metarialDemandEvent);
 	}
 
 	/**

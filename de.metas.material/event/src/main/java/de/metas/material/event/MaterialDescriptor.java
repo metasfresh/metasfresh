@@ -1,8 +1,7 @@
 package de.metas.material.event;
 
-import java.time.Instant;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
+import java.math.BigDecimal;
+import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +10,7 @@ import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-manufacturing-event-api
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -19,32 +18,35 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter-value goes into which property
-public class ShipmentScheduleEvent implements MaterialEvent
+@Builder
+@AllArgsConstructor
+public class MaterialDescriptor
 {
-	public static final String TYPE = "ShipmentScheduleEvent";
+	@NonNull
+	final Integer orgId;
 
 	@NonNull
-	private final Instant when;
+	private final Integer warehouseId;
 
 	@NonNull
-	private final TableRecordReference reference;
+	private final Integer productId;
 
 	@NonNull
-	private final MaterialDescriptor materialDescr;
+	private final BigDecimal qty;
 
-	private final boolean shipmentScheduleDeleted;
+	@NonNull
+	private final Date date;
+
 }

@@ -1,4 +1,4 @@
-package de.metas.manufacturing.model.interceptor;
+package de.metas.material.model.interceptor;
 
 import java.time.Instant;
 
@@ -9,7 +9,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.material.event.ManufacturingEventService;
+import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ReceiptScheduleEvent;
 
 @Interceptor(I_M_ReceiptSchedule.class)
@@ -31,14 +32,17 @@ public class M_ReceiptSchedule
 		final ReceiptScheduleEvent event = ReceiptScheduleEvent.builder()
 				.when(Instant.now())
 				.reference(TableRecordReference.of(schedule))
-				.productId(schedule.getM_Product_ID())
-				.warehouseId(schedule.getM_Warehouse_ID())
-				.qtyOrdered(schedule.getQtyOrdered())
+				.materialDescr(MaterialDescriptor.builder()
+						.orgId(schedule.getAD_Org_ID())
+						.productId(schedule.getM_Product_ID())
+						.warehouseId(schedule.getM_Warehouse_ID())
+						.date(schedule.getMovementDate())
+						.qty(schedule.getQtyOrdered())
+						.build())
 				.receiptScheduleDeleted(deleted)
-				.promisedDate(schedule.getMovementDate())
 				.build();
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		ManufacturingEventService.get().fireEventAfterCommit(event, trxName);
+		MaterialEventService.get().fireEventAfterCommit(event, trxName);
 	}
 }
