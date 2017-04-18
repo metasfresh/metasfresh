@@ -71,7 +71,6 @@ import de.metas.adempiere.form.terminal.PropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IDocumentCollector;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -89,7 +88,6 @@ import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssi
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplitModel;
-import de.metas.handlingunits.impl.DocumentCollector;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
@@ -1343,10 +1341,8 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Create and setup context
-		final IDocumentCollector documentsCollector = new DocumentCollector();
 		final IContextAware context = getTerminalContext();
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
-		huContext.setDocumentCollector(documentsCollector);
 
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
 		huContext.setDate(movementDate);
