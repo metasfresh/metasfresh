@@ -552,7 +552,8 @@ class RawWidget extends Component {
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
                     >
-                        {widgetData[0]
+                        {widgetData[0].value &&
+                            widgetData[0]
                             .value[Object.keys(widgetData[0].value)[0]]
                         }
                     </button>
