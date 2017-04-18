@@ -5,7 +5,7 @@
 @Rem explicitly here for different versions, etc. e.g.
 @Rem
 @Rem SET METASFRESH_HOME=C:\metasfresh
-@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_40
+@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_112
 
 @Rem Variables: 
 @Rem DBG_PORT                   ->  Start-Port the script will scan (min. port)
@@ -13,6 +13,9 @@
 @Rem ERRORLEVEL                 ->  Windows built-in return-code ( returns "0" if OK, "1" if not OK )
 @Rem CLIENT_REMOTE_DEBUG_OPTS   ->  Commandline-Options (Arguments) to use, if Debugging is enabled
 @Rem JMX_REMOTE_DEBUG_OPTS      ->  Same as CLIENT_REMOTE_DEBUG_OPTS
+
+@REM Uncomment this option to disable the client from comparing its own version with the version stored in the AD_System database table
+@REM SET METASFRESH_CLIENT_CHECK_OPTS="-Dde.metas.clientcheck.Enabled=false"
 
 :METASFRESH_DEBUG_PORTS
 @SET /a DBG_PORT=10000
@@ -49,7 +52,7 @@
   SET JMX_REMOTE_DEBUG_OPTS=
   echo Not using JMX_DEBUGGING_PORTS
   ) ELSE (
-  SET JMX_REMOTE_DEBUG_OPTS=-Dcom.sun.management.jmxremote.port=%DBG_PORT% -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+  SET JMX_REMOTE_DEBUG_OPTS=-Dcom.sun.management.jmxremote.port=%DBG_PORT% -Dcom.sun.management.jmxremote.rmi.port=%DBG_PORT% -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
   echo Using JMX_DEBUGGING_PORT %DBG_PORT%
 )
 
@@ -78,13 +81,19 @@ SET METASFRESH_HOME=%~dp0
 REM @goto MULTI_INSTALL
 
 :METASFRESH_HOME_OK
-SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
+SET MAIN_CLASSNAME=org.springframework.boot.loader.PropertiesLauncher
 
 @REM finding our jar file
 @REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
-for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
+for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR_FILE=%%F
 
-SET CLASSPATH=%JAR%
+SET CLASSPATH=%JAR_FILE%
+
+@REM Comma-separated Classpath for (additional) external libraries, e.g. lib,${HOME}/app/lib. 
+@REM see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+@REM see https://github.com/metasfresh/metasfresh/issues/695
+SET LOADER_PATH=%userprofile%\.metasfresh\userlib
+SET PATH=%PATH%;%userprofile%\.metasfresh\userlib-x64
 
 :MULTI_INSTALL
 @REM  To switch between multiple installs, copy the created metasfresh.properties file
@@ -108,11 +117,12 @@ SET CLASSPATH=%JAR%
 @Echo JMX_REMOTE_DEBUG_OPTS=%JMX_REMOTE_DEBUG_OPTS%
 @Echo SECURE=%SECURE%
 @Echo CLASSPATH=%CLASSPATH%
+@Echo LOADER_PATH=%LOADER_PATH%
 @Echo MAIN_CLASSNAME=%MAIN_CLASSNAME%
 
 :START
-SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true
-"%JAVA%" %JAVA_OPTS% -DMETASFRESH_HOME=%METASFRESH_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
+SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true
+"%JAVA%" %JAVA_OPTS% -DMETASFRESH_HOME=%METASFRESH_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %METASFRESH_CLIENT_CHECK_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL
