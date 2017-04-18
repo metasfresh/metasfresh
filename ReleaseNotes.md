@@ -10,11 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.5 (2017-16)
+# metasfresh 5.6 (2017-16)
 
 **upcoming release for week 2017-16**
 
 ## Features
+
+* metasfresh-backend
+  * [#1062](https://github.com/metasfresh/metasfresh/issues/1062) Return HU to vendor
+  * [#1064](https://github.com/metasfresh/metasfresh/issues/1064) Move HU to garbage
+  * [#1065](https://github.com/metasfresh/metasfresh/issues/1065) Move HU to other Warehouse/ Locator
+
 * metasfresh-frontend-api
   * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
     * Adding animation to dashboard charts (pie and bar charts).
