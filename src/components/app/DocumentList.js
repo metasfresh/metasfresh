@@ -25,7 +25,8 @@ import {
 import {
     setSorting,
     setPagination,
-    setListId
+    setListId,
+    setListIncludedView
 } from '../../actions/ListActions';
 
 import {
@@ -70,9 +71,9 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch
+            inBackground, dispatch, includedView, selectedWindowType
         } = props;
-        const {page, sort, viewId, cachedSelection} = this.state;
+        const {page, sort, viewId, cachedSelection, layout} = this.state;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -129,7 +130,9 @@ class DocumentList extends Component {
             inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                dispatch(selectTableItems(cachedSelection, windowType))
+                // In case of preventing cached selection restore
+                cachedSelection && 
+                    dispatch(selectTableItems(cachedSelection, windowType))
             }else{
                 this.setState({
                     cachedSelection: selected
@@ -137,11 +140,22 @@ class DocumentList extends Component {
             }
         }
         
+        
+        /*
+         * When the selection of unfocused table changes
+         */
         if(
+            selectedWindowType === windowType &&
             JSON.stringify(selected) != JSON.stringify(this.props.selected) &&
+            layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId
         ){
-            //TODO: we need here close includedView when supportIncludedView will be available
+            // There is no need to restore cached selection in that case
+            this.setState({
+                cachedSelection: null
+            }, () => {
+                dispatch(setListIncludedView());
+            })
         }
     }
 
@@ -379,10 +393,10 @@ class DocumentList extends Component {
             includedView, children, isIncluded
         } = this.props;
 
-        const hasIncluded = true && includedView && 
-            includedView.windowType && includedView.viewId;
+        const hasIncluded = layout && layout.supportIncludedView && 
+            includedView && includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
-        hasIncluded && console.log(selected)
+
         if(layout && data) {
             return (
                 <div 
@@ -465,6 +479,7 @@ class DocumentList extends Component {
                             inBackground={inBackground}
                         >
                             {layout.supportAttributes && !isIncluded &&
+                                !layout.supportIncludedView &&
                                 <DataLayoutWrapper
                                     className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
