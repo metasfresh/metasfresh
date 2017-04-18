@@ -14,15 +14,9 @@ class TablePagination extends Component {
 
     handleValue = (e) => {
         e.preventDefault();
-        if(e.target.value){
-            this.setState({
-                value: e.target.value
-            })
-        } else {
-            this.setState({
-                value: ''
-            })
-        }
+        this.setState({
+            value: e.target.value ? e.target.value : ''
+        })
     }
 
     handleSubmit = (e, value, pages) => {
@@ -31,10 +25,8 @@ class TablePagination extends Component {
             e.preventDefault();
 
             if(value <= pages && value > 0){
-
                 handleChangePage(Number(value));
                 deselect();
-
                 this.setState({
                     value: '',
                     secondDotsState: false,
@@ -85,7 +77,7 @@ class TablePagination extends Component {
     }
 
     renderFirstPartPagination = (pagination, pages) => {
-        const {handleChangePage, deselect} = this.props;
+        const {handleChangePage, deselect, compressed} = this.props;
         const {firstDotsState, value} = this.state;
         pagination.push(
             <li
@@ -93,14 +85,22 @@ class TablePagination extends Component {
                 key={1}
                 onClick={() => {handleChangePage(1); deselect()} }
             >
-                <a className="page-link">{1}</a>
+                <a
+                    className={
+                        'page-link ' +
+                        (compressed ? 'page-link-compressed ' : '')
+                    }
+                >{1}</a>
             </li>
         );
         pagination.push(
             <li className="page-item page-dots" key={0}>
                 { firstDotsState && this.renderGoToPage(pages, value) }
                 <a
-                    className="page-link"
+                    className={
+                        'page-link ' +
+                        (compressed ? 'page-link-compressed ' : '')
+                    }
                     onClick={() => this.handleFirstDotsState()}
                 >{'...'}</a>
             </li>
@@ -108,14 +108,17 @@ class TablePagination extends Component {
     }
 
     renderLastPartPagination = (pagination, pages) => {
-        const {handleChangePage, deselect} = this.props;
+        const {handleChangePage, deselect, compressed} = this.props;
         const {secondDotsState, value} = this.state;
 
         pagination.push(
             <li className="page-item page-dots" key={99990}>
                 { secondDotsState && this.renderGoToPage(pages, value) }
                 <a
-                    className="page-link"
+                    className={
+                        'page-link ' +
+                        (compressed ? 'page-link-compressed ' : '')
+                    }
                     onClick={() => this.handleSecondDotsState()}
                 >{'...'}</a>
             </li>
@@ -126,13 +129,18 @@ class TablePagination extends Component {
                 key={9999}
                 onClick={() => {handleChangePage(pages); deselect()} }
             >
-                <a className="page-link">{pages}</a>
+                <a
+                    className={
+                        'page-link ' +
+                        (compressed ? 'page-link-compressed ' : '')
+                    }
+                >{pages}</a>
             </li>
         );
     }
 
     renderPaginationContent = (pagination, page, start, end) => {
-        const {handleChangePage, deselect} = this.props;
+        const {handleChangePage, deselect, compressed} = this.props;
         for(let i = start; i <= end; i++){
             pagination.push(
                 <li
@@ -143,16 +151,72 @@ class TablePagination extends Component {
                     key={i}
                     onClick={() => {handleChangePage(i); deselect()} }
                 >
-                    <a className="page-link">{i}</a>
+                    <a
+                        className={
+                            'page-link ' +
+                            (compressed ? 'page-link-compressed ' : '')
+                        }>{i}</a>
                 </li>
             );
         }
     }
 
+    renderTotalItems = () => {
+        const {size, queryLimitHit} = this.props;
+        return (
+            <div className="hidden-sm-down">
+                <div>
+                    Total items {size}
+                    {queryLimitHit &&
+                        <span className="text-danger"> (limited)
+                        </span>
+                    }
+                </div>
+            </div>
+        )
+    }
+
+    renderSelectAll = () => {
+        const {selected, handleSelectAll} = this.props;
+        return (
+            <div className="hidden-sm-down">
+                <div>{selected.length > 0 ? selected.length +
+                         ' items selected' : 'No items selected'
+                     }
+                 </div>
+                <div
+                    className="pagination-link pointer"
+                    onClick={handleSelectAll}
+                >
+                    Select all on this page
+                </div>
+            </div>
+        )
+    }
+
+    renderArrow = (left) => {
+        const {compressed, handleChangePage, deselect} = this.props;
+        return (
+            <li className="page-item">
+                <a
+                    className={
+                        'page-link ' +
+                        (compressed ? 'page-link-compressed ' : '')
+                    }
+                    onClick={() => {
+                        handleChangePage(left ? 'down' : 'up');
+                        deselect();
+                    }}
+                >
+                    <span>{left ? '«' : '»'}</span>
+                </a>
+            </li>
+        )
+    }
+
     render() {
         const {
-            size, pageLength, selected, handleSelectAll, handleChangePage, page,
-            deselect, queryLimitHit
+            size, pageLength, handleChangePage, page, compressed
         } = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
 
@@ -181,57 +245,17 @@ class TablePagination extends Component {
         return (
             <div className="pagination-wrapper">
                 <div className="pagination-row">
-                    <div className="hidden-sm-down">
-                        <div>{selected.length > 0 ? selected.length +
-                                 ' items selected' : 'No items selected'
-                             }
-                         </div>
-                        <div
-                            className="pagination-link pointer"
-                            onClick={handleSelectAll}
-                        >
-                            Select all on this page
-                        </div>
-                    </div>
+                    {compressed && <div />}
+                    {!compressed && this.renderSelectAll()}
 
                     <div className="items-row-2 pagination-part">
-                        <div className="hidden-sm-down">
-                            <div>
-                                Total items {size}
-                                {queryLimitHit &&
-                                    <span className="text-danger"> (limited)
-                                    </span>
-                                }
-                            </div>
-                        </div>
+                        {!compressed && this.renderTotalItems()}
                         <div>
                             <nav>
                                 <ul className="pagination pointer">
-                                    <li className="page-item">
-                                        <a
-                                            className="page-link"
-                                            onClick={() => {
-                                                handleChangePage('down');
-                                                deselect()}
-                                            }
-                                        >
-                                            <span>&laquo;</span>
-                                        </a>
-                                    </li>
-
+                                    {this.renderArrow(true)}
                                     {pagination}
-
-                                    <li className="page-item ">
-                                        <a
-                                            className="page-link"
-                                            onClick={() => {
-                                                handleChangePage('up');
-                                                deselect()}
-                                            }
-                                        >
-                                            <span>&raquo;</span>
-                                        </a>
-                                    </li>
+                                    {this.renderArrow(false)}
                                 </ul>
                             </nav>
                         </div>

@@ -401,6 +401,13 @@ body {
     min-height: 100%;
 }
 
+.document-list-included {
+    flex: 2;
+    margin-left: .1rem;
+    overflow: auto;
+    overflow-x: hidden;
+}
+
 .document-list-header {
     display: flex;
     justify-content: space-between;

@@ -652,6 +652,9 @@ export function handleProcessResponse(response, type, id, successCallback) {
                             action.windowId, action.viewId
                         ));
                         break;
+                    case 'closeIncludedView':
+                        dispatch(setListIncludedView());
+                        break;
                 }
             }
 

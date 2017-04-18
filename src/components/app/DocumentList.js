@@ -25,7 +25,8 @@ import {
 import {
     setSorting,
     setPagination,
-    setListId
+    setListId,
+    setListIncludedView
 } from '../../actions/ListActions';
 
 import {
@@ -70,9 +71,9 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch
+            inBackground, dispatch, includedView, selectedWindowType
         } = props;
-        const {page, sort, viewId, cachedSelection} = this.state;
+        const {page, sort, viewId, cachedSelection, layout} = this.state;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -129,12 +130,31 @@ class DocumentList extends Component {
             inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                dispatch(selectTableItems(cachedSelection, windowType))
+                // In case of preventing cached selection restore
+                cachedSelection &&
+                    dispatch(selectTableItems(cachedSelection, windowType))
             }else{
                 this.setState({
                     cachedSelection: selected
                 })
             }
+        }
+
+        /*
+         * When the selection of unfocused table changes
+         */
+        if(
+            selectedWindowType === windowType &&
+            cachedSelection !== null &&
+            layout && layout.supportIncludedView &&
+            includedView && includedView.windowType && includedView.viewId
+        ){
+            // There is no need to restore cached selection in that case
+            this.setState({
+                cachedSelection: null
+            }, () => {
+                dispatch(setListIncludedView());
+            })
         }
     }
 
@@ -159,10 +179,14 @@ class DocumentList extends Component {
         });
     }
 
-    doesSelectionExist(selected) {
+    doesSelectionExist(selected, hasIncluded) {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
+
+        if(hasIncluded){
+            return true;
+        }
 
         let rows = [];
 
@@ -358,20 +382,29 @@ class DocumentList extends Component {
 
     render() {
         const {
-            layout, data, viewId, clickOutsideLock, refresh, page, filters
+            layout, data, viewId, clickOutsideLock, refresh, page, filters,
+            cachedSelection
         } = this.state;
 
         const {
             windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus, readonly
+            fetchQuickActionsOnInit, isModal, processStatus, readonly,
+            includedView, children, isIncluded
         } = this.props;
 
-        const selectionValid = this.doesSelectionExist(selected);
+        const hasIncluded = layout && layout.supportIncludedView &&
+            includedView && includedView.windowType && includedView.viewId;
+        const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
         if(layout && data) {
             return (
-                <div className="document-list-wrapper">
-                    {!readonly && <div
+                <div
+                    className={
+                        'document-list-wrapper ' +
+                        (isIncluded ? 'document-list-included ' : '')
+                    }
+                >
+                    {(!readonly && !isIncluded) && <div
                         className="panel panel-primary panel-spaced panel-inline document-list-header"
                     >
                         <div>
@@ -394,11 +427,16 @@ class DocumentList extends Component {
                             />}
                         </div>
                         <QuickActions
-                            windowType={windowType}
-                            viewId={viewId}
+                            windowType={
+                                (includedView && includedView.windowType) ?
+                                    includedView.windowType : windowType
+                            }
+                            viewId={(includedView && includedView.viewId) ?
+                                includedView.viewId : viewId
+                            }
                             selected={selectionValid ? selected : undefined}
                             refresh={refresh}
-                            shouldNotUpdate={inBackground}
+                            shouldNotUpdate={inBackground && !hasIncluded}
                             fetchOnInit={fetchQuickActionsOnInit}
                             processStatus={processStatus}
                         />
@@ -420,6 +458,7 @@ class DocumentList extends Component {
                             keyProperty="id"
                             onDoubleClick={(id) => this.redirectToDocument(id)}
                             isModal={isModal}
+                            isIncluded={isIncluded}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
@@ -433,11 +472,14 @@ class DocumentList extends Component {
                             closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
-                            defaultSelected={selected}
+                            defaultSelected={cachedSelection ?
+                                cachedSelection : selected}
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
+                            inBackground={inBackground}
                         >
-                            {layout.supportAttributes &&
+                            {layout.supportAttributes && !isIncluded &&
+                                !layout.supportIncludedView &&
                                 <DataLayoutWrapper
                                     className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
@@ -457,6 +499,13 @@ class DocumentList extends Component {
                                         }
                                     />
                                 </DataLayoutWrapper>
+                            }
+                            {hasIncluded &&
+                                <div
+                                    className="table-flex-wrapper document-list-included js-not-unselect"
+                                >
+                                    {children}
+                                </div>
                             }
                         </Table>
                     </div>

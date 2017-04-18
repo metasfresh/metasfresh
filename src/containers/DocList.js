@@ -62,7 +62,7 @@ class DocList extends Component {
     render() {
         const {
             windowType, breadcrumb, query, modal, selected, rawModal,
-            indicator, processStatus, includedView
+            indicator, processStatus, includedView, selectedWindowType
         } = this.props;
 
         const {
@@ -109,11 +109,21 @@ class DocList extends Component {
                              windowType={parseInt(rawModal.type)}
                              defaultViewId={rawModal.viewId}
                              selected={selected}
+                             selectedWindowType={selectedWindowType}
                              setModalTitle={this.setModalTitle}
                              isModal={true}
                              processStatus={processStatus}
                              includedView={includedView}
+                             inBackground={
+                                 includedView.windowType && includedView.viewId
+                             }
                          >
+                             <DocumentList
+                                 type="grid"
+                                 windowType={parseInt(includedView.windowType)}
+                                 defaultViewId={includedView.viewId}
+                                 isIncluded={true}
+                             />
                          </DocumentList>
                      </RawModal>
                  }
@@ -126,6 +136,7 @@ class DocList extends Component {
                      defaultPage={parseInt(query.page)}
                      refType={query.refType}
                      refId={query.refId}
+                     selectedWindowType={selectedWindowType}
                      selected={selected}
                      inBackground={rawModal.visible}
                      fetchQuickActionsOnInit={true}
@@ -158,12 +169,14 @@ function mapStateToProps(state) {
         modal,
         rawModal,
         selected,
+        selectedWindowType,
         latestNewDocument,
         indicator
     } = windowHandler || {
         modal: false,
         rawModal: false,
         selected: [],
+        selectedWindowType: null,
         latestNewDocument: null,
         indicator: ''
     }
@@ -194,7 +207,7 @@ function mapStateToProps(state) {
 
     return {
         modal, breadcrumb, pathname, selected, indicator, includedView,
-        latestNewDocument, rawModal, processStatus
+        latestNewDocument, rawModal, processStatus, selectedWindowType
     }
 }
 
