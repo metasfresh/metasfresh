@@ -78,6 +78,8 @@ class QuickActions extends Component {
                 viewId, selected
             )
         );
+        
+        this.toggleDropdown();
     }
 
     fetchActions = () => {
