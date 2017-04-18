@@ -27,7 +27,10 @@ Here come the actual release notes:
     * Adding animation to dashboard charts (pie and bar charts).
 
 ## Fixes
-
+* metasfresh-backend
+  * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
+    * fix empty page in sales invoice document
+    
 # metasfresh 5.5 (2017-15)
 
 ## Features
