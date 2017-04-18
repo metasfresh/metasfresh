@@ -31,7 +31,6 @@ import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
-import lombok.Getter;
 import lombok.Value;
 
 /*
@@ -294,12 +293,9 @@ public class EmptiesMovementProducer
 	private static class MovementHeaderCandidate
 	{
 		private final EmptiesMovementDirection direction;
-
 		private final int warehouseId;
-		@Getter(lazy = true)
-		private final transient I_M_Warehouse warehouse = retrieveWarehouse();
 
-		private I_M_Warehouse retrieveWarehouse()
+		private I_M_Warehouse getWarehouse()
 		{
 			if (warehouseId <= 0)
 			{
