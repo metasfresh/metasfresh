@@ -225,12 +225,10 @@ class Subheader extends Component {
                 onKeyDown={this.handleKeyDown}
                 ref={(c)=> this.subHeader = c}
             >
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="subheader-row">
-                            {this.renderNavColumn()}
-                            {this.renderActionsColumn()}
-                        </div>
+                <div className="container-fluid-subheader container-fluid">
+                    <div className="subheader-row">
+                        {this.renderNavColumn()}
+                        {this.renderActionsColumn()}
                     </div>
                 </div>
             </div>

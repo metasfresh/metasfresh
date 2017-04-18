@@ -164,7 +164,7 @@
 
 .subheader-container {
     display: none;
-    width: 100%;
+    width: 50%;
     position: fixed;
     z-index: 201;
     margin-top:-1px;
@@ -176,7 +176,7 @@
 }
 
 .subheader-column {
-    width: 25%;
+    width: 50%;
     border-right: 1px solid #e1e7ec;
     
     overflow: hidden;
@@ -188,6 +188,7 @@
 @media (max-width: $breakpoint) {
     .subheader-container {
         top: 55px;
+        width: 100%;
         z-index: 201;
         max-height: calc(100vh - 55px);
         overflow: scroll;
