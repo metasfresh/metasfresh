@@ -13,20 +13,20 @@ package de.metas.handlingunits.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -36,6 +36,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.ModelValidator;
 
+import de.metas.event.IEventBusFactory;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -48,11 +49,19 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.movement.event.MovementProcessedEventBus;
 
 @Validator(I_M_Movement.class)
 public class M_Movement
 {
 	public static final transient M_Movement instance = new M_Movement();
+
+	@Init
+	public void onInit()
+	{
+		// Setup event bus topics on which swing client notification listener shall subscribe
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(MovementProcessedEventBus.EVENTBUS_TOPIC);
+	}
 
 	private M_Movement()
 	{
@@ -163,10 +172,7 @@ public class M_Movement
 		moveHandlingUnits(movement, doReversal);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT
-			, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL
-			, ModelValidator.TIMING_BEFORE_VOID
-			, ModelValidator.TIMING_BEFORE_REACTIVATE })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void unmoveHandlingUnits(final I_M_Movement movement)
 	{
 		final boolean doReversal = true;
@@ -177,7 +183,7 @@ public class M_Movement
 	{
 		final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 		final Date movementDate = movement.getMovementDate();
-		
+
 		try (ITemporaryDateTrx dateTrx = IHUContext.DateTrxProvider.temporarySet(movementDate))
 		{
 			for (final I_M_MovementLine movementLine : movementDAO.retrieveLines(movement, I_M_MovementLine.class))

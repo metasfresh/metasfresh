@@ -678,6 +678,29 @@ public final class AEnv
 	}
 
 	/**
+	 * Zoom into a given window based on a query
+	 * 
+	 * @param query
+	 * @param adWindowId
+	 */
+	public static void zoom(final MQuery query, final int adWindowId)
+	{
+		if (query == null || query.getTableName() == null || query.getTableName().length() == 0)
+		{
+			return;
+		}
+
+		if (adWindowId <= 0)
+		{
+			log.warn("No AD_Window_ID found for ID {}", adWindowId);
+			return;
+		}
+		
+		zoom(RecordZoomWindowFinder.newInstance(query, adWindowId));
+
+	}
+
+	/**
 	 * Track open frame in window manager
 	 *
 	 * @param frame
@@ -1232,4 +1255,5 @@ public final class AEnv
 			return null;
 		}
 	}
+
 }	// AEnv
