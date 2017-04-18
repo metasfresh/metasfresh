@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -58,4 +57,14 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 * @return after-picking locator or null
 	 */
 	I_M_Locator suggestAfterPickingLocator(I_M_Warehouse warehouse);
+
+	/**
+	 * Retrieve the warehouses where the quality returns will be kept.
+	 * These warehouses must have the field <code>de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse</code> set on true.
+	 * See task #1056
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouse(Properties ctx);
 }

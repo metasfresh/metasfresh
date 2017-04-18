@@ -68,6 +68,7 @@ public class C_Invoice_Candidate_GenerateInvoice_From_Queue extends JavaProcess
 			final String notificationsLink = linkHelper.createShowWindowHTML(
 					"@AD_Note_ID@ #" + result.getNotificationCount(),
 					I_AD_Note.Table_Name,
+					-1, // suggested windowID -> use the default one
 					result.getNotificationsWhereClause());
 			summary.append(", ").append(notificationsLink);
 		}
