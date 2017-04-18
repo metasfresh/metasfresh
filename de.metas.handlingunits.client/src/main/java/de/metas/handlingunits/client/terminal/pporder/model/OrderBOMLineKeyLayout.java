@@ -31,6 +31,8 @@ import java.util.UUID;
 import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -95,35 +97,21 @@ public class OrderBOMLineKeyLayout extends DefaultKeyLayout
 				});
 	}
 
-	/**
-	 * Gets {@link OrderBOMLineKey}s.
-	 *
-	 * @return {@link OrderBOMLineKey}s
-	 * @see #getKeys()
-	 */
-	public List<OrderBOMLineKey> getOrderBOMLineKeys()
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesForIssuing()
 	{
-		final List<ITerminalKey> keys = super.getKeys();
-		final List<OrderBOMLineKey> bomLineKeys = new ArrayList<OrderBOMLineKey>(keys.size());
-		for (final ITerminalKey key : keys)
-		{
-			final OrderBOMLineKey bomLineKey = (OrderBOMLineKey)key;
-			bomLineKeys.add(bomLineKey);
-		}
-
-		return bomLineKeys;
+		return getKeys(OrderBOMLineKey.class)
+				.stream()
+				.filter(OrderBOMLineKey::isForIssuing)
+				.map(OrderBOMLineKey::getPP_Order_BOMLine)
+				.collect(ImmutableList.toImmutableList());
 	}
-
-	public List<I_PP_Order_BOMLine> getOrderBOMLines()
+	
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesForReceiving()
 	{
-		final List<OrderBOMLineKey> bomLineKeys = getKeys(OrderBOMLineKey.class);
-		final List<I_PP_Order_BOMLine> bomLines = new ArrayList<I_PP_Order_BOMLine>(bomLineKeys.size());
-		for (final OrderBOMLineKey bomLineKey : bomLineKeys)
-		{
-			final I_PP_Order_BOMLine bomLine = bomLineKey.getPP_Order_BOMLine();
-			bomLines.add(bomLine);
-		}
-
-		return bomLines;
+		return getKeys(OrderBOMLineKey.class)
+				.stream()
+				.filter(OrderBOMLineKey::isForReceiving)
+				.map(OrderBOMLineKey::getPP_Order_BOMLine)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

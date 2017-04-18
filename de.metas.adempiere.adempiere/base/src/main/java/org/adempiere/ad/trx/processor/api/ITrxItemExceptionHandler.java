@@ -39,7 +39,7 @@ public interface ITrxItemExceptionHandler
 	 * @param item item which was used to start the new chunk
 	 *
 	 */
-	void onNewChunkError(final Exception e, Object item);
+	void onNewChunkError(final Throwable e, Object item);
 
 	/**
 	 * Called when an item processing fails
@@ -47,7 +47,7 @@ public interface ITrxItemExceptionHandler
 	 * @param e exception
 	 * @param item item that failed on processing
 	 */
-	void onItemError(final Exception e, Object item);
+	void onItemError(final Throwable e, Object item);
 
 	/**
 	 * Called when completing a chunk fails.
@@ -56,20 +56,20 @@ public interface ITrxItemExceptionHandler
 	 *
 	 * @param e exception
 	 */
-	void onCompleteChunkError(Exception e);
+	void onCompleteChunkError(Throwable e);
 
 	/**
 	 * Called after completing a chunk, if commiting the transaction fails.
 	 *
 	 * @param e exception
 	 */
-	void onCommitChunkError(Exception e);
+	void onCommitChunkError(Throwable e);
 
 	/**
 	 * Called after trying to cancel the current chunk.
 	 *
 	 * @param e exception
 	 */
-	void onCancelChunkError(Exception e);
+	void onCancelChunkError(Throwable e);
 
 }

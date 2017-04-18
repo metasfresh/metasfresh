@@ -2989,7 +2989,9 @@ public abstract class PO
 
 		//
 		// Reset cache
-		if (!newRecord)
+		// NOTE: we need to do it even for newly created records because there are some aggregates which are cached (e.g. all lines for a given document),
+		// so in case a new record pops in, those caches shall be reset..
+		//if (!newRecord)
 		{
 			final int id = get_ID();
 			CacheMgt.get().resetOnTrxCommit(get_TrxName(), p_info.getTableName(), id);

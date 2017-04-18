@@ -82,7 +82,7 @@ public abstract class LockException extends AdempiereException
 			message.append("\n SQL Params: ").append(Arrays.asList(sqlParams));
 		}
 
-		message.append(buildParametersString());
+		appendParameters(message);
 
 		return message.toString();
 	}

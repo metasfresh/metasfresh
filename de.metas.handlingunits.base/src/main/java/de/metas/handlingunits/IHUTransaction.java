@@ -61,9 +61,16 @@ public interface IHUTransaction
 	/**
 	 * Gets {@link #getM_HU_Item()}'s handling unit
 	 *
-	 * @return affected HU
+	 * @return affected HU; might be null
 	 */
 	I_M_HU getM_HU();
+
+	/** @see #getM_HU() */
+	default int getM_HU_ID()
+	{
+		final I_M_HU hu = getM_HU();
+		return hu == null ? -1 : hu.getM_HU_ID();
+	}
 
 	/**
 	 * Gets affected HU Item.
@@ -100,9 +107,17 @@ public interface IHUTransaction
 	 *
 	 * i.e. the product which was transfered.
 	 *
-	 * @return transaction product.
+	 * @return transaction product; never returns null
 	 */
 	I_M_Product getProduct();
+
+	/**
+	 * @see #getProduct()
+	 */
+	default int getProductId()
+	{
+		return getProduct().getM_Product_ID();
+	}
 
 	/**
 	 * Gets transaction Qty/UOM. It's value is absolute and it means:

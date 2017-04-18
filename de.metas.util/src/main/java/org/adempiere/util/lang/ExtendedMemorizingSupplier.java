@@ -30,9 +30,9 @@ import java.io.Serializable;
  * 
  * @param <T>
  */
-public final class ExtendedMemorizingSupplier<T> implements com.google.common.base.Supplier<T>, java.util.function.Supplier<T>, Serializable
+public final class ExtendedMemorizingSupplier<T> implements java.util.function.Supplier<T>, Serializable
 {
-	public static final <T> ExtendedMemorizingSupplier<T> of(final com.google.common.base.Supplier<T> supplier)
+	public static final <T> ExtendedMemorizingSupplier<T> of(final java.util.function.Supplier<T> supplier)
 	{
 		if (supplier instanceof ExtendedMemorizingSupplier)
 		{
@@ -41,41 +41,16 @@ public final class ExtendedMemorizingSupplier<T> implements com.google.common.ba
 		return new ExtendedMemorizingSupplier<T>(supplier);
 	}
 
-	public static final <T> ExtendedMemorizingSupplier<T> ofJUFSupplier(final java.util.function.Supplier<T> supplier)
-	{
-		if (supplier instanceof ExtendedMemorizingSupplier)
-		{
-			return (ExtendedMemorizingSupplier<T>)supplier;
-		}
-		return new ExtendedMemorizingSupplier<T>(supplier);
-	}
-
-	private final com.google.common.base.Supplier<T> delegate;
+	private final java.util.function.Supplier<T> delegate;
 	private transient volatile boolean initialized;
 	// "value" does not need to be volatile; visibility piggy-backs
 	// on volatile read of "initialized".
 	private transient T value;
 
-	private ExtendedMemorizingSupplier(final com.google.common.base.Supplier<T> guavaDelegate)
+	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> delegate)
 	{
 		super();
-		this.delegate = guavaDelegate;
-	}
-	
-	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> jufDelegate)
-	{
-		super();
-		
-		if(jufDelegate instanceof com.google.common.base.Supplier)
-		{
-			@SuppressWarnings("unchecked")
-			final com.google.common.base.Supplier<T> guavaSupplier = (com.google.common.base.Supplier<T>)jufDelegate;
-			this.delegate = guavaSupplier;
-		}
-		else
-		{
-			this.delegate = jufDelegate::get;
-		}
+		this.delegate = delegate;
 	}
 
 	@Override

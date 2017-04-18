@@ -1,5 +1,9 @@
 package de.metas.lock.api.impl;
 
+import org.adempiere.util.Services;
+
+import de.metas.lock.api.ILockManager;
+
 /*
  * #%L
  * de.metas.async
@@ -28,11 +32,21 @@ import de.metas.lock.spi.impl.PlainLockDatabase;
 
 public class PlainLockManager extends LockManager
 {
+	public static final PlainLockManager get()
+	{
+		return (PlainLockManager)Services.get(ILockManager.class);
+	}
+	
 	private final PlainLockDatabase lockDatabase = new PlainLockDatabase();
 
 	@Override
 	public PlainLockDatabase getLockDatabase()
 	{
 		return lockDatabase;
+	}
+	
+	public void dump()
+	{
+		lockDatabase.dump();
 	}
 }

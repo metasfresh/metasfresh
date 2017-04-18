@@ -214,4 +214,14 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		return color;
 	}
+	
+	public boolean isForIssuing()
+	{
+		return !coProduct;
+	}
+	
+	public boolean isForReceiving()
+	{
+		return coProduct;
+	}
 }

@@ -14,12 +14,10 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.M_Element;
 import org.compiere.util.DisplayType;
 
-import com.google.common.base.Function;
-
 import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessClassParamInfo;
-import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -75,14 +73,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, process)
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
 				.create()
-				.map(I_AD_Process_Para.class, new Function<I_AD_Process_Para, String>()
-				{
-					@Override
-					public String apply(final I_AD_Process_Para param)
-					{
-						return param.getColumnName();
-					}
-				});
+				.map(I_AD_Process_Para.class, I_AD_Process_Para::getColumnName);
 	}
 
 	private void createUpdateProcessParam(final I_AD_Process process, I_AD_Process_Para processParamModel, final ProcessClassParamInfo paramInfo)

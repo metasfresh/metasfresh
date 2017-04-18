@@ -313,6 +313,31 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * Loads given model, out of transaction.
+	 * NOTE: to be used, mainly for loading master data models.
+	 * 
+	 * @param id model's ID
+	 * @param modelClass
+	 * @return loaded model
+	 */
+	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
+	{
+		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
+	}
+	
+	/**
+	 * Loads given model, using thread inherited transaction.
+	 * 
+	 * @param id model's ID
+	 * @param modelClass
+	 * @return loaded model
+	 */
+	public static <T> T load(final int id, final Class<T> modelClass)
+	{
+		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	/**
 	 * Converts given list to target type by calling {@link #create(Object, Class)} for each item.
 	 *
 	 * @param list list to be converted
@@ -451,27 +476,11 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Set current thread inerited transaction name to given model.
-	 *
-	 * @param model
-	 */
-	public static void setThreadInheritedTrxName(final Object model)
-	{
-		final ITrxManager trxManager = getTrxManager();
-		String trxName = trxManager.getThreadInheritedTrxName();
-		if (trxName == null)
-		{
-			trxName = ITrx.TRXNAME_None;
-		}
-		setTrxName(model, trxName);
-	}
-
-	/**
 	 * Sets trxName to {@link ITrx#TRXNAME_ThreadInherited}.
 	 *
 	 * @param model
 	 */
-	public static void setThreadInheritedTrxNameMarker(final Object model)
+	public static void setThreadInheritedTrxName(final Object model)
 	{
 		setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -488,16 +497,9 @@ public class InterfaceWrapperHelper
 			return;
 		}
 
-		final ITrxManager trxManager = getTrxManager();
-		String trxName = trxManager.getThreadInheritedTrxName();
-		if (trxName == null)
-		{
-			trxName = ITrx.TRXNAME_None;
-		}
-
 		for (final Object model : models)
 		{
-			setTrxName(model, trxName);
+			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

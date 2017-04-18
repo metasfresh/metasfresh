@@ -26,7 +26,9 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -57,6 +59,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return true if given Order BOM Line is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
 	 */
 	boolean isReceipt(I_PP_Order_BOMLine bomLine);
+	
+	default boolean isIssue(final I_PP_Order_BOMLine bomLine)
+	{
+		return !isReceipt(bomLine);
+	}
 
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.
@@ -184,11 +191,13 @@ public interface IPPOrderBOMBL extends ISingletonService
 	BigDecimal calculateQtyRequiredProjected(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
-	 * Calculates how much qty is required for given BOM Line considering the received quantity of finished good.<br/>
+	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.
 	 * 
 	 * @param orderBOMLine
+	 * @param uom
+	 * @return qty to issue (in given <code>uom</code>)
 	 */
-	BigDecimal calculateQtyRequiredBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine);
+	Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
 
 	void close(I_PP_Order_BOMLine line);
 

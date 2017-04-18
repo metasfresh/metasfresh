@@ -177,17 +177,25 @@ public class ModelCacheService implements IModelCacheService
 
 	protected final void addTableCacheConfig(final ITableCacheConfig cacheConfig, final boolean override)
 	{
-		final String tableName = cacheConfig.getTableName();
 		// TODO: allow caching config only for tables with single primary key
-
-		if (override)
-		{
-			tableName2cacheConfig.put(tableName, cacheConfig);
-		}
-		else
-		{
-			tableName2cacheConfig.putIfAbsent(tableName, cacheConfig);
-		}
+		
+		tableName2cacheConfig.compute(cacheConfig.getTableName(), (tableName, previousConfig) -> {
+			if(previousConfig == null)
+			{
+				logger.info("Registering new table cache config: {}", cacheConfig);
+				return cacheConfig;
+			}
+			else if(override)
+			{
+				logger.info("Registering table cache config: {} \nPrevious table caching config: {}", cacheConfig, previousConfig);
+				return cacheConfig;
+			}
+			else
+			{
+				logger.info("Skip registering table cache config: {} \nPreserving current table cache config: {}", cacheConfig, previousConfig);
+				return previousConfig;
+			}
+		});
 	}
 
 	@Override
@@ -253,6 +261,11 @@ public class ModelCacheService implements IModelCacheService
 			//
 			// Update statistics
 			statisticsCollector.record(cacheConfig, inTransaction, poToReturn);
+			// Logging
+			if(logger.isTraceEnabled())
+			{
+				logger.trace("Cache {} (inTrx={}) - tableName/recordId={}/{}", poToReturn != null ? "HIT" : "MISS", inTransaction, tableName, recordId);
+			} 
 
 			// each caller gets their own copy because in case they loaded the PO from database, they would also have gotten an instance of their own.
 			return copyPO(poToReturn, trxName);
@@ -332,6 +345,7 @@ public class ModelCacheService implements IModelCacheService
 		if (isExpired(ctx, tableName, recordId, trx, poCached))
 		{
 			cache.remove(recordId);
+			logger.trace("Removed {} from model cache because it's expired (trx={})", poCached, trx);
 			poCached = null;
 		}
 
@@ -535,6 +549,12 @@ public class ModelCacheService implements IModelCacheService
 		//
 		// Add our PO to cache
 		cache.put(recordId, po);
+		
+		// Logging
+		if(logger.isTraceEnabled())
+		{
+			logger.trace("Model added to cache {}: {} ", cache.getName(), po);
+		}
 	}
 
 	/**
@@ -542,6 +562,8 @@ public class ModelCacheService implements IModelCacheService
 	 */
 	public void reset()
 	{
+		logger.debug("Clearing all cache instances of {}", this);
+		
 		lock.lock();
 		try
 		{

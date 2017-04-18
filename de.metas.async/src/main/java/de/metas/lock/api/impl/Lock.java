@@ -13,15 +13,14 @@ package de.metas.lock.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,6 +32,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.lang.ObjectUtils;
+import org.slf4j.Logger;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -40,10 +40,14 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockAlreadyClosedException;
+import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.spi.ILockDatabase;
+import de.metas.logging.LogManager;
 
 /* package */class Lock implements ILock
 {
+	private static final transient Logger logger = LogManager.getLogger(Lock.class);
+
 	/* package */CloseableReentrantLock mutex = new CloseableReentrantLock();
 
 	private final ILockDatabase lockDatabase;
@@ -54,7 +58,7 @@ import de.metas.lock.spi.ILockDatabase;
 	// Status
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
-	/* package */Lock(final ILockDatabase lockDatabase, final LockOwner owner, final boolean isAutoCleanup, final int countLocked)
+	/* package */ Lock(final ILockDatabase lockDatabase, final LockOwner owner, final boolean isAutoCleanup, final int countLocked)
 	{
 		super();
 
@@ -103,7 +107,20 @@ import de.metas.lock.spi.ILockDatabase;
 	{
 		try (CloseableReentrantLock l = mutex.open())
 		{
-			_countLocked -= countLockedToSubtract;
+			if (_countLocked < countLockedToSubtract)
+			{
+				new UnlockFailedException("Unlocked more than counted"
+						+ "\n Current locked count: " + _countLocked
+						+ "\n Locked to subtract: " + countLockedToSubtract
+						+ "\n Lock: " + this)
+								.throwIfDeveloperModeOrLogWarningElse(logger);
+				
+				_countLocked = 0;
+			}
+			else
+			{
+				_countLocked -= countLockedToSubtract;
+			}
 		}
 	}
 
@@ -172,7 +189,7 @@ import de.metas.lock.spi.ILockDatabase;
 					}
 				});
 	}
-	
+
 	private final void assertHasRealOwner()
 	{
 		final LockOwner owner = getOwner();
@@ -196,6 +213,6 @@ import de.metas.lock.spi.ILockDatabase;
 	{
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);
-		return getLockDatabase().isLocked(adTableId, recordId, this);
+		return getLockDatabase().isLocked(adTableId, recordId, getOwner());
 	}
 }

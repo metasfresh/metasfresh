@@ -50,6 +50,7 @@ public interface IPreliminaryDocumentNoBuilder
 
 	IPreliminaryDocumentNoBuilder setNewDocType(I_C_DocType newDocType);
 
+	/** Sets the old C_DocType_ID. Used to identify if the underlying document sequence was really changed and in case it didn't change, shall prevent fetching a new (preliminary) DocumentNo. */
 	IPreliminaryDocumentNoBuilder setOldDocType_ID(int oldDocType_ID);
 
 	IPreliminaryDocumentNoBuilder setOldDocumentNo(String oldDocumentNo);

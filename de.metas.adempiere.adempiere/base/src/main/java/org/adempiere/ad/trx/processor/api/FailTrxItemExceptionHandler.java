@@ -39,39 +39,39 @@ public class FailTrxItemExceptionHandler implements ITrxItemExceptionHandler
 		super();
 	}
 
-	protected void fail(final Exception e, final Object item)
+	protected void fail(final Throwable e, final Object item)
 	{
 		throw AdempiereException.wrapIfNeeded(e);
 	}
 
 	@Override
-	public void onNewChunkError(final Exception e, final Object item)
+	public void onNewChunkError(final Throwable e, final Object item)
 	{
 		fail(e, item);
 	}
 
 	@Override
-	public void onItemError(final Exception e, final Object item)
+	public void onItemError(final Throwable e, final Object item)
 	{
 		fail(e, item);
 	}
 
 	@Override
-	public void onCompleteChunkError(final Exception e)
-	{
-		final Object item = null;
-		fail(e, item);
-	}
-
-	@Override
-	public void onCommitChunkError(final Exception e)
+	public void onCompleteChunkError(final Throwable e)
 	{
 		final Object item = null;
 		fail(e, item);
 	}
 
 	@Override
-	public void onCancelChunkError(final Exception e)
+	public void onCommitChunkError(final Throwable e)
+	{
+		final Object item = null;
+		fail(e, item);
+	}
+
+	@Override
+	public void onCancelChunkError(final Throwable e)
 	{
 		final Object item = null;
 		fail(e, item);

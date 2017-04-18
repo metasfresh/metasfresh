@@ -1592,7 +1592,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setError(final I_C_Invoice_Candidate ic, final Exception e)
+	public void setError(final I_C_Invoice_Candidate ic, final Throwable e)
 	{
 		Check.assumeNotNull(e, "e not null");
 

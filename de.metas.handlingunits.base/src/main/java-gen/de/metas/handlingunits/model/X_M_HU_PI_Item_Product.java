@@ -16,7 +16,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1902069976L;
+	private static final long serialVersionUID = -1791076618L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -204,9 +204,9 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	public void setM_HU_PI_Item_ID (int M_HU_PI_Item_ID)
 	{
 		if (M_HU_PI_Item_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_ID, null);
+			set_Value (COLUMNNAME_M_HU_PI_Item_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_ID, Integer.valueOf(M_HU_PI_Item_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Item_ID, Integer.valueOf(M_HU_PI_Item_ID));
 	}
 
 	/** Get Packvorschrift Position.
