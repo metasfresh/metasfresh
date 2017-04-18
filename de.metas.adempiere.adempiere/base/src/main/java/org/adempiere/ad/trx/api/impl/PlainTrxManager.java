@@ -25,8 +25,10 @@ package org.adempiere.ad.trx.api.impl;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 
 /**
  * This implementation is intended for unit and module testing in scenarios where you want the trxManager to get out of the way.
@@ -38,12 +40,19 @@ import org.adempiere.util.Check;
  */
 public class PlainTrxManager extends AbstractTrxManager
 {
+	/** Convenient method to get the {@link PlainTrxManager} via {@link Services} */
+	public static PlainTrxManager get()
+	{
+		return (PlainTrxManager)Services.get(ITrxManager.class);
+	}
+
 	//
 	// Flags used to check transaction lifecycle and consistency: COMMIT and ROLLBACK
 	// NOTE: atm, the actual JDBC are not failing in this case, but, i think is helpful in tests to be much more strict to enforce consistency
 	private boolean failCommitIfTrxNotStarted = true;
 	private boolean failRollbackIfTrxNotStarted = true;
-	
+	private boolean debugTrxLog;
+
 	public PlainTrxManager()
 	{
 		super();
@@ -88,5 +97,24 @@ public class PlainTrxManager extends AbstractTrxManager
 	{
 		final List<ITrx> activeTrxs = getActiveTransactionsList();
 		Check.assume(activeTrxs.isEmpty(), "Expected no active transactions but got: {}", activeTrxs);
+	}
+
+	/**
+	 * Ask the transactions to log their major events like COMMIT, ROLLBACK.
+	 * Those events will be visible on {@link PlainTrx#toString()}.
+	 * 
+	 * @param debugTrxLog
+	 */
+	public void setDebugTrxLog(boolean debugTrxLog)
+	{
+		this.debugTrxLog = debugTrxLog;
+	}
+
+	/**
+	 * @see #setDebugTrxLog(boolean)
+	 */
+	public boolean isDebugTrxLog()
+	{
+		return debugTrxLog;
 	}
 }

@@ -25,14 +25,14 @@ package de.metas.handlingunits.allocation.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.slf4j.Logger;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
@@ -43,6 +43,7 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.logging.LogManager;
 
 /**
  * Base class which provides both the features of {@link IAllocationSource} and {@link IAllocationDestination}.
@@ -194,17 +195,5 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 		final IAllocationResult result = unload(request);
 
 		return Collections.singletonList(ImmutablePair.of(request, result));
-	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext) // --NOPMD
-	{
-		// Do nothing on this level.
-	}
-
-	@Override
-	public void unloadComplete(final IHUContext huContext) // --NOPMD
-	{
-		// Do nothing on this level.
 	}
 }

@@ -13,24 +13,24 @@ package org.eevolution.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
@@ -53,12 +53,9 @@ public class PPOrderBOMBLTest
 	// Other services
 	private IPPOrderBOMDAO ppOrderBOMDAO;
 
-
 	@Before
 	public void init()
 	{
-		POJOWrapper.setDefaultStrictValues(false);
-
 		// NOTE: after this, model validators will be also registered
 		helper = new MRPTestHelper();
 		masterData = new MRPTestDataSimple(helper);
@@ -74,7 +71,7 @@ public class PPOrderBOMBLTest
 	@Test
 	public void qualityMultiplierTest()
 	{
-		// Mocking the AB Alicesalat 250g case from  db
+		// Mocking the AB Alicesalat 250g case from db
 
 		// Defining the needed UOM
 		final I_C_UOM uomKillogram = createUOM("Killogram", 2, 0);
@@ -211,6 +208,7 @@ public class PPOrderBOMBLTest
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
 		ppOrder.setM_Product(product);
 		ppOrder.setPP_Product_BOM(productBOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);

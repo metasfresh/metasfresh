@@ -16,15 +16,14 @@ package de.metas.adempiere.gui;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Map;
 
@@ -45,7 +44,7 @@ import de.metas.adempiere.util.ADHyperlinkBuilder;
 public class ADHyperlinkHandler implements HyperlinkListener
 {
 	private final ADHyperlinkBuilder helper = new ADHyperlinkBuilder();
-	
+
 	@Override
 	public void hyperlinkUpdate(HyperlinkEvent e)
 	{
@@ -53,7 +52,7 @@ public class ADHyperlinkHandler implements HyperlinkListener
 		{
 			ADHyperlink link = helper.getADHyperlink(e.getURL().toString());
 			handle(link);
-        }
+		}
 	}
 
 	private void handle(ADHyperlink link)
@@ -67,22 +66,36 @@ public class ADHyperlinkHandler implements HyperlinkListener
 			handleShowWindow(link);
 		}
 	}
-	
+
 	private void handleShowWindow(ADHyperlink link)
 	{
-		Map<String,String> params = link.getParameters();
+		Map<String, String> params = link.getParameters();
 		int AD_Table_ID = Integer.valueOf(params.get("AD_Table_ID"));
 		if (AD_Table_ID <= 0)
 		{
 			return;
 		}
-		
+
+		int adWindowId = -1;
+		String adWindowIdStr = params.get("AD_Window_ID");
+		if (adWindowIdStr != null && !adWindowIdStr.isEmpty())
+		{
+			adWindowId = Integer.valueOf(adWindowIdStr);
+		}
+
 		String whereClause = params.get("WhereClause");
-		
+
 		MQuery query = new MQuery(AD_Table_ID);
-		if(!Check.isEmpty(whereClause))
+		if (!Check.isEmpty(whereClause))
 			query.addRestriction(whereClause);
-		
-		AEnv.zoom(query);
+
+		if (adWindowId > 0)
+		{
+			AEnv.zoom(query, adWindowId);
+		}
+		else
+		{
+			AEnv.zoom(query);
+		}
 	}
 }

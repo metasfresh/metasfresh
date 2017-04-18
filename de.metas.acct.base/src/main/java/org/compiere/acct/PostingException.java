@@ -108,7 +108,7 @@ public final class PostingException extends AdempiereException
 		message.append("\n Preserve Posted status: ").append(isPreserveDocumentPostedStatus());
 
 		// Other parameters
-		message.append(buildParametersString());
+		appendParameters(message);
 
 		return message.toString();
 	}

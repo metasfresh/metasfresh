@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -297,8 +298,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		final I_M_Product rawProduct = huToProcess.getRaw_Product();
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, rawProduct);
 
-		huPPOrderBL.createIssueProducer(getCtx())
-				.setTrxName(ITrx.TRXNAME_ThreadInherited)
+		huPPOrderBL.createIssueProducer()
 				.setMovementDate(ppOrder.getDatePromised())
 				.setTargetOrderBOMLine(ppOrderBOMLine)
 				.createIssues(hu);

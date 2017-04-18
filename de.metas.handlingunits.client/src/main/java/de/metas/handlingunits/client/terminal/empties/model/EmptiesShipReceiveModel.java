@@ -60,8 +60,8 @@ import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMoveme
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKeyLayout;
-import de.metas.handlingunits.empties.IEmptiesInOutProducer;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -242,7 +242,9 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 	private final I_M_InOut createEmptiesInOut()
 	{
-		final IEmptiesInOutProducer producer = huEmptiesService.newEmptiesInOutProducer(getCtx());
+
+		final IReturnsInOutProducer producer = huEmptiesService.newReturnsInOutProducer(getCtx());
+
 		producer.setC_BPartner(getC_BPartner());
 		producer.setC_BPartner_Location(getC_BPartner_Location());
 
@@ -270,7 +272,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		return inOut;
 	}
 
-	private void addPackingMaterialsFromKeyLayout(final IEmptiesInOutProducer producer, final IKeyLayout keyLayout)
+	private void addPackingMaterialsFromKeyLayout(final IReturnsInOutProducer producer, final IKeyLayout keyLayout)
 	{
 		Check.assumeNotNull(keyLayout, "keyLayout not null");
 
@@ -288,6 +290,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 				throw new AdempiereException("@NotFound@ @M_HU_PackingMaterial_ID@"
 						+ "\n @M_HU_PI_ID@: " + key.getPIName());
 			}
+
 			for (final I_M_HU_PackingMaterial packingMaterial : packingMaterials)
 			{
 				producer.addPackingMaterial(packingMaterial, qty);

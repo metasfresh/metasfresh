@@ -264,6 +264,12 @@ public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 		orderNode.setDurationRequiered(workingTime.intValueExact());
 	}
 
+	@Override
+	public BigDecimal getQtyToDeliver(final I_PP_Order_Node node)
+	{
+		return node.getQtyRequiered().subtract(node.getQtyDelivered());
+	}
+
 	/**
 	 * Creates {@link I_PP_Order_NodeNext}.
 	 * 

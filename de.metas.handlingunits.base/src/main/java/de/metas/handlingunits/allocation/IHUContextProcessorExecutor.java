@@ -1,6 +1,10 @@
 package de.metas.handlingunits.allocation;
 
+import java.util.function.Consumer;
+
 import org.compiere.util.TrxRunnable;
+
+import com.google.common.base.Preconditions;
 
 /*
  * #%L
@@ -54,6 +58,26 @@ public interface IHUContextProcessorExecutor
 	 * @return result or {@link IHUContextProcessor#NULL_RESULT} if the result is not relevant for that processing.
 	 */
 	IMutableAllocationResult run(IHUContextProcessor processor);
+
+	/**
+	 * Execute the processor and take care of everything (see interface documentation). Run the processor within a {@link TrxRunnable}, but <b>do not</b> commit on successful execution.
+	 * 
+	 * @param processor
+	 * @see #run(IHUContextProcessor)
+	 */
+	default void run(final Consumer<IHUContext> processor)
+	{
+		Preconditions.checkNotNull(processor, "processor is null");
+		run(new IHUContextProcessor()
+		{
+			@Override
+			public IMutableAllocationResult process(IHUContext huContext)
+			{
+				processor.accept(huContext);
+				return NULL_RESULT;
+			}
+		});
+	}
 
 	/**
 	 * Gets current {@link IHUTransactionAttributeBuilder}.
