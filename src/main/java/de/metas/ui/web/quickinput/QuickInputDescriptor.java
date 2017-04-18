@@ -1,9 +1,9 @@
 package de.metas.ui.web.quickinput;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Throwables;
 
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -81,9 +81,9 @@ public class QuickInputDescriptor
 		{
 			return processorClass.newInstance();
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			throw Throwables.propagate(e);
+			throw new AdempiereException("Failed instantiating " + processorClass, ex);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.view.json;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 

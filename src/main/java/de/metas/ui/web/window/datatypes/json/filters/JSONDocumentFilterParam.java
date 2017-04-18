@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.model.filters.DocumentFilterParam;
@@ -33,6 +32,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
  */
 
 @SuppressWarnings("serial")
+@lombok.Data
 final class JSONDocumentFilterParam implements Serializable
 {
 	/**
@@ -77,31 +77,5 @@ final class JSONDocumentFilterParam implements Serializable
 		this.parameterName = parameterName;
 		this.value = value;
 		this.valueTo = valueTo;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("parameterName", parameterName)
-				.add("value", value)
-				.add("valueTo", valueTo)
-				.toString();
-	}
-
-	public String getParameterName()
-	{
-		return parameterName;
-	}
-
-	public Object getValue()
-	{
-		return value;
-	}
-
-	public Object getValueTo()
-	{
-		return valueTo;
 	}
 }

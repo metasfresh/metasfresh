@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -45,7 +46,7 @@ public final class JSONDocumentViewChanges implements Serializable
 	@JsonProperty("viewId")
 	private final String viewId;
 	@JsonProperty("windowId")
-	private final int windowId;
+	private final WindowId windowId;
 
 	@JsonProperty("fullyChanged")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -58,8 +59,9 @@ public final class JSONDocumentViewChanges implements Serializable
 	private JSONDocumentViewChanges(final DocumentViewChanges changes)
 	{
 		super();
-		viewId = changes.getViewId();
-		windowId = changes.getAD_Window_ID();
+		
+		viewId = changes.getViewId().getViewId();
+		windowId = changes.getViewId().getWindowId();
 
 		changedIds = DocumentId.toStringSet(changes.getChangedDocumentIds());
 
@@ -95,7 +97,7 @@ public final class JSONDocumentViewChanges implements Serializable
 		return viewId;
 	}
 
-	public int getWindowId()
+	public WindowId getWindowId()
 	{
 		return windowId;
 	}

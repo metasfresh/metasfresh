@@ -2,8 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -11,16 +10,13 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.IDocumentViewAttributes;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -49,11 +45,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /**
  * Instances of this class are created by {@link HUDocumentViewLoader}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class HUDocumentView implements IDocumentView
+public final class HUDocumentView extends ForwardingDocumentView
 {
 	public static final HUDocumentView of(final IDocumentView delegate)
 	{
@@ -65,36 +61,12 @@ public final class HUDocumentView implements IDocumentView
 		return (HUDocumentView)document;
 	}
 
-	private final IDocumentView delegate;
-	
 	private transient String _summary; // lazy
 
 	private HUDocumentView(final IDocumentView delegate)
 	{
-		super();
-		Check.assumeNotNull(delegate, "Parameter delegate is not null");
+		super(delegate);
 		Check.assumeNotNull(delegate.getType(), "type shall not be null for {}", delegate);
-		this.delegate = delegate;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(delegate)
-				.toString();
-	}
-
-	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return delegate.getDocumentPath();
-	}
-
-	@Override
-	public DocumentId getDocumentId()
-	{
-		return delegate.getDocumentId();
 	}
 
 	/**
@@ -103,70 +75,32 @@ public final class HUDocumentView implements IDocumentView
 	@Override
 	public HUDocumentViewType getType()
 	{
-		return (HUDocumentViewType)delegate.getType();
-	}
-
-	@Override
-	public boolean isProcessed()
-	{
-		return delegate.isProcessed();
-	}
-
-	@Override
-	public String getIdFieldNameOrNull()
-	{
-		return delegate.getIdFieldNameOrNull();
-	}
-
-	@Override
-	public Set<String> getFieldNames()
-	{
-		return delegate.getFieldNames();
-	}
-
-	@Override
-	public Object getFieldValueAsJson(final String fieldName)
-	{
-		return delegate.getFieldValueAsJson(fieldName);
-	}
-
-	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
-	{
-		return delegate.getFieldNameAndJsonValues();
-	}
-
-	@Override
-	public boolean hasAttributes()
-	{
-		return delegate.hasAttributes();
-	}
-
-	@Override
-	public IDocumentViewAttributes getAttributes()
-	{
-		return delegate.getAttributes();
+		return (HUDocumentViewType)getDelegate().getType();
 	}
 
 	@Override
 	public List<HUDocumentView> getIncludedDocuments()
 	{
-		@SuppressWarnings("unchecked")
-		final List<HUDocumentView> includedHUDocuments = (List<HUDocumentView>)(List<? extends IDocumentView>)delegate.getIncludedDocuments();
-		return includedHUDocuments;
+		return getIncludedDocuments(HUDocumentView.class);
+	}
+
+	@Override
+	public HUDocumentViewAttributes getAttributes() throws EntityNotFoundException
+	{
+		return HUDocumentViewAttributes.cast(super.getAttributes());
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the ID of the wrapped HU or a value {@code <= 0} if there is none.
 	 */
 	public int getM_HU_ID()
 	{
-		return (int)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
+		return (int)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the wrapped HU or {@code null} if there is none.
 	 */
 	public I_M_HU getM_HU()
@@ -181,23 +115,35 @@ public final class HUDocumentView implements IDocumentView
 
 	public String getValue()
 	{
-		return (String)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
+		return (String)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
 	}
 
-	public String getHUStatus()
+	private JSONLookupValue getHUStatus()
 	{
-		final JSONLookupValue jsonHUStatus = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
+		final JSONLookupValue jsonHUStatus = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
+		return jsonHUStatus;
+	}
+
+	public String getHUStatusKey()
+	{
+		final JSONLookupValue jsonHUStatus = getHUStatus();
 		return jsonHUStatus == null ? null : jsonHUStatus.getKey();
+	}
+
+	public String getHUStatusDisplayName()
+	{
+		final JSONLookupValue jsonHUStatus = getHUStatus();
+		return jsonHUStatus == null ? null : jsonHUStatus.getName();
 	}
 
 	public boolean isHUStatusPlanning()
 	{
-		return X_M_HU.HUSTATUS_Planning.equals(getHUStatus());
+		return X_M_HU.HUSTATUS_Planning.equals(getHUStatusKey());
 	}
 
 	public boolean isHUStatusActive()
 	{
-		return X_M_HU.HUSTATUS_Active.equals(getHUStatus());
+		return X_M_HU.HUSTATUS_Active.equals(getHUStatusKey());
 	}
 
 	public boolean isPureHU()
@@ -209,58 +155,63 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return getType().isCU();
 	}
-	
+
 	public boolean isTU()
 	{
 		return getType() == HUDocumentViewType.TU;
 	}
-	
+
 	public boolean isLU()
 	{
 		return getType() == HUDocumentViewType.LU;
 	}
 
-
 	public String getSummary()
 	{
-		if(_summary == null)
+		if (_summary == null)
 		{
 			_summary = buildSummary();
 		}
 		return _summary;
 	}
-	
+
 	private String buildSummary()
 	{
-		StringBuilder summary = new StringBuilder();
+		final StringBuilder summary = new StringBuilder();
 		final String value = getValue();
-		if(!Check.isEmpty(value, true))
+		if (!Check.isEmpty(value, true))
 		{
 			summary.append(value);
 		}
-		
+
 		final String packingInfo = getPackingInfo();
-		if(!Check.isEmpty(packingInfo, true))
+		if (!Check.isEmpty(packingInfo, true))
 		{
-			if(summary.length() > 0)
+			if (summary.length() > 0)
 			{
 				summary.append(" ");
 			}
 			summary.append(packingInfo);
 		}
-		
+
 		return summary.toString();
+	}
+
+	public JSONLookupValue getProduct()
+	{
+		final JSONLookupValue productLV = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		return productLV;
 	}
 
 	public int getM_Product_ID()
 	{
-		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		final JSONLookupValue productLV = getProduct();
 		return productLV == null ? -1 : productLV.getKeyAsInt();
 	}
-	
+
 	public String getM_Product_DisplayName()
 	{
-		final JSONLookupValue productLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		final JSONLookupValue productLV = getProduct();
 		return productLV == null ? null : productLV.getName();
 	}
 
@@ -273,25 +224,31 @@ public final class HUDocumentView implements IDocumentView
 		}
 		return InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
 	}
-	
+
 	public String getPackingInfo()
 	{
-		final Object packingInfo = delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
+		final Object packingInfo = getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
 		return packingInfo == null ? null : packingInfo.toString();
 	}
 
+	public JSONLookupValue getUOM()
+	{
+		final JSONLookupValue uomLV = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
+		return uomLV;
+	}
+
 	/**
-	 * 
+	 *
 	 * @return the ID of the wrapped UOM or {@code -1} if there is none.
 	 */
 	public int getC_UOM_ID()
 	{
-		final JSONLookupValue uomLV = (JSONLookupValue)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
+		final JSONLookupValue uomLV = getUOM();
 		return uomLV == null ? -1 : uomLV.getKeyAsInt();
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the wrapped UOM or {@code null} if there is none.
 	 */
 	public I_C_UOM getC_UOM()
@@ -309,12 +266,51 @@ public final class HUDocumentView implements IDocumentView
 	 */
 	public BigDecimal getQtyCU()
 	{
-		return (BigDecimal)delegate.getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
+		return (BigDecimal)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
 	}
-	
+
 	public LookupValue toLookupValue()
 	{
 		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
+	}
+
+	public String getBarcode()
+	{
+		if (!isPureHU())
+		{
+			return null;
+		}
+
+		//
+		// Try fetching SSCC first!
+		final String sscc18 = getAttributes().getSSCC18().orElse(null);
+		if (sscc18 != null)
+		{
+			return sscc18;
+		}
+
+		//
+		// Use HU's code (i.e. M_HU.Value)
+		final String huCode = getValue();
+		return huCode;
+	}
+
+	public boolean matchesBarcode(final String barcodeToMatch)
+	{
+		if (Check.isEmpty(barcodeToMatch, true))
+		{
+			throw new IllegalArgumentException("Invalid barcode: " + barcodeToMatch);
+		}
+		
+		final String barcodeToMatchNormalized = barcodeToMatch.trim();
+
+		final String huBarcode = getBarcode();
+		if (huBarcode == null)
+		{
+			return false;
+		}
+
+		return Objects.equals(huBarcode, barcodeToMatchNormalized);
 	}
 
 }

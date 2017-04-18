@@ -47,7 +47,7 @@ public final class JSONDocumentAction implements Serializable
 			;
 
 	@JsonProperty("processId")
-	private final int processId;
+	private final String processId;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("description")
@@ -72,7 +72,7 @@ public final class JSONDocumentAction implements Serializable
 
 		final String adLanguage = jsonOpts.getAD_Language();
 
-		processId = relatedProcessDescriptor.getAD_Process_ID();
+		processId = relatedProcessDescriptor.getProcessId().toJson();
 		caption = relatedProcessDescriptor.getCaption(adLanguage);
 		description = relatedProcessDescriptor.getDescription(adLanguage);
 
@@ -103,11 +103,6 @@ public final class JSONDocumentAction implements Serializable
 				.add("quickAction", quickAction)
 				.add("defaultQuickAction", defaultQuickAction)
 				.toString();
-	}
-
-	public int getProcessId()
-	{
-		return processId;
 	}
 
 	public String getCaption()

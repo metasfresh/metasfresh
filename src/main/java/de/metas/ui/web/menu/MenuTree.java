@@ -21,6 +21,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -83,7 +84,7 @@ public final class MenuTree
 		nodesByMainTableName = nodesByMainTableNameBuilder.build();
 	}
 
-	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final int elementId)
+	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final String elementId)
 	{
 		return Util.mkKey(type, elementId);
 	}
@@ -111,7 +112,7 @@ public final class MenuTree
 		return node;
 	}
 
-	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final int elementId)
+	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final String elementId)
 	{
 		final ArrayKey key = mkTypeAndElementIdKey(type, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
@@ -123,9 +124,10 @@ public final class MenuTree
 		return nodes.get(0);
 	}
 
-	public Optional<MenuNode> getNewRecordNodeForWindowId(final int adWindowId)
+	public Optional<MenuNode> getNewRecordNodeForWindowId(final WindowId windowId)
 	{
-		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, adWindowId);
+		final String elementId = windowId.toJson();
+		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())
 		{
@@ -150,7 +152,7 @@ public final class MenuTree
 		return getPath(node);
 	}
 
-	public List<MenuNode> getPath(final MenuNodeType type, final int elementId)
+	public List<MenuNode> getPath(final MenuNodeType type, final String elementId)
 	{
 		final MenuNode node = getFirstNodeByElementId(type, elementId);
 		return getPath(node);

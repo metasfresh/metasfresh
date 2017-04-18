@@ -3,17 +3,19 @@ package de.metas.ui.web.process.descriptor;
 import java.util.Optional;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Throwables;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.ProcessPreconditionChecker;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -29,11 +31,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -52,7 +54,7 @@ public final class ProcessDescriptor
 		Form, Workflow, Process, Report
 	};
 
-	private final int adProcessId;
+	private final ProcessId processId;
 	private final ProcessDescriptorType type;
 	private final Class<? extends IProcessDefaultParametersProvider> defaultParametersProviderClass;
 	private final String processClassname;
@@ -64,8 +66,7 @@ public final class ProcessDescriptor
 	{
 		super();
 
-		adProcessId = builder.getAD_Process_ID();
-
+		processId = builder.getProcessId();
 		type = builder.getType();
 
 		processClassname = builder.getProcessClassname();
@@ -75,28 +76,28 @@ public final class ProcessDescriptor
 
 		layout = builder.getLayout();
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("AD_Process_ID", adProcessId)
+				.add("processId", processId)
 				.toString();
 	}
 
-	public int getAD_Process_ID()
+	public ProcessId getProcessId()
 	{
-		return adProcessId;
+		return processId;
 	}
 
-	public String getCaption(final String adLanguage)
+	public ITranslatableString getCaption()
 	{
-		return getLayout().getCaption(adLanguage);
+		return getLayout().getCaption();
 	}
 
-	public String getDescription(final String adLanguage)
+	public ITranslatableString getDescription()
 	{
-		return getLayout().getDescription(adLanguage);
+		return getLayout().getDescription();
 	}
 
 	public ProcessDescriptorType getType()
@@ -112,17 +113,21 @@ public final class ProcessDescriptor
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
 	{
 		// Filter out processes on which we don't have access
-		final int adProcessId = getAD_Process_ID();
-		final Boolean accessRW = permissions.checkProcessAccess(adProcessId);
-		if (accessRW == null)
+		final ProcessId processId = getProcessId();
+		
+		if (ProcessId.PROCESSHANDLERTYPE_AD_Process.equals(processId.getProcessHandlerType()))
 		{
-			// no access at all => cannot execute
-			return false;
-		}
-		else if (!accessRW)
-		{
-			// has just readonly access => cannot execute
-			return false;
+			final Boolean accessRW = permissions.checkProcessAccess(processId.getProcessIdAsInt());
+			if (accessRW == null)
+			{
+				// no access at all => cannot execute
+				return false;
+			}
+			else if (!accessRW)
+			{
+				// has just readonly access => cannot execute
+				return false;
+			}
 		}
 
 		return true;
@@ -135,26 +140,27 @@ public final class ProcessDescriptor
 				.setPreconditionsContext(context)
 				.checkApplies();
 	}
-	
+
 	public IProcessDefaultParametersProvider getDefaultParametersProvider()
 	{
 		if (defaultParametersProviderClass == null)
 		{
 			return null;
 		}
-		
+
 		try
 		{
 			return defaultParametersProviderClass.newInstance();
 		}
 		catch (InstantiationException | IllegalAccessException ex)
 		{
-			throw Throwables.propagate(ex);
+			throw new AdempiereException("Failed to instantiate the process", ex);
 		}
 	}
-	
+
 	public DocumentEntityDescriptor getParametersDescriptor()
 	{
+		Check.assumeNotNull(parametersDescriptor, "Parameter parametersDescriptor is not null");
 		return parametersDescriptor;
 	}
 
@@ -166,7 +172,7 @@ public final class ProcessDescriptor
 	public static final class Builder
 	{
 		private ProcessDescriptorType type;
-		private int adProcessId;
+		private ProcessId processId;
 
 		public String processClassname;
 		private Optional<Class<?>> processClass = Optional.empty();
@@ -184,16 +190,16 @@ public final class ProcessDescriptor
 			return new ProcessDescriptor(this);
 		}
 
-		public Builder setAD_Process_ID(final int adProcessId)
+		public Builder setProcessId(final ProcessId processId)
 		{
-			this.adProcessId = adProcessId;
+			this.processId = processId;
 			return this;
 		}
 
-		private int getAD_Process_ID()
+		private ProcessId getProcessId()
 		{
-			Check.assume(adProcessId > 0, "adProcessId > 0");
-			return adProcessId;
+			Check.assumeNotNull(processId, "Parameter processId is not null");
+			return processId;
 		}
 
 		public Builder setType(final ProcessDescriptorType type)
@@ -264,7 +270,6 @@ public final class ProcessDescriptor
 			}
 		}
 
-
 		public Builder setParametersDescriptor(final DocumentEntityDescriptor parametersDescriptor)
 		{
 			this.parametersDescriptor = parametersDescriptor;
@@ -273,7 +278,6 @@ public final class ProcessDescriptor
 
 		private DocumentEntityDescriptor getParametersDescriptor()
 		{
-			Check.assumeNotNull(parametersDescriptor, "Parameter parametersDescriptor is not null");
 			return parametersDescriptor;
 		}
 

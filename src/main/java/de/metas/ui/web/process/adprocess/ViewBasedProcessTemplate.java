@@ -1,4 +1,4 @@
-package de.metas.ui.web.process;
+package de.metas.ui.web.process.adprocess;
 
 import java.util.Set;
 import java.util.function.Predicate;
@@ -18,6 +18,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUDocumentView;
+import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
@@ -59,9 +60,16 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	//
 	// View (internal) parameters
-	@Param(parameterName = ProcessInstance.PARAM_ViewId, mandatory = true)
+	public static final String PARAM_ViewWindowId = "$WEBUI_ViewWindowId";
+	@Param(parameterName = PARAM_ViewWindowId, mandatory = true)
+	private String p_WebuiViewWindowId;
+	//
+	public static final String PARAM_ViewId = "$WEBUI_ViewId";
+	@Param(parameterName = PARAM_ViewId, mandatory = true)
 	private String p_WebuiViewId;
-	@Param(parameterName = ProcessInstance.PARAM_ViewSelectedIds, mandatory = true)
+	//
+	public static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
+	@Param(parameterName = PARAM_ViewSelectedIds, mandatory = true)
 	private String p_WebuiViewSelectedIdsStr;
 
 	private IDocumentViewSelection _view;

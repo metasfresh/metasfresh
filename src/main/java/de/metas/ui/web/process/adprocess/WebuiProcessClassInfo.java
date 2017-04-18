@@ -1,4 +1,4 @@
-package de.metas.ui.web.process.descriptor;
+package de.metas.ui.web.process.adprocess;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.ListLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -60,7 +61,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class WebuiProcessClassInfo
+final class WebuiProcessClassInfo
 {
 	public static final WebuiProcessClassInfo of(@Nullable final Class<?> processClass)
 	{

@@ -68,7 +68,7 @@ public final class MenuNode
 	private final String caption;
 	private final String captionBreadcrumb;
 	private final MenuNodeType type;
-	private final int elementId;
+	private final String elementId;
 	private final String mainTableName;
 	
 	private final List<MenuNode> children;
@@ -209,7 +209,7 @@ public final class MenuNode
 		return type;
 	}
 
-	public int getElementId()
+	public String getElementId()
 	{
 		return elementId;
 	}
@@ -324,7 +324,7 @@ public final class MenuNode
 		private String caption;
 		private String captionBreadcrumb;
 		private MenuNodeType type;
-		private int elementId;
+		private String elementId;
 		private String mainTableName;
 		private final List<MenuNode> childrenFirst = new ArrayList<>();
 		private final List<MenuNode> childrenRest = new ArrayList<>();
@@ -363,7 +363,7 @@ public final class MenuNode
 			return this;
 		}
 
-		public Builder setType(final MenuNodeType type, final int elementId)
+		public Builder setType(final MenuNodeType type, final String elementId)
 		{
 			this.type = type;
 			this.elementId = elementId;

@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Functions;
 import org.adempiere.util.Functions.MemoizingFunction;
+import org.adempiere.util.collections.ListUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -19,6 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -61,24 +63,27 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 		}
 	}
 
-	public static final DocumentViewAsPreconditionsContext newInstance(final IDocumentViewSelection view, final String tableName, final Collection<DocumentId> selectedDocumentIds)
+	public static final DocumentViewAsPreconditionsContext newInstance(final IDocumentViewSelection view, final Collection<DocumentId> selectedDocumentIds)
 	{
-		return new DocumentViewAsPreconditionsContext(view, tableName, selectedDocumentIds);
+		return new DocumentViewAsPreconditionsContext(view, selectedDocumentIds);
 	}
 
 	private static final Logger logger = LogManager.getLogger(DocumentViewAsPreconditionsContext.class);
 
 	private final IDocumentViewSelection view;
 	private final String tableName;
+	private final WindowId windowId;
 	private final Set<DocumentId> selectedDocumentIds;
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
-	private DocumentViewAsPreconditionsContext(final IDocumentViewSelection view, final String tableName, final Collection<DocumentId> selectedDocumentIds)
+
+	private DocumentViewAsPreconditionsContext(final IDocumentViewSelection view, final Collection<DocumentId> selectedDocumentIds)
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
-		this.tableName = tableName;
+		this.windowId = view.getViewId().getWindowId();
+		this.tableName = view.getTableName();
 		this.selectedDocumentIds = ImmutableSet.copyOf(selectedDocumentIds);
 	}
 
@@ -104,6 +109,12 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 		final T viewCasted = (T)view;
 		return viewCasted;
 	}
+	
+	@Override
+	public int getAD_Window_ID()
+	{
+		return windowId.toInt();
+	}
 
 	@Override
 	public String getTableName()
@@ -114,6 +125,11 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 	public Set<DocumentId> getSelectedDocumentIds()
 	{
 		return selectedDocumentIds;
+	}
+	
+	public DocumentId getSingleSelectedDocumentId()
+	{
+		return ListUtils.singleElement(selectedDocumentIds);
 	}
 
 	@Override

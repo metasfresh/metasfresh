@@ -16,8 +16,9 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 
 /*
@@ -52,21 +53,32 @@ public final class JSONDocumentViewResult implements Serializable
 
 	//
 	// View informations
-	@JsonProperty(value = "viewId", index = 10)
+	@JsonProperty(value = "type")
+	@Deprecated
+	private final WindowId type;
+	@JsonProperty(value = "windowId")
+	private final WindowId windowId;
+	//
+	@JsonProperty(value = "viewId")
 	private final String viewId;
 
-	@JsonProperty(value = "type", index = 20)
-	private final int AD_Window_ID;
+	@JsonProperty(value = "parentWindowId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final WindowId parentWindowId;
+	//
+	@JsonProperty(value = "parentViewId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String parentViewId;
 
-	@JsonProperty(value = "size", index = 30)
+	@JsonProperty(value = "size")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Long size;
 
-	@JsonProperty(value = "orderBy", index = 70)
+	@JsonProperty(value = "orderBy")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentViewOrderBy> orderBy;
 
-	@JsonProperty(value = "filters", index = 60)
+	@JsonProperty(value = "filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilter> filters;
 
@@ -77,15 +89,15 @@ public final class JSONDocumentViewResult implements Serializable
 	// * null (excluded from JSON) => frontend will consider the page is not loaded, so it won't update the result on it's side
 	// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/330
 	// 
-	@JsonProperty(value = "result", index = 1000)
+	@JsonProperty(value = "result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final List<JSONDocument> result;
+	private final List<JSONDocumentView> result;
 
-	@JsonProperty(value = "firstRow", index = 40)
+	@JsonProperty(value = "firstRow")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer firstRow;
 
-	@JsonProperty(value = "pageLength", index = 50)
+	@JsonProperty(value = "pageLength")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer pageLength;
 	
@@ -109,8 +121,14 @@ public final class JSONDocumentViewResult implements Serializable
 		//
 		// View informations
 		final IDocumentViewSelection view = viewResult.getView();
-		viewId = view.getViewId();
-		AD_Window_ID = view.getAD_Window_ID();
+		final ViewId viewId = view.getViewId(); 
+		this.viewId = viewId.getViewId();
+		this.windowId = viewId.getWindowId();
+		type = windowId;
+		
+		final ViewId parentViewId = view.getParentViewId();
+		this.parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
+		this.parentViewId = parentViewId == null?null : parentViewId.getViewId();
 
 		final long size = view.size();
 		this.size = size >= 0 ? size : null;
@@ -122,7 +140,7 @@ public final class JSONDocumentViewResult implements Serializable
 		// Page informations
 		if (viewResult.isPageLoaded())
 		{
-			result = JSONDocument.ofDocumentViewList(viewResult.getPage());
+			result = JSONDocumentView.ofDocumentViewList(viewResult.getPage());
 			firstRow = viewResult.getFirstRow();
 			pageLength = viewResult.getPageLength();
 		}
@@ -152,13 +170,17 @@ public final class JSONDocumentViewResult implements Serializable
 
 	@JsonCreator
 	private JSONDocumentViewResult( //
-			@JsonProperty("viewId") final String viewId //
-			, @JsonProperty("type") final int adWindowId //
+			@JsonProperty("windowId") final WindowId windowId //
+			, @JsonProperty("viewId") final String viewId //
+			//
+			, @JsonProperty("parentWindowId") final WindowId parentWindowId //
+			, @JsonProperty("parentViewId") final String parentViewId //
+			//
 			, @JsonProperty("size") final Long size //
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
 			, @JsonProperty("orderBy") final List<JSONDocumentViewOrderBy> orderBy //
 			//
-			, @JsonProperty("result") final List<JSONDocument> result //
+			, @JsonProperty("result") final List<JSONDocumentView> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
 			, @JsonProperty("pageLength") final Integer pageLength //
 			//
@@ -171,7 +193,12 @@ public final class JSONDocumentViewResult implements Serializable
 		//
 		// View informations
 		this.viewId = viewId;
-		AD_Window_ID = adWindowId;
+		type = windowId;
+		this.windowId = windowId;
+		//
+		this.parentWindowId = parentWindowId;
+		this.parentViewId = parentViewId;
+		//
 		this.size = size;
 		this.filters = filters == null ? ImmutableList.of() : filters;
 		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
@@ -202,7 +229,7 @@ public final class JSONDocumentViewResult implements Serializable
 				//
 				// View info
 				.add("viewId", viewId)
-				.add("AD_Window_ID", AD_Window_ID)
+				.add("AD_Window_ID", windowId)
 				.add("size", size)
 				//
 				// Page info

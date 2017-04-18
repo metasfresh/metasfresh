@@ -1,42 +1,29 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.util.GuavaCollectors;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 
-import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
-import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -69,10 +56,8 @@ import io.swagger.annotations.ApiModel;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ApiModel("document")
-@SuppressWarnings("serial")
 // @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE) // cannot use it because of "otherProperties"
-public final class JSONDocument implements Serializable
+public final class JSONDocument extends JSONDocumentBase
 {
 	public static final JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
 	{
@@ -213,84 +198,7 @@ public final class JSONDocument implements Serializable
 		return jsonDocument;
 	}
 
-	public static List<JSONDocument> ofDocumentViewList(final List<IDocumentView> documentViews)
-	{
-		return documentViews.stream()
-				.map(JSONDocument::ofDocumentView)
-				.collect(Collectors.toList());
-	}
-
-	public static JSONDocument ofDocumentView(final IDocumentView documentView)
-	{
-		final JSONDocument jsonDocument = new JSONDocument(documentView.getDocumentPath());
-
-		//
-		// Fields
-		{
-			final List<JSONDocumentField> jsonFields = new ArrayList<>();
-
-			// Add pseudo "ID" field first
-			final String idFieldName = documentView.getIdFieldNameOrNull();
-			if (idFieldName != null)
-			{
-				final Object id = documentView.getDocumentId().toJson();
-				jsonFields.add(0, JSONDocumentField.idField(id));
-			}
-
-			// Append the other fields
-			documentView.getFieldNameAndJsonValues()
-					.entrySet()
-					.stream()
-					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
-					.forEach(jsonFields::add);
-
-			jsonDocument.setFields(jsonFields);
-
-			//
-			// Document view record specific attributes
-			if (documentView.isProcessed())
-			{
-				jsonDocument.putOtherProperty("processed", true);
-			}
-			if (documentView.hasAttributes())
-			{
-				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);
-			}
-			if (documentView.getType() != null)
-			{
-				jsonDocument.putOtherProperty("type", documentView.getType().getName());
-			}
-		}
-
-		//
-		// Included documents if any
-		{
-			final List<? extends IDocumentView> includedDocuments = documentView.getIncludedDocuments();
-			if (!includedDocuments.isEmpty())
-			{
-				final List<JSONDocument> jsonIncludedDocuments = includedDocuments
-						.stream()
-						.map(JSONDocument::ofDocumentView)
-						.collect(GuavaCollectors.toImmutableList());
-				jsonDocument.setIncludedDocuments(jsonIncludedDocuments);
-			}
-		}
-
-		return jsonDocument;
-	}
-
-	@JsonProperty("id")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String id;
-
-	@JsonProperty("tabid")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String tabid;
-
-	@JsonProperty("rowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String rowId;
-
+	
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentValidStatus validStatus;
@@ -298,15 +206,6 @@ public final class JSONDocument implements Serializable
 	@JsonProperty("saveStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentSaveStatus saveStatus;
-	
-	@JsonProperty("deleted")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Boolean deleted;
-
-	@JsonProperty("fields")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
-	private Map<String, JSONDocumentField> fieldsByName;
 
 	/** {@link JSONIncludedTabInfo}s indexed by tabId */
 	@JsonProperty("includedTabsInfo")
@@ -314,74 +213,11 @@ public final class JSONDocument implements Serializable
 	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
 
-	@JsonProperty("includedDocuments")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private List<JSONDocument> includedDocuments;
-
-	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
-
 	public JSONDocument(final DocumentPath documentPath)
 	{
-		super();
-
-		if (documentPath == null)
-		{
-			id = null;
-			tabid = null;
-			rowId = null;
-		}
-		else if (documentPath.isRootDocument())
-		{
-			id = documentPath.getDocumentId().toJson();
-			tabid = null;
-			rowId = null;
-		}
-		else if (documentPath.isSingleIncludedDocument())
-		{
-			id = documentPath.getDocumentId().toJson();
-			final DetailId detailId = documentPath.getDetailId();
-			tabid = DetailId.toJson(detailId);
-			rowId = documentPath.getSingleRowId().toJson();
-		}
-		else
-		{
-			// shall not happen
-			throw new InvalidDocumentPathException(documentPath, "only root path and single included document path are allowed");
-		}
+		super(documentPath);
 	}
-
-	@JsonCreator
-	private JSONDocument(
-			@JsonProperty("id") final String id //
-			, @JsonProperty("tabid") final String tabid //
-			, @JsonProperty("rowId") final String rowId //
-			, @JsonProperty("valid-status") final String validStatus //
-			, @JsonProperty("save-status") final String saveStatus //
-			, @JsonProperty("fields") final List<JSONDocumentField> fields //
-			)
-	{
-		super();
-		this.id = id;
-		this.tabid = tabid;
-		this.rowId = rowId;
-		setFields(fields);
-	}
-
-	public String getId()
-	{
-		return id;
-	}
-
-	public String getTabid()
-	{
-		return tabid;
-	}
-
-	public String getRowId()
-	{
-		return rowId;
-	}
-
+	
 	private void setValidStatus(final DocumentValidStatus validStatus)
 	{
 		this.validStatus = validStatus;
@@ -402,40 +238,6 @@ public final class JSONDocument implements Serializable
 		return saveStatus;
 	}
 	
-	public void setDeleted()
-	{
-		this.deleted = Boolean.TRUE;
-	}
-
-	@JsonAnyGetter
-	public Map<String, Object> getOtherProperties()
-	{
-		return otherProperties;
-	}
-
-	@JsonAnySetter
-	public void putOtherProperty(final String name, final Object jsonValue)
-	{
-		otherProperties.put(name, jsonValue);
-	}
-
-	public JSONDocument putDebugProperty(final String name, final Object jsonValue)
-	{
-		otherProperties.put("debug-" + name, jsonValue);
-		return this;
-	}
-
-	public void setFields(final Collection<JSONDocumentField> fields)
-	{
-		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
-	}
-
-	@JsonIgnore
-	public int getFieldsCount()
-	{
-		return fieldsByName == null ? 0 : fieldsByName.size();
-	}
-
 	private void setIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
 	{
 		if (includedTabsInfo == null)
@@ -445,11 +247,13 @@ public final class JSONDocument implements Serializable
 		includedTabsInfo.put(tabInfo.tabid, tabInfo);
 	}
 
-	private void setIncludedDocuments(final List<JSONDocument> includedDocuments)
-	{
-		this.includedDocuments = includedDocuments;
-	}
 
+
+	//
+	//
+	//
+	//
+	//
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	private static final class JSONIncludedTabInfo
 	{

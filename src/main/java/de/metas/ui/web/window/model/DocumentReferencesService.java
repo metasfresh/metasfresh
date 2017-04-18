@@ -17,6 +17,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -65,7 +66,7 @@ public class DocumentReferencesService
 		});
 	}
 
-	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final int targetWindowId)
+	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final WindowId targetWindowId)
 	{
 		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
@@ -75,7 +76,7 @@ public class DocumentReferencesService
 			
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
 			
-			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId);
+			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toInt());
 			return DocumentReference.of(zoomInfo);
 		});
 	}
@@ -99,7 +100,7 @@ public class DocumentReferencesService
 			evaluationContext = document.asEvaluatee();
 			
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-			adWindowId = entityDescriptor.getAD_Window_ID();
+			adWindowId = entityDescriptor.getWindowId().toInt();
 			tableName = entityDescriptor.getTableName();
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			recordId = document.getDocumentId().toInt();

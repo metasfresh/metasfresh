@@ -3,8 +3,10 @@ package de.metas.ui.web.debug;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.Check;
@@ -31,8 +33,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
 import de.metas.event.Event;
@@ -46,12 +48,13 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.notification.UserNotification.TargetType;
-import de.metas.ui.web.process.ProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
@@ -99,7 +102,7 @@ public class DebugRestController
 
 	@Autowired
 	@Lazy
-	private ProcessInstancesRepository pinstancesRepo;
+	private ProcessRestController processesController;
 
 	@Autowired
 	@Lazy
@@ -115,7 +118,7 @@ public class DebugRestController
 		CacheMgt.get().reset();
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
-		pinstancesRepo.cacheReset();
+		processesController.cacheReset();
 
 		System.gc();
 	}
@@ -200,9 +203,9 @@ public class DebugRestController
 			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
 			//
 			, @RequestParam(name = "targetType", required = false) final String targetTypeStr//
-			, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final int targetDocumentType//
+			, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final String targetDocumentType//
 			, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
-	)
+			)
 	{
 		final Topic topic = Topic.builder()
 				.setName(topicName)
@@ -222,7 +225,7 @@ public class DebugRestController
 		if (targetType == TargetType.Window)
 		{
 			final String targetTableName = documentCollection.getDocumentDescriptorFactory()
-					.getDocumentDescriptor(targetDocumentType)
+					.getDocumentDescriptor(WindowId.fromJson(targetDocumentType))
 					.getEntityDescriptor()
 					.getTableName();
 
@@ -298,31 +301,37 @@ public class DebugRestController
 
 	public static enum LoggingModule
 	{
-		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName())
-
+		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()) //
+		, cache(
+				org.compiere.util.CCache.class.getName() //
+				, org.compiere.util.CacheMgt.class.getName() //
+				, org.adempiere.ad.dao.cache.IModelCacheService.class.getName() // model caching
+		) //
 		;
 
-		private String loggerName;
+		private final Set<String> loggerNames;
 
-		private LoggingModule(final String loggerName)
+		private LoggingModule(final String... loggerNames)
 		{
-			this.loggerName = loggerName;
+			this.loggerNames = ImmutableSet.copyOf(loggerNames);
 		}
 
-		@JsonValue
-		public String getLoggerName()
+		//@JsonValue
+		public Set<String> getLoggerNames()
 		{
-			return loggerName;
+			return loggerNames;
 		}
 	}
 
 	@GetMapping("/logger/_setLevel/{level}")
 	public void setLoggerLevel(
-			@RequestParam("module") final LoggingModule module
-			, @RequestParam(name = "loggerName", required = false) String loggerName
-			, @PathVariable("level") final String levelStr
-	)
+			@RequestParam("module") final LoggingModule module //
+			, @RequestParam(name = "loggerName", required = false) String loggerName //
+			, @PathVariable("level") final String levelStr //
+			)
 	{
+		//
+		// Get Level to set
 		final Level level;
 		if (Check.isEmpty(levelStr, true))
 		{
@@ -337,22 +346,33 @@ public class DebugRestController
 			}
 		}
 
-		String loggerNameEffective = module == null ? null : module.getLoggerName();
+		//
+		// Get logger names
+		final Set<String> loggerNamesEffective = new LinkedHashSet<>();
+		if (module != null)
+		{
+			loggerNamesEffective.addAll(module.getLoggerNames());
+		}
 		if (!Check.isEmpty(loggerName, true))
 		{
-			loggerNameEffective = loggerName;
+			loggerNamesEffective.add(loggerName.trim());
 		}
 
-		final Logger logger = LogManager.getLogger(loggerNameEffective);
-		if (logger == null)
+		//
+		// Set level to effective logger names
+		for (final String loggerNameEffective : loggerNamesEffective)
 		{
-			throw new EntityNotFoundException("No logger found for " + loggerNameEffective);
-		}
+			final Logger logger = LogManager.getLogger(loggerNameEffective);
+			if (logger == null)
+			{
+				throw new EntityNotFoundException("No logger found for " + loggerNameEffective);
+			}
 
-		final boolean set = LogManager.setLoggerLevel(logger, level);
-		if (!set)
-		{
-			throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
+			final boolean set = LogManager.setLoggerLevel(logger, level);
+			if (!set)
+			{
+				throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
+			}
 		}
 	}
 

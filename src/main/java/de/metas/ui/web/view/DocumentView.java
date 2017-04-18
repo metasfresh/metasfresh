@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
@@ -18,8 +17,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,9 +45,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public final class DocumentView implements IDocumentView
 {
-	public static final Builder builder(final int adWindowId)
+	public static final Builder builder(final WindowId windowId)
 	{
-		return new Builder(adWindowId);
+		return new Builder(windowId);
 	}
 
 	private final DocumentPath documentPath;
@@ -171,6 +171,18 @@ public final class DocumentView implements IDocumentView
 	}
 
 	@Override
+	public boolean hasIncludedView()
+	{
+		return false;
+	}
+
+	@Override
+	public IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo)
+	{
+		throw new EntityNotFoundException("Row " + this + " does not support included view");
+	}
+
+	@Override
 	public List<IDocumentView> getIncludedDocuments()
 	{
 		return includedDocuments;
@@ -178,7 +190,7 @@ public final class DocumentView implements IDocumentView
 
 	public static final class Builder
 	{
-		private final int adWindowId;
+		private final WindowId windowId;
 		private String idFieldName;
 		private DocumentId _documentId;
 		private IDocumentViewType type;
@@ -191,11 +203,9 @@ public final class DocumentView implements IDocumentView
 		private IDocumentViewAttributesProvider attributesProvider;
 		private DocumentId attributesKey;
 
-		private Builder(final int adWindowId)
+		private Builder(@NonNull final WindowId windowId)
 		{
-			super();
-			Check.assume(adWindowId > 0, "adWindowId > 0 but it was {}", adWindowId);
-			this.adWindowId = adWindowId;
+			this.windowId = windowId;
 		}
 
 		public DocumentView build()
@@ -206,7 +216,7 @@ public final class DocumentView implements IDocumentView
 		private DocumentPath getDocumentPath()
 		{
 			final DocumentId documentId = getDocumentId();
-			return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+			return DocumentPath.rootDocumentPath(windowId, documentId);
 		}
 
 		public Builder setIdFieldName(final String idFieldName)
@@ -217,7 +227,7 @@ public final class DocumentView implements IDocumentView
 
 		public Builder setDocumentId(final DocumentId documentId)
 		{
-			this._documentId = documentId;
+			_documentId = documentId;
 			return this;
 		}
 
@@ -265,7 +275,7 @@ public final class DocumentView implements IDocumentView
 			return type;
 		}
 
-		public Builder setType(IDocumentViewType type)
+		public Builder setType(final IDocumentViewType type)
 		{
 			this.type = type;
 			return this;
@@ -321,14 +331,13 @@ public final class DocumentView implements IDocumentView
 			this.attributesKey = attributesKey;
 			return this;
 		}
-		
+
 		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
-			this.attributesKey = null; // will be auto-detected (i.e. the documentId will be used)
+			attributesKey = null; // will be auto-detected (i.e. the documentId will be used)
 			return this;
 		}
-
 
 		public Builder addIncludedDocument(final IDocumentView includedDocument)
 		{

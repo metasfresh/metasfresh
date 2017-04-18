@@ -85,7 +85,7 @@ public class NewRecordDescriptorsProvider
 	 */
 	public NewRecordDescriptor getNewRecordDescriptor(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final int newRecordWindowId = entityDescriptor.getAD_Window_ID();
+		final int newRecordWindowId = entityDescriptor.getWindowId().toInt();
 
 		return newRecordDescriptorsByTableName.values()
 				.stream()

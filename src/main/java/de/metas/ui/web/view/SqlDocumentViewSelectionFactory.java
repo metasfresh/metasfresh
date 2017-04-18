@@ -5,19 +5,18 @@ import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.view.json.JSONDocumentViewLayout;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -48,68 +47,69 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
-	@Autowired
-	private ProcessDescriptorsFactory processDescriptorsFactory;
-	@Autowired
-	private MenuTreeRepository menuTreeRepo;
 
 	@Override
-	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
+	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
-
-		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
-		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
-
-		final JSONDocumentViewLayout jsonLayout;
+		final DocumentLayoutDescriptor layout = documentDescriptorFactory.getDocumentDescriptor(windowId).getLayout();
 		switch (viewDataType)
 		{
 			case grid:
 			{
-				final DocumentViewLayout viewLayout = layout.getGridViewLayout();
-				jsonLayout = JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
-				break;
+				return layout.getGridViewLayout();
 			}
 			case list:
 			{
-				final DocumentViewLayout viewLayout = layout.getSideListViewLayout();
-				jsonLayout = JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
-				break;
+				return layout.getSideListViewLayout();
 			}
 			default:
 			{
 				throw new IllegalArgumentException("Invalid viewDataType: " + viewDataType);
 			}
 		}
-
-		//
-		// Enable new record if supported
-		menuTreeRepo.getUserSessionMenuTree()
-				.getNewRecordNodeForWindowId(layout.getAD_Window_ID())
-				.ifPresent(newRecordMenuNode -> jsonLayout.enableNewRecord(newRecordMenuNode.getCaption()));
-
-		return jsonLayout;
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
+	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
 	{
-		if (!jsonRequest.getFilterOnlyIds().isEmpty())
+		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
+		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
+		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
+		return filters;
+	}
+
+	@Override
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
+	{
+		if (!request.getFilterOnlyIds().isEmpty())
 		{
-			throw new IllegalArgumentException("Filtering by Ids are not supported: " + jsonRequest);
+			throw new IllegalArgumentException("Filtering by Ids are not supported: " + request);
 		}
 
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(jsonRequest.getAD_Window_ID());
+		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(request.getWindowId());
 		return SqlDocumentViewSelection.builder(entityDescriptor)
-				.setServices(processDescriptorsFactory, documentReferencesService)
 				//
-				.setViewFieldsByCharacteristic(jsonRequest.getViewTypeRequiredFieldCharacteristic())
+				.setParentViewId(request.getParentViewId())
 				//
-				.setStickyFilterByReferencedDocument(jsonRequest.getReferencingDocumentPathOrNull())
-				.setFiltersFromJSON(jsonRequest.getFilters())
+				.setViewFieldsByCharacteristic(request.getViewTypeRequiredFieldCharacteristic())
+				//
+				.setStickyFilter(extractReferencedDocumentFilter(entityDescriptor.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
+				.setFiltersFromJSON(request.getFilters())
 				//
 				.build();
+	}
+
+	private final DocumentFilter extractReferencedDocumentFilter(final WindowId targetWindowId, final DocumentPath referencedDocumentPath)
+	{
+		if (referencedDocumentPath == null)
+		{
+			return null;
+		}
+		else
+		{
+			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
+			return reference.getFilter();
+		}
 	}
 
 }

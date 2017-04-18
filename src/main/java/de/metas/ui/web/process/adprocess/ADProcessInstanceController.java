@@ -1,4 +1,4 @@
-package de.metas.ui.web.process;
+package de.metas.ui.web.process.adprocess;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,6 @@ import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
@@ -37,21 +36,23 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.process.IProcessInstanceController;
+import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
+import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest.JSONReferencing;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -81,31 +82,28 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 /**
- * WEBUI Process instance.
+ * WEBUI AD_Process based process instance controller
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class ProcessInstance
+/* package */final class ADProcessInstanceController implements IProcessInstanceController
 {
-	private static final transient Logger logger = LogManager.getLogger(ProcessInstance.class);
-
-	public static final String PARAM_ViewId = "$WEBUI_ViewId";
-	public static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
+	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	private final DocumentId adPInstanceId;
+	private final DocumentId instanceId;
 
 	private final ProcessDescriptor processDescriptor;
 	private final Document parameters;
 	private final Object processClassInstance;
 
 	private final IDocumentViewsRepository viewsRepo;
-	private final String viewId;
+	private final ViewId viewId;
 	private final Set<DocumentId> viewSelectedDocumentIds;
 
 	private boolean executed = false;
@@ -114,12 +112,10 @@ public final class ProcessInstance
 	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
-	private ProcessInstance(final Builder builder)
+	private ADProcessInstanceController(final Builder builder)
 	{
-		Adempiere.autowire(this);
-
 		processDescriptor = builder.processDescriptor;
-		adPInstanceId = builder.adPInstanceId;
+		instanceId = builder.instanceId;
 		parameters = builder.parameters;
 		processClassInstance = builder.processClassInstance;
 
@@ -134,11 +130,11 @@ public final class ProcessInstance
 	}
 
 	/** Copy constructor */
-	private ProcessInstance(final ProcessInstance from, final CopyMode copyMode)
+	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode)
 	{
 		super();
 
-		adPInstanceId = from.adPInstanceId;
+		instanceId = from.instanceId;
 
 		processDescriptor = from.processDescriptor;
 		parameters = from.parameters.copy(copyMode);
@@ -159,27 +155,29 @@ public final class ProcessInstance
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_PInstance_ID", adPInstanceId)
+				.add("AD_PInstance_ID", instanceId)
 				.add("executed", "executed")
 				.add("executionResult", executionResult)
 				.add("processDescriptor", processDescriptor)
 				.toString();
 	}
 
+	@Override
 	public void destroy()
 	{
 		// TODO Auto-generated method stub
 
 	}
 
-	public ProcessDescriptor getDescriptor()
+	private ProcessDescriptor getDescriptor()
 	{
 		return processDescriptor;
 	}
 
-	public DocumentId getAD_PInstance_ID()
+	@Override
+	public DocumentId getInstanceId()
 	{
-		return adPInstanceId;
+		return instanceId;
 	}
 
 	private Document getParametersDocument()
@@ -187,40 +185,42 @@ public final class ProcessInstance
 		return parameters;
 	}
 
+	@Override
 	public Collection<IDocumentFieldView> getParameters()
 	{
 		return parameters.getFieldViews();
 	}
 
-	public ProcessInstance copy(final CopyMode copyMode)
+	public ADProcessInstanceController copy(final CopyMode copyMode)
 	{
-		return new ProcessInstance(this, copyMode);
+		return new ADProcessInstanceController(this, copyMode);
 	}
-	
+
 	public IAutoCloseable activate()
 	{
 		return JavaProcess.temporaryChangeCurrentInstance(processClassInstance);
 	}
 
+	@Override
 	public LookupValuesList getParameterLookupValues(final String parameterName)
 	{
 		return parameters.getFieldLookupValues(parameterName);
 	}
 
+	@Override
 	public LookupValuesList getParameterLookupValuesForQuery(final String parameterName, final String query)
 	{
 		return parameters.getFieldLookupValuesForQuery(parameterName, query);
 	}
 
+	@Override
 	public void processParameterValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
 		assertNotExecuted();
 		parameters.processValueChanges(events, reason);
 	}
 
-	/**
-	 * @return execution result or throws exception if the process was not already executed
-	 */
+	@Override
 	public ProcessInstanceResult getExecutionResult()
 	{
 		final ProcessInstanceResult executionResult = this.executionResult;
@@ -244,6 +244,7 @@ public final class ProcessInstance
 		}
 	}
 
+	@Override
 	public ProcessInstanceResult startProcess()
 	{
 		assertNotExecuted();
@@ -257,15 +258,25 @@ public final class ProcessInstance
 		}
 
 		//
+		executionResult = executeADProcess(getInstanceId(), getDescriptor(), viewsRepo);
+		if (executionResult.isSuccess())
+		{
+			executed = false;
+		}
+		return executionResult;
+	}
+
+	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, IDocumentViewsRepository viewsRepo)
+	{
+		//
 		// Create the process info and execute the process synchronously
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
-		final ProcessDescriptor processDescriptor = getDescriptor();
 		final String adLanguage = Env.getAD_Language(ctx);
-		final String name = processDescriptor.getCaption(adLanguage);
+		final String name = processDescriptor.getCaption().translate(adLanguage);
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(getAD_PInstance_ID().toInt())
+				.setAD_PInstance_ID(adPInstanceId.toInt())
 				.setTitle(name)
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
@@ -285,8 +296,7 @@ public final class ProcessInstance
 				summary = null;
 			}
 
-			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
-					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
+			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder(DocumentId.of(processExecutionResult.getAD_PInstance_ID()))
 					.setSummary(summary)
 					.setError(processExecutionResult.isError());
 
@@ -310,9 +320,9 @@ public final class ProcessInstance
 				// View
 				else if (recordsToOpen != null && recordsToOpen.isGridView())
 				{
-					final IDocumentViewSelection view = createView(processExecutor.getProcessInfo(), recordsToOpen);
+					final DocumentViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
+					final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
-							.windowId(view.getAD_Window_ID())
 							.viewId(view.getViewId())
 							.build());
 				}
@@ -327,15 +337,10 @@ public final class ProcessInstance
 				}
 			}
 
-			//
 			final ProcessInstanceResult result = resultBuilder.build();
-			executionResult = result;
-			if (result.isSuccess())
-			{
-				executed = false;
-			}
 			return result;
 		}
+
 	}
 
 	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
@@ -372,7 +377,7 @@ public final class ProcessInstance
 		return reportFile;
 	}
 
-	private final IDocumentViewSelection createView(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
+	private static final DocumentViewCreateRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
 	{
 		final List<TableRecordReference> recordRefs = recordsToOpen.getRecords();
 		if (recordRefs.isEmpty())
@@ -384,11 +389,12 @@ public final class ProcessInstance
 
 		//
 		// Create view create request builders from current records
-		final Map<Integer, JSONCreateDocumentViewRequest.Builder> viewRequestBuilders = new HashMap<>();
+		final Map<WindowId, DocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final int recordWindowId = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
-			final JSONCreateDocumentViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> JSONCreateDocumentViewRequest.builder(recordWindowId, JSONViewDataType.grid));
+			final int recordWindowIdInt = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			final WindowId recordWindowId = WindowId.of(recordWindowIdInt);
+			final DocumentViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> DocumentViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
 		}
@@ -404,28 +410,25 @@ public final class ProcessInstance
 		{
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
-		final JSONCreateDocumentViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
-				.setReferencing(extractJSONReferencing(processInfo))
+		final DocumentViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
+				.setReferencingDocumentPaths(extractReferencingDocumentPaths(processInfo))
 				.build();
-
-		//
-		// Create the view and set its ID to our process result.
-		final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
-		return view;
+		return viewRequest;
 	}
 
-	private static final JSONReferencing extractJSONReferencing(final ProcessInfo processInfo)
+	private static final Set<DocumentPath> extractReferencingDocumentPaths(final ProcessInfo processInfo)
 	{
 		final String tableName = processInfo.getTableNameOrNull();
 		if (tableName == null)
 		{
-			return null;
+			return ImmutableSet.of();
 		}
 		final TableRecordReference sourceRecordRef = processInfo.getRecordRefOrNull();
 
 		final IQueryFilter<Object> selectionQueryFilter = processInfo.getQueryFilterOrElse(null);
 		if (selectionQueryFilter != null)
 		{
+			// TODO: hardcoded limit. It shall be much more obvious!!!
 			final int maxRecordAllowedToSelect = 200;
 			final List<Integer> recordIds = Services.get(IQueryBL.class).createQueryBuilder(tableName, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.filter(selectionQueryFilter)
@@ -434,7 +437,7 @@ public final class ProcessInstance
 					.listIds();
 			if (recordIds.isEmpty())
 			{
-				return null;
+				return ImmutableSet.of();
 			}
 			else if (recordIds.size() > maxRecordAllowedToSelect)
 			{
@@ -442,17 +445,20 @@ public final class ProcessInstance
 			}
 
 			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
-			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef); // assume all records are from same window
-			return JSONReferencing.of(adWindowId, recordIds);
+			final WindowId windowId = WindowId.of(RecordZoomWindowFinder.findAD_Window_ID(firstRecordRef)); // assume all records are from same window
+			return recordIds.stream()
+					.map(recordId -> DocumentPath.rootDocumentPath(windowId, recordId))
+					.collect(ImmutableSet.toImmutableSet());
 		}
 		else if (sourceRecordRef != null)
 		{
-			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
-			return JSONReferencing.of(adWindowId, sourceRecordRef.getRecord_ID());
+			final WindowId windowId = WindowId.of(RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef));
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, sourceRecordRef.getRecord_ID());
+			return ImmutableSet.of(documentPath);
 		}
 		else
 		{
-			return null;
+			return ImmutableSet.of();
 		}
 	}
 
@@ -467,16 +473,10 @@ public final class ProcessInstance
 			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
 		}
 
-		return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+		return DocumentPath.rootDocumentPath(WindowId.of(adWindowId), documentId);
 	}
 
-	/**
-	 * Save
-	 *
-	 * @param throwEx <code>true</code> if we shall throw an exception if document it's not valid or it's not saved
-	 * @return true if valid and saved
-	 */
-	public boolean saveIfValidAndHasChanges(final boolean throwEx)
+	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
 	{
 		final Document parametersDocument = getParametersDocument();
 		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges();
@@ -523,11 +523,11 @@ public final class ProcessInstance
 	public static class Builder
 	{
 		private ProcessDescriptor processDescriptor;
-		private DocumentId adPInstanceId;
+		private DocumentId instanceId;
 		private Document parameters;
 
 		private IDocumentViewsRepository viewsRepo;
-		private String viewId;
+		private ViewId viewId;
 		private Set<DocumentId> viewSelectedDocumentIds;
 		private Object processClassInstance;
 
@@ -535,10 +535,10 @@ public final class ProcessInstance
 		{
 		}
 
-		public ProcessInstance build()
+		public ADProcessInstanceController build()
 		{
-			
-			return new ProcessInstance(this);
+
+			return new ADProcessInstanceController(this);
 		}
 
 		public Builder setProcessDescriptor(final ProcessDescriptor processDescriptor)
@@ -547,9 +547,9 @@ public final class ProcessInstance
 			return this;
 		}
 
-		public Builder setAD_PInstance_ID(final DocumentId adPInstanceId)
+		public Builder setInstanceId(final DocumentId instanceId)
 		{
-			this.adPInstanceId = adPInstanceId;
+			this.instanceId = instanceId;
 			return this;
 		}
 
@@ -565,7 +565,7 @@ public final class ProcessInstance
 			return this;
 		}
 
-		public Builder setView(final String viewId, final Set<DocumentId> selectedDocumentIds)
+		public Builder setView(final ViewId viewId, final Set<DocumentId> selectedDocumentIds)
 		{
 			this.viewId = viewId;
 			viewSelectedDocumentIds = selectedDocumentIds;

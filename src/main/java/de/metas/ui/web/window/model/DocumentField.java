@@ -37,16 +37,16 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/class DocumentField implements IDocumentField
+/* package */class DocumentField implements IDocumentField
 {
 	private static final Logger logger = LogManager.getLogger(DocumentField.class);
 
@@ -117,9 +117,12 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	public String toString()
 	{
 		// NOTE: try keeping this string short...
-		
+
+		final String tableName = getDocument().getEntityDescriptor().getTableNameOrNull();
+		final String fieldName = getFieldName();
+		final String fieldNameFQ = tableName == null ? fieldName : tableName + "." + fieldName;
 		return MoreObjects.toStringHelper(this)
-				.add("fieldName", getFieldName())
+				.add("fieldName", fieldNameFQ)
 				// .add("documentPath", getDocumentPath())
 				.add("value", _value)
 				.add("initalValue", _initialValue)
@@ -140,7 +143,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	{
 		return descriptor;
 	}
-	
+
 	private LookupDataSource getLookupDataSource()
 	{
 		return _lookupDataSource;
@@ -292,7 +295,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 				return valueBDCorrected;
 			}
 		}
-		else if(valueConv instanceof String)
+		else if (valueConv instanceof String)
 		{
 			if (((String)valueConv).isEmpty())
 			{
@@ -438,7 +441,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		// Collect validStatus changed event
 		if (!Objects.equals(validStatusOld, validStatusNew))
 		{
-			//logger.debug("updateValid: {}: {} <- {}", getFieldName(), validNew, validOld);
+			// logger.debug("updateValid: {}: {} <- {}", getFieldName(), validNew, validOld);
 			Execution.getCurrentDocumentChangesCollectorOrNull().collectValidStatus(this);
 		}
 	}
@@ -457,7 +460,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private final DocumentValidStatus checkValid()
 	{
 		// Consider virtual fields as valid because there is nothing we can do about them
-		if(isVirtualField())
+		if (isVirtualField())
 		{
 			return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
 		}
@@ -483,14 +486,14 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean hasChangesToSave()
 	{
-		if(isVirtualField())
+		if (isVirtualField())
 		{
 			return false;
 		}
-		
+
 		return !isInitialValue();
 	}
-	
+
 	private boolean isInitialValue()
 	{
 		return DataTypes.equals(_value, _initialValue);
