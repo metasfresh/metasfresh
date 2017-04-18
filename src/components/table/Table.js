@@ -57,13 +57,12 @@ class Table extends Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {dispatch, type} = this.props;
+        const {dispatch, type, inBackground} = this.props;
 
         if(
             JSON.stringify(nextState.selected) !==
             JSON.stringify(this.state.selected)
         ){
-            console.log('tabela')
             dispatch(selectTableItems(nextState.selected, type));
         }
     }
