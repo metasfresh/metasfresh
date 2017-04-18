@@ -21,6 +21,9 @@ Here come the actual release notes:
   * [#1064](https://github.com/metasfresh/metasfresh/issues/1064) Move HU to garbage
   * [#1065](https://github.com/metasfresh/metasfresh/issues/1065) Move HU to other Warehouse/ Locator
   * [#1286](https://github.com/metasfresh/metasfresh/issues/1286) Performance Business Partner Pricelist generation process
+
+* metasfresh-webui-api
+  * [#269](https://github.com/metasfresh/metasfresh-webui-api/issues/269) API for Manufacturing UI Planning/ Doing
   
 * metasfresh-frontend-api
   * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
