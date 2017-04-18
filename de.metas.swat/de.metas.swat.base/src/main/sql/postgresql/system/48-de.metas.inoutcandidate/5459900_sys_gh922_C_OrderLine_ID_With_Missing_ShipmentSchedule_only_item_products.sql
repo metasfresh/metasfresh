@@ -1,12 +1,9 @@
 
-
-drop VIEW IF EXISTS C_OrderLine_ID_With_Missing_ShipmentSchedule; -- ad-hoc view, wrong name
 CREATE OR REPLACE VIEW C_OrderLine_ID_With_Missing_ShipmentSchedule_v AS
 SELECT ol.C_OrderLine_id
 FROM C_OrderLine ol
 	JOIN C_Order o ON ol.C_Order_id=o.C_Order_ID
 		JOIN C_DocType dt on dt.C_DocType_ID=o.c_doctype_id
-	JOIN M_Product p ON p.M_Product_ID=ol.M_Product_ID AND p.ProductType='I' /* gh #992; see comment */
 	JOIN M_Product p ON p.M_Product_ID=ol.M_Product_ID AND p.ProductType='I' /* gh #992; see comment */
 where true
 	AND ol.QtyOrdered <> ol.QtyDelivered 

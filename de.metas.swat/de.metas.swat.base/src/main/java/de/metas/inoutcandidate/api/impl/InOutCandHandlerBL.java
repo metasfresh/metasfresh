@@ -235,6 +235,6 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 		final IInOutCandHandler inOutCandHandler = tableName2Handler.get(tableName);
 		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
 
-		return inOutCandHandler.createDeliverReques(sched);
+		return inOutCandHandler.createDeliverRequest(sched);
 	}
 }
