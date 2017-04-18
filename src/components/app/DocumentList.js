@@ -131,7 +131,7 @@ class DocumentList extends Component {
         ) {
             if(!inBackground){
                 // In case of preventing cached selection restore
-                cachedSelection && 
+                cachedSelection &&
                     dispatch(selectTableItems(cachedSelection, windowType))
             }else{
                 this.setState({
@@ -139,14 +139,13 @@ class DocumentList extends Component {
                 })
             }
         }
-        
-        
+
         /*
          * When the selection of unfocused table changes
          */
         if(
             selectedWindowType === windowType &&
-            JSON.stringify(selected) != JSON.stringify(this.props.selected) &&
+            cachedSelection !== null &&
             layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId
         ){
@@ -184,7 +183,7 @@ class DocumentList extends Component {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
-        
+
         if(hasIncluded){
             return true;
         }
@@ -393,15 +392,15 @@ class DocumentList extends Component {
             includedView, children, isIncluded
         } = this.props;
 
-        const hasIncluded = layout && layout.supportIncludedView && 
+        const hasIncluded = layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
         if(layout && data) {
             return (
-                <div 
+                <div
                     className={
-                        'document-list-wrapper ' + 
+                        'document-list-wrapper ' +
                         (isIncluded ? 'document-list-included ' : '')
                     }
                 >
@@ -473,7 +472,8 @@ class DocumentList extends Component {
                             closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
-                            defaultSelected={cachedSelection ? cachedSelection : selected}
+                            defaultSelected={cachedSelection ?
+                                cachedSelection : selected}
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
                             inBackground={inBackground}

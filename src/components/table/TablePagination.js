@@ -85,7 +85,7 @@ class TablePagination extends Component {
                 key={1}
                 onClick={() => {handleChangePage(1); deselect()} }
             >
-                <a 
+                <a
                     className={
                         'page-link ' +
                         (compressed ? 'page-link-compressed ' : '')
@@ -160,10 +160,10 @@ class TablePagination extends Component {
             );
         }
     }
-    
+
     renderTotalItems = () => {
         const {size, queryLimitHit} = this.props;
-        return ( 
+        return (
             <div className="hidden-sm-down">
                 <div>
                     Total items {size}
@@ -175,7 +175,7 @@ class TablePagination extends Component {
             </div>
         )
     }
-    
+
     renderSelectAll = () => {
         const {selected, handleSelectAll} = this.props;
         return (
@@ -193,9 +193,9 @@ class TablePagination extends Component {
             </div>
         )
     }
-    
+
     renderArrow = (left) => {
-        const {compressed} = this.props;
+        const {compressed, handleChangePage, deselect} = this.props;
         return (
             <li className="page-item">
                 <a
@@ -216,8 +216,7 @@ class TablePagination extends Component {
 
     render() {
         const {
-            size, pageLength, selected, handleSelectAll, handleChangePage, page,
-            deselect, queryLimitHit, compressed
+            size, pageLength, handleChangePage, page, compressed
         } = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
 

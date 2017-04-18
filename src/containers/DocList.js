@@ -120,7 +120,7 @@ class DocList extends Component {
                          >
                              <DocumentList
                                  type="grid"
-                                 windowType={includedView.windowType}
+                                 windowType={parseInt(includedView.windowType)}
                                  defaultViewId={includedView.viewId}
                                  isIncluded={true}
                              />
@@ -180,13 +180,13 @@ function mapStateToProps(state) {
         latestNewDocument: null,
         indicator: ''
     }
-    
+
     const {
         includedView
     } = listHandler || {
         includedView: {}
     }
-    
+
     const {
         processStatus
     } = appHandler || {
