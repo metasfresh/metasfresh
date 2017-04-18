@@ -93,6 +93,7 @@ import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
 import de.metas.adempiere.modelvalidator.C_CountryArea_Assign;
+import de.metas.adempiere.modelvalidator.M_Inventory;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
@@ -216,6 +217,9 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.picking.modelvalidator.M_PickingSlot(), client); // 06178
 
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
+		
+		//task #1064
+		engine.addModelValidator(new M_Inventory(), client);
 
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);

@@ -53,7 +53,7 @@ public class ADHyperlinkBuilder
 
 	private static final transient Logger logger = LogManager.getLogger(ADHyperlinkBuilder.class);
 
-	public String createShowWindowHTML(final ITableRecordReference recordRef)
+	public String createShowWindowHTML(final ITableRecordReference recordRef, final int adWindowId)
 	{
 		if (recordRef == null)
 		{
@@ -64,7 +64,7 @@ public class ADHyperlinkBuilder
 		Object record;
 		try
 		{
-			final IContextAware context = new PlainContextAware(Env.getCtx());
+			final IContextAware context = PlainContextAware.newOutOfTrx(Env.getCtx());
 			record = recordRef.getModel(context);
 		}
 		catch (Exception e)
@@ -76,23 +76,27 @@ public class ADHyperlinkBuilder
 		String documentNo = Services.get(IDocActionBL.class).getDocumentNo(record);
 		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
 		final int recordId = InterfaceWrapperHelper.getId(record);
-		return createShowWindowHTML(documentNo, tableName, recordId);
+		return createShowWindowHTML(documentNo, tableName, recordId, adWindowId);
 	}
 
-	public String createShowWindowHTML(String text, String tableName, int recordId)
+	public String createShowWindowHTML(String text, String tableName, int recordId, final int adWindowId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String whereClause = keyColumnName + "=" + recordId;
-		return createShowWindowHTML(text, tableName, whereClause);
+		return createShowWindowHTML(text, tableName, adWindowId, whereClause);
 	}
 
-	public String createShowWindowHTML(String text, String tableName, String whereClause)
+	public String createShowWindowHTML(String text, String tableName, final int adWindowId, String whereClause)
 	{
 		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final Map<String, String> params = new LinkedHashMap<>(); // we use LinkedHashMap because we need a predictable order; tests are depending on this.
 		params.put("AD_Table_ID", Integer.toString(AD_Table_ID));
 		params.put("WhereClause", whereClause);
+		if(adWindowId > 0)
+		{
+			params.put("AD_Window_ID", Integer.toString(adWindowId));
+		}
 
 		final ADHyperlink link = new ADHyperlink(ADHyperlink.Action.ShowWindow, params);
 		final URI uri = toURI(link);

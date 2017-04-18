@@ -238,9 +238,20 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp shipDate = inOut.getMovementDate();
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
-		final int taxId = Services.get(ITaxBL.class).getTax(ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
+		final int taxId = Services.get(ITaxBL.class).getTax(
+				ctx
+				, ic
+				, taxCategoryId
+				, productId
+				, chargeId
+				, billDate
+				, shipDate
+				, adOrgId
+				, inOut.getM_Warehouse()
+				, locationId // billC_BPartner_Location_ID
 				, locationId // shipC_BPartner_Location_ID
-				, isSOTrx, trxName);
+				, isSOTrx 
+				, trxName);
 		ic.setC_Tax_ID(taxId);
 
 		//
