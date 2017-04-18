@@ -75,7 +75,9 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				//
+				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
+				.setHasIncludedViewSupport(true)
 				//
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Lookup)

@@ -62,6 +62,7 @@ public class DocumentViewLayout
 	
 	private final boolean hasAttributesSupport;
 	private final boolean hasTreeSupport;
+	private final boolean hasIncludedViewSupport;
 
 
 	private DocumentViewLayout(final Builder builder)
@@ -82,6 +83,7 @@ public class DocumentViewLayout
 		
 		hasAttributesSupport = builder.hasAttributesSupport;
 		hasTreeSupport = builder.hasTreeSupport;
+		hasIncludedViewSupport = builder.hasIncludedViewSupport;
 	}
 
 	@Override
@@ -155,6 +157,11 @@ public class DocumentViewLayout
 	{
 		return hasTreeSupport;
 	}
+	
+	public boolean isIncludedViewSupport()
+	{
+		return hasIncludedViewSupport;
+	}
 
 	public static final class Builder
 	{
@@ -169,6 +176,7 @@ public class DocumentViewLayout
 		
 		private boolean hasAttributesSupport = false;
 		private boolean hasTreeSupport = false;
+		private boolean hasIncludedViewSupport = false;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 		
@@ -331,6 +339,12 @@ public class DocumentViewLayout
 		public Builder setHasTreeSupport(boolean hasTreeSupport)
 		{
 			this.hasTreeSupport = hasTreeSupport;
+			return this;
+		}
+		
+		public Builder setHasIncludedViewSupport(boolean hasIncludedViewSupport)
+		{
+			this.hasIncludedViewSupport = hasIncludedViewSupport;
 			return this;
 		}
 	}

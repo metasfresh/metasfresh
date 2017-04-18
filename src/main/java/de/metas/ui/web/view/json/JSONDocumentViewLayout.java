@@ -107,8 +107,12 @@ public final class JSONDocumentViewLayout implements Serializable
 	public static final String PROPERTY_supportAttributes = "supportAttributes";
 	@JsonProperty(value = PROPERTY_supportAttributes)
 	private boolean supportAttributes;
-	@JsonProperty(value = "supportTree")
+	//
+	@JsonProperty("supportTree")
 	private final boolean supportTree;
+	//
+	@JsonProperty("supportIncludedView")
+	private final boolean supportIncludedView;
 
 	//
 	// New record support
@@ -153,6 +157,7 @@ public final class JSONDocumentViewLayout implements Serializable
 
 		supportAttributes = layout.isAttributesSupport();
 		supportTree = layout.isTreeSupport();
+		supportIncludedView = layout.isIncludedViewSupport();
 	}
 
 	@JsonCreator
@@ -166,6 +171,7 @@ public final class JSONDocumentViewLayout implements Serializable
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 			, @JsonProperty(value = PROPERTY_supportAttributes) final boolean supportAttributes //
 			, @JsonProperty(value = "supportTree") final boolean supportTree //
+			, @JsonProperty(value = "supportIncludedView") final boolean supportIncludedView //
 			//
 			, @JsonProperty("newRecordCaption") final String newRecordCaption //
 			, @JsonProperty("supportNewRecord") final boolean supportNewRecord //
@@ -185,6 +191,7 @@ public final class JSONDocumentViewLayout implements Serializable
 
 		this.supportAttributes = supportAttributes;
 		this.supportTree = supportTree;
+		this.supportIncludedView = supportIncludedView;
 
 		//
 		// New record support
