@@ -51,6 +51,11 @@ body {
     height: 100%;
 }
 
+.container-fluid-subheader {
+    padding-right: 0;
+}
+
+
 @media (max-width: 768px) {
     .container-fluid {
         padding-left: .5rem;
