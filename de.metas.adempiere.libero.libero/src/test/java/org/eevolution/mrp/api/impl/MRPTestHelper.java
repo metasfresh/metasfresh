@@ -80,15 +80,12 @@ import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assume;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.engine.impl.PlainDocActionBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 public class MRPTestHelper

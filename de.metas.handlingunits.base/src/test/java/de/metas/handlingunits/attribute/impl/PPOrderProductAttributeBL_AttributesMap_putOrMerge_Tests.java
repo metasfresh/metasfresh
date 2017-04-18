@@ -8,9 +8,7 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,10 +17,12 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.attribute.impl.PPOrderProductAttributeBL.AttributesWithValues;
+import de.metas.handlingunits.attribute.impl.PPOrderProductAttributeBL.AttributeWithValue;
+import de.metas.handlingunits.attribute.impl.PPOrderProductAttributeBL.AttributesMap;
 import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 
@@ -49,18 +49,54 @@ import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
  */
 
 /**
- * Verifies the behavior of {@link PPOrderProductAttributeBL#putOrMergeInMap(Map, I_PP_Order_ProductAttribute)}.
+ * Verifies the behavior of {@link AttributesMap#putOrMerge(I_PP_Order_ProductAttribute)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/810
  */
-public class PPOrderProductAttributeBLputOrMergeInMapTests
+public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 {
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 	}
+	
+	@Test
+	public void transferWhenNullWithThreeAttributesOneFilled_AllNull()
+	{
+		final boolean transferWhenNull = true;
+		final I_M_Attribute attribute = mkAttribute(transferWhenNull);
+
+		final I_PP_Order_ProductAttribute ppOrderAttribute1 = mkPPOrderAttributeStr(attribute, null);
+		final I_PP_Order_ProductAttribute ppOrderAttribute2 = mkPPOrderAttributeStr(attribute, null);
+		final I_PP_Order_ProductAttribute ppOrderAttribute3 = mkPPOrderAttributeStr(attribute, null);
+
+		performTestWithThreeAttributes(attribute,
+				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
+				a -> a.getValueString(), // actual
+				nullValue() // expected
+		);
+	}
+	
+	@Test
+	public void dontTransferWhenNullWithThreeAttributesOneFilled_AllNull()
+	{
+		final boolean transferWhenNull = false;
+		final I_M_Attribute attribute = mkAttribute(transferWhenNull);
+
+		final I_PP_Order_ProductAttribute ppOrderAttribute1 = mkPPOrderAttributeStr(attribute, null);
+		final I_PP_Order_ProductAttribute ppOrderAttribute2 = mkPPOrderAttributeStr(attribute, null);
+		final I_PP_Order_ProductAttribute ppOrderAttribute3 = mkPPOrderAttributeStr(attribute, null);
+
+		performTestWithThreeAttributes(attribute,
+				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
+				a -> a.getValueString(), // actual
+				nullValue() // expected
+		);
+	}
+
+
 
 	@Test
 	public void transferWhenNullWithThreeAttributesOneFilled_Value()
@@ -76,7 +112,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				is(expectedValue) // expected
 		);
 	}
@@ -114,7 +150,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				is(expectedValue) // expected
 		);
 	}
@@ -133,7 +169,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				is(expectedValue) // expected
 		);
 	}
@@ -170,7 +206,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				nullValue() // expected
 		);
 	}
@@ -204,7 +240,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				nullValue() // expected
 		);
 	}
@@ -240,7 +276,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				nullValue() // expected
 		);
 	}
@@ -276,7 +312,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				nullValue() // expected
 		);
 	}
@@ -295,7 +331,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				is(expectedValue) // expected
 		);
 	}
@@ -306,11 +342,11 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 		final boolean transferWhenNull = false;
 		final I_M_Attribute attribute = mkAttribute(transferWhenNull);
 
-		final BigDecimal expectedValue = new BigDecimal("3");
+		final BigDecimal value = new BigDecimal("3");
 
 		final I_PP_Order_ProductAttribute ppOrderAttribute1 = mkPPOrderAttributeNum(attribute, null);
-		final I_PP_Order_ProductAttribute ppOrderAttribute2 = mkPPOrderAttributeNum(attribute, expectedValue);
-		final I_PP_Order_ProductAttribute ppOrderAttribute3 = mkPPOrderAttributeNum(attribute, expectedValue.setScale(3)/* equal but not same number */);
+		final I_PP_Order_ProductAttribute ppOrderAttribute2 = mkPPOrderAttributeNum(attribute, value);
+		final I_PP_Order_ProductAttribute ppOrderAttribute3 = mkPPOrderAttributeNum(attribute, value.setScale(3)/* equal but not same number */);
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
@@ -350,7 +386,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				nullValue() // expected
 		);
 	}
@@ -384,7 +420,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
-				a -> a.getValue(), // actual
+				a -> a.getValueString(), // actual
 				nullValue() // expected
 		);
 	}
@@ -427,7 +463,7 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 	}
 
 	/**
-	 * Calls {@link PPOrderProductAttributeBL#putOrMergeInMap(Map, I_PP_Order_ProductAttribute)} multiple times, with the given three attributes, but in different ordering.
+	 * Calls "putOrMerge" multiple times, with the given three attributes, but in different ordering.
 	 * The result always needs to be the same.
 	 *
 	 * @param attribute
@@ -437,35 +473,30 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 	 * @param actualValue function that will be used to get the actual value (i.e. {@code value} or {@code valueNumber}) when checking the results
 	 * @param expectedValue matcher that is applied to find out if the actual value is OK
 	 */
-	private <T> void performTestWithThreeAttributes(final I_M_Attribute attribute,
-			final I_PP_Order_ProductAttribute ppOrderAttribute1,
-			final I_PP_Order_ProductAttribute ppOrderAttribute2,
-			final I_PP_Order_ProductAttribute ppOrderAttribute3,
-			final Function<PPOrderProductAttributeBL.AttributesWithValues, T> actualValue,
-			final Matcher<?> expectedValue)
+	private <T> void performTestWithThreeAttributes(final I_M_Attribute attribute, final I_PP_Order_ProductAttribute ppOrderAttribute1, final I_PP_Order_ProductAttribute ppOrderAttribute2, final I_PP_Order_ProductAttribute ppOrderAttribute3, final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue, final Matcher<?> expectedValue)
 	{
-		final Map<Integer, PPOrderProductAttributeBL.AttributesWithValues> attributesMap = new HashMap<>();
 
 		// we want to check each different ordering (i.e. all possible permutations).
 		final Collection<List<I_PP_Order_ProductAttribute>> permutations = Collections2.permutations(ImmutableList.of(ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3));
-		permutations
-				.forEach(permulation -> {
+		
+		permutations.forEach(permutation -> {
+			final AttributesMap attributesMap = new AttributesMap();
+			
+			// invoke the code under test
+			permutation.forEach(ppOrderAttribute -> attributesMap.putOrMerge(ppOrderAttribute));
 
-					// invoke the code under test
-					permulation
-							.forEach(ppOrderAttribute -> new PPOrderProductAttributeBL().putOrMergeInMap(attributesMap, ppOrderAttribute));
-
-					// verify
-					try
-					{
-						verifyInvariants(attribute, attributesMap, actualValue, expectedValue);
-						attributesMap.clear();
-					}
-					catch (final AssertionError e)
-					{
-						fail("Failed with permulation=" + permulation + ":" + e.getMessage());
-					}
-				});
+			// verify
+			try
+			{
+				verifyInvariants(attribute, attributesMap, actualValue, expectedValue);
+			}
+			catch (final AssertionError e)
+			{
+				e.printStackTrace();
+				fail(e.getMessage()
+						+ "\n Permutation:\n" + Joiner.on("\n").join(permutation));
+			}
+		});
 
 	}
 
@@ -477,12 +508,9 @@ public class PPOrderProductAttributeBLputOrMergeInMapTests
 	 * @param actualValue
 	 * @param expectedValue
 	 */
-	private <T> void verifyInvariants(final I_M_Attribute attribute,
-			final Map<Integer, PPOrderProductAttributeBL.AttributesWithValues> attributesMap,
-			final Function<PPOrderProductAttributeBL.AttributesWithValues, T> actualValue,
-			final Matcher<?> expectedValue)
+	private <T> void verifyInvariants(final I_M_Attribute attribute, final AttributesMap attributesMap, final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue, final Matcher<?> expectedValue)
 	{
-		final AttributesWithValues attributeFromMap = attributesMap.get(attribute.getM_Attribute_ID());
+		final AttributeWithValue attributeFromMap = attributesMap.getByAttributeId(attribute.getM_Attribute_ID());
 		if (attributeFromMap == null)
 		{
 			if (!expectedValue.equals(nullValue()))

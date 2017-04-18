@@ -1,12 +1,12 @@
 package de.metas.process;
 
-import java.util.Objects;
-
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
+import lombok.Value;
 
 /*
  * #%L
@@ -21,22 +21,23 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * A small immutable object which contains the AD_Process_ID and it's attached flags (is quick action, is the default quick action etc).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Immutable
+@Value
 public final class RelatedProcessDescriptor
 {
 	public static final Builder builder()
@@ -44,91 +45,37 @@ public final class RelatedProcessDescriptor
 		return new Builder();
 	}
 
-	public static final RelatedProcessDescriptor ofAD_Process_ID(final int adProcessId)
-	{
-		return builder()
-				.setAD_Process_ID(adProcessId)
-				.build();
-	}
+	private final int processId;
 
-	private final int adProcessId;
+	private final int tableId;
+	private final int windowId;
+
 	private final boolean webuiQuickAction;
 	private final boolean webuiDefaultQuickAction;
 
 	private RelatedProcessDescriptor(final Builder builder)
 	{
 		super();
-		adProcessId = builder.adProcessId;
-		if (adProcessId <= 0)
-		{
-			throw new IllegalArgumentException("adProcessId shall be >= 0");
-		}
+		processId = builder.processId;
+		Preconditions.checkArgument(processId > 0, "adProcessId not set");
+
+		tableId = builder.tableId > 0 ? builder.tableId : 0;
+		windowId = builder.windowId > 0 ? builder.windowId : 0;
 
 		webuiQuickAction = builder.webuiQuickAction;
 		webuiDefaultQuickAction = builder.webuiDefaultQuickAction;
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("AD_Process_ID", adProcessId)
-				.add("webuiQuickAction", webuiQuickAction)
-				.add("webuiDefaultQuickAction", webuiDefaultQuickAction)
-				.toString();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(adProcessId, webuiQuickAction, webuiDefaultQuickAction);
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		if (obj instanceof RelatedProcessDescriptor)
-		{
-			final RelatedProcessDescriptor other = (RelatedProcessDescriptor)obj;
-			return adProcessId == other.adProcessId
-					&& webuiQuickAction == other.webuiQuickAction
-					&& webuiDefaultQuickAction == other.webuiDefaultQuickAction;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public int getAD_Process_ID()
-	{
-		return adProcessId;
-	}
-
-	public boolean isWebuiQuickAction()
-	{
-		return webuiQuickAction;
-	}
-
-	public boolean isWebuiDefaultQuickAction()
-	{
-		return webuiDefaultQuickAction;
-	}
-	
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
 	{
-		return permissions.checkProcessAccessRW(adProcessId);
+		return permissions.checkProcessAccessRW(processId);
 	}
-
 
 	public static final class Builder
 	{
-		private int adProcessId;
+		private int processId;
+		private int tableId;
+		private int windowId;
 		private boolean webuiQuickAction;
 		private boolean webuiDefaultQuickAction;
 
@@ -142,21 +89,51 @@ public final class RelatedProcessDescriptor
 			return new RelatedProcessDescriptor(this);
 		}
 
-		public Builder setAD_Process_ID(final int adProcessId)
+		public Builder processId(final int adProcessId)
 		{
-			this.adProcessId = adProcessId;
+			processId = adProcessId;
 			return this;
 		}
 
-		public Builder setWebuiQuickAction(final boolean webuiQuickAction)
+		public Builder tableId(final int adTableId)
+		{
+			tableId = adTableId;
+			return this;
+		}
+
+		public Builder anyTable()
+		{
+			tableId = 0;
+			return this;
+		}
+
+		public Builder windowId(final int adWindowId)
+		{
+			windowId = adWindowId;
+			return this;
+		}
+
+		public Builder anyWindow()
+		{
+			windowId = 0;
+			return this;
+		}
+
+		public Builder webuiQuickAction(final boolean webuiQuickAction)
 		{
 			this.webuiQuickAction = webuiQuickAction;
 			return this;
 		}
 
-		public Builder setWebuiDefaultQuickAction(final boolean webuiDefaultQuickAction)
+		public Builder webuiDefaultQuickAction(final boolean webuiDefaultQuickAction)
 		{
 			this.webuiDefaultQuickAction = webuiDefaultQuickAction;
+			return this;
+		}
+
+		public Builder webuiDefaultQuickAction()
+		{
+			webuiDefaultQuickAction(true);
 			return this;
 		}
 	}
