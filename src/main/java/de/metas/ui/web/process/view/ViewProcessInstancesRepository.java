@@ -58,7 +58,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 
 	private static final String PROCESS_HANDLER_TYPE = "View";
 
-	private final CCache<String, ViewActionsDescriptor> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
+	private final CCache<String, ViewActionsListDescriptor> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
 
 	private final CCache<String, ViewActionInstancesList> viewActionInstancesByViewId = CCache.newLRUCache("viewActionInstancesByViewId", 100, 60);
 
@@ -68,10 +68,10 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		return PROCESS_HANDLER_TYPE;
 	}
 
-	private final ViewActionsDescriptor getViewActionsDescriptor(@NonNull final IDocumentViewSelection view)
+	private final ViewActionsListDescriptor getViewActionsDescriptor(@NonNull final IDocumentViewSelection view)
 	{
 		final Class<? extends IDocumentViewSelection> viewClass = view.getClass();
-		return viewActionsDescriptorByViewClassname.getOrLoad(viewClass.getName(), () -> ViewActionsDescriptor.of(viewClass));
+		return viewActionsDescriptorByViewClassname.getOrLoad(viewClass.getName(), () -> ViewActionsListDescriptor.of(viewClass));
 	}
 
 	private final ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)

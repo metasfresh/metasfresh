@@ -47,18 +47,18 @@ import lombok.ToString;
  *
  */
 @ToString
-/* package */final class ViewActionsDescriptor
+/* package */final class ViewActionsListDescriptor
 {
-	public static final ViewActionsDescriptor of(final Class<? extends IDocumentViewSelection> viewClass)
+	public static final ViewActionsListDescriptor of(final Class<? extends IDocumentViewSelection> viewClass)
 	{
-		return new ViewActionsDescriptor(viewClass);
+		return new ViewActionsListDescriptor(viewClass);
 	}
 
-	private static final Logger logger = LogManager.getLogger(ViewActionsDescriptor.class);
+	private static final Logger logger = LogManager.getLogger(ViewActionsListDescriptor.class);
 
 	private final Map<String, ViewActionDescriptor> viewActions;
 
-	private ViewActionsDescriptor(final Class<? extends IDocumentViewSelection> viewClass)
+	private ViewActionsListDescriptor(final Class<? extends IDocumentViewSelection> viewClass)
 	{
 		final ActionIdGenerator actionIdGenerator = new ActionIdGenerator();
 
