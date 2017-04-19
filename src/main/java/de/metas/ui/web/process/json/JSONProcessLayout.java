@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -43,10 +44,14 @@ public class JSONProcessLayout implements Serializable
 		return new JSONProcessLayout(layout, jsonOpts);
 	}
 
+	@JsonProperty("layoutType")
+	private final ProcessLayoutType layoutType;
+	
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("description")
 	private final String description;
+	
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -54,11 +59,13 @@ public class JSONProcessLayout implements Serializable
 	private JSONProcessLayout(final ProcessLayout layout, final JSONOptions jsonOpts)
 	{
 		super();
+		
+		layoutType = layout.getLayoutType();
+		
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = layout.getCaption(adLanguage);
 		description = layout.getDescription(adLanguage);
 
 		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
 	}
-
 }

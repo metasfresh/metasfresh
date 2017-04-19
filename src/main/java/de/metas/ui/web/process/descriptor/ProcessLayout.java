@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -48,7 +49,28 @@ public class ProcessLayout
 		return new Builder();
 	}
 
+	public static enum ProcessLayoutType
+	{
+		Panel("panel"), SingleOverlayField("singleOverlayField");
+
+		private final String json;
+
+		private ProcessLayoutType(final String json)
+		{
+			this.json = json;
+		}
+
+		@JsonValue
+		public String toJson()
+		{
+			return json;
+		}
+	};
+
 	private final ProcessId processId;
+
+	private final ProcessLayoutType layoutType;
+
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
@@ -60,6 +82,10 @@ public class ProcessLayout
 
 		Preconditions.checkNotNull(builder.processId, "processId not set: %s", builder);
 		processId = builder.processId;
+		
+		Preconditions.checkNotNull(builder.layoutType, "layoutType not set: %s", builder);
+		layoutType = builder.layoutType;
+		
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
 		elements = ImmutableList.copyOf(builder.elements);
@@ -74,6 +100,11 @@ public class ProcessLayout
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
+	}
+
+	public ProcessLayoutType getLayoutType()
+	{
+		return layoutType;
 	}
 
 	public ITranslatableString getCaption()
@@ -103,7 +134,8 @@ public class ProcessLayout
 
 	public static final class Builder
 	{
-		public ProcessId processId;
+		private ProcessId processId;
+		private ProcessLayoutType layoutType = ProcessLayoutType.Panel;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
@@ -129,9 +161,15 @@ public class ProcessLayout
 					.toString();
 		}
 
-		public Builder setProcessId(ProcessId processId)
+		public Builder setProcessId(final ProcessId processId)
 		{
 			this.processId = processId;
+			return this;
+		}
+
+		public Builder setLayoutType(final ProcessLayoutType layoutType)
+		{
+			this.layoutType = layoutType;
 			return this;
 		}
 

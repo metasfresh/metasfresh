@@ -22,6 +22,7 @@ import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.view.ViewAction.AlwaysAllowPrecondition;
 import de.metas.ui.web.process.view.ViewAction.Precondition;
@@ -79,6 +80,8 @@ import lombok.ToString;
 	private final boolean defaultAction;
 	private final Class<? extends Precondition> preconditionClass;
 	private final Precondition preconditionSharedInstance;
+	
+	private final ProcessLayoutType layoutType;
 
 	private final List<ViewActionParamDescriptor> viewActionParamDescriptors;
 	private final ViewActionMethodReturnTypeConverter viewActionReturnTypeConverter;
@@ -96,6 +99,7 @@ import lombok.ToString;
 		caption = Services.get(IMsgBL.class).getTranslatableMsgText(viewActionAnn.caption());
 		description = Services.get(IMsgBL.class).getTranslatableMsgText(viewActionAnn.description());
 		defaultAction = viewActionAnn.defaultAction();
+		layoutType = viewActionAnn.layoutType();
 
 		//
 		// Preconditions
@@ -184,6 +188,7 @@ import lombok.ToString;
 
 		final ProcessLayout processLayout = ProcessLayout.builder()
 				.setProcessId(processId)
+				.setLayoutType(layoutType)
 				.setCaption(caption)
 				.setDescription(description)
 				.addElements(parametersDescriptor)
