@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.compiere.util.CCache;
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.ui.web.view.DocumentViewCreateRequest;
@@ -49,12 +50,13 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
-	private final transient CCache<WindowId, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
+	private final transient CCache<ArrayKey, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
 
 	@Override
-	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
+	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		return layouts.getOrLoad(windowId, () -> createHUViewLayout(windowId));
+		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
+		return layouts.getOrLoad(key, () -> createHUViewLayout(windowId, viewDataType));
 	}
 
 	@Override
@@ -62,8 +64,57 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		return null; // not supported
 	}
+	
+	private final DocumentViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
+	{
+		if(viewDataType == JSONViewDataType.includedView)
+		{
+			return createHUViewLayout_IncludedView(windowId);
+		}
+		else
+		{
+			return createHUViewLayout_Grid(windowId);
+		}
+	}
 
-	private final DocumentViewLayout createHUViewLayout(final WindowId windowId)
+	private final DocumentViewLayout createHUViewLayout_IncludedView(final WindowId windowId)
+	{
+		return DocumentViewLayout.builder()
+				.setWindowId(windowId)
+				.setCaption("HU Editor")
+				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
+				//
+				.setHasAttributesSupport(true)
+				.setHasTreeSupport(true)
+				//
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaption("Code")
+						.setWidgetType(DocumentFieldWidgetType.Text)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(I_WEBUI_HU_View.COLUMNNAME_Value)))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaptionFromAD_Message("M_Product_ID")
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID)))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaptionFromAD_Message("M_HU_PI_Item_Product_ID")
+						.setWidgetType(DocumentFieldWidgetType.Text)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(I_WEBUI_HU_View.COLUMNNAME_PackingInfo)))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaptionFromAD_Message("QtyCU")
+						.setWidgetType(DocumentFieldWidgetType.Quantity)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(I_WEBUI_HU_View.COLUMNNAME_QtyCU)))
+				//
+				.build();
+	}
+
+
+	private final DocumentViewLayout createHUViewLayout_Grid(final WindowId windowId)
 	{
 		return DocumentViewLayout.builder()
 				.setWindowId(windowId)
