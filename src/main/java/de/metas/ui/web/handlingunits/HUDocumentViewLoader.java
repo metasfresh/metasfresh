@@ -31,7 +31,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.DocumentView;
-import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -93,7 +92,7 @@ public class HUDocumentViewLoader
 			throw new IllegalArgumentException("No filters specified for " + request);
 		}
 
-		_attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(windowId);
+		_attributesProvider = new HUDocumentViewAttributesProvider();
 	}
 
 	public IDocumentViewAttributesProvider getAttributesProvider()
