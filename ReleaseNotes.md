@@ -20,6 +20,7 @@ Here come the actual release notes:
   * [#1062](https://github.com/metasfresh/metasfresh/issues/1062) Return HU to vendor
   * [#1064](https://github.com/metasfresh/metasfresh/issues/1064) Move HU to garbage
   * [#1065](https://github.com/metasfresh/metasfresh/issues/1065) Move HU to other Warehouse/ Locator
+  * [#1223](https://github.com/metasfresh/metasfresh/issues/1223) Show line number in jaspers
   * [#1286](https://github.com/metasfresh/metasfresh/issues/1286) Performance Business Partner Pricelist generation process
 
 * metasfresh-webui-api
