@@ -72,8 +72,6 @@ public class JSONDocumentView extends JSONDocumentBase
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
 			// Add pseudo "ID" field first
-			final String idFieldName = row.getIdFieldNameOrNull();
-			if (idFieldName != null)
 			{
 				final Object id = row.getDocumentId().toJson();
 				jsonFields.add(0, JSONDocumentField.idField(id));

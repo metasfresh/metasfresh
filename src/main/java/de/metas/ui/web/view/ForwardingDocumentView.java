@@ -84,12 +84,6 @@ public class ForwardingDocumentView implements IDocumentView
 	}
 
 	@Override
-	public String getIdFieldNameOrNull()
-	{
-		return getDelegate().getIdFieldNameOrNull();
-	}
-
-	@Override
 	public Set<String> getFieldNames()
 	{
 		return getDelegate().getFieldNames();

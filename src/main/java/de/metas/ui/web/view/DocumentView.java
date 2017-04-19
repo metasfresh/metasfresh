@@ -55,7 +55,6 @@ public final class DocumentView implements IDocumentView
 	private final IDocumentViewType type;
 	private final boolean processed;
 
-	private final String idFieldName;
 	private final Map<String, Object> values;
 
 	private final IDocumentViewAttributesProvider attributesProvider;
@@ -68,7 +67,6 @@ public final class DocumentView implements IDocumentView
 		super();
 		documentPath = builder.getDocumentPath();
 
-		idFieldName = builder.idFieldName;
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
 		processed = builder.isProcessed();
@@ -100,12 +98,6 @@ public final class DocumentView implements IDocumentView
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
-	}
-
-	@Override
-	public String getIdFieldNameOrNull()
-	{
-		return idFieldName;
 	}
 
 	@Override
@@ -231,6 +223,7 @@ public final class DocumentView implements IDocumentView
 			return this;
 		}
 
+		/** @return view row ID */
 		private DocumentId getDocumentId()
 		{
 			if (_documentId != null)
@@ -267,7 +260,6 @@ public final class DocumentView implements IDocumentView
 			{
 				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' (" + idJson.getClass() + ") to integer");
 			}
-
 		}
 
 		private IDocumentViewType getType()

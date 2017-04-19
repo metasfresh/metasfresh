@@ -44,7 +44,6 @@ public interface IDocumentView
 	//
 	// Fields
 	// @formatter:off
-	String getIdFieldNameOrNull();
 	Set<String> getFieldNames();
 	Object getFieldValueAsJson(final String fieldName);
 	Map<String, Object> getFieldNameAndJsonValues();
