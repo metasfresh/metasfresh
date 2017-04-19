@@ -115,7 +115,7 @@ class Referenced extends Component {
 }
 
 Referenced.propTypes = {
-    windowType: PropTypes.number.isRequired,
+    windowType: PropTypes.string.isRequired,
     docId: PropTypes.string.isRequired,
     dispatch: PropTypes.func.isRequired
 }

@@ -218,7 +218,7 @@ class MasterWindow extends Component {
                      >
                          <DocumentList
                              type="grid"
-                             windowType={parseInt(rawModal.type)}
+                             windowType={rawModal.type}
                              defaultViewId={rawModal.viewId}
                              selected={selected}
                              setModalTitle={this.setModalTitle}
