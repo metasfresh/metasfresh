@@ -521,7 +521,7 @@ class DocumentList extends Component {
 }
 
 DocumentList.propTypes = {
-    windowType: PropTypes.number.isRequired,
+    windowType: PropTypes.string.isRequired,
     dispatch: PropTypes.func.isRequired
 }
 

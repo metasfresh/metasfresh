@@ -106,7 +106,7 @@ class DocList extends Component {
                      >
                          <DocumentList
                              type="grid"
-                             windowType={parseInt(rawModal.type)}
+                             windowType={rawModal.type}
                              defaultViewId={rawModal.viewId}
                              selected={selected}
                              selectedWindowType={selectedWindowType}
@@ -120,7 +120,7 @@ class DocList extends Component {
                          >
                              <DocumentList
                                  type="grid"
-                                 windowType={parseInt(includedView.windowType)}
+                                 windowType={includedView.windowType}
                                  defaultViewId={includedView.viewId}
                                  isIncluded={true}
                              />
@@ -130,7 +130,7 @@ class DocList extends Component {
                  <DocumentList
                      type="grid"
                      updateUri={this.updateUriCallback}
-                     windowType={parseInt(windowType)}
+                     windowType={windowType}
                      defaultViewId={query.viewId}
                      defaultSort={query.sort}
                      defaultPage={parseInt(query.page)}
