@@ -119,7 +119,7 @@ class DocList extends Component {
                              }
                          >
                              <DocumentList
-                                 type="grid"
+                                 type="includedView"
                                  windowType={includedView.windowType}
                                  defaultViewId={includedView.viewId}
                                  isIncluded={true}
