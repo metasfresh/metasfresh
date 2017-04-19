@@ -52,8 +52,8 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 	@Value
 	private static final class DocumentViewAttributesKey
 	{
-		private DocumentId documentId;
-		private int huId;
+		private DocumentId viewRowId;
+		private DocumentId huId;
 	}
 
 	public HUDocumentViewAttributesProvider()
@@ -62,16 +62,15 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 	}
 
 	@Override
-	public HUDocumentViewAttributes getAttributes(final DocumentId documentId, final DocumentId attributesKey)
+	public HUDocumentViewAttributes getAttributes(final DocumentId viewRowId, final DocumentId huId)
 	{
-		final int huId = attributesKey.toInt();
-		final DocumentViewAttributesKey key = new DocumentViewAttributesKey(documentId, huId);
+		final DocumentViewAttributesKey key = new DocumentViewAttributesKey(viewRowId, huId);
 		return documentViewAttributesByKey.computeIfAbsent(key, this::createDocumentViewAttributes);
 	}
 
 	private HUDocumentViewAttributes createDocumentViewAttributes(final DocumentViewAttributesKey key)
 	{
-		final int huId = key.getHuId();
+		final int huId = key.getHuId().toInt();
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
 		if (hu == null)
 		{
@@ -82,13 +81,13 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 		attributesStorage.setSaveOnChange(true);
 		
 		final DocumentId documentTypeId = DocumentId.of(huId);
-		final DocumentId documentId = key.getDocumentId();
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.HUAttributes, documentTypeId, documentId);
+		final DocumentId viewRowId = key.getViewRowId();
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.HUAttributes, documentTypeId, viewRowId);
 
 		return new HUDocumentViewAttributes(documentPath, attributesStorage);
 	}
 
-	public IAttributeStorageFactory getAttributeStorageFactory()
+	private IAttributeStorageFactory getAttributeStorageFactory()
 	{
 		return _attributeStorageFactory.get();
 	}
