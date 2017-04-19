@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
+import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.DocumentViewResult;
@@ -345,7 +346,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
-	@ViewAction(caption = "Barcode")
+	@ViewAction(caption = "Barcode", layoutType = ProcessLayoutType.SingleOverlayField)
 	public SelectViewRowsAction actionSelectHUsByBarcode( //
 			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
 			, final Set<DocumentId> selectedDocumentIds //
@@ -473,7 +474,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		private ViewId parentViewId;
 		private ViewId viewId;
-		
+
 		private Set<DocumentPath> referencingDocumentPaths;
 
 		private HUDocumentViewLoader documentViewsLoader;
