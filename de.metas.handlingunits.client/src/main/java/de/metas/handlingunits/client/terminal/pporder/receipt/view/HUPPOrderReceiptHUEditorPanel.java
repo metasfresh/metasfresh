@@ -1,16 +1,12 @@
 package de.metas.handlingunits.client.terminal.pporder.receipt.view;
 
-import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.TerminalException;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
@@ -51,13 +47,6 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 		// get the selected cuKey
 		final CUKey cuKey = model.getCUKey();
 
-		// TODO: decide to delete following because not needed and will be implemented differently
-//		if (!(cuKey instanceof HUPPOrderReceiptCUKey))
-//		{
-//			model.doMoveForwardSelectedHUs();
-//			return;
-//		}
-
 		final HUPPOrderReceiptCUKey orderReceiptCUKey = (HUPPOrderReceiptCUKey)cuKey;
 
 		Services.get(ITrxManager.class).run(() -> {
@@ -78,34 +67,5 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 						.process();
 			}
 		});
-
-		//
-		// Complete forward DD Order if exists.
-		// We need to do this after first MO receipt, to allow the Bereitsteller to move the materials forward.
-		// task 07395
-		// TODO: decide to delete following because not needed and will be implemented differently
-//		Services.get(IDDOrderBL.class).completeForwardDDOrdersIfNeeded(model.getPP_Order());
 	}
-
-	@Override
-	protected void onDialogOkBeforeSave(final ITerminalDialog dialog)
-	{
-		// 08077
-		// Logic moved from de.metas.handlingunits.pporder.api.impl.PPOrderHUAssignmentListener.onHUAssigned(I_M_HU, Object, String)
-		// This is the place when we want the HUs to be activated
-		// service
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		final HUPPOrderReceiptHUEditorModel model = getHUEditorModel();
-
-		final Set<HUKey> selectedHUKeys = model.getSelectedHUKeys();
-		if (selectedHUKeys == null || selectedHUKeys.isEmpty())
-		{
-			throw new TerminalException("@NoSelection@");
-		}
-
-		final List<I_M_HU> selectedHUs = selectedHUKeys.stream().map(HUKey::getM_HU).collect(ImmutableList.toImmutableList());
-		handlingUnitsBL.setHUStatusActive(selectedHUs);
-	}
-
 }
