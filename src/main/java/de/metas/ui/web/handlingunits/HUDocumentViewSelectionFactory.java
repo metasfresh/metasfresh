@@ -44,7 +44,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewType = JSONViewDataType.grid)
+@DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
 {
 	@Autowired
@@ -64,10 +64,10 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		return null; // not supported
 	}
-	
+
 	private final DocumentViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
 	{
-		if(viewDataType == JSONViewDataType.includedView)
+		if (viewDataType == JSONViewDataType.includedView)
 		{
 			return createHUViewLayout_IncludedView(windowId);
 		}
@@ -112,7 +112,6 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				//
 				.build();
 	}
-
 
 	private final DocumentViewLayout createHUViewLayout_Grid(final WindowId windowId)
 	{

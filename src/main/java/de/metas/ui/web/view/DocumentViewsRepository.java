@@ -62,10 +62,9 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	private final ConcurrentHashMap<ArrayKey, IDocumentViewSelectionFactory> factories = new ConcurrentHashMap<>();
 	@Autowired
 	private SqlDocumentViewSelectionFactory defaultFactory;
-	
+
 	@Autowired
 	private MenuTreeRepository menuTreeRepo;
-
 
 	private final Cache<String, IDocumentViewSelection> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
@@ -82,14 +81,24 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 			final IDocumentViewSelectionFactory factory = (IDocumentViewSelectionFactory)factoryObj;
 			final DocumentViewFactory annotation = factoryObj.getClass().getAnnotation(DocumentViewFactory.class);
 			final WindowId windowId = WindowId.fromJson(annotation.windowId());
-			registerFactory(windowId, annotation.viewType(), factory);
+
+			JSONViewDataType[] viewTypes = annotation.viewTypes();
+			if (viewTypes.length == 0)
+			{
+				viewTypes = JSONViewDataType.values();
+			}
+
+			registerFactory(windowId, viewTypes, factory);
 		}
 	}
 
-	public void registerFactory(final WindowId windowId, final JSONViewDataType viewType, @NonNull final IDocumentViewSelectionFactory factory)
+	public void registerFactory(final WindowId windowId, final JSONViewDataType[] viewTypes, @NonNull final IDocumentViewSelectionFactory factory)
 	{
-		factories.put(mkFactoryKey(windowId, viewType), factory);
-		logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewType);
+		for (final JSONViewDataType viewType : viewTypes)
+		{
+			factories.put(mkFactoryKey(windowId, viewType), factory);
+			logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
+		}
 	}
 
 	private final IDocumentViewSelectionFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -120,7 +129,7 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 		final IDocumentViewSelectionFactory factory = getFactory(windowId, viewDataType);
 		final DocumentViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
 		final Collection<DocumentFilterDescriptor> viewFilters = factory.getViewFilters(windowId);
-		
+
 		final JSONDocumentViewLayout jsonLayout = JSONDocumentViewLayout.of(viewLayout, viewFilters, jsonOpts);
 		//
 		// Enable new record if supported
