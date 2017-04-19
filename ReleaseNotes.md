@@ -18,11 +18,13 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1062](https://github.com/metasfresh/metasfresh/issues/1062) Return HU to vendor
+    * New Functionality to send received Material back to Vendor via HU Editor. Can be automatically filtered directly via correction functionality in Material Receipt POS or manually filtered  in Handling Unit Editor.
   * [#1064](https://github.com/metasfresh/metasfresh/issues/1064) Move HU to garbage
     * Implementation of the Handling Unit Material disposal functionality as part of the RMA workflow.
   * [#1065](https://github.com/metasfresh/metasfresh/issues/1065) Move HU to other Warehouse/ Locator
     * New functionality to easy move Handling Units from the current Locator to a new selected Locator.
-  * [#1223](https://github.com/metasfresh/metasfresh/issues/1223) Show line number in jaspers
+  * [#1223](https://github.com/metasfresh/metasfresh/issues/1223) Show line number in jaspers 
+    * Now showing the line No in all Jasper Documents - order, inout, invoice - for sales and purchase.
   * [#1286](https://github.com/metasfresh/metasfresh/issues/1286) Performance Business Partner Pricelist generation process
     * Improving the performance of the BusinessPartner Pricelist generation process. The time for the report generation is reduced by aprox 60%.
   * [#1322](https://github.com/metasfresh/metasfresh/issues/1322) Forecast Window in WebUI 
@@ -30,6 +32,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#269](https://github.com/metasfresh/metasfresh-webui-api/issues/269) API for Manufacturing UI Planning/ Doing
+    * Implemention of new manufacturing window and Functionalities (issue, receipt) in WebUI. Refactoring of current backend logic to serve the Rest-API.
   
 * metasfresh-frontend-api
   * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
@@ -40,6 +43,7 @@ Here come the actual release notes:
   * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
     * fix empty page in sales invoice document
   * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document best before date missing
+    * Fixes the best-before-date issues in Material Receipt documents.
     
 # metasfresh 5.5 (2017-15)
 
