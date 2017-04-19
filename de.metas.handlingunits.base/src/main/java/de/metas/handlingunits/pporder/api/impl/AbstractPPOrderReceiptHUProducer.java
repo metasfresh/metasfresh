@@ -212,8 +212,16 @@ import lombok.Data;
 			huPPOrderQtyDAO.streamOrderQtys(getPP_Order_ID())
 					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
 					.forEach(huPPOrderQtyDAO::delete);
+			
+			// Extract it if not top level
+			huTrxBL.setParentHU(huContext,
+					null,
+					planningHU,
+					true // destroyOldParentIfEmptyStorage
+			);
 
-			final int topLevelHUId = planningHU.getM_HU_ID(); // TODO: extract it if not top level
+
+			final int topLevelHUId = planningHU.getM_HU_ID();
 			final int locatorId = planningHU.getM_Locator_ID();
 
 			// Stream all product storages
@@ -310,7 +318,8 @@ import lombok.Data;
 				qtyToReceive, // the quantity to receive
 				uom,
 				date, // transaction date
-				referencedModel // referenced model
+				referencedModel, // referenced model
+				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 		);
 
 		return allocationRequest;

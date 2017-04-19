@@ -3,6 +3,7 @@ package de.metas.handlingunits.client.terminal.pporder.receipt.view;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -52,7 +53,8 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 		Services.get(ITrxManager.class).run(() -> {
 			for (final HUKey huKey : selectedHUKeys)
 			{
-				final I_M_HU selectedHU = huKey.getM_HU();
+				// load the HU here because in case something will fail, our HUKey's HU won't be affected
+				final I_M_HU selectedHU = InterfaceWrapperHelper.load(huKey.getM_HU_ID(), I_M_HU.class);
 
 				//
 				// Create receipt candidates for our already existing planning HU
