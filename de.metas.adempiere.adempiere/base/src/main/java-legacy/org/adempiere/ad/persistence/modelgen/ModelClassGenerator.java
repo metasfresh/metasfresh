@@ -441,7 +441,7 @@ public class ModelClassGenerator
 					mandatory.append("false");
 			}
 			else if (clazz.equals(BigDecimal.class))
-				mandatory.append("Env.ZERO");
+				mandatory.append("BigDecimal.ZERO");
 			else if (clazz.equals(Timestamp.class))
 				mandatory.append("new Timestamp( System.currentTimeMillis() )");
 			else
@@ -487,7 +487,7 @@ public class ModelClassGenerator
 		{
 			sb.append("BigDecimal bd = (BigDecimal)").append(getValue).append("(").append("COLUMNNAME_").append(columnName).append(");").append(NL)
 					.append("\t\tif (bd == null)").append(NL)
-					.append("\t\t\t return Env.ZERO;").append(NL)
+					.append("\t\t\t return BigDecimal.ZERO;").append(NL)
 					.append("\t\treturn bd;").append(NL);
 			addImportClass(java.math.BigDecimal.class);
 			addImportClass(org.compiere.util.Env.class);
