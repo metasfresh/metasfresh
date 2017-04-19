@@ -21,6 +21,7 @@ import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -237,6 +238,7 @@ public final class JSONProcessInstanceResult implements Serializable
 	{
 		private final WindowId windowId;
 		private final String viewId;
+		private final JSONViewDataType viewType = JSONViewDataType.includedView;
 
 		public JSONOpenIncludedViewAction(final ViewId viewId)
 		{
