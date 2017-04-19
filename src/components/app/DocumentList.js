@@ -389,7 +389,7 @@ class DocumentList extends Component {
         const {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
-            includedView, children, isIncluded
+            includedView, children, isIncluded, disablePaginationShortcuts
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
@@ -477,6 +477,8 @@ class DocumentList extends Component {
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
                             inBackground={inBackground}
+                            disablePaginationShortcuts=
+                                {disablePaginationShortcuts}
                         >
                             {layout.supportAttributes && !isIncluded &&
                                 !layout.supportIncludedView &&

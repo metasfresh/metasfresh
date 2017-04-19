@@ -216,8 +216,10 @@ class TablePagination extends Component {
 
     render() {
         const {
-            size, pageLength, handleChangePage, page, compressed
+            size, pageLength, handleChangePage, page, compressed,
+            disablePaginationShortcuts
         } = this.props;
+
         const pages = size ? Math.ceil(size / pageLength) : 0;
 
         let pagination = [];
@@ -262,14 +264,18 @@ class TablePagination extends Component {
                     </div>
                 </div>
 
-                <PaginationContextShortcuts
-                    handleFirstPage={() => handleChangePage(1)}
-                    handleLastPage={() => handleChangePage(
-                        size ? Math.ceil(size / pageLength) : 0)
-                    }
-                    handleNextPage={() => handleChangePage('up')}
-                    handlePrevPage={() => handleChangePage('down')}
-                />
+                {
+                    !disablePaginationShortcuts &&
+                    <PaginationContextShortcuts
+                        handleFirstPage={() => handleChangePage(1)}
+                        handleLastPage={() => handleChangePage(
+                            size ? Math.ceil(size / pageLength) : 0)
+                        }
+                        handleNextPage={() => handleChangePage('up')}
+                        handlePrevPage={() => handleChangePage('down')}
+                    />
+
+                }
             </div>
         );
 

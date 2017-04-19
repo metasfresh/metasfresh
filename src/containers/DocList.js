@@ -141,6 +141,8 @@ class DocList extends Component {
                      inBackground={rawModal.visible}
                      fetchQuickActionsOnInit={true}
                      processStatus={processStatus}
+                     disablePaginationShortcuts=
+                        {modal.visible || rawModal.visible}
                  />
             </Container>
         );
