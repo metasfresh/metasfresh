@@ -26,9 +26,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
-import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -124,8 +122,9 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlanTotal = ppOrder.getQtyOrdered();
 		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 
-		final DocumentView.Builder builder = DocumentView.builder(viewId.getWindowId())
+		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
 				.setDocumentId(documentId)
+				.ppOrder(ppOrder.getPP_Order_ID())
 				.setType(PPOrderLineType.MainProduct)
 				//
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, null)
@@ -143,9 +142,7 @@ public class PPOrderLinesLoader
 				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
 
-		return PPOrderLineRow.builder(viewId, builder.build())
-				.ppOrder(ppOrder.getPP_Order_ID())
-				.build();
+		return builder.build();
 	}
 
 	private PPOrderLineRow createForBOMLine(final ViewId viewId, final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
@@ -168,8 +165,9 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlanTotal = ppOrderBOMLine.getQtyRequiered();
 		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 
-		final DocumentView.Builder builder = DocumentView.builder(viewId.getWindowId())
+		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
 				.setDocumentId(documentId)
+				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
 				//
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, null)
@@ -186,12 +184,10 @@ public class PPOrderLinesLoader
 				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
 
-		return PPOrderLineRow.builder(viewId, builder.build())
-				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
-				.build();
+		return builder.build();
 	}
 
-	private IDocumentView createForQty(final ViewId viewId, final I_PP_Order_Qty ppOrderQty)
+	private PPOrderLineRow createForQty(final ViewId viewId, final I_PP_Order_Qty ppOrderQty)
 	{
 		final HUDocumentView huViewRecord = getHUViewRecordLoader().retrieveForHUId(ppOrderQty.getM_HU_ID());
 		return createForHUViewRecordRecursivelly(viewId, ppOrderQty, huViewRecord);
@@ -214,9 +210,12 @@ public class PPOrderLinesLoader
 			qty = BigDecimal.ZERO;
 		}
 
-		final DocumentView.Builder builder = DocumentView.builder(viewId.getWindowId())
+		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
 				.setDocumentId(huViewRecord.getDocumentId())
+				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
+				.processed(ppOrderQty.isProcessed())
 				.setType(type)
+				.setAttributesSupplier(huViewRecord.getAttributesSupplier())
 				//
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, huViewRecord.getValue())
 				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_BOMType, null)
@@ -235,10 +234,7 @@ public class PPOrderLinesLoader
 				.map(includedHUViewRecord -> createForHUViewRecordRecursivelly(viewId, ppOrderQty, includedHUViewRecord))
 				.forEach(builder::addIncludedDocument);
 
-		return PPOrderLineRow.builder(viewId, builder.build())
-				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
-				.processed(ppOrderQty.isProcessed())
-				.build();
+		return builder.build();
 	}
 
 	private static JSONLookupValue createProductLookupValue(final I_M_Product product)

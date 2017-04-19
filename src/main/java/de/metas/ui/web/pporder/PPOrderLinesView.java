@@ -189,7 +189,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	@Override
 	public boolean hasAttributesSupport()
 	{
-		return false;
+		return true;
 	}
 
 	@Override

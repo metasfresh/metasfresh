@@ -44,7 +44,7 @@ import lombok.Value;
  * #L%
  */
 
-public class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvider
+class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvider
 {
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
 	private final ConcurrentHashMap<DocumentViewAttributesKey, HUDocumentViewAttributes> documentViewAttributesByKey = new ConcurrentHashMap<>();

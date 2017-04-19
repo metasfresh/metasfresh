@@ -1,28 +1,39 @@
 package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
+import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -48,17 +59,27 @@ import lombok.ToString;
  */
 
 @ToString
-public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBOMLine
+public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 {
-	public static final Builder builder(final ViewId viewId, final IDocumentView delegate)
+	public static final Builder builder(final ViewId viewId)
 	{
-		return new Builder(viewId, delegate);
+		return new Builder(viewId);
 	}
 
 	public static final PPOrderLineRow cast(final IDocumentView viewRecord)
 	{
 		return (PPOrderLineRow)viewRecord;
 	}
+
+	private final DocumentPath documentPath;
+	private final DocumentId documentId;
+	private final PPOrderLineType type;
+
+	private final Map<String, Object> values;
+
+	private final Supplier<? extends IDocumentViewAttributes> attributesSupplier;
+
+	private final List<PPOrderLineRow> includedDocuments;
 
 	private final ViewId viewId;
 	private final boolean processed;
@@ -70,7 +91,16 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 
 	private PPOrderLineRow(final Builder builder)
 	{
-		super(builder.delegate);
+		documentPath = builder.getDocumentPath();
+
+		documentId = documentPath.getDocumentId();
+		type = builder.getType();
+
+		values = ImmutableMap.copyOf(builder.values);
+
+		attributesSupplier = builder.attributesSupplier;
+		includedDocuments = builder.buildIncludedDocuments();
+
 		viewId = builder.viewId;
 
 		processed = builder.processed;
@@ -80,7 +110,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 
 		ppOrderQtyId = builder.ppOrderQtyId;
 	}
-	
+
 	public ViewId getViewId()
 	{
 		return viewId;
@@ -102,6 +132,36 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	}
 
 	@Override
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
+	}
+
+	@Override
+	public DocumentId getDocumentId()
+	{
+		return documentId;
+	}
+
+	@Override
+	public Set<String> getFieldNames()
+	{
+		return values.keySet();
+	}
+
+	@Override
+	public Object getFieldValueAsJson(final String fieldName)
+	{
+		return values.get(fieldName);
+	}
+
+	@Override
+	public Map<String, Object> getFieldNameAndJsonValues()
+	{
+		return values;
+	}
+
+	@Override
 	public boolean isProcessed()
 	{
 		return processed;
@@ -110,17 +170,17 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	@Override
 	public PPOrderLineType getType()
 	{
-		return PPOrderLineType.cast(super.getType());
+		return type;
 	}
 
 	public String getBOMLineType()
 	{
-		return (String)getDelegate().getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_BOMType);
+		return (String)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_BOMType);
 	}
 
 	public JSONLookupValue getProduct()
 	{
-		return (JSONLookupValue)getDelegate().getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_M_Product_ID);
+		return (JSONLookupValue)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_M_Product_ID);
 	}
 
 	public int getM_Product_ID()
@@ -131,7 +191,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 
 	public JSONLookupValue getUOM()
 	{
-		return (JSONLookupValue)getDelegate().getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID);
+		return (JSONLookupValue)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID);
 	}
 
 	public int getC_UOM_ID()
@@ -148,12 +208,12 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 
 	public BigDecimal getQty()
 	{
-		return (BigDecimal)getDelegate().getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_Qty);
+		return (BigDecimal)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_Qty);
 	}
 
 	public BigDecimal getQtyPlan()
 	{
-		return (BigDecimal)getDelegate().getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_QtyPlan);
+		return (BigDecimal)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_QtyPlan);
 	}
 
 	public boolean isReceipt()
@@ -165,7 +225,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	{
 		return getType().canIssue();
 	}
-	
+
 	public boolean isNotProcessedCandidate()
 	{
 		return !isProcessed() && getPP_Order_Qty_ID() > 0;
@@ -174,13 +234,35 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 	@Override
 	public List<PPOrderLineRow> getIncludedDocuments()
 	{
-		return getIncludedDocuments(PPOrderLineRow.class);
+		return includedDocuments;
 	}
 
 	@Override
 	public boolean hasIncludedView()
 	{
 		return isIssue();
+	}
+
+	@Override
+	public boolean hasAttributes()
+	{
+		return attributesSupplier != null;
+	}
+
+	@Override
+	public IDocumentViewAttributes getAttributes() throws EntityNotFoundException
+	{
+		if (attributesSupplier == null)
+		{
+			throw new EntityNotFoundException("Document does not support attributes");
+		}
+
+		final IDocumentViewAttributes attributes = attributesSupplier.get();
+		if (attributes == null)
+		{
+			throw new EntityNotFoundException("Document does not support attributes");
+		}
+		return attributes;
 	}
 
 	@Override
@@ -228,7 +310,7 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 				//
 				.createQuery()
 				.listIds();
-		if(huIdsToAvailableToIssue.isEmpty())
+		if (huIdsToAvailableToIssue.isEmpty())
 		{
 			throw new EntityNotFoundException("No HUs to issue found");
 		}
@@ -241,26 +323,34 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 
 	public static final class Builder
 	{
+		private final WindowId windowId;
+		private DocumentId _documentId;
+		private PPOrderLineType type;
+
+		private final Map<String, Object> values = new LinkedHashMap<>();
+
+		private List<PPOrderLineRow> includedDocuments = null;
+
+		private Supplier<? extends IDocumentViewAttributes> attributesSupplier;
+
 		private final ViewId viewId;
-		private final IDocumentView delegate;
-		
+
 		private int ppOrderId;
 		private int ppOrderBOMLineId;
 		private int ppOrderQtyId;
 		private boolean processed = false;
 
-		private Builder(final ViewId viewId, final IDocumentView delegate)
+		private Builder(@NonNull final ViewId viewId)
 		{
-			this.delegate = delegate;
-			Preconditions.checkNotNull(viewId, "viewId not provided");
 			this.viewId = viewId;
+			windowId = viewId.getWindowId();
 		}
 
 		public PPOrderLineRow build()
 		{
 			return new PPOrderLineRow(this);
 		}
-		
+
 		public Builder ppOrder(final int ppOrderId)
 		{
 			this.ppOrderId = ppOrderId;
@@ -285,6 +375,84 @@ public class PPOrderLineRow extends ForwardingDocumentView implements IPPOrderBO
 		{
 			this.processed = processed;
 			return this;
+		}
+
+		private DocumentPath getDocumentPath()
+		{
+			final DocumentId documentId = getDocumentId();
+			return DocumentPath.rootDocumentPath(windowId, documentId);
+		}
+
+		public Builder setDocumentId(final DocumentId documentId)
+		{
+			_documentId = documentId;
+			return this;
+		}
+
+		/** @return view row ID */
+		private DocumentId getDocumentId()
+		{
+			Check.assumeNotNull(_documentId, "Parameter _documentId is not null");
+			return _documentId;
+		}
+
+		private PPOrderLineType getType()
+		{
+			return type;
+		}
+
+		public Builder setType(final PPOrderLineType type)
+		{
+			this.type = type;
+			return this;
+		}
+
+		public Builder setProcessed(final boolean processed)
+		{
+			this.processed = processed;
+			return this;
+		}
+
+		public Builder putFieldValue(final String fieldName, final Object jsonValue)
+		{
+			if (jsonValue == null)
+			{
+				values.remove(fieldName);
+			}
+			else
+			{
+				values.put(fieldName, jsonValue);
+			}
+
+			return this;
+		}
+
+		public Builder setAttributesSupplier(Supplier<? extends IDocumentViewAttributes> attributesSupplier)
+		{
+			this.attributesSupplier = attributesSupplier;
+			return this;
+		}
+
+		public Builder addIncludedDocument(final PPOrderLineRow includedDocument)
+		{
+			if (includedDocuments == null)
+			{
+				includedDocuments = new ArrayList<>();
+			}
+
+			includedDocuments.add(includedDocument);
+
+			return this;
+		}
+
+		private List<PPOrderLineRow> buildIncludedDocuments()
+		{
+			if (includedDocuments == null || includedDocuments.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			return ImmutableList.copyOf(includedDocuments);
 		}
 	}
 

@@ -1,25 +1,42 @@
 package de.metas.ui.web.handlingunits;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.ForwardingDocumentView;
 import de.metas.ui.web.view.IDocumentView;
+import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,11 +66,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class HUDocumentView extends ForwardingDocumentView
+public final class HUDocumentView implements IDocumentView
 {
-	public static final HUDocumentView of(final IDocumentView delegate)
+	public static final Builder builder(final WindowId windowId)
 	{
-		return new HUDocumentView(delegate);
+		return new Builder(windowId);
 	}
 
 	public static final HUDocumentView cast(final IDocumentView document)
@@ -61,12 +78,53 @@ public final class HUDocumentView extends ForwardingDocumentView
 		return (HUDocumentView)document;
 	}
 
+	private final DocumentPath documentPath;
+	private final DocumentId documentId;
+	private final HUDocumentViewType type;
+	private final boolean processed;
+
+	private final Map<String, Object> values;
+
+	private final Supplier<HUDocumentViewAttributes> attributesSupplier;
+
+	private final List<HUDocumentView> includedDocuments;
+
 	private transient String _summary; // lazy
 
-	private HUDocumentView(final IDocumentView delegate)
+	private HUDocumentView(final Builder builder)
 	{
-		super(delegate);
-		Check.assumeNotNull(delegate.getType(), "type shall not be null for {}", delegate);
+		documentPath = builder.getDocumentPath();
+
+		documentId = documentPath.getDocumentId();
+		type = builder.getType();
+		processed = builder.isProcessed();
+
+		values = ImmutableMap.copyOf(builder.values);
+
+		includedDocuments = builder.buildIncludedDocuments();
+
+		final HUDocumentViewAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
+		if (attributesProvider != null)
+		{
+			final DocumentId attributesKey = Util.coalesce(builder.getAttributesKeyOrNull(), documentId);
+			attributesSupplier = () -> attributesProvider.getAttributes(documentId, attributesKey);
+		}
+		else
+		{
+			attributesSupplier = null;
+		}
+	}
+
+	@Override
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
+	}
+
+	@Override
+	public DocumentId getDocumentId()
+	{
+		return documentId;
 	}
 
 	/**
@@ -75,19 +133,76 @@ public final class HUDocumentView extends ForwardingDocumentView
 	@Override
 	public HUDocumentViewType getType()
 	{
-		return (HUDocumentViewType)getDelegate().getType();
+		return type;
 	}
 
 	@Override
-	public List<HUDocumentView> getIncludedDocuments()
+	public boolean isProcessed()
 	{
-		return getIncludedDocuments(HUDocumentView.class);
+		return processed;
+	}
+
+	@Override
+	public Set<String> getFieldNames()
+	{
+		return values.keySet();
+	}
+
+	@Override
+	public Object getFieldValueAsJson(String fieldName)
+	{
+		return values.get(fieldName);
+	}
+
+	@Override
+	public Map<String, Object> getFieldNameAndJsonValues()
+	{
+		return values;
+	}
+
+	@Override
+	public boolean hasAttributes()
+	{
+		return attributesSupplier != null;
 	}
 
 	@Override
 	public HUDocumentViewAttributes getAttributes() throws EntityNotFoundException
 	{
-		return HUDocumentViewAttributes.cast(super.getAttributes());
+		if (attributesSupplier == null)
+		{
+			throw new EntityNotFoundException("Document does not support attributes");
+		}
+
+		final HUDocumentViewAttributes attributes = attributesSupplier.get();
+		if (attributes == null)
+		{
+			throw new EntityNotFoundException("Document does not support attributes");
+		}
+		return attributes;
+	}
+	
+	public Supplier<HUDocumentViewAttributes> getAttributesSupplier()
+	{
+		return attributesSupplier;
+	}
+
+	@Override
+	public boolean hasIncludedView()
+	{
+		return false;
+	}
+
+	@Override
+	public IDocumentViewSelection getCreateIncludedView(IDocumentViewsRepository viewsRepo)
+	{
+		throw new EntityNotFoundException("Row " + this + " does not support included view");
+	}
+
+	@Override
+	public List<HUDocumentView> getIncludedDocuments()
+	{
+		return includedDocuments;
 	}
 
 	/**
@@ -96,7 +211,7 @@ public final class HUDocumentView extends ForwardingDocumentView
 	 */
 	public int getM_HU_ID()
 	{
-		return (int)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
+		return (int)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
 	}
 
 	/**
@@ -115,12 +230,12 @@ public final class HUDocumentView extends ForwardingDocumentView
 
 	public String getValue()
 	{
-		return (String)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
+		return (String)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
 	}
 
 	private JSONLookupValue getHUStatus()
 	{
-		final JSONLookupValue jsonHUStatus = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
+		final JSONLookupValue jsonHUStatus = (JSONLookupValue)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
 		return jsonHUStatus;
 	}
 
@@ -199,7 +314,7 @@ public final class HUDocumentView extends ForwardingDocumentView
 
 	public JSONLookupValue getProduct()
 	{
-		final JSONLookupValue productLV = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
+		final JSONLookupValue productLV = (JSONLookupValue)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
 		return productLV;
 	}
 
@@ -227,13 +342,13 @@ public final class HUDocumentView extends ForwardingDocumentView
 
 	public String getPackingInfo()
 	{
-		final Object packingInfo = getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
+		final Object packingInfo = getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
 		return packingInfo == null ? null : packingInfo.toString();
 	}
 
 	public JSONLookupValue getUOM()
 	{
-		final JSONLookupValue uomLV = (JSONLookupValue)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
+		final JSONLookupValue uomLV = (JSONLookupValue)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
 		return uomLV;
 	}
 
@@ -266,7 +381,7 @@ public final class HUDocumentView extends ForwardingDocumentView
 	 */
 	public BigDecimal getQtyCU()
 	{
-		return (BigDecimal)getDelegate().getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
+		return (BigDecimal)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
 	}
 
 	public LookupValue toLookupValue()
@@ -301,7 +416,7 @@ public final class HUDocumentView extends ForwardingDocumentView
 		{
 			throw new IllegalArgumentException("Invalid barcode: " + barcodeToMatch);
 		}
-		
+
 		final String barcodeToMatchNormalized = barcodeToMatch.trim();
 
 		final String huBarcode = getBarcode();
@@ -313,4 +428,145 @@ public final class HUDocumentView extends ForwardingDocumentView
 		return Objects.equals(huBarcode, barcodeToMatchNormalized);
 	}
 
+	//
+	//
+	//
+	//
+	//
+	public static final class Builder
+	{
+		private final WindowId windowId;
+		private DocumentId _documentId;
+		private HUDocumentViewType type;
+		private Boolean processed;
+
+		private final Map<String, Object> values = new LinkedHashMap<>();
+
+		private List<HUDocumentView> includedDocuments = null;
+
+		private HUDocumentViewAttributesProvider attributesProvider;
+		private DocumentId attributesKey;
+
+		private Builder(@NonNull final WindowId windowId)
+		{
+			this.windowId = windowId;
+		}
+
+		public HUDocumentView build()
+		{
+			return new HUDocumentView(this);
+		}
+
+		private DocumentPath getDocumentPath()
+		{
+			final DocumentId documentId = getDocumentId();
+			return DocumentPath.rootDocumentPath(windowId, documentId);
+		}
+
+		public Builder setDocumentId(final DocumentId documentId)
+		{
+			_documentId = documentId;
+			return this;
+		}
+
+		/** @return view row ID */
+		private DocumentId getDocumentId()
+		{
+			Check.assumeNotNull(_documentId, "Parameter _documentId is not null");
+			return _documentId;
+		}
+
+		private HUDocumentViewType getType()
+		{
+			return type;
+		}
+
+		public Builder setType(final HUDocumentViewType type)
+		{
+			this.type = type;
+			return this;
+		}
+
+		public Builder setProcessed(final boolean processed)
+		{
+			this.processed = processed;
+			return this;
+		}
+
+		private boolean isProcessed()
+		{
+			if (processed == null)
+			{
+				// NOTE: don't take the "Processed" field if any, because in frontend we will end up with a lot of grayed out completed sales orders, for example.
+				// return DisplayType.toBoolean(values.getOrDefault("Processed", false));
+				return false;
+			}
+			else
+			{
+				return processed.booleanValue();
+			}
+		}
+
+		public Builder putFieldValue(final String fieldName, final Object jsonValue)
+		{
+			if (jsonValue == null)
+			{
+				values.remove(fieldName);
+			}
+			else
+			{
+				values.put(fieldName, jsonValue);
+			}
+
+			return this;
+		}
+
+		private HUDocumentViewAttributesProvider getAttributesProviderOrNull()
+		{
+			return attributesProvider;
+		}
+
+		private DocumentId getAttributesKeyOrNull()
+		{
+			return attributesKey;
+		}
+
+		public Builder setAttributesProvider(@Nullable final HUDocumentViewAttributesProvider attributesProvider, @Nullable final DocumentId attributesKey)
+		{
+			this.attributesProvider = attributesProvider;
+			if (attributesProvider == null)
+			{
+				Preconditions.checkArgument(attributesKey == null, "attributesKey shall be null but it was %s", attributesKey);
+				this.attributesKey = null;
+			}
+			else
+			{
+				Preconditions.checkNotNull(attributesKey, "attributesKey shall NOT be null");
+				this.attributesKey = attributesKey;
+			}
+			return this;
+		}
+
+		public Builder addIncludedDocument(final HUDocumentView includedDocument)
+		{
+			if (includedDocuments == null)
+			{
+				includedDocuments = new ArrayList<>();
+			}
+
+			includedDocuments.add(includedDocument);
+
+			return this;
+		}
+
+		private List<HUDocumentView> buildIncludedDocuments()
+		{
+			if (includedDocuments == null || includedDocuments.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			return ImmutableList.copyOf(includedDocuments);
+		}
+	}
 }
