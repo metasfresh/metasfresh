@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,6 +36,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
@@ -74,14 +74,19 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	private final I_M_Locator defaultLocator;
 
 	private I_M_Inventory inventory = null;
+
+	private final I_C_DocType inventoryDocType;
+
 	private final Map<Integer, I_M_InventoryLine> inOutLineId2InventoryLine = new HashMap<Integer, I_M_InventoryLine>();
 
-	public InventoryAllocationDestination(final I_M_Warehouse warehouse)
+	public InventoryAllocationDestination(final I_M_Warehouse warehouse, final I_C_DocType inventoryDocType)
 	{
 		Check.assumeNotNull(warehouse, "Warehouse not null");
 
 		this.warehouse = warehouse;
 		defaultLocator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+
+		this.inventoryDocType = inventoryDocType;
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
 		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId(ctx);
@@ -113,9 +118,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 					request.getHUContext().getCtx(), reference.getRecord_ID(), I_M_HU_Item.class, trxName);
 
 			final I_M_HU hu = huItem.getM_HU();
-			
+
 			final I_M_HU topLevelParent = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
-			
 
 			final List<I_M_InOutLine> inOutLines = Services.get(IHUAssignmentDAO.class).retrieveModelsForHU(topLevelParent, I_M_InOutLine.class);
 
@@ -156,6 +160,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class, huContext);
 		inventory.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
 		inventory.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+
+		if (inventoryDocType != null)
+		{
+			inventory.setC_DocType_ID(inventoryDocType.getC_DocType_ID());
+		}
 
 		InterfaceWrapperHelper.save(inventory);
 

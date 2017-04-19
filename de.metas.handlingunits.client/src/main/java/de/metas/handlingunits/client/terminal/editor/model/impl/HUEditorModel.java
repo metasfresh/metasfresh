@@ -50,9 +50,11 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -71,6 +73,7 @@ import de.metas.adempiere.form.terminal.PropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -1347,8 +1350,19 @@ public class HUEditorModel implements IDisposable
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
 		huContext.setDate(movementDate);
 
+		final I_C_DocType materialDisposalDocType =  Services.get(IDocTypeDAO.class)
+						.getDocTypeOrNull(
+								context.getCtx() // ctx
+								, X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory // doc basetype
+								, X_C_DocType.DOCSUBTYPE_MaterialDisposal // doc subtype
+								 // isSOTrx
+								, warehouseFrom.getAD_Client_ID() // client
+								, warehouseFrom.getAD_Org_ID() // org
+								, ITrx.TRXNAME_None // trx
+				);
+
 		// Inventory allocation destination
-		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouseFrom);
+		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouseFrom, materialDisposalDocType);
 		//
 		// Create and configure Loader
 		final HULoader loader = HULoader.of(husSource, inventoryAllocationDestination);
