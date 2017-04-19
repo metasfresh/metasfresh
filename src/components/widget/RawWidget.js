@@ -26,6 +26,7 @@ class RawWidget extends Component {
 
     componentDidMount(){
         const {autoFocus} = this.props
+
         if(this.rawWidget && autoFocus){
             this.rawWidget.focus();
         }
@@ -198,7 +199,6 @@ class RawWidget extends Component {
                     return (
                         <div className={this.getClassnames(true)}>
                             <DatePicker
-                                ref={c => this.rawWidget = c}
                                 timeFormat={false}
                                 dateFormat={true}
                                 inputProps={{
@@ -255,7 +255,6 @@ class RawWidget extends Component {
                     return (
                         <div className={this.getClassnames(true)}>
                             <DatePicker
-                                ref={c => this.rawWidget = c}
                                 timeFormat={true}
                                 dateFormat={true}
                                 inputProps={{
@@ -283,7 +282,6 @@ class RawWidget extends Component {
                 return (
                     <div className={this.getClassnames(true)}>
                         <DatePicker
-                            ref={c => this.rawWidget = c}
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{
