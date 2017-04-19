@@ -1,6 +1,5 @@
 package de.metas.procurement.base.impl;
 
-import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -26,11 +25,11 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,7 +37,7 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 public class PMMContractsBL implements IPMMContractsBL
 {
 	private static final String SYSCONFIG_AD_USER_IN_CHARGE = "de.metas.procurement.C_Flatrate_Term_Create_ProcurementContract.AD_User_InCharge_ID";
-	
+
 	@Override
 	public int getDefaultContractUserInCharge_ID(final Properties ctx)
 	{
@@ -56,7 +55,7 @@ public class PMMContractsBL implements IPMMContractsBL
 		{
 			return null;
 		}
-		
+
 		final I_AD_User userInCharge = InterfaceWrapperHelper.create(ctx, userInChangeId, I_AD_User.class, ITrx.TRXNAME_None);
 		return userInCharge;
 	}
@@ -64,24 +63,18 @@ public class PMMContractsBL implements IPMMContractsBL
 	@Override
 	public boolean hasPriceOrQty(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		if(dataEntry == null)
+		if (dataEntry == null)
 		{
 			return false;
 		}
-		
-		final BigDecimal price = dataEntry.getFlatrateAmtPerUOM();
-		if (price != null && price.signum() > 0)
-		{
-			return true;
-		}
-		
-		final BigDecimal qty = dataEntry.getQty_Planned();
-		if(qty != null && qty.signum() > 0)
-		{
-			return true;
-		}
-		
-		return false;
+
+		final boolean hasPrice = !InterfaceWrapperHelper.isNull(dataEntry, I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM)
+				&& dataEntry.getFlatrateAmtPerUOM().signum() >= 0;
+
+		final boolean hasQty = !InterfaceWrapperHelper.isNull(dataEntry, I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Planned)
+				&& dataEntry.getQty_Planned().signum() >= 0;
+
+		return hasPrice || hasQty;
 	}
 
 }

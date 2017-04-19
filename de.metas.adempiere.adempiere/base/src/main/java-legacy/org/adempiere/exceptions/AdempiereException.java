@@ -15,17 +15,24 @@ package org.adempiere.exceptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.MetasfreshLastError;
@@ -158,6 +165,8 @@ public class AdempiereException extends RuntimeException
 
 	private Integer adIssueId = null;
 
+	private Map<String, Object> parameters = null;
+
 	/**
 	 * Default Constructor (saved logger error will be used as message)
 	 */
@@ -265,6 +274,7 @@ public class AdempiereException extends RuntimeException
 	 */
 	protected String buildMessage()
 	{
+		// NOTE: by default we are not appending the parameterss
 		return super.getMessage();
 	}
 
@@ -416,5 +426,82 @@ public class AdempiereException extends RuntimeException
 	{
 		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	public AdempiereException setParameter(final String name, final Object value)
+	{
+		if (parameters == null)
+		{
+			parameters = new LinkedHashMap<>();
+		}
+
+		parameters.put(name, value);
+		resetMessageBuilt();
+
+		return this;
+	}
+
+	public final Map<String, Object> getParameters()
+	{
+		if (parameters == null)
+		{
+			return ImmutableMap.of();
+		}
+		return ImmutableMap.copyOf(parameters);
+	}
+
+	/**
+	 * Utility method that can be used by both external callers and subclasses'
+	 * {@link AdempiereException#buildMessage()} or
+	 * {@link #getMessage()} methods to create a string from this instance's parameters.
+	 * 
+	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere,
+	 * but instead add another method that can take a format string as parameter.
+	 * 
+	 * @return an empty sting if this instance has no parameters or otherwise something like
+	 * 
+	 *         <pre>
+	 * Additional parameters:
+	 * name1: value1
+	 * name2: value2
+	 *         </pre>
+	 */
+	protected final String buildParametersString()
+	{
+		final Map<String, Object> parameters = getParameters();
+		if (parameters.isEmpty())
+		{
+			return "";
+		}
+
+		final StringBuilder message = new StringBuilder();
+		message.append("Additional parameters:");
+		for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
+		{
+			message.append("\n ").append(paramName2Value.getKey()).append(": ").append(paramName2Value.getValue());
+		}
+
+		return message.toString();
+	}
+
+	/**
+	 * Utility method to convert parameters to string and append them to given <code>message</code>
+	 * 
+	 * @see #buildParametersString()
+	 */
+	protected final void appendParameters(final StringBuilder message)
+	{
+		final String parametersStr = buildParametersString();
+		if (Check.isEmpty(parametersStr, true))
+		{
+			return;
+		}
+
+		if (message.length() > 0)
+		{
+			message.append("\n");
+		}
+		message.append(parametersStr);
 	}
 }

@@ -288,10 +288,6 @@ public class HUTransferService
 			}
 		}
 
-		// get cuHU's old parent (if any) for later usage, before the changes start
-		final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(sourceCuHU);
-		final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(sourceCuHU);
 
 		if (destination != null)
@@ -325,8 +321,8 @@ public class HUTransferService
 		}
 		else
 		{
+			// destination must be the HUProducerDestination we created further up, otherwise we would already have returned
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
-
 		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
@@ -337,21 +333,24 @@ public class HUTransferService
 		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", targetTuHU);
 
 		// finally do the attaching
-		final I_M_HU targetTuHUParent = handlingUnitsDAO.retrieveParent(targetTuHU);
 
 		// iterate the child CUs and set their parent item
 		childCUs.forEach(newChildCU -> {
 			setParent(newChildCU,
 					tuMaterialItem.get(0),
 
-					// after the childHU's parent item is set,
+					// before the newChildCU's parent item is set,
 					localHuContext -> {
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
 						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
 					},
 
-					// after the childHU's parent item is set,
+					// after the newChildCU's parent item is set,
 					localHuContext -> {
-						updateAllocation(targetTuHUParent, targetTuHU, newChildCU, qtyCU, false, localHuContext);
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
 					});
 		});
 	}
@@ -483,7 +482,7 @@ public class HUTransferService
 					},
 					localHuContext -> {
 						final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
-						updateAllocation(newParentLU, tuToAttach, null, null, true, localHuContext);
+						updateAllocation(newParentLU, tuToAttach, null, null, false, localHuContext);
 					});
 		});
 	}
@@ -582,6 +581,17 @@ public class HUTransferService
 			final Consumer<IHUContext> afterParentChange)
 	{
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		
+		final int parentItemId = parentItem == null ? 0 : parentItem.getM_HU_Item_ID();
+		if(childHU.getM_HU_Item_Parent_ID() == parentItemId)
+		{
+			// Nothing to do. Note that IHUTrxBL.setParentHU() won't do anything either. 
+			// But by returning even before we call it, we avoid applying 'beforeParentChange' and 'afterParentChange'.
+			// That way, we avoid one useless -1/+1 pair of allocations
+			return;
+		}
+
 		huTrxBL.createHUContextProcessorExecutor(huContext)
 				.run(new IHUContextProcessor()
 				{
@@ -589,7 +599,7 @@ public class HUTransferService
 					public IMutableAllocationResult process(final IHUContext localHuContext)
 					{
 						Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
-						Services.get(ITrxManager.class).assertTrxNotNull(localHuContext);
+						trxManager.assertTrxNotNull(localHuContext);
 
 						beforeParentChange.accept(localHuContext);
 

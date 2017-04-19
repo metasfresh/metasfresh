@@ -1,5 +1,8 @@
 package org.eevolution.model.validator;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -13,15 +16,14 @@ package org.eevolution.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -38,6 +40,12 @@ import org.eevolution.model.I_PP_Cost_Collector;
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
 {
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Cost_Collector());
+	}
+
 	/**
 	 * Validates given cost collector and set missing fields if possible.
 	 * 

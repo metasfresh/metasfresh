@@ -54,7 +54,7 @@ import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Test;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHUContext;

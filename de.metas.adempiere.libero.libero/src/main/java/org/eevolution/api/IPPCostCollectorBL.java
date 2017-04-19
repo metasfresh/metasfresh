@@ -29,6 +29,7 @@ import java.util.Date;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
@@ -42,7 +43,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * 
 	 * @return receipt cost collector candidate
 	 */
-	IReceiptCostCollectorCandidate createReceiptCostCollectorCandidate();
+	ReceiptCostCollectorCandidateBuilder createReceiptCostCollectorCandidate();
 
 	/**
 	 * Create and process material issue cost collector. The given qtys are converted to the UOM of the given <code>orderBOMLine</code>. The Cost collector's type is determined from the given

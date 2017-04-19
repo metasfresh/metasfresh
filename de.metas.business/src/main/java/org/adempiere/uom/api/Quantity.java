@@ -48,6 +48,11 @@ import org.compiere.model.I_C_UOM;
  */
 public final class Quantity
 {
+	public static final Quantity of(final BigDecimal qty, final I_C_UOM uom)
+	{
+		return new Quantity(qty, uom);
+	}
+	
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
 
 	// NOTE to dev: all fields shall be final because this is a immutable object. Please keep that logic if u are adding more fields

@@ -73,7 +73,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
-import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineHUTrxListener;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
@@ -199,10 +198,9 @@ public final class Main extends AbstractModuleInterceptor
 	{
 		ProductPriceQuery.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
 
-		// Registers a default matcher which filters out all product prices which have an M_HU_PI_Item_Product_ID set.
+		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
 		//
 		// From skype chat:
-		//
 		// <pre>
 		// [Dienstag, 4. Februar 2014 15:33] Cis:
 		//
@@ -217,7 +215,6 @@ public final class Main extends AbstractModuleInterceptor
 		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
 		//
 		// <pre>
-		//
 		// ..and that's why we register the filter here.
 		//
 		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
@@ -317,12 +314,6 @@ public final class Main extends AbstractModuleInterceptor
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IInOutCandHandlerBL.class)
 					.registerListener(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
-		}
-
-		//
-		// Manufacturing
-		{
-			huTrxBL.addListener(PPOrderBOMLineHUTrxListener.instance);
 		}
 
 		// Order - Fast Input

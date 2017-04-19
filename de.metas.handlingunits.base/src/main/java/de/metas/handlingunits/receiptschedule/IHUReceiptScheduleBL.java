@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -46,6 +47,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IInOutProducer;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
@@ -70,6 +72,12 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 * @return qty ordered minus qty moved (TU)
 	 */
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
+	
+	default BigDecimal getQtyToMoveCU(I_M_ReceiptSchedule receiptSchedule)
+	{
+		return Services.get(IReceiptScheduleBL.class).getQtyMoved(receiptSchedule);
+	}
+
 	
 	/**
 	 * Create Receipts Producer.

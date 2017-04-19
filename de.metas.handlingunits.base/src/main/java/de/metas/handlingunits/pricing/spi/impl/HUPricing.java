@@ -19,12 +19,24 @@ import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 
+/**
+ * Note that we invoke {@link AttributePricing#registerDefaultMatcher(IProductPriceQueryMatcher)} with {@link #HUPIItemProductMatcher_None} (in a model interceptor)
+ * to make sure that our super class will ignore those product price records that have a {@code M_HU_PI_Item_Product_ID} set.<br>
+ * That way this class can reuse a lot of stuff like the {@link #applies(IPricingContext, IPricingResult)} method from its superclass.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class HUPricing extends AttributePricing
 {
 	private static final transient Logger logger = LogManager.getLogger(HUPricing.class);
 
 	private static final String HUPIItemProductMatcher_NAME = "M_HU_PI_Item_Product_Matcher";
 	public static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
+
+	/**
+	 * Matches any product price with a not-null M_HU_PI_Item_Product_ID.
+	 */
 	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, new NotEqualsQueryFilter<>(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
@@ -45,13 +57,6 @@ public class HUPricing extends AttributePricing
 		}
 
 		// task 09051: don't leave yet, because there might be a product price with just a M_HU_PI_Item_Product and no other attribute values and stuff to match
-// @formatter:off
-//		if (attributeSetInstance == null)
-//		{
-//			logger.debug("No ASI found: {}", pricingCtx);
-//			return Optional.empty();
-//		}
-// @formatter:on
 
 		// Get the price list version, if any.
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
@@ -69,13 +74,13 @@ public class HUPricing extends AttributePricing
 			logger.debug("No M_HU_PI_Item_Product_ID found: {}", pricingCtx);
 			return Optional.empty();
 		}
-		
+
 		final ProductPriceQuery productPriceQuery = ProductPriceQuery.newInstance(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
 				.matching(createHUPIItemProductMatcher(huPIItemProductId));
 
 		// Match attributes if we have attributes.
-		if(attributeSetInstance == null || attributeSetInstance.getM_AttributeSetInstance_ID() <= 0)
+		if (attributeSetInstance == null || attributeSetInstance.getM_AttributeSetInstance_ID() <= 0)
 		{
 			productPriceQuery.dontMatchAttributes();
 		}
@@ -83,7 +88,7 @@ public class HUPricing extends AttributePricing
 		{
 			productPriceQuery.matchingAttributes(attributeSetInstance);
 		}
-		
+
 		final I_M_ProductPrice productPrice = productPriceQuery.firstMatching(I_M_ProductPrice.class);
 		if (productPrice == null)
 		{
@@ -94,6 +99,17 @@ public class HUPricing extends AttributePricing
 		return Optional.of(productPrice);
 	}
 
+	/**
+	 * Just calls the parent method and nothing else.
+	 * In particular, does not do anything special about the "HU price".
+	 * Instead we make sure that
+	 * <ul>
+	 * <li>there is a proper UOM-conversion for QtyEntered => QtyEnteredInPriceUOM</li>
+	 * <li>LineNetAmt is computed from QtyEnteredInPriceUOM x PriceActual</li>
+	 * </ul>
+	 * 
+	 * @task 08147
+	 */
 	@Override
 	protected void setResultForProductPriceAttribute(
 			final IPricingContext pricingCtx,
@@ -101,46 +117,6 @@ public class HUPricing extends AttributePricing
 			final org.compiere.model.I_M_ProductPrice productPrice)
 	{
 		super.setResultForProductPriceAttribute(pricingCtx, result, productPrice);
-
-		// @formatter:off
-		// 08147: don't do anything special about the "HU price". Instead we make sure that
-		//  *there is a proper UOM-conversion for QtyEntered => QtyEnteredInPriceUOM
-		//  *LineNetAmt is computed from QtyEnteredInPriceUOM x PriceActual
-
-		// older comment
-		// 06942: reset the prices according to the HU price (if it actually is a HU price)
-//		if (productPriceAttribute.isHUPrice())
-//		{
-//			Check.assume(productPriceAttribute.getM_HU_PI_Item_Product_ID() > 0,
-//					"{} has a pip assigned, because otherwise we would not be where", productPriceAttribute);
-//			final I_M_HU_PI_Item_Product pip = productPriceAttribute.getM_HU_PI_Item_Product();
-//
-//			final BigDecimal divisor = pip.getQty();
-//
-//			// 07674: we will round the price-per-unit to the PL's precision *even* if the line's net-amount will not be a clean multiple of the HU-price anymore.
-//			// for the time being it's the user's job to choose their prices in accordance to their PIP-qtys.
-//			final int precision = priceList.getPricePrecision();
-//
-//			final BigDecimal huPriceStd;
-//			final BigDecimal huPriceList;
-//			final BigDecimal huPriceLimit;
-//			if (divisor.signum() > 0)
-//			{
-//				huPriceStd = productPriceAttribute.getPriceStd().divide(divisor, precision, RoundingMode.HALF_UP);
-//				huPriceList = productPriceAttribute.getPriceList().divide(divisor, precision, RoundingMode.HALF_UP);
-//				huPriceLimit = productPriceAttribute.getPriceLimit().divide(divisor, precision, RoundingMode.HALF_UP);
-//			}
-//			else
-//			{
-//				huPriceStd = BigDecimal.ZERO;
-//				huPriceList = BigDecimal.ZERO;
-//				huPriceLimit = BigDecimal.ZERO;
-//			}
-//			result.setPriceStd(huPriceStd);
-//			result.setPriceList(huPriceList);
-//			result.setPriceLimit(huPriceLimit);
-//		}
-		// @formatter:on
 	}
 
 	/**
@@ -172,19 +148,21 @@ public class HUPricing extends AttributePricing
 		//
 		// Make sure the default product price attribute is matching our pricing context M_HU_PI_Item_Product_ID,
 		// or it has no M_HU_PI_Item_Product_ID set.
+		final int ctxPIItemProductId = getM_HU_PI_Item_Product_ID(pricingCtx);
+		if (ctxPIItemProductId <= 0)
+		{
+			// We don't have a M_HU_PI_Item_Product_ID on the pricing context.
+			// Return the default price. It's M_HU_PI_Item_Product_ID will be used, e.g. in the C_OrderLine or C_OLCand which this invocation is about
+			return defaultPrice;
+		}
+
 		final int productPrice_HUPIItemProductId = defaultPrice.getM_HU_PI_Item_Product_ID();
-		if (productPrice_HUPIItemProductId <= 0)
+		if (productPrice_HUPIItemProductId == ctxPIItemProductId)
 		{
 			return defaultPrice;
 		}
-		else if (productPrice_HUPIItemProductId == getM_HU_PI_Item_Product_ID(pricingCtx))
-		{
-			return defaultPrice;
-		}
-		else
-		{
-			return null;
-		}
+
+		return null;
 	}
 
 	private int getM_HU_PI_Item_Product_ID(final IPricingContext pricingCtx)

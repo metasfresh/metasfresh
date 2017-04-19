@@ -130,7 +130,7 @@ WHERE
 	AND o_io.docStatus IN ('CO', 'CL')
 	AND c_o.docStatus IN ('CO', 'CL')
 	AND c_io.docStatus IN ('CO', 'CL')
-	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	
 	AND
 		(CASE WHEN EXISTS ( SELECT ai_value FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $8 )

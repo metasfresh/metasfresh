@@ -150,25 +150,45 @@ public class HUReportExecutor
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						ProcessInfo.builder()
-								.setCtx(ctx)
-								.setAD_Process(process)
-								.setWindowNo(windowNo)
-								.setTableName(I_M_HU.Table_Name)
-								.setReportLanguage(reportLanguage)
-								.addParameter(PARA_BarcodeURL, barcodeServlet)
-								.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
-								//
-								// Execute report in a new transaction
-								.buildAndPrepareExecution()
-								.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
-								.executeSync();
-					}
-				});
+				.registerListener(
+						new TrxListenerAdapter()
+						{
+							/**
+							 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
+							 * Therefore (and because right now there is not time to get to the root of the problem),
+							 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
+							 * 
+							 * @task https://github.com/metasfresh/metasfresh/issues/1263
+							 * 
+							 */
+							boolean commitWasDone = false;
+
+							@Override
+							public void afterCommit(final ITrx trx)
+							{
+								commitWasDone = true;
+							}
+
+							public void afterClose(final ITrx trx)
+							{
+								if (!commitWasDone)
+								{
+									return;
+								}
+								ProcessInfo.builder()
+										.setCtx(ctx)
+										.setAD_Process(process)
+										.setWindowNo(windowNo)
+										.setTableName(I_M_HU.Table_Name)
+										.setReportLanguage(reportLanguage)
+										.addParameter(PARA_BarcodeURL, barcodeServlet)
+										.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
+										//
+										// Execute report in a new transaction
+										.buildAndPrepareExecution()
+										.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
+										.executeSync();
+							}
+						});
 	}
 }

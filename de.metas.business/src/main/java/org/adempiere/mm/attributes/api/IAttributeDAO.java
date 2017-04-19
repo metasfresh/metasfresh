@@ -179,13 +179,26 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
 	 * 
-	 * @param asi
+	 * @param fromASI
 	 * @return asi copy
 	 */
-	I_M_AttributeSetInstance copy(I_M_AttributeSetInstance asi);
+	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
+	{
+		return ASICopy.newInstance(fromASI).copy();
+	}
 
 
-	I_M_AttributeSetInstance copy(I_M_AttributeSetInstance asi, int overrideM_AttributeSet_ID);
+	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI, int overrideM_AttributeSet_ID)
+	{
+		return ASICopy.newInstance(fromASI)
+				.overrideM_AttributeSet_ID(overrideM_AttributeSet_ID)
+				.copy();
+	}
+	
+	default ASICopy prepareCopy(final I_M_AttributeSetInstance fromASI)
+	{
+		return ASICopy.newInstance(fromASI);
+	}
 
 	/**
 	 * @param attribute

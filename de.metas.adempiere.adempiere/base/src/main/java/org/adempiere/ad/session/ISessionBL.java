@@ -1,5 +1,7 @@
 package org.adempiere.ad.session;
 
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,20 +15,37 @@ package org.adempiere.ad.session;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.ISingletonService;
 
 public interface ISessionBL extends ISingletonService
 {
+	MFSession getSessionById(final Properties ctx, final int AD_Session_ID);
+
+	/**
+	 * @param ctx
+	 * @return current session or null
+	 */
+	MFSession getCurrentSession(Properties ctx);
+
+	/**
+	 * Gets current session if exists. If not, creates a new session
+	 * 
+	 * @param ctx
+	 * @return current session (existing or new); never returns null
+	 */
+	MFSession getCurrentOrCreateNewSession(Properties ctx);
+
+	void logoutCurrentSession();
+
 	/**
 	 * 
 	 * @return true if record change log system is enabled

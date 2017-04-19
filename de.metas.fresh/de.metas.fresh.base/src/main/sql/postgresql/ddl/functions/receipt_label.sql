@@ -20,6 +20,7 @@ CREATE FUNCTION report.receipt_label(IN M_HU_ID numeric) RETURNS TABLE
 	zusatz Character Varying,
 	tracking Character Varying,
 	mhd Character Varying,
+	mhd_date Character Varying,
 	receiptdocno Character Varying,
 	PackingInstruction Character Varying,
 	deliverydate timestamp without time zone,
@@ -65,7 +66,8 @@ SELECT distinct
   ,(t.TU_Attrs).qualitynotice_name AS notiz
   ,(t.TU_Attrs).zitrus_name AS zusatz
   ,tr.lot AS tracking
-  ,(t.TU_Attrs).mhd_value AS mhd
+  ,COALESCE((t.TU_Attrs).mhd_value,'') AS mhd
+  ,COALESCE(to_char((t.TU_Attrs).HU_BestBeforeDate_Value, 'DD.MM.YYYY'),'') AS mhd_date
   ,COALESCE(luvalue,tuvalue) AS receiptdocno
   ,hu_piip.Name AS PackingInstruction
 

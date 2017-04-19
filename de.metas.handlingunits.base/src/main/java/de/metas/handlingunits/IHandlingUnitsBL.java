@@ -10,7 +10,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -22,7 +21,6 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Status;
-import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public interface IHandlingUnitsBL extends ISingletonService
@@ -234,7 +232,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Determines if the handling unit is a loading unit (type {@link X_M_HU_PI_Version#HU_UNITTYPE_LoadLogistiqueUnit} )
 	 *
-	 * @param hu
+	 * @param hu maybe be {@code null}. In that case, {@code false} is returned.
 	 * @return true if loading unit (LU)
 	 */
 	boolean isLoadingUnit(I_M_HU hu);
@@ -338,16 +336,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isPhysicalHU(String huStatus);
 
-	/**
-	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse sourse the one given as parameter
-	 *
-	 * @param ctx
-	 * @param warehouse
-	 * @param trxName
-	 *
-	 * @return the gebinde warehouse (if found,exception thrown otherwise)
-	 */
-	I_M_Warehouse getEmptiesWarehouse(Properties ctx, I_M_Warehouse warehouse, String trxName);
 
 	/**
 	 * Set the status of the HU. <br>
@@ -364,12 +352,21 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
 	 *
+	 * NOTE: this method is not saving the HU.
+	 * 
 	 * @param huContext
 	 * @param hu
 	 * @param huStatus
 	 * @param forceFetchPackingMaterial
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
+	
+	/**
+	 * Activate the HU (assuming it was Planning)
+	 * 
+	 * @param hus
+	 */
+	void setHUStatusActive(Collection<I_M_HU> hus);
 
 	/**
 	 * Marks the hu as destroyed, but doesn't handle the storages
@@ -388,13 +385,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
 
 	/**
-	 * Builder for the movements TO and FROM the GebindeLager
-	 *
-	 * @return
-	 */
-	IEmptiesMovementBuilder createEmptiesMovementBuilder();
-
-	/**
 	 * Checks if the given {@code hu} is a "bag".
 	 * 
 	 * @param hu optional, may be {@code null}.
@@ -410,4 +400,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI_Version getEffectivePIVersion(I_M_HU hu);
+
+	/**
+	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
+	 * Otherwise, return the given {@code hu}'s own/direct PI.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_PI getEffectivePI(I_M_HU hu);
+
 }

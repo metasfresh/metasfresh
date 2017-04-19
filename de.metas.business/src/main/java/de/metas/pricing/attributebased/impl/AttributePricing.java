@@ -1,6 +1,5 @@
 package de.metas.pricing.attributebased.impl;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -34,16 +33,16 @@ public class AttributePricing extends PricingRuleAdapter
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
+	/**
+	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
+	 * 
+	 * @param matcher
+	 */
 	public static final void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
 	{
 		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
-	}
-	
-	private List<IProductPriceQueryMatcher> getDefaultMatchers()
-	{
-		return _defaultMatchers;
 	}
 
 	/**
@@ -51,7 +50,8 @@ public class AttributePricing extends PricingRuleAdapter
 	 * <ul>
 	 * <li>the result shall not be already calculated
 	 * <li>a product shall exist in pricing context
-	 * <li>a matching attributed {@link I_M_ProductPrice} shall be found
+	 * <li>a matching attributed {@link I_M_ProductPrice} shall be found.<br>
+	 * Note that here that matcher(s) that were registered via {@link #registerDefaultMatcher(IProductPriceQueryMatcher)} are also applied.
 	 * </ul>
 	 */
 	@Override
@@ -76,11 +76,11 @@ public class AttributePricing extends PricingRuleAdapter
 		}
 
 		//
-		// Gets the product price attribute, if any.
+		// Gets the "attributed" "product price, if any.
 		// If nothing found, this pricing rule does not apply.
 		if (!getProductPrice(pricingCtx).isPresent())
 		{
-			logger.debug("Not applying because no product attribute pricing found: {}" + pricingCtx);
+			logger.debug("Not applying because no product price with an attribute found: {}" + pricingCtx);
 			return false;
 		}
 
@@ -98,11 +98,11 @@ public class AttributePricing extends PricingRuleAdapter
 	}
 
 	/**
-	 * Updates the {@link IPricingResult} using the given <code>productPriceAttribute</code>.
+	 * Updates the {@link IPricingResult} using the given <code>productPrice</code>.
 	 * 
 	 * @param pricingCtx
 	 * @param result
-	 * @param productPriceAttribute
+	 * @param productPrice
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setResultForProductPriceAttribute(
@@ -138,7 +138,9 @@ public class AttributePricing extends PricingRuleAdapter
 	/**
 	 * Gets the {@link I_M_ProductPrice} to be used for setting the prices.
 	 * 
-	 * It checks if there is an attributed {@link I_M_ProductPrice} set explicitly and if not it tries to search for the best matching one, if any.
+	 * It checks if the referenced object from the given {@code pricingCtx} references a {@link I_M_ProductPrice} and explicitly demands a particular product price attribute.
+	 * If that's the case, if returns that product price (if valid!).
+	 * If that's not the case it tries to search for the best matching one, if any.
 	 * 
 	 * @param pricingCtx
 	 */
@@ -248,7 +250,7 @@ public class AttributePricing extends PricingRuleAdapter
 
 		final I_M_ProductPrice productPrice = ProductPriceQuery.newInstance(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
-				.matching(getDefaultMatchers())
+				.matching(_defaultMatchers)
 				.matchingAttributes(attributeSetInstance)
 				.firstMatching();
 
@@ -262,12 +264,15 @@ public class AttributePricing extends PricingRuleAdapter
 	}
 
 	/**
+	 * Extracts an ASI from the given {@code pricingCtx}.
 	 * 
 	 * @param pricingCtx
 	 * @return
 	 *         <ul>
 	 *         <li>ASI
-	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code> or if the referenced object can't be converted in an {@link IAttributeSetInstanceAware}.
+	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
+	 *         or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
+	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
 	 *         </ul>
 	 */
 	protected final static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
@@ -282,15 +287,20 @@ public class AttributePricing extends PricingRuleAdapter
 		// Get M_AttributeSetInstance_ID and return it.
 		// NOTE: to respect the method contract, ALWAYS return ZERO if it's not set, no matter if the getter returned -1.
 		final int attributeSetInstanceId = asiAware.getM_AttributeSetInstance_ID();
-		if(attributeSetInstanceId <= 0)
+		if (attributeSetInstanceId <= 0)
 		{
 			return null;
 		}
-		
+
 		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
 		return attributeSetInstance;
 	}
 
+	/**
+	 * 
+	 * @param pricingCtx
+	 * @return the referenced object of the given {@code pricingCtx} as ASI-Aware. Note that the respective {@code M_AttributeSetInstance_ID} might be {@code <= 0}.
+	 */
 	private static final Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware(final IPricingContext pricingCtx)
 	{
 		final Object referencedObj = pricingCtx.getReferencedObject();

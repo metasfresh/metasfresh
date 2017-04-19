@@ -18,11 +18,11 @@ SELECT
 		WHEN
 		EXISTS(
 			SELECT 0
-			FROM C_OrderLine ol1
-			INNER JOIN M_Product p ON ol1.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			FROM M_InOutLine iol1
+			INNER JOIN M_Product p ON iol1.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-			WHERE pc.M_Product_Category_ID = ((SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y'))
-				AND ol.C_Order_ID = ol1.C_Order_ID AND ol1.isActive = 'Y'
+			WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol1.AD_Client_ID, iol1.AD_Org_ID)
+				AND iol.M_InOutLine_ID = iol1.M_InOutLine_ID AND iol1.isActive = 'Y'
 		)
 		THEN 'Y'
 		ELSE 'N'

@@ -10,18 +10,17 @@ package org.adempiere.pricing.spi.impl.rules;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -33,10 +32,37 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 
+/**
+ * This rule only applies if the give {@link IPricingContext} does not contain a price list version.
+ * It looks for an active {@link I_M_ProductPrice} in the <b>base</b> price list that is assigned to the pricing context's price list.
+ * <p>
+ * <b>IMPORTANT: </b> this rule might find an active product price that is not in the most recent price list version of the respective price list.
+ * This enables "sparse" price list versions that only contain changed prices, but please make sure it's what you want.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class BasePriceList extends AbstractPriceListBasedRule
 {
+	/**
+	 * Returns <code>false</code> if the given <code>pricingContext</code> has a a <code>M_PriceList_Version_ID</code> set.<br>
+	 * In this case we don't want apply this rule, because it would return a product price from <b>any</b> price list version (and not the most recent one!) with a fitting price date.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1184
+	 */
+	@Override
+	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
+	{
+		if (pricingCtx.getM_PriceList_Version_ID() > 0)
+		{
+			return false;
+		}
+		return super.applies(pricingCtx, result);
+	}
+
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
@@ -49,7 +75,9 @@ public class BasePriceList extends AbstractPriceListBasedRule
 		final int m_M_PriceList_ID = pricingCtx.getM_PriceList_ID();
 		Timestamp m_PriceDate = pricingCtx.getPriceDate();
 		if (m_PriceDate == null)
+		{
 			m_PriceDate = SystemTime.asTimestamp();
+		}
 		//
 		boolean m_calculated = false;
 		BigDecimal m_PriceStd = null;
@@ -61,25 +89,27 @@ public class BasePriceList extends AbstractPriceListBasedRule
 		boolean m_enforcePriceLimit = false;
 		boolean m_isTaxIncluded = false;
 		int m_C_TaxCategory_ID = -1; // metas
+		int m_M_PriceList_Version_ID = -1;
 		int ppUOMId = -1;
 
 		//
 		//
 
-		String sql = "SELECT bomPriceStd(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceStd,"	// 1
+		final String sql = "SELECT bomPriceStd(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceStd,"	// 1
 				+ " bomPriceList(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceList,"		// 2
 				+ " bomPriceLimit(p.M_Product_ID,pv.M_PriceList_Version_ID) AS PriceLimit,"	// 3
 				+ " p.C_UOM_ID,pv.ValidFrom,pl.C_Currency_ID,p.M_Product_Category_ID,"	// 4..7
 				+ " pl.EnforcePriceLimit, pl.IsTaxIncluded "	// 8..9
 				+ " , pp.C_TaxCategory_ID " // metas
-				+ ", pp.C_UOM_ID " // 11
+				+ " , pp.C_UOM_ID " // 11
+				+ " , pv.M_PriceList_Version_ID"
 				+ " FROM M_Product p"
 				+ " INNER JOIN M_ProductPrice pp ON (p.M_Product_ID=pp.M_Product_ID)"
-				+ " INNER JOIN  M_PriceList_Version pv ON (pp.M_PriceList_Version_ID=pv.M_PriceList_Version_ID)"
+				+ " INNER JOIN M_PriceList_Version pv ON (pp.M_PriceList_Version_ID=pv.M_PriceList_Version_ID)"
 				+ " INNER JOIN M_Pricelist bpl ON (pv.M_PriceList_ID=bpl.M_PriceList_ID)"
 				+ " INNER JOIN M_Pricelist pl ON (bpl.M_PriceList_ID=pl.BasePriceList_ID) "
 				+ "WHERE pv.IsActive='Y'"
-				+ " AND pp.IsActive='Y'"
+				// + " AND pp.IsActive='Y'"
 				+ " AND p.M_Product_ID=?"				// #1
 				+ " AND pl.M_PriceList_ID=?"			// #2
 				+ " ORDER BY pv.ValidFrom DESC";
@@ -93,21 +123,27 @@ public class BasePriceList extends AbstractPriceListBasedRule
 			rs = pstmt.executeQuery();
 			while (!m_calculated && rs.next())
 			{
-				Timestamp plDate = rs.getTimestamp(5);
+				final Timestamp plDate = rs.getTimestamp(5);
 				// we have the price list
 				// if order date is after or equal PriceList validFrom
-				if (plDate == null || !m_PriceDate.before(plDate))
+				if (plDate == null || !m_PriceDate.before(plDate)) // the PLV is "timeless" or m_PriceDate is at the same day or after thePLV's date
 				{
 					// Prices
 					m_PriceStd = rs.getBigDecimal(1);
 					if (rs.wasNull())
+					{
 						m_PriceStd = BigDecimal.ZERO;
+					}
 					m_PriceList = rs.getBigDecimal(2);
 					if (rs.wasNull())
+					{
 						m_PriceList = BigDecimal.ZERO;
+					}
 					m_PriceLimit = rs.getBigDecimal(3);
 					if (rs.wasNull())
+					{
 						m_PriceLimit = BigDecimal.ZERO;
+					}
 					//
 					m_C_UOM_ID = rs.getInt(4);
 					ppUOMId = rs.getInt(11);
@@ -116,6 +152,8 @@ public class BasePriceList extends AbstractPriceListBasedRule
 					m_enforcePriceLimit = "Y".equals(rs.getString(8));
 					m_isTaxIncluded = "Y".equals(rs.getString(9));
 					m_C_TaxCategory_ID = rs.getInt("C_TaxCategory_ID");
+					m_M_PriceList_Version_ID = rs.getInt("M_PriceList_Version_ID");
+					
 					//
 					log.debug("M_PriceList_ID=" + m_M_PriceList_ID
 							+ "(" + plDate + ")" + " - " + m_PriceStd);
@@ -124,7 +162,7 @@ public class BasePriceList extends AbstractPriceListBasedRule
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			m_calculated = false;
 			throw new DBException(e, sql);
@@ -152,10 +190,10 @@ public class BasePriceList extends AbstractPriceListBasedRule
 		result.setM_Product_Category_ID(m_M_Product_Category_ID);
 		result.setEnforcePriceLimit(m_enforcePriceLimit);
 		result.setTaxIncluded(m_isTaxIncluded);
-		// result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID);
+		result.setM_PriceList_Version_ID(m_M_PriceList_Version_ID); // tell 'em which PLV-ID we used in the end
 		result.setC_TaxCategory_ID(m_C_TaxCategory_ID);
 		result.setCalculated(true);
-		
+
 		// 06942 : use product price uom all the time
 		if (ppUOMId <= 0)
 		{

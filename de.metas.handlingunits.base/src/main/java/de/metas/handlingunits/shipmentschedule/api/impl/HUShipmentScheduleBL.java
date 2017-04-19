@@ -13,25 +13,24 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -50,12 +49,16 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
+import org.slf4j.Logger;
+
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -86,6 +89,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.logging.LogManager;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
 public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
@@ -247,7 +251,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule()
 	{
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts = true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class)
+				.createInOutGenerateResult(true); // storeReceipts = true
+
 		return new InOutProducerFromShipmentScheduleWithHU(result);
 	}
 
@@ -424,17 +430,49 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void updateHUDeliveryQuantities(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+
+		final List<I_M_ShipmentSchedule_QtyPicked> allocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+
+		IPair<BigDecimal, BigDecimal> deliveredQtyLUAndTU = calculateQtyDeliveredFromQtyPickedRecords(allocations);
+		if (deliveredQtyLUAndTU == null)
+		{
+			deliveredQtyLUAndTU = calculateQtyDeliveredFromInOutLines(allocations);
+		}
+		if (deliveredQtyLUAndTU == null)
+		{
+			deliveredQtyLUAndTU = ImmutablePair.of(BigDecimal.ZERO, BigDecimal.ZERO);
+		}
+		BigDecimal qtyDelivered_LU = deliveredQtyLUAndTU.getLeft();
+		BigDecimal qtyDelivered_TU = deliveredQtyLUAndTU.getRight();
+
+		final I_M_ShipmentSchedule huShipmentSchedule = InterfaceWrapperHelper.create(shipmentSchedule, I_M_ShipmentSchedule.class);
+		huShipmentSchedule.setQtyDelivered_TU(qtyDelivered_TU);
+		huShipmentSchedule.setQtyDelivered_LU(qtyDelivered_LU);
+		HUDeliveryQuantitiesHelper.updateQtyToDeliver(huShipmentSchedule);
+
+		// NOTE: please don't save it, respect the method contract
+		// InterfaceWrapperHelper.save(huShipmentSchedule);
+	}
+
+	/** @return QtyDeliveredLU / QtyDeliveredTU pair */
+	private IPair<BigDecimal, BigDecimal> calculateQtyDeliveredFromQtyPickedRecords(final Collection<I_M_ShipmentSchedule_QtyPicked> allocations)
+	{
+		if (allocations.isEmpty())
+		{
+			return null;
+		}
+
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
-		final Set<Integer> deliveredLUIds = new HashSet<>();
-		final Set<Integer> deliveredTUIds = new HashSet<>();
+		final Set<Integer> seenLUIds = new HashSet<>();
+		final Set<Integer> seenTUIds = new HashSet<>();
+		int qtyDelivered_TU = 0;
 
 		// task 08298: if the shipment was directly created from the M_Shipment_Schedule without picking and HUs, then this variable will remain "true" after the following for-loop.
 		boolean allocationsHaveNoLUTU = true;
 
 		//
 		// Iterate allocations and build up the counters
-		final List<I_M_ShipmentSchedule_QtyPicked> allocations = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
 		{
 			// skip inactive allocations
@@ -443,104 +481,111 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				continue;
 			}
 
-			final int huLUId = alloc.getM_LU_HU_ID();
-			final int huTUId = alloc.getM_TU_HU_ID();
-			//
-			// count delivered LUs and TUs
-			if (shipmentScheduleAllocBL.isDelivered(alloc))
+			// skip not-delivered allocations
+			if (!shipmentScheduleAllocBL.isDelivered(alloc))
 			{
-				if (huLUId > 0)
+				continue;
+			}
+
+			//
+			// count delivered LUs
+			final int huLUId = alloc.getM_LU_HU_ID();
+			if (huLUId > 0)
+			{
+				seenLUIds.add(huLUId);
+				allocationsHaveNoLUTU = false; // task 08298: at least one alloc has a LU-ID set so we assume that the LUTU-information is valid
+			}
+
+			//
+			// count delivered TUs
+			final int huTUId = alloc.getM_TU_HU_ID();
+			if (huTUId > 0 && seenTUIds.add(huTUId))
+			{
+				// gh #1244: the following code can be a performance penalty and the assumption below might not be 100% correct.
+				// TODO in gh#1271: we might consider introducing I_M_ShipmentSchedule_QtyPicked.QtyDelivered_TU/QtyDelivered_LU fields
+				final I_M_HU huTU = alloc.getM_TU_HU();
+				if (huTU != null)
 				{
-					deliveredLUIds.add(huLUId);
-					allocationsHaveNoLUTU = false; // task 08298: at least one alloc has a LU-ID set so we assume that the LUTU-information is valid
-				}
-				if (huTUId > 0)
-				{
-					deliveredTUIds.add(huTUId);
+					//gh #1244: also cover the case of aggregate HUs.
+					final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+					final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+					if (handlingUnitsBL.isAggregateHU(huTU))
+					{
+						// we assume the whole aggregated TU was assigned to this shipment schedule, so that's why we consider the whole number of TUs (to be done in gh#1271)
+						qtyDelivered_TU += handlingUnitsDAO.retrieveParentItem(huTU).getQty().intValueExact();
+					}
+					else
+					{
+						qtyDelivered_TU += 1;
+					}
 					allocationsHaveNoLUTU = false; // task 08298: at least one alloc has a TU-ID set so we assume that the LUTU-information is valid
 				}
 			}
 		}
 
-		// set this value either from the allocs' M_TU_HU_ID info, or as a fallback from the allocated inout line(s).
-		final BigDecimal qtyDelivered_TU;
+		if (allocationsHaveNoLUTU)
+		{
+			return null;
+		}
 
+		final BigDecimal qtyDelivered_LU = BigDecimal.valueOf(seenLUIds.size());
+		return ImmutablePair.of(qtyDelivered_LU, BigDecimal.valueOf(qtyDelivered_TU));
+	}
+
+	/** @return QtyDeliveredLU / QtyDeliveredTU pair */
+	private IPair<BigDecimal, BigDecimal> calculateQtyDeliveredFromInOutLines(final Collection<I_M_ShipmentSchedule_QtyPicked> allocations)
+	{
 		// set of the linked inouts that have status Complete. It will be needed to determine the number of LUs
 		final Set<Integer> seenIOIds = new HashSet<Integer>();
 
-		if (allocationsHaveNoLUTU)
+		// task 08298: fallback and use the actual lines' TU-Qty
+		BigDecimal iolTuQtySum = BigDecimal.ZERO;
+
+		// not sure if each line is always allocated just once..using this set to make sure we don't count a line twice
+		final Set<Integer> seenIolIds = new HashSet<Integer>();
+
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
 		{
-			// task 08298: fallback and use the actual lines' TU-Qty
-			BigDecimal iolTuQtySum = BigDecimal.ZERO;
-
-			// not sure if each line is always allocated just once..using this set to make sure we don't count a line twice
-			final Set<Integer> seenIolIds = new HashSet<Integer>();
-
-			for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
+			if (alloc.isActive() // is active, ...
+					&& alloc.getM_InOutLine_ID() > 0 // ... references an iol ...
+					&& seenIolIds.add(alloc.getM_InOutLine_ID()) // ... and wasn't counted yet
+			)
 			{
-				if (alloc.isActive() // is active, ...
-						&& alloc.getM_InOutLine_ID() > 0 // ... references an iol ...
-						&& seenIolIds.add(alloc.getM_InOutLine_ID()) // ... and wasn't counted yet
-				)
+				final I_M_InOutLine iol = InterfaceWrapperHelper.create(alloc.getM_InOutLine(), I_M_InOutLine.class);
+
+				// task 08959
+				// Only sum up the qtys from inout lines that belong to completed inouts
+				final org.compiere.model.I_M_InOut io = iol.getM_InOut();
+
+				if (Services.get(IDocActionBL.class).isStatusCompleted(io))
 				{
-					final I_M_InOutLine iol = InterfaceWrapperHelper.create(alloc.getM_InOutLine(), I_M_InOutLine.class);
-
-					// task 08959
-					// Only sum up the qtys from inout lines that belong to completed inouts
-					final org.compiere.model.I_M_InOut io = iol.getM_InOut();
-
-					if (Services.get(IDocActionBL.class).isStatusCompleted(io))
-					{
-						seenIOIds.add(io.getM_InOut_ID());
-						iolTuQtySum = iolTuQtySum.add(iol.getQtyEnteredTU());
-					}
+					seenIOIds.add(io.getM_InOut_ID());
+					iolTuQtySum = iolTuQtySum.add(iol.getQtyEnteredTU());
 				}
 			}
-			qtyDelivered_TU = iolTuQtySum;
-		}
-		else
-		{
-			// this is the "normal" case.
-			qtyDelivered_TU = BigDecimal.valueOf(deliveredTUIds.size());
 		}
 
-		//
-		final I_M_ShipmentSchedule huShipmentSchedule = InterfaceWrapperHelper.create(shipmentSchedule, I_M_ShipmentSchedule.class);
-
-		huShipmentSchedule.setQtyDelivered_TU(qtyDelivered_TU);
+		final BigDecimal qtyDelivered_TU = iolTuQtySum;
 
 		// task 08959
 		// Assume there is one LU / Complete InOut
 		// TODO: When the logic of updating shipment schedules is modified, an elegant solution must be provided that is also consistent with the LU values in the inoutlines
-		BigDecimal qtyDelivered_LU = BigDecimal.valueOf(seenIOIds.size());
+		final BigDecimal qtyDelivered_LU = BigDecimal.valueOf(seenIOIds.size());
+		// task 08959: I will leave this here for traceability :
+		// final BigDecimal currentQtyToDeliverLU = huShipmentSchedule.getQtyToDeliver_LU();
 
-		// make sure the qtyDeliveredLU is also updated even if there are no allocations
-		if (allocationsHaveNoLUTU)
-		{
-			// task 08959: I will leave this here for traceability :
-			// final BigDecimal currentQtyToDeliverLU = huShipmentSchedule.getQtyToDeliver_LU();
-			// NOTE: because we don't have handlers for the shipment schedules update other than the swat one, we cannot properly update the HU delivered qtys on shipment complete,
-			// which would be similar with the CU qty
-			// To make sure we are not updating the QtyDeliveredLU too early, make sure to set it only when the QtyDeliveredTU is also set
-			// Because there is no LU qty in the M_ShipmentSchedule_QtyPicked andd neither in the M_InOutLine, we have to make sure this value is set even if there are no allocations
-			// TODO: Fix this with an elegant solution after we have a HU handler for updating Shipment schedules or after we merge shipment schedules with receipt schedules
+		// NOTE: because we don't have handlers for the shipment schedules update other than the swat one, we cannot properly update the HU delivered qtys on shipment complete,
+		// which would be similar with the CU qty
+		// To make sure we are not updating the QtyDeliveredLU too early, make sure to set it only when the QtyDeliveredTU is also set
+		// Because there is no LU qty in the M_ShipmentSchedule_QtyPicked andd neither in the M_InOutLine, we have to make sure this value is set even if there are no allocations
+		// TODO: Fix this with an elegant solution after we have a HU handler for updating Shipment schedules or after we merge shipment schedules with receipt schedules
 
-			// if (huShipmentSchedule.getQtyDelivered_TU().signum() > 0)
-			// {
-			// qtyDelivered_LU = qtyDelivered_LU.add(currentQtyToDeliverLU);
-			// }
-		}
-		else
-		{
-			qtyDelivered_LU = BigDecimal.valueOf(deliveredLUIds.size());
-		}
+		// if (huShipmentSchedule.getQtyDelivered_TU().signum() > 0)
+		// {
+		// qtyDelivered_LU = qtyDelivered_LU.add(currentQtyToDeliverLU);
+		// }
 
-		huShipmentSchedule.setQtyDelivered_LU(qtyDelivered_LU);
-
-		HUDeliveryQuantitiesHelper.updateQtyToDeliver(huShipmentSchedule);
-
-		// NOTE: please don't save it, respect the method contract
-		// InterfaceWrapperHelper.save(huShipmentSchedule);
+		return ImmutablePair.of(qtyDelivered_LU, qtyDelivered_TU);
 	}
 
 	@Override

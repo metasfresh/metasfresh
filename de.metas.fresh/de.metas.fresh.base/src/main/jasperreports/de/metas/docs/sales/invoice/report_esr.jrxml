@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-04T17:50:52 -->
+<!-- 2017-03-22T14:35:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_esr" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9ad91fd2-2369-44ef-8fdd-a6b2c907244c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5000000000000024"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -99,7 +100,7 @@ FROM
 	<detail>
 		<band height="297" splitType="Stretch">
 			<textField>
-				<reportElement mode="Transparent" x="159" y="239" width="413" height="14" uuid="e19b4fb3-80d1-4f94-9be4-bbd34f3d224b"/>
+				<reportElement mode="Transparent" x="157" y="237" width="413" height="14" uuid="e19b4fb3-80d1-4f94-9be4-bbd34f3d224b"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="OCRB" size="10"/>
 				</textElement>
@@ -134,28 +135,28 @@ FROM
 				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Transparent" x="204" y="115" width="94" height="13" uuid="c05f2848-e44e-4bc4-adfe-19b7e1a18d55"/>
+				<reportElement mode="Transparent" x="206" y="115" width="94" height="13" uuid="c05f2848-e44e-4bc4-adfe-19b7e1a18d55"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Transparent" x="32" y="115" width="94" height="13" uuid="b8e75c03-1423-4960-ac64-6673cd9a0304"/>
+				<reportElement mode="Transparent" x="34" y="115" width="94" height="13" uuid="b8e75c03-1423-4960-ac64-6673cd9a0304"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement mode="Transparent" x="12" y="183" width="155" height="11" uuid="5ba1b633-db57-459b-bccb-4928e4591d47"/>
+				<reportElement mode="Transparent" x="19" y="183" width="155" height="11" uuid="5ba1b633-db57-459b-bccb-4928e4591d47"/>
 				<textElement markup="none">
 					<font fontName="OCRB" size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{referenceno}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement mode="Transparent" x="13" y="196" width="137" height="64" uuid="d22cea99-69ad-4feb-86cb-9e0712461603"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement mode="Transparent" x="19" y="196" width="137" height="74" uuid="d22cea99-69ad-4feb-86cb-9e0712461603"/>
 				<textElement>
 					<font fontName="SansSerif" size="8"/>
 				</textElement>

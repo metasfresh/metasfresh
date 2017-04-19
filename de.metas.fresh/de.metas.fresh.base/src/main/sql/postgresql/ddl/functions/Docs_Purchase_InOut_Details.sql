@@ -14,7 +14,8 @@ RETURNS TABLE
 	isInDispute character(1),
 	Description Character Varying,
 	bp_product_no character varying(30),
-	bp_product_name character varying(100)
+	bp_product_name character varying(100),
+	line numeric
 )
 AS
 $$
@@ -32,7 +33,8 @@ SELECT
 	isInDispute,
 	iol.Description,
 	bp_product_no,
-	bp_product_name
+	bp_product_name,
+	max(iol.line) as line
 
 FROM
 	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
@@ -62,7 +64,8 @@ FROM
 		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description,
 		-- in case there is no C_BPartner_Product, fallback to the default ones
 		COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
-		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
+		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+		iol.line
 	FROM
 		-- All In Outs linked to the order
 		(
@@ -125,8 +128,8 @@ FROM
 					FROM 	Report.fresh_Attributes att
 					INNER JOIN M_InOutLine iol ON att.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
 					INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID and ol.isActive = 'Y'
-					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), MHD, M_Material_Tracking_ID
-						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', '1000021', 'M_Material_Tracking_ID')
+					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), HU_BestBeforeDate, MHD, M_Material_Tracking_ID
+						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', 'HU_BestBeforeDate', '1000021', 'M_Material_Tracking_ID')
 						/* currently those flags are set to be correct for purchase invoices. we need something
 						 * more flexible for all kinds of documents
 						 * att.at_IsAttrDocumentRelevant = 'Y' */
@@ -139,7 +142,7 @@ FROM
 		LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
 		LEFT OUTER JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 	WHERE
-		pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+		pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 	) iol
 GROUP BY
 	Attributes,
