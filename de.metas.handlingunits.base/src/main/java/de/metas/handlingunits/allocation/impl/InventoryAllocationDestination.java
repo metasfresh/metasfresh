@@ -38,6 +38,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -77,6 +78,9 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	private final I_C_DocType inventoryDocType;
 
+	/**
+	 * Map the inventory lines to the base inout lines
+	 */
 	private final Map<Integer, I_M_InventoryLine> inOutLineId2InventoryLine = new HashMap<Integer, I_M_InventoryLine>();
 
 	public InventoryAllocationDestination(final I_M_Warehouse warehouse, final I_C_DocType inventoryDocType)
@@ -109,7 +113,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		// Create result
 		final IMutableAllocationResult result = AllocationUtils.createMutableAllocationResult(request);
 
-		// TODO!!!!!!!!
 		final ITableRecordReference reference = request.getReference();
 
 		if (InterfaceWrapperHelper.isInstanceOf(reference, I_M_HU_Item.class))
@@ -125,6 +128,16 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			for (final I_M_InOutLine inOutLine : inOutLines)
 			{
+
+				final I_M_InOut inout = inOutLine.getM_InOut();
+
+				if (inout.isSOTrx())
+				{
+					// in case the base inout line is from a shipment, it is not relevant for the material disposal ( for the time being)
+					continue;
+				}
+
+				// create the inventory line based on the info from inoutline and request
 				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, request);
 
 				final BigDecimal qtyInternalUseOld = inventoryLine.getQtyInternalUse();
@@ -180,7 +193,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	private I_M_InventoryLine getCreateInventoryLine(final I_M_InOutLine inOutLine, final IAllocationRequest request)
 	{
-		// final int productId = request.getProduct().getM_Product_ID();
 		final int inOutLineId = inOutLine.getM_InOutLine_ID();
 
 		if (inOutLineId2InventoryLine.containsKey(inOutLineId))
@@ -217,6 +229,5 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		// Finally, process the inventory document.
 		Services.get(IDocActionBL.class).processEx(inventory, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-
 	}
 }
