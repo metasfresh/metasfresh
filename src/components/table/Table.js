@@ -703,7 +703,8 @@ class Table extends Component {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
-            queryLimitHit, supportQuickInput, tabInfo, isIncluded
+            queryLimitHit, supportQuickInput, tabInfo, isIncluded,
+            disablePaginationShortcuts
         } = this.props;
 
         const {
@@ -825,6 +826,8 @@ class Table extends Component {
                                 deselect={this.deselectAllProducts}
                                 queryLimitHit={queryLimitHit}
                                 compressed={isIncluded}
+                                disablePaginationShortcuts=
+                                    {disablePaginationShortcuts}
                             />
                         </div>
                     </div>
