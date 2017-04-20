@@ -28,8 +28,9 @@ import java.math.BigDecimal;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.mrp.AbstractMRPTestBase;
-import org.eevolution.mrp.api.IMutableMRPContext;
 import org.junit.Test;
+
+import de.metas.material.planning.IMutableMRPContext;
 
 /**
  * Tests how {@link MRPExecutor} behaves when it needs to balance very small numbers.

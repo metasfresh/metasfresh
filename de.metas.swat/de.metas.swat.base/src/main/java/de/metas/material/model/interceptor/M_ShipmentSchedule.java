@@ -1,5 +1,6 @@
 package de.metas.material.model.interceptor;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -33,18 +34,30 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */ })
+			ModelValidator.TYPE_BEFORE_DELETE /* before delete because we still need the M_ShipmentSchedule_ID */
+	}, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
+			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID,
+			I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+			I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
+			I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID,
+			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate,
+			I_M_ShipmentSchedule.COLUMNNAME_IsActive /* IsActive=N shall be threaded like a deletion*/})
 	public void fireEvent(final I_M_ShipmentSchedule schedule, final int timing)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final boolean deleted = timing == ModelValidator.TYPE_AFTER_DELETE;
+		final boolean deleted = timing == ModelValidator.TYPE_BEFORE_DELETE || !schedule.isActive();
+		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(schedule);
+
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
 				.materialDescr(MaterialDescriptor.builder()
 						.orgId(schedule.getAD_Org_ID())
-						.date(shipmentScheduleEffectiveBL.getPreparationDate(schedule))
+						.date(preparationDate)
 						.productId(schedule.getM_Product_ID())
-						.warehouseId(schedule.getM_Warehouse_ID())
+						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
 						.qty(shipmentScheduleEffectiveBL.getQtyOrdered(schedule))
 						.build())
 				.reference(TableRecordReference.of(schedule))

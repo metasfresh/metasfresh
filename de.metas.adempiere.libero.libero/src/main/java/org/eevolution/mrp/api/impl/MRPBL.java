@@ -46,15 +46,15 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPAllocDAO;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPContextFactory;
 import org.eevolution.mrp.api.IMRPContextRunnable;
-import org.eevolution.mrp.api.IMRPSegment;
-import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IMRPContextFactory;
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
 import de.metas.logging.LogManager;
 
 import de.metas.product.IProductBL;
@@ -99,7 +99,7 @@ public class MRPBL implements IMRPBL
 	@Override
 	public void updateMRPFromContext(final I_PP_MRP mrp)
 	{
-		final IMRPContext mrpContext = mrpContextThreadLocal.get();
+		final IMaterialPlanningContext mrpContext = mrpContextThreadLocal.get();
 		if (mrpContext == null)
 		{
 			return;
@@ -119,7 +119,7 @@ public class MRPBL implements IMRPBL
 	@Override
 	public void createMRPAllocationsFromContext(final I_PP_MRP mrpSupply)
 	{
-		final IMRPContext mrpContext = mrpContextThreadLocal.get();
+		final IMaterialPlanningContext mrpContext = mrpContextThreadLocal.get();
 		if (mrpContext == null)
 		{
 			return;
@@ -261,7 +261,7 @@ public class MRPBL implements IMRPBL
 	}
 
 	@Override
-	public void executeInMRPContext(final IMRPContext mrpContext, final IMRPContextRunnable runnable)
+	public void executeInMRPContext(final IMaterialPlanningContext mrpContext, final IMRPContextRunnable runnable)
 	{
 		Check.assumeNotNull(mrpContext, LiberoException.class, "mrpContext not null");
 		Check.assumeNotNull(runnable, LiberoException.class, "runnable not null");
@@ -286,7 +286,7 @@ public class MRPBL implements IMRPBL
 				mrpContextLocal.setTrxName(localTrxName);
 
 				// Make sure the supply is created in the current context, with the correct parent
-				final IMRPContext mrpContextFromThreadLocal = mrpContextThreadLocal.get();
+				final IMaterialPlanningContext mrpContextFromThreadLocal = mrpContextThreadLocal.get();
 				mrpContextThreadLocal.set(mrpContextLocal);
 				try
 				{
@@ -302,7 +302,7 @@ public class MRPBL implements IMRPBL
 		});
 	}
 
-	private final transient InheritableThreadLocal<IMRPContext> mrpContextThreadLocal = new InheritableThreadLocal<IMRPContext>();
+	private final transient InheritableThreadLocal<IMaterialPlanningContext> mrpContextThreadLocal = new InheritableThreadLocal<IMaterialPlanningContext>();
 
 	@Override
 	public BigDecimal getQtyAbs(final I_PP_MRP mrp)

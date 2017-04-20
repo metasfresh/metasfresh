@@ -30,15 +30,18 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPContextFactory;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPResult;
-import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 import org.slf4j.Logger;
+
+import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMRPContextFactory;
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
+
 import org.slf4j.Logger;
 
 public class MRPExecutorService implements IMRPExecutorService
@@ -46,7 +49,7 @@ public class MRPExecutorService implements IMRPExecutorService
 	// Services
 	// private final transient Logger logger = CLogMgt.getLogger(getClass());
 
-	public static final String MRP_ERROR_MRPExecutorMaxIterationsExceeded = IMRPExecutor.MRP_ERROR_999_Unknown; // TODO: add particular MRP code for this
+	public static final String MRP_ERROR_MRPExecutorMaxIterationsExceeded = ErrorCodes.MRP_ERROR_999_Unknown; // TODO: add particular MRP code for this
 
 	private final ThreadLocal<IMRPExecutor> _currentMRPExecutor = new ThreadLocal<IMRPExecutor>();
 
@@ -80,15 +83,15 @@ public class MRPExecutorService implements IMRPExecutorService
 	}
 
 	@Override
-	public IMRPResult run(final IMRPContext mrpContext)
+	public IMRPResult run(final IMaterialPlanningContext mrpContext)
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
-		final List<IMRPContext> mrpContexts = Collections.singletonList(mrpContext);
+		final List<IMaterialPlanningContext> mrpContexts = Collections.singletonList(mrpContext);
 		return run(mrpContexts);
 	}
 
 	@Override
-	public IMRPResult run(final List<IMRPContext> mrpContexts)
+	public IMRPResult run(final List<IMaterialPlanningContext> mrpContexts)
 	{
 		final IMRPExecutor mrpExecutor = createMRPExecutor();
 
@@ -105,7 +108,7 @@ public class MRPExecutorService implements IMRPExecutorService
 		{
 
 			@Override
-			public void run(final IMRPContext mrpContextLocal)
+			public void run(final IMaterialPlanningContext mrpContextLocal)
 			{
 				mrpExecutor.runMRP(mrpContextLocal);
 			}
@@ -125,21 +128,21 @@ public class MRPExecutorService implements IMRPExecutorService
 	}
 
 	@Override
-	public IMRPResult cleanup(final IMRPContext mrpContext)
+	public IMRPResult cleanup(final IMaterialPlanningContext mrpContext)
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
-		final List<IMRPContext> mrpContexts = Collections.singletonList(mrpContext);
+		final List<IMaterialPlanningContext> mrpContexts = Collections.singletonList(mrpContext);
 		final IMRPExecutor mrpExecutor = createMRPExecutor();
 		cleanup(mrpContexts, mrpExecutor);
 		return mrpExecutor.getMRPResult();
 	}
 
-	private final void cleanup(final List<IMRPContext> mrpContexts, final IMRPExecutor mrpExecutor)
+	private final void cleanup(final List<IMaterialPlanningContext> mrpContexts, final IMRPExecutor mrpExecutor)
 	{
 		run(mrpContexts, mrpExecutor, new IMRPRunnable()
 		{
 			@Override
-			public void run(final IMRPContext mrpContextLocal)
+			public void run(final IMaterialPlanningContext mrpContextLocal)
 			{
 				mrpExecutor.cleanup(mrpContextLocal);
 			}
@@ -153,16 +156,16 @@ public class MRPExecutorService implements IMRPExecutorService
 
 	}
 
-	private final void run(final List<IMRPContext> mrpContexts, final IMRPExecutor mrpExecutor, final IMRPRunnable mrpRunnable)
+	private final void run(final List<IMaterialPlanningContext> mrpContexts, final IMRPExecutor mrpExecutor, final IMRPRunnable mrpRunnable)
 	{
 		Check.assumeNotEmpty(mrpContexts, "mrpContexts not empty");
-		for (final IMRPContext mrpContext : mrpContexts)
+		for (final IMaterialPlanningContext mrpContext : mrpContexts)
 		{
 			run(mrpContext, mrpExecutor, mrpRunnable);
 		}
 	}
 
-	private final void run(final IMRPContext mrpContext0, final IMRPExecutor mrpExecutor, final IMRPRunnable mrpRunnable)
+	private final void run(final IMaterialPlanningContext mrpContext0, final IMRPExecutor mrpExecutor, final IMRPRunnable mrpRunnable)
 	{
 		// trxManager.assertTrxNull(mrpContext0); // it can be not null // TODO: narrow down this (i.e. when is allowed?)
 		Check.assumeNotNull(mrpContext0, LiberoException.class, "mrpContext0 not null");
@@ -209,7 +212,7 @@ public class MRPExecutorService implements IMRPExecutorService
 			logger.info("Evaluating segment: {}", mrpSegment);
 			logger.info("Trace: {}", mrpSegmentAndTrace.getTrace());
 
-			final IMRPContext currentMRPContext = mrpContextFactory.createMRPContext(mrpContext0, mrpSegment);
+			final IMaterialPlanningContext currentMRPContext = mrpContextFactory.createMRPContext(mrpContext0, mrpSegment);
 
 			//
 			// Make sure there is no other executor which is running at the moment
@@ -318,7 +321,7 @@ public class MRPExecutorService implements IMRPExecutorService
 
 interface IMRPRunnable
 {
-	void run(IMRPContext mrpContext);
+	void run(IMaterialPlanningContext mrpContext);
 
 	/** @return <code>true</code> if this runnable is about cleaning up data and not about actual MRP work */
 	boolean isCleanup();

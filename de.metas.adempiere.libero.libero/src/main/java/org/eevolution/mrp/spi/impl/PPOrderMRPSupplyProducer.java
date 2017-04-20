@@ -42,7 +42,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMBL;
@@ -58,13 +57,14 @@ import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Product_Planning;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPContextFactory;
+import org.eevolution.mrp.api.ILiberoMRPContextFactory;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPSourceEvent;
-import org.eevolution.mrp.api.IMutableMRPContext;
+
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
 
 public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -74,7 +74,6 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	public PPOrderMRPSupplyProducer()
 	{
-		super();
 		addSourceColumnNames(I_PP_Order.Table_Name, new String[] {
 				I_PP_Order.COLUMNNAME_AD_Org_ID,
 				I_PP_Order.COLUMNNAME_M_Product_ID,
@@ -113,7 +112,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		final I_M_Product product = mrpContext.getM_Product();
 		final I_PP_Product_Planning productDataPlanning = mrpContext.getProductPlanning();
@@ -523,7 +522,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
-		final IMRPContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMRPContext();
 		final IMRPExecutor executor = request.getMRPExecutor();
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
@@ -610,10 +609,11 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 		//
 		// Save the manufacturing order
+		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
 		InterfaceWrapperHelper.save(order);
 
 		//
-		// If we are asked to complete it, enque the MO for completion after MRP runs
+		// If we are asked to complete it, enqueue the MO for completion after MRP runs
 		if (productPlanningData.isDocComplete())
 		{
 			final DocumentsToCompleteAfterMRPExecution scheduler = DocumentsToCompleteAfterMRPExecution.getCreate(executor);
@@ -625,14 +625,14 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		executor.addGeneratedSupplyDocument(order);
 	}
 
-	private int calculateDurationDays(final IMRPContext mrpContext, final BigDecimal qty)
+	private int calculateDurationDays(final IMaterialPlanningContext mrpContext, final BigDecimal qty)
 	{
 		final int leadtimeDays = calculateLeadtimeDays(mrpContext, qty);
 		final int durationTotalDays = mrpBL.calculateDurationDays(leadtimeDays, mrpContext.getProductPlanning());
 		return durationTotalDays;
 	}
 
-	private int calculateLeadtimeDays(final IMRPContext mrpContext, final BigDecimal qty)
+	private int calculateLeadtimeDays(final IMaterialPlanningContext mrpContext, final BigDecimal qty)
 	{
 		final Properties ctx = mrpContext.getCtx();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
@@ -653,7 +653,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		//
 		// Delete generated manufacturing orders
@@ -739,7 +739,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 			return;
 		}
 
-		final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
+		final ILiberoMRPContextFactory mrpContextFactory = Services.get(ILiberoMRPContextFactory.class);
 
 		final MRPContextUniquePlanningSegmentsCollector mrpContextsCollector = new MRPContextUniquePlanningSegmentsCollector();
 		mrpContextsCollector.setKeepLastAdded(true);

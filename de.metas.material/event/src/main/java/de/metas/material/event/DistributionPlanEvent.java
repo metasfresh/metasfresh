@@ -1,5 +1,9 @@
 package de.metas.material.event;
 
+import java.util.Date;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,8 +38,14 @@ public class DistributionPlanEvent implements MaterialEvent
 	public static final String TYPE = "ProductionPlanEvent";
 
 	@NonNull
-	private final MaterialDescriptor sourceMaterialDescr;
+	private final Integer fromWarehouseId;
+
+	@NonNull
+	private final Date distributionStart;
 
 	@NonNull
 	private final MaterialDescriptor materialDescr;
+
+	@NonNull
+	private final TableRecordReference reference;
 }

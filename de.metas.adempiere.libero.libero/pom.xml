@@ -50,6 +50,12 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-planning</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125

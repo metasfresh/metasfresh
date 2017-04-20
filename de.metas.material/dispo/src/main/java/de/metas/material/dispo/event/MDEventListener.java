@@ -4,11 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateChangeHandler;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.MaterialEvent;
+import de.metas.material.dispo.CandidateChangeHandler;
+import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
@@ -58,6 +59,25 @@ public class MDEventListener implements MaterialEventListener
 		{
 			handleShipmentScheduleEvent((ShipmentScheduleEvent)event);
 		}
+		else if(event instanceof DistributionPlanEvent)
+		{
+			handleDistributionPlanEvent((DistributionPlanEvent)event);
+		}
+	}
+
+	private void handleDistributionPlanEvent(DistributionPlanEvent event)
+	{
+		final Candidate supplyCandidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.subType(SubType.DISTRIBUTION)
+				.date(event.getMaterialDescr().getDate())
+				.orgId(event.getMaterialDescr().getOrgId())
+				.productId(event.getMaterialDescr().getProductId())
+				.quantity(event.getMaterialDescr().getQty())
+				.reference(event.getReference())
+				.build();
+		candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+		
 	}
 
 	private void handleTransactionEvent(@NonNull final TransactionEvent event)
@@ -77,7 +97,7 @@ public class MDEventListener implements MaterialEventListener
 				.date(materialDescr.getDate())
 				.productId(materialDescr.getProductId())
 				.quantity(materialDescr.getQty())
-				.referencedRecord(event.getReference())
+				.reference(event.getReference())
 				.build();
 
 		candidateChangeHandler.updateStock(candidate);
@@ -101,7 +121,7 @@ public class MDEventListener implements MaterialEventListener
 				.warehouseId(materialDescr.getWarehouseId())
 				.productId(materialDescr.getProductId())
 				.quantity(materialDescr.getQty())
-				.referencedRecord(event.getReference())
+				.reference(event.getReference())
 				.build();
 
 		candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
@@ -124,7 +144,7 @@ public class MDEventListener implements MaterialEventListener
 				.warehouseId(materialDescr.getWarehouseId())
 				.productId(materialDescr.getProductId())
 				.quantity(materialDescr.getQty())
-				.referencedRecord(event.getReference())
+				.reference(event.getReference())
 				.build();
 		candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
 	}

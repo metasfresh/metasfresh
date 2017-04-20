@@ -58,10 +58,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductPlanningBL;
-import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.exceptions.LiberoException;
-import org.eevolution.exceptions.NoPlantForWarehouseException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -72,15 +69,19 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
 import org.eevolution.model.X_PP_Product_BOM;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.exception.NoPlantForWarehouseException;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -88,6 +89,9 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
+	@Autowired
+	private transient ProductPlanningBL productPlanningBL;
+	
 	public OrderMRPSupplyProducer()
 	{
 		super();
@@ -119,7 +123,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		// always false; it's never used to balance demand
 		notAppliesReason.setValue(MSG_OrderMRPNoBalanceDemand);
@@ -188,7 +192,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		// nothing
 	}
@@ -438,7 +442,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 							+ " : "
 							+ ol.getC_Order().getDocumentNo();
 					// Create temporary data planning to create Manufacturing Order
-					productPlanning = Services.get(IProductPlanningBL.class).createPlainProductPlanning(ctx);
+					productPlanning = productPlanningBL.createPlainProductPlanning(ctx);
 					productPlanning.setAD_Org_ID(ol.getAD_Org_ID());
 					productPlanning.setM_Product(product);
 					productPlanning.setPlanner_ID(ol.getC_Order().getSalesRep_ID());

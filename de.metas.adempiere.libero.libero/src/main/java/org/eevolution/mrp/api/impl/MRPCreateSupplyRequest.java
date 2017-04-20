@@ -35,13 +35,15 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 
+import de.metas.material.planning.IMaterialPlanningContext;
+
+
 public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
 {
-	private final IMRPContext mrpContext;
+	private final IMaterialPlanningContext mrpContext;
 	private final IMRPExecutor mrpExecutor;
 	private final BigDecimal qtyToSupply;
 	private final Date demandDate;
@@ -55,7 +57,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	private final int mrpDemandBPartnerId;
 	private final int mrpDemandOrderLineSOId;
 
-	public MRPCreateSupplyRequest(final IMRPContext mrpContext,
+	public MRPCreateSupplyRequest(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final BigDecimal qtyToSupply,
 			final Date demandDate,
@@ -139,7 +141,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	}
 
 	@Override
-	public IMRPContext getMRPContext()
+	public IMaterialPlanningContext getMRPContext()
 	{
 		return mrpContext;
 	}

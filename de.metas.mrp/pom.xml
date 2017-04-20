@@ -9,14 +9,12 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 	
-	<groupId>de.metas.mrp</groupId>
-	<artifactId>metasfresh-mrp</artifactId>
+	<groupId>de.metas.material</groupId>
+	<artifactId>metasfresh-material-planning</artifactId>
 	<packaging>jar</packaging>
 
-	<description>
-		This componend shall leverage the libero code to generate production and dsitribution suggestions for the material-dispo service
-		Not sure if this shall be a dedicated service..it depends on how well we will be able to cope with having more and more of them
-	</description>
+	<description>This componend shall leverage the libero code to generate production and dsitribution suggestions for the material-dispo service
+Not sure if this shall be a dedicated service..it depends on how well we will be able to cope with having more and more of them.</description>
 
 	<dependencies>
 	
@@ -30,12 +28,6 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.adempiere.libero</groupId>
-			<artifactId>de.metas.adempiere.libero.libero</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 		

@@ -6,6 +6,8 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -65,9 +67,10 @@ public class MaterialEventService
 		return INSTANCE;
 	}
 
-	public void registerListener(final MaterialEventListener l)
+	public void registerListener(final MaterialEventListener materialDemandListener)
 	{
-		listeners.add(l);
+		Preconditions.checkNotNull(materialDemandListener, "Param materialDemandListener is null");
+		listeners.add(materialDemandListener);
 	}
 
 	public void fireEventAfterCommit(final MaterialEvent event, final String trxName)

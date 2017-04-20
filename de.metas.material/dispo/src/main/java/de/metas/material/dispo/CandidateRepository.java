@@ -1,5 +1,6 @@
 package de.metas.material.dispo;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -57,16 +58,24 @@ public class CandidateRepository
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.
 	 *
 	 * @param candidate
-	 * @return the old candidate, how it used to be persisted before this invocation (if it was persisted at all).
+	 * @return a candidate with
+	 *         <ul>
+	 *         <li>the {@code id} of the persisted data record
+	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made
+	 *         </ul>
 	 */
 	public Candidate addOrReplace(@NonNull final Candidate candidate)
 	{
 		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
-
+		final BigDecimal oldqty = oldCandidateRecord.isPresent() ? oldCandidateRecord.get().getQty() : BigDecimal.ZERO;
+		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);
+		
 		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate);
 		InterfaceWrapperHelper.save(synchedRecord);
 
-		return candidate.withId(synchedRecord.getMD_Candidate_ID());
+		return candidate
+				.withId(synchedRecord.getMD_Candidate_ID())
+				.withQuantity(qtyDelta);
 	}
 
 	public Optional<Candidate> retrieve(@NonNull final Candidate candidate)
@@ -107,7 +116,7 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, candidate.getProductId())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getDate());
 
-		final ITableRecordReference referencedRecord = candidate.getReferencedRecord();
+		final TableRecordReference referencedRecord = candidate.getReference();
 		if (referencedRecord != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID());
@@ -139,6 +148,7 @@ public class CandidateRepository
 
 		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(InterfaceWrapperHelper.newInstance(I_MD_Candidate.class));
 
+		candidateRecordToUse.setAD_Org_ID(candidate.getOrgId());
 		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecordToUse.setM_Warehouse_ID(candidate.getWarehouseId());
 		candidateRecordToUse.setM_Product_ID(candidate.getProductId());
@@ -155,7 +165,7 @@ public class CandidateRepository
 			candidateRecordToUse.setMD_Candidate_Parent_ID(candidate.getParentId());
 		}
 
-		final ITableRecordReference referencedRecord = candidate.getReferencedRecord();
+		final ITableRecordReference referencedRecord = candidate.getReference();
 		if (referencedRecord != null)
 		{
 			candidateRecordToUse.setAD_Table_ID(referencedRecord.getAD_Table_ID());
@@ -164,29 +174,36 @@ public class CandidateRepository
 		return candidateRecordToUse;
 	}
 
-	private Optional<Candidate> fromCandidateRecord(final Optional<I_MD_Candidate> candidateRecord)
+	private Optional<Candidate> fromCandidateRecord(final Optional<I_MD_Candidate> candidateRecordOpt)
 	{
-		if (candidateRecord == null
-				|| !candidateRecord.isPresent()
-				|| InterfaceWrapperHelper.isNew(candidateRecord.get()))
+		if (candidateRecordOpt == null
+				|| !candidateRecordOpt.isPresent())
+		{
+			return Optional.empty();
+		}
+
+		final I_MD_Candidate candidateRecord = candidateRecordOpt.get();
+
+		if (InterfaceWrapperHelper.isNew(candidateRecord))
 		{
 			return Optional.empty();
 		}
 
 		CandidateBuilder builder = Candidate.builder()
-				.id(candidateRecord.get().getMD_Candidate_ID())
-				.parentId(candidateRecord.get().getMD_Candidate_Parent_ID())
-				.productId(candidateRecord.get().getM_Product_ID())
-				.quantity(candidateRecord.get().getQty())
-				.type(Type.valueOf(candidateRecord.get().getMD_Candidate_Type()))
-				.warehouseId(candidateRecord.get().getM_Warehouse_ID())
+				.id(candidateRecord.getMD_Candidate_ID())
+				.orgId(candidateRecord.getAD_Org_ID())
+				.parentId(candidateRecord.getMD_Candidate_Parent_ID())
+				.productId(candidateRecord.getM_Product_ID())
+				.quantity(candidateRecord.getQty())
+				.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
+				.warehouseId(candidateRecord.getM_Warehouse_ID())
 
 				// make sure to add a Date and not a Timestamp to make sure not to confuse Candidate's equals() and hashCode() methods
-				.date(new Date(candidateRecord.get().getDateProjected().getTime()));
+				.date(new Date(candidateRecord.getDateProjected().getTime()));
 
-		if (candidateRecord.get().getRecord_ID() > 0)
+		if (candidateRecord.getRecord_ID() > 0)
 		{
-			builder = builder.referencedRecord(TableRecordReference.ofReferenced(candidateRecord));
+			builder = builder.reference(TableRecordReference.ofReferenced(candidateRecord));
 		}
 
 		return Optional.of(builder.build());
@@ -216,19 +233,28 @@ public class CandidateRepository
 		return fromCandidateRecord(Optional.ofNullable(candidateRecord));
 	}
 
+	/**
+	 * Retrieve stock records that match the given segment's warehouse, product etc and have a timestamp later <b>or equal</b>.
+	 * 
+	 * @param segment
+	 * @return
+	 */
 	public List<Candidate> retrieveStockFrom(@NonNull final CandidatesSegment segment)
 	{
-		return retrieveStockFromOrAfter(segment, true);
+		final boolean from = true;
+		return retrieveStockFromOrAfter(segment, from);
 	}
 
 	/**
-	 *
+	 * Retrieve stock records that match the given segment's warehouse, product etc and have a timestamp later <b>but not equal</b>.
+	 * 
 	 * @param segment
 	 * @return
 	 */
 	public List<Candidate> retrieveStockAfter(@NonNull final CandidatesSegment segment)
 	{
-		return retrieveStockFromOrAfter(segment, false);
+		final boolean from = false;
+		return retrieveStockFromOrAfter(segment, from);
 	}
 
 	/**

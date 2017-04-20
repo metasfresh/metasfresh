@@ -26,7 +26,6 @@ package org.eevolution.mrp;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Services;
 import org.eevolution.api.IDDOrderBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.eevolution.mrp.api.impl.MockedMRPExecutor;
 import org.junit.Before;
@@ -35,6 +34,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public abstract class AbstractMRPTestBase
 {
@@ -105,7 +105,7 @@ public abstract class AbstractMRPTestBase
 		helper.runMRP();
 	}
 
-	protected void runMRP(final IMRPContext mrpContext)
+	protected void runMRP(final IMaterialPlanningContext mrpContext)
 	{
 		helper.runMRP(mrpContext);
 	}

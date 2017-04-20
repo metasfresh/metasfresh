@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,5 +37,8 @@ public class MaterialDemandEvent implements MaterialEvent
 	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
-	private MaterialDescriptor descr;
+	private final MaterialDescriptor descr;
+	
+	@NonNull
+	private final TableRecordReference reference;
 }

@@ -50,8 +50,14 @@ public class CandidateChangeHandler
 	{
 		final Candidate demandCandidateWithId = candidateRepository.addOrReplace(demandCandidate);
 
+		if (demandCandidateWithId.getQuantity().signum() == 0)
+		{
+			// this candidate didn't change anything
+			return;
+		}
+
 		final Candidate stockWithDemand = updateStock(demandCandidate
-				.withQuantity(demandCandidate.getQuantity().negate())
+				.withQuantity(demandCandidateWithId.getQuantity().negate())
 				.withParentId(demandCandidateWithId.getId()));
 
 		if (stockWithDemand.getQuantity().signum() >= 0)
@@ -70,6 +76,7 @@ public class CandidateChangeHandler
 						.qty(stockWithDemand.getQuantity().negate())
 						.warehouseId(demandCandidate.getWarehouseId())
 						.build())
+				.reference(demandCandidate.getReference())
 				.build();
 
 		MaterialEventService.get().fireEvent(metarialDemandEvent);
@@ -87,9 +94,15 @@ public class CandidateChangeHandler
 	 */
 	public void onSupplyCandidateNewOrChange(final Candidate supplyCandidate)
 	{
-		final Candidate parentStockCandidateWithId = updateStock(supplyCandidate);
+		// store the supply candidate and get both it's ID and qty-delta
+		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrReplace(supplyCandidate);
+		
+		// update the stock with the delta
+		final Candidate parentStockCandidateWithId = updateStock(supplyCandidateDeltaWithId);
 
-		candidateRepository.addOrReplace(supplyCandidate.withParentId(parentStockCandidateWithId.getId()));
+		// set the stock candidate as parent for the supply candidate
+		candidateRepository.addOrReplace(
+				supplyCandidate.withParentId(parentStockCandidateWithId.getId()));
 
 		// e.g.
 		// supply-candidate with 23 (i.e. +23)

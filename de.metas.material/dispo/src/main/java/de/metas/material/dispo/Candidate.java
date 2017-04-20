@@ -3,7 +3,7 @@ package de.metas.material.dispo;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import lombok.Builder;
 import lombok.Data;
@@ -78,7 +78,7 @@ public class Candidate
 	 */
 	private final SubType subType;
 
-	private final ITableRecordReference referencedRecord;
+	private final TableRecordReference reference;
 
 	private final Integer id;
 

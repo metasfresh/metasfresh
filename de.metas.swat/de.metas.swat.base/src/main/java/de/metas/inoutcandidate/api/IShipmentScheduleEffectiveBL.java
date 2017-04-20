@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,7 +86,9 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	Timestamp getDeliveryDate(I_M_ShipmentSchedule sched);
 
 	/**
-	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override
+	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override.
+	 * If none of them is set, try to fallback to the given {@code sched}'s order's preparation date. If the order has no proparation date, falls back to the order's promised date.
+	 * If the given {@code sched} doesn't have an order, return the current time.,
 	 * 
 	 * @param sched
 	 * @return

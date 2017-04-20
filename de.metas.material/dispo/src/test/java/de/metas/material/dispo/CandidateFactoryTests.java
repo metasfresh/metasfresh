@@ -86,6 +86,7 @@ public class CandidateFactoryTests
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
@@ -102,6 +103,7 @@ public class CandidateFactoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(earlier)
@@ -120,6 +122,7 @@ public class CandidateFactoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(later)

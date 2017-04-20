@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -29,10 +28,13 @@ import java.sql.Timestamp;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -45,10 +47,9 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_C_BPartner_Location getBPartnerLocation(final I_M_ShipmentSchedule sched)
 	{
-		final I_C_BPartner_Location location =
-				InterfaceWrapperHelper.create(
-						sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
-						I_C_BPartner_Location.class);
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
+				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
+				I_C_BPartner_Location.class);
 		return location;
 	}
 
@@ -70,9 +71,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	{
 		Check.assume(sched != null, "'sched' parameter may not be null");
 
-		final String deliveryRule =
-				Check.isEmpty(sched.getDeliveryRule_Override(), true) ?
-						sched.getDeliveryRule() : sched.getDeliveryRule_Override();
+		final String deliveryRule = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
 		return deliveryRule;
 	}
 
@@ -120,10 +119,9 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
-		final I_C_BPartner bPartner =
-				InterfaceWrapperHelper.create(
-						sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
-						I_C_BPartner.class);
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(
+				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
+				I_C_BPartner.class);
 		return bPartner;
 	}
 
@@ -143,17 +141,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public int getAD_User_ID(final I_M_ShipmentSchedule sched)
 	{
-		return sched.getAD_User_Override_ID() > 0 ?
-				sched.getAD_User_Override_ID() : sched.getAD_User_ID();
+		return sched.getAD_User_Override_ID() > 0 ? sched.getAD_User_Override_ID() : sched.getAD_User_ID();
 
 	}
 
 	@Override
 	public I_AD_User getAD_User(final I_M_ShipmentSchedule sched)
 	{
-		final I_AD_User user =
-				sched.getAD_User_Override_ID() <= 0 ?
-						InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : InterfaceWrapperHelper.create(sched.getAD_User_Override(), I_AD_User.class);
+		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : InterfaceWrapperHelper.create(sched.getAD_User_Override(), I_AD_User.class);
 		return user;
 	}
 
@@ -166,7 +161,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		}
 		return shipmentSchedule.getQtyOrdered_Override();
 	}
-	
+
 	@Override
 	public Timestamp getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
@@ -188,6 +183,17 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 			return preparationDateOverride;
 		}
 
-		return sched.getPreparationDate();
+		if (sched.getPreparationDate() != null)
+		{
+			return sched.getPreparationDate();
+		}
+
+		if (sched.getC_Order_ID() > 0)
+		{
+			final I_C_Order order = sched.getC_Order();
+			return Util.coalesce(order.getPreparationDate(), order.getDatePromised());
+		}
+
+		return SystemTime.asTimestamp();
 	}
 }

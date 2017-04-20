@@ -35,6 +35,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -52,8 +53,6 @@ import org.compiere.util.TrxRunnable;
 import org.eevolution.LiberoConstants;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductPlanningBL;
-import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_AD_Note;
 import org.eevolution.model.I_PP_MRP;
@@ -61,8 +60,6 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Product_Planning;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPContextFactory;
 import org.eevolution.mrp.api.IMRPContextRunnable;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDAO;
@@ -72,20 +69,25 @@ import org.eevolution.mrp.api.IMRPDemandAggregationFactory;
 import org.eevolution.mrp.api.IMRPDemandAllocationResult;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorJobs;
-import org.eevolution.mrp.api.IMRPNoteBuilder;
 import org.eevolution.mrp.api.IMRPNoteDAO;
-import org.eevolution.mrp.api.IMRPNotesCollector;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.IMRPResult;
-import org.eevolution.mrp.api.IMRPSegment;
-import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.IMutableMRPResult;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IMRPContextFactory;
+import de.metas.material.planning.IMRPNoteBuilder;
+import de.metas.material.planning.IMRPNotesCollector;
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public /* package */class MRPExecutor implements IMRPExecutor
@@ -138,11 +140,13 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	// Database/Trx services:
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ITrxConstraintsBL trxConstraintsBL = Services.get(ITrxConstraintsBL.class);
-	private final IProductPlanningBL productPlanningBL = Services.get(IProductPlanningBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final IPPWorkflowDAO ppWorkflowDAO = Services.get(IPPWorkflowDAO.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	
+	@Autowired
+	private transient ProductPlanningBL productPlanningBL;
 	//
 
 	//
@@ -174,7 +178,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * 
 	 * @param mrpContext
 	 */
-	private final void initFromMRPContext(final IMRPContext mrpContext)
+	private final void initFromMRPContext(final IMaterialPlanningContext mrpContext)
 	{
 		this.logger = mrpContext.getLogger();
 		this._subsequentMRPExecutorCall = mrpContext.isSubsequentMRPExecutorCall();
@@ -191,14 +195,14 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		return _mrpSupplyProducerFactory;
 	}
 
-	private final IMutableMRPContext createMRPContext(final IMRPContext mrpContext)
+	private final IMutableMRPContext createMRPContext(final IMaterialPlanningContext mrpContext)
 	{
 		final IMutableMRPContext mrpContextNew = mrpContextFactory.createMRPContext(mrpContext);
 		return mrpContextNew;
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext)
+	public void cleanup(final IMaterialPlanningContext mrpContext)
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 		initFromMRPContext(mrpContext);
@@ -253,7 +257,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		}
 	}
 
-	protected void markMRPRecordsAvailable(final IMRPContext mrpContext)
+	protected void markMRPRecordsAvailable(final IMaterialPlanningContext mrpContext)
 	{
 		//
 		// Update MRP supplies
@@ -270,7 +274,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		logger.debug("Marked demands available for #{} records\n{}", new Object[] { mrpDemands_UpdateCount, mrpContext });
 	}
 
-	private Iterator<I_PP_MRP> retrieveMRPDemands(final IMRPContext mrpContext, final int lowLevel)
+	private Iterator<I_PP_MRP> retrieveMRPDemands(final IMaterialPlanningContext mrpContext, final int lowLevel)
 	{
 		final IMRPQueryBuilder mrpQueryBuilder = createDemandsMRPQueryBuilder(mrpContext)
 				// Product's LLC
@@ -302,7 +306,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		return mrpDemands.iterator();
 	}
 
-	private IMRPQueryBuilder createDemandsMRPQueryBuilder(final IMRPContext mrpContext)
+	private IMRPQueryBuilder createDemandsMRPQueryBuilder(final IMaterialPlanningContext mrpContext)
 	{
 		final IMRPQueryBuilder mrpQueryBuilder = mrpDAO.createMRPQueryBuilder()
 				// Planning Dimension
@@ -328,7 +332,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	}
 
 	@Override
-	public IMRPQueryBuilder createMRPQueryBuilder(final IMRPContext mrpContext)
+	public IMRPQueryBuilder createMRPQueryBuilder(final IMaterialPlanningContext mrpContext)
 	{
 		final IMRPQueryBuilder mrpQueryBuilder = mrpDAO.createMRPQueryBuilder()
 				// Planning Dimension
@@ -344,7 +348,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	}
 
 	@Override
-	public final void runMRP(final IMRPContext mrpContext0)
+	public final void runMRP(final IMaterialPlanningContext mrpContext0)
 	{
 		//
 		// Validate MRP Context (i.e. MRP Planning Segment is fully defined)
@@ -538,7 +542,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	} // end runMRP
 
 	/**
-	 * Execute submited jobs to be executed after {@link #runMRP(IMRPContext)}
+	 * Execute submited jobs to be executed after {@link #runMRP(IMaterialPlanningContext)}
 	 */
 	private final void executeAfterRunJobs()
 	{
@@ -569,7 +573,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * @param mrpDemand
 	 * @return true if given MRP demand is available for balancing
 	 */
-	private final boolean isMRPDemandAvailable(final IMRPContext mrpContext, final I_PP_MRP mrpDemand)
+	private final boolean isMRPDemandAvailable(final IMaterialPlanningContext mrpContext, final I_PP_MRP mrpDemand)
 	{
 		Check.assume(mrpBL.isDemand(mrpDemand), LiberoException.class, "MRP record shall be a Demand: {}", mrpDemand);
 		final String OrderType = mrpDemand.getOrderType();
@@ -708,7 +712,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		mrpContext.setQtyProjectOnHand(qtyOnHand);
 	}
 
-	private final IMRPDemandAggregation createMRPDemandAggregation(final IMRPContext mrpContext)
+	private final IMRPDemandAggregation createMRPDemandAggregation(final IMaterialPlanningContext mrpContext)
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 
@@ -719,7 +723,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		return mrpDemandAggegation;
 	}
 
-	private I_PP_Product_Planning findProductPlanning(final IMRPContext mrpContext)
+	private I_PP_Product_Planning findProductPlanning(final IMaterialPlanningContext mrpContext)
 	{
 		final Properties ctx = mrpContext.getCtx();
 		final I_M_Product product = mrpContext.getM_Product();
@@ -856,7 +860,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * @param mrpContext
 	 * @return QtyOnHand
 	 */
-	private BigDecimal calculateQtyOnHand(final IMRPContext mrpContext)
+	private BigDecimal calculateQtyOnHand(final IMaterialPlanningContext mrpContext)
 	{
 		final I_M_Warehouse warehouse = mrpContext.getM_Warehouse();
 		final I_M_Product product = mrpContext.getM_Product();
@@ -888,7 +892,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * @param mrpContext
 	 * @param mrpDemand
 	 */
-	private void calculatePlan(final IMRPContext mrpContext, final IMRPDemand mrpDemand)
+	private void calculatePlan(final IMaterialPlanningContext mrpContext, final IMRPDemand mrpDemand)
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 
@@ -1062,7 +1066,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * @param qtyNetReq
 	 * @return net requirements quantity adjusted
 	 */
-	private BigDecimal calculateQtyToOrder(final IMRPContext mrpContext, final BigDecimal qtyNetReq)
+	private BigDecimal calculateQtyToOrder(final IMaterialPlanningContext mrpContext, final BigDecimal qtyNetReq)
 	{
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
@@ -1122,7 +1126,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * @throws LiberoException if there is any error
 	 */
 	private BigDecimal createSupply(
-			final IMRPContext mrpContext,
+			final IMaterialPlanningContext mrpContext,
 			final BigDecimal qtyToSupply,
 			final Date DemandDateStartSchedule,
 			final List<IMRPRecordAndQty> mrpDemandsToAllocate)
@@ -1207,7 +1211,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		final String trxName;
 		if (isSubsequentMRPExecutor())
 		{
-			final IMRPContext mrpContext = mrpNoteBuilder.getMRPContext();
+			final IMaterialPlanningContext mrpContext = mrpNoteBuilder.getMRPContext();
 			trxName = mrpContext != null ? mrpContext.getTrxName() : ITrx.TRXNAME_None;
 		}
 		else
@@ -1223,7 +1227,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
-				final I_AD_Note note = mrpNoteBuilder.createMRPNote();
+				final I_AD_Note note = InterfaceWrapperHelper.create(mrpNoteBuilder.createMRPNote(), I_AD_Note.class);
 				noteToReturn.setValue(note);
 			}
 		});
@@ -1232,7 +1236,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	}
 
 	@Override
-	public IMRPNoteBuilder newMRPNote(final IMRPContext mrpContext, final String mrpErrorCode)
+	public IMRPNoteBuilder newMRPNote(final IMaterialPlanningContext mrpContext, final String mrpErrorCode)
 	{
 		final IMRPNotesCollector mrpNotesCollector = getMRPNotesCollector();
 		return mrpNotesCollector.newMRPNoteBuilder(mrpContext, mrpErrorCode);
@@ -1262,8 +1266,8 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	 * 
 	 * NOTE: logic of following methods are are all relying on this:
 	 * <ul>
-	 * <li>{@link #isMRPDemandAvailable(IMRPContext, I_PP_MRP)}
-	 * <li>{@link #retrieveMRPDemands(IMRPContext, int)}
+	 * <li>{@link #isMRPDemandAvailable(IMaterialPlanningContext, I_PP_MRP)}
+	 * <li>{@link #retrieveMRPDemands(IMaterialPlanningContext, int)}
 	 * </ul>
 	 */
 	@Override

@@ -1,8 +1,6 @@
 package de.metas.material.event;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 

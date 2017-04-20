@@ -46,5 +46,8 @@ public class ShipmentScheduleEvent implements MaterialEvent
 	@NonNull
 	private final MaterialDescriptor materialDescr;
 
+	/**
+	 * Note that we count an inactive shipment schedule as deleted too, because as far as the material dispo is concerned, there is no difference
+	 */
 	private final boolean shipmentScheduleDeleted;
 }

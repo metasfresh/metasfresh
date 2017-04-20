@@ -99,6 +99,7 @@ public class CandiateRepositoryTests
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("11"))
@@ -108,6 +109,7 @@ public class CandiateRepositoryTests
 
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
@@ -117,6 +119,7 @@ public class CandiateRepositoryTests
 
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
@@ -170,12 +173,12 @@ public class CandiateRepositoryTests
 
 	/**
 	 * 
-	 * @param laterStock
+	 * @param candidate
 	 * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
 	 */
-	private Candidate toCandidateWithoutIds(final Candidate laterStock)
+	private Candidate toCandidateWithoutIds(final Candidate candidate)
 	{
-		return laterStock.withId(null).withParentId(null);
+		return candidate.withId(null).withParentId(null);
 	}
 
 	@Test
@@ -188,7 +191,7 @@ public class CandiateRepositoryTests
 			assertThat(stockFrom.size(), is(2));
 
 			// what we retrieved, but without the IDs. To be used to compare with our "originals"
-			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> from.withId(null).withParentId(null)).collect(Collectors.toList());
+			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> toCandidateWithoutIds(from)).collect(Collectors.toList());
 
 			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));

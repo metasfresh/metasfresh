@@ -55,11 +55,12 @@ public class CandidateFactory
 
 		return Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(candidate.getOrgId())
 				.productId(candidate.getProductId())
 				.warehouseId(candidate.getWarehouseId())
 				.date(candidate.getDate())
 				.quantity(formerQuantity.add(candidate.getQuantity()))
-				.referencedRecord(candidate.getReferencedRecord())
+				.reference(candidate.getReference())
 				.parentId(candidate.getParentId())
 				.build();
 	}

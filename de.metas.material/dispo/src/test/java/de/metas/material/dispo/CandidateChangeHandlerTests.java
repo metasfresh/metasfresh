@@ -8,12 +8,15 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -112,6 +115,7 @@ public class CandidateChangeHandlerTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
@@ -121,6 +125,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate earlierCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
@@ -130,6 +135,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate laterCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
@@ -139,6 +145,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate evenLaterCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("12"))
@@ -148,6 +155,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(otherWarehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("12"))
@@ -271,12 +279,13 @@ public class CandidateChangeHandlerTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(t2)
 				.build();
-		
+
 		final Candidate processedCandidate = candidateChangeHandler.updateStock(candidate);
 		assertThat(processedCandidate.getType(), is(Type.STOCK));
 		assertThat(processedCandidate.getDate().getTime(), is(t2.getTime()));
@@ -284,11 +293,12 @@ public class CandidateChangeHandlerTests
 		assertThat(processedCandidate.getProductId(), is(product.getM_Product_ID()));
 		assertThat(processedCandidate.getWarehouseId(), is(warehouse.getM_Warehouse_ID()));
 	}
-	
+
 	private Candidate invokeOnStockCandidateNewOrChangedWithCandidate(Date t, BigDecimal qty)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -319,6 +329,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -336,6 +347,73 @@ public class CandidateChangeHandlerTests
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
 	}
 
+	@Test
+	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+		final Date t = t1;
+
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.SUPPLY)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.build();
+
+		final Consumer<Candidate> doTest = candidate -> {
+			
+			candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
+			
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(2));
+			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
+			final I_MD_Candidate supplyRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.SUPPLY.toString())).findFirst().get();
+
+			assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
+			assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
+			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+		};
+
+		doTest.accept(candidatee); // 1st invocation
+		doTest.accept(candidatee); // 2nd invocation, same candidate
+	}
+
+	
+	@Test
+	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithDifferent()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+		final Date t = t1;
+
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.SUPPLY)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.build();
+
+		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
+			
+			candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
+			
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(2));
+			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
+			final I_MD_Candidate supplyRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.SUPPLY.toString())).findFirst().get();
+
+			assertThat(supplyRecord.getQty(), comparesEqualTo(exptectedQty));
+			assertThat(stockRecord.getQty(), comparesEqualTo(exptectedQty)); // ..because there was no older record, the "delta" we provided is the current quantity
+			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+		};
+
+		doTest.accept(candidatee, qty); // 1st invocation
+		doTest.accept(candidatee.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // 2nd invocation, same candidate
+	}
+	
 	/**
 	 * If this test fails, please first verify whether {@link #testOnStockCandidateNewOrChanged()} and {@link #testOnSupplyCandidateNewOrChange_noOlderRecords()} work.
 	 */
@@ -346,6 +424,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate olderStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(olderStockQty)
@@ -357,6 +436,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.orgId(1)
 				.subType(SubType.PRODUCTION)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -375,7 +455,7 @@ public class CandidateChangeHandlerTests
 		assertThat(stockRecord.getQty(), comparesEqualTo(new BigDecimal("34")));
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
 	}
-	
+
 	@Test
 	public void testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 	{
@@ -384,10 +464,12 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.orgId(1)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
 
@@ -399,6 +481,80 @@ public class CandidateChangeHandlerTests
 		assertThat(demandRecord.getQty(), comparesEqualTo(qty));
 		assertThat(stockRecord.getQty(), comparesEqualTo(qty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
 		assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
+	}
+
+	/**
+	 * Like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()},
+	 * but the method under test is called two times. We expect the code to recognize this and not count the 2nd invocation.
+	 */
+	@Test
+	public void testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+		final Date t = t1;
+
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.DEMAND)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.reference(TableRecordReference.of(1, 2))
+				.build();
+
+		final Consumer<Candidate> doTest = candidate -> {
+			candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
+
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(2));
+			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
+			final I_MD_Candidate demandRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.DEMAND.toString())).findFirst().get();
+
+			assertThat(demandRecord.getQty(), comparesEqualTo(qty));
+			assertThat(stockRecord.getQty(), comparesEqualTo(qty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
+			assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
+		};
+
+		doTest.accept(candidatee); // first invocation
+		doTest.accept(candidatee); // second invocation
+	}
+
+	/**
+	 * like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWitDifferent()},
+	 * but on the 2nd invocation, a different demand-quantity is used.
+	 */
+	@Test
+	public void testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWitDifferent()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+		final Date t = t1;
+
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.DEMAND)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.reference(TableRecordReference.of(1, 2))
+				.build();
+
+		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, expectedQty) -> {
+			candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
+
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(2));
+			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
+			final I_MD_Candidate demandRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.DEMAND.toString())).findFirst().get();
+
+			assertThat(demandRecord.getQty(), comparesEqualTo(expectedQty));
+			assertThat(stockRecord.getQty(), comparesEqualTo(expectedQty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
+			assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
+		};
+
+		doTest.accept(candidatee, qty); // first invocation
+		doTest.accept(candidatee.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // second invocation
 	}
 
 }

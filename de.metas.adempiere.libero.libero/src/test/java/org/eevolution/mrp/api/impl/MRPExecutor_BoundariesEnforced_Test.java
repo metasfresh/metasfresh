@@ -33,8 +33,9 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.mrp.AbstractMRPTestBase;
-import org.eevolution.mrp.api.IMutableMRPContext;
 import org.junit.Test;
+
+import de.metas.material.planning.IMutableMRPContext;
 
 /**
  * Case: we make sure that we are running MRP only on segments that we asked for.
