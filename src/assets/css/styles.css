@@ -1092,3 +1092,21 @@ td.pulse-off input {
 .browser-warning p {
     margin: 0;
 }
+
+.blank-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.blank-page h1 {
+    font-size: 6rem;
+    opacity: .3;
+}
+
+.blank-page h3 {
+    font-size: 3rem;
+    opacity: .2;
+}

@@ -86,6 +86,17 @@ export function patchRequest(
         (isAdvanced ? '?advanced=true' : ''), payload);
 }
 
+export function getDataByIds(entity, docType, viewId, docIds) {
+    return () => axios.get(
+        config.API_URL +
+        '/' + entity +
+        (docType ? '/' + docType : '') +
+        (viewId ? '/' + viewId : '') +
+        '/byIds' +
+        '?ids='+ docIds
+    )
+}
+
 export function completeRequest(
     entity, docType, docId, tabId, rowId, subentity, subentityId
 ) {

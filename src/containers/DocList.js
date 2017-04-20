@@ -121,6 +121,7 @@ class DocList extends Component {
                          >
                              <DocumentList
                                  type="includedView"
+                                 selected={selected}
                                  windowType={includedView.windowType}
                                  defaultViewId={includedView.viewId}
                                  isIncluded={true}

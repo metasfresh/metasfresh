@@ -4,6 +4,7 @@ import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import QuickActions from './QuickActions';
+import BlankPage from '../BlankPage';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
@@ -13,7 +14,8 @@ import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
 
 import {
-    initLayout
+    initLayout,
+    getDataByIds
 } from '../../actions/GenericActions';
 
 import {
@@ -133,6 +135,9 @@ class DocumentList extends Component {
                 // In case of preventing cached selection restore
                 cachedSelection &&
                     dispatch(selectTableItems(cachedSelection, windowType))
+                this.setState({
+                    cachedSelection: undefined
+                })
             }else{
                 this.setState({
                     cachedSelection: selected
@@ -146,6 +151,7 @@ class DocumentList extends Component {
         if(
             selectedWindowType === windowType &&
             cachedSelection !== null &&
+            cachedSelection !== undefined &&
             layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId
         ){
@@ -163,6 +169,7 @@ class DocumentList extends Component {
     }
 
     connectWS = (viewId) => {
+        const {dispatch, windowType} = this.props;
         (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
 
@@ -171,7 +178,24 @@ class DocumentList extends Component {
         this.sockClient.debug = null;
         this.sockClient.connect({}, () => {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
-                const {fullyChanged} = JSON.parse(msg.body);
+                const {fullyChanged, changedIds} = JSON.parse(msg.body);
+                if(changedIds){
+                    dispatch(getDataByIds(
+                        'documentView', windowType, viewId, changedIds.join()
+                    )).then(response => {
+                        response.data.map(row => {
+                            this.setState({
+                                data: Object.assign(this.state.data, {}, {
+                                    result: this.state.data.result.map(
+                                        resultRow =>
+                                            resultRow.id === row.id ?
+                                                row : resultRow
+                                    )
+                                })
+                            })
+                        })
+                    });
+                }
                 if(fullyChanged == true){
                     this.browseView(true);
                 }
@@ -246,7 +270,12 @@ class DocumentList extends Component {
                 }
                 setModalTitle && setModalTitle(response.data.caption)
             })
-        });
+        }).catch(() => {
+            this.mounted && this.setState({
+                layout: 'notfound',
+                data: 'notfound'
+            });
+        })
     }
     /*
      *  If viewId exist, than browse that view.
@@ -396,6 +425,10 @@ class DocumentList extends Component {
             includedView && includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
+        if(layout === 'notfound'){
+            return <BlankPage what="Document type"/>
+        }
+
         if(layout && data) {
             return (
                 <div
@@ -456,7 +489,8 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => this.redirectToDocument(id)}
+                            onDoubleClick={(id) =>
+                                    !isIncluded && this.redirectToDocument(id)}
                             isModal={isModal}
                             isIncluded={isIncluded}
                             size={data.size}
@@ -481,7 +515,7 @@ class DocumentList extends Component {
                                 {disablePaginationShortcuts}
                         >
                             {layout.supportAttributes && !isIncluded &&
-                                !layout.supportIncludedView &&
+                                !hasIncluded &&
                                 <DataLayoutWrapper
                                     className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
