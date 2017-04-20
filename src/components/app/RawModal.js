@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import Indicator from './Indicator';
@@ -25,13 +26,15 @@ class RawModal extends Component {
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
-        modalContent && modalContent.addEventListener('scroll', this.handleScroll);
+        modalContent &&
+            modalContent.addEventListener('scroll', this.handleScroll);
     }
 
     componentWillUnmount() {
         const modalContent = document.querySelector('.js-panel-modal-content');
 
-        modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
+        modalContent &&
+            modalContent.removeEventListener('scroll', this.handleScroll);
     }
 
     handleScroll = (event) => {

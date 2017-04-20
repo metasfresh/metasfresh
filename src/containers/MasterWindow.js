@@ -1,9 +1,12 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
+import {push} from 'react-router-redux';
 
 import {
     findRowByPropName,
-    attachFileAction
+    attachFileAction,
+    clearMasterData
 } from '../actions/WindowActions';
 
 import {
@@ -11,6 +14,7 @@ import {
 } from '../actions/AppActions';
 
 import Window from '../components/Window';
+import BlankPage from '../components/BlankPage';
 import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
 import DocumentList from '../components/app/DocumentList';
@@ -22,7 +26,8 @@ class MasterWindow extends Component {
 
         this.state = {
             newRow: false,
-            modalTitle: null
+            modalTitle: null,
+            isDeleted: false
         }
     }
 
@@ -49,16 +54,23 @@ class MasterWindow extends Component {
     }
 
     componentWillUnmount() {
-        const { master } = this.props;
-        const isDocumentNotSaved = !master.saveStatus.saved;
+        const { master, dispatch } = this.props;
+        const { isDeleted } = this.state;
+        const {pathname} = this.props.location;
+        const isDocumentNotSaved =
+            !master.saveStatus.saved && master.saveStatus.saved !== undefined;
 
-        if(isDocumentNotSaved){
+        window.removeEventListener('beforeunload', this.confirm);
+
+        if(isDocumentNotSaved && !isDeleted){
             const result = window.confirm('Do you really want to leave?');
-            window.removeEventListener('beforeunload', this.confirm);
+
             if(!result){
-                this.context.router.goBack();
+                dispatch(push(pathname));
             }
         }
+
+        dispatch(clearMasterData());
     }
 
     confirm = (e) => {
@@ -100,7 +112,8 @@ class MasterWindow extends Component {
     handleRejectDropped(droppedFiles){
         const { dispatch } = this.props;
 
-        const dropped = droppedFiles instanceof Array ? droppedFiles[0] : droppedFiles;
+        const dropped = droppedFiles instanceof Array ?
+            droppedFiles[0] : droppedFiles;
 
         dispatch(addNotification(
             'Attachment', 'Dropped item [' +
@@ -115,16 +128,102 @@ class MasterWindow extends Component {
         })
     }
 
+    handleDeletedStatus = (param) => {
+        this.setState({
+                isDeleted: param
+            })
+    }
+
+    renderBody = () => {
+        const {
+            master, modal, rawModal, selected, indicator
+        } = this.props;
+        const {newRow, modalTitle} = this.state;
+        const {type} = master.layout;
+        const dataId = master.docId;
+
+        let body = [];
+
+        if(modal.visible){
+            body.push(
+                <Modal
+                    key="modal"
+                    relativeType={type}
+                    relativeDataId={dataId}
+                    triggerField={modal.triggerField}
+                    windowType={modal.type}
+                    dataId={modal.dataId ? modal.dataId : dataId}
+                    data={modal.data}
+                    layout={modal.layout}
+                    rowData={modal.rowData}
+                    tabId={modal.tabId}
+                    rowId={modal.rowId}
+                    modalTitle={modal.title}
+                    modalType={modal.modalType}
+                    modalViewId={modal.viewId}
+                    isAdvanced={modal.isAdvanced}
+                    viewId={null}
+                    modalViewDocumentIds={modal.viewDocumentIds}
+                    closeCallback={this.closeModalCallback}
+                    rawModalVisible={rawModal.visible}
+                    indicator={indicator}
+                    modalSaveStatus={
+                        modal.saveStatus &&
+                        modal.saveStatus.saved !== undefined ?
+                            modal.saveStatus.saved : true
+                    }
+                    isDocumentNotSaved={modal.saveStatus ?
+                        !modal.saveStatus.saved &&
+                        !modal.validStatus.initialValue : false
+                    }
+                 />
+            )
+        }
+
+        if(rawModal.visible){
+            body.push(
+                <RawModal
+                    key="rawModal"
+                    modalTitle={modalTitle}
+                >
+                    <DocumentList
+                        type="grid"
+                        windowType={rawModal.type}
+                        defaultViewId={rawModal.viewId}
+                        selected={selected}
+                        setModalTitle={this.setModalTitle}
+                    />
+                </RawModal>
+            )
+        }
+
+        body.push(
+            <Window
+                key="window"
+                data={master.data}
+                layout={master.layout}
+                rowData={master.rowData}
+                tabsInfo={master.includedTabsInfo}
+                dataId={dataId}
+                isModal={false}
+                newRow={newRow}
+                handleDropFile={accepted => this.handleDropFile(accepted)}
+                handleRejectDropped={
+                    rejected => this.handleRejectDropped(rejected)
+                }
+            />
+        )
+
+        return body;
+    }
+
     render() {
         const {
-            master, modal, breadcrumb, references, actions, attachments,
-            rawModal, selected, indicator, params
+            master, modal, breadcrumb, params
         } = this.props;
 
-        const {newRow, modalTitle} = this.state;
-
         const {
-            documentNoElement, docActionElement, documentSummaryElement, type
+            documentNoElement, docActionElement, documentSummaryElement
         } = master.layout;
 
         const dataId = master.docId;
@@ -155,67 +254,18 @@ class MasterWindow extends Component {
                 dataId={dataId}
                 windowType={params.windowType}
                 breadcrumb={breadcrumb}
-                references={references}
-                actions={actions}
-                attachments={attachments}
                 showSidelist={true}
                 showIndicator={!modal.visible}
+                handleDeletedStatus={this.handleDeletedStatus}
                 isDocumentNotSaved={
+                    dataId !== 'notfound' &&
                     !master.saveStatus.saved &&
                     !master.validStatus.initialValue
                 }
             >
-                {modal.visible &&
-                    <Modal
-                        relativeType={type}
-                        relativeDataId={dataId}
-                        triggerField={modal.triggerField}
-                        windowType={modal.type}
-                        dataId={modal.dataId ? modal.dataId : dataId}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        isAdvanced={modal.isAdvanced}
-                        viewId={null}
-                        modalViewDocumentIds={modal.viewDocumentIds}
-                        closeCallback={this.closeModalCallback}
-                        rawModalVisible={rawModal.visible}
-                        indicator={indicator}
-                        modalSaveStatus={modal.saveStatus ? modal.saveStatus.saved : true}
-                        isDocumentNotSaved={modal.saveStatus ?
-                            !modal.saveStatus.saved &&
-                            !modal.validStatus.initialValue : false
-                        }
-                     />
-                 }
-                 {rawModal.visible &&
-                     <RawModal
-                         modalTitle={modalTitle}
-                     >
-                         <DocumentList
-                             type="grid"
-                             windowType={parseInt(rawModal.type)}
-                             defaultViewId={rawModal.viewId}
-                             selected={selected}
-                             setModalTitle={this.setModalTitle}
-                         />
-                     </RawModal>
-                 }
-                <Window
-                    data={master.data}
-                    layout={master.layout}
-                    rowData={master.rowData}
-                    dataId={dataId}
-                    isModal={false}
-                    newRow={newRow}
-                    handleDropFile={accepted => this.handleDropFile(accepted)}
-                    handleRejectDropped={rejected => this.handleRejectDropped(rejected)}
-                />
+                {dataId === 'notfound' ?
+                    <BlankPage what="Document" /> : this.renderBody()
+                }
             </Container>
         );
     }
@@ -225,9 +275,6 @@ MasterWindow.propTypes = {
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
-    references: PropTypes.array.isRequired,
-    actions: PropTypes.array.isRequired,
-    attachments: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array,
     rawModal: PropTypes.object.isRequired,
@@ -251,24 +298,15 @@ function mapStateToProps(state) {
     }
 
     const {
-        breadcrumb,
-        references,
-        actions,
-        attachments
+        breadcrumb
     } = menuHandler || {
-        references: [],
-        breadcrumb: [],
-        actions: [],
-        attachments: []
+        breadcrumb: []
     }
 
     return {
         master,
         breadcrumb,
-        references,
         modal,
-        actions,
-        attachments,
         selected,
         rawModal,
         indicator
@@ -276,7 +314,7 @@ function mapStateToProps(state) {
 }
 
 MasterWindow.contextTypes = {
-    router: React.PropTypes.object.isRequired
+    router: PropTypes.object.isRequired
 }
 
 MasterWindow = connect(mapStateToProps)(MasterWindow)

@@ -8,8 +8,8 @@ class GlobalContextShortcuts extends Component {
     }
     handleShortcuts = (action, event) => {
         const {
-          handleMenuOverlay, openModal,
-          handlePrint, handleDelete, handleSideList, handleInboxOpen,
+          handleMenuOverlay, openModal, handleSidelistToggle,
+          handlePrint, handleDelete, handleInboxOpen,
           redirect, handleDocStatusToggle, closeOverlays
         } = this.props;
         switch (action) {
@@ -27,11 +27,23 @@ class GlobalContextShortcuts extends Component {
                 closeOverlays('', ()=> handleInboxOpen(true));
 
                 break;
-            case 'OPEN_SIDEBAR_MENU':
+            case 'OPEN_SIDEBAR_MENU_0':
                 event.preventDefault();
-                if (handleSideList) {
-                    closeOverlays('isSideListShow');
-                }
+                closeOverlays(null, () => {
+                    handleSidelistToggle(0);
+                });
+                break;
+            case 'OPEN_SIDEBAR_MENU_1':
+                event.preventDefault();
+                closeOverlays(null, () => {
+                    handleSidelistToggle(1);
+                });
+                break;
+            case 'OPEN_SIDEBAR_MENU_2':
+                event.preventDefault();
+                closeOverlays(null, () => {
+                    handleSidelistToggle(2);
+                });
                 break;
             case 'DELETE_DOCUMENT':
                 event.preventDefault();

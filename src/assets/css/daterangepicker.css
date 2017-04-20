@@ -170,6 +170,9 @@
 .daterangepicker select.hourselect, .daterangepicker select.minuteselect, .daterangepicker select.secondselect, .daterangepicker select.ampmselect {
     width: 50px;
     margin-bottom: 0;
+    background-color: #fff;
+    color: #555;
+    border: 1px solid $brand-color-primary;
 }
 .daterangepicker .input-mini {
     border: 1px solid #ccc;

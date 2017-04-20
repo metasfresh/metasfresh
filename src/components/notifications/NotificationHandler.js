@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import Notification from './Notification';
@@ -9,15 +10,23 @@ class NotificationHandler extends Component {
     }
 
     render() {
-        const {notifications} = this.props;
+        const {
+            notifications, children
+        } = this.props;
+
         return (
-            <div className="notification-handler">
-                {Object.keys(notifications).map((key) =>
-                    <Notification
-                        key={key}
-                        item={notifications[key]}
-                    />
-                )}
+            <div>
+                <div className="notification-handler">
+                    {Object.keys(notifications).map(key =>
+                        <Notification
+                            key={key}
+                            item={notifications[key]}
+                        />
+                    )}
+                </div>
+                <div className="root-children">
+                    {children}
+                </div>
             </div>
         )
     }

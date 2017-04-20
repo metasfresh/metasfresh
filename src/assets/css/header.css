@@ -164,7 +164,7 @@
 
 .subheader-container {
     display: none;
-    width: 100%;
+    width: 50%;
     position: fixed;
     z-index: 201;
     margin-top:-1px;
@@ -176,7 +176,7 @@
 }
 
 .subheader-column {
-    width: 25%;
+    width: 50%;
     border-right: 1px solid #e1e7ec;
     
     overflow: hidden;
@@ -188,6 +188,7 @@
 @media (max-width: $breakpoint) {
     .subheader-container {
         top: 55px;
+        width: 100%;
         z-index: 201;
         max-height: calc(100vh - 55px);
         overflow: scroll;
@@ -252,7 +253,6 @@
     display: flex;
     align-items: stretch;
     flex-flow: row wrap;
-    justify-content: space-around;
 }
 
 .subheader-break {
@@ -320,13 +320,25 @@
 }
 
 .menu-overlay-body {
-    padding: 1rem 1.2rem 1.8rem 1.2rem;
+    padding: 0 1.2rem 1.8rem 1.2rem;
     min-height: 400px;
     z-index:1;
     margin-top:-1px;
     pointer-events: all;
     overflow: auto;
     max-height: calc(100vh - 80px);
+}
+
+.menu-overlay-top-spacer {
+    height:1rem;
+    content:"";
+}
+
+@media screen and (max-width: $breakpoint) {
+    .menu-overlay-body {
+        min-height: 200px;
+        max-height: calc(100vh - 100px);
+    }
 }
 
 .menu-overlay-root-body {
@@ -492,6 +504,12 @@
 
 .header-item.icon-sm {
     font-size: .875rem;
+    padding-top: 0;
+}
+
+.header-item.icon-sm i {
+    vertical-align: text-bottom;
+    line-height: 0.9;
 }
 
 .header-item-container {

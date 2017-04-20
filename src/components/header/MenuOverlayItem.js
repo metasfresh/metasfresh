@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import {
@@ -76,7 +77,9 @@ class MenuOverlayItem extends Component {
         let prevSiblings = document.activeElement.previousSibling;
         if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
             document.getElementById('search-input-query').focus();
-        } else if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
+        } else if (
+            prevSiblings && prevSiblings.classList.contains('js-menu-item')
+        ) {
             document.activeElement.previousSibling.focus();
         } else {
             this.handleGroupUp();
@@ -84,7 +87,8 @@ class MenuOverlayItem extends Component {
     }
 
     handleGroupUp() {
-        const previousGroup = document.activeElement.parentElement.previousSibling;
+        const previousGroup =
+            document.activeElement.parentElement.previousSibling;
         const headerLink = document.getElementsByClassName('js-menu-header')[0];
         if (previousGroup) {
             const listChildren = previousGroup.childNodes;
@@ -104,7 +108,8 @@ class MenuOverlayItem extends Component {
             document.activeElement.nextSibling.focus();
         } else {
             if (document.activeElement.parentElement.nextSibling) {
-                const listChildren = document.activeElement.parentElement.nextSibling.childNodes;
+                const listChildren =
+                    document.activeElement.parentElement.nextSibling.childNodes;
                 if(listChildren.length == 1){
                     listChildren[0].focus();
                 }else{
@@ -153,15 +158,34 @@ class MenuOverlayItem extends Component {
             }
 
             { query &&
-                <span className={children ? '' : (type === 'group'? 'query-clickable-group' : 'query-clickable-link')}
-                    onClick={ children ? '' : e => this.clickedItem(e, elementId, nodeId, type)  }
+                <span
+                    className={children ? '' : (type === 'group' ?
+                        'query-clickable-group' : 'query-clickable-link')
+                    }
+                    onClick={ children ? '' :
+                        e => this.clickedItem(e, elementId, nodeId, type)
+                    }
                 >
                     {children ? children.map(
                         (item, id) =>
                             <span key={id} className="query-results" >
-                                <span className="query-caption">{id===0 ? caption +' / ': '/'}</span>
-                                <span title={item.caption} className={type === 'group' ? 'query-clickable-group' : 'query-clickable-link'}
-                                     onClick={e => this.clickedItem(e, item.elementId, item.nodeId, item.type)}
+                                <span
+                                    className="query-caption"
+                                >
+                                    {id === 0 ? caption + ' / ': '/'}
+                                </span>
+                                <span
+                                    title={item.caption}
+                                    className={type === 'group' ?
+                                        'query-clickable-group' :
+                                        'query-clickable-link'
+                                    }
+                                    onClick={
+                                        e => this.clickedItem(
+                                            e, item.elementId, item.nodeId,
+                                            item.type
+                                        )
+                                    }
                                 >
                                     {item.caption}
                                 </span>

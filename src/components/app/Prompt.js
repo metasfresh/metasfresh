@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 class Prompt extends Component {
@@ -52,7 +53,9 @@ class Prompt extends Component {
                     <div className="panel-modal-content panel-prompt-content">
                         <p>{this.props.text}</p>
                     </div>
-                    <div className="panel-modal-header panel-prompt-header panel-prompt-footer">
+                    <div
+                        className="panel-modal-header panel-prompt-header panel-prompt-footer"
+                    >
                         <div className="prompt-button-wrapper">
                             {cancel ? this.renderCancelButton() : ''}
                             {submit ? this.renderSubmitButton() : ''}

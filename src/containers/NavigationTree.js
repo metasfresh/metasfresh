@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
@@ -72,19 +73,19 @@ class NavigationTree extends Component {
                 query: e.target.value
             });
 
-            dispatch(queryPathsRequest(e.target.value, '', true)).then(response => {
-
-                this.setState({
-                    queriedResults: response.data.children
-                })
-            }).catch((err) => {
-                if(err.response && err.response.status === 404) {
+            dispatch(queryPathsRequest(e.target.value, '', true))
+                .then(response => {
                     this.setState({
-                        queriedResults: [],
-                        rootResults: {}
+                        queriedResults: response.data.children
                     })
-                }
-            });
+                }).catch((err) => {
+                    if(err.response && err.response.status === 404) {
+                        this.setState({
+                            queriedResults: [],
+                            rootResults: {}
+                        })
+                    }
+                });
         }else{
             this.getData(this.clearValue);
         }
@@ -115,10 +116,17 @@ class NavigationTree extends Component {
                         placeholder="Type phrase here"
                         onChange={e => this.handleQuery(e) }
                     />
-                    {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                    {this.state.query && <i
+                        className="input-icon meta-icon-close-alt pointer"
+                        onClick={e => this.handleClear(e) }
+                    />}
                   </div>
               </div>
-              <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
+              <p
+                  className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced"
+              >
+                  {rootResults.caption}
+              </p>
               <div className="column-wrapper">
                     {queriedResults && queriedResults.map((subitem, subindex) =>
                         <MenuOverlayContainer

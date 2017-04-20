@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import Window from '../Window';
@@ -34,11 +35,11 @@ class Modal extends Component {
             pending: false,
             waitingFetch: false
         }
-
-        this.init();
     }
 
     componentDidMount() {
+        this.init();
+
         // Dirty solution, but use only if you need to
         // there is no way to affect body
         // because body is out of react app range
@@ -93,8 +94,9 @@ class Modal extends Component {
             case 'window':
                 dispatch(createWindow(
                     windowType, dataId, tabId, rowId, true, isAdvanced
-                )).catch(() => {
+                )).catch(err => {
                     this.handleClose();
+                    throw err;
                 });
                 break;
             case 'process':
@@ -108,8 +110,12 @@ class Modal extends Component {
                         modalViewDocumentIds || (dataId ? [dataId] : selected),
                         tabId, rowId
                     )
-                ).catch(() => {
+                ).catch(err => {
                     this.handleClose();
+
+                    if(err.toString() !== 'Error: close_modal'){
+                        throw err;
+                    }
                 });
                 break;
         }
@@ -225,6 +231,7 @@ class Modal extends Component {
                         rowId={rowId}
                         isModal={true}
                         isAdvanced={isAdvanced}
+                        tabsInfo={null}
                     />
                 )
             case 'process':

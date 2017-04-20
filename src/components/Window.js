@@ -42,7 +42,7 @@ class Window extends Component {
 
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
-        const {data, rowData, newRow} = this.props;
+        const {data, rowData, newRow, tabsInfo} = this.props;
         const {fullScreen} = this.state;
         const dataId = findRowByPropName(data, 'ID').value;
 
@@ -53,7 +53,7 @@ class Window extends Component {
                 fullScreen={fullScreen}
                 windowType={type}
             >
-                {tabs.map((elem)=> {
+                {tabs.map(elem => {
                     const {
                         tabid, caption, elements, emptyResultText,
                         emptyResultHint, queryOnActivate, supportQuickInput
@@ -74,6 +74,7 @@ class Window extends Component {
                             tabIndex={this.tabIndex.tabs}
                             queryOnActivate={queryOnActivate}
                             supportQuickInput={supportQuickInput}
+                            tabInfo={tabsInfo && tabsInfo[tabid]}
                         />
                     )
                 })}
@@ -100,7 +101,9 @@ class Window extends Component {
             const elementGroups = elem.elementGroups;
             return (
                 <div className={'col-sm-' + colWidth} key={'col' + id}>
-                    {elementGroups && this.renderElementGroups(elementGroups, isFirst)}
+                    {elementGroups &&
+                        this.renderElementGroups(elementGroups, isFirst)
+                    }
                 </div>
             )
         })
@@ -122,10 +125,15 @@ class Window extends Component {
                         tabIndex={shouldBeFocused ? 0 : undefined}
                         className={
                             'panel panel-spaced panel-distance ' +
-                            ((type === 'primary') ? 'panel-bordered panel-primary' : 'panel-secondary')
+                            ((type === 'primary') ?
+                                'panel-bordered panel-primary' :
+                                'panel-secondary'
+                            )
                         }
                     >
-                        {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
+                        {this.renderElementsLine(
+                            elementsLine, tabIndex, shouldBeFocused
+                        )}
                     </div>
             )
         })
@@ -150,10 +158,11 @@ class Window extends Component {
         const {fullScreen} = this.state;
 
         return elements.map((elem, id)=> {
-
             const autoFocus = isFocused && (id === 0);
-            let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
-            let relativeDocId = findRowByPropName(data, 'ID').value;
+            const widgetData = elem.fields.map(item =>
+                findRowByPropName(data, item.field)
+            );
+            const relativeDocId = findRowByPropName(data, 'ID').value;
             return (
                 <MasterWidget
                     entity="window"
@@ -180,7 +189,10 @@ class Window extends Component {
         const {handleDropFile, handleRejectDropped} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                <Dropzone handleDropFile={handleDropFile} handleRejectDropped={handleRejectDropped}>
+                <Dropzone
+                    handleDropFile={handleDropFile}
+                    handleRejectDropped={handleRejectDropped}
+                >
                     <div className="sections-wrapper">
                         {sections && this.renderSections(sections)}
                     </div>

@@ -1,9 +1,10 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import {
     patch,
-    updateProperty,
+    updatePropertyValue,
     openModal
 } from '../../actions/WindowActions';
 
@@ -35,6 +36,10 @@ class MasterWidget extends Component {
             JSON.stringify(widgetData[0].value) !==
             JSON.stringify(nextProps.widgetData[0].value)
         ){
+            this.setState({
+                data: nextProps.widgetData[0].value
+            });
+
             if(!edited) {
                 this.setState({
                         updated: true
@@ -72,12 +77,14 @@ class MasterWidget extends Component {
         }
 
         if(widgetType !== 'Button'){
-            dispatch(updateProperty(property, value, tabId, currRowId, isModal));
+            dispatch(updatePropertyValue(
+                property, value, tabId, currRowId, isModal)
+            );
         }
 
         ret = dispatch(patch(
-            entity, windowType, dataId, tabId, currRowId, property, value, isModal,
-            isAdvanced
+            entity, windowType, dataId, tabId, currRowId, property, value,
+            isModal, isAdvanced
         ));
 
         //callback
@@ -113,7 +120,9 @@ class MasterWidget extends Component {
             if(rowId === 'NEW'){
                 currRowId = relativeDocId;
             }
-            dispatch(updateProperty(property, val, tabId, currRowId, isModal));
+            dispatch(updatePropertyValue(
+                property, val, tabId, currRowId, isModal
+            ));
         });
     }
 

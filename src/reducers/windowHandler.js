@@ -19,7 +19,8 @@ const initialState = {
         viewDocumentIds: null,
         triggerField: null,
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        includedTabsInfo: {}
     },
     rawModal: {
         visible: false,
@@ -31,14 +32,16 @@ const initialState = {
         data: [],
         rowData: {},
         saveStatus: {},
-        validStatus: {}
+        validStatus: {},
+        includedTabsInfo: {},
+        docId: undefined
     },
     indicator: 'saved',
     latestNewDocument: null,
     viewId: null,
     selected: [],
     selectedWindowType: null
-}
+};
 
 export default function windowHandler(state = initialState, action) {
     switch(action.type){
@@ -46,7 +49,7 @@ export default function windowHandler(state = initialState, action) {
         case types.NO_CONNECTION:
             return Object.assign({}, state, {
                 connectionError: action.status
-            })
+            });
 
         case types.OPEN_MODAL:
             return Object.assign({}, state, {
@@ -63,7 +66,7 @@ export default function windowHandler(state = initialState, action) {
                     viewDocumentIds: action.viewDocumentIds,
                     triggerField: action.triggerField
                 })
-        })
+            });
 
         case types.UPDATE_MODAL:
             return Object.assign({}, state, {
@@ -71,7 +74,7 @@ export default function windowHandler(state = initialState, action) {
                     rowId: action.rowId,
                     dataId: action.dataId
                 })
-        })
+            });
 
         case types.CLOSE_MODAL:
             return Object.assign({}, state, {
@@ -84,7 +87,7 @@ export default function windowHandler(state = initialState, action) {
                     title: '',
                     rowData: {}
                 })
-        })
+            });
 
         // SCOPED ACTIONS
 
@@ -93,7 +96,7 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     layout: action.layout
                 })
-        })
+            });
 
         case types.INIT_DATA_SUCCESS:
             return Object.assign({}, state, {
@@ -103,60 +106,119 @@ export default function windowHandler(state = initialState, action) {
                     layout: {},
                     rowData: {},
                     saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
+                    validStatus: action.validStatus,
+                    includedTabsInfo: action.includedTabsInfo
                 })
-        })
+            });
+
+        case types.CLEAR_MASTER_DATA:
+            return Object.assign({}, state, {
+                master: Object.assign({}, state.master, {
+                    data: [],
+                    rowData: {},
+                    docId: undefined
+                })
+            });
 
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    rowData: Object.assign({}, state[action.scope].rowData, action.data)
+                    rowData: Object.assign(
+                        {}, state[action.scope].rowData, action.data
+                    )
                 })
-        })
+            });
 
         case types.ADD_NEW_ROW:
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {$set: action.item}
-                        }
+                        [action.tabid]: {$merge: {
+                            [action.rowid]: action.item
+                        }}
                     }
                 }
-            })
+            });
 
         case types.DELETE_ROW:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {$set:
-                            Object.keys(state[action.scope].rowData[action.tabid])
-                                .filter(key => key !== action.rowid)
-                                .reduce((result, current) => {
-                                    result[current] = state[action.scope].rowData[action.tabid][current];
-                                    return result;
-                                }, {})
-                            }
+                            Object.keys(
+                                state[action.scope].rowData[action.tabid]
+                            ).filter(key => key !== action.rowid)
+                            .reduce((result, current) => {
+                                result[current] =
+                                    state[action.scope]
+                                        .rowData[action.tabid][current];
+                                return result;
+                            }, {})
+                        }
                     }
                 }
-            })
+            });
 
-        case types.UPDATE_ROW_SUCCESS:
+        case types.UPDATE_DATA_FIELD_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    data: {$set: state[action.scope].data.map(item =>
+                        item.field === action.property ?
+                        Object.assign({}, item, action.item) :
+                        item
+                    )}
+                }
+            });
+
+        case types.UPDATE_DATA_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    [action.property]: {$set:
+                        typeof action.value === 'string' ?
+                            action.value :
+                            Object.assign({},
+                                state[action.scope] ?
+                                    state[action.scope][action.property] : {},
+                                action.value
+                            )
+                    }
+                }
+            });
+
+        case types.UPDATE_ROW_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
                             [action.rowid]: {
-                                fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map(item =>
-                                    item.field === action.item.field ?
-                                        Object.assign({}, item, action.item) :
-                                        item
-                                )}
+                                fields: {$set:
+                                    state[action.scope]
+                                        .rowData[action.tabid][action.rowid]
+                                        .fields.map(item =>
+                                        item.field === action.property ?
+                                            Object.assign(
+                                                {}, item, action.item
+                                            ) : item
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            })
+            });
+
+        case types.UPDATE_ROW_PROPERTY:
+            return update(state, {
+                [action.scope]: {
+                    rowData: {
+                        [action.tabid]: {
+                            [action.rowid]: {$merge: {
+                                [action.property]: action.item
+                            }}
+                        }
+                    }
+                }
+            });
 
         case types.UPDATE_ROW_STATUS:
             return update(state, {
@@ -169,70 +231,45 @@ export default function windowHandler(state = initialState, action) {
                         }
                     }
                 }
-            })
+            });
 
         case types.UPDATE_DATA_VALID_STATUS:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     validStatus: action.validStatus
                 })
-            })
+            });
 
         case types.UPDATE_DATA_SAVE_STATUS:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     saveStatus: action.saveStatus
                 })
-            })
+            });
 
-        case types.UPDATE_DATA_SUCCESS:
+        case types.UPDATE_DATA_INCLUDED_TABS_INFO:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    data: state[action.scope].data.map(item =>
-                        item.field === action.item.field ?
-                            Object.assign({}, item, action.item) :
-                            item
-                    ),
-                    saveStatus: action.saveStatus,
-                    validStatus: action.validStatus
+                    includedTabsInfo:
+                        Object.keys(state[action.scope].includedTabsInfo)
+                            .reduce((result, current) => {
+                                result[current] = Object.assign({},
+                                    state[action.scope]
+                                        .includedTabsInfo[current],
+                                    action.includedTabsInfo[current] ?
+                                        action.includedTabsInfo[current] : {}
+                                );
+                                return result;
+                            }, {})
                 })
-        })
-
-        case types.UPDATE_DATA_PROPERTY:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    data: state[action.scope].data.map(item =>
-                        item.field === action.property ?
-                        Object.assign({}, item, { value: action.value }) :
-                        item
-                    )
-                })
-        })
-
-        case types.UPDATE_ROW_PROPERTY:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {
-                                fields: {$set: state[action.scope].rowData[action.tabid][action.rowid].fields.map( item =>
-                                    item.field === action.property ?
-                                        Object.assign({}, item, {value: action.value}):
-                                        item
-                                )}
-                            }
-                        }
-                    }
-                }
-            })
-
+            });
         // END OF SCOPED ACTIONS
 
         // INDICATOR ACTIONS
         case types.CHANGE_INDICATOR_STATE:
             return Object.assign({}, state, {
                 indicator: action.state
-            })
+            });
 
         // END OF INDICATOR ACTIONS
 
@@ -240,13 +277,13 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 selected: action.ids,
                 selectedWindowType: action.windowType
-            })
+            });
 
         // LATEST NEW DOCUMENT CACHE
         case types.SET_LATEST_NEW_DOCUMENT:
             return Object.assign({}, state, {
                 latestNewDocument: action.id
-            })
+            });
 
         // RAW Modal
         case types.CLOSE_RAW_MODAL:
@@ -256,7 +293,7 @@ export default function windowHandler(state = initialState, action) {
                     type: null,
                     viewId: null
                 })
-            })
+            });
 
         case types.OPEN_RAW_MODAL:
             return Object.assign({}, state, {
@@ -265,9 +302,9 @@ export default function windowHandler(state = initialState, action) {
                     type: action.windowType,
                     viewId: action.viewId
                 })
-            })
+            });
 
         default:
-            return state
+            return state;
     }
 }

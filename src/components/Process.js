@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import MasterWidget from './widget/MasterWidget';
@@ -28,6 +29,7 @@ export class Process extends Component {
                     widgetData={widgetData}
                     isModal={true}
                     disabled={disabled}
+                    autoFocus={id === 0}
                     {...elem}
                 />
             )

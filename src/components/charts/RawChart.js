@@ -33,6 +33,7 @@ class RawChart extends Component {
             .then(response => {
                 return response.data.datasets[0].values
             })
+            .catch(()=>{});
     }
 
     fetchData(){
@@ -68,6 +69,15 @@ class RawChart extends Component {
         }
     }
 
+    renderError() {
+        return(
+            <div className="error-load-data">
+                <h6 className="error-load-text">Error loading data...</h6>
+                <div className="error-loading"></div>
+            </div>
+        );
+    }
+
     renderChart() {
         const {
             id, chartType, caption, fields, groupBy, reRender, height
@@ -86,7 +96,11 @@ class RawChart extends Component {
                         chartClass={'chart-' + id}
                         height={height}
                         reRender={reRender}
-                        colors = {['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f']}
+                        colors = {[
+                            '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
+                            '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
+                            '#32520d', '#605a7f'
+                        ]}
                     />
                 );
             case 'PieChart':
@@ -98,7 +112,12 @@ class RawChart extends Component {
                         fields={fields}
                         groupBy={groupBy}
                         height={height}
-                        colors = {['#89d729', '#9aafbd', '#7688c9', '#c1ea8e', '#c9d5dc', '#aab5e0', '#6aad18', '#298216', '#32520d', '#605a7f']}
+                        reRender={reRender}
+                        colors = {[
+                            '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
+                            '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
+                            '#32520d', '#605a7f'
+                        ]}
                     />
                 );
             case 'Indicator':
@@ -117,7 +136,12 @@ class RawChart extends Component {
 
     render(){
         const {chartData} = this.state;
-        return chartData.length > 0 && this.renderChart();
+
+        if(chartData){
+            return chartData.length > 0 && this.renderChart();
+        } else {
+            return this.renderError();
+        }
     }
 }
 

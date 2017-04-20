@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import RawList from './RawList';
@@ -18,8 +19,8 @@ class List extends Component {
 
     handleFocus = () => {
         const {
-            properties, dispatch, dataId, rowId, tabId, windowType, filterWidget,
-            entity, subentity, subentityId, viewId
+            properties, dispatch, dataId, rowId, tabId, windowType,
+            filterWidget, entity, subentity, subentityId, viewId
         } = this.props;
 
         this.setState({
@@ -27,7 +28,8 @@ class List extends Component {
         });
 
         dispatch(dropdownRequest(
-            windowType, filterWidget ? properties[0].parameterName: properties[0].field,
+            windowType,
+            filterWidget ? properties[0].parameterName: properties[0].field,
             dataId, tabId, rowId, entity, subentity, subentityId, viewId
         )).then((res) => {
             this.setState({

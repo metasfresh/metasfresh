@@ -1,7 +1,8 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 
 import {
     autocompleteRequest,
@@ -34,7 +35,8 @@ class Lookup extends Component {
             mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
-            shouldBeFocused: true
+            shouldBeFocused: true,
+            validLocal: true
         }
     }
 
@@ -87,7 +89,9 @@ class Lookup extends Component {
                 // handling selection when main is not set or set.
 
                 if(property === '') {
-                    const promise = onChange(mainProperty[0].field, select, this.getAllDropdowns);
+                    const promise = onChange(
+                        mainProperty[0].field, select, this.getAllDropdowns
+                    );
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
 
@@ -124,20 +128,23 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, dataId, select, tabId, rowId, entity, subentity,
-            subentityId, defaultValue, closeTableField
+            dispatch, windowType, dataId, select, tabId, rowId, entity,
+            subentity, subentityId, defaultValue, closeTableField
         } = this.props;
 
         const {
             propertiesCopy
         } = this.state;
 
-        let propertiesArray = []; //need to have property which has no default value;
+        // need to have property which has no default value
+        let propertiesArray = [];
 
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.filter((item, index) => {
-                const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
+                const objectValue = getItemsByProperty(
+                    defaultValue, 'field', item.field
+                )[0].value;
                 if(objectValue) {
                     return false;
                 } else {
@@ -155,7 +162,8 @@ class Lookup extends Component {
                 const newProps = {};
                 props.map((prop, index) => {
                     if(propertiesArray.length > 0){
-                        newProps[propertiesArray[index].field] = prop.data.values;
+                        newProps[propertiesArray[index].field] =
+                            prop.data.values;
                     }
                 });
 
@@ -236,11 +244,11 @@ class Lookup extends Component {
         })
 
         if(!isInputEmpty && property === ''){
-            this.handleChange();
+            this.handleChange(true);
         }
     }
 
-    handleChange = () => {
+    handleChange = (handleChangeOnFocus) => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
             tabId, rowId, entity, subentity, subentityId, viewId
@@ -258,12 +266,17 @@ class Lookup extends Component {
             });
 
             dispatch(autocompleteRequest(
-                windowType, (filterWidget ? parameterName : mainProperty[0].field), this.inputSearch.value,
-                (filterWidget ? viewId : dataId), tabId, rowId, entity, subentity, subentityId
+                windowType,
+                (filterWidget ? parameterName : mainProperty[0].field),
+                this.inputSearch.value,
+                (filterWidget ? viewId : dataId), tabId, rowId, entity,
+                subentity, subentityId
             )).then((response)=>{
                 this.setState({
                     list: response.data.values,
-                    loading: false
+                    loading: false,
+                    validLocal: response.data.values.length === 0 &&
+                                handleChangeOnFocus!==true ? false : true
                 });
             });
 
@@ -374,7 +387,8 @@ class Lookup extends Component {
 
                 this.setState({
                     oldValue: inputValue,
-                    isInputEmpty: false
+                    isInputEmpty: false,
+                    validLocal: true
                 });
             }
 
@@ -399,7 +413,8 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
+            propertiesCopy, isInputEmpty, list, query, loading, selected,
+            isOpen, validLocal
         } = this.state;
 
         return (
@@ -416,16 +431,19 @@ class Lookup extends Component {
                 }
             >
                 <div className={
-                    'input-dropdown input-block input-' + (rank ? rank : 'primary') +
+                    'input-dropdown input-block input-' +
+                    (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
-                    (mandatory && isInputEmpty ? ' input-mandatory ' : '') +
+                    (mandatory && (isInputEmpty ||
+                        (validStatus.initialValue && !validStatus.valid)) ?
+                        ' input-mandatory ' : '') +
                     ((validStatus &&
                         (
-                            !validStatus.valid &&
-                            !validStatus.initialValue
+                            (!validStatus.valid && !validStatus.initialValue) ||
+                             !validLocal
                         )
-                    ) ? 'input-error ' : '')
+                    ) ? ' input-error ' : '')
                 }>
                     <div className={
                         'input-editable ' +
@@ -445,8 +463,12 @@ class Lookup extends Component {
 
                     {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
-                            const objectValue = getItemsByProperty(defaultValue, 'field', item.field)[0].value;
-                            return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
+                            const objectValue = getItemsByProperty(
+                                defaultValue, 'field', item.field
+                            )[0].value;
+                            return (!!objectValue && <span key={index}>
+                                {objectValue[Object.keys(objectValue)[0]]}
+                            </span>)
                         })}
                     </div>}
                     {isInputEmpty ?
@@ -454,7 +476,10 @@ class Lookup extends Component {
                             <i className="meta-icon-preview" />
                         </div> :
                         <div className="input-icon input-icon-lg">
-                            {!readonly && <i onClick={this.handleClear} className="meta-icon-close-alt"/>}
+                            {!readonly && <i
+                                onClick={this.handleClear}
+                                className="meta-icon-close-alt"
+                            />}
                         </div>
                     }
                 </div>

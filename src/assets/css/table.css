@@ -3,9 +3,14 @@
     margin-bottom: 0;
 }
 
-.table *::selection {
+.table *::selection{
     background-color: transparent;
     color: $brand-font-color;
+}
+
+.table .input-body-container *::selection {
+    background-color: $brand-color-primary;
+    color: #fff;
 }
 
 .table tbody+tbody {
@@ -19,6 +24,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    vertical-align: middle;
 }
 
 .table .col-xs-12,
@@ -41,6 +47,7 @@
 .table td,
 .table th {
     padding: .50rem .75rem;
+    height: 42px;
 }
 
 .table td {
@@ -51,7 +58,6 @@
     padding-top: 0;
     padding-bottom: 0;
     vertical-align: middle;
-    height: 2.6rem;
 }
 
 .table td span {
@@ -211,6 +217,18 @@
     text-align: center;
 }
 
+.page-link-compressed{
+    border:0;
+    background-color: transparent;
+    padding: .1rem .3rem;
+}
+
+.page-item.active .page-link-compressed {
+    background-color: transparent;
+    font-weight: bold;
+    color: $brand-font-color;
+}
+
 th {
     font-weight: 500;
     position: relative;
@@ -311,7 +329,7 @@ th {
 
 /* INDENT SIGN ================ */
 
-$indent-height: 37px;
+$indent-height: 42px;
 $indent-height-mid: 18px;
 $indent-signs-offset: 6px;
 

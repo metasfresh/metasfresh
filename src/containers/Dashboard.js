@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
@@ -9,13 +10,16 @@ export class Dashboard extends Component {
     }
 
     render() {
+        const {location} = this.props;
         return (
             <Container
-                siteName = "Dashboard"
-                noMargin = {true}
+                siteName="Dashboard"
+                noMargin={true}
             >
                 <div className="container-fluid dashboard-wrapper">
-                    <DraggableWrapper dashboard={this.props.location.pathname} />
+                    <DraggableWrapper
+                        dashboard={location.pathname}
+                    />
                 </div>
             </Container>
         );

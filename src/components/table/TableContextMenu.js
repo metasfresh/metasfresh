@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import keymap from '../../keymap.js';
@@ -21,8 +22,10 @@ class TableContextMenu extends Component {
 
     getPosition = (dir, pos, element) => {
         if(element){
-            const windowSize = (dir === 'x' ? window.innerWidth : window.innerHeight);
-            const elementSize = (dir === 'x' ? element.offsetWidth : element.offsetHeight);
+            const windowSize =
+                (dir === 'x' ? window.innerWidth : window.innerHeight);
+            const elementSize =
+                (dir === 'x' ? element.offsetWidth : element.offsetHeight);
 
             if (windowSize - pos > elementSize) {
                 return pos;
@@ -43,7 +46,8 @@ class TableContextMenu extends Component {
 
     render() {
         const {
-            blur, selected, mainTable, handleAdvancedEdit, handleOpenNewTab, handleDelete
+            blur, selected, mainTable, handleAdvancedEdit, handleOpenNewTab,
+            handleDelete
         } = this.props;
         const {contextMenu} = this.state;
 
@@ -60,7 +64,10 @@ class TableContextMenu extends Component {
                     onBlur={blur}
                 >
                 {isSelectedOne && !mainTable &&
-                    <div className="context-menu-item" onClick={handleAdvancedEdit}>
+                    <div
+                        className="context-menu-item"
+                        onClick={handleAdvancedEdit}
+                    >
                         <i className="meta-icon-edit" /> Advanced edit
                         <span className="tooltip-inline">
                             {keymap.DOCUMENT_LIST_CONTEXT.ADVANCED_EDIT}
@@ -69,7 +76,10 @@ class TableContextMenu extends Component {
                 }
 
                 {mainTable &&
-                    <div className="context-menu-item" onClick={handleOpenNewTab}>
+                    <div
+                        className="context-menu-item"
+                        onClick={handleOpenNewTab}
+                    >
                         <i className="meta-icon-file" /> Open in new tab
                         <span className="tooltip-inline">
                             {keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}

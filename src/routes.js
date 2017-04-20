@@ -3,6 +3,7 @@ import {Route, IndexRoute, NoMatch} from 'react-router';
 import {push} from 'react-router-redux';
 
 import Login from './containers/Login.js';
+import Settings from './containers/Settings.js';
 import Dashboard from './containers/Dashboard.js';
 import MasterWindow from './containers/MasterWindow.js';
 import DocList from './containers/DocList.js';
@@ -62,10 +63,13 @@ export const getRoutes = (store) => {
                 <Route path="/window/:windowType/:docId"
                     component={MasterWindow}
                     onEnter={(nextState) => store.dispatch(
-                        createWindow(nextState.params.windowType, nextState.params.docId)
+                        createWindow(
+                            nextState.params.windowType, nextState.params.docId
+                        )
                     )}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
+                <Route path="/settings" component={Settings} />
                 <Route path="/inbox" component={InboxAll} />
                 <Route path="/logout" onEnter={logout} />
                 <Route path="/dashboard1" component={Dashboard} />

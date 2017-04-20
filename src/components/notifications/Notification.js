@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import {
@@ -94,7 +95,9 @@ class Notification extends Component {
                         <span
                             className={
                                 'tag tag-sm tag-default ' +
-                                ('tag-' + (item.notifType ? item.notifType : 'error '))
+                                ('tag-' + (
+                                    item.notifType ? item.notifType : 'error '
+                                ))
                             }>{item.count}</span> : ''}
                     <i
                         onClick={() => this.handleCloseButton()}

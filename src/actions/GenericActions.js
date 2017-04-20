@@ -3,7 +3,8 @@ import axios from 'axios';
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
 export function initLayout(
-    entity, docType, tabId, subentity = null, docId = null, isAdvanced, list, supportTree
+    entity, docType, tabId, subentity = null, docId = null, isAdvanced, list,
+    supportTree
 ) {
     return () => axios.get(
         config.API_URL +
@@ -132,7 +133,8 @@ export function autocompleteRequest(
 }
 
 export function dropdownRequest(
-    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId, viewId
+    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId,
+    viewId
 ) {
     return () => axios.get(
         config.API_URL +
@@ -177,7 +179,8 @@ export function actionsRequest(entity, type, id, selected){
         type + '/' +
         id +
         '/actions'+
-        (selected.length > 0 && entity=='documentView' ? '?selectedIds='+ query :'')
+        (selected.length > 0 && entity=='documentView' ?
+            '?selectedIds='+ query :'')
     );
 }
 

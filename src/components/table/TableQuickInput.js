@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import RawWidget from '../widget/RawWidget';
@@ -43,7 +44,9 @@ class TableQuickInput extends Component {
         const {data, layout, editedField} = this.state;
         if(data && layout){
             for(let i = 0; i < layout.length; i++){
-                const item = layout[i].fields.map(elem => findRowByPropName(data, elem.field));
+                const item = layout[i].fields.map(elem =>
+                    findRowByPropName(data, elem.field)
+                );
                 if(!item[0].value){
                     if(editedField !== i){
                         this.setState({
@@ -64,7 +67,9 @@ class TableQuickInput extends Component {
         this.setState({
             data: null
         }, () => {
-            dispatch(createInstance('window', docType, docId, tabId, 'quickInput')).then(instance => {
+            dispatch(
+                createInstance('window', docType, docId, tabId, 'quickInput')
+            ).then(instance => {
                 this.setState({
                     data: parseToDisplay(instance.data.fields),
                     id: instance.data.id,
@@ -72,12 +77,16 @@ class TableQuickInput extends Component {
                 });
             }).catch(err => {
                 if(err.response.status === 404){
-                    dispatch(addNotification('Batch entry error', 'Batch entry is not available.', 5000, 'error'));
+                    dispatch(addNotification(
+                        'Batch entry error',
+                        'Batch entry is not available.', 5000, 'error'));
                     closeBatchEntry();
                 }
             });
 
-            !layout && dispatch(initLayout('window', docType, tabId, 'quickInput', docId)).then(layout => {
+            !layout && dispatch(
+                initLayout('window', docType, tabId, 'quickInput', docId)
+            ).then(layout => {
                 this.setState({
                     layout: layout.data.elements
                 })
@@ -106,28 +115,31 @@ class TableQuickInput extends Component {
         const {id} = this.state;
 
         this.patchPromise = new Promise(resolve => {
-            dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id))
-                .then(response => {
-                    response.data[0] && response.data[0].fields.map(item => {
-                        this.setState({
-                            data: this.state.data.map(field => {
-                                if (field.field !== item.field){
-                                    return field;
-                                }
+            dispatch(patchRequest(
+                'window', docType, docId, tabId, null, prop, value,
+                'quickInput', id
+            )).then(response => {
+                response.data[0] && response.data[0].fields &&
+                response.data[0].fields.map(item => {
+                    this.setState({
+                        data: this.state.data.map(field => {
+                            if (field.field !== item.field){
+                                return field;
+                            }
 
-                                if(callback){
-                                    callback();
-                                }
+                            if(callback){
+                                callback();
+                            }
 
-                                resolve();
-                                return {
-                                    ...field,
-                                    ...item
-                                };
-                            })
-                        });
-                    })
+                            resolve();
+                            return {
+                                ...field,
+                                ...item
+                            };
+                        })
+                    });
                 })
+            })
         });
     }
 
@@ -136,7 +148,9 @@ class TableQuickInput extends Component {
 
         if(layout){
             return layout.map((item, id) => {
-                const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
+                const widgetData = item.fields.map(elem =>
+                    findRowByPropName(data, elem.field)
+                );
                 return (<RawWidget
                     entity={attributeType}
                     subentity="quickInput"
@@ -150,7 +164,8 @@ class TableQuickInput extends Component {
                     gridAlign={item.gridAlign}
                     key={id}
                     caption={item.caption}
-                    handlePatch={(prop, value, callback) => this.handlePatch(prop, value, callback)}
+                    handlePatch={(prop, value, callback) =>
+                        this.handlePatch(prop, value, callback)}
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
                     type="secondary"
@@ -168,16 +183,22 @@ class TableQuickInput extends Component {
         document.activeElement.blur();
 
         if(!this.validateForm(data)){
-            return dispatch(addNotification('Error', 'Mandatory fields are not filled!', 5000, 'error'))
+            return dispatch(addNotification(
+                'Error', 'Mandatory fields are not filled!', 5000, 'error'
+            ))
         }
 
         this.patchPromise
             .then(() => {
-                return dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id))
+                return dispatch(completeRequest(
+                    'window', docType, docId, tabId, null, 'quickInput', id
+                ))
             })
             .then(response => {
                 this.initQuickInput();
-                dispatch(addNewRow(response.data, tabId, response.data.rowId, 'master'))
+                dispatch(addNewRow(
+                    response.data, tabId, response.data.rowId, 'master'
+                ))
             });
     }
 
@@ -200,7 +221,8 @@ class TableQuickInput extends Component {
                 className="quick-input-container"
                 ref={c => this.form = c}
             >
-                {this.renderFields(layout, data, docId, 'window', id)} <div className="hint">(Press 'Enter' to add)</div>
+                {this.renderFields(layout, data, docId, 'window', id)}
+                <div className="hint">(Press 'Enter' to add)</div>
                 <button type="submit" className="hidden-xs-up"></button>
             </form>
         )

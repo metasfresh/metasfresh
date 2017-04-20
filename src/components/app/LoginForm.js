@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {push, goBack} from 'react-router-redux';
 
 import {connect} from 'react-redux';
@@ -49,7 +50,7 @@ class LoginForm extends Component {
 
         dispatch(getUserLang()).then(response => {
             //GET language shall always return a result
-            Moment.locale(response.data);
+            Moment.locale(Object.keys(response.data)[0]);
 
             if(redirect){
                 dispatch(goBack());
@@ -134,7 +135,9 @@ class LoginForm extends Component {
                     <img src={logo} className="header-logo mt-2 mb-2" />
                 </div>
                 {roleSelect ? <div>
-                    <div className="form-control-label"><small>Select role</small></div>
+                        <div className="form-control-label">
+                            <small>Select role</small>
+                        </div>
                         <RawList
                             rank="primary"
                             list={roles}
@@ -152,7 +155,9 @@ class LoginForm extends Component {
                             </div>
                         }
                         <div>
-                            <div className="form-control-label"><small>Login</small></div>
+                            <div className="form-control-label">
+                                <small>Login</small>
+                            </div>
                             <input
                                 type="text"
                                 onChange={this.handleOnChange}
@@ -165,7 +170,9 @@ class LoginForm extends Component {
                                 ref={c => this.login = c} />
                         </div>
                         <div>
-                            <div className="form-control-label"><small>Password</small></div>
+                            <div className="form-control-label">
+                                <small>Password</small>
+                            </div>
                             <input
                                 type="password"
                                 onChange={this.handleOnChange}

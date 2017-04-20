@@ -17,7 +17,11 @@ import {
     addNotification,
     setProcessSaved,
     setProcessPending
-} from './AppActions'
+} from './AppActions';
+
+import {
+    setListIncludedView
+} from './ListActions';
 
 export function setLatestNewDocument(id) {
     return {
@@ -48,14 +52,23 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope, docId, saveStatus, validStatus) {
+export function initDataSuccess(
+    data, scope, docId, saveStatus, validStatus, includedTabsInfo
+) {
     return {
         type: types.INIT_DATA_SUCCESS,
         data,
         scope,
         docId,
         saveStatus,
-        validStatus
+        validStatus,
+        includedTabsInfo
+    }
+}
+
+export function clearMasterData() {
+    return {
+        type: types.CLEAR_MASTER_DATA
     }
 }
 
@@ -77,12 +90,11 @@ export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     }
 }
 
-export function updateDataSuccess(item, scope, saveStatus, validStatus) {
+export function updateDataProperty(property, value, scope) {
     return {
-        type: types.UPDATE_DATA_SUCCESS,
-        item,
-        saveStatus,
-        validStatus,
+        type: types.UPDATE_DATA_PROPERTY,
+        property,
+        value,
         scope
     }
 }
@@ -103,13 +115,22 @@ export function updateDataValidStatus(scope, validStatus) {
     }
 }
 
-export function updateRowSuccess(item, tabid, rowid, scope) {
+export function updateRowProperty(property, item, tabid, rowid, scope) {
     return {
-        type: types.UPDATE_ROW_SUCCESS,
-        item: item,
-        tabid: tabid,
-        rowid: rowid,
-        scope: scope
+        type: types.UPDATE_ROW_PROPERTY,
+        property,
+        item,
+        tabid,
+        rowid,
+        scope
+    }
+}
+
+export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
+    return {
+        type: types.UPDATE_DATA_INCLUDED_TABS_INFO,
+        scope,
+        includedTabsInfo
     }
 }
 
@@ -132,20 +153,20 @@ export function deleteRow(tabid, rowid, scope) {
     }
 }
 
-export function updateDataProperty(property, value, scope) {
+export function updateDataFieldProperty(property, item, scope) {
     return {
-        type: types.UPDATE_DATA_PROPERTY,
+        type: types.UPDATE_DATA_FIELD_PROPERTY,
         property: property,
-        value: value,
+        item: item,
         scope: scope
     }
 }
 
-export function updateRowProperty(property, value, tabid, rowid, scope) {
+export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
     return {
-        type: types.UPDATE_ROW_PROPERTY,
+        type: types.UPDATE_ROW_FIELD_PROPERTY,
         property: property,
-        value: value,
+        item: item,
         tabid: tabid,
         rowid: rowid,
         scope: scope
@@ -228,6 +249,9 @@ export function createWindow(
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
+                if(!response){
+                    return;
+                }
                 if (docId == 'NEW' && !isModal) {
                     dispatch(setLatestNewDocument(response.data[0].id));
                     // redirect immedietely
@@ -249,18 +273,20 @@ export function createWindow(
                 }
 
                 docId = response.data[elem].id;
-                const preparedData = parseToDisplay(response.data[elem].fields);
 
                 dispatch(initDataSuccess(
-                    preparedData, getScope(isModal), docId,
-                    response.data[0].saveStatus, response.data[0].validStatus
+                    parseToDisplay(response.data[elem].fields),
+                    getScope(isModal), docId,
+                    response.data[0].saveStatus, response.data[0].validStatus,
+                    response.data[0].includedTabsInfo
                 ));
 
                 if (isModal) {
                     if(rowId === 'NEW'){
                         dispatch(mapDataToState(
-                            [response.data[0]], false, 'NEW', docId, windowType
+                            response.data, false, 'NEW', docId, windowType
                         ));
+                        dispatch(updateStatus(response.data))
                         dispatch(updateModal(response.data[0].rowId));
                     }
                 }else{
@@ -270,34 +296,36 @@ export function createWindow(
                 dispatch(initLayout(
                     'window', windowType, tabId, null, null, isAdvanced
                 )).then(response =>
-                        dispatch(initLayoutSuccess(
-                            response.data, getScope(isModal)
-                        ))
-                    ).then(response => {
-                        let tabTmp = {};
-
-                        response.layout.tabs &&
-                        response.layout.tabs.map((tab, index) => {
-                            tabTmp[tab.tabid] = {};
-
-                            if(index === 0 || !tab.queryOnActivate){
-                                dispatch(
-                                    getTab(tab.tabid, windowType, docId)
-                                ).then(res => {
-                                    tabTmp[tab.tabid] = res;
-                                    dispatch(
-                                        addRowData(tabTmp, getScope(isModal))
-                                    );
-                                })
-                            }
-                        }
-                    )
-            }).catch((err) => {
-                dispatch(addNotification(
-                    'Error', err.response.data.error, 5000, 'error'
-                ));
-            });
+                    dispatch(initLayoutSuccess(
+                        response.data, getScope(isModal)
+                    ))
+                ).then(response => {
+                    dispatch(initTabs(
+                        response.layout.tabs, windowType, docId, isModal
+                    ))
+                })
         });
+    }
+}
+
+function initTabs(layout, windowType, docId, isModal) {
+    return dispatch => {
+        let tabTmp = {};
+
+        layout && layout.map((tab, index) => {
+            tabTmp[tab.tabid] = {};
+
+            if(index === 0 || !tab.queryOnActivate){
+                dispatch(
+                    getTab(tab.tabid, windowType, docId)
+                ).then(res => {
+                    tabTmp[tab.tabid] = res;
+                    dispatch(
+                        addRowData(tabTmp, getScope(isModal))
+                    );
+                })
+            }
+        })
     }
 }
 
@@ -324,15 +352,24 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
         } else {
             if (rowId === 'NEW') {
                 //New row document
-                return dispatch(patchRequest('window', windowType, docId, tabId, 'NEW'))
+                return dispatch(patchRequest(
+                    'window', windowType, docId, tabId, 'NEW'
+                ))
             } else if (rowId) {
                 //Existing row document
-                return dispatch(getData('window', windowType, docId, tabId, rowId, null, null, isAdvanced))
+                return dispatch(getData(
+                    'window', windowType, docId, tabId, rowId, null, null,
+                    isAdvanced
+                ))
             } else {
                 //Existing master document
-                return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
-                .catch(() => {
-                    dispatch(push('/window/'+ windowType));
+                return dispatch(getData(
+                    'window', windowType, docId, null, null, null, null,
+                    isAdvanced
+                )).catch(() => {
+                    dispatch(initDataSuccess(
+                        {}, 'master', 'notfound', {saved: true}, {}, {}
+                    ));
                 });
             }
         }
@@ -384,33 +421,80 @@ export function patch(
     }
 }
 
+function updateData(doc, scope){
+    return dispatch => {
+        Object.keys(doc).map(key => {
+            if(key === 'fields'){
+                doc.fields.map(field => {
+                    dispatch(updateDataFieldProperty(
+                        field.field, field, scope
+                    ))
+                })
+            }else if(key === 'includedTabsInfo'){
+                dispatch(updateDataIncludedTabsInfo(
+                    'master', doc[key]
+                ));
+            }else{
+                dispatch(updateDataProperty(key, doc[key], scope))
+            }
+        })
+    }
+}
+
+function updateRow(row, scope){
+    return dispatch => {
+        Object.keys(row).map(key => {
+            if(key === 'fields'){
+                row.fields.map(field => {
+                    dispatch(updateRowFieldProperty(
+                        field.field, field, row.tabid, row.rowId, scope
+                    ))
+                });
+            }else{
+                dispatch(updateRowProperty(
+                    key, row[key], row.tabid, row.rowId, scope
+                ));
+            }
+        })
+    }
+}
+
 function mapDataToState(data, isModal, rowId, id, windowType) {
     return (dispatch) => {
         let staleTabIds = [];
-        data.map(item => {
+
+        data.map((item, index) => {
             // Merging staleTabIds
-            item.includedTabsInfo && item.includedTabsInfo.map(tabInfo => {
-                if(tabInfo.stale && staleTabIds.indexOf(tabInfo.tabid) === -1){
-                    staleTabIds.push(tabInfo.tabid);
-                }
-            })
-
-            // Mapping fields property
-            item.fields = parseToDisplay(item.fields);
-            if (rowId === 'NEW') {
-                dispatch(addNewRow(item, item.tabid, item.rowId, 'master'))
-            } else {
-                item.fields.map(field => {
-                    if (rowId && !isModal) {
-                        dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
-                    } else {
-                        if (rowId) {
-                            dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
-                        }
-
-                        dispatch(updateDataSuccess(field, getScope(isModal), data[0].saveStatus, data[0].validStatus));
+            item.includedTabsInfo &&
+                Object.keys(item.includedTabsInfo).map(tabId => {
+                    const tabInfo = item.includedTabsInfo[tabId];
+                    if(
+                        tabInfo.stale &&
+                        staleTabIds.indexOf(tabInfo.tabid) === -1
+                      ){
+                        staleTabIds.push(tabInfo.tabid);
                     }
-                });
+                })
+
+            const parsedItem = item.fields ? Object.assign({}, item, {
+                fields: parseToDisplay(item.fields)
+            }) : item;
+
+            // First item in response is direct one for action that called it.
+            if(index === 0 && rowId === 'NEW'){
+                dispatch(addNewRow(
+                    parsedItem, parsedItem.tabid, parsedItem.rowId, 'master'
+                ))
+            }else{
+                if (item.rowId && !isModal) {
+                    dispatch(updateRow(parsedItem, 'master'));
+                } else {
+                    item.rowId && dispatch(updateRow(parsedItem, 'master'));
+
+                    dispatch(updateData(
+                        parsedItem, getScope(isModal && index === 0)
+                    ));
+                }
             }
         })
 
@@ -421,7 +505,6 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
             })
         })
 
-        dispatch(updateStatus(data))
     }
 }
 
@@ -429,10 +512,19 @@ function updateStatus(responseData) {
     return dispatch => {
         const updateDispatch = (item) => {
             if(item.rowId){
-                dispatch(updateRowStatus('master', item.tabid, item.rowId, item.saveStatus));
+                dispatch(updateRowStatus(
+                    'master', item.tabid, item.rowId, item.saveStatus
+                ));
             }else{
-                item.validStatus && dispatch(updateDataValidStatus('master', item.validStatus));
-                item.saveStatus && dispatch(updateDataSaveStatus('master', item.saveStatus));
+
+                item.validStatus &&
+                    dispatch(updateDataValidStatus('master', item.validStatus));
+                item.saveStatus &&
+                    dispatch(updateDataSaveStatus('master', item.saveStatus));
+                item.includedTabsInfo &&
+                    dispatch(updateDataIncludedTabsInfo(
+                        'master', item.includedTabsInfo
+                    ));
             }
         }
 
@@ -446,18 +538,26 @@ function updateStatus(responseData) {
     }
 }
 
-export function updateProperty(property, value, tabid, rowid, isModal) {
+/*
+ * It updates store for single field value modification, like handleChange
+ * in MasterWidget
+ */
+export function updatePropertyValue(property, value, tabid, rowid, isModal) {
     return dispatch => {
         if (tabid && rowid) {
-            dispatch(updateRowProperty(property, value, tabid, rowid, 'master'))
+            dispatch(updateRowFieldProperty(
+                property, {value}, tabid, rowid, 'master'
+            ))
             if (isModal) {
-                dispatch(updateDataProperty(property, value, 'modal'))
+                dispatch(updateDataFieldProperty(property, {value}, 'modal'))
             }
         } else {
-            dispatch(updateDataProperty(property, value, getScope(isModal)))
+            dispatch(updateDataFieldProperty(
+                property, {value}, getScope(isModal)
+            ))
             if (isModal) {
                 //update the master field too if exist
-                dispatch(updateDataProperty(property, value, 'master'))
+                dispatch(updateDataFieldProperty(property, {value}, 'master'))
             }
         }
     }
@@ -465,15 +565,22 @@ export function updateProperty(property, value, tabid, rowid, isModal) {
 
 export function attachFileAction(windowType, docId, data){
     return dispatch => {
-        dispatch(addNotification('Attachment', 'Uploading attachment', 5000, 'primary'));
+        dispatch(addNotification(
+            'Attachment', 'Uploading attachment', 5000, 'primary'
+        ));
 
-        return axios.post(`${config.API_URL}/window/${windowType}/${docId}/attachments`, data)
-            .then(() => {
-                dispatch(addNotification('Attachment', 'Uploading attachment succeeded.', 5000, 'primary'))
-            })
-            .catch(() => {
-                dispatch(addNotification('Attachment', 'Uploading attachment error.', 5000, 'error'))
-            })
+        return axios.post(
+            `${config.API_URL}/window/${windowType}/${docId}/attachments`, data
+        ).then(() => {
+            dispatch(addNotification(
+                'Attachment', 'Uploading attachment succeeded.', 5000, 'primary'
+            ))
+        })
+        .catch(() => {
+            dispatch(addNotification(
+                'Attachment', 'Uploading attachment error.', 5000, 'error'
+            ))
+        })
     }
 }
 
@@ -494,6 +601,9 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                 dispatch(startProcess(processType, pid)).then(response => {
                     dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
+                }).catch(err => {
+                    dispatch(setProcessSaved());
+                    throw err;
                 });
                 throw new Error('close_modal');
             }else{
@@ -504,29 +614,55 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     })
                     dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
+                }).catch(err => {
+                    dispatch(setProcessSaved());
+                    throw err;
                 });
-
             }
-        })
+        });
     }
 }
 
 export function handleProcessResponse(response, type, id, successCallback) {
     return (dispatch) => {
         const {
-            error, summary, openDocumentId, openDocumentWindowId, reportFilename,
-            openViewId, openViewWindowId
+            error, summary, action
         } = response.data;
 
         if(error){
             dispatch(addNotification('Process error', summary, 5000, 'error'));
         }else{
-            if(openViewId && openViewWindowId){
-                dispatch(openRawModal(openViewWindowId, openViewId));
-            }else if(openDocumentWindowId && openDocumentId){
-                dispatch(push('/window/' + openDocumentWindowId + '/' + openDocumentId));
-            }else if(reportFilename){
-                dispatch(openFile('process', type, id, 'print', reportFilename))
+            if(action){
+                switch(action.type){
+                    case 'openView':
+                        dispatch(openRawModal(action.windowId, action.viewId));
+                        break;
+                    case 'openReport':
+                        dispatch(openFile(
+                            'process', action.contentType, id, 'print',
+                            action.filename
+                        ));
+                        break;
+                    case 'openDocument':
+                        dispatch(push(
+                            '/window/' + action.windowId +
+                            '/' + action.documentId
+                        ));
+                        break;
+                    case 'openIncludedView':
+                        dispatch(setListIncludedView(
+                            action.windowId, action.viewId
+                        ));
+                        break;
+                    case 'closeIncludedView':
+                        dispatch(setListIncludedView());
+                        break;
+                    case 'selectViewRows':
+                        dispatch(selectTableItems(
+                            action.rowIds, action.windowId
+                        ));
+                        break;
+                }
             }
 
             if(summary){
@@ -591,8 +727,9 @@ function parseDateToReadable(arr) {
     const dateParse = ['Date', 'DateTime', 'Time'];
     return arr.map(item =>
         (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
-        Object.assign({}, item, { value: item.value ? new Date(item.value) : '' }) :
-        item
+        Object.assign({}, item, {
+            value: item.value ? new Date(item.value) : ''
+        }) : item
     )
 }
 

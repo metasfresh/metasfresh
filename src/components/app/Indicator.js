@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 class Indicator extends Component {
@@ -24,7 +25,8 @@ class Indicator extends Component {
             <div>
                 <div className={
                     'indicator-bar ' +
-                    (isDocumentNotSaved ? 'indicator-error ' : 'indicator-' + indicator)
+                    (isDocumentNotSaved ?
+                        'indicator-error ' : 'indicator-' + indicator)
                 } />
             </div>
         )

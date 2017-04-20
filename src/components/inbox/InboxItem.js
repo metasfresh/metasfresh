@@ -56,11 +56,19 @@ class InboxItem extends Component {
                 'inbox-item js-inbox-item pointer ' +
                 (!item.read ? 'inbox-item-unread ':'')
             }>
-                {item.important && <div className="inbox-item-icon inbox-item-icon-sm">
+                {item.important && <div
+                    className="inbox-item-icon inbox-item-icon-sm"
+                >
                     <i className="meta-icon-important" />
                 </div>}
                 <div className="inbox-item-icon">
-                    <i className={'meta-icon-' + this.renderIconFromTarget(item.target && item.target.documentType)} />
+                    <i
+                        className={
+                            'meta-icon-' +
+                            this.renderIconFromTarget(
+                                item.target && item.target.documentType
+                            )
+                    }/>
                 </div>
                 <div className="inbox-item-content">
                     <div className="inbox-item-title">

@@ -51,6 +51,11 @@ body {
     height: 100%;
 }
 
+.container-fluid-subheader {
+    padding-right: 0;
+}
+
+
 @media (max-width: 768px) {
     .container-fluid {
         padding-left: .5rem;
@@ -169,6 +174,44 @@ body {
 
 .order-list-panel-body {
     font-size: 12px;
+}
+
+.order-list-panel-body .subheader-item {
+    font-size: 14px;
+}
+
+.order-list-nav {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid $brand-light-color;
+}
+
+.order-list-btn{
+    flex:1;
+    text-align: center;
+    font-size: 1rem;
+    padding: .5rem 0;
+    cursor: pointer;
+}
+
+.order-list-btn.active,
+.order-list-btn.active:hover {
+    color: #fff;
+    background-color: $brand-light-color;
+}
+
+.order-list-btn:hover {
+    background-color: $brand-super-light-color;
+}
+
+.order-list-btn:not(:last-child){
+    border-right: 1px solid $brand-light-color;
+}
+
+.order-list-loader {
+    margin: 1rem;
 }
 
 .sm {
@@ -361,6 +404,13 @@ body {
     flex-grow: 1;
     flex-direction: column;
     min-height: 100%;
+}
+
+.document-list-included {
+    flex: 2;
+    margin-left: .1rem;
+    overflow: auto;
+    overflow-x: hidden;
 }
 
 .document-list-header {
@@ -631,6 +681,10 @@ body {
     min-height: 500px;
 }
 
+.fullscreen {
+    height: 100%;
+}
+
 html {
     height: 100%;
 }
@@ -640,7 +694,9 @@ body {
 }
 
 #root,
-#root>div {
+#root>div,
+.root-children,
+.root-children>div {
     height: 100%;
 }
 
@@ -769,7 +825,7 @@ td.pulse-off input {
     display: flex;
     width: 100%;
     height: 100%;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -1023,4 +1079,33 @@ td.pulse-off input {
 
 .progress-leave.slidein-leave-active {
     width: 0;
+}
+
+.browser-warning {
+    color: $brand-color-secondary;
+    padding-top: 10px;
+    max-width: 300px;
+    text-align: center;
+}
+
+.browser-warning p {
+    margin: 0;
+}
+
+.blank-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.blank-page h1 {
+    font-size: 6rem;
+    opacity: .3;
+}
+
+.blank-page h3 {
+    font-size: 3rem;
+    opacity: .2;
 }

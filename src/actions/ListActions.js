@@ -1,41 +1,43 @@
-import * as types from '../constants/ActionTypes'
+import * as types from '../constants/ListTypes'
 import axios from 'axios';
+
+export function setListId(viewId, windowType) {
+    return {
+        type: types.SET_LIST_ID,
+        viewId,
+        windowType
+    }
+}
 
 export function setFilter(filter, windowType){
     return {
         type: types.SET_LIST_FILTERS,
-        filter: filter,
-        windowType: windowType
+        filter,
+        windowType
     }
 }
 
-export function setSorting(prop, dir, windowType){
+export function setSorting(sort, windowType){
     return {
         type: types.SET_LIST_SORTING,
-        prop: prop,
-        dir: dir,
-        windowType: windowType
+        sort,
+        windowType
     }
 }
 
 export function setPagination(page, windowType){
     return {
         type: types.SET_LIST_PAGINATION,
-        page: page,
-        windowType: windowType
+        page,
+        windowType
     }
 }
 
-export function clearListProps(){
+export function setListIncludedView(windowType, viewId) {
     return {
-        type: types.CLEAR_LIST_PROPS
-    }
-}
-
-export function initDocumentView(viewId) {
-    return {
-        type: types.INIT_DOC_VIEW,
-        viewId: viewId
+        type: types.SET_LIST_INCLUDED_VIEW,
+        windowType,
+        viewId
     }
 }
 
