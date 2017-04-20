@@ -4,6 +4,7 @@ import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import QuickActions from './QuickActions';
+import BlankPage from '../BlankPage';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
@@ -246,7 +247,12 @@ class DocumentList extends Component {
                 }
                 setModalTitle && setModalTitle(response.data.caption)
             })
-        });
+        }).catch(() => {
+            this.mounted && this.setState({
+                layout: 'notfound',
+                data: 'notfound'
+            });
+        })
     }
     /*
      *  If viewId exist, than browse that view.
@@ -395,6 +401,10 @@ class DocumentList extends Component {
         const hasIncluded = layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
+
+        if(layout === 'notfound'){
+            return <BlankPage what="Document type"/>
+        }
 
         if(layout && data) {
             return (
