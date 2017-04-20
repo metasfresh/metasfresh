@@ -8,13 +8,11 @@ import {
 class OverlayField extends Component {
 
     handleKeyDown = (e) => {
-        const {handleStart} = this.props;
+        const {setFetchOnTrue} = this.props;
         switch(e.key) {
             case 'Enter':
             document.activeElement.blur();
-            setTimeout(() => {
-                handleStart();
-            }, 1000);
+            setFetchOnTrue();
             break;
         }
     }

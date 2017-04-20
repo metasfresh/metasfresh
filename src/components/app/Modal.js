@@ -168,6 +168,12 @@ class Modal extends Component {
         });
     }
 
+    setFetchOnTrue = () => {
+        this.setState({
+            waitingFetch: true
+        });
+    }
+
     handleStart = () => {
         const {dispatch, layout, windowType, indicator} = this.props;
 
@@ -321,11 +327,11 @@ class Modal extends Component {
 
         return(
             <OverlayField
-                handleStart={this.handleStart}
                 type={windowType}
                 disabled={pending}
                 data={data}
                 layout={layout}
+                setFetchOnTrue={this.setFetchOnTrue}
             />
         )
     }
