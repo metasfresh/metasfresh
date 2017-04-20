@@ -3,19 +3,17 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
+		<groupId>de.metas.material</groupId>
+		<artifactId>metasfresh-material</artifactId>
 		<version>1.0.0</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
-	<groupId>de.metas.material</groupId>
 	<artifactId>metasfresh-material-planning</artifactId>
 	<packaging>jar</packaging>
 
-	<description>This componend shall leverage the libero code to generate production and dsitribution suggestions for the material-dispo service
+	<description>This component shall leverage the libero code to generate production and distribution suggestions for the material-dispo service
 Not sure if this shall be a dedicated service..it depends on how well we will be able to cope with having more and more of them.</description>
-
 	<dependencies>
 	
 		<!-- metasfresh -->
