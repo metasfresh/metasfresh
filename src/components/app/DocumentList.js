@@ -14,7 +14,8 @@ import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
 
 import {
-    initLayout
+    initLayout,
+    getDataByIds
 } from '../../actions/GenericActions';
 
 import {
@@ -168,6 +169,7 @@ class DocumentList extends Component {
     }
 
     connectWS = (viewId) => {
+        const {dispatch, windowType} = this.props;
         (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
 
@@ -176,7 +178,24 @@ class DocumentList extends Component {
         this.sockClient.debug = null;
         this.sockClient.connect({}, () => {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
-                const {fullyChanged} = JSON.parse(msg.body);
+                const {fullyChanged, changedIds} = JSON.parse(msg.body);
+                if(changedIds){
+                    dispatch(getDataByIds(
+                        'documentView', windowType, viewId, changedIds.join()
+                    )).then(response => {
+                        response.data.map(row => {
+                            this.setState({
+                                data: Object.assign(this.state.data, {}, {
+                                    result: this.state.data.result.map(
+                                        resultRow =>
+                                            resultRow.id === row.id ?
+                                                row : resultRow
+                                    )
+                                })
+                            })
+                        })
+                    });
+                }
                 if(fullyChanged == true){
                     this.browseView(true);
                 }
