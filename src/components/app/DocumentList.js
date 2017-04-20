@@ -466,7 +466,8 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => this.redirectToDocument(id)}
+                            onDoubleClick={(id) => 
+                                    !isIncluded && this.redirectToDocument(id)}
                             isModal={isModal}
                             isIncluded={isIncluded}
                             size={data.size}
