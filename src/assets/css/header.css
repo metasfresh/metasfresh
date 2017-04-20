@@ -320,13 +320,18 @@
 }
 
 .menu-overlay-body {
-    padding: 1rem 1.2rem 1.8rem 1.2rem;
+    padding: 0 1.2rem 1.8rem 1.2rem;
     min-height: 400px;
     z-index:1;
     margin-top:-1px;
     pointer-events: all;
     overflow: auto;
     max-height: calc(100vh - 80px);
+}
+
+.menu-overlay-top-spacer {
+    height:1rem;
+    content:"";
 }
 
 @media screen and (max-width: $breakpoint) {

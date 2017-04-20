@@ -203,7 +203,7 @@ class MenuOverlay extends Component {
     }
 
     renderNaviagtion = (node) => {
-        const {path} = this.state;
+        const {path, deepNode} = this.state;
         const {handleMenuOverlay, openModal} = this.props;
         return (
              <div
@@ -211,6 +211,25 @@ class MenuOverlay extends Component {
                 tabIndex={0}
                 onKeyDown={(e) => this.handleKeyDown(e)}
              >
+                <div className="menu-overlay-top-spacer" />
+                 {deepNode ?
+                     <div>
+                         <span
+                             className="menu-overlay-link"
+                             onClick={e => this.handleClickBack(e)}
+                         >&lt; Back</span>
+                     </div> :
+                     <div>
+                         <span
+                             className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+                             onClick={() => dispatch(push('/'))}
+                             tabIndex={0}
+                             onKeyDown={(e) => this.handleKeyDown(e)}
+                         >
+                             Dashboard
+                         </span>
+                     </div>
+                 }
                 {node.nodeId != 0 &&
                     <p
                         className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header"
@@ -338,22 +357,6 @@ class MenuOverlay extends Component {
                     {nodeId == 0 ?
                         //ROOT
                         <div>
-                            {deepNode ?
-                                <div>
-                                    <span
-                                        className="menu-overlay-link"
-                                        onClick={e => this.handleClickBack(e)}
-                                    >&lt; Back</span>
-                                </div> :
-                                <span
-                                    className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
-                                    onClick={() => dispatch(push('/'))}
-                                    tabIndex={0}
-                                    onKeyDown={(e) => this.handleKeyDown(e)}
-                                >
-                                    Dashboard
-                                </span>
-                            }
                             <div className="menu-overlay-root-body">
                                 {this.renderNaviagtion(
                                     deepNode ? deepNode : nodeData)
