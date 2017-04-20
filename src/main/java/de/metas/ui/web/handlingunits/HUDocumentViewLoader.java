@@ -106,6 +106,16 @@ public class HUDocumentViewLoader
 
 		this.huIds.addAll(huIdsToAdd);
 	}
+	
+	public void removeHUs(final Collection<I_M_HU> husToRemove)
+	{
+		final Set<Integer> huIdsToRemove = husToRemove.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.collect(GuavaCollectors.toImmutableSet());
+
+		this.huIds.removeAll(huIdsToRemove);
+	}
+
 
 	public List<HUDocumentView> retrieveDocumentViews()
 	{

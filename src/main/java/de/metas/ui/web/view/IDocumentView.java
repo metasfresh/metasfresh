@@ -64,6 +64,5 @@ public interface IDocumentView
 	// Attributes
 	// @formatter:off
 	boolean hasIncludedView();
-	IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo);
 	// @formatter:on
 }

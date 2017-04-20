@@ -164,12 +164,6 @@ public final class DocumentView implements IDocumentView
 	}
 
 	@Override
-	public IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo)
-	{
-		throw new EntityNotFoundException("Row " + this + " does not support included view");
-	}
-
-	@Override
 	public List<IDocumentView> getIncludedDocuments()
 	{
 		return includedDocuments;

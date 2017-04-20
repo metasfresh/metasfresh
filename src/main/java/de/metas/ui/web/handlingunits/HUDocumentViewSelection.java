@@ -187,6 +187,13 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return getRecords().getById(documentId);
 	}
+	
+	@Override
+	public List<HUDocumentView> getByIds(final Set<DocumentId> documentIds)
+	{
+		return streamByIds(documentIds).collect(ImmutableList.toImmutableList());
+	}
+
 
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
@@ -274,6 +281,29 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader.addHUs(ImmutableSet.of(hu));
 		invalidateAll();
 	}
+	
+	public void removesHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
+	{
+		if(husToRemove.isEmpty())
+		{
+			return;
+		}
+		
+		documentViewsLoader.removeHUs(husToRemove);
+		invalidateAll();
+	}
+	
+	public void removesHUAndInvalidate(final Collection<I_M_HU> husToRemove)
+	{
+		if(husToRemove == null || husToRemove.isEmpty())
+		{
+			return;
+		}
+		
+		documentViewsLoader.removeHUs(husToRemove);
+		invalidateAll();
+	}
+
 
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)

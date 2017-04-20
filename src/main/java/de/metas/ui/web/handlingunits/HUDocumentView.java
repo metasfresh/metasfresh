@@ -28,8 +28,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -191,12 +189,6 @@ public final class HUDocumentView implements IDocumentView
 	public boolean hasIncludedView()
 	{
 		return false;
-	}
-
-	@Override
-	public IDocumentViewSelection getCreateIncludedView(IDocumentViewsRepository viewsRepo)
-	{
-		throw new EntityNotFoundException("Row " + this + " does not support included view");
 	}
 
 	@Override
@@ -478,6 +470,7 @@ public final class HUDocumentView implements IDocumentView
 
 		private HUDocumentViewType getType()
 		{
+			Check.assumeNotNull(type, "Parameter type is not null");
 			return type;
 		}
 

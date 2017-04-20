@@ -1,7 +1,10 @@
 package de.metas.ui.web.pporder.process;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,7 +12,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUDocumentView;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.handlingunits.process.HUViewProcessTemplate;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -58,9 +61,9 @@ public class WEBUI_M_HU_IssueSelectedHU
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedDocumentIds().size() != 1)
+		if (getSelectedDocumentIds().isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		if (!ppOrderView().isPresent())
@@ -68,30 +71,34 @@ public class WEBUI_M_HU_IssueSelectedHU
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not called from manufacturing issue/receipt view");
 		}
 
-		final HUDocumentView huRow = getSingleSelectedRow();
-		if (huRow.getM_HU_ID() <= 0)
+		final Set<Integer> huIds = getSelectedHUIds();
+		if (huIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject("no HU");
+			ProcessPreconditionsResolution.reject("no HUs");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final PPOrderLinesView ppOrderView = ppOrderView().get();
 		final int ppOrderId = ppOrderView.getPP_Order_ID();
 
-		final HUDocumentView huRow = getSingleSelectedRow();
-		final I_M_HU hu = huRow.getM_HU();
+		final List<I_M_HU> hus = getSelectedHUs();
+		if(hus.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
 
 		huPPOrderBL
 				.createIssueProducer()
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createIssues(hu);
+				.createIssues(hus);
 
-		getView().invalidateAll();
+		getView().removesHUAndInvalidate(hus);
 		ppOrderView.invalidateAll();
 
 		return MSG_OK;

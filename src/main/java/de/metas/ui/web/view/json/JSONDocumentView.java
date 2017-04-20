@@ -44,7 +44,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
  */
 public class JSONDocumentView extends JSONDocumentBase
 {
-	public static List<JSONDocumentView> ofDocumentViewList(final List<IDocumentView> documentViews)
+	public static List<JSONDocumentView> ofDocumentViewList(final List<? extends IDocumentView> documentViews)
 	{
 		return documentViews.stream()
 				.map(JSONDocumentView::ofDocumentView)

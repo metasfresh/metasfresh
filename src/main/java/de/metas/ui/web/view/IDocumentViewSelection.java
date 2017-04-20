@@ -71,7 +71,7 @@ public interface IDocumentViewSelection
 
 	IDocumentView getById(DocumentId documentId) throws EntityNotFoundException;
 
-	default List<IDocumentView> getByIds(final Set<DocumentId> documentIds)
+	default List<? extends IDocumentView> getByIds(final Set<DocumentId> documentIds)
 	{
 		return streamByIds(documentIds).collect(ImmutableList.toImmutableList());
 	}

@@ -87,8 +87,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private final int ppOrderBOMLineId;
 	private final int ppOrderQtyId;
 
-	private volatile ViewId husToIssueViewId = null; // lazy
-
 	private PPOrderLineRow(final Builder builder)
 	{
 		documentPath = builder.getDocumentPath();
@@ -265,39 +263,13 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		return attributes;
 	}
 
-	@Override
-	public IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo)
+	public IDocumentViewSelection createHUsToIssueView(final IDocumentViewsRepository viewsRepo)
 	{
-		if (isIssue())
+		if (!isIssue())
 		{
-			return getCreateHUsToIssueView(viewsRepo);
+			throw new IllegalStateException("Only issue lines are supported");
 		}
-		else
-		{
-			throw new EntityNotFoundException("Line " + this + " does not have an included view");
-		}
-	}
-
-	private synchronized IDocumentViewSelection getCreateHUsToIssueView(final IDocumentViewsRepository viewsRepo)
-	{
-		if (husToIssueViewId != null)
-		{
-			final IDocumentViewSelection existingView = viewsRepo.getViewIfExists(husToIssueViewId);
-			if (existingView != null)
-			{
-				return existingView;
-			}
-		}
-
-		//
-		// Create new view
-		final IDocumentViewSelection newView = createHUsToIssueView(viewsRepo);
-		husToIssueViewId = newView.getViewId();
-		return newView;
-	}
-
-	private IDocumentViewSelection createHUsToIssueView(final IDocumentViewsRepository viewsRepo)
-	{
+		
 		// TODO: move it to DAO/Repository
 		// TODO: rewrite the whole shit, this is just prototyping
 		final List<Integer> huIdsToAvailableToIssue = Services.get(IHandlingUnitsDAO.class)
@@ -307,6 +279,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithProductId(getM_Product_ID())
 				.setOnlyTopLevelHUs()
+				.onlyNotLocked()
 				//
 				.createQuery()
 				.listIds();

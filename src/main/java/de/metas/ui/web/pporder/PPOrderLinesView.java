@@ -246,7 +246,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		final DocumentId selectedRowId = ListUtils.singleElement(selectedDocumentIds);
 		final PPOrderLineRow row = getById(selectedRowId);
 		final IDocumentViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IDocumentViewsRepository.class); // TODO dirty workaround
-		final IDocumentViewSelection husToIssueView = row.getCreateIncludedView(viewsRepo);
+		final IDocumentViewSelection husToIssueView = row.createHUsToIssueView(viewsRepo);
 
 		return OpenIncludedViewAction.builder()
 				.viewId(husToIssueView.getViewId())
