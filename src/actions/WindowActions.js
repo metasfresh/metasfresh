@@ -367,7 +367,9 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
                     'window', windowType, docId, null, null, null, null,
                     isAdvanced
                 )).catch(() => {
-                    dispatch(push('/window/'+ windowType));
+                    dispatch(initDataSuccess(
+                        {}, 'master', 'notfound', {saved: true}, {}, {}
+                    ));
                 });
             }
         }
