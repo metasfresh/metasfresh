@@ -112,7 +112,7 @@ class Subheader extends Component {
     renderNavColumn = () => {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
-            handleDelete, handleClone, docNo, redirect
+            handleDelete, docNo, redirect
         } = this.props;
 
         const docLinks = dataId && [
@@ -142,14 +142,6 @@ class Subheader extends Component {
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}
                 </span>
-            </div>,
-            <div
-                key={2}
-                className="subheader-item js-subheader-item"
-                tabIndex={0}
-                onClick={() => handleClone(windowType, dataId)}
-            >
-                <i className="meta-icon-duplicate" /> Clone
             </div>,
             <div
                 key={3}

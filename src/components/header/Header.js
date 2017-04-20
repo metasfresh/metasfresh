@@ -148,10 +148,6 @@ class Header extends Component {
         });
     }
 
-    handleClone = () => {
-        //TODO when API ready
-    }
-
     handlePromptCancelClick = () => {
         this.setState({
             prompt: Object.assign({}, this.state.prompt, {
@@ -482,7 +478,6 @@ class Header extends Component {
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
-                    handleClone={this.handleClone}
                     redirect={this.redirect}
                     selected={selected}
                     selectedWindowType={selectedWindowType}
