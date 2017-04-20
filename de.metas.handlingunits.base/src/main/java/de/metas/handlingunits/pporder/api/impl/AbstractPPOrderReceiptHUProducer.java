@@ -92,6 +92,8 @@ import lombok.Data;
 	private final int _ppOrderId;
 	private transient I_M_HU_LUTU_Configuration _lutuConfiguration;
 	private Date _movementDate;
+	@Deprecated
+	private boolean _skipCreateCandidates;
 	
 	// State
 	private final List<I_PP_Order_Qty> createdCandidates = new ArrayList<>();
@@ -112,6 +114,19 @@ import lombok.Data;
 	{
 		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId not valid");
 		this._ppOrderId = ppOrderId;
+	}
+	
+	@Override
+	@Deprecated
+	public void setSkipCreateCandidates()
+	{
+		this._skipCreateCandidates = true;
+	}
+	
+	@Deprecated
+	private boolean isSkipCreateCandidates()
+	{
+		return _skipCreateCandidates;
 	}
 	
 	private int getPP_Order_ID()
@@ -159,9 +174,12 @@ import lombok.Data;
 
 		//
 		// Create receipt candidates
-		ppOrderReceiptCandidateCollector
-				.streamRequests()
-				.forEach(this::createReceiptCandidateFromRequest);
+		if(!isSkipCreateCandidates())
+		{
+			ppOrderReceiptCandidateCollector
+					.streamRequests()
+					.forEach(this::createReceiptCandidateFromRequest);
+		}
 
 		//
 		// Generate the HUs 
@@ -181,7 +199,7 @@ import lombok.Data;
 	public void createReceiptCandidatesFromPlanningHU(final I_M_HU planningHU)
 	{
 		Preconditions.checkNotNull(planningHU);
-		if (X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
+		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
 		{
 			throw new HUException("HU " + planningHU + " shall have status Planning but it has " + planningHU.getHUStatus());
 		}
@@ -195,8 +213,16 @@ import lombok.Data;
 			huPPOrderQtyDAO.streamOrderQtys(getPP_Order_ID())
 					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
 					.forEach(huPPOrderQtyDAO::delete);
+			
+			// Extract it if not top level
+			huTrxBL.setParentHU(huContext,
+					null,
+					planningHU,
+					true // destroyOldParentIfEmptyStorage
+			);
 
-			final int topLevelHUId = planningHU.getM_HU_ID(); // TODO: extract it if not top level
+
+			final int topLevelHUId = planningHU.getM_HU_ID();
 			final int locatorId = planningHU.getM_Locator_ID();
 
 			// Stream all product storages
@@ -293,7 +319,8 @@ import lombok.Data;
 				qtyToReceive, // the quantity to receive
 				uom,
 				date, // transaction date
-				referencedModel // referenced model
+				referencedModel, // referenced model
+				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 		);
 
 		return allocationRequest;

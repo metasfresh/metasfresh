@@ -16,7 +16,7 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1354020709L;
+	private static final long serialVersionUID = 317893535L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Snapshot (Properties ctx, int M_HU_Item_Snapshot_ID, String trxName)
@@ -251,7 +251,7 @@ public class X_M_HU_Item_Snapshot extends org.compiere.model.PO implements I_M_H
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
