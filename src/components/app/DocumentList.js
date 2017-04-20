@@ -183,7 +183,17 @@ class DocumentList extends Component {
                     dispatch(getDataByIds(
                         'documentView', windowType, viewId, changedIds.join()
                     )).then(response => {
-                        console.log(response.data)
+                        response.data.map(row => {
+                            this.setState({
+                                data: Object.assign(this.state.data, {}, {
+                                    result: this.state.data.result.map(
+                                        resultRow =>
+                                            resultRow.id === row.id ?
+                                                row : resultRow
+                                    )
+                                })
+                            })
+                        })
                     });
                 }
                 if(fullyChanged == true){
