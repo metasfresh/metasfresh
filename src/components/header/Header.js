@@ -191,11 +191,10 @@ class Header extends Component {
         }
     }
 
-    handleSidelistToggle = (id = null) => {
-        const {sideListTab} = this.state;
+    handleSidelistToggle = (id = null, sideListTab) => {
 
         this.toggleScrollScope(id !== null);
-
+        
         this.setState({
             isSideListShow: id !== null && id !== sideListTab,
             sideListTab: id !== sideListTab ? id : null
@@ -503,7 +502,7 @@ class Header extends Component {
                 />}
 
                 <GlobalContextShortcuts
-                    handleSidelistToggle={this.handleSidelistToggle}
+                    handleSidelistToggle={(id) => this.handleSidelistToggle(id, sideListTab)}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
