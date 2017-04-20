@@ -150,6 +150,7 @@ class DocumentList extends Component {
         if(
             selectedWindowType === windowType &&
             cachedSelection !== null &&
+            cachedSelection !== undefined &&
             layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId
         ){

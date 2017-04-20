@@ -657,6 +657,11 @@ export function handleProcessResponse(response, type, id, successCallback) {
                     case 'closeIncludedView':
                         dispatch(setListIncludedView());
                         break;
+                    case 'selectViewRows':
+                        dispatch(selectTableItems(
+                            action.rowIds, action.windowId
+                        ));
+                        break;
                 }
             }
 
