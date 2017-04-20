@@ -134,6 +134,9 @@ class DocumentList extends Component {
                 // In case of preventing cached selection restore
                 cachedSelection &&
                     dispatch(selectTableItems(cachedSelection, windowType))
+                this.setState({
+                    cachedSelection: undefined
+                })
             }else{
                 this.setState({
                     cachedSelection: selected
@@ -466,7 +469,7 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => 
+                            onDoubleClick={(id) =>
                                     !isIncluded && this.redirectToDocument(id)}
                             isModal={isModal}
                             isIncluded={isIncluded}
