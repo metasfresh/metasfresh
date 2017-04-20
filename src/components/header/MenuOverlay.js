@@ -204,7 +204,7 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
         const {path, deepNode} = this.state;
-        const {handleMenuOverlay, openModal} = this.props;
+        const {handleMenuOverlay, openModal, dispatch} = this.props;
         return (
              <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
@@ -346,7 +346,7 @@ class MenuOverlay extends Component {
             queriedResults, deepNode, deepSubNode, subPath, query, data
         } = this.state;
         const {
-            dispatch, nodeId, node, siteName, handleMenuOverlay, openModal
+            nodeId, node, siteName, handleMenuOverlay, openModal
         } = this.props;
         const nodeData = nodeId == '0' ? data : node.children;
         return (
