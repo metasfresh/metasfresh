@@ -614,22 +614,26 @@ public final class ProcessInfo implements Serializable
 		final IQueryFilter<T> whereFilter;
 		if (Check.isEmpty(whereClause, true))
 		{
-			whereFilter = new TypedSqlQueryFilter<>(whereClause);
+			whereFilter = defaultQueryFilter;
 		}
 		else
 		{
-			whereFilter = defaultQueryFilter;
+			whereFilter = new TypedSqlQueryFilter<>(whereClause);
 		}
 
 		// https://github.com/metasfresh/metasfresh/issues/1348
 		// also restrict to the client(s) and org(s) the user shall see with its current role.
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
-		final TypedSqlQueryFilter<T> orgFilter = new TypedSqlQueryFilter<>(role.getOrgWhere(getTableNameOrNull(), true));
+
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
+		final TypedSqlQueryFilter<T> orgFilter = new TypedSqlQueryFilter<>(role.getOrgWhere(null, true));
 
 		final TypedSqlQueryFilter<T> clientFilter = new TypedSqlQueryFilter<>(role.getClientWhere(true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter(getTableNameOrNull());
+		
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name in this case
+		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
 
 		compositeFilter.addFilter(whereFilter)
 				.addFilter(clientFilter)
