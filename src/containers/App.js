@@ -20,7 +20,8 @@ import {
 import {
     addNotification,
     logoutSuccess,
-    getAvailableLang
+    getAvailableLang,
+    setProcessSaved
 } from '../actions/AppActions';
 
 import '../assets/css/styles.css';
@@ -41,6 +42,7 @@ axios.interceptors.response.use(function (response) {
      * Authorization error
      */
     if(error.response.status == 401){
+        store.dispatch(setProcessSaved());
         store.dispatch(logoutSuccess());
         store.dispatch(push('/login?redirect=true'));
     }else if(error.response.status != 404){
