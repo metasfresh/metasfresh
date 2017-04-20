@@ -6,6 +6,9 @@ import {
 } from '../../actions/WindowActions';
 
 class OverlayField extends Component {
+    constructor(props) {
+        super(props);
+    }
 
     handleKeyDown = (e) => {
         const {setFetchOnTrue} = this.props;
