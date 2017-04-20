@@ -6,6 +6,7 @@ import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
+import OverlayField from '../components/app/OverlayField';
 
 import {
     getWindowBreadcrumb
@@ -77,7 +78,11 @@ class DocList extends Component {
                 query={query}
                 showIndicator={!modal.visible && !rawModal.visible}
             >
-                {modal.visible &&
+                {
+                    modal.visible &&
+                    (!modal.layout.layoutType ||
+                    modal.layout.layoutType === 'panel') &&
+
                     <Modal
                         windowType={modal.type}
                         data={modal.data}
@@ -99,6 +104,11 @@ class DocList extends Component {
                                 !modal.validStatus.initialValue)
                         }
                      />
+                 }
+                 {
+                     modal.visible &&
+                     modal.layout.layoutType === 'singleOverlayField' &&
+                    <OverlayField/>
                  }
                  {rawModal.visible &&
                      <RawModal
