@@ -9,8 +9,8 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.endcustomer.mf15</groupId>
-	<artifactId>de.metas.endcustomer.mf15</artifactId>
+	<groupId>de.metas.dist</groupId>
+	<artifactId>metasfresh-dist</artifactId>
 	<packaging>pom</packaging>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
