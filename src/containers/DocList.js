@@ -100,6 +100,7 @@ class DocList extends Component {
                         }
                      />
                  }
+
                  {rawModal.visible &&
                      <RawModal
                          modalTitle={modalTitle}
