@@ -119,10 +119,12 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * Shall we destroy HUs which are empty after {@link #unloadAll(IHUContext)}.
 	 *
 	 * @param destroyEmptyHUs true if HUs shall be destroyed if they are empty
+	 * @return 
 	 */
-	public void setDestroyEmptyHUs(final boolean destroyEmptyHUs)
+	public HUListAllocationSourceDestination setDestroyEmptyHUs(final boolean destroyEmptyHUs)
 	{
 		this.destroyEmptyHUs = destroyEmptyHUs;
+		return this;
 	}
 
 	/**
@@ -132,10 +134,12 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * The snapshot ID will be accessible by {@link #getSnapshotId()}.
 	 *
 	 * @param createHUSnapshots
+	 * @return 
 	 */
-	public void setCreateHUSnapshots(final boolean createHUSnapshots)
+	public HUListAllocationSourceDestination setCreateHUSnapshots(final boolean createHUSnapshots)
 	{
 		this.createHUSnapshots = createHUSnapshots;
+		return this;
 	}
 
 	/**
@@ -145,10 +149,12 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * If you don't want this behavior (e.g. gh #943: because we are adjusting the HU's storage from the net weight), then just call this method with {@code false}. If you don't use this setter, the default will be {@code true}.
 	 *
 	 * @param storeCUQtyBeforeProcessing
+	 * @return 
 	 */
-	public void setStoreCUQtyBeforeProcessing(final boolean storeCUQtyBeforeProcessing)
+	public HUListAllocationSourceDestination setStoreCUQtyBeforeProcessing(final boolean storeCUQtyBeforeProcessing)
 	{
 		this.storeCUQtyBeforeProcessing = storeCUQtyBeforeProcessing;
+		return this;
 	}
 
 	@Override
@@ -376,12 +382,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		iterator.iterate(hu);
 
 		return result;
-	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// nothing
 	}
 
 	@Override

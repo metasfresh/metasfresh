@@ -43,6 +43,7 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.base.Optional;
 
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -96,6 +97,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 
 	// Services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 
 	private final I_M_HU _hu;
 	private IHUStorage _huStorage;
@@ -187,6 +189,11 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	public final I_M_HU getM_HU()
 	{
 		return _hu;
+	}
+	
+	public final int getM_HU_ID()
+	{
+		return _hu.getM_HU_ID();
 	}
 
 	@Override
@@ -359,7 +366,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		}
 
 		final I_M_HU hu = getM_HU();
-		if (hu.isLocked())
+		if(huLockBL.isLocked(hu))
 		{
 			return true;
 		}

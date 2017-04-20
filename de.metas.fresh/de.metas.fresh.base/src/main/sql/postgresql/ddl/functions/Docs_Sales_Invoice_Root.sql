@@ -4,7 +4,8 @@ RETURNS TABLE
 	(AD_Org_ID numeric,
 	DocStatus character(2),
 	PrintName character varying(60),
-	countrycode character(2)
+	countrycode character(2),
+	displayhu text
 	)
 AS
 $$	
@@ -12,7 +13,20 @@ SELECT
 	i.AD_Org_ID,
 	i.DocStatus,
 	dt.PrintName,
-	c.countrycode
+	c.countrycode,
+	CASE
+		WHEN
+		EXISTS(
+			SELECT 0
+			FROM C_InvoiceLine il
+			INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+			WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
+			AND il.C_Invoice_ID = i.C_Invoice_ID AND il.isActive = 'Y'
+		)
+		THEN 'Y'
+		ELSE 'N'
+	END as displayhu
 FROM
 	C_Invoice i
 	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-03-23T12:00:13 -->
+<!-- 2017-04-11T15:57:56 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,6 +8,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -188,6 +189,9 @@
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="displayhu">
+					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_v2.jasper"]]></subreportExpression>
 			</subreport>
@@ -195,7 +199,9 @@
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($F{displayhu}.equals( "Y" ))]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
+				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f4aecc68-d647-409b-bde5-65f943103dc3">
+					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -204,6 +210,21 @@
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_hu.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="130471db-2ea2-49fa-9497-57da3fa95ab5">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="c_order_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_hu_v2.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="24">

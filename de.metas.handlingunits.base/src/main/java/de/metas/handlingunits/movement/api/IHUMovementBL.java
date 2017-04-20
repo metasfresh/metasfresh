@@ -13,15 +13,14 @@ package de.metas.handlingunits.movement.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
@@ -31,6 +30,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
@@ -89,6 +89,19 @@ public interface IHUMovementBL extends ISingletonService
 	 * @see IHUAssignmentBL#assignHU(Object, I_M_HU, boolean, String)
 	 */
 	void assignHU(org.compiere.model.I_M_MovementLine movementLine, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
-	
-	
+
+	/**
+	 * 
+	 * Create movements for the given HUs from warehouseFrom to warehouseTo
+	 * 
+	 * @param ctxAware
+	 * @param warehouseFrom
+	 * @param warehouseTo
+	 * @param hus
+	 * @return
+	 */
+	List<I_M_Movement> doDirectMoveToWarehouse(ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, I_M_Warehouse warehouseTo, List<I_M_HU> hus);
+
+	List<I_M_Movement> moveToQualityWarehouse(ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, I_M_Warehouse warehouseTo, List<I_M_HU> hus);
+
 }

@@ -136,6 +136,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventory;
 	}
 
+	public I_M_Inventory getInventory()
+	{
+		return inventory;
+	}
+
 	private I_M_InventoryLine getCreateInventoryLine(final IAllocationRequest request)
 	{
 		final int productId = request.getProduct().getM_Product_ID();
@@ -172,13 +177,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		// Finally, process the inventory document.
 		Services.get(IDocActionBL.class).processEx(inventory, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-
-	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// Finally, process the inventory doc.
 
 	}
 }

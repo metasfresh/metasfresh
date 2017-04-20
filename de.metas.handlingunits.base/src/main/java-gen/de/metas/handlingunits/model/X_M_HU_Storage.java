@@ -16,7 +16,7 @@ public class X_M_HU_Storage extends org.compiere.model.PO implements I_M_HU_Stor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1206296066L;
+	private static final long serialVersionUID = 1994716708L;
 
     /** Standard Constructor */
     public X_M_HU_Storage (Properties ctx, int M_HU_Storage_ID, String trxName)
@@ -28,7 +28,7 @@ public class X_M_HU_Storage extends org.compiere.model.PO implements I_M_HU_Stor
 			setM_HU_ID (0);
 			setM_HU_Storage_ID (0);
 			setM_Product_ID (0);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -96,9 +96,9 @@ public class X_M_HU_Storage extends org.compiere.model.PO implements I_M_HU_Stor
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -109,8 +109,8 @@ public class X_M_HU_Storage extends org.compiere.model.PO implements I_M_HU_Stor
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -232,7 +232,7 @@ public class X_M_HU_Storage extends org.compiere.model.PO implements I_M_HU_Stor
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

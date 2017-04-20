@@ -48,10 +48,10 @@ public interface ILockManager extends ISingletonService
 	 *
 	 * @param modelClass
 	 * @param recordId
-	 * @param lockedBy lock or null
-	 * @return true if the record is locked by given {@link ILock}. If <code>lockedBy</code> is null, the underlying API will check if the record is locked by any lock.
+	 * @param lockOwner lock owner; if null it will check if the record is locked by any owner
+	 * @return true if the record is locked by given lock owner
 	 */
-	boolean isLocked(Class<?> modelClass, int recordId, ILock lockedBy);
+	boolean isLocked(Class<?> modelClass, int recordId, LockOwner lockOwner);
 
 	/** Starting building a lock command */
 	ILockCommand lock();
@@ -120,24 +120,30 @@ public interface ILockManager extends ISingletonService
 	<T> IQueryFilter<T> getNotLockedFilter(Class<T> modelClass);
 
 	/**
-	 * Builds a SQL where clause used to filter records locked by a given {@link ILock}. Also see {@link #getNotLockedWhereClause(String, String)} for information.
+	 * Builds a SQL where clause used to filter records locked by a given {@link LockOwner}. Also see {@link #getNotLockedWhereClause(String, String)} for information.
 	 *
 	 * @param modelClass
 	 * @param joinColumnNameFQ
-	 * @param lock may <b>not</b> be <code>null</code>
+	 * @param lockOwner may <b>not</b> be <code>null</code>
 	 * @return SQL where clause
 	 * 
-	 * @deprecated Please consider using {@link #getLockedByFilter(Class, ILock)}. Only keep in mind, while this method accepts a null <code>lock</code>, the {@link #getLockedByFilter(Class, ILock)} enforces a mandatory lock.
+	 * @deprecated Please consider using {@link #getLockedByFilter(Class, LockOwner)}. Only keep in mind, while this method accepts a null <code>lock</code>, the {@link #getLockedByFilter(Class, LockOwner)} enforces a mandatory lock.
 	 */
 	@Deprecated
-	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, ILock lock);
+	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, LockOwner lockOwner);
 
 	/**
 	 * @param modelClass
-	 * @param lock lock (mandatory)
-	 * @return filter which accepts only those records which were locked by given {@link ILock}.
+	 * @param lockOwner lock owner (mandatory)
+	 * @return filter which accepts only those records which were locked by given {@link LockOwner}.
 	 */
-	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, ILock lock);
+	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, LockOwner lockOwner);
+	
+	default <T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, ILock lock)
+	{
+		return getLockedByFilter(modelClass, lock == null ? null : lock.getOwner());
+	}
+
 
 	/**
 	 * Gets existing lock for given owner name
@@ -158,4 +164,6 @@ public interface ILockManager extends ISingletonService
 	 * @return
 	 */
 	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
+	
+	int removeAutoCleanupLocks();
 }

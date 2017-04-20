@@ -16,7 +16,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -808427137L;
+	private static final long serialVersionUID = -1543538405L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Attribute (Properties ctx, int M_HU_Trx_Attribute_ID, String trxName)
@@ -420,7 +420,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -442,7 +442,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumberInitial);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

@@ -165,7 +165,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredBasedOnFinishedGoodReceipt(ppOrderBOMLine),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
 				// Expected: ZERO because nothing was received yet
 				Matchers.comparesEqualTo(BigDecimal.ZERO)
 				);
@@ -191,7 +191,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredBasedOnFinishedGoodReceipt(ppOrderBOMLine),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
 				// Expected: 50(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("8580"))
 				);
@@ -217,7 +217,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredBasedOnFinishedGoodReceipt(ppOrderBOMLine),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
 				// Expected: 100(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600"))
 				);
@@ -243,7 +243,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredBasedOnFinishedGoodReceipt(ppOrderBOMLine),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
 				// Expected: 130(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("37180"))
 				);

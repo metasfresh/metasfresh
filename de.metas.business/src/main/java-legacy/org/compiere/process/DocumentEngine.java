@@ -275,7 +275,7 @@ public class DocumentEngine implements DocAction
 	@Override
 	public boolean processIt(final String action)
 	{
-		final LockOwner lockOwner = LockOwner.forOwnerName(DocumentEngine.class.getSimpleName() + "#processIt");
+		final LockOwner lockOwner = LockOwner.newOwner(DocumentEngine.class.getSimpleName() + "#processIt");
 		final ILockManager lockManager = Services.get(ILockManager.class);
 
 		final ILock lock = lockManager

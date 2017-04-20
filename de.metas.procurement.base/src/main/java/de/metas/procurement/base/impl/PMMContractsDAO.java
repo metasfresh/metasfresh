@@ -19,7 +19,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -71,18 +70,16 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.flatrate.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
-				//
-				// Collect linked C_Flatrate_Terms
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				//
-				// Running contract restriction
+				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
+
+				// completed contract restriction
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend)
-		//
+
+				// gh #1241: we don't maintain the contract status for procurement contracts; in particular, we do not set it to "running" "sometimes, but not if a contract is extended
+				// also, even if a contract's current status is not running, it doesn't mean that it's not valid within the period if time between its start and end date! 
+				// .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Laufend) 
 		;
 
 		// Date restriction

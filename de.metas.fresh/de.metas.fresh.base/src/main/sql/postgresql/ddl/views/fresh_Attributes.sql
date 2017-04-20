@@ -10,7 +10,8 @@ SELECT * FROM
 			WHEN a.Value = '1000015' AND av.value = '01' THEN NULL -- ADR & Keine/Leer
 			WHEN a.Value = '1000015' AND (av.value IS NOT NULL AND av.value != '') THEN 'AdR' -- ADR
 			WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '') THEN av.value -- Herkunft
-			WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '') THEN 'MHD: '||ai.Value -- MHD
+			WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '') THEN ai.Value -- MHD
+			WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL) THEN 'MHD: '|| to_char(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
 			WHEN a.AttributeValueType = 'S' AND (ai.value IS NOT NULL AND ai.value != '') THEN ai.Value
 			WHEN a.Value = 'M_Material_Tracking_ID' 
 				THEN (SELECT mt.lot FROM m_material_tracking mt 

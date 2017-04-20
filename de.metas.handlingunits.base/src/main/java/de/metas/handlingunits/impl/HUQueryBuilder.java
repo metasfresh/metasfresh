@@ -62,6 +62,7 @@ import de.metas.dimension.IDimensionSpecAttributeDAO;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
@@ -546,7 +547,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		// Filter only Locked records
 		if (onlyLocked)
 		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_Locked, true);
+			filters.addFilter(Services.get(IHULockBL.class).isLockedFilter());
 		}
 
 		//
@@ -1065,9 +1066,9 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	}
 
 	@Override
-	public IHUQueryBuilder setOnlyLocked(final boolean onlyLocked)
+	public IHUQueryBuilder onlyLocked()
 	{
-		this.onlyLocked = onlyLocked;
+		this.onlyLocked = true;
 		return this;
 	}
 
