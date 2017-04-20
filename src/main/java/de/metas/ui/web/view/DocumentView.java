@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -111,18 +110,6 @@ public final class DocumentView implements IDocumentView
 	public boolean isProcessed()
 	{
 		return processed;
-	}
-
-	@Override
-	public Set<String> getFieldNames()
-	{
-		return values.keySet();
-	}
-
-	@Override
-	public Object getFieldValueAsJson(final String fieldName)
-	{
-		return values.get(fieldName);
 	}
 
 	@Override

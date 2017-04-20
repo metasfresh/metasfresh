@@ -106,7 +106,7 @@ public class HUDocumentViewLoader
 
 		this.huIds.addAll(huIdsToAdd);
 	}
-	
+
 	public void removeHUs(final Collection<I_M_HU> husToRemove)
 	{
 		final Set<Integer> huIdsToRemove = husToRemove.stream()
@@ -115,7 +115,6 @@ public class HUDocumentViewLoader
 
 		this.huIds.removeAll(huIdsToRemove);
 	}
-
 
 	public List<HUDocumentView> retrieveDocumentViews()
 	{
@@ -183,14 +182,14 @@ public class HUDocumentViewLoader
 		final HUDocumentView.Builder huViewRecord = HUDocumentView.builder(windowId)
 				.setDocumentId(DocumentId.of(huId))
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId))
+				.setAttributesProvider(getAttributesProvider())
 				.setProcessed(processed)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_PackingInfo, extractPackingInfo(hu, huRecordType));
+				.setHUId(huId)
+				.setCode(hu.getValue())
+				.setHUUnitType(huUnitTypeLookupValue)
+				.setHUStatus(huStatus)
+				.setPackingInfo(extractPackingInfo(hu, huRecordType));
 
 		//
 		// Product/UOM/Qty if there is only one product stored
@@ -198,9 +197,9 @@ public class HUDocumentViewLoader
 		if (singleProductStorage != null)
 		{
 			huViewRecord
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(singleProductStorage.getM_Product()))
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(singleProductStorage.getC_UOM()))
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, singleProductStorage.getQty());
+					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
+					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
+					.setQtyCU(singleProductStorage.getQty());
 		}
 
 		//
@@ -246,12 +245,6 @@ public class HUDocumentViewLoader
 
 		return huViewRecord.build();
 	}
-	
-	private static final DocumentId createAttributesKey(final int huId)
-	{
-		return DocumentId.of(huId);
-	}
-
 
 	private static final String extractPackingInfo(final I_M_HU hu, final HUDocumentViewType huUnitType)
 	{
@@ -321,18 +314,18 @@ public class HUDocumentViewLoader
 				.setType(HUDocumentViewType.HUStorage)
 				.setProcessed(processed)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
-				// .putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue()) // NOTE: don't show value on storage level
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
+				.setHUId(huId)
+				//.setCode(hu.getValue()) // NOTE: don't show value on storage level
+				.setHUUnitType(huUnitTypeLookupValue)
+				.setHUStatus(huStatus)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(product))
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(huStorage.getC_UOM()))
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty());
+				.setProduct(createProductLookupValue(product))
+				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
+				.setQtyCU(huStorage.getQty());
 
 		if (huId != parent_HU_ID)
 		{
-			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId));
+			storageDocumentBuilder.setAttributesProvider(getAttributesProvider());
 		}
 
 		return storageDocumentBuilder.build();
@@ -341,7 +334,7 @@ public class HUDocumentViewLoader
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
 	{
 		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), I_WEBUI_HU_View.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), IHUDocumentView.HUSTATUS_AD_Reference_ID, huStatusKey);
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 

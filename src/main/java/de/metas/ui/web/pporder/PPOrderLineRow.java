@@ -2,10 +2,8 @@ package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -21,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUDocumentViewType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentView;
@@ -75,8 +74,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private final DocumentId documentId;
 	private final PPOrderLineType type;
 
-	private final Map<String, Object> values;
-
 	private final Supplier<? extends IDocumentViewAttributes> attributesSupplier;
 
 	private final List<PPOrderLineRow> includedDocuments;
@@ -87,26 +84,45 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private final int ppOrderBOMLineId;
 	private final int ppOrderQtyId;
 
+	private final ImmutableMap<String, Object> values;
+	private final JSONLookupValue product;
+	private final JSONLookupValue uom;
+	private final String packingInfo;
+	private final String code;
+	private final String bomType;
+	private final HUDocumentViewType huType;
+	private final String huStatusInfo;
+	private final BigDecimal qty;
+	private final BigDecimal qtyPlan;
+
 	private PPOrderLineRow(final Builder builder)
 	{
+		viewId = builder.viewId;
 		documentPath = builder.getDocumentPath();
-
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
 
-		values = ImmutableMap.copyOf(builder.values);
-
-		attributesSupplier = builder.attributesSupplier;
-		includedDocuments = builder.buildIncludedDocuments();
-
-		viewId = builder.viewId;
+		ppOrderId = builder.ppOrderId;
+		ppOrderBOMLineId = builder.ppOrderBOMLineId;
+		ppOrderQtyId = builder.ppOrderQtyId;
 
 		processed = builder.processed;
 
-		ppOrderId = builder.ppOrderId;
-		ppOrderBOMLineId = builder.ppOrderBOMLineId;
+		//
+		// Values
+		product = builder.product;
+		uom = builder.uom;
+		packingInfo = builder.packingInfo;
+		code = builder.code;
+		bomType = builder.bomType;
+		huType = builder.huType;
+		huStatusInfo = builder.huStatusInfo;
+		qty = builder.qty;
+		qtyPlan = builder.qtyPlan;
+		values = builder.buildValuesMap();
 
-		ppOrderQtyId = builder.ppOrderQtyId;
+		attributesSupplier = builder.attributesSupplier;
+		includedDocuments = builder.buildIncludedDocuments();
 	}
 
 	public ViewId getViewId()
@@ -142,18 +158,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	}
 
 	@Override
-	public Set<String> getFieldNames()
-	{
-		return values.keySet();
-	}
-
-	@Override
-	public Object getFieldValueAsJson(final String fieldName)
-	{
-		return values.get(fieldName);
-	}
-
-	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
 		return values;
@@ -173,12 +177,12 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 	public String getBOMLineType()
 	{
-		return (String)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_BOMType);
+		return bomType;
 	}
 
 	public JSONLookupValue getProduct()
 	{
-		return (JSONLookupValue)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_M_Product_ID);
+		return product;
 	}
 
 	public int getM_Product_ID()
@@ -189,7 +193,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 	public JSONLookupValue getUOM()
 	{
-		return (JSONLookupValue)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID);
+		return uom;
 	}
 
 	public int getC_UOM_ID()
@@ -206,12 +210,12 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 	public BigDecimal getQty()
 	{
-		return (BigDecimal)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_Qty);
+		return qty;
 	}
 
 	public BigDecimal getQtyPlan()
 	{
-		return (BigDecimal)getFieldValueAsJson(IPPOrderBOMLine.COLUMNNAME_QtyPlan);
+		return qtyPlan;
 	}
 
 	public boolean isReceipt()
@@ -269,7 +273,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		{
 			throw new IllegalStateException("Only issue lines are supported");
 		}
-		
+
 		// TODO: move it to DAO/Repository
 		// TODO: rewrite the whole shit, this is just prototyping
 		final List<Integer> huIdsToAvailableToIssue = Services.get(IHandlingUnitsDAO.class)
@@ -300,8 +304,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private DocumentId _documentId;
 		private PPOrderLineType type;
 
-		private final Map<String, Object> values = new LinkedHashMap<>();
-
 		private List<PPOrderLineRow> includedDocuments = null;
 
 		private Supplier<? extends IDocumentViewAttributes> attributesSupplier;
@@ -313,6 +315,16 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private int ppOrderQtyId;
 		private boolean processed = false;
 
+		private JSONLookupValue product;
+		private JSONLookupValue uom;
+		private String packingInfo;
+		private String code;
+		private String bomType;
+		private HUDocumentViewType huType;
+		private String huStatusInfo;
+		private BigDecimal qty;
+		private BigDecimal qtyPlan;
+
 		private Builder(@NonNull final ViewId viewId)
 		{
 			this.viewId = viewId;
@@ -322,6 +334,31 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		public PPOrderLineRow build()
 		{
 			return new PPOrderLineRow(this);
+		}
+
+		private ImmutableMap<String, Object> buildValuesMap()
+		{
+			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Value, code);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_BOMType, bomType);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_HUType, huType);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_StatusInfo, huStatusInfo);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_M_Product_ID, product);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, uom);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_PackingInfo, packingInfo);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Qty, qty);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan);
+
+			return map.build();
+		}
+
+		private static final void putIfNotNull(final ImmutableMap.Builder<String, Object> map, final String name, final Object value)
+		{
+			if (value == null)
+			{
+				return;
+			}
+			map.put(name, value);
 		}
 
 		public Builder ppOrder(final int ppOrderId)
@@ -386,21 +423,61 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
-		public Builder putFieldValue(final String fieldName, final Object jsonValue)
+		public Builder setCode(final String code)
 		{
-			if (jsonValue == null)
-			{
-				values.remove(fieldName);
-			}
-			else
-			{
-				values.put(fieldName, jsonValue);
-			}
-
+			this.code = code;
 			return this;
 		}
 
-		public Builder setAttributesSupplier(Supplier<? extends IDocumentViewAttributes> attributesSupplier)
+		public Builder setBOMType(final String bomType)
+		{
+			this.bomType = bomType;
+			return this;
+		}
+
+		public Builder setHUType(final HUDocumentViewType huType)
+		{
+			this.huType = huType;
+			return this;
+		}
+
+		public Builder setHUStatusInfo(final String huStatusInfo)
+		{
+			this.huStatusInfo = huStatusInfo;
+			return this;
+		}
+
+		public Builder setProduct(final JSONLookupValue product)
+		{
+			this.product = product;
+			return this;
+		}
+
+		public Builder setUOM(final JSONLookupValue uom)
+		{
+			this.uom = uom;
+			return this;
+		}
+
+		public Builder setPackingInfo(final String packingInfo)
+		{
+			this.packingInfo = packingInfo;
+			return this;
+		}
+
+		public Builder setQty(final BigDecimal qty)
+		{
+			this.qty = qty;
+			return this;
+		}
+
+		public Builder setQtyPlan(final BigDecimal qtyPlan)
+		{
+			this.qtyPlan = qtyPlan;
+			return this;
+		}
+
+		public Builder setAttributesSupplier(final Supplier<? extends IDocumentViewAttributes> attributesSupplier)
 		{
 			this.attributesSupplier = attributesSupplier;
 			return this;

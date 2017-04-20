@@ -127,14 +127,11 @@ public class PPOrderLinesLoader
 				.ppOrder(ppOrder.getPP_Order_ID())
 				.setType(PPOrderLineType.MainProduct)
 				//
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_BOMType, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_HUType, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_M_Product_ID, createProductLookupValue(ppOrder.getM_Product()))
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, createUOMLookupValue(ppOrder.getC_UOM()))
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, qty)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan)
+				.setProduct(createProductLookupValue(ppOrder.getM_Product()))
+				.setPackingInfo(null)
+				.setUOM(createUOMLookupValue(ppOrder.getC_UOM()))
+				.setQty(qty)
+				.setQtyPlan(qtyPlan)
 		//
 		;
 
@@ -170,16 +167,12 @@ public class PPOrderLinesLoader
 				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
 				//
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_BOMType, ppOrderBOMLine.getComponentType())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_HUType, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_M_Product_ID, createProductLookupValue(ppOrderBOMLine.getM_Product()))
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, qty)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan)
-		//
-		;
+				.setBOMType(ppOrderBOMLine.getComponentType())
+				.setProduct(createProductLookupValue(ppOrderBOMLine.getM_Product()))
+				.setUOM(createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
+				.setQty(qty)
+				.setQtyPlan(qtyPlan);
+		
 		ppOrderQtys.stream()
 				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
@@ -217,15 +210,15 @@ public class PPOrderLinesLoader
 				.setType(type)
 				.setAttributesSupplier(huViewRecord.getAttributesSupplier())
 				//
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Value, huViewRecord.getValue())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_BOMType, null)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_HUType, huViewRecord.getType())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_M_Product_ID, huViewRecord.getProduct())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_PackingInfo, huViewRecord.getPackingInfo())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, huViewRecord.getUOM())
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_Qty, qty)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan)
-				.putFieldValue(IPPOrderBOMLine.COLUMNNAME_StatusInfo, huViewRecord.getHUStatusDisplayName())
+				.setCode(huViewRecord.getValue())
+				.setBOMType(null)
+				.setHUType(huViewRecord.getType())
+				.setProduct(huViewRecord.getProduct())
+				.setPackingInfo(huViewRecord.getPackingInfo())
+				.setUOM(huViewRecord.getUOM())
+				.setQty(qty)
+				.setQtyPlan(qtyPlan)
+				.setHUStatusInfo(huViewRecord.getHUStatusDisplayName())
 		//
 		;
 

@@ -2,11 +2,9 @@ package de.metas.ui.web.handlingunits;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -16,9 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -64,7 +60,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class HUDocumentView implements IDocumentView
+public final class HUDocumentView implements IDocumentView, IHUDocumentView
 {
 	public static final Builder builder(final WindowId windowId)
 	{
@@ -82,6 +78,14 @@ public final class HUDocumentView implements IDocumentView
 	private final boolean processed;
 
 	private final Map<String, Object> values;
+	private final int huId;
+	private final String code;
+	// private final JSONLookupValue huUnitType;
+	private final JSONLookupValue huStatus;
+	private final String packingInfo;
+	private final JSONLookupValue product;
+	private final JSONLookupValue uom;
+	private final BigDecimal qtyCU;
 
 	private final Supplier<HUDocumentViewAttributes> attributesSupplier;
 
@@ -97,14 +101,22 @@ public final class HUDocumentView implements IDocumentView
 		type = builder.getType();
 		processed = builder.isProcessed();
 
-		values = ImmutableMap.copyOf(builder.values);
+		values = builder.buildValuesMap();
+		huId = builder.huId;
+		code = builder.code;
+		// huUnitType = builder.huUnitType;
+		huStatus = builder.huStatus;
+		packingInfo = builder.packingInfo;
+		product = builder.product;
+		uom = builder.uom;
+		qtyCU = builder.qtyCU;
 
 		includedDocuments = builder.buildIncludedDocuments();
 
 		final HUDocumentViewAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
 		if (attributesProvider != null)
 		{
-			final DocumentId attributesKey = Util.coalesce(builder.getAttributesKeyOrNull(), documentId);
+			final DocumentId attributesKey = DocumentId.of(huId);
 			attributesSupplier = () -> attributesProvider.getAttributes(documentId, attributesKey);
 		}
 		else
@@ -140,14 +152,7 @@ public final class HUDocumentView implements IDocumentView
 		return processed;
 	}
 
-	@Override
-	public Set<String> getFieldNames()
-	{
-		return values.keySet();
-	}
-
-	@Override
-	public Object getFieldValueAsJson(String fieldName)
+	Object getFieldValueAsJson(final String fieldName)
 	{
 		return values.get(fieldName);
 	}
@@ -179,7 +184,7 @@ public final class HUDocumentView implements IDocumentView
 		}
 		return attributes;
 	}
-	
+
 	public Supplier<HUDocumentViewAttributes> getAttributesSupplier()
 	{
 		return attributesSupplier;
@@ -203,7 +208,7 @@ public final class HUDocumentView implements IDocumentView
 	 */
 	public int getM_HU_ID()
 	{
-		return (int)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID);
+		return huId;
 	}
 
 	/**
@@ -222,13 +227,12 @@ public final class HUDocumentView implements IDocumentView
 
 	public String getValue()
 	{
-		return (String)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_Value);
+		return code;
 	}
 
 	private JSONLookupValue getHUStatus()
 	{
-		final JSONLookupValue jsonHUStatus = (JSONLookupValue)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_HUStatus);
-		return jsonHUStatus;
+		return huStatus;
 	}
 
 	public String getHUStatusKey()
@@ -306,8 +310,7 @@ public final class HUDocumentView implements IDocumentView
 
 	public JSONLookupValue getProduct()
 	{
-		final JSONLookupValue productLV = (JSONLookupValue)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID);
-		return productLV;
+		return product;
 	}
 
 	public int getM_Product_ID()
@@ -334,14 +337,12 @@ public final class HUDocumentView implements IDocumentView
 
 	public String getPackingInfo()
 	{
-		final Object packingInfo = getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_PackingInfo);
-		return packingInfo == null ? null : packingInfo.toString();
+		return packingInfo;
 	}
 
 	public JSONLookupValue getUOM()
 	{
-		final JSONLookupValue uomLV = (JSONLookupValue)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID);
-		return uomLV;
+		return uom;
 	}
 
 	/**
@@ -373,7 +374,7 @@ public final class HUDocumentView implements IDocumentView
 	 */
 	public BigDecimal getQtyCU()
 	{
-		return (BigDecimal)getFieldValueAsJson(I_WEBUI_HU_View.COLUMNNAME_QtyCU);
+		return qtyCU;
 	}
 
 	public LookupValue toLookupValue()
@@ -432,12 +433,18 @@ public final class HUDocumentView implements IDocumentView
 		private HUDocumentViewType type;
 		private Boolean processed;
 
-		private final Map<String, Object> values = new LinkedHashMap<>();
+		private Integer huId;
+		private String code;
+		private JSONLookupValue huUnitType;
+		private JSONLookupValue huStatus;
+		private String packingInfo;
+		private JSONLookupValue product;
+		private JSONLookupValue uom;
+		private BigDecimal qtyCU;
 
 		private List<HUDocumentView> includedDocuments = null;
 
 		private HUDocumentViewAttributesProvider attributesProvider;
-		private DocumentId attributesKey;
 
 		private Builder(@NonNull final WindowId windowId)
 		{
@@ -447,6 +454,31 @@ public final class HUDocumentView implements IDocumentView
 		public HUDocumentView build()
 		{
 			return new HUDocumentView(this);
+		}
+
+		private ImmutableMap<String, Object> buildValuesMap()
+		{
+			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_M_HU_ID, huId);
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_Value, code);
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_HU_UnitType, huUnitType);
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_HUStatus, huStatus);
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_PackingInfo, packingInfo);
+
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_M_Product_ID, product);
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_C_UOM_ID, uom);
+			putIfNotNull(map, IHUDocumentView.COLUMNNAME_QtyCU, qtyCU);
+
+			return map.build();
+		}
+
+		private static final void putIfNotNull(final ImmutableMap.Builder<String, Object> map, final String name, final Object value)
+		{
+			if (value == null)
+			{
+				return;
+			}
+			map.put(name, value);
 		}
 
 		private DocumentPath getDocumentPath()
@@ -500,17 +532,51 @@ public final class HUDocumentView implements IDocumentView
 			}
 		}
 
-		public Builder putFieldValue(final String fieldName, final Object jsonValue)
+		public Builder setHUId(final Integer huId)
 		{
-			if (jsonValue == null)
-			{
-				values.remove(fieldName);
-			}
-			else
-			{
-				values.put(fieldName, jsonValue);
-			}
+			this.huId = huId;
+			return this;
+		}
 
+		public Builder setCode(final String code)
+		{
+			this.code = code;
+			return this;
+		}
+
+		public Builder setHUUnitType(final JSONLookupValue huUnitType)
+		{
+			this.huUnitType = huUnitType;
+			return this;
+		}
+
+		public Builder setHUStatus(final JSONLookupValue huStatus)
+		{
+			this.huStatus = huStatus;
+			return this;
+		}
+
+		public Builder setPackingInfo(final String packingInfo)
+		{
+			this.packingInfo = packingInfo;
+			return this;
+		}
+
+		public Builder setProduct(final JSONLookupValue product)
+		{
+			this.product = product;
+			return this;
+		}
+
+		public Builder setUOM(final JSONLookupValue uom)
+		{
+			this.uom = uom;
+			return this;
+		}
+
+		public Builder setQtyCU(final BigDecimal qtyCU)
+		{
+			this.qtyCU = qtyCU;
 			return this;
 		}
 
@@ -519,24 +585,9 @@ public final class HUDocumentView implements IDocumentView
 			return attributesProvider;
 		}
 
-		private DocumentId getAttributesKeyOrNull()
-		{
-			return attributesKey;
-		}
-
-		public Builder setAttributesProvider(@Nullable final HUDocumentViewAttributesProvider attributesProvider, @Nullable final DocumentId attributesKey)
+		public Builder setAttributesProvider(@Nullable final HUDocumentViewAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
-			if (attributesProvider == null)
-			{
-				Preconditions.checkArgument(attributesKey == null, "attributesKey shall be null but it was %s", attributesKey);
-				this.attributesKey = null;
-			}
-			else
-			{
-				Preconditions.checkNotNull(attributesKey, "attributesKey shall NOT be null");
-				this.attributesKey = attributesKey;
-			}
 			return this;
 		}
 
