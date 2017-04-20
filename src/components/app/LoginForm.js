@@ -111,7 +111,8 @@ class LoginForm extends Component {
                 })
                 .catch(err => {
                     this.setState({
-                        err: err.response.data.message,
+                        err: (err.response ?
+                            err.response.data.message : 'Connection problem'),
                         pending: false
                     });
                 })
