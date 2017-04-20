@@ -332,6 +332,7 @@ class Modal extends Component {
                 data={data}
                 layout={layout}
                 setFetchOnTrue={this.setFetchOnTrue}
+                removeModal={this.removeModal}
             />
         )
     }

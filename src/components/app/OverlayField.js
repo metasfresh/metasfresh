@@ -11,12 +11,15 @@ class OverlayField extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {setFetchOnTrue} = this.props;
+        const {setFetchOnTrue, removeModal} = this.props;
         switch(e.key) {
             case 'Enter':
-            document.activeElement.blur();
-            setFetchOnTrue();
-            break;
+                document.activeElement.blur();
+                setFetchOnTrue();
+                break;
+            case 'Escape':
+                removeModal();
+                break;
         }
     }
 
