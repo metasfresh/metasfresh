@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
@@ -44,6 +45,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -53,6 +55,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
 
 /**
@@ -66,11 +69,16 @@ import de.metas.logging.LogManager;
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueProducer.class);
 	//
-	final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	//
+	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	//
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+
+	private static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
 
 	private Date movementDate;
 	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
@@ -97,15 +105,32 @@ import de.metas.logging.LogManager;
 		{
 			return ImmutableList.of();
 		}
+		
+		trxManager.assertThreadInheritedTrxNotExists();
 
-		final List<I_PP_Order_Qty> candidates = huTrxBL.process(huContext -> {
-			return hus.stream()
-					.map(hu -> createIssue_InTrx(huContext, hu))
-					.filter(issueCandidate -> issueCandidate != null)
-					.collect(ImmutableList.toImmutableList());
-		});
+		huLockBL.lockAll(hus, lockOwner);
+		boolean success = false;
+		try
+		{
+			final List<I_PP_Order_Qty> candidates = huTrxBL.process(huContext -> {
+				return hus.stream()
+						.map(hu -> createIssue_InTrx(huContext, hu))
+						.filter(issueCandidate -> issueCandidate != null)
+						.collect(ImmutableList.toImmutableList());
+			});
 
-		return candidates;
+			success = true;
+
+			return candidates;
+		}
+		finally
+		{
+			if (!success)
+			{
+				huLockBL.unlockAll(hus, lockOwner);
+			}
+		}
+
 	}
 
 	private I_PP_Order_Qty createIssue_InTrx(final IHUContext huContext, final I_M_HU hu)
@@ -117,10 +142,15 @@ import de.metas.logging.LogManager;
 			throw new HUException("Only active HUs can be issued but " + hu + " is " + hu.getHUStatus());
 		}
 
-		// TODO if not a top level HU, take it out first !!!
+		// If not a top level HU, take it out first
 		if (!handlingUnitsBL.isTopLevel(hu))
 		{
-			throw new HUException("Only top level HUs are allowed to be issued");
+			huTrxBL.setParentHU(huContext //
+					, null // parentHUItem
+					, hu //
+					, true // destroyOldParentIfEmptyStorage
+			);
+			// throw new HUException("Only top level HUs are allowed to be issued");
 		}
 
 		//
@@ -171,7 +201,7 @@ import de.metas.logging.LogManager;
 			return candidate;
 		}
 	}
-	
+
 	/** @return how much quantity to take "from" and issue it to given BOM line */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
@@ -222,7 +252,7 @@ import de.metas.logging.LogManager;
 		this.targetOrderBOMLines = targetOrderBOMLines;
 		return this;
 	}
-	
+
 	private List<I_PP_Order_BOMLine> getTargetOrderBOMLines()
 	{
 		if (targetOrderBOMLines == null || targetOrderBOMLines.isEmpty())
@@ -232,7 +262,6 @@ import de.metas.logging.LogManager;
 
 		return targetOrderBOMLines;
 	}
-
 
 	@Override
 	public IHUPPOrderIssueProducer setTargetOrderBOMLine(final I_PP_Order_BOMLine targetOrderBOMLine)
