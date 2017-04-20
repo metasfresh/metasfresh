@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import Window from '../Window';
 import Process from '../Process';
 import Indicator from './Indicator';
+import OverlayField from './OverlayField';
 
 import {
     closeModal,
@@ -246,7 +247,7 @@ class Modal extends Component {
         }
     }
 
-    render() {
+    renderPanel = () => {
         const {
             data, modalTitle, modalType, isDocumentNotSaved
         } = this.props;
@@ -255,58 +256,95 @@ class Modal extends Component {
             scrolled, pending
         } = this.state;
 
-        return (
+        return(
             data.length > 0 && <div
                 className="screen-freeze js-not-unselect"
             >
-                <div className="panel panel-modal panel-modal-primary">
-                    <div
-                        className={
-                            'panel-modal-header ' +
-                            (scrolled ? 'header-shadow': '')
-                        }
-                    >
-                        <span className="panel-modal-header-title">
-                            {modalTitle ? modalTitle : 'Modal'}
-                        </span>
-                        <div className="items-row-2">
+            <div className="panel panel-modal panel-modal-primary">
+                <div
+                    className={
+                        'panel-modal-header ' +
+                        (scrolled ? 'header-shadow': '')
+                    }
+                >
+                    <span className="panel-modal-header-title">
+                        {modalTitle ? modalTitle : 'Modal'}
+                    </span>
+                    <div className="items-row-2">
+                        <button
+                            className={
+                                `btn btn-meta-outline-secondary
+                                btn-distance-3 btn-md `+
+                                (pending ? 'tag-disabled disabled ' : '')
+                            }
+                            onClick={this.handleClose}
+                            tabIndex={0}
+                        >
+                            {modalType === 'process' ? 'Cancel' : 'Done'}
+                        </button>
+                        {modalType === 'process' &&
                             <button
                                 className={
-                                    `btn btn-meta-outline-secondary
-                                    btn-distance-3 btn-md `+
-                                    (pending ? 'tag-disabled disabled ' : '')
+                                    `btn btn-meta-primary btn-distance-3
+                                    btn-md ` +
+                                    (pending ? 'tag-disabled disabled' : '')
                                 }
-                                onClick={this.handleClose}
+                                onClick={this.handleStart}
                                 tabIndex={0}
                             >
-                                {modalType === 'process' ? 'Cancel' : 'Done'}
+                                Start
                             </button>
-                            {modalType === 'process' &&
-                                <button
-                                    className={
-                                        `btn btn-meta-primary btn-distance-3
-                                        btn-md ` +
-                                        (pending ? 'tag-disabled disabled' : '')
-                                    }
-                                    onClick={this.handleStart}
-                                    tabIndex={0}
-                                >
-                                    Start
-                                </button>
-                            }
-                        </div>
-                    </div>
-                    <Indicator {...{isDocumentNotSaved}}/>
-                    <div
-                        className={
-                            `panel-modal-content js-panel-modal-content
-                            container-fluid`
                         }
-                        ref={c => { c && c.focus()}}
-                    >
-                        {this.renderModalBody()}
                     </div>
                 </div>
+                <Indicator {...{isDocumentNotSaved}}/>
+                <div
+                    className={
+                        `panel-modal-content js-panel-modal-content
+                        container-fluid`
+                    }
+                    ref={c => { c && c.focus()}}
+                >
+                    {this.renderModalBody()}
+                </div>
+            </div>
+        </div>
+        )
+    }
+
+    renderOverlay = () => {
+       const {
+            data, layout, windowType
+        } = this.props;
+
+        const {pending} = this.state;
+
+        return(
+            <OverlayField
+                handleStart={this.handleStart}
+                type={windowType}
+                disabled={pending}
+                data={data}
+                layout={layout}
+            />
+        )
+    }
+
+    render() {
+        const {
+            layout
+        } = this.props;
+
+        return (
+            <div>
+                {
+                    (!layout.layoutType || layout.layoutType === 'panel') &&
+                    this.renderPanel()
+                }
+                {
+                    layout.layoutType === 'singleOverlayField' &&
+                    this.renderOverlay()
+                }
             </div>
         )
     }
