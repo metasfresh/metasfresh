@@ -491,7 +491,7 @@ class DocumentList extends Component {
                                 {disablePaginationShortcuts}
                         >
                             {layout.supportAttributes && !isIncluded &&
-                                !layout.supportIncludedView &&
+                                !hasIncluded &&
                                 <DataLayoutWrapper
                                     className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
