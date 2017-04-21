@@ -53,6 +53,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 	private I_M_Warehouse warehouseFrom;
 
 	private List<I_M_HU> hus;
+	private List<I_M_Movement> movements;
 
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -153,10 +154,20 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		final I_M_Warehouse warehouseFrom = getM_WarehouseFrom(); // shall not be null
 		final I_M_Warehouse warehouseTo = getM_WarehouseTo();
 		final List<I_M_HU> hus = getHUs();
-		final List<I_M_Movement> movements = huMovementBL.moveToQualityWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
+		movements = huMovementBL.moveToQualityWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
 
 		return movements;
 
+	}
+
+	public List<I_M_Movement> getMovements()
+	{
+		return movements;
+	}
+
+	public void setMovements(List<I_M_Movement> movements)
+	{
+		this.movements = movements;
 	}
 
 	@Override
