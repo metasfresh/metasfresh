@@ -58,7 +58,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 
 	private static final String PROCESS_HANDLER_TYPE = "View";
 
-	private final CCache<String, ViewActionsListDescriptor> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
+//	private final CCache<String, ViewActionDescriptorsList> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
 
 	private final CCache<String, ViewActionInstancesList> viewActionInstancesByViewId = CCache.newLRUCache("viewActionInstancesByViewId", 100, 60);
 
@@ -68,10 +68,13 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		return PROCESS_HANDLER_TYPE;
 	}
 
-	private final ViewActionsListDescriptor getViewActionsDescriptor(@NonNull final IDocumentViewSelection view)
+	private final ViewActionDescriptorsList getViewActionsDescriptor(@NonNull final IDocumentViewSelection view)
 	{
-		final Class<? extends IDocumentViewSelection> viewClass = view.getClass();
-		return viewActionsDescriptorByViewClassname.getOrLoad(viewClass.getName(), () -> ViewActionsListDescriptor.of(viewClass));
+		final ViewActionDescriptorsList viewClassActions = ViewActionDescriptorsFactory.instance.getFromClass(view.getClass());
+		
+		final ViewActionDescriptorsList viewActions = view.getActions();
+		
+		return viewClassActions.mergeWith(viewActions);
 	}
 
 	private final ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)
@@ -174,7 +177,6 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	@Override
 	public void cacheReset()
 	{
-		viewActionsDescriptorByViewClassname.clear();
 		viewActionInstancesByViewId.clear();
 	}
 

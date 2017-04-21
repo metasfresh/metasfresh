@@ -29,6 +29,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
 import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.view.ViewAction;
+import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
@@ -41,6 +42,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -84,6 +86,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	private final HUDocumentViewLoader documentViewsLoader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
+	
+	private final ViewActionDescriptorsList actions;
 
 	private HUDocumentViewSelection(final Builder builder)
 	{
@@ -96,6 +100,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		
+		this.actions = builder.actions;
 	}
 
 	@Override
@@ -156,6 +162,12 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		final List<IDocumentView> page = stream.collect(GuavaCollectors.toImmutableList());
 
 		return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
+	}
+
+	@Override
+	public ViewActionDescriptorsList getActions()
+	{
+		return actions;
 	}
 
 	private static final Comparator<HUDocumentView> createComparatorOrNull(final List<DocumentQueryOrderBy> orderBys)
@@ -508,6 +520,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private Set<DocumentPath> referencingDocumentPaths;
 
 		private HUDocumentViewLoader documentViewsLoader;
+		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 
 		private Builder()
 		{
@@ -562,6 +575,12 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private Set<DocumentPath> getReferencingDocumentPaths()
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+		}
+		
+		public Builder setActions(@NonNull final ViewActionDescriptorsList actions)
+		{
+			this.actions = actions;
+			return this;
 		}
 	}
 }

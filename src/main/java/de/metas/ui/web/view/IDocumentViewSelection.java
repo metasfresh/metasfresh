@@ -11,6 +11,7 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -105,4 +106,10 @@ public interface IDocumentViewSelection
 	 * Notify the view that given record(s) has changed.
 	 */
 	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
+
+	/** @return actions which were registered particularly for this view instance */
+	default ViewActionDescriptorsList getActions()
+	{
+		return ViewActionDescriptorsList.EMPTY;
+	}
 }
