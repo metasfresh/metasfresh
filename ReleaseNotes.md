@@ -40,7 +40,7 @@ Here come the actual release notes:
     * Implemention of new manufacturing window and Functionalities (issue, receipt) in WebUI. Refactoring of current backend logic to serve the Rest-API.
   
 * metasfresh-webui-frontend
-  * [#96](https://github.com/metasfresh/metasfresh-webui-frontend/issues/96)
+  * [#96](https://github.com/metasfresh/metasfresh-webui-frontend/issues/96) Actions overlay menu cleanup
   * [#355](https://github.com/metasfresh/metasfresh-webui-frontend/issues/355) view websocket notifications: handle "changedIds"
   * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
     * Adding animation to dashboard charts (pie and bar charts).
