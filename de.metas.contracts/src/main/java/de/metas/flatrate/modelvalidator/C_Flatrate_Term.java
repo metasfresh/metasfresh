@@ -58,6 +58,7 @@ import de.metas.document.IDocumentPA;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.IFlatrateHandlersService;
+import de.metas.flatrate.api.impl.FlatrateBL;
 import de.metas.flatrate.interfaces.I_C_DocType;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
@@ -80,7 +81,7 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
-	private static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
+
 
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
@@ -110,8 +111,8 @@ public class C_Flatrate_Term
 			// otherwise both the lookup of existing DocTypes and the creation of new doc types
 			// (MDocType.setGL_Category_ID() ) will fail.
 			final Properties localCtx = Env.deriveCtx(Env.getCtx());
-			Env.setContext(localCtx, "#AD_Client_ID", org.getAD_Client_ID());
-			Env.setContext(localCtx, "#AD_Org_ID", org.getAD_Org_ID());
+			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
+			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
 			if (null != documentPA.retrieve(localCtx, org.getAD_Org_ID(), I_C_DocType.DocBaseType_CustomerContract, docSubType, false, null))
 			{
@@ -484,20 +485,16 @@ public class C_Flatrate_Term
 	 * 
 	 * @param term
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void preventOverlappingTerms(final I_C_Flatrate_Term term)
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE})
+	public void preventOverlappingTerms_OnComplete(final I_C_Flatrate_Term term)
 	{
 		// services
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
-
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(
-					InterfaceWrapperHelper.getCtx(term),
-					MSG_HasOverlapping_Term,
-					new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
+			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
 		}
 	}
 }

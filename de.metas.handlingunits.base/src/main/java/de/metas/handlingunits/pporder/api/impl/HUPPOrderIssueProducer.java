@@ -106,7 +106,10 @@ import de.metas.logging.LogManager;
 			return ImmutableList.of();
 		}
 		
-		trxManager.assertThreadInheritedTrxNotExists();
+		// NOTE: we would prefer to always run this out of transactions,
+		// but in some cases like issuing from Swing POS we cannot enforce it because in that case
+		// the candidates are created and processed in one uber-transaction
+		// trxManager.assertThreadInheritedTrxNotExists();
 
 		huLockBL.lockAll(hus, lockOwner);
 		boolean success = false;

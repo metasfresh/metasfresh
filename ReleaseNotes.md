@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.7 (2017-17)
+
+**upcoming release for week 2017-17**
+
 # metasfresh 5.6 (2017-16)
 
-**upcoming release for week 2017-16**
+**this week's release candidate
 
 ## Features
 
@@ -29,14 +33,28 @@ Here come the actual release notes:
     * Improving the performance of the BusinessPartner Pricelist generation process. The time for the report generation is reduced by aprox 60%.
   * [#1322](https://github.com/metasfresh/metasfresh/issues/1322) Forecast Window in WebUI 
     * Adding the initial Layout of the Forecast Window to WebUI.
-
+  
 * metasfresh-webui-api
   * [#269](https://github.com/metasfresh/metasfresh-webui-api/issues/269) API for Manufacturing UI Planning/ Doing
     * Implemention of new manufacturing window and Functionalities (issue, receipt) in WebUI. Refactoring of current backend logic to serve the Rest-API.
   
-* metasfresh-frontend-api
+* metasfresh-webui-frontend
+  * [#96](https://github.com/metasfresh/metasfresh-webui-frontend/issues/96) Actions overlay menu cleanup
+    * Housekeeping task. Tidying the action menu and removing the actions that are not attached to working procedures.
+  * [#355](https://github.com/metasfresh/metasfresh-webui-frontend/issues/355) view websocket notifications: handle "changedIds"
+    * Adding internal functionality to react on websocket information about changed Element ID's
   * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
     * Adding animation to dashboard charts (pie and bar charts).
+  * [#630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/630) Open docLists side by side in QuickAction response.
+    * New frontend functionality to open Document Lists side-by-side at the same time.
+  * [#643](https://github.com/metasfresh/metasfresh-webui-frontend/issues/643) Reduce size of Action Menu
+    * Reducing the side of action menu. Now that the attachments and referenced documents have been moved to sidelist, the action menue does not need the large size anymore.
+  * [#651](https://github.com/metasfresh/metasfresh-webui-frontend/issues/651) 404 errors for non-existing pages
+    * Implemetation of 404-page for not existing window elements.
+  * [#653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/653) Honor openIncludedView's viewType property
+    * New feature viewType to tell the frontend to open the viewID in the requested viewType. This allows the opening of viewID's also in other Types than GridView.
+  * [#655](https://github.com/metasfresh/metasfresh-webui-frontend/issues/655) Handle process layout type field
+    * New modal overlay type for processes. This is firt time needed for scan control prcess view.
 
 ## Fixes
 * metasfresh-backend
@@ -44,7 +62,31 @@ Here come the actual release notes:
     * fix empty page in sales invoice document
   * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document best before date missing
     * Fixes the best-before-date issues in Material Receipt documents.
-    
+  * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
+    * Fixes a Bug that did not allow the reversal of Docuemnts.
+  * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
+    * Fixes a Bug that did not allow to allocate more than one selected Handling Unit after split to an existing Logistic Unit.
+  * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+    * Fixing an issue in attribute transfer. The flag isTransferWhenNull was not considered properly.
+  * [#1636](https://github.com/metasfresh/metasfresh/issues/1336) npe in purchase order
+    * Fixing a Null Pointer Exception in Purchase Order when using Drop Shipment.
+  
+* metasfresh-webui-api
+  * [#303](https://github.com/metasfresh/metasfresh-webui-api/issues/303) ASI button not working from process panel
+    * This fix allows to to open the Attribute Panel as Process Panel.
+
+* metasfresh-webui-frontend
+  * [#645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/645) HOME/END keys not working in process parameter field when opened from view
+    * The HOME and END Buttons now also work in process Parameter fields.
+  * [#656](https://github.com/metasfresh/metasfresh-webui-frontend/issues/656) Selected grid row and quick actions not consistent after closing a modal
+    * Returning to the main view after closing modal overlay process parameters now preserves the previously selected grid row.
+  * [#657](https://github.com/metasfresh/metasfresh-webui-frontend/issues/657) Manufacturing Order Issue/Receipt is not displaying the attributes
+    * Manufacturing project. Now the grid view lines also display attributes if available for the corresponding line.
+  * [#659](https://github.com/metasfresh/metasfresh-webui-frontend/issues/659) Double-clicking on included view row shall not open the document
+    * Manufacturing project. The double click on a selected line now does not open the underlying document anymore.
+  * [#661](https://github.com/metasfresh/metasfresh-webui-frontend/issues/661) Service not available not detected on login
+    * The login menu now shows an overly with "Service not available" if this is the case.
+  
 # metasfresh 5.5 (2017-15)
 
 ## Features

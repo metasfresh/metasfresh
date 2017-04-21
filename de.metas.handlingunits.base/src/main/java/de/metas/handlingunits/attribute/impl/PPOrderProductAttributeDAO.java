@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -66,7 +68,9 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 
 			attribute.setM_Attribute(huAttribute.getM_Attribute());
 			attribute.setValue(huAttribute.getValue());
-			attribute.setValueNumber(huAttribute.getValueNumber());
+			
+			BigDecimal valueNumber = InterfaceWrapperHelper.getValueOrNull(huAttribute, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+			attribute.setValueNumber(valueNumber);
 
 			attribute.setM_HU(huAttribute.getM_HU()); // provenance HU
 

@@ -560,7 +560,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/** DownPayment = DP */
 	public static final String DOCSUBTYPE_DownPayment = "DP";
 	/** Material Disposal */
-	public static final String DOCSYBTYPE_MaterialDisposal = "MD";
+	public static final String DOCSUBTYPE_MaterialDisposal = "MD";
 	
 	/** Set Doc Sub Type.
 		@param DocSubType 
