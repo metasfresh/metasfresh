@@ -73,13 +73,19 @@ Here come the actual release notes:
   
 * metasfresh-webui-api
   * [#303](https://github.com/metasfresh/metasfresh-webui-api/issues/303) ASI button not working from process panel
+    * This fix allows to to open the Attribute Panel as Process Panel.
 
 * metasfresh-webui-frontend
   * [#645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/645) HOME/END keys not working in process parameter field when opened from view
+    * The HOME and END Buttons now also work in process Parameter fields.
   * [#656](https://github.com/metasfresh/metasfresh-webui-frontend/issues/656) Selected grid row and quick actions not consistent after closing a modal
+    * Returning to the main view after closing modal overlay process parameters now preserves the previously selected grid row.
   * [#657](https://github.com/metasfresh/metasfresh-webui-frontend/issues/657) Manufacturing Order Issue/Receipt is not displaying the attributes
+    * Manufacturing project. Now the grid view lines also display attributes if available for the corresponding line.
   * [#659](https://github.com/metasfresh/metasfresh-webui-frontend/issues/659) Double-clicking on included view row shall not open the document
+    * Manufacturing project. The double click on a selected line now does not open the underlying document anymore.
   * [#661](https://github.com/metasfresh/metasfresh-webui-frontend/issues/661) Service not available not detected on login
+    * The login menu now shows an overly with "Service not available" if this is the case.
   
 # metasfresh 5.5 (2017-15)
 
