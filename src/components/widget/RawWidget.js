@@ -590,6 +590,7 @@ class RawWidget extends Component {
             case 'ProductAttributes':
                 return (
                     <Attributes
+                        entity={entity}
                         attributeType="pattribute"
                         fields={fields}
                         dataId={dataId}
