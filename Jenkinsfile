@@ -8,7 +8,7 @@
 def invokeDownStreamJobs(String jobFolderName, String upstreamBranch, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
-	
+
 	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
 	//
 	// Here i'm not checking if the build job exists but if the respective branch on github exists. If the branch is there, then I assume that the multibranch plugin also created the job
@@ -20,7 +20,7 @@ def invokeDownStreamJobs(String jobFolderName, String upstreamBranch, boolean wa
 		// Perhaps you forgot to surround the code with a step that provides this, such as: node
 		// ...
 		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
-		
+
 		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
 	}
 
@@ -29,24 +29,24 @@ def invokeDownStreamJobs(String jobFolderName, String upstreamBranch, boolean wa
 		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
 		jobName = jobFolderName + "/" + upstreamBranch
 	}
-	else 
+	else
 	{
 		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
 		jobName = jobFolderName + "/master"
 	}
-	
+
 	// I also tried
-	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name] 
+	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name]
 	// which worked from chrome, also for metas-dev.
 	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
 	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
 	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
-	
-	// and I also tried inspecting the list returned by 
+
+	// and I also tried inspecting the list returned by
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
-	
-	build job: jobName, 
+
+	build job: jobName,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			// the following two parameters need to be the same way they would be if the donwstream-job was triggered by a change and not by metasfresh-parent.
@@ -98,9 +98,9 @@ def createRepo(String repoId)
 		// # nexus ignored application/json
 		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
-		
+
 		echo "Create the repository-group ${repoId}";
-		
+
 		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
 <repo-group>
   <data>
@@ -134,7 +134,7 @@ def createRepo(String repoId)
 		sh "${createGroupCommand}"
 
 		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
-		
+
 final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 <scheduled-task>
   <data>
@@ -161,10 +161,10 @@ final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 	</properties>
   </data>
 </scheduled-task>"""
-	
+
 		// # nexus ignored application/json
 		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
-		sh "${createScheduleCommand}"		
+		sh "${createScheduleCommand}"
 	} // withCredentials
 }
 
@@ -173,13 +173,13 @@ def deleteRepo(String repoId)
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
 		echo "Delete the repository ${repoId}";
-		
+
 		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
 		sh "${deleteGroupCommand}"
-		
+
 		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
 		sh "${deleteRepoCommand}"
-		
+
 		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
 		sh "${deleteScheduleCommand}"
 	}
@@ -192,9 +192,9 @@ def deleteRepo(String repoId)
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger downstream builds.''', 
+		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger downstream builds.''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
-	]), 
+	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '100')) // keep the last 20 builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_UPSTREAM_BUILDNO in each snapshot artifact's version
@@ -241,7 +241,7 @@ echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 // note: going to set currentBuild.description after we deployed
 
-timestamps 
+timestamps
 {
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -249,27 +249,27 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	{
 		// checkout our code
 		checkout([
-			$class: 'GitSCM', 
-			branches: [[name: "${env.BRANCH_NAME}"]], 
-			doGenerateSubmoduleConfigurations: false, 
+			$class: 'GitSCM',
+			branches: [[name: "${env.BRANCH_NAME}"]],
+			doGenerateSubmoduleConfigurations: false,
 			extensions: [
 				[$class: 'CleanCheckout']
-			], 
-			submoduleCfg: [], 
+			],
+			submoduleCfg: [],
 			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-parent.git']]
 		]);
-		
+
 		if(!isRepoExists(MF_MAVEN_REPO_NAME))
 		{
 			createRepo(MF_MAVEN_REPO_NAME);
 		}
 	}
 
-    configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+    configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
-        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
+        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
-            stage('Set versions and build metasfresh-procurement-webui') 
+            stage('Set versions and build') 
             {
 				// set the artifact version of everything below the webui's pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
@@ -277,7 +277,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-				
+
 				// in metasfresh-parent we don't have tests
 				// junit '**/target/surefire-reports/*.xml'
             }
@@ -285,11 +285,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	}
 } // node
 
-stage('Invoke downstream job') 
-{	
+stage('Invoke downstream job')
+{
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BRANCH, false); // wait=false 
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BRANCH, false); // wait=false
 	}
 	else
 	{
@@ -297,4 +297,4 @@ stage('Invoke downstream job')
 	}
 }
 
-} // timestamps   
+} // timestamps
