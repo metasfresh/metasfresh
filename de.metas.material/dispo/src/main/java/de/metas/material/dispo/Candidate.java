@@ -55,7 +55,7 @@ public class Candidate
 
 	@NonNull
 	private final Integer orgId;
-	
+
 	@NonNull
 	private final Integer productId;
 
@@ -90,12 +90,22 @@ public class Candidate
 	@NonNull
 	private final Date date;
 
-	public CandidatesSegment mkSegment()
+	/**
+	 * Does not create a parent segment, even if this candidate has a parent.
+	 * 
+	 * @return
+	 */
+	public CandidatesSegment.CandidatesSegmentBuilder mkSegmentBuilder()
 	{
 		return CandidatesSegment.builder()
 				.productId(productId)
-				.date(date)
 				.warehouseId(warehouseId)
-				.build();
+				.date(date);
+	}
+
+	public int getParentIdNotNull()
+	{
+		return getParentId() == null ? 0 : getParentId();
+
 	}
 }

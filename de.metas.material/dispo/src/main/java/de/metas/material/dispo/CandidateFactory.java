@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidatesSegment.DateOperator;
 
 /*
  * #%L
@@ -37,7 +38,7 @@ public class CandidateFactory
 	private CandidateRepository candidateRepository;
 
 	/**
-	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger stock candidate that has the same product and locator.
+	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger (or same-age!) stock candidate that has the same product and locator.
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
 	 * @param product
@@ -47,7 +48,10 @@ public class CandidateFactory
 	 */
 	public Candidate createStockCandidate(final Candidate candidate)
 	{
-		final Optional<Candidate> stock = candidateRepository.retrieveStockAt(candidate.mkSegment());
+		final Optional<Candidate> stock = candidateRepository.retrieveLatestMatch(candidate.mkSegmentBuilder()
+				.type(Type.STOCK)
+				.dateOperator(DateOperator.until)
+				.build());
 
 		final BigDecimal formerQuantity = stock.isPresent()
 				? stock.get().getQuantity()

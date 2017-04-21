@@ -1,5 +1,6 @@
 package de.metas.material.event;
 
+import java.time.Instant;
 import java.util.Date;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,8 +36,11 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class DistributionPlanEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionPlanEvent";
+	public static final String TYPE = "DistributionPlanEvent";
 
+	@NonNull
+	private final Instant when;
+	
 	@NonNull
 	private final Integer fromWarehouseId;
 

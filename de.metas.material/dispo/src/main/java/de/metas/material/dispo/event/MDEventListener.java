@@ -7,6 +7,7 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateChangeHandler;
+import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
@@ -44,6 +45,9 @@ public class MDEventListener implements MaterialEventListener
 	@Autowired
 	private CandidateChangeHandler candidateChangeHandler;
 
+	@Autowired
+	private SupplyProposalEvaluator supplyProposalEvaluator;
+
 	@Override
 	public void onEvent(@NonNull final MaterialEvent event)
 	{
@@ -59,7 +63,7 @@ public class MDEventListener implements MaterialEventListener
 		{
 			handleShipmentScheduleEvent((ShipmentScheduleEvent)event);
 		}
-		else if(event instanceof DistributionPlanEvent)
+		else if (event instanceof DistributionPlanEvent)
 		{
 			handleDistributionPlanEvent((DistributionPlanEvent)event);
 		}
@@ -67,17 +71,51 @@ public class MDEventListener implements MaterialEventListener
 
 	private void handleDistributionPlanEvent(DistributionPlanEvent event)
 	{
+		final MaterialDescriptor materialDescr = event.getMaterialDescr();
+
+		final SupplyProposal proposal = SupplyProposal.builder()
+				.date(event.getDistributionStart())
+				.productId(materialDescr.getProductId())
+				.destWarehouseId(materialDescr.getWarehouseId())
+				.sourceWarehouseId(event.getFromWarehouseId())
+				.build();
+		if (!supplyProposalEvaluator.evaluateSupply(proposal))
+		{
+			// 'supplyProposalEvaluator' told us to ignore the given supply candidate.
+			// the reason for this could be that it found an already existing distribution plan pointing in the other direction.
+			// so instead of playing an infinite game of ping-ping with the material-planning component, it ignored the given 'event'
+			// and leave it to the user to come up with a great idea.
+			return;
+		}
+
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.subType(SubType.DISTRIBUTION)
-				.date(event.getMaterialDescr().getDate())
-				.orgId(event.getMaterialDescr().getOrgId())
-				.productId(event.getMaterialDescr().getProductId())
-				.quantity(event.getMaterialDescr().getQty())
+				.date(materialDescr.getDate())
+				.orgId(materialDescr.getOrgId())
+				.productId(materialDescr.getProductId())
+				.quantity(materialDescr.getQty())
+				.warehouseId(materialDescr.getWarehouseId())
 				.reference(event.getReference())
 				.build();
-		candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
-		
+
+		final Candidate supplyCandidateWithId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+		if (supplyCandidateWithId.getQuantity().signum() == 0)
+		{
+			// nothing was added as supply in the destination warehouse, so there is no demand to register either
+			return;
+		}
+
+		final Candidate demandCandidate = supplyCandidate
+				.withType(Type.DEMAND)
+				.withSubType(null)
+				.withParentId(supplyCandidateWithId.getId())
+				.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
+				.withDate(event.getDistributionStart())
+				.withWarehouseId(event.getFromWarehouseId());
+
+		// this might cause 'candidateChangeHandler' to trigger another event
+		candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
 	}
 
 	private void handleTransactionEvent(@NonNull final TransactionEvent event)
@@ -87,9 +125,9 @@ public class MDEventListener implements MaterialEventListener
 			candidateChangeHandler.onCandidateDelete(event.getReference());
 			return;
 		}
-		
+
 		final MaterialDescriptor materialDescr = event.getMaterialDescr();
-		
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
 				.orgId(materialDescr.getOrgId())

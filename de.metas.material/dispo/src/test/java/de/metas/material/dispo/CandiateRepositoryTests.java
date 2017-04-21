@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -29,10 +28,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidatesSegment.DateOperator;
 
 /*
  * #%L
@@ -135,17 +132,17 @@ public class CandiateRepositoryTests
 	public void add_update()
 	{
 		// guard
-		assertThat(candidateRepository.retrieveStockAt(mkSegment(now)).isPresent(), is(true));
-		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkSegment(now)).get()), is(stockCandidate));
-		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveStockFrom(mkSegment(now));
+		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).isPresent(), is(true));
+		assertThat(toCandidateWithoutIds(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get()), is(stockCandidate));
+		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
 		assertThat(stockBeforeReplacement.size(), is(2));
 		assertThat(stockBeforeReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
 
 		final Candidate replacementCandidate = stockCandidate.withQuantity(BigDecimal.ONE);
 		candidateRepository.addOrReplace(replacementCandidate);
 
-		assertThat(toCandidateWithoutIds(candidateRepository.retrieveStockAt(mkSegment(now)).get()), is(replacementCandidate));
-		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveStockFrom(mkSegment(now));
+		assertThat(toCandidateWithoutIds(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get()), is(replacementCandidate));
+		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
 		assertThat(stockAfterReplacement.size(), is(2));
 		assertThat(stockAfterReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
 	}
@@ -156,17 +153,17 @@ public class CandiateRepositoryTests
 	@Test
 	public void retrieveStockAt()
 	{
-		final CandidatesSegment earlierQuery = mkSegment(earlier);
-		final Optional<Candidate> earlierStock = candidateRepository.retrieveStockAt(earlierQuery);
+		final CandidatesSegment earlierQuery = mkStockUntilSegment(earlier);
+		final Optional<Candidate> earlierStock = candidateRepository.retrieveLatestMatch(earlierQuery);
 		assertThat(earlierStock.isPresent(), is(false));
 
-		final CandidatesSegment sameTimeQuery = mkSegment(now);
-		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveStockAt(sameTimeQuery);
+		final CandidatesSegment sameTimeQuery = mkStockUntilSegment(now);
+		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveLatestMatch(sameTimeQuery);
 		assertThat(sameTimeStock.isPresent(), is(true));
 		assertThat(toCandidateWithoutIds(sameTimeStock.get()), is(stockCandidate));
 
-		final CandidatesSegment laterQuery = mkSegment(later);
-		final Optional<Candidate> laterStock = candidateRepository.retrieveStockAt(laterQuery);
+		final CandidatesSegment laterQuery = mkStockUntilSegment(later);
+		final Optional<Candidate> laterStock = candidateRepository.retrieveLatestMatch(laterQuery);
 		assertThat(laterStock.isPresent(), is(true));
 		assertThat(toCandidateWithoutIds(laterStock.get()), is(laterStockCandidate));
 	}
@@ -185,9 +182,9 @@ public class CandiateRepositoryTests
 	public void retrieveStockFrom()
 	{
 		{
-			final CandidatesSegment earlierQuery = mkSegment(earlier);
+			final CandidatesSegment earlierQuery = mkStockFromSegment(earlier);
 
-			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(earlierQuery);
+			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(earlierQuery);
 			assertThat(stockFrom.size(), is(2));
 
 			// what we retrieved, but without the IDs. To be used to compare with our "originals"
@@ -197,9 +194,9 @@ public class CandiateRepositoryTests
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 		{
-			final CandidatesSegment sameTimeQuery = mkSegment(now);
+			final CandidatesSegment sameTimeQuery = mkStockFromSegment(now);
 
-			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(sameTimeQuery);
+			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(sameTimeQuery);
 			assertThat(stockFrom.size(), is(2));
 
 			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> toCandidateWithoutIds(from)).collect(Collectors.toList());
@@ -208,9 +205,9 @@ public class CandiateRepositoryTests
 		}
 
 		{
-			final CandidatesSegment laterQuery = mkSegment(later);
+			final CandidatesSegment laterQuery = mkStockFromSegment(later);
 
-			final List<Candidate> stockFrom = candidateRepository.retrieveStockFrom(laterQuery);
+			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(laterQuery);
 			assertThat(stockFrom.size(), is(1));
 
 			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> from.withId(null).withParentId(null)).collect(Collectors.toList());
@@ -218,21 +215,24 @@ public class CandiateRepositoryTests
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 	}
-
-	private CandidatesSegment mkSegment(final Date later)
+	
+	private CandidatesSegment mkStockUntilSegment(final Date date)
 	{
 		return CandidatesSegment.builder()
+				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
-				.date(later)
+				.date(date).dateOperator(DateOperator.until)
 				.build();
 	}
-
-	@Test
-	public void retrieveStockViaReference()
+	
+	private CandidatesSegment mkStockFromSegment(final Date date)
 	{
-		final TableRecordReference reference = TableRecordReference.of("tableName", 123);
-		candidateRepository.retrieveSingleStockFor(reference);
+		return CandidatesSegment.builder()
+				.type(Type.STOCK)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.date(date).dateOperator(DateOperator.from)
+				.build();
 	}
-
 }

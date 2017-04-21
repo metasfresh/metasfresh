@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -26,7 +27,6 @@ import com.google.common.base.Preconditions;
 import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.NonNull;
 
 /*
@@ -67,9 +67,10 @@ public class CandidateRepository
 	public Candidate addOrReplace(@NonNull final Candidate candidate)
 	{
 		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
+
 		final BigDecimal oldqty = oldCandidateRecord.isPresent() ? oldCandidateRecord.get().getQty() : BigDecimal.ZERO;
 		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);
-		
+
 		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate);
 		InterfaceWrapperHelper.save(synchedRecord);
 
@@ -94,7 +95,6 @@ public class CandidateRepository
 	 * <ul>
 	 * <li>type</li>
 	 * <li>warehouse</li>
-	 * <li>locator?</li>
 	 * <li>product</li>
 	 * <li>date</li>
 	 * <li>tableId and record?</li>
@@ -212,18 +212,11 @@ public class CandidateRepository
 	/**
 	 *
 	 * @param segment
-	 * @return the "oldest" stock candidate that is <b>not</b> after the given {@code segment}'s date.
+	 * @return the "oldest" stock candidate that matches the given {@code segment}.
 	 */
-	public Optional<Candidate> retrieveStockAt(@NonNull final CandidatesSegment segment)
+	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesSegment segment)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouseId())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProductId())
-				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, segment.getDate());
+		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
 
 		final I_MD_Candidate candidateRecord = builder
 				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, false).endOrderBy()
@@ -233,46 +226,9 @@ public class CandidateRepository
 		return fromCandidateRecord(Optional.ofNullable(candidateRecord));
 	}
 
-	/**
-	 * Retrieve stock records that match the given segment's warehouse, product etc and have a timestamp later <b>or equal</b>.
-	 * 
-	 * @param segment
-	 * @return
-	 */
-	public List<Candidate> retrieveStockFrom(@NonNull final CandidatesSegment segment)
+	public List<Candidate> retrieveMatches(@NonNull final CandidatesSegment segment)
 	{
-		final boolean from = true;
-		return retrieveStockFromOrAfter(segment, from);
-	}
-
-	/**
-	 * Retrieve stock records that match the given segment's warehouse, product etc and have a timestamp later <b>but not equal</b>.
-	 * 
-	 * @param segment
-	 * @return
-	 */
-	public List<Candidate> retrieveStockAfter(@NonNull final CandidatesSegment segment)
-	{
-		final boolean from = false;
-		return retrieveStockFromOrAfter(segment, from);
-	}
-
-	/**
-	 *
-	 * @param segment
-	 * @param from if <code>true</code>, the also records with the same time are included. Otherwise, only records after the given segment's time are included.
-	 * @return
-	 */
-	private List<Candidate> retrieveStockFromOrAfter(@NonNull final CandidatesSegment segment, final boolean from)
-	{
-		final IQueryBuilder<I_MD_Candidate> builder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouseId())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProductId())
-				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected,
-						from ? Operator.GREATER_OR_EQUAL : Operator.GREATER,
-						segment.getDate());
+		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
 
 		final Stream<I_MD_Candidate> candidateRecords = builder
 				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, true).endOrderBy()
@@ -284,15 +240,76 @@ public class CandidateRepository
 				.collect(Collectors.toList());
 	}
 
-	public Optional<Candidate> retrieveSingleStockFor(@NonNull final TableRecordReference reference)
+	/**
+	 * turns the given segment into the "where part" of a big query builder. Does not specify the ordering.
+	 * 
+	 * @param segment
+	 * @return
+	 */
+	private IQueryBuilder<I_MD_Candidate> mkQueryBuilder(final CandidatesSegment segment)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final I_MD_Candidate candidateRecord = mkReferencedRecordFilter(reference)
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.create()
-				.firstOnly(I_MD_Candidate.class);
+		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter();
 
-		return fromCandidateRecord(Optional.ofNullable(candidateRecord));
+		switch (segment.getDateOperator())
+		{
+			case until:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, segment.getDate());
+				break;
+			case from:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, segment.getDate());
+				break;
+			case after:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, segment.getDate());
+				break;
+			default:
+				Check.errorIf(true, "segment has unexpected DateOperator {}; segment={}", segment.getDateOperator(), segment);
+				break;
+		}
+
+		if (segment.getType() != null)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, segment.getType().toString());
+		}
+
+		if (segment.getProductId() != null)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProductId());
+		}
+
+		if (segment.getWarehouseId() != null)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouseId());
+		}
+
+		if (segment.getParentProductId() != null || segment.getParentWarehouseId() != null)
+		{
+			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (segment.getParentProductId() != null)
+			{
+				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getParentProductId());
+			}
+
+			if (segment.getParentWarehouseId() != null)
+			{
+				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getParentWarehouseId());
+			}
+
+			// restrict our set of matches to those records that reference a parent record which have the give product and/or warehouse.
+			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
+		}
+
+		if (segment.getReference() != null)
+		{
+			builder
+					.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, segment.getReference().getAD_Table_ID())
+					.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, segment.getReference().getRecord_ID());
+		}
+		return builder;
 	}
 
 	/**

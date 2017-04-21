@@ -32,12 +32,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateChangeHandler;
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 
 /*
@@ -164,17 +161,19 @@ public class CandidateChangeHandlerTests
 		candidateRepository.addOrReplace(evenLaterCandidateWithDifferentWarehouse);
 
 		candidateChangeHandler.applyDeltaToLaterStockCandidates(
-				mkSegment(t2, warehouse),
+				product.getM_Product_ID(),
+				warehouse.getM_Warehouse_ID(),
+				t2,
 				new BigDecimal("3"));
 
-		final Optional<Candidate> earlierCandidateAfterChange = candidateRepository.retrieveStockAt(mkSegment(t1, warehouse));
+		final Optional<Candidate> earlierCandidateAfterChange = candidateRepository.retrieveLatestMatch(mkStockUntilSegment(t1, warehouse));
 		assertThat(earlierCandidateAfterChange.isPresent(), is(true));
 		assertThat(earlierCandidateAfterChange.get().getQuantity(), is(earlierCandidate.getQuantity())); // quantity shall be unchanged
 
 		final I_MD_Candidate candidateRecordAfterChange = candidateRepository.retrieveExact(candidate).get();
 		assertThat(candidateRecordAfterChange.getQty(), is(new BigDecimal("10"))); // quantity shall be unchanged, because that method shall only update *later* records
 
-		final Optional<Candidate> laterCandidateAfterChange = candidateRepository.retrieveStockAt(mkSegment(t3, warehouse));
+		final Optional<Candidate> laterCandidateAfterChange = candidateRepository.retrieveLatestMatch(mkStockUntilSegment(t3, warehouse));
 		assertThat(laterCandidateAfterChange.isPresent(), is(true));
 		assertThat(laterCandidateAfterChange.get().getQuantity(), is(new BigDecimal("13"))); // quantity shall be plus 3
 
@@ -185,12 +184,14 @@ public class CandidateChangeHandlerTests
 		assertThat(evenLaterCandidateWithDifferentLocatorRecordAfterChange.getQty(), is(new BigDecimal("12"))); // quantity shall be unchanged, because we changed another warehouse and this one should not have been matched
 	}
 
-	private CandidatesSegment mkSegment(final Date timestamp, final I_M_Warehouse warehouse)
+	private CandidatesSegment mkStockUntilSegment(final Date timestamp, final I_M_Warehouse warehouse)
 	{
 		return CandidatesSegment.builder()
+				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(timestamp)
+				.dateOperator(DateOperator.until)
 				.build();
 	}
 
@@ -236,27 +237,27 @@ public class CandidateChangeHandlerTests
 	 * </tr>
 	 * <tr>
 	 * <td>4</td>
-	 * <td>t2,w1,<strong>l2</strong> =&gt; - 3</td>
+	 * <td>t2,w1,<strong>l2</strong> =&gt; - 4</td>
 	 * <td>(t1,w1,l1) 10<br>
 	 * (t3,w1,l1) 7<br>
 	 * (t4,w1,l1) 9<br>
-	 * <strong>(t2,w1,l2) -3</strong></td>
+	 * <strong>(t2,w1,l2) -4</strong></td>
 	 * <td>t1 10<br>
-	 * t2 7<br>
+	 * t2 6<br>
 	 * t3 4<br>
-	 * t4 6</td>
+	 * t4 5</td>
 	 * <td></td>
 	 * </tr>
 	 * </tbody>
 	 * </table>
 	 */
 	@Test
-	public void testOnStockCandidateNewOrChanged()
+	public void testUpdateStockDifferentTimes()
 	{
-		invokeOnStockCandidateNewOrChangedWithCandidate(t1, new BigDecimal("10"));
-		invokeOnStockCandidateNewOrChangedWithCandidate(t4, new BigDecimal("2"));
-		invokeOnStockCandidateNewOrChangedWithCandidate(t3, new BigDecimal("-3"));
-		invokeOnStockCandidateNewOrChangedWithCandidate(t2, new BigDecimal("-3"));
+		invokeUpdateStock(t1, new BigDecimal("10"));
+		invokeUpdateStock(t4, new BigDecimal("2"));
+		invokeUpdateStock(t3, new BigDecimal("-3"));
+		invokeUpdateStock(t2, new BigDecimal("-4"));
 
 		final List<I_MD_Candidate> records = retriveRecords();
 		assertThat(records.size(), is(4));
@@ -265,13 +266,85 @@ public class CandidateChangeHandlerTests
 		assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
 
 		assertThat(records.get(1).getDateProjected().getTime(), is(t2.getTime()));
-		assertThat(records.get(1).getQty(), comparesEqualTo(new BigDecimal("7")));
+		assertThat(records.get(1).getQty(), comparesEqualTo(new BigDecimal("6")));
 
 		assertThat(records.get(2).getDateProjected().getTime(), is(t3.getTime()));
-		assertThat(records.get(2).getQty(), comparesEqualTo(new BigDecimal("4")));
+		assertThat(records.get(2).getQty(), comparesEqualTo(new BigDecimal("3")));
 
 		assertThat(records.get(3).getDateProjected().getTime(), is(t4.getTime()));
-		assertThat(records.get(3).getQty(), comparesEqualTo(new BigDecimal("6")));
+		assertThat(records.get(3).getQty(), comparesEqualTo(new BigDecimal("5")));
+	}
+
+	private Candidate invokeUpdateStock(final Date t, final BigDecimal qty)
+	{
+		final Candidate candidate = Candidate.builder()
+				.type(Type.STOCK)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.build();
+		final Candidate processedCandidate = candidateChangeHandler.updateStock(candidate);
+		return processedCandidate;
+	}
+
+	/**
+	 * Similar to {@link #testUpdateStockDifferentTimes()}, but two invocations have the same timestamp.
+	 */
+	@Test
+	public void testUpdateStockWithOverlappingTime()
+	{
+		{
+			invokeUpdateStock(t1, new BigDecimal("10"));
+
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(1));
+			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
+			assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
+		}
+
+		{
+			invokeUpdateStock(t4, new BigDecimal("2"));
+
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(2));
+			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
+			assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
+			assertThat(records.get(1).getDateProjected().getTime(), is(t4.getTime()));
+			assertThat(records.get(1).getQty(), comparesEqualTo(new BigDecimal("12")));
+
+		}
+
+		{
+			invokeUpdateStock(t3, new BigDecimal("-3"));
+			
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(3));
+
+			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
+			assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
+			assertThat(records.get(1).getDateProjected().getTime(), is(t3.getTime()));
+			assertThat(records.get(1).getQty(), comparesEqualTo(new BigDecimal("7")));
+			assertThat(records.get(2).getDateProjected().getTime(), is(t4.getTime()));
+			assertThat(records.get(2).getQty(), comparesEqualTo(new BigDecimal("9")));
+		}
+
+		{
+			invokeUpdateStock(t3, new BigDecimal("-4")); // same time again!
+
+			final List<I_MD_Candidate> records = retriveRecords();
+			assertThat(records.size(), is(3));
+
+			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
+			assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
+
+			assertThat(records.get(1).getDateProjected().getTime(), is(t3.getTime()));
+			assertThat(records.get(1).getQty(), comparesEqualTo(new BigDecimal("3")));
+
+			assertThat(records.get(2).getDateProjected().getTime(), is(t4.getTime()));
+			assertThat(records.get(2).getQty(), comparesEqualTo(new BigDecimal("5")));
+		}
 	}
 
 	@Test
@@ -292,20 +365,6 @@ public class CandidateChangeHandlerTests
 		assertThat(processedCandidate.getQuantity(), comparesEqualTo(BigDecimal.TEN));
 		assertThat(processedCandidate.getProductId(), is(product.getM_Product_ID()));
 		assertThat(processedCandidate.getWarehouseId(), is(warehouse.getM_Warehouse_ID()));
-	}
-
-	private Candidate invokeOnStockCandidateNewOrChangedWithCandidate(Date t, BigDecimal qty)
-	{
-		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
-				.orgId(1)
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
-				.quantity(qty)
-				.date(t)
-				.build();
-		final Candidate processedCandidate = candidateChangeHandler.updateStock(candidate);
-		return processedCandidate;
 	}
 
 	private List<I_MD_Candidate> retriveRecords()
@@ -363,9 +422,9 @@ public class CandidateChangeHandlerTests
 				.build();
 
 		final Consumer<Candidate> doTest = candidate -> {
-			
+
 			candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
-			
+
 			final List<I_MD_Candidate> records = retriveRecords();
 			assertThat(records.size(), is(2));
 			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
@@ -380,7 +439,6 @@ public class CandidateChangeHandlerTests
 		doTest.accept(candidatee); // 2nd invocation, same candidate
 	}
 
-	
 	@Test
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithDifferent()
 	{
@@ -397,9 +455,9 @@ public class CandidateChangeHandlerTests
 				.build();
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
-			
+
 			candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
-			
+
 			final List<I_MD_Candidate> records = retriveRecords();
 			assertThat(records.size(), is(2));
 			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
@@ -413,7 +471,7 @@ public class CandidateChangeHandlerTests
 		doTest.accept(candidatee, qty); // 1st invocation
 		doTest.accept(candidatee.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // 2nd invocation, same candidate
 	}
-	
+
 	/**
 	 * If this test fails, please first verify whether {@link #testOnStockCandidateNewOrChanged()} and {@link #testOnSupplyCandidateNewOrChange_noOlderRecords()} work.
 	 */

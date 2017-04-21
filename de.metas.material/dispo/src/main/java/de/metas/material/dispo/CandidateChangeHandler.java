@@ -1,6 +1,7 @@
 package de.metas.material.dispo;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -83,34 +85,38 @@ public class CandidateChangeHandler
 	}
 
 	/**
-	 * Call this one if the system was notified about a new or changed or deleted supply candidate.
+	 * Call this one if the system was notified about a new or changed supply candidate.
 	 * <p>
-	 * Create a new stock candidate or retrieve an existing one and set its qty to the value of the supply candidate's qty.<br>
-	 * The new stock candidate shall be the <i>parent</i> of the supplyCandidate.<br>
+	 * Creates a new stock candidate or retrieves and updates an existing one.<br>
+	 * The stock candidate is made the <i>parent</i> of the supplyCandidate.<br>
 	 * When creating a new candidate, then compute its qty by getting the qty from that stockCandidate that has the same product and locator and is "before" it and add the supply candidate's qty
 	 *
 	 * @param supplyCandidate
-	 * @return
 	 */
-	public void onSupplyCandidateNewOrChange(final Candidate supplyCandidate)
+	public Candidate onSupplyCandidateNewOrChange(final Candidate supplyCandidate)
 	{
 		// store the supply candidate and get both it's ID and qty-delta
 		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrReplace(supplyCandidate);
-		
+
+		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
+		{
+			return supplyCandidateDeltaWithId; // nothing to do
+		}
+
 		// update the stock with the delta
 		final Candidate parentStockCandidateWithId = updateStock(supplyCandidateDeltaWithId);
 
 		// set the stock candidate as parent for the supply candidate
+		// the return value would have qty=0, but in the repository we updated the parent-ID
 		candidateRepository.addOrReplace(
 				supplyCandidate.withParentId(parentStockCandidateWithId.getId()));
+
+		return supplyCandidateDeltaWithId;
 
 		// e.g.
 		// supply-candidate with 23 (i.e. +23)
 		// parent-stockCandidate used to have -44 (because of "earlier" candidate)
 		// now has -21
-
-		// notify the system about the stock candidate
-		// this notification shall lead to all "later" stock candidates with the same product and locator being notified
 	}
 
 	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
@@ -119,13 +125,15 @@ public class CandidateChangeHandler
 	}
 
 	/**
-	 * This method adds or replaces the given candidate.
+	 * This method creates or updates a stock candidate according to the given candidate.
 	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
 	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
 	 *
-	 * @param candidate a candidate with type being {@link Type#STOCK} and a quantity being a <b>delta</b>, i.e. a quantity that is add or removed at the candidate's date.
+	 * @param candidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
 	 * 
-	 * @return a new candidate that reflects what was persisted in the DB. The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.
+	 * @return a candidate with type {@link Type#STOCK} that reflects what was persisted in the DB.<br>
+	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
+	 *         Note: this method does not establish a parent-child relationship between any two records
 	 */
 	public Candidate updateStock(@NonNull final Candidate candidate)
 	{
@@ -135,21 +143,22 @@ public class CandidateChangeHandler
 
 		final Candidate savedCandidate = candidateRepository.addOrReplace(candidateToPersist);
 
-		// if there was not pre-existing candidate, then subtract zero.
-		final BigDecimal delta = candidate.getQuantity()
-				.subtract(
-						previousCandidate
-								.orElse(
-										candidate.withQuantity(BigDecimal.ZERO))
-								.getQuantity());
-
-		final CandidatesSegment segment = CandidatesSegment.builder()
-				.productId(candidate.getProductId())
-				.warehouseId(candidate.getWarehouseId())
-				.date(candidate.getDate())
-				.build();
-
-		applyDeltaToLaterStockCandidates(segment, delta);
+		final BigDecimal delta;
+		if (previousCandidate.isPresent())
+		{
+			// there was already a persisted candidate. This means that the addOrReplace already did the work of providing our delta between the old and the current status.
+			delta = savedCandidate.getQuantity();
+		}
+		else
+		{
+			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
+			delta = candidate.getQuantity();
+		}
+		applyDeltaToLaterStockCandidates(
+				candidate.getProductId(),
+				candidate.getWarehouseId(),
+				candidate.getDate(),
+				delta);
 		return savedCandidate;
 	}
 
@@ -163,9 +172,21 @@ public class CandidateChangeHandler
 	 * @param delta
 	 */
 	@VisibleForTesting
-	/* package */ void applyDeltaToLaterStockCandidates(final CandidatesSegment segment, final BigDecimal delta)
+	/* package */ void applyDeltaToLaterStockCandidates(
+			@NonNull final Integer productId,
+			@NonNull final Integer warehouseId,
+			@NonNull final Date date,
+			@NonNull final BigDecimal delta)
 	{
-		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveStockAfter(segment);
+		final CandidatesSegment segment = CandidatesSegment.builder()
+				.type(Type.STOCK)
+				.date(date)
+				.dateOperator(DateOperator.after)
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.build();
+
+		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveMatches(segment);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
