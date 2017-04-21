@@ -540,14 +540,14 @@ note: when adding new records, please roughly order them by alphabet.
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.serverRoot</artifactId>
+									<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.swingui</artifactId>
+									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>zip</type>
