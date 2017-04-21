@@ -69,13 +69,14 @@ class Attributes extends Component {
     handleInit = () => {
         const {
             dispatch, docType, dataId, tabId, rowId, fieldName, attributeType,
-            widgetData
+            widgetData, entity
         } = this.props;
         const tmpId = Object.keys(widgetData.value)[0];
 
         dispatch(
             getAttributesInstance(
-                attributeType, tmpId, docType, dataId, tabId, rowId, fieldName
+                attributeType, tmpId, docType, dataId, tabId, rowId, fieldName,
+                entity
             )
         ).then(response => {
             const {id, fields} = response.data;

@@ -169,12 +169,14 @@ export function markAsRead(id) {
 // Attribute widget backend
 
 export function getAttributesInstance(
-    attrType, tmpId, docType, docId, tabId, rowId, fieldName
+    attrType, tmpId, docType, docId, tabId, rowId, fieldName, entity
 ) {
+    const type = entity === 'process' ? 'processId':'windowId';
+
     return () => axios.post(config.API_URL + '/' + attrType, {
         'templateId': tmpId,
         'source': {
-            'documentType': docType,
+            [type] : docType,
             'documentId': docId,
             'tabid': tabId,
             'rowId': rowId,
