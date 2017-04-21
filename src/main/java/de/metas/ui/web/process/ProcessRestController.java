@@ -158,7 +158,7 @@ public class ProcessRestController
 
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
@@ -175,7 +175,7 @@ public class ProcessRestController
 
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
@@ -197,15 +197,17 @@ public class ProcessRestController
 
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
-		return Execution.callInNewExecution("", () -> {
-			return instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
-				final ProcessInstanceResult result = processInstance.startProcess();
-				return JSONProcessInstanceResult.of(result);
-			});
-		});
+		return Execution.prepareNewExecution()
+				.outOfTransaction()
+				.execute(() -> {
+					return instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+						final ProcessInstanceResult result = processInstance.startProcess();
+						return JSONProcessInstanceResult.of(result);
+					});
+				});
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/print/{filename:.*}", method = RequestMethod.GET)
@@ -216,10 +218,10 @@ public class ProcessRestController
 			)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 		final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
 
@@ -250,7 +252,7 @@ public class ProcessRestController
 
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
@@ -268,7 +270,7 @@ public class ProcessRestController
 
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
