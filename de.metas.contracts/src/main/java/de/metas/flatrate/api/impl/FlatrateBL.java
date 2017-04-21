@@ -131,6 +131,11 @@ public class FlatrateBL implements IFlatrateBL
 	private static final String MSG_TERM_NEW_COMPLETED_0P = "FlatrateTerm_New_Completed_Term";
 	private static final String MSG_TERM_NO_NEW_0P = "FlatrateTerm_No_New_Term";
 
+	/**
+	 * Message for announcing the user that there are overlapping terms for the term they want to complete
+	 */
+	public static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -1240,12 +1245,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			if (completeNextTerm)
 			{
-				nextTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
-
-				final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-				docActionBL.processEx(nextTerm, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-
-				InterfaceWrapperHelper.save(nextTerm);
+				completeIfValid(nextTerm);
 
 				if (currentTransition.isNotifyUserInCharge())
 				{
@@ -1697,6 +1697,23 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
 		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+	}
+
+	@Override
+	public void completeIfValid(final I_C_Flatrate_Term term)
+	{
+		final boolean hasOverlappingTerms = hasOverlappingTerms(term);
+		if (hasOverlappingTerms)
+		{
+
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
+					Env.getCtx(),
+					MSG_HasOverlapping_Term,
+					new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
+			return;
+		}
+
+		complete(term);
 	}
 
 	@Override

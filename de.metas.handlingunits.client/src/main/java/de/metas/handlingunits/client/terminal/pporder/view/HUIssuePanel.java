@@ -654,6 +654,8 @@ public class HUIssuePanel implements IHUSelectPanel
 			// Activate editor dialog
 			editorDialog.activate();
 		}
+		
+		planningHUs.forEach(InterfaceWrapperHelper::markStaled);
 	}
 
 	private boolean _disposed = false;

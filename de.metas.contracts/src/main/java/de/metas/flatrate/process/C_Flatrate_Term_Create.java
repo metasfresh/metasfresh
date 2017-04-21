@@ -122,7 +122,6 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	private I_C_Flatrate_Term createTerm(final I_C_BPartner partner)
 	{
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
-		final boolean completeIt = true;
 
 		final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, false);
 
@@ -143,14 +142,13 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 
 		InterfaceWrapperHelper.save(newTerm);
 
-		if (completeIt)
-		{
-			flatrateBL.complete(newTerm);
-		}
+		//
+		// Complete it if valid
+		flatrateBL.completeIfValid(newTerm);
 
 		return newTerm;
 	}
-
+	
 	/**
 	 * Implement this method in the subclass to provide all the partners that are about to have terms created.
 	 *

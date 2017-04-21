@@ -198,4 +198,12 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return
 	 */
 	boolean hasOverlappingTerms(final I_C_Flatrate_Term term);
+
+	/**
+	 * Complete the given flatrate term only if it respects some conditions:
+	 * 1) Has not already completed overlapping terms (until now this is the only condition. Implement here if more become needed)
+	 * 
+	 * @param term
+	 */
+	void completeIfValid(I_C_Flatrate_Term term);
 }
