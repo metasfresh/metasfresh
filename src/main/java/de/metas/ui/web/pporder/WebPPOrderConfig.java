@@ -71,7 +71,7 @@ public class WebPPOrderConfig
 		{
 			final Function<Class<?>, RelatedProcessDescriptor.Builder> newDescriptorBuilder = (processClass) -> {
 				final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
-				Preconditions.checkArgument(processId > 0, "No AD_Process_ID foudn for %s", processClass);
+				Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
 
 				return RelatedProcessDescriptor.builder()
 						.processId(processId)
