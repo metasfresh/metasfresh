@@ -208,7 +208,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		}
 	}
 
-	private I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setC_BPartner(bpartner);

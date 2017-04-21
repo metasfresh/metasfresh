@@ -13,19 +13,16 @@ package de.metas.tourplanning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,8 +30,6 @@ import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.api.IDeliveryDayQueryParams;
 import de.metas.tourplanning.api.PlainDeliveryDayQueryParams;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
-import de.metas.tourplanning.model.I_M_Tour;
-import de.metas.tourplanning.model.I_M_TourVersion;
 
 /**
  * Tests for {@link DeliveryDayDAO#retrieveDeliveryDay(org.adempiere.model.IContextAware, IDeliveryDayQueryParams)}.
@@ -44,12 +39,6 @@ import de.metas.tourplanning.model.I_M_TourVersion;
  */
 public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBase
 {
-	//
-	// Master data
-	private I_M_Tour tour;
-	private I_M_TourVersion tourVersion;
-	private I_C_BPartner bpartner;
-	private I_C_BPartner_Location bpLocation;
 
 	@Override
 	protected void afterInit()
@@ -106,7 +95,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 		// Make Delivery Day 2 as processed
 		dd2.setProcessed(true);
 		InterfaceWrapperHelper.save(dd2);
-		
+
 		// Re-test again: those who were matched to dd2 now shall be matched to dd1
 		testRetrieveDeliveryDay(null, "06.09.2014 23:59:59.999");
 		testRetrieveDeliveryDay(dd1, "07.09.2014 23:59:59.999");
@@ -116,29 +105,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 		testRetrieveDeliveryDay(dd3, "11.09.2014 23:59:59.999");
 	}
 
-	private I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
-	{
-		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
-		deliveryDay.setIsActive(true);
-		deliveryDay.setC_BPartner(bpLocation.getC_BPartner());
-		deliveryDay.setC_BPartner_Location(bpLocation);
-		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
-		deliveryDay.setBufferHours(bufferHours);
-		deliveryDay.setIsManual(false);
-		deliveryDay.setIsToBeFetched(false);
-		deliveryDay.setM_Tour(tour);
-		deliveryDay.setM_TourVersion(tourVersion);
-		deliveryDay.setM_Tour_Instance(null);
-		deliveryDay.setProcessed(false);
-
-		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
-		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
-
-		InterfaceWrapperHelper.save(deliveryDay);
-
-		return deliveryDay;
-	}
-
+	
 	private IDeliveryDayQueryParams createDeliveryDayQueryParams(final String deliveryDateStr)
 	{
 		final PlainDeliveryDayQueryParams params = new PlainDeliveryDayQueryParams();
@@ -166,4 +133,5 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 		final I_M_DeliveryDay deliveryDayActual = retrieveDeliveryDay(deliveryDateStr);
 		Assert.assertEquals("Invalid M_DeliveryDay for: " + deliveryDateStr, deliveryDayExpected, deliveryDayActual);
 	}
+
 }

@@ -90,7 +90,7 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		assertDeliveryDayAlloc(dd2, shipmentSchedule);
 	}
 
-	private I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setC_BPartner(bpartner);
