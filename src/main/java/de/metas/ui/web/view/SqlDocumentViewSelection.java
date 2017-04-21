@@ -329,7 +329,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private final IDocumentView retrieveById(final DocumentId documentId)
 	{
-		final Object[] sqlParams = new Object[] { getViewId(), documentId.toInt() };
+		final Object[] sqlParams = new Object[] { getViewId().getViewId(), documentId.toInt() };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
