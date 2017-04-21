@@ -55,6 +55,16 @@ class Header extends Component {
         document.removeEventListener('scroll', this.handleScroll);
     }
 
+    componentWillUpdate = (nextProps) => {
+        const {dropzoneFocused} = this.props;
+        if(
+            nextProps.dropzoneFocused !== dropzoneFocused &&
+            nextProps.dropzoneFocused
+        ){
+            this.closeOverlays();
+        }
+    }
+
     getChildContext = () => {
         return { shortcuts: shortcutManager }
     }

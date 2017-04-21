@@ -27,7 +27,8 @@ class MasterWindow extends Component {
         this.state = {
             newRow: false,
             modalTitle: null,
-            isDeleted: false
+            isDeleted: false,
+            dropzoneFocused: false
         }
     }
 
@@ -107,6 +108,16 @@ class MasterWindow extends Component {
         fd.append('file', file);
 
         return dispatch(attachFileAction(type, dataId, fd));
+    }
+
+    handleDragStart = () => {
+        this.setState({
+            dropzoneFocused: true
+        }, () => {
+            this.setState({
+                dropzoneFocused: false
+            })
+        })
     }
 
     handleRejectDropped(droppedFiles){
@@ -207,6 +218,7 @@ class MasterWindow extends Component {
                 dataId={dataId}
                 isModal={false}
                 newRow={newRow}
+                handleDragStart={this.handleDragStart}
                 handleDropFile={accepted => this.handleDropFile(accepted)}
                 handleRejectDropped={
                     rejected => this.handleRejectDropped(rejected)
@@ -221,6 +233,10 @@ class MasterWindow extends Component {
         const {
             master, modal, breadcrumb, params
         } = this.props;
+
+        const {
+            dropzoneFocused
+        } = this.state;
 
         const {
             documentNoElement, docActionElement, documentSummaryElement
@@ -246,14 +262,11 @@ class MasterWindow extends Component {
         return (
             <Container
                 entity="window"
+                {...{dropzoneFocused, docStatusData, docNoData, docSummaryData,
+                    dataId, breadcrumb}}
                 docActionElem = {docActionElement}
-                docStatusData = {docStatusData}
                 docNoElement = {documentNoElement}
-                docNoData = {docNoData}
-                docSummaryData = {docSummaryData}
-                dataId={dataId}
                 windowType={params.windowType}
-                breadcrumb={breadcrumb}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
