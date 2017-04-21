@@ -40,14 +40,21 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#96](https://github.com/metasfresh/metasfresh-webui-frontend/issues/96) Actions overlay menu cleanup
+    * Housekeeping task. Tidying the action menu and removing the actions that are not attached to working procedures.
   * [#355](https://github.com/metasfresh/metasfresh-webui-frontend/issues/355) view websocket notifications: handle "changedIds"
+    * Adding internal functionality to react on websocket information about changed Element ID's
   * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
     * Adding animation to dashboard charts (pie and bar charts).
   * [#630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/630) Open docLists side by side in QuickAction response.
+    * New frontend functionality to open Document Lists side-by-side at the same time.
   * [#643](https://github.com/metasfresh/metasfresh-webui-frontend/issues/643) Reduce size of Action Menu
+    * Reducing the side of action menu. Now that the attachments and referenced documents have been moved to sidelist, the action menue does not need the large size anymore.
   * [#651](https://github.com/metasfresh/metasfresh-webui-frontend/issues/651) 404 errors for non-existing pages
+    * Implemetation of 404-page for not existing window elements.
   * [#653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/653) Honor openIncludedView's viewType property
+    * New feature viewType to tell the frontend to open the viewID in the requested viewType. This allows the opening of viewID's also in other Types than GridView.
   * [#655](https://github.com/metasfresh/metasfresh-webui-frontend/issues/655) Handle process layout type field
+    * New modal overlay type for processes. This is firt time needed for scan control prcess view.
 
 ## Fixes
 * metasfresh-backend
