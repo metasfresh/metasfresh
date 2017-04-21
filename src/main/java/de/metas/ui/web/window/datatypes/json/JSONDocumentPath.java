@@ -69,8 +69,7 @@ public class JSONDocumentPath implements Serializable
 
 	@JsonCreator
 	private JSONDocumentPath(
-			@JsonProperty("documentType") @Deprecated final String documentType //
-			, @JsonProperty("windowId") final WindowId windowId //
+			@JsonProperty("windowId") final WindowId windowId //
 			, @JsonProperty("processId") final ProcessId processId //
 			, @JsonProperty("documentId") final DocumentId documentId //
 			, @JsonProperty("tabid") final DetailId tabid //
@@ -79,8 +78,11 @@ public class JSONDocumentPath implements Serializable
 	{
 		if (windowId == null && processId == null)
 		{
-			this.windowId = WindowId.fromJson(documentType);
-			this.processId = null;
+			throw new IllegalArgumentException("windowId or processId shall be set");
+		}
+		else if(windowId != null && processId != null)
+		{
+			throw new IllegalArgumentException("windowId or processId shall be set but not all of them");
 		}
 		else
 		{
