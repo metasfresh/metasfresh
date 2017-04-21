@@ -269,7 +269,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
-            stage('Set versions and build') 
+            stage('Set versions and build')
             {
 				// set the artifact version of everything below the webui's pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
@@ -289,7 +289,8 @@ stage('Invoke downstream job')
 {
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BRANCH, false); // wait=false
+		// wait=true; if a downstream job fails with this parent pom then we want to know about it
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BRANCH, true);
 	}
 	else
 	{
