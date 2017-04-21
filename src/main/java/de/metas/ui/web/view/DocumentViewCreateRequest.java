@@ -10,6 +10,8 @@ import org.adempiere.util.Check;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
+import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -55,7 +57,7 @@ public final class DocumentViewCreateRequest
 
 	private final WindowId windowId;
 	private final JSONViewDataType viewType;
-	
+
 	private final ViewId parentViewId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
@@ -65,11 +67,13 @@ public final class DocumentViewCreateRequest
 	private final int queryFirstRow;
 	private final int queryPageLength;
 
+	private final ViewActionDescriptorsList actions;
+
 	private DocumentViewCreateRequest(final Builder builder)
 	{
 		windowId = builder.getWindowId();
 		viewType = builder.getViewType();
-		
+
 		parentViewId = builder.getParentViewId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
@@ -78,8 +82,10 @@ public final class DocumentViewCreateRequest
 
 		queryFirstRow = builder.getQueryFirstRow();
 		queryPageLength = builder.getQueryPageLength();
+
+		actions = builder.getActions();
 	}
-	
+
 	public ViewId getParentViewId()
 	{
 		return parentViewId;
@@ -116,7 +122,7 @@ public final class DocumentViewCreateRequest
 	{
 		private final WindowId windowId;
 		private final JSONViewDataType viewType;
-		
+
 		private ViewId parentViewId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
@@ -125,6 +131,7 @@ public final class DocumentViewCreateRequest
 
 		private int queryFirstRow = -1;
 		private int queryPageLength = -1;
+		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 
 		private Builder(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewType)
 		{
@@ -146,13 +153,13 @@ public final class DocumentViewCreateRequest
 		{
 			return viewType;
 		}
-		
+
 		public Builder setParentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
+
 		private ViewId getParentViewId()
 		{
 			return parentViewId;
@@ -220,6 +227,18 @@ public final class DocumentViewCreateRequest
 		private int getQueryPageLength()
 		{
 			return queryPageLength;
+		}
+
+		public Builder addActionsFromUtilityClass(final Class<?> utilityClass)
+		{
+			final ViewActionDescriptorsList actionsToAdd = ViewActionDescriptorsFactory.instance.getFromClass(utilityClass);
+			this.actions = this.actions.mergeWith(actionsToAdd);
+			return this;
+		}
+
+		private ViewActionDescriptorsList getActions()
+		{
+			return actions;
 		}
 	}
 }

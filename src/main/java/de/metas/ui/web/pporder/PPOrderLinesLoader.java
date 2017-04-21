@@ -108,7 +108,7 @@ public class PPOrderLinesLoader
 		// BOM lines
 		ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
-				.map(ppOrderBOMLine -> createForBOMLine(viewId, ppOrderBOMLine, ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID())))
+				.map(ppOrderBOMLine -> createForBOMLine(viewId, ppOrder, ppOrderBOMLine, ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID())))
 				.forEach(records::add);
 
 		return records.build();
@@ -142,7 +142,7 @@ public class PPOrderLinesLoader
 		return builder.build();
 	}
 
-	private PPOrderLineRow createForBOMLine(final ViewId viewId, final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
+	private PPOrderLineRow createForBOMLine(final ViewId viewId, final I_PP_Order ppOrder, final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
 		final DocumentId documentId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBOMLine.getPP_Order_BOMLine_ID());
 
@@ -166,8 +166,8 @@ public class PPOrderLinesLoader
 				.setDocumentId(documentId)
 				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
+				.setBOMType(componentType)
 				//
-				.setBOMType(ppOrderBOMLine.getComponentType())
 				.setProduct(createProductLookupValue(ppOrderBOMLine.getM_Product()))
 				.setUOM(createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
 				.setQty(qty)

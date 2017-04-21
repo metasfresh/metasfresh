@@ -1,17 +1,10 @@
 package de.metas.ui.web.process.view;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -24,16 +17,15 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorTyp
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
-import de.metas.ui.web.process.view.ViewAction.AlwaysAllowPrecondition;
 import de.metas.ui.web.process.view.ViewAction.Precondition;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 /*
@@ -65,97 +57,23 @@ import lombok.ToString;
  *
  */
 @ToString
-/* package */final class ViewActionDescriptor
+@Builder
+public final class ViewActionDescriptor
 {
-	public static final ViewActionDescriptor of(final String actionId, final Method viewActionMethod)
-	{
-		return new ViewActionDescriptor(actionId, viewActionMethod);
-	}
+	private final @NonNull String actionId;
+	private final @NonNull Method viewActionMethod; // hard reference, because else it would be too sensible on things like cache reset
 
-	private final String actionId;
-	private final Method viewActionMethod;
-
-	private final ITranslatableString caption;
-	private final ITranslatableString description;
+	private final @NonNull ITranslatableString caption;
+	private final @NonNull ITranslatableString description;
 	private final boolean defaultAction;
 	private final Class<? extends Precondition> preconditionClass;
 	private final Precondition preconditionSharedInstance;
-	
-	private final ProcessLayoutType layoutType;
 
-	private final List<ViewActionParamDescriptor> viewActionParamDescriptors;
-	private final ViewActionMethodReturnTypeConverter viewActionReturnTypeConverter;
+	private final @NonNull ProcessLayoutType layoutType;
 
-	private ViewActionDescriptor(@NonNull final String actionId, @NonNull final Method viewActionMethod)
-	{
-		this.actionId = actionId;
-		this.viewActionMethod = viewActionMethod; // hard reference, because else it would be too sensible on things like cache reset
-		if (!viewActionMethod.isAccessible())
-		{
-			viewActionMethod.setAccessible(true);
-		}
-
-		final ViewAction viewActionAnn = viewActionMethod.getAnnotation(ViewAction.class);
-		caption = Services.get(IMsgBL.class).getTranslatableMsgText(viewActionAnn.caption());
-		description = Services.get(IMsgBL.class).getTranslatableMsgText(viewActionAnn.description());
-		defaultAction = viewActionAnn.defaultAction();
-		layoutType = viewActionAnn.layoutType();
-
-		//
-		// Preconditions
-		preconditionClass = viewActionAnn.precondition();
-		if (AlwaysAllowPrecondition.class.equals(preconditionClass))
-		{
-			preconditionSharedInstance = AlwaysAllowPrecondition.instance;
-		}
-		else
-		{
-			preconditionSharedInstance = null;
-		}
-
-		//
-		// View action method's return type
-		viewActionReturnTypeConverter = createReturnTypeConverter(viewActionMethod);
-
-		//
-		// View action method's parameters
-		{
-			final ImmutableList.Builder<ViewActionParamDescriptor> viewActionParamDescriptors = ImmutableList.builder();
-			final Class<?>[] methodParameterTypes = viewActionMethod.getParameterTypes();
-			final Annotation[][] methodParameterAnnotations = viewActionMethod.getParameterAnnotations();
-			for (int parameterIndex = 0; parameterIndex < methodParameterTypes.length; parameterIndex++)
-			{
-				final Class<?> methodParameterType = methodParameterTypes[parameterIndex];
-				final ViewActionParam methodParameterAnnotation = Stream.of(methodParameterAnnotations[parameterIndex])
-						.filter(ann -> ann instanceof ViewActionParam)
-						.map(ann -> (ViewActionParam)ann)
-						.findFirst().orElse(null);
-
-				final ViewActionParamDescriptor paramDescriptor = ViewActionParamDescriptor.of(viewActionMethod, parameterIndex, methodParameterType, methodParameterAnnotation);
-				viewActionParamDescriptors.add(paramDescriptor);
-			}
-
-			this.viewActionParamDescriptors = viewActionParamDescriptors.build();
-		}
-	}
-
-	private static final ViewActionMethodReturnTypeConverter createReturnTypeConverter(final Method method)
-	{
-		final Class<?> viewActionReturnType = method.getReturnType();
-		if (Void.class.equals(viewActionReturnType) || void.class.equals(viewActionReturnType))
-		{
-			return returnValue -> null;
-		}
-		else if (ProcessInstanceResult.ResultAction.class.isAssignableFrom(viewActionReturnType))
-		{
-			return returnType -> (ProcessInstanceResult.ResultAction)returnType;
-		}
-		else
-		{
-			throw new IllegalArgumentException("Action method's return type is not supported: " + method);
-		}
-
-	}
+	@Singular
+	private final ImmutableList<ViewActionParamDescriptor> viewActionParamDescriptors;
+	private final @NonNull ViewActionMethodReturnTypeConverter viewActionReturnTypeConverter;
 
 	public String getActionId()
 	{
@@ -166,12 +84,11 @@ import lombok.ToString;
 	{
 		final DocumentEntityDescriptor.Builder parametersDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
-				// .setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
 				.disableDefaultTableCallouts();
 
 		viewActionParamDescriptors.stream()
 				.filter(ViewActionParamDescriptor::isUserParameter)
-				.map(ViewActionParamDescriptor::getParameterFieldDescriptor)
+				.map(ViewActionParamDescriptor::createParameterFieldDescriptor)
 				.forEach(parametersDescriptor::addField);
 
 		if (parametersDescriptor.getFieldsCount() == 0)
@@ -252,93 +169,22 @@ import lombok.ToString;
 		return viewActionReturnTypeConverter.convert(returnValue);
 	}
 
-	public Object[] extractMethodArguments(final Document processParameters, final Set<DocumentId> selectedDocumentIds)
+	public Object[] extractMethodArguments(final IDocumentViewSelection view, final Document processParameters, final Set<DocumentId> selectedDocumentIds)
 	{
 		return viewActionParamDescriptors.stream()
-				.map(paramDesc -> paramDesc.extractArgument(processParameters, selectedDocumentIds))
+				.map(paramDesc -> paramDesc.extractArgument(view, processParameters, selectedDocumentIds))
 				.toArray();
 	}
 
 	@FunctionalInterface
-	private static interface ViewActionMethodReturnTypeConverter
+	public static interface ViewActionMethodReturnTypeConverter
 	{
 		ProcessInstanceResult.ResultAction convert(Object returnValue);
 	}
 
 	@FunctionalInterface
-	private static interface ViewActionMethodArgumentExtractor
+	public static interface ViewActionMethodArgumentExtractor
 	{
-		public Object extractArgument(Document processParameters, Set<DocumentId> selectedDocumentIds);
-	}
-
-	private static final class ViewActionParamDescriptor
-	{
-		public static ViewActionParamDescriptor of(final Method method, final int parameterIndex, final Class<?> parameterType, final ViewActionParam annotation)
-		{
-			return new ViewActionParamDescriptor(method, parameterIndex, parameterType, annotation);
-		}
-
-		private final String parameterName;
-		private final Class<?> parameterValueClass;
-		private final ViewActionParam parameterAnnotation;
-
-		private final ViewActionMethodArgumentExtractor methodArgumentExtractor;
-
-		private ViewActionParamDescriptor(final Method method, final int parameterIndex, final Class<?> parameterType, final ViewActionParam annotation)
-		{
-			parameterName = String.valueOf(parameterIndex);
-			parameterValueClass = parameterType;
-			parameterAnnotation = annotation;
-
-			// Process parameter
-			if (annotation != null)
-			{
-				methodArgumentExtractor = (processParameters, selectedDocumentIds) -> processParameters.getFieldView(parameterName).getValueAs(parameterValueClass);
-			}
-			// selectedDocumentIds internal parameter
-			else if (Collection.class.isAssignableFrom(parameterType))
-			{
-				methodArgumentExtractor = (processParameters, selectedDocumentIds) -> selectedDocumentIds;
-			}
-			else
-			{
-				throw new IllegalArgumentException("Action method's parameter " + parameterType + " is not supported: " + method);
-			}
-		}
-
-		public boolean isUserParameter()
-		{
-			return parameterAnnotation != null;
-		}
-
-		public DocumentFieldDescriptor.Builder getParameterFieldDescriptor()
-		{
-			Preconditions.checkState(isUserParameter(), "parameter is internal");
-
-			return DocumentFieldDescriptor.builder(parameterName)
-					.setCaption(parameterAnnotation.caption())
-					// .setDescription(attribute.getDescription())
-					//
-					.setValueClass(parameterValueClass)
-					.setWidgetType(parameterAnnotation.widgetType())
-					// .setLookupDescriptorProvider(lookupDescriptor)
-					//
-					// .setDefaultValueExpression(defaultValueExpr)
-					.setReadonlyLogic(false)
-					.setDisplayLogic(true)
-					.setMandatoryLogic(parameterAnnotation.mandatory())
-					//
-					.addCharacteristic(Characteristic.PublicField)
-			//
-			// .setDataBinding(new ASIAttributeFieldBinding(attributeId, fieldName, attribute.isMandatory(), readMethod, writeMethod))
-			;
-
-		}
-
-		public Object extractArgument(final Document processParameters, final Set<DocumentId> selectedDocumentIds)
-		{
-			return methodArgumentExtractor.extractArgument(processParameters, selectedDocumentIds);
-		}
-
+		public Object extractArgument(IDocumentViewSelection view, Document processParameters, Set<DocumentId> selectedDocumentIds);
 	}
 }

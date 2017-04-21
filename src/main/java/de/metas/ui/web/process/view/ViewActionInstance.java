@@ -2,6 +2,7 @@ package de.metas.ui.web.process.view;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -172,10 +173,11 @@ import lombok.ToString;
 		// Execute view action's method
 		final IDocumentViewSelection view = getView();
 		final Method viewActionMethod = viewActionDescriptor.getViewActionMethod();
-		final Object[] viewActionParams = viewActionDescriptor.extractMethodArguments(parametersDocument, selectedDocumentIds);
+		final Object[] viewActionParams = viewActionDescriptor.extractMethodArguments(view, parametersDocument, selectedDocumentIds);
 		try
 		{
-			final Object resultActionObj = viewActionMethod.invoke(view, viewActionParams);
+			final Object targetObject = Modifier.isStatic(viewActionMethod.getModifiers()) ? null : view;
+			final Object resultActionObj = viewActionMethod.invoke(targetObject, viewActionParams);
 			final ResultAction resultAction = viewActionDescriptor.convertReturnType(resultActionObj);
 
 			final ProcessInstanceResult result = ProcessInstanceResult.builder(instanceId)

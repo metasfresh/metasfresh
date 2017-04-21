@@ -280,6 +280,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 				.createHUQueryBuilder()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				//
+				// TODO warehouse
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithProductId(getM_Product_ID())
 				.setOnlyTopLevelHUs()
@@ -292,9 +293,10 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			throw new EntityNotFoundException("No HUs to issue found");
 		}
 
-		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.grid)
+		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 				.setParentViewId(getViewId())
 				.setFilterOnlyIds(huIdsToAvailableToIssue)
+				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
 				.build());
 	}
 

@@ -198,6 +198,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setViewId(viewId)
 				.setRecords(documentViewsLoader)
 				.setReferencingDocumentPaths(referencingDocumentPaths)
+				.setActions(request.getActions())
 				.build();
 	}
 }
