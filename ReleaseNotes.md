@@ -33,7 +33,6 @@ Here come the actual release notes:
     * Improving the performance of the BusinessPartner Pricelist generation process. The time for the report generation is reduced by aprox 60%.
   * [#1322](https://github.com/metasfresh/metasfresh/issues/1322) Forecast Window in WebUI 
     * Adding the initial Layout of the Forecast Window to WebUI.
-  * [#1636](https://github.com/metasfresh/metasfresh/issues/1336) npe in purchase order
   
 * metasfresh-webui-api
   * [#269](https://github.com/metasfresh/metasfresh-webui-api/issues/269) API for Manufacturing UI Planning/ Doing
@@ -59,6 +58,8 @@ Here come the actual release notes:
   * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
   * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
   * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+  * [#1636](https://github.com/metasfresh/metasfresh/issues/1336) npe in purchase order
+    * Fixing a Null Pointer Exception in Purchase Order when using Drop Shipment.
   
 * metasfresh-webui-api
   * [#303](https://github.com/metasfresh/metasfresh-webui-api/issues/303) ASI button not working from process panel
