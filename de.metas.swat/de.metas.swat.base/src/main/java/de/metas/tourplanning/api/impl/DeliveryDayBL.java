@@ -13,15 +13,14 @@ package de.metas.tourplanning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -36,7 +35,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
@@ -185,7 +183,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	private I_M_DeliveryDay_Alloc createDeliveryDayAlloc(final IContextAware context, final I_M_DeliveryDay deliveryDay, final IDeliveryDayAllocable deliveryDayAllocable)
 	{
 		Check.assume(!deliveryDay.isProcessed(), "Delivery day shall not be processed: {}", deliveryDay);
-		
+
 		final String tableName = deliveryDayAllocable.getTableName();
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
@@ -235,11 +233,28 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	}
 
 	@Override
-	public Timestamp calculatePreparationDateOrNull(IContextAware context, boolean isSOTrx, Timestamp datePromised, final int bpartnerLocationId)
+	public Timestamp calculatePreparationDateOrNull(
+			final IContextAware context,
+			final boolean isSOTrx,
+			final Timestamp dateOrdered,
+			final Timestamp datePromised,
+			final int bpartnerLocationId)
 	{
+		// #1211
+		// Note: I am commenting this out instead of deleting it for traceability. This functionality changed several times in the past.
 		// task 09004: add the current time as parameter and fetch the closest next fit delivery day
-		final Timestamp calculationTime = SystemTime.asTimestamp();
-		
+		// final Timestamp calculationTime = SystemTime.asTimestamp();
+
+		// task #1211
+		// The search will initially be made for the first deliveryDay of the day of the promised date
+		// For example, if there are 3 deliveryDay entries for a certain date and the products are
+		// promised to be shipped in that day's evening, the first deliveryDay of that day will be chosen.
+		Timestamp preparationDay = TimeUtil.getDay(datePromised);
+
+		// the date+time when the calculation is made, generically named DateOrdered.
+		// It will usually be when the date+time when the order was created, or the system time
+		final Timestamp calculationTime = dateOrdered;
+
 		//
 		// Create Delivery Day Query Parameters
 		final PlainDeliveryDayQueryParams deliveryDayQueryParams = new PlainDeliveryDayQueryParams();
@@ -248,11 +263,23 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		deliveryDayQueryParams.setToBeFetched(!isSOTrx);
 		deliveryDayQueryParams.setProcessed(false);
 		deliveryDayQueryParams.setCalculationTime(calculationTime);
+		deliveryDayQueryParams.setPreparationDay(preparationDay);
 
 		//
 		// Find matching delivery day record
 		final IDeliveryDayDAO deliveryDayDAO = Services.get(IDeliveryDayDAO.class);
-		final I_M_DeliveryDay dd = deliveryDayDAO.retrieveDeliveryDay(context, deliveryDayQueryParams);
+		I_M_DeliveryDay dd = deliveryDayDAO.retrieveDeliveryDay(context, deliveryDayQueryParams);
+
+		// task #1211
+		// If there are no deliveryDay entries for the given date that are before the promised date/time,
+		// select the last available deliveryDay that is before the promised date/time
+		if (dd == null)
+		{
+			preparationDay = null;
+			deliveryDayQueryParams.setPreparationDay(preparationDay);
+			dd = deliveryDayDAO.retrieveDeliveryDay(context, deliveryDayQueryParams);
+
+		}
 
 		//
 		// Extract PreparationDate from DeliveryDay record
@@ -265,7 +292,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		{
 			preparationDate = dd.getDeliveryDate();
 		}
-		
+
 		return preparationDate;
 	}
 }
