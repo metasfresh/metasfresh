@@ -30,10 +30,10 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.Builder;
 
 /*
  * #%L
@@ -59,43 +59,37 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public class HUDocumentViewLoader
 {
-	public static final HUDocumentViewLoader of(final DocumentViewCreateRequest request, final String referencingTableName)
-	{
-		return new HUDocumentViewLoader(request, referencingTableName);
-	}
-
 	private static final transient Logger logger = LogManager.getLogger(HUDocumentViewLoader.class);
 
 	private final WindowId windowId;
 	private final String referencingTableName;
-	private final CopyOnWriteArraySet<Integer> huIds = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArraySet<Integer> huIds;
 
-	private final HUDocumentViewAttributesProvider _attributesProvider;
+	private final HUDocumentViewAttributesProvider attributesProvider;
 
-	private HUDocumentViewLoader(final DocumentViewCreateRequest request, final String referencingTableName)
+	@Builder
+	private HUDocumentViewLoader(final WindowId windowId, final String referencingTableName, final Set<Integer> huIds)
 	{
 		super();
 
-		windowId = request.getWindowId();
+		this.windowId = windowId;
 		this.referencingTableName = referencingTableName;
 
-		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
-		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
+		if (huIds == null || huIds.isEmpty())
 		{
-			huIds.addAll(filterOnlyIds);
+			this.huIds = new CopyOnWriteArraySet<>();
 		}
-
-		if (huIds.isEmpty())
+		else
 		{
-			throw new IllegalArgumentException("No filters specified for " + request);
+			this.huIds = new CopyOnWriteArraySet<>(huIds);
 		}
-
-		_attributesProvider = new HUDocumentViewAttributesProvider();
+		
+		this.attributesProvider = new HUDocumentViewAttributesProvider();
 	}
 
 	public HUDocumentViewAttributesProvider getAttributesProvider()
 	{
-		return _attributesProvider;
+		return attributesProvider;
 	}
 
 	public void addHUs(final Collection<I_M_HU> husToAdd)
@@ -303,32 +297,25 @@ public class HUDocumentViewLoader
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
-
 		final I_M_Product product = huStorage.getM_Product();
+		final HUDocumentViewAttributesProvider attributesProvider = huId != parent_HU_ID ? getAttributesProvider() : null;
 
-		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
-		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
-
-		final HUDocumentView.Builder storageDocumentBuilder = HUDocumentView.builder(windowId)
+		return HUDocumentView.builder(windowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
 				.setType(HUDocumentViewType.HUStorage)
 				.setProcessed(processed)
+				.setAttributesProvider(attributesProvider)
 				//
 				.setHUId(huId)
-				//.setCode(hu.getValue()) // NOTE: don't show value on storage level
-				.setHUUnitType(huUnitTypeLookupValue)
-				.setHUStatus(huStatus)
+				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
+				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
+				.setHUStatus(createHUStatusLookupValue(hu))
 				//
 				.setProduct(createProductLookupValue(product))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
-				.setQtyCU(huStorage.getQty());
-
-		if (huId != parent_HU_ID)
-		{
-			storageDocumentBuilder.setAttributesProvider(getAttributesProvider());
-		}
-
-		return storageDocumentBuilder.build();
+				.setQtyCU(huStorage.getQty())
+				//
+				.build();
 	}
 
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)

@@ -2,7 +2,6 @@ package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,14 +63,16 @@ public class PPOrderLinesLoader
 	private final transient IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient HUDocumentViewLoader _huViewRecordLoader;
 
-	private int _ppOrderId;
+	private final int _ppOrderId;
 
 	public PPOrderLinesLoader(final DocumentViewCreateRequest request)
 	{
-		_huViewRecordLoader = HUDocumentViewLoader.of(request, I_PP_Order.Table_Name);
+		_huViewRecordLoader = HUDocumentViewLoader.builder()
+				.windowId(request.getWindowId())
+				.referencingTableName(I_PP_Order.Table_Name)
+				.build();
 
-		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
-		final int ppOrderId = ListUtils.singleElement(filterOnlyIds);
+		final int ppOrderId = ListUtils.singleElement(request.getFilterOnlyIds());
 		Preconditions.checkArgument(ppOrderId > 0, "No manufacturing order ID found in %s", request);
 		this._ppOrderId = ppOrderId;
 	}

@@ -191,7 +191,11 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 			referencingTableName = null;
 		}
 
-		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.of(request, referencingTableName);
+		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.builder()
+				.windowId(windowId)
+				.referencingTableName(referencingTableName)
+				.huIds(request.getFilterOnlyIds())
+				.build();
 
 		return HUDocumentViewSelection.builder()
 				.setParentViewId(request.getParentViewId())
