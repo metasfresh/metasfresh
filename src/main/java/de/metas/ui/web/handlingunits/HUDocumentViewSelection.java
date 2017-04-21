@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -84,6 +86,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 
+	private final CopyOnWriteArraySet<Integer> huIds;
 	private final HUDocumentViewLoader documentViewsLoader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
 	
@@ -97,7 +100,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 		viewId = builder.getViewId();
 
-		documentViewsLoader = builder.getDocumentViewsLoader();
+		huIds = new CopyOnWriteArraySet<>(builder.getHUIds());
+		documentViewsLoader = builder.createDocumentViewsLoader();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		
@@ -269,7 +273,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	private void invalidateAllNoNotify()
 	{
 		_recordsSupplier.forget();
-		documentViewsLoader.getAttributesProvider().invalidateAll();
+		documentViewsLoader.invalidateAll();
 	}
 
 	public void addHUsAndInvalidate(final Collection<I_M_HU> husToAdd)
@@ -279,7 +283,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return;
 		}
 
-		documentViewsLoader.addHUs(husToAdd);
+		huIds.addAll(extractHUIds(husToAdd));
 		invalidateAll();
 	}
 
@@ -290,33 +294,31 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return;
 		}
 
-		documentViewsLoader.addHUs(ImmutableSet.of(hu));
+		huIds.add(hu.getM_HU_ID());
 		invalidateAll();
 	}
 	
 	public void removesHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
-	{
-		if(husToRemove.isEmpty())
-		{
-			return;
-		}
-		
-		documentViewsLoader.removeHUs(husToRemove);
-		invalidateAll();
-	}
-	
-	public void removesHUAndInvalidate(final Collection<I_M_HU> husToRemove)
 	{
 		if(husToRemove == null || husToRemove.isEmpty())
 		{
 			return;
 		}
 		
-		documentViewsLoader.removeHUs(husToRemove);
+		huIds.removeAll(extractHUIds(husToRemove));
 		invalidateAll();
 	}
-
-
+	
+	private static final Set<Integer> extractHUIds(final Collection<I_M_HU> hus)
+	{
+		if (hus == null || hus.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
+		return hus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
+	}
+	
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
@@ -350,7 +352,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	private IndexedDocumentViews retrieveRecords()
 	{
-		final List<HUDocumentView> recordsList = documentViewsLoader.retrieveDocumentViews();
+		final List<HUDocumentView> recordsList = documentViewsLoader.retrieveDocumentViews(huIds);
 		return new IndexedDocumentViews(recordsList);
 	}
 
@@ -517,10 +519,11 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private ViewId parentViewId;
 		private ViewId viewId;
 
+		private String referencingTableName;
 		private Set<DocumentPath> referencingDocumentPaths;
 
-		private HUDocumentViewLoader documentViewsLoader;
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
+		private Collection<Integer> huIds;
 
 		private Builder()
 		{
@@ -553,21 +556,33 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return viewId;
 		}
-
-		public Builder setRecords(final HUDocumentViewLoader documentViewsLoader)
+		
+		public Builder setHUIds(final Collection<Integer> huIds)
 		{
-			this.documentViewsLoader = documentViewsLoader;
+			this.huIds = huIds;
 			return this;
 		}
-
-		private HUDocumentViewLoader getDocumentViewsLoader()
+		
+		private Collection<Integer> getHUIds()
 		{
-			Check.assumeNotNull(documentViewsLoader, "Parameter documentViewsLoader is not null");
-			return documentViewsLoader;
+			if(huIds == null || huIds.isEmpty())
+			{
+				return ImmutableSet.of();
+			}
+			return huIds;
 		}
 
-		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
+		private HUDocumentViewLoader createDocumentViewsLoader()
 		{
+			return HUDocumentViewLoader.builder()
+					.windowId(getViewId().getWindowId())
+					.referencingTableName(referencingTableName)
+					.build();
+		}
+
+		public Builder setReferencingDocumentPaths(final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
+		{
+			this.referencingTableName = referencingTableName;
 			this.referencingDocumentPaths = referencingDocumentPaths;
 			return this;
 		}

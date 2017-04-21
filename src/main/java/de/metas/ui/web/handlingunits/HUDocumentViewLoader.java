@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -15,6 +14,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -63,54 +64,26 @@ public class HUDocumentViewLoader
 
 	private final WindowId windowId;
 	private final String referencingTableName;
-	private final CopyOnWriteArraySet<Integer> huIds;
 
 	private final HUDocumentViewAttributesProvider attributesProvider;
 
 	@Builder
-	private HUDocumentViewLoader(final WindowId windowId, final String referencingTableName, final Set<Integer> huIds)
+	private HUDocumentViewLoader(final WindowId windowId, final String referencingTableName)
 	{
 		super();
 
 		this.windowId = windowId;
 		this.referencingTableName = referencingTableName;
 
-		if (huIds == null || huIds.isEmpty())
-		{
-			this.huIds = new CopyOnWriteArraySet<>();
-		}
-		else
-		{
-			this.huIds = new CopyOnWriteArraySet<>(huIds);
-		}
-		
 		this.attributesProvider = new HUDocumentViewAttributesProvider();
 	}
-
-	public HUDocumentViewAttributesProvider getAttributesProvider()
+	
+	public void invalidateAll()
 	{
-		return attributesProvider;
+		attributesProvider.invalidateAll();
 	}
 
-	public void addHUs(final Collection<I_M_HU> husToAdd)
-	{
-		final Set<Integer> huIdsToAdd = husToAdd.stream()
-				.map(I_M_HU::getM_HU_ID)
-				.collect(GuavaCollectors.toImmutableSet());
-
-		this.huIds.addAll(huIdsToAdd);
-	}
-
-	public void removeHUs(final Collection<I_M_HU> husToRemove)
-	{
-		final Set<Integer> huIdsToRemove = husToRemove.stream()
-				.map(I_M_HU::getM_HU_ID)
-				.collect(GuavaCollectors.toImmutableSet());
-
-		this.huIds.removeAll(huIdsToRemove);
-	}
-
-	public List<HUDocumentView> retrieveDocumentViews()
+	public List<HUDocumentView> retrieveDocumentViews(final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
@@ -134,17 +107,22 @@ public class HUDocumentViewLoader
 		return createDocumentView(hu);
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> filterOnlyIds)
+	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> huIds)
 	{
+		if(huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
 		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
 				.setOnlyTopLevelHUs()
 				.createQueryBuilder();
 
-		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
+		if (huIds != null && !huIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, filterOnlyIds);
+			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds);
 		}
 
 		return queryBuilder
@@ -176,7 +154,7 @@ public class HUDocumentViewLoader
 		final HUDocumentView.Builder huViewRecord = HUDocumentView.builder(windowId)
 				.setDocumentId(DocumentId.of(huId))
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider())
+				.setAttributesProvider(attributesProvider)
 				.setProcessed(processed)
 				//
 				.setHUId(huId)
@@ -298,13 +276,13 @@ public class HUDocumentViewLoader
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
 		final I_M_Product product = huStorage.getM_Product();
-		final HUDocumentViewAttributesProvider attributesProvider = huId != parent_HU_ID ? getAttributesProvider() : null;
+		final HUDocumentViewAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
 
 		return HUDocumentView.builder(windowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
 				.setType(HUDocumentViewType.HUStorage)
 				.setProcessed(processed)
-				.setAttributesProvider(attributesProvider)
+				.setAttributesProvider(attributesProviderEffective)
 				//
 				.setHUId(huId)
 				// .setCode(hu.getValue()) // NOTE: don't show value on storage level

@@ -190,18 +190,12 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		{
 			referencingTableName = null;
 		}
-
-		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.builder()
-				.windowId(windowId)
-				.referencingTableName(referencingTableName)
-				.huIds(request.getFilterOnlyIds())
-				.build();
-
+		
 		return HUDocumentViewSelection.builder()
 				.setParentViewId(request.getParentViewId())
 				.setViewId(viewId)
-				.setRecords(documentViewsLoader)
-				.setReferencingDocumentPaths(referencingDocumentPaths)
+				.setHUIds(request.getFilterOnlyIds())
+				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())
 				.build();
 	}
