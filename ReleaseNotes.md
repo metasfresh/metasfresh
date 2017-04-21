@@ -63,8 +63,11 @@ Here come the actual release notes:
   * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document best before date missing
     * Fixes the best-before-date issues in Material Receipt documents.
   * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
+    * Fixes a Bug that did not allow the reversal of Docuemnts.
   * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
+    * Fixes a Bug that did not allow to allocate more than one selected Handling Unit after split to an existing Logistic Unit.
   * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+    * Fixing an issue in attribute transfer. The flag isTransferWhenNull was not considered properly.
   * [#1636](https://github.com/metasfresh/metasfresh/issues/1336) npe in purchase order
     * Fixing a Null Pointer Exception in Purchase Order when using Drop Shipment.
   
