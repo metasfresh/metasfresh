@@ -23,3 +23,8 @@ UPDATE C_DocType SET PrintName='Entsorgung',Updated=TO_TIMESTAMP('2017-04-12 18:
 UPDATE C_DocType_Trl SET IsTranslated='N' WHERE C_DocType_ID=540948
 ;
 
+-- 2017-04-18T16:40:19.168
+-- URL zum Konzept
+UPDATE C_DocType SET DocSubType='MD',Updated=TO_TIMESTAMP('2017-04-18 16:40:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=540948
+;
+
