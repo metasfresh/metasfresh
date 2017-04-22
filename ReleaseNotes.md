@@ -10,57 +10,148 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.5 (2017-15)
+# metasfresh 5.7 (2017-17)
 
-**this week's RC**
+**upcoming release for week 2017-17**
+
+# metasfresh 5.6 (2017-16)
+
+**this week's release candidate
 
 ## Features
+
 * metasfresh-backend
-  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
-    * thanks @homebeaver
-  * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
-  * [#1057](https://github.com/metasfresh/metasfresh/issues/1057) Role window WebUI
-    * Initial Layout configuration for Role maintenance Window.
-  * [#1287](https://github.com/metasfresh/metasfresh/issues/1287) Search for name in product window in webUI
-  * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
-    * Adding further adjustments to new Manufactirung Order in WebUI, allowing an easier User experience.
-  * [#1301](https://github.com/metasfresh/metasfresh/issues/1301) DeliveryDays Window for WebUI
-    * Adding the Window Layout for Delivery Days in WebUI.
-  * [#1302](https://github.com/metasfresh/metasfresh/issues/1302) Tour Window in WebUI
-    * Adding Tour maintenance Window in new Webui.
-  * [#1303](https://github.com/metasfresh/metasfresh/issues/1303) Tour Version Window in WebUI
-    * Adding the new Window Tour Version to WebUI, allowing Tour maintenance for Businesspartner, Locations and delivers Days.
-  * [#1307](https://github.com/metasfresh/metasfresh/issues/1307) Only show Partner Name fields needed for case company
-  * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
-    * Adding the initial window setup for Unit of measure window in WebUI.
-  * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
-  * [#1324](https://github.com/metasfresh/metasfresh/issues/1324) Take out pwd Field from AD_User in WebUI
+  * [#1062](https://github.com/metasfresh/metasfresh/issues/1062) Return HU to vendor
+    * New Functionality to send received Material back to Vendor via HU Editor. Can be automatically filtered directly via correction functionality in Material Receipt POS or manually filtered  in Handling Unit Editor.
+  * [#1064](https://github.com/metasfresh/metasfresh/issues/1064) Move HU to garbage
+    * Implementation of the Handling Unit Material disposal functionality as part of the RMA workflow.
+  * [#1065](https://github.com/metasfresh/metasfresh/issues/1065) Move HU to other Warehouse/ Locator
+    * New functionality to easy move Handling Units from the current Locator to a new selected Locator.
+  * [#1223](https://github.com/metasfresh/metasfresh/issues/1223) Show line number in jaspers 
+    * Now showing the line No in all Jasper Documents - order, inout, invoice - for sales and purchase.
+  * [#1286](https://github.com/metasfresh/metasfresh/issues/1286) Performance Business Partner Pricelist generation process
+    * Improving the performance of the BusinessPartner Pricelist generation process. The time for the report generation is reduced by aprox 60%.
+  * [#1322](https://github.com/metasfresh/metasfresh/issues/1322) Forecast Window in WebUI 
+    * Adding the initial Layout of the Forecast Window to WebUI.
   
 * metasfresh-webui-api
-  * [#294](https://github.com/metasfresh/metasfresh-webui-api/issues/294) Refactor /process/start response
-
+  * [#269](https://github.com/metasfresh/metasfresh-webui-api/issues/269) API for Manufacturing UI Planning/ Doing
+    * Implemention of new manufacturing window and Functionalities (issue, receipt) in WebUI. Refactoring of current backend logic to serve the Rest-API.
+  
 * metasfresh-webui-frontend
-  * [#88](https://github.com/metasfresh/metasfresh-webui-frontend/issues/88) Special Place for Record dependent content
-  * [#110](https://github.com/metasfresh/metasfresh-webui-frontend/issues/110) Don't fetch the side list when it's not needed
-  * [#267](https://github.com/metasfresh/metasfresh-webui-frontend/issues/267) Sidelist refactor
-  * [#628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/628) frontend: refactor /process/start response
-  * [#631](https://github.com/metasfresh/metasfresh-webui-frontend/issues/631) Minor grid view layout tweaks
-  * [#636](https://github.com/metasfresh/metasfresh-webui-frontend/issues/636) Sidelist Fontsize too small
-  * [#639](https://github.com/metasfresh/metasfresh-webui-frontend/issues/639) Navigation shortcut ctrl+2 is broken
-    * Fixing the shortcut for Navigation Menu.
+  * [#96](https://github.com/metasfresh/metasfresh-webui-frontend/issues/96) Actions overlay menu cleanup
+    * Housekeeping task. Tidying the action menu and removing the actions that are not attached to working procedures.
+  * [#355](https://github.com/metasfresh/metasfresh-webui-frontend/issues/355) view websocket notifications: handle "changedIds"
+    * Adding internal functionality to react on websocket information about changed Element ID's
+  * [#608](https://github.com/metasfresh/metasfresh-webui-frontend/issues/608) Chart animations
+    * Adding animation to dashboard charts (pie and bar charts).
+  * [#630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/630) Open docLists side by side in QuickAction response.
+    * New frontend functionality to open Document Lists side-by-side at the same time.
+  * [#643](https://github.com/metasfresh/metasfresh-webui-frontend/issues/643) Reduce size of Action Menu
+    * Reducing the side of action menu. Now that the attachments and referenced documents have been moved to sidelist, the action menue does not need the large size anymore.
+  * [#651](https://github.com/metasfresh/metasfresh-webui-frontend/issues/651) 404 errors for non-existing pages
+    * Implemetation of 404-page for not existing window elements.
+  * [#653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/653) Honor openIncludedView's viewType property
+    * New feature viewType to tell the frontend to open the viewID in the requested viewType. This allows the opening of viewID's also in other Types than GridView.
+  * [#655](https://github.com/metasfresh/metasfresh-webui-frontend/issues/655) Handle process layout type field
+    * New modal overlay type for processes. This is firt time needed for scan control prcess view.
 
 ## Fixes
 * metasfresh-backend
-  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI: provide lib-dirs to access user jars and dlls at runtime
+  * [#1191](https://github.com/metasfresh/metasfresh/issues/1191) small adjustments in jasper documents
+    * fix empty page in sales invoice document
+  * [#1264](https://github.com/metasfresh/metasfresh/issues/1264) Material Receipt document best before date missing
+    * Fixes the best-before-date issues in Material Receipt documents.
+  * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
+    * Fixes a Bug that did not allow the reversal of Documents.
+  * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
+    * Fixes a Bug that did not allow to allocate more than one selected Handling Unit after split to an existing Logistic Unit.
+  * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+    * Fixing an issue in attribute transfer. The flag isTransferWhenNull was not considered properly.
+  * [#1636](https://github.com/metasfresh/metasfresh/issues/1336) npe in purchase order
+    * Fixing a Null Pointer Exception in Purchase Order when using Drop Shipment.
+  
+* metasfresh-webui-api
+  * [#303](https://github.com/metasfresh/metasfresh-webui-api/issues/303) ASI button not working from process panel
+    * This fix allows to to open the Attribute Panel as Process Panel.
+
+* metasfresh-webui-frontend
+  * [#645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/645) HOME/END keys not working in process parameter field when opened from view
+    * The HOME and END Buttons now also work in process Parameter fields.
+  * [#656](https://github.com/metasfresh/metasfresh-webui-frontend/issues/656) Selected grid row and quick actions not consistent after closing a modal
+    * Returning to the main view after closing modal overlay process parameters now preserves the previously selected grid row.
+  * [#657](https://github.com/metasfresh/metasfresh-webui-frontend/issues/657) Manufacturing Order Issue/Receipt is not displaying the attributes
+    * Manufacturing project. Now the grid view lines also display attributes if available for the corresponding line.
+  * [#659](https://github.com/metasfresh/metasfresh-webui-frontend/issues/659) Double-clicking on included view row shall not open the document
+    * Manufacturing project. The double click on a selected line now does not open the underlying document anymore.
+  * [#661](https://github.com/metasfresh/metasfresh-webui-frontend/issues/661) Service not available not detected on login
+    * The login menu now shows an overly with "Service not available" if this is the case.
+  
+# metasfresh 5.5 (2017-15)
+
+## Features
+* metasfresh-backend
+  * [#695](https://github.com/metasfresh/metasfresh/issues/695) swingUI provide lib-dirs to access user jars and dlls at runtime
+    * Adding a possibility to provide user jars and dlls at runtime for swing client, thanks to @homebeaver
+  * [#992](https://github.com/metasfresh/metasfresh/issues/992) Allow subscription without shipment
+    * Allowing to use subsriptions for services that are not "shipped" and therfor will not be shown in shipment schedule.
+  * [#1057](https://github.com/metasfresh/metasfresh/issues/1057) Role window WebUI
+    * Initial Layout configuration for Role maintenance Window.
+  * [#1287](https://github.com/metasfresh/metasfresh/issues/1287) Search for name in product window in webUI
+    * Now it's possible to search and filter by product name in product window in WebUI.
+  * [#1291](https://github.com/metasfresh/metasfresh/issues/1291) Manufacturing Order Window adjustments
+    * Adding further adjustments to new manufacturing order in WebUI, allowing an easier/ better user experience.
+  * [#1301](https://github.com/metasfresh/metasfresh/issues/1301) DeliveryDays Window for WebUI
+    * Adding the window layout for delivery days in WebUI.
+  * [#1302](https://github.com/metasfresh/metasfresh/issues/1302) Tour Window in WebUI
+    * Adding the tour maintenance window in new WebUI.
+  * [#1303](https://github.com/metasfresh/metasfresh/issues/1303) Tour Version Window in WebUI
+    * Adding the new window tour version to WebUI, allowing tour maintenance for businesspartner, locations and delivery days.
+  * [#1307](https://github.com/metasfresh/metasfresh/issues/1307) Only show Partner Name fields needed for case company
+    * Now switching between company name field and person name field depending on isCompany flag in window businesspartner in WebUI.
+  * [#1309](https://github.com/metasfresh/metasfresh/issues/1309) Unit of Measure Window in WebUI
+    * Adding the initial window setup for unit of measure window in WebUI.
+  * [#1324](https://github.com/metasfresh/metasfresh/issues/1324) Take out pwd Field from AD_User in WebUI
+    * Not showing the pwd field anymore un user window WebUI.
+  
+* metasfresh-webui-api
+  * [#294](https://github.com/metasfresh/metasfresh-webui-api/issues/294) Refactor /process/start response
+    * Massive technical improvement about processes and documents in metasfresh. This refactoring was needed to meet new requirements in WebUI in a better way.
+
+* metasfresh-webui-frontend
+  * [#88](https://github.com/metasfresh/metasfresh-webui-frontend/issues/88) Special Place for Record dependent content
+    * Record dependant content and references are now moved from action menu to the extended sidelist menu. Each reference area has its own keyboard shortcut so that navigation to that content is easy and fast.
+  * [#110](https://github.com/metasfresh/metasfresh-webui-frontend/issues/110) Don't fetch the side list when it's not needed
+    * Performance improvement. Only fetching the sidelist initially when the user opens it first time.
+  * [#267](https://github.com/metasfresh/metasfresh-webui-frontend/issues/267) Sidelist refactor
+    * Refactoring of sidelist, now including other document references (zoom accross, record attachements)
+  * [#628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/628) frontend: refactor /process/start response
+    * Frontend work for the refactoring of processes and documents in metasfresh.
+  * [#631](https://github.com/metasfresh/metasfresh-webui-frontend/issues/631) Minor grid view layout tweaks
+    * Minor UX improvements/ prettyfying to grid view in WebUI.
+  * [#636](https://github.com/metasfresh/metasfresh-webui-frontend/issues/636) Sidelist Fontsize too small
+    * Raising the font size in sidelist to match the fontsize in other menues.
+  
+## Fixes
+* metasfresh-backend
   * [#886](https://github.com/metasfresh/metasfresh/issues/886) GrandTotal missing in GridView of Purchase Order
+    * Adding column grandtotal to gridview of purchase orders in WebUI.
   * [#1241](https://github.com/metasfresh/metasfresh/issues/1241) metasfresh does not notify procurement-webui about new contracts
+    * Fix for procurement WebUI when automatically prolonging new procurement contracts.
   * [#1294](https://github.com/metasfresh/metasfresh/issues/1294) Report with Attribute Set Parameter cannot be started anymore
-    * Fixing an exception when calling the Attribute Editor in Process Parameters.
+    * Fixing an exception when calling the attribute editor in process parameters.
+  * [#1318](https://github.com/metasfresh/metasfresh/issues/1318) Exception when creating translation entries for new System Language
+    * Fixing an exception which popped up when adding a new system language.
 
 * metasfresh-webui-frontend
   * [#619](https://github.com/metasfresh/metasfresh-webui-frontend/issues/619) Address editor silently ignores changes if the mandatory fields are not filled
-  * [#620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/620) When deleting a newly created document, frontend shall not ask the user if he/she wants to leave the page
+    * Usability fix for the location editor in WebUI. Improvement of user interaction possibility when mandatory fields are not filled in location editor.
+  * [#620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/620) When deleting a newly created document, frontend shall not ask the user if the user wants to leave the page
+    * Usability fix. After deleting a document the user is now not asked anymore if the page shall be left altough it does not exist anymore, because deleted.
   * [#637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/637) CTRL+1 and keyboard navigation left-right not working anymore
+    * Fix for action menu (ctrl+1) for keyboard arrow navigation.
+  * [#639](https://github.com/metasfresh/metasfresh-webui-frontend/issues/639) Navigation shortcut ctrl+2 is broken
+    * Fixing the shortcut for navigation menu.
 
 # metasfresh 5.4 (2017-14)
 

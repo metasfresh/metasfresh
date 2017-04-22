@@ -67,7 +67,7 @@ LEFT OUTER JOIN LATERAL
 	(
 		SELECT  M_ProductPrice_ID, M_Attributesetinstance_ID, PriceStd, IsActive, M_HU_PI_Item_Product_ID, Attributes, Signature
 		FROM report.fresh_AttributePrice ppa
-		WHERE ppa.isActive = 'Y' AND ppa.M_ProductPrice_ID = pp.M_ProductPrice_ID AND (ppa.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa.m_hu_pi_item_product_id IS NULL)
+		WHERE ppa.isActive = 'Y' AND ppa.M_ProductPrice_ID = pp.M_ProductPrice_ID AND (ppa.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa.m_hu_pi_item_product_id IS NULL) AND ppa.m_pricelist_version_id = pp.m_pricelist_version_id
 	) ppa on true
 
 LEFT OUTER JOIN m_hu_pi_item_product hupip ON bp_ip.m_hu_pi_item_product_ID = hupip.m_hu_pi_item_product_id and hupip.isActive ='Y'		
@@ -91,7 +91,7 @@ LEFT JOIN M_ProductPrice pp2 ON p.M_Product_ID = pp2.M_Product_ID AND pp2.M_Pric
 								AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
 											
 	/* Joining attribute prices */
-LEFT JOIN report.fresh_AttributePrice ppa2 ON pp2.M_ProductPrice_ID = ppa2.M_ProductPrice_ID
+LEFT JOIN report.fresh_AttributePrice ppa2 ON pp2.M_ProductPrice_ID = ppa2.M_ProductPrice_ID AND ppa2.m_pricelist_version_id = pp2.m_pricelist_version_id
 			/* we have to make sure that only prices with the same attributes and packing instructions are compared. Note: 
 			 * - If there is an Existing Attribute Price but no signature related columns are filled the signature will be ''
 			 * - If there are no Attribute Prices the signature will be null

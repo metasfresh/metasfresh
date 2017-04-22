@@ -52,6 +52,7 @@ import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.eevolution.api.IPPOrderWorkflowBL;
 
 /**
  * PP Order Workflow Node Model
@@ -74,6 +75,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 	 * @return MPPOrderNode
 	 * @deprecated Use {@link #get(Properties, int, String)}
 	 */
+	@Deprecated
 	public static MPPOrderNode get (Properties ctx, int PP_Order_Node_ID)
 	{
 		return get(ctx, PP_Order_Node_ID, null); 
@@ -287,9 +289,12 @@ public class MPPOrderNode extends X_PP_Order_Node
 	/**
 	 * Get Qty To Deliver (Open Qty)
 	 * @return open qty
+	 * @deprecated please use {@link IPPOrderWorkflowBL#getQtyToDeliver(I_PP_Order_Node)}
 	 */
+	@Deprecated
 	public BigDecimal getQtyToDeliver()
 	{
+		Services.get(IPPOrderWorkflowBL.class).getQtyToDeliver(this);
 		return getQtyRequiered().subtract(getQtyDelivered());
 	}
 	

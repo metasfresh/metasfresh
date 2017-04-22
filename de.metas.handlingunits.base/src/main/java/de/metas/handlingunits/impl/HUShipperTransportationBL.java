@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,15 +35,16 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Shipper;
 
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.lock.api.LockOwner;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.interfaces.I_M_Package;
@@ -53,6 +53,8 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
+	private static final LockOwner transportationLockOwner = LockOwner.forOwnerName(HUShipperTransportationBL.class.getName());
+
 	@Override
 	public void addHUsToShipperTransportation(final IContextAware contextProvider, final int shipperTransportationId, final Collection<I_M_HU> hus)
 	{
@@ -83,7 +85,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHULockBL huLockBL = Services.get(IHULockBL.class);
 		for (final I_M_HU hu : hus)
 		{
 			//
@@ -112,8 +114,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 				//
 				// Mark the top level HU as Locked & save it
-				hu.setLocked(true);
-				handlingUnitsDAO.saveHU(hu);
+				huLockBL.lock(hu, transportationLockOwner);
 
 				//
 				// Remove HU from picking slots, if any (07499).
@@ -140,7 +141,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		}
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		//
 		// Only Top Level HUs can be added to shipper transportation
 		//
@@ -158,9 +159,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	public void generateShipments(final Properties ctx, final IHUQueryBuilder husQueryBuilder)
 	{
 		Check.assumeNotNull(husQueryBuilder, "husQueryBuilder not null");
-		husQueryBuilder.setOnlyLocked(true);
 
-		final List<I_M_HU> hus = husQueryBuilder.list();
+		final List<I_M_HU> hus = husQueryBuilder.onlyLocked().list();
 		if (hus.isEmpty())
 		{
 			throw new AdempiereException("@NotFound@ @M_HU_ID@ @Locked@");

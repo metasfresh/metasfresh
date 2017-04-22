@@ -33,6 +33,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 
 public class HUPPOrderReceiptCUKey extends CUKey
 {
@@ -81,5 +82,23 @@ public class HUPPOrderReceiptCUKey extends CUKey
 	public final IReceiptCostCollectorCandidate getReceiptCostCollectorCandidate()
 	{
 		return receiptCostCollectorCandidate;
+	}
+	
+	public final IPPOrderReceiptHUProducer createReceiptCandidatesProducer()
+	{
+		final IReceiptCostCollectorCandidate receiptCostCollectorCandidate = getReceiptCostCollectorCandidate();
+		
+		final IPPOrderReceiptHUProducer producer;
+		if (receiptCostCollectorCandidate.getPP_Order_BOMLine() != null)
+		{
+			producer = IPPOrderReceiptHUProducer.receiveByOrCoProduct(receiptCostCollectorCandidate.getPP_Order_BOMLine());
+		}
+
+		else
+		{
+			producer = IPPOrderReceiptHUProducer.receiveMainProduct(receiptCostCollectorCandidate.getPP_Order());
+		}
+		
+		return producer;
 	}
 }

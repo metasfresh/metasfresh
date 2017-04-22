@@ -22,7 +22,6 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -77,11 +76,12 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 	@Override
 	public String toString()
 	{
+		final String fromTableRecordStr = fromTableRecord == null ? null : "" + fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
 		return "AllocationRequest ["
 				+ "product=" + product.getValue()
 				+ ", qty=" + (isInfiniteQty() ? "inifinite" : quantity)
 				+ ", date=" + date
-				+ ", fromTableRecord=" + fromTableRecord
+				+ ", fromTableRecord=" + fromTableRecordStr
 				+ ", forceQtyAllocation=" + forceQtyAllocation
 				+ "]";
 	}

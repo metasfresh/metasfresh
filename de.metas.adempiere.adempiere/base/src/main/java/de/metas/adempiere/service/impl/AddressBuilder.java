@@ -61,7 +61,7 @@ public class AddressBuilder
 	
 	private int getAD_Org_ID()
 	{
-		return org.getAD_Org_ID();
+		return org == null ? Env.CTXVALUE_AD_Org_ID_Any : org.getAD_Org_ID();
 	}
 
 	private String getAD_Language()
