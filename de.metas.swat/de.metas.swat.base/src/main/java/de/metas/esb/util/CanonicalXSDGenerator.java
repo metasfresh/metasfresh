@@ -59,7 +59,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.RPL_Constants;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
@@ -74,13 +73,14 @@ import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import de.metas.logging.LogManager;
 
 /**
  * Helper tool that generates XSD Schema for Canonical Messages
@@ -408,7 +408,7 @@ public class CanonicalXSDGenerator
 
 					final I_AD_Reference refValue = column.getAD_Reference_Value();
 
-					if (!MiscUtils.mkAsciiOnly(refValue.getName()).equals(refValue.getName()))
+					if (!mkAsciiOnly(refValue.getName()).equals(refValue.getName()))
 					{
 						final String msg = msgBL.getMsg(Env.getCtx(), ERROR_ESB_AD_REFERENCE_VALUE_NON_ASCII_3P, new Object[] {
 								column.getColumnName(),
@@ -552,19 +552,47 @@ public class CanonicalXSDGenerator
 		return e2;
 	}
 
-	private String toJavaName(final String name)
+	private static String toJavaName(final String name)
 	{
 		if (name == null)
 		{
 			return "";
 		}
 
-		return MiscUtils.mkAsciiOnly(name)
+		return mkAsciiOnly(name)
 				.trim()
 				.replace(" ", "_")
 				.replace("-", "_")
 				.replace('.', '_');
 	}
+	
+	/**
+	 * Returns a string created from the given input, but without any non-ascii characters. If the given string is
+	 * empty, then an empty string is returned.
+	 * 
+	 * It is assumed that
+	 * <ul>
+	 * <li>the given input is not null</li>
+	 * <li>after stripping non-ascii chars from the given (a non-empty!) input there is at least one ascii character
+	 * left to output</li>
+	 * </ul>
+	 * 
+	 */
+	private static final String mkAsciiOnly(final String input)
+	{
+		Check.assume(input != null, "Input string is not null");
+		
+		if("".equals(input))
+		{
+			return "";
+		}
+		
+		final String output = input.replaceAll("[^\\p{ASCII}]", "");
+				
+		Check.assume(!"".equals(output), "Input string '" + input + "' has at least one ascii-character");
+        return output;
+	}
+
 
 	private MEXPFormat findEXPFormatForColumn(final I_EXP_FormatLine line)
 	{
