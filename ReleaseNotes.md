@@ -14,9 +14,11 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-17**
 
-# metasfresh 5.6 (2017-16)
+* metasfresh-backend
+  * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
+    * Adding the initial window layout for Bankstatement window in webUI.
 
-**this week's release candidate
+# metasfresh 5.6 (2017-16)
 
 ## Features
 
