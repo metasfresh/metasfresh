@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -303,7 +304,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@FunctionalInterface
 	public static interface DocumentFieldValueLoader
 	{
-		Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable) throws SQLException;
+		Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage) throws SQLException;
+		
+		default Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable) throws SQLException
+		{
+			String adLanguage = null;
+			return retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+		}
+
 	}
 
 	public static final class Builder
@@ -446,7 +454,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				if (numericKey)
 				{
-					return (rs, isDisplayColumnAvailable) -> {
+					return (rs, isDisplayColumnAvailable, adLanguage) -> {
 						final int id = rs.getInt(sqlColumnName);
 						if(rs.wasNull())
 						{
@@ -455,7 +463,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 						if (isDisplayColumnAvailable)
 						{
 							final String displayName = rs.getString(displayColumnName);
-							return IntegerLookupValue.of(id, displayName);
+							return IntegerLookupValue.of(id, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
 						}
 						else
 						{
@@ -465,7 +473,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				}
 				else
 				{
-					return (rs, isDisplayColumnAvailable) -> {
+					return (rs, isDisplayColumnAvailable, adLanguage) -> {
 						final String key = rs.getString(sqlColumnName);
 						if(rs.wasNull())
 						{
@@ -474,7 +482,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 						if (isDisplayColumnAvailable)
 						{
 							final String displayName = rs.getString(displayColumnName);
-							return StringLookupValue.of(key, displayName);
+							return StringLookupValue.of(key, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
 						}
 						else
 						{
@@ -488,16 +496,16 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				if (encrypted)
 				{
-					return (rs, isDisplayColumnAvailable) -> decrypt(rs.getString(sqlColumnName));
+					return (rs, isDisplayColumnAvailable, adLanguage) -> decrypt(rs.getString(sqlColumnName));
 				}
 				else
 				{
-					return (rs, isDisplayColumnAvailable) -> rs.getString(sqlColumnName);
+					return (rs, isDisplayColumnAvailable, adLanguage) -> rs.getString(sqlColumnName);
 				}
 			}
 			else if (java.lang.Integer.class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable) -> {
+				return (rs, isDisplayColumnAvailable, adLanguage) -> {
 					final int valueInt = rs.getInt(sqlColumnName);
 					final Integer value = rs.wasNull() ? null : valueInt;
 					return encrypted ? decrypt(value) : value;
@@ -509,7 +517,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				if (precision != null)
 				{
 					final int precisionInt = precision;
-					return (rs, isDisplayColumnAvailable) -> {
+					return (rs, isDisplayColumnAvailable, adLanguage) -> {
 						BigDecimal value = rs.getBigDecimal(sqlColumnName);
 						value = value == null ? null : NumberUtils.setMinimumScale(value, precisionInt);
 						return encrypted ? decrypt(value) : value;
@@ -517,7 +525,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				}
 				else
 				{
-					return (rs, isDisplayColumnAvailable) -> {
+					return (rs, isDisplayColumnAvailable, adLanguage) -> {
 						final BigDecimal value = rs.getBigDecimal(sqlColumnName);
 						return encrypted ? decrypt(value) : value;
 					};
@@ -525,7 +533,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
-				return (rs, isDisplayColumnAvailable) -> {
+				return (rs, isDisplayColumnAvailable, adLanguage) -> {
 					final Timestamp valueTS = rs.getTimestamp(sqlColumnName);
 					final java.util.Date value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
 					return encrypted ? decrypt(value) : value;
@@ -534,7 +542,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			// YesNo
 			else if (Boolean.class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable) -> {
+				return (rs, isDisplayColumnAvailable, adLanguage) -> {
 					String valueStr = rs.getString(sqlColumnName);
 					if (encrypted)
 					{
@@ -547,7 +555,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			// LOB
 			else if (byte[].class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable) -> {
+				return (rs, isDisplayColumnAvailable, adLanguage) -> {
 					final Object valueObj = rs.getObject(sqlColumnName);
 					final byte[] valueBytes;
 					if (rs.wasNull())
@@ -585,7 +593,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 			else
 			{
-				return (rs, isDisplayColumnAvailable) -> {
+				return (rs, isDisplayColumnAvailable, adLanguage) -> {
 					final String value = rs.getString(sqlColumnName);
 					return encrypted ? decrypt(value) : value;
 				};

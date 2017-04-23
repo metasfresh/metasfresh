@@ -9,6 +9,9 @@ import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -79,35 +82,53 @@ public abstract class LookupValue
 		}
 		if (id instanceof Integer)
 		{
-			return new IntegerLookupValue((int)id, displayName);
+			return new IntegerLookupValue((int)id, ImmutableTranslatableString.constant(displayName));
 		}
 		else
 		{
-			return new StringLookupValue(id.toString(), displayName);
+			return new StringLookupValue(id.toString(), ImmutableTranslatableString.constant(displayName));
 		}
 	}
 
 	public static final LookupValue fromNamePair(final NamePair namePair)
 	{
+		final String adLanguage = null;
 		final LookupValue defaultValue = null;
-		return fromNamePair(namePair, defaultValue);
+		return fromNamePair(namePair, adLanguage, defaultValue);
+	}
+
+	public static final LookupValue fromNamePair(final NamePair namePair, final String adLanguage)
+	{
+		final LookupValue defaultValue = null;
+		return fromNamePair(namePair, adLanguage, defaultValue);
 	}
 	
-	public static final LookupValue fromNamePair(final NamePair namePair, final LookupValue defaultValue)
+	public static final LookupValue fromNamePair(final NamePair namePair, final String adLanguage, final LookupValue defaultValue)
 	{
 		if (namePair == null)
 		{
 			return defaultValue;
 		}
-		else if (namePair instanceof ValueNamePair)
+		
+		final ITranslatableString displayNameTrl;
+		if(adLanguage == null)
+		{
+			displayNameTrl = ImmutableTranslatableString.anyLanguage(namePair.getName());
+		}
+		else
+		{
+			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, namePair.getName());
+		}
+		
+		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
-			return StringLookupValue.of(vnp.getValue(), vnp.getName());
+			return StringLookupValue.of(vnp.getValue(), displayNameTrl);
 		}
 		else if (namePair instanceof KeyNamePair)
 		{
 			final KeyNamePair knp = (KeyNamePair)namePair;
-			return IntegerLookupValue.of(knp.getKey(), knp.getName());
+			return IntegerLookupValue.of(knp.getKey(), displayNameTrl);
 		}
 		else
 		{
@@ -117,9 +138,9 @@ public abstract class LookupValue
 	}
 
 	protected final Object id;
-	protected final String displayName;
+	protected final ITranslatableString displayName;
 
-	private LookupValue(final Object id, final String displayName)
+	private LookupValue(final Object id, final ITranslatableString displayName)
 	{
 		super();
 		if (id == null)
@@ -127,7 +148,7 @@ public abstract class LookupValue
 			throw new NullPointerException("id");
 		}
 		this.id = id;
-		this.displayName = displayName == null ? "" : displayName;
+		this.displayName = displayName == null ? ImmutableTranslatableString.empty() : displayName;
 	}
 
 	@Override
@@ -167,6 +188,11 @@ public abstract class LookupValue
 
 	public String getDisplayName()
 	{
+		return displayName.getDefaultValue();
+	}
+	
+	public ITranslatableString getDisplayNameTrl()
+	{
 		return displayName;
 	}
 
@@ -191,17 +217,23 @@ public abstract class LookupValue
 	{
 		public static final StringLookupValue of(final String value, final String displayName)
 		{
+			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName));
+		}
+		
+		public static final StringLookupValue of(final String value, final ITranslatableString displayName)
+		{
 			return new StringLookupValue(value, displayName);
 		}
 
+
 		public static final StringLookupValue unknown(final String value)
 		{
-			return new StringLookupValue(value, "<" + value + ">");
+			return new StringLookupValue(value, ImmutableTranslatableString.constant("<" + value + ">"));
 		}
 
 		private Integer idInt; // lazy
 
-		private StringLookupValue(final String id, final String displayName)
+		private StringLookupValue(final String id, final ITranslatableString displayName)
 		{
 			super(id, displayName);
 		}
@@ -221,8 +253,14 @@ public abstract class LookupValue
 	{
 		public static final IntegerLookupValue of(final int id, final String displayName)
 		{
+			return new IntegerLookupValue(id, ImmutableTranslatableString.constant(displayName));
+		}
+		
+		public static final IntegerLookupValue of(final int id, final ITranslatableString displayName)
+		{
 			return new IntegerLookupValue(id, displayName);
 		}
+
 
 		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
 		{
@@ -230,15 +268,15 @@ public abstract class LookupValue
 			{
 				return null;
 			}
-			return new IntegerLookupValue(stringLookupValue.getIdAsInt(), stringLookupValue.getDisplayName());
+			return new IntegerLookupValue(stringLookupValue.getIdAsInt(), stringLookupValue.displayName);
 		}
 
 		public static final IntegerLookupValue unknown(final int id)
 		{
-			return new IntegerLookupValue(id, "<" + id + ">");
+			return new IntegerLookupValue(id, ImmutableTranslatableString.constant("<" + id + ">"));
 		}
 
-		private IntegerLookupValue(final int id, final String displayName)
+		private IntegerLookupValue(final int id, final ITranslatableString displayName)
 		{
 			super(id, displayName);
 		}

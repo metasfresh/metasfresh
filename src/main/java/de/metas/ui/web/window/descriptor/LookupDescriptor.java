@@ -36,6 +36,12 @@ public interface LookupDescriptor
 	{
 		return Optional.empty();
 	}
+	
+	@Override
+	boolean equals(Object obj);
+	
+	@Override
+	int hashCode();
 
 	LookupDataSourceFetcher getLookupDataSourceFetcher();
 

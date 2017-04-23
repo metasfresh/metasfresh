@@ -155,7 +155,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final Document parentDocument = query.getParentDocument();
 
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = SqlDocumentQueryBuilder.of(query).getSql(sqlParams);
+		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
+		final String sql = sqlBuilder.getSql(sqlParams);
+		final String adLanguage = sqlBuilder.getAD_Language();
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
 		final int loadLimitWarn = this.loadLimitWarn;
@@ -182,7 +184,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			boolean loadLimitWarnReported = false;
 			while (rs.next())
 			{
-				final Document document = retriveDocument(entityDescriptor, parentDocument, rs);
+				final Document document = Document.builder(entityDescriptor)
+						.setParentDocument(parentDocument)
+						.initializeAsExistingRecord(new ResultSetDocumentValuesSupplier(entityDescriptor, adLanguage, rs));
 				documentsCollector.add(document);
 
 				final int loadCount = documentsCollector.size();
@@ -253,13 +257,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				.initializeAsNewDocument(documentId, VERSION_DEFAULT);
 	}
 
-	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final ResultSet rs)
-	{
-		return Document.builder(entityDescriptor)
-				.setParentDocument(parentDocument)
-				.initializeAsExistingRecord(new ResultSetDocumentValuesSupplier(entityDescriptor, rs));
-	}
-
 	@FunctionalInterface
 	private static interface FieldValueSupplier
 	{
@@ -275,6 +272,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
 
 		private final DocumentEntityDescriptor entityDescriptor;
+		private final String adLanguage;
 		private final ResultSet rs;
 
 		private boolean idAquired = false;
@@ -282,12 +280,14 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		private String version;
 
-		public ResultSetDocumentValuesSupplier(final DocumentEntityDescriptor entityDescriptor, final ResultSet rs)
+
+		public ResultSetDocumentValuesSupplier(final DocumentEntityDescriptor entityDescriptor, final String adLanguage, final ResultSet rs)
 		{
 			super();
 			Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
 			Check.assumeNotNull(rs, "Parameter rs is not null");
 			this.entityDescriptor = entityDescriptor;
+			this.adLanguage = adLanguage;
 			this.rs = rs;
 		}
 
@@ -372,7 +372,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 			try
 			{
-				return fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable);
+				return fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
 			}
 			catch (final SQLException e)
 			{
@@ -396,8 +396,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentId);
 
+		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = SqlDocumentQueryBuilder.of(query).getSql(sqlParams);
+		final String sql = sqlBuilder.getSql(sqlParams);
+		final String adLanguage = sqlBuilder.getAD_Language();
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
 		PreparedStatement pstmt = null;
@@ -409,7 +411,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final ResultSetDocumentValuesSupplier fieldValueSupplier = new ResultSetDocumentValuesSupplier(entityDescriptor, rs);
+				final ResultSetDocumentValuesSupplier fieldValueSupplier = new ResultSetDocumentValuesSupplier(entityDescriptor, adLanguage, rs);
 				document.refreshFromSupplier(fieldValueSupplier);
 			}
 			else

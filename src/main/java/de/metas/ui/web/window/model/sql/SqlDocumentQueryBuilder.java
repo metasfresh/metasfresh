@@ -59,6 +59,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 public class SqlDocumentQueryBuilder
 {
+
 	public static SqlDocumentQueryBuilder newInstance(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return new SqlDocumentQueryBuilder(entityDescriptor);
@@ -79,6 +80,7 @@ public class SqlDocumentQueryBuilder
 				;
 	}
 
+	private final Properties ctx;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final SqlDocumentEntityDataBindingDescriptor entityBinding;
 
@@ -102,11 +104,12 @@ public class SqlDocumentQueryBuilder
 
 	private SqlDocumentQueryBuilder(final DocumentEntityDescriptor entityDescriptor)
 	{
-		super();
+		ctx = Env.getCtx();
 
 		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
 		this.entityDescriptor = entityDescriptor;
 		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+		
 	}
 
 	@Override
@@ -153,10 +156,10 @@ public class SqlDocumentQueryBuilder
 
 	private Properties getCtx()
 	{
-		return Env.getCtx();
+		return ctx;
 	}
 
-	private String getAD_Language()
+	public String getAD_Language()
 	{
 		// TODO: introduce AD_Language as parameter
 		return Env.getAD_Language(getCtx());

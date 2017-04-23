@@ -106,11 +106,6 @@ public class AddressDescriptorFactory
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, I_C_Location::getCity, AddressFieldBinding::writeValue_City)));
-		// addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_City_ID)
-		// .setValueClass(IntegerLookupValue.class)
-		// .setWidgetType(DocumentFieldWidgetType.Lookup)
-		// .setLookupDescriptorProvider(new AddressCityLookupDescriptor())
-		// .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_City_ID, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_C_City_ID)));
 		//
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Region_ID)
 				.setValueClass(IntegerLookupValue.class)

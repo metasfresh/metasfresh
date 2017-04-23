@@ -12,9 +12,11 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -225,9 +227,29 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	@Override
-	public Object getValueAsJsonObject()
+	public Object getValueAsJsonObject(final String adLanguage)
 	{
-		return Values.valueToJsonObject(_value);
+		Object value = getValue();
+		if(value == null)
+		{
+			return null;
+		}
+		
+		//
+		// If we are dealing with a lookup value, make, sure it's translated (see https://github.com/metasfresh/metasfresh-webui-api/issues/311 )
+		final LookupDataSource lookupDataSource = getLookupDataSource();
+		if(lookupDataSource != null && value instanceof LookupValue)
+		{
+			final LookupValue lookupValue = (LookupValue)value;
+			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
+			if(!displayNameTrl.isTranslatedTo(adLanguage))
+			{
+				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
+				value = lookupValueNew;
+			}
+		}
+		
+		return Values.valueToJsonObject(value);
 	}
 
 	@Override
