@@ -14,9 +14,15 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-17**
 
-# metasfresh 5.6 (2017-16)
+* metasfresh-backend
+  * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
+    * Adding the initial window layout for Bankstatement window in webUI.
+  * [#1349](https://github.com/metasfresh/metasfresh/issues/1349) Create Product category webui window
+    * Adding the product category window to WebUI.
+  * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
+    * Adding missing fields into advanced edit of Sales Order Window in WebUI.
 
-**this week's release candidate
+# metasfresh 5.6 (2017-16)
 
 ## Features
 
