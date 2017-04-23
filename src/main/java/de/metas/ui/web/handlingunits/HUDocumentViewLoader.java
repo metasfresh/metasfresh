@@ -299,7 +299,7 @@ public class HUDocumentViewLoader
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
 	{
 		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), IHUDocumentView.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(IHUDocumentView.HUSTATUS_AD_Reference_ID, huStatusKey);
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 
