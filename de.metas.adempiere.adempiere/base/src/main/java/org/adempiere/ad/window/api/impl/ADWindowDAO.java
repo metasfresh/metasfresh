@@ -44,27 +44,25 @@ import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 public class ADWindowDAO implements IADWindowDAO
 {
 
 	@Override
-	public String retrieveWindowName(final int adWindowId)
+	public ITranslatableString retrieveWindowName(final int adWindowId)
 	{
-		final Properties ctx = Env.getCtx();
-		return retrieveWindowNameCached(ctx, adWindowId);
+		return retrieveWindowNameCached(adWindowId);
 	}
 
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	public String retrieveWindowNameCached(
-			@CacheCtx final Properties ctx,
-			final int adWindowId)
+	public ITranslatableString retrieveWindowNameCached(final int adWindowId)
 	{
 		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
 		
 		final I_AD_Window window = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Window.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Window.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
@@ -72,11 +70,10 @@ public class ADWindowDAO implements IADWindowDAO
 		
 		if(window == null)
 		{
-			return null;
+			return ImmutableTranslatableString.empty();
 		}
 		
-		final I_AD_Window windowTrl = InterfaceWrapperHelper.translate(window, I_AD_Window.class);
-		return window.getName();
+		return InterfaceWrapperHelper.getModelTranslationMap(window).getColumnTrl(I_AD_Window.COLUMNNAME_Name, window.getName());
 	}
 
 	@Override
