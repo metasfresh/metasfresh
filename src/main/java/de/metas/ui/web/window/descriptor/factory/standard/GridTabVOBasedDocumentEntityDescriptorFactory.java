@@ -94,17 +94,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		// Document summary
 		if(rootEntity)
 		{
-			final IDocumentFieldValueProvider summaryValueProvider;
-//			// FIXME: HARDCODED: C_Order's DocumentSummary
-//			if (_documentEntryBuilder.isTableName(I_C_Order.Table_Name))
-//			{
-//				summaryValueProvider = HARDCODED_OrderDocumentSummaryValueProvider.instance;
-//			}
-//			else
-			{
-				summaryValueProvider = GenericDocumentSummaryValueProvider.of(_documentEntryBuilder);
-			}
-
+			final IDocumentFieldValueProvider summaryValueProvider = GenericDocumentSummaryValueProvider.of(_documentEntryBuilder);
 			if(summaryValueProvider != null)
 			{
 				addInternalVirtualField(WindowConstants.FIELDNAME_DocumentSummary, DocumentFieldWidgetType.Text, summaryValueProvider);
