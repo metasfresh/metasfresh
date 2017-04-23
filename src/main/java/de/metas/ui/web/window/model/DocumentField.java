@@ -462,7 +462,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		// Consider virtual fields as valid because there is nothing we can do about them
 		if (isVirtualField())
 		{
-			return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
+			return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 		}
 
 		// Check mandatory constraint
@@ -471,7 +471,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 			return DocumentValidStatus.invalidFieldMandatoryNotFilled(getFieldName(), isInitialValue());
 		}
 
-		return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
+		return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 	}
 
 	/**
