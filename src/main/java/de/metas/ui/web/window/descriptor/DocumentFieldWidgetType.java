@@ -119,6 +119,11 @@ public enum DocumentFieldWidgetType
 		return TYPES_Date.contains(this);
 	}
 	
+	public final boolean isNumeric()
+	{
+		return TYPES_Numeric.contains(this);
+	}
+	
 	public final boolean isText()
 	{
 		return this == Text || this == LongText;

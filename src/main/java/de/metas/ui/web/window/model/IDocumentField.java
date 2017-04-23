@@ -46,9 +46,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/**
 	 * @param initialValue initial value / last saved value
-	 * @param mode initialization mode
 	 */
-	void setInitialValue(Object initialValue, FieldInitializationMode mode);
+	void setInitialValue(Object initialValue);
 
 	/**
 	 * Set field's current value.

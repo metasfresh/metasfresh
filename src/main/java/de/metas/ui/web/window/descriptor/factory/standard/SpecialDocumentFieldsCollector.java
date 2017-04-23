@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -43,6 +44,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 	private static final Set<String> COLUMNNAMES_DocumentNos = ImmutableSet.of(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name);
 	private static final Set<String> COLUMNNAMES_DocumentSummary = ImmutableSet.of(WindowConstants.FIELDNAME_DocumentSummary, WindowConstants.FIELDNAME_Name);
 
+	/** All column names which might be special fields */
 	private static final Set<String> COLUMNNAMES = ImmutableSet.<String> builder()
 			.addAll(COLUMNNAMES_DocumentNos)
 			.addAll(COLUMNNAMES_DocumentSummary)
@@ -50,10 +52,13 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 			.add(WindowConstants.FIELDNAME_DocAction)
 			.build();
 
+	private boolean allowCollecting = true;
 	private final Map<String, DocumentFieldDescriptor.Builder> collectedFields = new HashMap<>();
 
 	public void collect(final DocumentFieldDescriptor.Builder field)
 	{
+		Preconditions.checkState(allowCollecting, "allowCollecting shall be true");
+		
 		final String fieldName = field.getFieldName();
 		if (!COLUMNNAMES.contains(fieldName))
 		{
@@ -69,9 +74,14 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 		collectedFields.put(fieldName, field);
 	}
-
-	public DocumentFieldDescriptor.Builder getDocumentNo()
+	
+	public void collectFinish()
 	{
+		Preconditions.checkState(allowCollecting, "allowCollecting shall be true");
+		allowCollecting = false;
+
+		//
+		// Update DocumentNo field flags
 		for (final String fieldName : COLUMNNAMES_DocumentNos)
 		{
 			final DocumentFieldDescriptor.Builder field = collectedFields.get(fieldName);
@@ -82,10 +92,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 			field.addCharacteristic(Characteristic.PublicField);
 			field.addCharacteristic(Characteristic.SpecialField_DocumentNo);
-			return field;
+			break; // only first field shall be elected as DocumentNo
 		}
-
-		return null;
 	}
 
 	public DocumentFieldDescriptor.Builder getDocumentSummary()
@@ -99,7 +107,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 			}
 
 			field.addCharacteristic(Characteristic.PublicField);
-			field.addCharacteristic(Characteristic.SpecialField_DocumentSummary);
+			//field.addCharacteristic(Characteristic.SpecialField_DocumentSummary);
 			return field;
 		}
 

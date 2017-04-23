@@ -70,7 +70,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _validStatus = DocumentValidStatus.fieldInitiallyInvalid();
+	private DocumentValidStatus _validStatus;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -165,12 +165,12 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	 * @param initialValue
 	 */
 	@Override
-	public void setInitialValue(final Object initialValue, final FieldInitializationMode mode)
+	public void setInitialValue(final Object initialValue)
 	{
 		final Object initialValueConv = convertToValueClassAndCorrect(initialValue);
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("setInitialValue: {} = {} ({})", getFieldName(), initialValueConv, mode);
+			logger.trace("setInitialValue: {} = {}", getFieldName(), initialValueConv);
 		}
 		_initialValue = initialValueConv;
 

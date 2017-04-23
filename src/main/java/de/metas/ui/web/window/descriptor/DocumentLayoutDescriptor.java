@@ -57,8 +57,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/** i.e. AD_Window_ID */
 	private final int AD_Window_ID;
 
-	/** Special element: DocumentNo */
-	private final DocumentLayoutElementDescriptor documentNoElement;
 	/** Special element: Document summary */
 	private final DocumentLayoutElementDescriptor documentSummaryElement;
 	/** Special element: DocStatus/DocAction */
@@ -82,7 +80,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		super();
 		AD_Window_ID = builder.AD_Window_ID;
-		documentNoElement = builder.documentNoElement;
 		documentSummaryElement = builder.documentSummaryElement;
 		docActionElement = builder.docActionElement;
 
@@ -116,11 +113,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 	public int getAD_Window_ID()
 	{
 		return AD_Window_ID;
-	}
-
-	public DocumentLayoutElementDescriptor getDocumentNoElement()
-	{
-		return documentNoElement;
 	}
 
 	public DocumentLayoutElementDescriptor getDocumentSummaryElement()
@@ -195,7 +187,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
 
 		private int AD_Window_ID;
-		private DocumentLayoutElementDescriptor documentNoElement;
 		private DocumentLayoutElementDescriptor documentSummaryElement;
 		private DocumentLayoutElementDescriptor docActionElement;
 
@@ -282,12 +273,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public Builder setAD_Window_ID(final int AD_Window_ID)
 		{
 			this.AD_Window_ID = AD_Window_ID;
-			return this;
-		}
-
-		public Builder setDocumentNoElement(final DocumentLayoutElementDescriptor documentNoElement)
-		{
-			this.documentNoElement = documentNoElement;
 			return this;
 		}
 

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
@@ -50,10 +49,17 @@ public final class DocumentFieldDependencyMap
 
 	public enum DependencyType
 	{
-		ReadonlyLogic, DisplayLogic, MandatoryLogic, LookupValues,
+		ReadonlyLogic, DisplayLogic, MandatoryLogic, LookupValues, FieldValue
 	};
+	
+	@FunctionalInterface
+	public static interface IDependencyConsumer
+	{
+		void consume(String dependentFieldName, DependencyType dependencyType);
+	}
 
-	private final Map<DependencyType, Multimap<String, String>> type2name2dependencies;
+	/** Map: "dependency type" to "depends on field name" to list of "dependent field name" */ 
+	private final ImmutableMap<DependencyType, Multimap<String, String>> type2name2dependencies;
 
 	private DocumentFieldDependencyMap(final Builder builder)
 	{
@@ -100,22 +106,28 @@ public final class DocumentFieldDependencyMap
 		return sb.toString();
 	}
 
-	public void consumeForChangedFieldName(final String changedFieldName, final BiConsumer<String, DependencyType> consumer)
+	public void consumeForChangedFieldName(final String changedFieldName, final IDependencyConsumer consumer)
 	{
 		for (final DependencyType dependencyType : DependencyType.values())
 		{
 			final Multimap<String, String> name2dependencies = type2name2dependencies.get(dependencyType);
-			if (name2dependencies == null)
+			if (name2dependencies == null || name2dependencies.isEmpty())
 			{
 				continue;
 			}
+			
 			for (final String dependentFieldName : name2dependencies.get(changedFieldName))
 			{
-				consumer.accept(dependentFieldName, dependencyType);
+				consumer.consume(dependentFieldName, dependencyType);
 			}
 		}
 	}
 
+	//
+	//
+	//
+	//
+	//
 	public static final class Builder
 	{
 		private final Map<DependencyType, ImmutableSetMultimap.Builder<String, String>> type2name2dependencies = new HashMap<>();
@@ -134,7 +146,7 @@ public final class DocumentFieldDependencyMap
 			return new DocumentFieldDependencyMap(this);
 		}
 
-		private Map<DependencyType, Multimap<String, String>> getType2Name2DependenciesMap()
+		private ImmutableMap<DependencyType, Multimap<String, String>> getType2Name2DependenciesMap()
 		{
 			final ImmutableMap.Builder<DependencyType, Multimap<String, String>> builder = ImmutableMap.builder();
 			for (final Entry<DependencyType, ImmutableSetMultimap.Builder<String, String>> e : type2name2dependencies.entrySet())

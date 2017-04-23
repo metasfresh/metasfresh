@@ -360,6 +360,7 @@ public final class Document
 			}
 
 			//
+			// Initializing a new document
 			if (FieldInitializationMode.NewDocument == mode)
 			{
 				// FIXME: i think it would be better to trigger the callouts when setting the initial value
@@ -376,16 +377,22 @@ public final class Document
 
 				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector());
 			}
+			//
+			// Initializing an existing loaded document
 			else if (FieldInitializationMode.Load == mode)
 			{
 				updateAllFieldsFlags(NullDocumentChangesCollector.instance);
 			}
+			//
+			// Document refresh
 			else if (FieldInitializationMode.Refresh == mode)
 			{
 				documentCallout.onRefresh(asCalloutRecord());
 
 				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollectorOrNull());
 			}
+			//
+			// Unknown initialization mode
 			else
 			{
 				throw new IllegalArgumentException("Unknown mode: " + mode);
@@ -426,7 +433,7 @@ public final class Document
 			if (initialValue != DocumentValuesSupplier.NO_VALUE)
 			{
 				valueOld = documentField.getValue();
-				documentField.setInitialValue(initialValue, mode);
+				documentField.setInitialValue(initialValue);
 			}
 
 			valueSet = true;
@@ -826,7 +833,7 @@ public final class Document
 
 		return parent;
 	}
-	
+
 	public boolean isRootDocument()
 	{
 		return getParentDocument() == null;
@@ -1232,12 +1239,13 @@ public final class Document
 			, final IDocumentChangesCollector documentChangesCollector //
 			)
 	{
+		final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
+		
 		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
 		{
 			final LogicExpressionResult valueOld = documentField.getReadonly();
 			updateFieldReadOnly(documentField);
 
-			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
 			documentChangesCollector.collectReadonlyIfChanged(documentField, valueOld, reason);
 		}
 		else if (DependencyType.MandatoryLogic == triggeringDependencyType)
@@ -1245,7 +1253,6 @@ public final class Document
 			final LogicExpressionResult valueOld = documentField.getMandatory();
 			updateFieldMandatory(documentField);
 
-			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
 			documentChangesCollector.collectMandatoryIfChanged(documentField, valueOld, reason);
 		}
 		else if (DependencyType.DisplayLogic == triggeringDependencyType)
@@ -1253,17 +1260,37 @@ public final class Document
 			final LogicExpressionResult valueOld = documentField.getDisplayed();
 			updateFieldDisplayed(documentField);
 
-			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
 			documentChangesCollector.collectDisplayedIfChanged(documentField, valueOld, reason);
 		}
 		else if (DependencyType.LookupValues == triggeringDependencyType)
 		{
-			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
 			final boolean lookupValuesStaledOld = documentField.isLookupValuesStale();
 			final boolean lookupValuesStaled = documentField.setLookupValuesStaled(triggeringFieldName);
 			if (lookupValuesStaled && !lookupValuesStaledOld)
 			{
 				documentChangesCollector.collectLookupValuesStaled(documentField, reason);
+			}
+		}
+		else if(DependencyType.FieldValue == triggeringDependencyType)
+		{
+			final IDocumentFieldValueProvider valueProvider = documentField.getDescriptor().getVirtualFieldValueProvider().orElse(null);
+			if(valueProvider != null)
+			{
+				try
+				{
+					final Object valueOld = documentField.getValue();
+					final Object valueNew = valueProvider.calculateValue(this);
+					
+					documentField.setInitialValue(valueNew);
+					documentField.setValue(valueNew);
+					documentField.updateValid(); // make sure is still valid
+					
+					documentChangesCollector.collectValueIfChanged(documentField, valueOld, reason);
+				}
+				catch (Exception ex)
+				{
+					logger.warn("Failed updating virtual field {} for {}", documentField, this, ex);
+				}
 			}
 		}
 		else
@@ -1489,6 +1516,12 @@ public final class Document
 		// Check document fields
 		for (final IDocumentField documentField : getFields())
 		{
+			// skip virtual fields, those does not matter
+			if(documentField.isVirtualField())
+			{
+				continue;
+			}
+			
 			final DocumentValidStatus validState = documentField.getValidStatus();
 			if (!validState.isValid())
 			{
