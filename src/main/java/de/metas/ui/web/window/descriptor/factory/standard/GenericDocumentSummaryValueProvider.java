@@ -191,9 +191,14 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 				.map(valueExtractor -> valueExtractor.extractFieldValueToString(document))
 				.map(fieldValue -> Check.isEmpty(fieldValue, true) ? null : fieldValue.trim()) // convert empty strings to null
 				.filter(fieldValue -> fieldValue != null) // skip null strings
-				.collect(Collectors.joining("_")); // join all field values
+				.collect(Collectors.joining(" ")); // join all field values
+		
+		if (Check.isEmpty(summary, true))
+		{
+			return "";
+		}
 
-		return summary;
+		return " / " + summary;
 	}
 
 	private static interface FieldValueExtractor
