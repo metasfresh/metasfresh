@@ -436,7 +436,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 				if (plant != null && workflow != null)
 				{
-					String description = Services.get(IMsgBL.class).translate(ctx, Services.get(IADReferenceDAO.class).retriveListName(ctx, X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType()))
+					String description = Services.get(IMsgBL.class).translate(ctx, Services.get(IADReferenceDAO.class).retrieveListNameTrl(ctx, X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType()))
 							+ " "
 							+ Services.get(IMsgBL.class).translate(ctx, I_C_Order.COLUMNNAME_C_Order_ID)
 							+ " : "
@@ -472,7 +472,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 					}
 
 					description = description
-							+ " " + Services.get(IADReferenceDAO.class).retriveListName(ctx, X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType())
+							+ " " + Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType())
 							+ " "
 							+ Services.get(IMsgBL.class).translate(ctx, I_PP_Order.COLUMNNAME_PP_Order_ID)
 							+ " : "

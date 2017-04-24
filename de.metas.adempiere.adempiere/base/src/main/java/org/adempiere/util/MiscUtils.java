@@ -13,22 +13,19 @@ package org.adempiere.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
@@ -40,15 +37,20 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTable;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
 
+/**
+ * Misc utils
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ * @deprecated This class is scheduled to be removed
+ */
+@Deprecated
 public final class MiscUtils
 {
 
@@ -73,7 +75,8 @@ public final class MiscUtils
 		{
 			msg.append(" Last warning: [value='")
 					.append(lastWarning.getValue()).append("', name='").append(
-							lastWarning.getName()).append("']");
+							lastWarning.getName())
+					.append("']");
 		}
 		return msg.toString();
 	}
@@ -96,12 +99,10 @@ public final class MiscUtils
 		return "Unknown Error";
 	}
 
-	public static IllegalArgumentException illegalArgumentEx(
-			final Object value, final String paramName)
-			throws IllegalArgumentException
+	public static IllegalArgumentException illegalArgumentEx(final Object value, final String paramName) throws IllegalArgumentException
 	{
 
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append("Illegal value '");
 		sb.append(value);
 		sb.append("' for param ");
@@ -111,8 +112,7 @@ public final class MiscUtils
 
 	}
 
-	public static void throwIllegalArgumentEx(final Object value,
-			final String paramName) throws IllegalArgumentException
+	private static void throwIllegalArgumentEx(final Object value, final String paramName) throws IllegalArgumentException
 	{
 
 		throw illegalArgumentEx(value, paramName);
@@ -172,8 +172,7 @@ public final class MiscUtils
 
 		if (timestamp == null)
 		{
-			throw new IllegalArgumentException(
-					"Param 'timestamp' may not be null");
+			throw new IllegalArgumentException("Param 'timestamp' may not be null");
 		}
 
 		final Calendar calNow = SystemTime.asGregorianCalendar();
@@ -191,8 +190,7 @@ public final class MiscUtils
 	{
 		try
 		{
-			return new Timestamp(new SimpleDateFormat("yyyy-MM-dd").parse(
-					string).getTime());
+			return new Timestamp(new SimpleDateFormat("yyyy-MM-dd").parse(string).getTime());
 		}
 		catch (ParseException e)
 		{
@@ -211,62 +209,6 @@ public final class MiscUtils
 			return 0;
 		}
 		return id;
-	}
-
-	public static Boolean getBoolean(final GridTab mTab, final String colName)
-	{
-
-		final Object isSOTrx = mTab.getValue(colName);
-		if (isSOTrx == null)
-		{
-			return false;
-		}
-		if (isSOTrx instanceof Boolean)
-		{
-			return (Boolean)isSOTrx;
-
-		}
-		else if (isSOTrx instanceof String)
-		{
-			return "Y".equals(isSOTrx);
-		}
-
-		throw new AdempiereException("Unexpected class " + isSOTrx.getClass()
-				+ " of field " + colName + "; Value: " + isSOTrx);
-	}
-
-	/**
-	 * Returns an instance of {@link ArrayList} that can be used as a key in HashSets and HashMaps.
-	 * 
-	 * @param input
-	 * @return
-	 * 
-	 * @deprecated use {@link Util#mkKey(Object...)} instead
-	 */
-	@Deprecated
-	public static ArrayKey mkKey(final Object... input)
-	{
-		return new ArrayKey(input);
-	}
-
-	/**
-	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[]))} and {@link Arrays#equals(Object)}.
-	 * Instances of this class are obtained by {@link MiscUtils#mkKey(Object...)} and can be used as keys in hashmaps
-	 * and hash sets.
-	 * 
-	 * Thanks to http://stackoverflow.com/questions/1595588/java-how-to-be-sure-to-store-unique-arrays-based-on
-	 * -its-values-on-a-list
-	 * 
-	 * @author ts
-	 * @deprecated use org.compiere.util.Util.ArrayKey
-	 */
-	@Deprecated
-	public static class ArrayKey extends Util.ArrayKey
-	{
-		public ArrayKey(final Object... input)
-		{
-			super(input);
-		}
 	}
 
 	/**
@@ -296,43 +238,7 @@ public final class MiscUtils
 		return currentDate;
 	}
 
-	/**
-	 * @deprecated Please use {@link Util#getInstanceOrNull(Class, String)}
-	 */
-	@Deprecated
-	public static <T> T getInstanceOrNull(final Class<T> interfaceClazz, final String className)
-	{
-		return Util.getInstanceOrNull(interfaceClazz, className);
-	}
-
-	public static String mkStackTraceStr()
-	{
-		final StringBuilder sb = new StringBuilder();
-		for (final StackTraceElement ste : Thread.currentThread().getStackTrace())
-		{
-			sb.append("\tat " + ste);
-		}
-		return sb.toString();
-	}
-
-	public static GridTab getGridTabForTable(
-			final Properties ctx,
-			final int windowNo,
-			final int AD_Table_ID,
-			final boolean startWithEmptyQuery)
-	{
-		final int AD_Window_ID = MTable.get(ctx, AD_Table_ID).getAD_Window_ID();
-		//
-		return getGridTabForTableAndWindow(ctx, windowNo, AD_Window_ID, AD_Table_ID, startWithEmptyQuery);
-
-	}
-
-	public static GridTab getGridTabForTableAndWindow(
-			final Properties ctx,
-			final int windowNo,
-			final int AD_Window_ID,
-			final int AD_Table_ID,
-			final boolean startWithEmptyQuery)
+	public static GridTab getGridTabForTableAndWindow(final Properties ctx, final int windowNo, final int AD_Window_ID, final int AD_Table_ID, final boolean startWithEmptyQuery)
 	{
 		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
 		if (wVO == null)
@@ -356,8 +262,7 @@ public final class MiscUtils
 		}
 		if (tab == null)
 		{
-			throw new AdempiereException("No Tab found for table " + MTable.getTableName(ctx, AD_Table_ID)
-					+ ", Window:" + gridWindow.getName());
+			throw new AdempiereException("No Tab found for AD_Table_ID=" + AD_Table_ID + ", Window:" + gridWindow.getName());
 		}
 		gridWindow.initTab(tabIndex);
 		//
@@ -367,32 +272,5 @@ public final class MiscUtils
 			tab.query(false);
 		}
 		return tab;
-	}
-	
-	/**
-	 * Returns a string created from the given input, but without any non-ascii characters. If the given string is
-	 * empty, then an empty string is returned.
-	 * 
-	 * It is assumed that
-	 * <ul>
-	 * <li>the given input is not null</li>
-	 * <li>after stripping non-ascii chars from the given (a non-empty!) input there is at least one ascii character
-	 * left to output</li>
-	 * </ul>
-	 * 
-	 */
-	public static String mkAsciiOnly(final String input)
-	{
-		Util.assume(input != null, "Input string is not null");
-		
-		if("".equals(input))
-		{
-			return "";
-		}
-		
-		final String output = input.replaceAll("[^\\p{ASCII}]", "");
-				
-		Util.assume(!"".equals(output), "Input string '" + input + "' has at least one ascii-character");
-        return output;
 	}
 }

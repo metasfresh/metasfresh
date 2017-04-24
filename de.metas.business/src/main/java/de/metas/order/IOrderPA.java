@@ -72,9 +72,6 @@ public interface IOrderPA extends ISingletonService
 	 */
 	<T extends I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
 
-	Collection<I_C_OrderLine> retrieveOrderLinesForLoc(int bPartnerLocationId,
-			int shipperId, String trxName);
-
 	Collection<I_C_Order> retrieveOrders(String docStatus, String trxName);
 
 	/**
@@ -99,21 +96,6 @@ public interface IOrderPA extends ISingletonService
 	 */
 	Collection<I_C_OrderLine> retrieveOrderLinesForProdAndWH(int productId,
 			int warehouseId, String trxName);
-
-	/**
-	 * Retrieves order lines from sales orders for the given product and shipping location ( {@link I_C_OrderLine#COLUMNNAME_C_BPartner_Location_ID} ). Lines are ordered by
-	 * {@link I_C_OrderLine#COLUMNNAME_DateOrdered}.
-	 * 
-	 * @param productId
-	 * @param bPartnerLocationId
-	 * @return
-	 */
-	<T extends I_C_OrderLine> List<T> retrieveOrderLinesForProdAndLoc(
-			Properties ctx,
-			int productId,
-			int bPartnerLocationId,
-			Class<T> clazz,
-			String trxName);
 
 	/**
 	 * No trxName required. Implementation uses <code>order</code>'s internal trxName.
