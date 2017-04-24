@@ -39,7 +39,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewType = JSONViewDataType.grid)
+@DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
 public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 {
 	private final transient CCache<WindowId, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
@@ -75,7 +75,9 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				//
+				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
+				.setHasIncludedViewSupport(true)
 				//
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Lookup)

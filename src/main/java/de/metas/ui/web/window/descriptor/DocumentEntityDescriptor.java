@@ -531,6 +531,11 @@ public class DocumentEntityDescriptor
 			return _fieldBuilders.values();
 		}
 		
+		public boolean hasField(final String fieldName)
+		{
+			return getFieldBuilder(fieldName) != null;
+		}
+		
 		public int getFieldsCount()
 		{
 			return _fieldBuilders.size();

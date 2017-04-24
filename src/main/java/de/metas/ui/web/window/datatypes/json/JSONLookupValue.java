@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -31,11 +33,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -57,12 +59,19 @@ public final class JSONLookupValue implements Serializable
 
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
 	{
-		return of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
+		final String id = lookupValue.getIdAsString();
+		
+		final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
+		final String adLanguage = Env.getAD_Language(Env.getCtx()); // FIXME add it as parameter!
+		final String displayName = displayNameTrl.translate(adLanguage);
+		
+		final JSONLookupValue json = new JSONLookupValue(id, displayName);
+		return json;
 	}
 
 	public static final JSONLookupValue ofNamePair(final NamePair namePair)
 	{
-		return of(namePair.getID(), namePair.getName());
+		return new JSONLookupValue(namePair.getID(), namePair.getName());
 	}
 
 	public static final IntegerLookupValue integerLookupValueFromJsonMap(final Map<String, String> map)
@@ -109,6 +118,8 @@ public final class JSONLookupValue implements Serializable
 	private Map<String, String> map;
 	@JsonIgnore
 	private String _key;
+	@JsonIgnore
+	private Integer _keyAsInt = null; // lazy
 	@JsonIgnore
 	private String _name;
 
@@ -166,11 +177,16 @@ public final class JSONLookupValue implements Serializable
 	{
 		return _key;
 	}
-	
+
 	@JsonIgnore
 	public int getKeyAsInt()
 	{
-		return Integer.parseInt(getKey());
+		if(_keyAsInt == null)
+		{
+			_keyAsInt = Integer.parseInt(getKey());
+		}
+		
+		return _keyAsInt;
 	}
 
 	@JsonIgnore

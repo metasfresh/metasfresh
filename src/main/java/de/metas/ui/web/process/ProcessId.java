@@ -1,5 +1,7 @@
 package de.metas.ui.web.process;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -59,6 +61,7 @@ public final class ProcessId
 	private final String processId;
 	private transient int processIdAsInt = 0;
 
+	@JsonCreator
 	private ProcessId(final String json)
 	{
 		super();
@@ -101,6 +104,7 @@ public final class ProcessId
 		return toJson();
 	}
 
+	@JsonValue
 	public String toJson()
 	{
 		return json;

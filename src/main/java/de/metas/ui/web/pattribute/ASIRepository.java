@@ -23,6 +23,7 @@ import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
@@ -109,15 +110,32 @@ public class ASIRepository
 	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
 	{
 		final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
-		return documentsCollection.forDocumentReadonly(documentPath, document -> {
-			final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
-			final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
 
+		if (documentPath.getDocumentType() == DocumentType.Window)
+		{
+			return documentsCollection.forDocumentReadonly(documentPath, document -> {
+				final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
+				final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
+
+				final int attributeSetInstanceId = request.getTemplateId();
+				final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
+				final int callerColumnId = -1; // FIXME implement
+				return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
+			});
+		}
+		else if (documentPath.getDocumentType() == DocumentType.Process)
+		{
+			final int productId = -1;
+			final boolean isSOTrx = true;
 			final int attributeSetInstanceId = request.getTemplateId();
-			final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
-			final int callerColumnId = -1; // FIXME implement
+			final String callerTableName = null;
+			final int callerColumnId = -1; // N/A
 			return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
-		});
+		}
+		else
+		{
+			throw new IllegalStateException("Cannot create ASI editing info from " + documentPath);
+		}
 	}
 
 	public ASILayout getLayout(final DocumentId asiDocId)

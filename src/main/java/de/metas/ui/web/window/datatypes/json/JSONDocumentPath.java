@@ -9,8 +9,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -25,11 +29,11 @@ import de.metas.ui.web.window.datatypes.WindowId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,21 +42,26 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDocumentPath implements Serializable
 {
-	@JsonProperty("documentType")
+	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final WindowId windowId;
+
+	@JsonProperty("processId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final ProcessId processId;
+
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String documentId;
+	private final DocumentId documentId;
 	//
 	@JsonProperty("tabid")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String tabid;
+	private final DetailId tabid;
 	//
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String rowId;
+	private final DocumentId rowId;
 
 	@JsonProperty("fieldName")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -60,14 +69,27 @@ public class JSONDocumentPath implements Serializable
 
 	@JsonCreator
 	private JSONDocumentPath(
-			@JsonProperty("documentType") final WindowId windowId //
-			, @JsonProperty("documentId") final String documentId //
-			, @JsonProperty("tabid") final String tabid //
-			, @JsonProperty("rowId") final String rowId //
+			@JsonProperty("windowId") final WindowId windowId //
+			, @JsonProperty("processId") final ProcessId processId //
+			, @JsonProperty("documentId") final DocumentId documentId //
+			, @JsonProperty("tabid") final DetailId tabid //
+			, @JsonProperty("rowId") final DocumentId rowId //
 			, @JsonProperty("fieldName") final String fieldName)
 	{
-		super();
-		this.windowId = windowId;
+		if (windowId == null && processId == null)
+		{
+			throw new IllegalArgumentException("windowId or processId shall be set");
+		}
+		else if(windowId != null && processId != null)
+		{
+			throw new IllegalArgumentException("windowId or processId shall be set but not all of them");
+		}
+		else
+		{
+			this.windowId = windowId;
+			this.processId = processId;
+		}
+
 		this.documentId = documentId;
 		this.tabid = tabid;
 		this.rowId = rowId;
@@ -80,6 +102,7 @@ public class JSONDocumentPath implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("windowId", windowId)
+				.add("processId", processId)
 				.add("documentId", documentId)
 				.add("tabid", tabid)
 				.add("rowId", rowId)
@@ -89,6 +112,17 @@ public class JSONDocumentPath implements Serializable
 
 	public DocumentPath toSingleDocumentPath()
 	{
-		return DocumentPath.singleWindowDocumentPath(windowId, documentId, tabid, rowId);
+		if (windowId != null)
+		{
+			return DocumentPath.singleWindowDocumentPath(windowId, documentId, tabid, rowId);
+		}
+		else if (processId != null)
+		{
+			return DocumentPath.rootDocumentPath(DocumentType.Process, processId.toDocumentId(), documentId);
+		}
+		else
+		{
+			throw new IllegalStateException("Cannot create single document path from " + this);
+		}
 	}
 }

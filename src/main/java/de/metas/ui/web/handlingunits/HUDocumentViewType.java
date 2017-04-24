@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.ui.web.view.IDocumentViewType;
 
@@ -44,6 +46,7 @@ public enum HUDocumentViewType implements IDocumentViewType
 	}
 
 	@Override
+	@JsonValue
 	public String getName()
 	{
 		return name;

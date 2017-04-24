@@ -44,7 +44,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
  */
 public class JSONDocumentView extends JSONDocumentBase
 {
-	public static List<JSONDocumentView> ofDocumentViewList(final List<IDocumentView> documentViews)
+	public static List<JSONDocumentView> ofDocumentViewList(final List<? extends IDocumentView> documentViews)
 	{
 		return documentViews.stream()
 				.map(JSONDocumentView::ofDocumentView)
@@ -72,8 +72,6 @@ public class JSONDocumentView extends JSONDocumentBase
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
 			// Add pseudo "ID" field first
-			final String idFieldName = row.getIdFieldNameOrNull();
-			if (idFieldName != null)
 			{
 				final Object id = row.getDocumentId().toJson();
 				jsonFields.add(0, JSONDocumentField.idField(id));

@@ -2,7 +2,6 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -44,9 +43,6 @@ public interface IDocumentView
 	//
 	// Fields
 	// @formatter:off
-	String getIdFieldNameOrNull();
-	Set<String> getFieldNames();
-	Object getFieldValueAsJson(final String fieldName);
 	Map<String, Object> getFieldNameAndJsonValues();
 	// @formatter:on
 
@@ -65,6 +61,5 @@ public interface IDocumentView
 	// Attributes
 	// @formatter:off
 	boolean hasIncludedView();
-	IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo);
 	// @formatter:on
 }

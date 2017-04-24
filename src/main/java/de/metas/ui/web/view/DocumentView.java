@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nullable;
-
-import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -55,11 +52,9 @@ public final class DocumentView implements IDocumentView
 	private final IDocumentViewType type;
 	private final boolean processed;
 
-	private final String idFieldName;
 	private final Map<String, Object> values;
 
 	private final IDocumentViewAttributesProvider attributesProvider;
-	private final DocumentId attributesKey;
 
 	private final List<IDocumentView> includedDocuments;
 
@@ -68,7 +63,6 @@ public final class DocumentView implements IDocumentView
 		super();
 		documentPath = builder.getDocumentPath();
 
-		idFieldName = builder.idFieldName;
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
 		processed = builder.isProcessed();
@@ -78,7 +72,6 @@ public final class DocumentView implements IDocumentView
 		includedDocuments = builder.buildIncludedDocuments();
 
 		attributesProvider = builder.getAttributesProviderOrNull();
-		attributesKey = Util.coalesce(builder.getAttributesKeyOrNull(), documentId);
 	}
 
 	@Override
@@ -89,7 +82,6 @@ public final class DocumentView implements IDocumentView
 				.add("id", documentId)
 				.add("type", type)
 				.add("values", values)
-				.add("attributesKey", attributesKey)
 				.add("attributesProvider", attributesProvider)
 				.add("includedDocuments.count", includedDocuments.size())
 				.add("processed", processed)
@@ -100,12 +92,6 @@ public final class DocumentView implements IDocumentView
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
-	}
-
-	@Override
-	public String getIdFieldNameOrNull()
-	{
-		return idFieldName;
 	}
 
 	@Override
@@ -127,18 +113,6 @@ public final class DocumentView implements IDocumentView
 	}
 
 	@Override
-	public Set<String> getFieldNames()
-	{
-		return values.keySet();
-	}
-
-	@Override
-	public Object getFieldValueAsJson(final String fieldName)
-	{
-		return values.get(fieldName);
-	}
-
-	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
 		return values;
@@ -153,7 +127,7 @@ public final class DocumentView implements IDocumentView
 	@Override
 	public IDocumentViewAttributes getAttributes()
 	{
-		if (attributesKey == null)
+		if (documentId == null)
 		{
 			throw new EntityNotFoundException("Document does not support attributes");
 		}
@@ -162,7 +136,7 @@ public final class DocumentView implements IDocumentView
 			throw new EntityNotFoundException("Document does not support attributes");
 		}
 
-		final IDocumentViewAttributes attributes = attributesProvider.getAttributes(documentId, attributesKey);
+		final IDocumentViewAttributes attributes = attributesProvider.getAttributes(documentId, documentId);
 		if (attributes == null)
 		{
 			throw new EntityNotFoundException("Document does not support attributes");
@@ -177,17 +151,16 @@ public final class DocumentView implements IDocumentView
 	}
 
 	@Override
-	public IDocumentViewSelection getCreateIncludedView(final IDocumentViewsRepository viewsRepo)
-	{
-		throw new EntityNotFoundException("Row " + this + " does not support included view");
-	}
-
-	@Override
 	public List<IDocumentView> getIncludedDocuments()
 	{
 		return includedDocuments;
 	}
 
+	//
+	//
+	//
+	//
+	//
 	public static final class Builder
 	{
 		private final WindowId windowId;
@@ -201,7 +174,6 @@ public final class DocumentView implements IDocumentView
 		private List<IDocumentView> includedDocuments = null;
 
 		private IDocumentViewAttributesProvider attributesProvider;
-		private DocumentId attributesKey;
 
 		private Builder(@NonNull final WindowId windowId)
 		{
@@ -231,6 +203,7 @@ public final class DocumentView implements IDocumentView
 			return this;
 		}
 
+		/** @return view row ID */
 		private DocumentId getDocumentId()
 		{
 			if (_documentId != null)
@@ -267,7 +240,6 @@ public final class DocumentView implements IDocumentView
 			{
 				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' (" + idJson.getClass() + ") to integer");
 			}
-
 		}
 
 		private IDocumentViewType getType()
@@ -320,22 +292,9 @@ public final class DocumentView implements IDocumentView
 			return attributesProvider;
 		}
 
-		private DocumentId getAttributesKeyOrNull()
-		{
-			return attributesKey;
-		}
-
-		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider, @Nullable final DocumentId attributesKey)
-		{
-			this.attributesProvider = attributesProvider;
-			this.attributesKey = attributesKey;
-			return this;
-		}
-
 		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
-			attributesKey = null; // will be auto-detected (i.e. the documentId will be used)
 			return this;
 		}
 

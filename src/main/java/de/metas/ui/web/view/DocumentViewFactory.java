@@ -44,5 +44,6 @@ public @interface DocumentViewFactory
 {
 	String windowId();
 
-	JSONViewDataType viewType();
+	/** supported view types (empty means all */
+	JSONViewDataType[] viewTypes() default {};
 }

@@ -53,7 +53,7 @@ public class JSONProcessInstance implements Serializable
 
 		parameters = pinstance.getParameters()
 				.stream()
-				.map(JSONDocumentField::ofDocumentField)
+				.map(param -> JSONDocumentField.ofDocumentField(param, jsonOpts.getAD_Language()))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 }

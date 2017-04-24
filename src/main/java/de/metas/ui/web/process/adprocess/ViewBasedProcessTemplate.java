@@ -152,7 +152,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final DocumentId documentId = ListUtils.singleElement(selectedDocumentIds);
 		return getView().getById(documentId);
 	}
-
+	
 	protected static <T extends IDocumentView> ProcessPreconditionsResolution checkRowsEligible(final Stream<T> rows, final Predicate<T> isEligible)
 	{
 		final MutableInt countNotEligible = MutableInt.zero();

@@ -41,9 +41,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -87,7 +89,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	/** Is this the key field ? */
 	private final boolean key;
 	private final boolean parentLink;
-	private final boolean virtualField;
 	private final boolean calculated;
 
 	private final DocumentFieldWidgetType widgetType;
@@ -95,9 +96,12 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Class<?> valueClass;
 
 	private final LookupDescriptorProvider lookupDescriptorProvider;
+	
+	private final boolean virtualField;
+	private final Optional<IDocumentFieldValueProvider> virtualFieldValueProvider;
 
 	private final Optional<IExpression<?>> defaultValueExpression;
-	private final List<IDocumentFieldCallout> callouts;
+	private final ImmutableList<IDocumentFieldCallout> callouts;
 
 	public static enum Characteristic
 	{
@@ -110,13 +114,13 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocumentNo //
 		, SpecialField_DocStatus //
 		, SpecialField_DocAction //
-		, SpecialField_DocumentSummary //
+//		, SpecialField_DocumentSummary //
 		;
 	};
 
 	private static final List<Characteristic> SPECIALFIELDS_ToExcludeFromLayout = ImmutableList.of(
-			Characteristic.SpecialField_DocumentNo //
-			, Characteristic.SpecialField_DocStatus //
+//			Characteristic.SpecialField_DocumentNo // NOP, don't exclude it (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 )
+			Characteristic.SpecialField_DocStatus //
 			, Characteristic.SpecialField_DocAction //
 	// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
 	);
@@ -142,8 +146,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		key = builder.isKey();
 		parentLink = builder.parentLink;
-		virtualField = builder.virtualField;
-		calculated = builder.calculated;
+		calculated = builder.isCalculated();
 
 		widgetType = builder.getWidgetType();
 		valueClass = builder.getValueClass();
@@ -151,6 +154,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
 
 		defaultValueExpression = Preconditions.checkNotNull(builder.defaultValueExpression, "defaultValueExpression not null");
+		
+		virtualField = builder.isVirtualField();
+		virtualFieldValueProvider = builder.getVirtualFieldValueProvider();
 
 		characteristics = Sets.immutableEnumSet(builder.characteristics);
 		readonlyLogic = builder.getReadonlyLogicEffective();
@@ -162,7 +168,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		dependencies = builder.buildDependencies();
 
-		callouts = ImmutableList.copyOf(builder.getCallouts());
+		callouts = builder.buildCallouts();
 	}
 
 	@Override
@@ -211,6 +217,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	public boolean isVirtualField()
 	{
 		return virtualField;
+	}
+	
+	public Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
+	{
+		return virtualFieldValueProvider;
 	}
 
 	public boolean isCalculated()
@@ -603,6 +614,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private boolean key = false;
 		private boolean parentLink = false;
 		private boolean virtualField;
+		private Optional<IDocumentFieldValueProvider> virtualFieldValueProvider = Optional.empty();
 		private boolean calculated;
 
 		private DocumentFieldWidgetType _widgetType;
@@ -617,7 +629,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private ILogicExpression _entityReadonlyLogic = ILogicExpression.FALSE;
 		private ILogicExpression _readonlyLogic = ILogicExpression.FALSE;
 		private ILogicExpression _readonlyLogicEffective = null;
-		private boolean alwaysUpdateable;
+		private boolean alwaysUpdateable = false;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
 		private ILogicExpression _mandatoryLogic = ILogicExpression.FALSE;
 		private ILogicExpression _mandatoryLogicEffective = null;
@@ -772,6 +784,15 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			this.virtualField = virtualField;
+			this.virtualFieldValueProvider = Optional.empty();
+			return this;
+		}
+		
+		public Builder setVirtualField(@NonNull final IDocumentFieldValueProvider virtualFieldValueProvider)
+		{
+			assertNotBuilt();
+			this.virtualField = true;
+			this.virtualFieldValueProvider = Optional.of(virtualFieldValueProvider);
 			return this;
 		}
 
@@ -779,12 +800,26 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return virtualField;
 		}
+		
+		private Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
+		{
+			return virtualFieldValueProvider;
+		}
 
 		public Builder setCalculated(final boolean calculated)
 		{
 			assertNotBuilt();
 			this.calculated = calculated;
 			return this;
+		}
+		
+		private boolean isCalculated()
+		{
+			if(isVirtualField())
+			{
+				return true;
+			}
+			return calculated;
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
@@ -897,7 +932,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public boolean isSpecialField()
+		public boolean isSpecialFieldToExcludeFromLayout()
 		{
 			return !Collections.disjoint(characteristics, SPECIALFIELDS_ToExcludeFromLayout);
 		}
@@ -963,7 +998,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				return ILogicExpression.TRUE;
 			}
 
-			// Case: DocumentNo special field not be readonly
+			// Case: DocumentNo/Value special field not be readonly
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
 				return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
@@ -1089,11 +1124,6 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public ILogicExpression getMandatoryLogic()
-		{
-			return _mandatoryLogic;
-		}
-
 		private ILogicExpression getMandatoryLogicEffective()
 		{
 			if (_mandatoryLogicEffective == null)
@@ -1135,7 +1165,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			// => we need to NOT enforce setting it because it's not needed, user cannot change it and it might be no callouts to set it.
 			// Else, we won't be able to save our document.
 			final boolean publicField = hasCharacteristic(Characteristic.PublicField);
-			final ILogicExpression mandatoryLogic = getMandatoryLogic();
+			final ILogicExpression mandatoryLogic = _mandatoryLogic;
 			final boolean mandatory = mandatoryLogic.isConstantTrue();
 			final DocumentFieldDataBindingDescriptor fieldDataBinding = getDataBinding().orElse(null);
 			final boolean mandatoryDB = fieldDataBinding != null && fieldDataBinding.isMandatory();
@@ -1182,6 +1212,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			{
 				dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues);
 			}
+			
+			final IDocumentFieldValueProvider virtualFieldValueProvider = getVirtualFieldValueProvider().orElse(null);
+			if(virtualFieldValueProvider != null)
+			{
+				dependencyMapBuilder.add(fieldName, virtualFieldValueProvider.getDependsOnFieldNames(), DependencyType.FieldValue);
+			}
 
 			return dependencyMapBuilder.build();
 		}
@@ -1206,9 +1242,9 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		/* package */List<IDocumentFieldCallout> getCallouts()
+		private ImmutableList<IDocumentFieldCallout> buildCallouts()
 		{
-			return callouts;
+			return ImmutableList.copyOf(callouts);
 		}
 
 		public Builder setButtonProcessId(final int buttonProcessId)

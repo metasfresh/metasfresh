@@ -16,7 +16,6 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
-import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -34,7 +33,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
-import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
+import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 /*
@@ -92,20 +91,18 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		_documentEntryBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx);
 
 		//
-		// FIXME: HARDCODED: C_Order's DocumentSummary
-		if (rootEntity && _documentEntryBuilder.isTableName(I_C_Order.Table_Name))
+		// Document summary
+		if(rootEntity)
 		{
-			// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
-			final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
-			addInternalVirtualField(
-					WindowConstants.FIELDNAME_DocumentSummary // fieldName
-					, DocumentFieldWidgetType.Text // widgetType
-					, String.class // valueType
-					, true // publicField
-					, valueProvider // valueProvider
-			);
+			final IDocumentFieldValueProvider summaryValueProvider = GenericDocumentSummaryValueProvider.of(_documentEntryBuilder);
+			if(summaryValueProvider != null)
+			{
+				addInternalVirtualField(WindowConstants.FIELDNAME_DocumentSummary, DocumentFieldWidgetType.Text, summaryValueProvider);
+			}
 		}
 
+		//
+		collectSpecialFieldsDone();
 	}
 
 	public ILogicExpression getTabDisplayLogic()
@@ -255,9 +252,9 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		{
 			final int displayType = gridFieldVO.getDisplayType();
 			widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
-			if(widgetType.isButton() && gridFieldVO.AD_Process_ID > 0)
+			if (widgetType.isButton() && gridFieldVO.AD_Process_ID > 0)
 			{
-				if(WindowConstants.FIELDNAME_DocAction.equals(fieldName)
+				if (WindowConstants.FIELDNAME_DocAction.equals(fieldName)
 						|| WindowConstants.FIELDNAME_Processing.equals(fieldName))
 				{
 					// FIXME: hardcoded, exclude field when considering ProcessButton widget
@@ -274,7 +271,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			{
 				buttonProcessId = -1;
 			}
-			
+
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
@@ -387,46 +384,19 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 	public final DocumentFieldDescriptor.Builder addInternalVirtualField(
 			final String fieldName //
 			, final DocumentFieldWidgetType widgetType //
-			, final Class<?> valueClass //
-			, final boolean publicField //
-			, final IExpression<?> valueProvider //
+			, final IDocumentFieldValueProvider valueProvider //
 	)
 	{
 		final DocumentEntityDescriptor.Builder documentEntity = documentEntity();
 
-		final ExpressionDocumentFieldCallout callout = ExpressionDocumentFieldCallout.of(fieldName, valueProvider);
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(fieldName)
-				//
-				.setKey(false)
-				.setParentLink(false)
-				//
 				.setWidgetType(widgetType)
-				.setValueClass(valueClass)
-				.setVirtualField(true)
-				.setCalculated(true)
-				//
-				// Default value: use our expression
-				.setDefaultValueExpression(valueProvider)
-				//
-				.addCharacteristicIfTrue(publicField, Characteristic.PublicField)
-				//
-				// Logics:
-				.setReadonlyLogic(ILogicExpression.TRUE) // yes, always readonly for outside
-				.setAlwaysUpdateable(false)
-				.setMandatoryLogic(ILogicExpression.FALSE) // not mandatory
-				.setDisplayLogic(ILogicExpression.FALSE) // never display it
-				//
-				.setDataBinding(null) // no databinding !
-				//
-				.addCallout(callout);
+				.setVirtualField(valueProvider)
+				.setDisplayLogic(false); // never display it because it's internal
 
 		//
 		// Add Field builder to document entity
 		documentEntity.addField(fieldBuilder);
-
-		//
-		// Add Field's data binding to entity data binding
-		// entityBindingsBuilder.addField(dataBinding); // no databinding!
 
 		//
 		// Collect special field
@@ -511,9 +481,14 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		_specialFieldsCollector.collect(field);
 	}
 
-	public DocumentFieldDescriptor.Builder getSpecialField_DocumentNo()
+	private final void collectSpecialFieldsDone()
 	{
-		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocumentNo();
+		if (_specialFieldsCollector == null)
+		{
+			return;
+		}
+
+		_specialFieldsCollector.collectFinish();
 	}
 
 	public DocumentFieldDescriptor.Builder getSpecialField_DocumentSummary()

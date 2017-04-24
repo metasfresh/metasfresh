@@ -68,6 +68,17 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 public class LayoutFactory
 {
+	public static final LayoutFactory ofMainTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO)
+	{
+		final GridTabVO parentTab = null; // no parent
+		return new LayoutFactory(gridWindowVO, mainTabVO, parentTab);
+	}
+	
+	public static final LayoutFactory ofIncludedTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO, final GridTabVO detailTabVO)
+	{
+		return new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
+	}
+	
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
 	@Autowired
@@ -97,7 +108,7 @@ public class LayoutFactory
 	private IWindowUIElementsProvider _uiProvider;
 	private final List<I_AD_UI_Section> _uiSections;
 
-	public LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
+	private LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
 	{
 		Adempiere.autowire(this);
 
@@ -631,23 +642,6 @@ public class LayoutFactory
 	public DocumentEntityDescriptor.Builder documentEntity()
 	{
 		return descriptorsFactory.documentEntity();
-	}
-
-	public DocumentLayoutElementDescriptor createSpecialElement_DocumentNo()
-	{
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.getSpecialField_DocumentNo();
-		if (field == null)
-		{
-			return null;
-		}
-
-		return DocumentLayoutElementDescriptor.builder()
-				.setCaptionNone() // not relevant
-				.setDescription(null) // not relevant
-				.setLayoutTypeNone() // not relevant
-				.setWidgetType(field.getWidgetType())
-				.addField(layoutElementField(field))
-				.build();
 	}
 
 	public DocumentLayoutElementDescriptor createSpecialElement_DocumentSummary()

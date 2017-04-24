@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -21,7 +22,6 @@ import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.model.I_AD_Ref_List;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -77,7 +77,7 @@ public class WEBUI_M_HU_Transform
 		extends HUViewProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final  String SYSCONFIG_ALLOW_INFINIT_CAPACITY_TUS = "de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform.AllowNewTUsWithInfiniteCapacity";
+	private static final String SYSCONFIG_ALLOW_INFINIT_CAPACITY_TUS = "de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform.AllowNewTUsWithInfiniteCapacity";
 
 	/**
 	 *
@@ -378,10 +378,7 @@ public class WEBUI_M_HU_Transform
 	 * @param tuPIItemProductId to TU
 	 */
 	private void action_SplitCU_To_NewTUs(
-			final HUDocumentView cuRow,
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
-			final BigDecimal qtyCU,
-			final boolean isOwnPackingMaterials)
+			final HUDocumentView cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final BigDecimal qtyCU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -395,9 +392,7 @@ public class WEBUI_M_HU_Transform
 	// * existing LU (M_HU_ID)
 	// * QtyTUs
 	private void action_SplitTU_To_ExistingLU(
-			final HUDocumentView tuRow,
-			final I_M_HU luHU,
-			final BigDecimal qtyTU)
+			final HUDocumentView tuRow, final I_M_HU luHU, final BigDecimal qtyTU)
 	{
 		HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -417,10 +412,7 @@ public class WEBUI_M_HU_Transform
 	 * @param luPI
 	 */
 	private void action_SplitTU_To_NewLU(
-			final HUDocumentView tuRow,
-			final I_M_HU_PI_Item huPIItem,
-			final BigDecimal qtyTU,
-			final boolean isOwnPackingMaterials)
+			final HUDocumentView tuRow, final I_M_HU_PI_Item huPIItem, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -438,8 +430,7 @@ public class WEBUI_M_HU_Transform
 	 * @param tuPI
 	 */
 	private void action_SplitTU_To_NewTUs(
-			final HUDocumentView tuRow,
-			final BigDecimal qtyTU)
+			final HUDocumentView tuRow, final BigDecimal qtyTU)
 	{
 		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
 		final I_M_HU sourceTuHU = tuRow.getM_HU();
@@ -463,7 +454,7 @@ public class WEBUI_M_HU_Transform
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(getCtx(), getProcessInfo().getAD_Process_ID(), PARAM_Action);
-		final Collection<I_AD_Ref_List> allActiveActionItems = adReferenceDAO.retrieveListItems(getCtx(), processParameter.getAD_Reference_Value_ID());
+		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(processParameter.getAD_Reference_Value_ID());
 
 		final Set<String> selectableTypes = new HashSet<>();
 
@@ -505,11 +496,12 @@ public class WEBUI_M_HU_Transform
 			selectableTypes.add(ActionType.LU_Set_Ownership.toString());
 		}
 
+		final String adLanguage = Env.getAD_Language(getCtx());
+
 		return allActiveActionItems.stream()
 				.filter(item -> selectableTypes.contains(item.getValueName()))
-				.map(item -> InterfaceWrapperHelper.translate(item, I_AD_Ref_List.class)) // replace 'item' with its translated version
-				.sorted(Comparator.comparing(I_AD_Ref_List::getName))
-				.map(item -> StringLookupValue.of(item.getValueName(), item.getName()))
+				.map(item -> StringLookupValue.of(item.getValueName(), item.getName().translate(adLanguage)))
+				.sorted(Comparator.comparing(lookupValue -> lookupValue.getDisplayName()))
 				.collect(LookupValuesList.collect());
 	}
 

@@ -56,11 +56,11 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
 {
-	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field)
+	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field, final String adLanguage)
 	{
 		final String name = field.getFieldName();
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
-		final Object valueJSON = field.getValueAsJsonObject();
+		final Object valueJSON = field.getValueAsJsonObject(adLanguage);
 		final String reason = null; // N/A
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)

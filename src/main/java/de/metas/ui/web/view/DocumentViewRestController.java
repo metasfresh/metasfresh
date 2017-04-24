@@ -213,26 +213,9 @@ public class DocumentViewRestController
 		final Set<DocumentId> documentIds = DocumentId.ofCommaSeparatedString(idsListStr);
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final List<IDocumentView> result = documentViewsRepo.getView(viewId)
+		final List<? extends IDocumentView> result = documentViewsRepo.getView(viewId)
 				.getByIds(documentIds);
 		return JSONDocumentView.ofDocumentViewList(result);
-	}
-
-	@GetMapping("/{viewId}/rows/{documentId}/includedView")
-	public JSONDocumentViewResult getIncludedView(
-			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr //
-			, @PathVariable("documentId") final String documentIdStr//
-			)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final DocumentId documentId = DocumentId.of(documentIdStr);
-		final IDocumentView row = documentViewsRepo.getView(viewId).getById(documentId);
-
-		final IDocumentViewSelection includedView = row.getCreateIncludedView(documentViewsRepo);
-		return JSONDocumentViewResult.of(DocumentViewResult.ofView(includedView));
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")

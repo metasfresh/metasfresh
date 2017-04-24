@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 import java.util.Set;
 
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -45,6 +46,8 @@ public @interface ViewAction
 	String description() default "";
 
 	boolean defaultAction() default false;
+	
+	ProcessLayoutType layoutType() default ProcessLayoutType.Panel;
 
 	Class<? extends Precondition> precondition() default AlwaysAllowPrecondition.class;
 

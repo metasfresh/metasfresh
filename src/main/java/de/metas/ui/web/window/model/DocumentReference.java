@@ -7,7 +7,6 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import groovy.transform.Immutable;
 
@@ -52,7 +51,7 @@ public final class DocumentReference
 		super();
 
 		id = zoomInfo.getId();
-		caption = ImmutableTranslatableString.constant(zoomInfo.getLabel());
+		caption = zoomInfo.getLabel();
 		AD_Window_ID = zoomInfo.getAD_Window_ID();
 		documentsCount = zoomInfo.getRecordCount();
 		filter = DocumentFilter.of(zoomInfo.getQuery());

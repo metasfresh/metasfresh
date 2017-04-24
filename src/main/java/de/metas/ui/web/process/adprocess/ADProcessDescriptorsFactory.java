@@ -34,6 +34,7 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -152,6 +153,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 		// Parameters layout
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setProcessId(processId)
+				.setLayoutType(ProcessLayoutType.Panel)
 				.setCaption(parametersDescriptor.getCaption())
 				.setDescription(parametersDescriptor.getDescription())
 				.addElements(parametersDescriptor);

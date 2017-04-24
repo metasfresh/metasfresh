@@ -5,8 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.ui.web.handlingunits.HUDocumentViewAttributesProvider;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
@@ -41,9 +39,6 @@ public final class DocumentViewAttributesProviderFactory
 	private DocumentViewAttributesProviderFactory()
 	{
 		super();
-
-		// FIXME: hardcoded factories
-		registerProvider(WEBUI_HU_Constants.WEBUI_HU_Window_ID, HUDocumentViewAttributesProvider.class);
 	}
 
 	public void registerProvider(@NonNull final WindowId windowId, @NonNull final Class<? extends IDocumentViewAttributesProvider> providerClass)

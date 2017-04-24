@@ -30,6 +30,8 @@ public enum JSONViewDataType
 	list(Characteristic.SideListField) //
 	/** Grid layout data */
 	, grid(Characteristic.GridViewField) //
+	/** Included view layout */
+	, includedView(null)
 	;
 	
 	private final Characteristic requiredFieldCharacteristic;

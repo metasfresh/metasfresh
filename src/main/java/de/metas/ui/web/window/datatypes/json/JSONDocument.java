@@ -75,7 +75,7 @@ public final class JSONDocument extends JSONDocumentBase
 			document.getFieldViews()
 					.stream()
 					.filter(jsonOpts.documentFieldFilter())
-					.map(JSONDocumentField::ofDocumentField)
+					.map(field -> JSONDocumentField.ofDocumentField(field, jsonOpts.getAD_Language()))
 					.forEach(jsonFields::add);
 
 			jsonDocument.setFields(jsonFields);

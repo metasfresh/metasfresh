@@ -66,7 +66,7 @@ public final class DocumentPath
 		}
 		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), documentId);
 	}
-	
+
 	public static final DocumentPath rootDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
 	{
 		if (documentId.isNew())
@@ -75,7 +75,6 @@ public final class DocumentPath
 		}
 		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), documentId);
 	}
-
 
 	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 	{
@@ -136,13 +135,13 @@ public final class DocumentPath
 	/**
 	 * Creates the path of a single document (root document or included document).
 	 */
-	public static final DocumentPath singleWindowDocumentPath(@NonNull final WindowId windowId, final String idStr, final String detailId, final String rowIdStr)
+	public static final DocumentPath singleWindowDocumentPath(@NonNull final WindowId windowId, final DocumentId id, final DetailId detailId, final DocumentId rowId)
 	{
 		return builder()
 				.setDocumentType(windowId)
-				.setDocumentId(idStr)
+				.setDocumentId(id)
 				.setDetailId(detailId)
-				.setRowId(rowIdStr)
+				.setRowId(rowId)
 				.build();
 	}
 
@@ -525,7 +524,13 @@ public final class DocumentPath
 
 		public Builder setDocumentId(final String documentIdStr)
 		{
-			documentId = DocumentId.fromNullable(documentIdStr);
+			setDocumentId(DocumentId.fromNullable(documentIdStr));
+			return this;
+		}
+
+		public Builder setDocumentId(final DocumentId documentId)
+		{
+			this.documentId = documentId;
 			return this;
 		}
 
@@ -537,7 +542,13 @@ public final class DocumentPath
 
 		public Builder setDetailId(final String detailIdStr)
 		{
-			detailId = DetailId.fromJson(detailIdStr);
+			setDetailId(DetailId.fromJson(detailIdStr));
+			return this;
+		}
+
+		public Builder setDetailId(final DetailId detailId)
+		{
+			this.detailId = detailId;
 			return this;
 		}
 

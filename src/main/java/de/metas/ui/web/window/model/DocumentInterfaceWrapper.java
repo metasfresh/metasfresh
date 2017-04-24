@@ -38,11 +38,11 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -102,7 +102,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			document = ((IDocumentAware)model).getDocument();
 			useOldValuesDefault = false;
 		}
-		
+
 		if (document == null)
 		{
 			final DocumentInterfaceWrapper wrapper = getWrapper(model);
@@ -179,7 +179,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	 * @param model
 	 * @return {@link DocumentInterfaceWrapper} or null if no {@link DocumentInterfaceWrapper} can be extracted from given model
 	 */
-	/* package */static DocumentInterfaceWrapper getWrapper(final Object model)
+	private static DocumentInterfaceWrapper getWrapper(final Object model)
 	{
 		if (model == null)
 		{
@@ -202,6 +202,50 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		}
 
 		return null;
+	}
+
+	/* package */static DocumentInterfaceWrapper getOrCreateWrapper(final Object model)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+
+		//
+		// Try to get the wrapper directly
+		if (Proxy.isProxyClass(model.getClass()))
+		{
+			final InvocationHandler ih = Proxy.getInvocationHandler(model);
+			if (ih instanceof DocumentInterfaceWrapper)
+			{
+				final DocumentInterfaceWrapper wrapper = (DocumentInterfaceWrapper)ih;
+				return wrapper;
+			}
+			return null;
+		}
+		else if (model instanceof DocumentInterfaceWrapper)
+		{
+			return (DocumentInterfaceWrapper)model;
+		}
+
+		//
+		// Try getting the document and create a wrapper for it
+		if (model instanceof Document)
+		{
+			final Document document = (Document)model;
+			final boolean useOldValues = false;
+			return new DocumentInterfaceWrapper(document, useOldValues);
+		}
+		else if (model instanceof IDocumentAware)
+		{
+			final Document document = ((IDocumentAware)model).getDocument();
+			final boolean useOldValues = false;
+			return new DocumentInterfaceWrapper(document, useOldValues);
+		}
+
+		//
+		// Wrapper could not be found or create
+		throw new IllegalArgumentException("Cannot get or create the " + DocumentInterfaceWrapper.class + " from " + model);
 	}
 
 	public static int getWindowNo(final Object model)

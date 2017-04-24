@@ -258,7 +258,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 				return false;
 			}
 
-			if (excludeSpecialFields && fieldBuilder.isSpecialField())
+			if (excludeSpecialFields && fieldBuilder.isSpecialFieldToExcludeFromLayout())
 			{
 				logger.trace("Skip adding {} to {} because it's a special field and we were asked to exclude special fields", fieldBuilder, this);
 				return false;

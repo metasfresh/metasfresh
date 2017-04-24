@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -15,6 +14,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -30,13 +31,10 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
-import de.metas.ui.web.view.DocumentView;
-import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.Builder;
 
 /*
  * #%L
@@ -62,55 +60,30 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public class HUDocumentViewLoader
 {
-	public static final HUDocumentViewLoader of(final DocumentViewCreateRequest request, final String referencingTableName)
-	{
-		return new HUDocumentViewLoader(request, referencingTableName);
-	}
-
 	private static final transient Logger logger = LogManager.getLogger(HUDocumentViewLoader.class);
 
 	private final WindowId windowId;
 	private final String referencingTableName;
-	private final CopyOnWriteArraySet<Integer> huIds = new CopyOnWriteArraySet<>();
 
-	private final IDocumentViewAttributesProvider _attributesProvider;
+	private final HUDocumentViewAttributesProvider attributesProvider;
 
-	private HUDocumentViewLoader(final DocumentViewCreateRequest request, final String referencingTableName)
+	@Builder
+	private HUDocumentViewLoader(final WindowId windowId, final String referencingTableName)
 	{
 		super();
 
-		windowId = request.getWindowId();
+		this.windowId = windowId;
 		this.referencingTableName = referencingTableName;
 
-		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
-		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
-		{
-			huIds.addAll(filterOnlyIds);
-		}
-
-		if (huIds.isEmpty())
-		{
-			throw new IllegalArgumentException("No filters specified for " + request);
-		}
-
-		_attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(windowId);
+		this.attributesProvider = new HUDocumentViewAttributesProvider();
 	}
-
-	public IDocumentViewAttributesProvider getAttributesProvider()
+	
+	public void invalidateAll()
 	{
-		return _attributesProvider;
+		attributesProvider.invalidateAll();
 	}
 
-	public void addHUs(final Collection<I_M_HU> husToAdd)
-	{
-		final Set<Integer> huIdsToAdd = husToAdd.stream()
-				.map(I_M_HU::getM_HU_ID)
-				.collect(GuavaCollectors.toImmutableSet());
-
-		this.huIds.addAll(huIdsToAdd);
-	}
-
-	public List<HUDocumentView> retrieveDocumentViews()
+	public List<HUDocumentView> retrieveDocumentViews(final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
@@ -134,17 +107,22 @@ public class HUDocumentViewLoader
 		return createDocumentView(hu);
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> filterOnlyIds)
+	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> huIds)
 	{
+		if(huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
 		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
 				.setOnlyTopLevelHUs()
 				.createQueryBuilder();
 
-		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
+		if (huIds != null && !huIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, filterOnlyIds);
+			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds);
 		}
 
 		return queryBuilder
@@ -173,17 +151,17 @@ public class HUDocumentViewLoader
 		final boolean processed = extractProcessed(hu);
 		final int huId = hu.getM_HU_ID();
 
-		final DocumentView.Builder huViewRecord = DocumentView.builder(windowId)
-				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
+		final HUDocumentView.Builder huViewRecord = HUDocumentView.builder(windowId)
+				.setDocumentId(DocumentId.of(huId))
 				.setType(huRecordType)
-				.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId))
+				.setAttributesProvider(attributesProvider)
 				.setProcessed(processed)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_PackingInfo, extractPackingInfo(hu, huRecordType));
+				.setHUId(huId)
+				.setCode(hu.getValue())
+				.setHUUnitType(huUnitTypeLookupValue)
+				.setHUStatus(huStatus)
+				.setPackingInfo(extractPackingInfo(hu, huRecordType));
 
 		//
 		// Product/UOM/Qty if there is only one product stored
@@ -191,9 +169,9 @@ public class HUDocumentViewLoader
 		if (singleProductStorage != null)
 		{
 			huViewRecord
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(singleProductStorage.getM_Product()))
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(singleProductStorage.getC_UOM()))
-					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, singleProductStorage.getQty());
+					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
+					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
+					.setQtyCU(singleProductStorage.getQty());
 		}
 
 		//
@@ -237,14 +215,8 @@ public class HUDocumentViewLoader
 			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
 		}
 
-		return HUDocumentView.of(huViewRecord.build());
+		return huViewRecord.build();
 	}
-	
-	private static final DocumentId createAttributesKey(final int huId)
-	{
-		return DocumentId.of(huId);
-	}
-
 
 	private static final String extractPackingInfo(final I_M_HU hu, final HUDocumentViewType huUnitType)
 	{
@@ -303,39 +275,31 @@ public class HUDocumentViewLoader
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
-
 		final I_M_Product product = huStorage.getM_Product();
+		final HUDocumentViewAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
 
-		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
-		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
-
-		final DocumentView.Builder storageDocumentBuilder = DocumentView.builder(windowId)
+		return HUDocumentView.builder(windowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
-				.setIdFieldName(null) // N/A
 				.setType(HUDocumentViewType.HUStorage)
 				.setProcessed(processed)
+				.setAttributesProvider(attributesProviderEffective)
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, huId)
-				// .putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue()) // NOTE: don't show value on storage level
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
+				.setHUId(huId)
+				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
+				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
+				.setHUStatus(createHUStatusLookupValue(hu))
 				//
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createProductLookupValue(product))
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createUOMLookupValue(huStorage.getC_UOM()))
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty());
-
-		if (huId != parent_HU_ID)
-		{
-			storageDocumentBuilder.setAttributesProvider(getAttributesProvider(), createAttributesKey(huId));
-		}
-
-		return HUDocumentView.of(storageDocumentBuilder.build());
+				.setProduct(createProductLookupValue(product))
+				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
+				.setQtyCU(huStorage.getQty())
+				//
+				.build();
 	}
 
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
 	{
 		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), I_WEBUI_HU_View.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(IHUDocumentView.HUSTATUS_AD_Reference_ID, huStatusKey);
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 

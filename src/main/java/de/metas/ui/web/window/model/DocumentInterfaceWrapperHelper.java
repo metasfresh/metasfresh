@@ -135,9 +135,10 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	@Override
 	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
 	{
+		final DocumentInterfaceWrapper wrapper = DocumentInterfaceWrapper.getOrCreateWrapper(model);
+		
 		//
 		// Get <columnName>_Override's value, if any
-		final DocumentInterfaceWrapper wrapper = DocumentInterfaceWrapper.getWrapper(model);
 		if (useOverrideColumnIfAvailable)
 		{
 			final T value = getValueOverrideOrNull(wrapper, columnName);

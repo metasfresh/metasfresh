@@ -17,6 +17,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -65,6 +67,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	private final IStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final INamePairPredicate postQueryPredicate;
 
+	private final boolean isTranslatable;
+
 	private GenericSqlLookupDataSourceFetcher(final LookupDescriptor lookupDescriptor)
 	{
 		super();
@@ -79,6 +83,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
 		sqlForFetchingDisplayNameByIdExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression();
 		postQueryPredicate = sqlLookupDescriptor.getPostQueryPredicate();
+		
+		isTranslatable = sqlForFetchingDisplayNameByIdExpression.requiresParameter(LookupDataSourceContext.PARAM_AD_Language.getName());
 	}
 
 	@Override
@@ -144,6 +150,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+		final String adLanguage = isTranslatable ? evalCtx.getAD_Language() : null;
 
 		try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
 		{
@@ -158,7 +165,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			LookupValuesList values = data.fetchAll()
 					.stream()
 					.filter(evalCtx::acceptItem)
-					.map(namePair -> LookupValue.fromNamePair(namePair))
+					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage))
 					.collect(LookupValuesList.collect(debugProperties));
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);
@@ -181,18 +188,29 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		{
 			return LOOKUPVALUE_NULL;
 		}
+		
+		final ITranslatableString displayNameTrl;
+		if(isTranslatable)
+		{
+			final String adLanguage = evalCtx.getAD_Language();
+			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, displayName);
+		}
+		else
+		{
+			displayNameTrl = ImmutableTranslatableString.anyLanguage(displayName);
+		}
 
 		//
 		//
 		if (id instanceof Integer)
 		{
 			final Integer idInt = (Integer)id;
-			return IntegerLookupValue.of(idInt, displayName);
+			return IntegerLookupValue.of(idInt, displayNameTrl);
 		}
 		else
 		{
 			final String idString = id.toString();
-			return StringLookupValue.of(idString, displayName);
+			return StringLookupValue.of(idString, displayNameTrl);
 		}
 	}
 }
