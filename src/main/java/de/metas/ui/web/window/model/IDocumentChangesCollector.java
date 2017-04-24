@@ -85,6 +85,8 @@ public interface IDocumentChangesCollector
 	@FunctionalInterface
 	public interface ReasonSupplier
 	{
+		public static final ReasonSupplier NONE = null;
+		
 		/**
 		 * @return actual reason string
 		 */

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -46,6 +47,8 @@ public final class WindowConstants
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
+	
+	public static final WindowId WINDOWID_R_Request = WindowId.of(232); // FIXME: HARDCODED
 
 	public static final String FIELDNAME_DocumentNo = "DocumentNo";
 	public static final String FIELDNAME_Value = "Value";
