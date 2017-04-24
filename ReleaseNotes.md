@@ -40,6 +40,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
     * Fixing the bug that prevented the usage of document reversals.
+  * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
+    * Fixes a Bug that did not allow to add split-off Transport Units to be added to a new Logistic Unit.
 
 * metasfesh-webui-api
   * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
