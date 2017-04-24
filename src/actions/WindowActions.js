@@ -639,8 +639,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         break;
                     case 'openReport':
                         dispatch(openFile(
-                            'process', action.contentType, id, 'print',
-                            action.filename
+                            'process', type, id, 'print', action.filename
                         ));
                         break;
                     case 'openDocument':
