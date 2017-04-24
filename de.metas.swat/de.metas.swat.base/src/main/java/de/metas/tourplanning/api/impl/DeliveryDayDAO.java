@@ -117,6 +117,8 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		// the delivery days that are in the same day as the datePromised have priority over the earlier ones.
 		if (preparationDay != null)
 		{
+			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
+
 			queryBuilder.orderBy()
 					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Ascending, Nulls.Last);
 		}
