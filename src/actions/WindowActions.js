@@ -370,6 +370,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
                     dispatch(initDataSuccess(
                         {}, 'master', 'notfound', {saved: true}, {}, {}
                     ));
+                    dispatch(getWindowBreadcrumb());
                 });
             }
         }
