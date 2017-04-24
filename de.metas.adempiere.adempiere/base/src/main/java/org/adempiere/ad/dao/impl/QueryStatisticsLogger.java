@@ -3,6 +3,7 @@ package org.adempiere.ad.dao.impl;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,13 +11,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.db.util.AbstractResultSetBlindIterator;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
-import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CStatementVO;
+import org.compiere.util.Trace;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
@@ -149,7 +148,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	@ManagedOperation(description = "Sets a filter for SQLs which are collected for statistics. NOTE: this is not affecting the SQL tracing.")
 	public void setFilterBy(final String filterBy)
 	{
-		if (Check.equals(this.filterBy, filterBy))
+		if (Objects.equals(this.filterBy, filterBy))
 		{
 			//
 			// Nothing changed
@@ -220,7 +219,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		//
 		// Dump the stacktrace as short as possible
-		final String stackTraceStr = toOnLineString(stacktrace);
+		final String stackTraceStr = Trace.toOneLineStackTraceString(stacktrace);
 		message.append(nl + "-- Stacktrace: ").append(stackTraceStr);
 
 		//
@@ -251,70 +250,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		System.err.println(prefixSQL + message.toString().replaceAll("\n", prefixSQL));
 		System.err.println(prefix + "-end-----------------------------------------------------------------------------");
 		System.err.println("");
-	}
-
-	private static final String toOnLineString(final StackTraceElement[] stacktrace)
-	{
-		final StringBuilder stackTraceStr = new StringBuilder();
-		int ste_Considered = 0;
-		boolean ste_lastSkipped = false;
-		for (final StackTraceElement ste : stacktrace)
-		{
-			if (ste_Considered >= 100)
-			{
-				stackTraceStr.append("...");
-				break;
-			}
-
-			String classname = ste.getClassName();
-			final String methodName = ste.getMethodName();
-
-			// Skip some irrelevant stack trace elements
-			if (classname.startsWith("java.") || classname.startsWith("javax.") || classname.startsWith("sun.")
-					|| classname.startsWith("com.google.")
-					|| classname.startsWith("org.springframework.")
-					|| classname.startsWith("org.apache.")
-					|| classname.startsWith(QueryStatisticsLogger.class.getPackage().getName())
-					//
-					|| classname.startsWith(StatementsFactory.class.getPackage().getName())
-					|| classname.startsWith(AbstractResultSetBlindIterator.class.getPackage().getName())
-					|| classname.startsWith(ITrxManager.class.getPackage().getName())
-					|| classname.startsWith(org.adempiere.ad.persistence.TableModelLoader.class.getPackage().getName())
-					//
-					|| classname.startsWith(JavaAssistInterceptor.class.getPackage().getName())
-					|| classname.indexOf("_$$_jvstdca_") >= 0 // javassist proxy
-					|| methodName.startsWith("access$")
-			//
-			)
-			{
-				ste_lastSkipped = true;
-				continue;
-			}
-
-			final int lastDot = classname.lastIndexOf(".");
-			if (lastDot >= 0)
-			{
-				classname = classname.substring(lastDot + 1);
-			}
-
-			if (ste_lastSkipped || stackTraceStr.length() > 0)
-			{
-				stackTraceStr.append(ste_lastSkipped ? " <~~~ " : " <- ");
-			}
-
-			stackTraceStr.append(classname).append(".").append(methodName);
-
-			final int lineNumber = ste.getLineNumber();
-			if (lineNumber > 0)
-			{
-				stackTraceStr.append(":").append(lineNumber);
-			}
-
-			ste_lastSkipped = false;
-			ste_Considered++;
-		}
-
-		return stackTraceStr.toString();
 	}
 
 	/**

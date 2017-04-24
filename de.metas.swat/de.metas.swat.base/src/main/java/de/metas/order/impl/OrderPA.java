@@ -34,10 +34,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.db.IDatabaseBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.MiscUtils;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Order;
@@ -46,7 +45,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
-import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -379,57 +377,6 @@ public class OrderPA implements IOrderPA
 	}
 
 	@Override
-	public Collection<I_C_OrderLine> retrieveOrderLinesForLoc(
-			final int partnerLocationId, final int shipperId,
-			final String trxName)
-	{
-
-		final Object[] params = new Object[] { partnerLocationId, shipperId,
-				shipperId };
-
-		final IDatabaseBL db = Services.get(IDatabaseBL.class);
-
-		final List<X_C_OrderLine> xOrderLines = db.retrieveList(
-				SQL_LOC_SCHED_ORDERLINES, params, X_C_OrderLine.class, trxName);
-
-		final Collection<I_C_OrderLine> result = new ArrayList<I_C_OrderLine>();
-
-		for (X_C_OrderLine olPO : xOrderLines)
-		{
-			result.add(InterfaceWrapperHelper.create(olPO, I_C_OrderLine.class));
-		}
-
-		return result;
-	}
-
-	@Override
-	public <T extends I_C_OrderLine> List<T> retrieveOrderLinesForProdAndLoc(
-			final Properties ctx, 
-			final int productId, 
-			final int partnerLocationId,
-			final Class<T> clazz,
-			final String trxName)
-	{
-
-		final String sql = "SELECT ol.* " //
-				+ " FROM C_OrderLine ol " //
-				+ " WHERE ol.M_Product_ID=? AND ol.C_BPartner_Location_ID=? "
-				+ EXISTS_SCHED + "ORDER BY ol.DateOrdered";
-
-		final IDatabaseBL db = Services.get(IDatabaseBL.class);
-		final List<MOrderLine> ols = db.retrieveList(sql, new Object[] {
-				productId, partnerLocationId }, MOrderLine.class, trxName);
-
-		final ArrayList<T> result = new ArrayList<T>();
-		for (final MOrderLine olPO : ols)
-		{
-			result.add(InterfaceWrapperHelper.create(olPO, clazz));
-		}
-
-		return result;
-	}
-
-	@Override
 	public void reserveStock(final I_C_Order order, final I_C_OrderLine... ols)
 	{
 
@@ -507,7 +454,7 @@ public class OrderPA implements IOrderPA
 
 		if (copyLines)
 		{
-			final int linesCopied = newOrder.copyLinesFrom((MOrder)MiscUtils.asPO(originalOrder), false, false);
+			final int linesCopied = newOrder.copyLinesFrom(LegacyAdapters.convertToPO(originalOrder), false, false);
 			logger.debug("Copied " + linesCopied + " form original order");
 		}
 

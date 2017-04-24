@@ -1124,7 +1124,7 @@ public abstract class PO
 					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
 					value instanceof String)
 			{
-				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
+				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
 				if (!hasListValue)
 				{
 					final StringBuilder validValues = new StringBuilder();
