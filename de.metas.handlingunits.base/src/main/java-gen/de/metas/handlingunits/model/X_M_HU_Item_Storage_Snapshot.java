@@ -16,7 +16,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1402357528L;
+	private static final long serialVersionUID = 157516636L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Storage_Snapshot (Properties ctx, int M_HU_Item_Storage_Snapshot_ID, String trxName)
@@ -27,7 +27,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 			setM_HU_Item_ID (0);
 			setM_HU_Item_Storage_Snapshot_ID (0);
 			setM_Product_ID (0);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
 			setSnapshot_UUID (null);
         } */
     }
@@ -229,7 +229,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

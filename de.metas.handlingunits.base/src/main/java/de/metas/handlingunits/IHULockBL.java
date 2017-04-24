@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.util.Collection;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 
@@ -56,6 +58,8 @@ public interface IHULockBL extends ISingletonService
 	 */
 	void lock(I_M_HU hu, LockOwner lockOwner);
 
+	void lockAll(Collection<I_M_HU> hus, LockOwner lockOwner);
+
 	/**
 	 * Unlock the HU from given lock owner.
 	 * 
@@ -66,8 +70,12 @@ public interface IHULockBL extends ISingletonService
 	 */
 	void unlock(I_M_HU hu, LockOwner lockOwner);
 
+	void unlockAll(Collection<I_M_HU> hus, LockOwner lockOwner);
+
 	/**
 	 * @return filter which accepts only those HUs which are not locked for any owner
 	 */
 	IQueryFilter<I_M_HU> isLockedFilter();
+
+	IQueryFilter<I_M_HU> isNotLockedFilter();
 }

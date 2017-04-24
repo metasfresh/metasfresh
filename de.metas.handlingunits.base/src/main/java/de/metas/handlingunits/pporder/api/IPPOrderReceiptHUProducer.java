@@ -75,6 +75,12 @@ public interface IPPOrderReceiptHUProducer
 	void createReceiptCandidatesFromPlanningHU(I_M_HU planningHU);
 
 	/**
+	 * @deprecated To be removed. Needed only for the legacy Swing UI.
+	 */
+	@Deprecated
+	void setSkipCreateCandidates();
+
+	/**
 	 * @return created manufacturing receipt candidate
 	 */
 	List<I_PP_Order_Qty> getCreatedCandidates();

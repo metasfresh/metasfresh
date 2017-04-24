@@ -16,7 +16,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -22118109L;
+	private static final long serialVersionUID = -1376727325L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -33,7 +33,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 			setPP_Order_Qty_ID (0);
 			setProcessed (false);
 // N
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
 // 0
         } */
     }
@@ -385,7 +385,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

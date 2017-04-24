@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 
 /**
@@ -225,17 +227,17 @@ public class ZoomInfoFactory implements IZoomProvider
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
+		public static final ZoomInfo of(final String zoomInfoId, final int windowId, final MQuery query, final ITranslatableString destinationDisplay)
 		{
 			return new ZoomInfo(zoomInfoId, windowId, query, destinationDisplay);
 		}
 
 		private final String _zoomInfoId;
-		private final String _destinationDisplay;
+		private final ITranslatableString _destinationDisplay;
 		private final MQuery _query;
 		private final int _windowId;
 
-		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
+		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final ITranslatableString destinationDisplay)
 		{
 			super();
 
@@ -248,7 +250,7 @@ public class ZoomInfoFactory implements IZoomProvider
 			Check.assumeNotNull(query, "Parameter query is not null");
 			_query = query;
 
-			Check.assumeNotEmpty(destinationDisplay, "destinationDisplay is not empty");
+			Check.assumeNotNull(destinationDisplay, "destinationDisplay is not null");
 			_destinationDisplay = destinationDisplay;
 		}
 
@@ -267,10 +269,11 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			return _zoomInfoId;
 		}
-
-		public String getLabel()
+		
+		public ITranslatableString getLabel()
 		{
-			return _destinationDisplay + " (#" + getRecordCount() + ")";
+			final ITranslatableString postfix = ImmutableTranslatableString.constant(" (#" + getRecordCount() + ")");
+			return ITranslatableString.compose(_destinationDisplay, postfix);
 		}
 
 		public int getRecordCount()

@@ -16,7 +16,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1381594396L;
+	private static final long serialVersionUID = 196512502L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
@@ -34,9 +34,9 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 			setM_HU_LUTU_Configuration_ID (0);
 			setM_Product_ID (0);
 			setM_TU_HU_PI_ID (0);
-			setQtyCU (Env.ZERO);
-			setQtyLU (Env.ZERO);
-			setQtyTU (Env.ZERO);
+			setQtyCU (BigDecimal.ZERO);
+			setQtyLU (BigDecimal.ZERO);
+			setQtyTU (BigDecimal.ZERO);
         } */
     }
 
@@ -514,7 +514,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -533,7 +533,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyLU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -552,7 +552,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyTU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

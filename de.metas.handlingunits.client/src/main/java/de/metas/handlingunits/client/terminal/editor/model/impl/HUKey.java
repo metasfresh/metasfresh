@@ -190,6 +190,11 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	{
 		return _hu;
 	}
+	
+	public final int getM_HU_ID()
+	{
+		return _hu.getM_HU_ID();
+	}
 
 	@Override
 	public Object getAggregationKey()

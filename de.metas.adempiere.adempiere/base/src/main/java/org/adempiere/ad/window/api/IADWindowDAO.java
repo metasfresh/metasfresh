@@ -35,6 +35,8 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
+import de.metas.i18n.ITranslatableString;
+
 public interface IADWindowDAO extends ISingletonService
 {
 
@@ -44,7 +46,7 @@ public interface IADWindowDAO extends ISingletonService
 	 * @param adWindowId
 	 * @return the name for the given <code>AD_Window_ID</code> or <code>null</code> if the given ID is less or equal zero.
 	 */
-	String retrieveWindowName(int adWindowId);
+	ITranslatableString retrieveWindowName(int adWindowId);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 

@@ -16,7 +16,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1338709188L;
+	private static final long serialVersionUID = -197246446L;
 
     /** Standard Constructor */
     public X_M_HU_Assignment (Properties ctx, int M_HU_Assignment_ID, String trxName)
@@ -274,7 +274,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
