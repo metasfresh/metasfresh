@@ -65,13 +65,6 @@ class Header extends Component {
         });
     }
 
-    handleCloseSideList = (callback) => {
-        this.setState({
-                isSideListShow: false
-            }, callback);
-        this.toggleScrollScope(false);
-    }
-
     handleMenuOverlay = (e, nodeId) => {
         const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
@@ -155,10 +148,6 @@ class Header extends Component {
         });
     }
 
-    handleClone = () => {
-        //TODO when API ready
-    }
-
     handlePromptCancelClick = () => {
         this.setState({
             prompt: Object.assign({}, this.state.prompt, {
@@ -198,13 +187,12 @@ class Header extends Component {
         }
     }
 
-    handleSidelistToggle = (id = null) => {
-        const {sideListTab} = this.state;
+    handleSidelistToggle = (id = null, sideListTab) => {
 
         this.toggleScrollScope(id !== null);
 
         this.setState({
-            isSideListShow: id !== sideListTab,
+            isSideListShow: id !== null && id !== sideListTab,
             sideListTab: id !== sideListTab ? id : null
         });
     }
@@ -217,6 +205,7 @@ class Header extends Component {
             isMenuOverlayShow: false,
             isInboxOpen: false,
             isSideListShow: false,
+            sideListTab: null,
             isSubheaderShow:
                 (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
             tooltipOpen: ''
@@ -489,7 +478,6 @@ class Header extends Component {
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
-                    handleClone={this.handleClone}
                     redirect={this.redirect}
                     selected={selected}
                     selectedWindowType={selectedWindowType}
@@ -499,9 +487,9 @@ class Header extends Component {
                 />}
 
                 {showSidelist && isSideListShow && <SideList
-                    windowType={windowType ? parseInt(windowType) : ''}
+                    windowType={windowType ? windowType : ''}
                     closeOverlays={this.closeOverlays}
-                    closeSideList={this.handleCloseSideList}
+                    closeSideList={this.handleSidelistToggle}
                     isSideListShow={isSideListShow}
                     disableOnClickOutside={!showSidelist}
                     docId={dataId}
@@ -509,7 +497,8 @@ class Header extends Component {
                 />}
 
                 <GlobalContextShortcuts
-                    handleSidelistToggle={this.handleSidelistToggle}
+                    handleSidelistToggle={(id) =>
+                        this.handleSidelistToggle(id, sideListTab)}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',

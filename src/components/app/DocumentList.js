@@ -4,6 +4,7 @@ import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import QuickActions from './QuickActions';
+import BlankPage from '../BlankPage';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
@@ -13,7 +14,8 @@ import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
 
 import {
-    initLayout
+    initLayout,
+    getDataByIds
 } from '../../actions/GenericActions';
 
 import {
@@ -25,7 +27,8 @@ import {
 import {
     setSorting,
     setPagination,
-    setListId
+    setListId,
+    setListIncludedView
 } from '../../actions/ListActions';
 
 import {
@@ -70,9 +73,9 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch
+            inBackground, dispatch, includedView, selectedWindowType
         } = props;
-        const {page, sort, viewId, cachedSelection} = this.state;
+        const {page, sort, viewId, cachedSelection, layout} = this.state;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -129,12 +132,35 @@ class DocumentList extends Component {
             inBackground != this.props.inBackground
         ) {
             if(!inBackground){
-                dispatch(selectTableItems(cachedSelection, windowType))
+                // In case of preventing cached selection restore
+                cachedSelection &&
+                    dispatch(selectTableItems(cachedSelection, windowType))
+                this.setState({
+                    cachedSelection: undefined
+                })
             }else{
                 this.setState({
                     cachedSelection: selected
                 })
             }
+        }
+
+        /*
+         * When the selection of unfocused table changes
+         */
+        if(
+            selectedWindowType === windowType &&
+            cachedSelection !== null &&
+            cachedSelection !== undefined &&
+            layout && layout.supportIncludedView &&
+            includedView && includedView.windowType && includedView.viewId
+        ){
+            // There is no need to restore cached selection in that case
+            this.setState({
+                cachedSelection: null
+            }, () => {
+                dispatch(setListIncludedView());
+            })
         }
     }
 
@@ -143,6 +169,7 @@ class DocumentList extends Component {
     }
 
     connectWS = (viewId) => {
+        const {dispatch, windowType} = this.props;
         (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
 
@@ -151,7 +178,24 @@ class DocumentList extends Component {
         this.sockClient.debug = null;
         this.sockClient.connect({}, () => {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
-                const {fullyChanged} = JSON.parse(msg.body);
+                const {fullyChanged, changedIds} = JSON.parse(msg.body);
+                if(changedIds){
+                    dispatch(getDataByIds(
+                        'documentView', windowType, viewId, changedIds.join()
+                    )).then(response => {
+                        response.data.map(row => {
+                            this.setState({
+                                data: Object.assign(this.state.data, {}, {
+                                    result: this.state.data.result.map(
+                                        resultRow =>
+                                            resultRow.id === row.id ?
+                                                row : resultRow
+                                    )
+                                })
+                            })
+                        })
+                    });
+                }
                 if(fullyChanged == true){
                     this.browseView(true);
                 }
@@ -159,10 +203,14 @@ class DocumentList extends Component {
         });
     }
 
-    doesSelectionExist(selected) {
+    doesSelectionExist(selected, hasIncluded) {
         const {data} = this.state;
         // When the rows are changing we should ensure
         // that selection still exist
+
+        if(hasIncluded){
+            return true;
+        }
 
         let rows = [];
 
@@ -222,7 +270,12 @@ class DocumentList extends Component {
                 }
                 setModalTitle && setModalTitle(response.data.caption)
             })
-        });
+        }).catch(() => {
+            this.mounted && this.setState({
+                layout: 'notfound',
+                data: 'notfound'
+            });
+        })
     }
     /*
      *  If viewId exist, than browse that view.
@@ -358,20 +411,33 @@ class DocumentList extends Component {
 
     render() {
         const {
-            layout, data, viewId, clickOutsideLock, refresh, page, filters
+            layout, data, viewId, clickOutsideLock, refresh, page, filters,
+            cachedSelection
         } = this.state;
 
         const {
             windowType, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit, isModal, processStatus, readonly
+            fetchQuickActionsOnInit, isModal, processStatus, readonly,
+            includedView, children, isIncluded, disablePaginationShortcuts
         } = this.props;
 
-        const selectionValid = this.doesSelectionExist(selected);
+        const hasIncluded = layout && layout.supportIncludedView &&
+            includedView && includedView.windowType && includedView.viewId;
+        const selectionValid = this.doesSelectionExist(selected, hasIncluded);
+
+        if(layout === 'notfound'){
+            return <BlankPage what="Document type"/>
+        }
 
         if(layout && data) {
             return (
-                <div className="document-list-wrapper">
-                    {!readonly && <div
+                <div
+                    className={
+                        'document-list-wrapper ' +
+                        (isIncluded ? 'document-list-included ' : '')
+                    }
+                >
+                    {(!readonly && !isIncluded) && <div
                         className="panel panel-primary panel-spaced panel-inline document-list-header"
                     >
                         <div>
@@ -394,11 +460,16 @@ class DocumentList extends Component {
                             />}
                         </div>
                         <QuickActions
-                            windowType={windowType}
-                            viewId={viewId}
+                            windowType={
+                                (includedView && includedView.windowType) ?
+                                    includedView.windowType : windowType
+                            }
+                            viewId={(includedView && includedView.viewId) ?
+                                includedView.viewId : viewId
+                            }
                             selected={selectionValid ? selected : undefined}
                             refresh={refresh}
-                            shouldNotUpdate={inBackground}
+                            shouldNotUpdate={inBackground && !hasIncluded}
                             fetchOnInit={fetchQuickActionsOnInit}
                             processStatus={processStatus}
                         />
@@ -418,8 +489,10 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => this.redirectToDocument(id)}
+                            onDoubleClick={(id) =>
+                                    !isIncluded && this.redirectToDocument(id)}
                             isModal={isModal}
+                            isIncluded={isIncluded}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
@@ -433,11 +506,16 @@ class DocumentList extends Component {
                             closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
-                            defaultSelected={selected}
+                            defaultSelected={cachedSelection ?
+                                cachedSelection : selected}
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
+                            inBackground={inBackground}
+                            disablePaginationShortcuts=
+                                {disablePaginationShortcuts}
                         >
-                            {layout.supportAttributes &&
+                            {layout.supportAttributes && !isIncluded &&
+                                !hasIncluded &&
                                 <DataLayoutWrapper
                                     className="table-flex-wrapper attributes-selector js-not-unselect"
                                     entity="documentView"
@@ -458,6 +536,13 @@ class DocumentList extends Component {
                                     />
                                 </DataLayoutWrapper>
                             }
+                            {hasIncluded &&
+                                <div
+                                    className="table-flex-wrapper document-list-included js-not-unselect"
+                                >
+                                    {children}
+                                </div>
+                            }
                         </Table>
                     </div>
                 </div>
@@ -470,7 +555,7 @@ class DocumentList extends Component {
 }
 
 DocumentList.propTypes = {
-    windowType: PropTypes.number.isRequired,
+    windowType: PropTypes.string.isRequired,
     dispatch: PropTypes.func.isRequired
 }
 

@@ -145,7 +145,7 @@ class Attachments extends Component {
 }
 
 Attachments.PropTypes = {
-    windowType: PropTypes.number.isRequired,
+    windowType: PropTypes.string.isRequired,
     docId: PropTypes.string.isRequired,
     dispatch: PropTypes.func.isRequired
 }

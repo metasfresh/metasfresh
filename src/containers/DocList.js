@@ -62,7 +62,7 @@ class DocList extends Component {
     render() {
         const {
             windowType, breadcrumb, query, modal, selected, rawModal,
-            indicator, processStatus
+            indicator, processStatus, includedView, selectedWindowType
         } = this.props;
 
         const {
@@ -100,34 +100,51 @@ class DocList extends Component {
                         }
                      />
                  }
+
                  {rawModal.visible &&
                      <RawModal
                          modalTitle={modalTitle}
                      >
                          <DocumentList
                              type="grid"
-                             windowType={parseInt(rawModal.type)}
+                             windowType={rawModal.type}
                              defaultViewId={rawModal.viewId}
                              selected={selected}
+                             selectedWindowType={selectedWindowType}
                              setModalTitle={this.setModalTitle}
                              isModal={true}
                              processStatus={processStatus}
-                         />
+                             includedView={includedView}
+                             inBackground={
+                                 includedView.windowType && includedView.viewId
+                             }
+                         >
+                             <DocumentList
+                                 type="includedView"
+                                 selected={selected}
+                                 windowType={includedView.windowType}
+                                 defaultViewId={includedView.viewId}
+                                 isIncluded={true}
+                             />
+                         </DocumentList>
                      </RawModal>
                  }
                  <DocumentList
                      type="grid"
                      updateUri={this.updateUriCallback}
-                     windowType={parseInt(windowType)}
+                     windowType={windowType}
                      defaultViewId={query.viewId}
                      defaultSort={query.sort}
                      defaultPage={parseInt(query.page)}
                      refType={query.refType}
                      refId={query.refId}
+                     selectedWindowType={selectedWindowType}
                      selected={selected}
                      inBackground={rawModal.visible}
                      fetchQuickActionsOnInit={true}
                      processStatus={processStatus}
+                     disablePaginationShortcuts=
+                        {modal.visible || rawModal.visible}
                  />
             </Container>
         );
@@ -138,6 +155,7 @@ DocList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired,
     query: PropTypes.object.isRequired,
+    includedView: PropTypes.object.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
     rawModal: PropTypes.object.isRequired,
@@ -147,20 +165,30 @@ DocList.propTypes = {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler, appHandler, routing } = state;
+    const {
+        windowHandler, menuHandler, listHandler, appHandler, routing
+    } = state;
 
     const {
         modal,
         rawModal,
         selected,
+        selectedWindowType,
         latestNewDocument,
         indicator
     } = windowHandler || {
         modal: false,
         rawModal: false,
         selected: [],
+        selectedWindowType: null,
         latestNewDocument: null,
         indicator: ''
+    }
+
+    const {
+        includedView
+    } = listHandler || {
+        includedView: {}
     }
 
     const {
@@ -182,8 +210,8 @@ function mapStateToProps(state) {
     }
 
     return {
-        modal, breadcrumb, pathname, selected, indicator,
-        latestNewDocument, rawModal, processStatus
+        modal, breadcrumb, pathname, selected, indicator, includedView,
+        latestNewDocument, rawModal, processStatus, selectedWindowType
     }
 }
 

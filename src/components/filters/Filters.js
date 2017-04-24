@@ -158,7 +158,7 @@ class Filters extends Component {
 }
 
 Filters.propTypes = {
-    windowType: PropTypes.number.isRequired
+    windowType: PropTypes.string.isRequired
 }
 
 export default Filters;

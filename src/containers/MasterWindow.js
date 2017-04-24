@@ -14,6 +14,7 @@ import {
 } from '../actions/AppActions';
 
 import Window from '../components/Window';
+import BlankPage from '../components/BlankPage';
 import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
 import DocumentList from '../components/app/DocumentList';
@@ -58,6 +59,7 @@ class MasterWindow extends Component {
         const {pathname} = this.props.location;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
+
         window.removeEventListener('beforeunload', this.confirm);
 
         if(isDocumentNotSaved && !isDeleted){
@@ -132,16 +134,96 @@ class MasterWindow extends Component {
             })
     }
 
+    renderBody = () => {
+        const {
+            master, modal, rawModal, selected, indicator
+        } = this.props;
+        const {newRow, modalTitle} = this.state;
+        const {type} = master.layout;
+        const dataId = master.docId;
+
+        let body = [];
+
+        if(modal.visible){
+            body.push(
+                <Modal
+                    key="modal"
+                    relativeType={type}
+                    relativeDataId={dataId}
+                    triggerField={modal.triggerField}
+                    windowType={modal.type}
+                    dataId={modal.dataId ? modal.dataId : dataId}
+                    data={modal.data}
+                    layout={modal.layout}
+                    rowData={modal.rowData}
+                    tabId={modal.tabId}
+                    rowId={modal.rowId}
+                    modalTitle={modal.title}
+                    modalType={modal.modalType}
+                    modalViewId={modal.viewId}
+                    isAdvanced={modal.isAdvanced}
+                    viewId={null}
+                    modalViewDocumentIds={modal.viewDocumentIds}
+                    closeCallback={this.closeModalCallback}
+                    rawModalVisible={rawModal.visible}
+                    indicator={indicator}
+                    modalSaveStatus={
+                        modal.saveStatus &&
+                        modal.saveStatus.saved !== undefined ?
+                            modal.saveStatus.saved : true
+                    }
+                    isDocumentNotSaved={modal.saveStatus ?
+                        !modal.saveStatus.saved &&
+                        !modal.validStatus.initialValue : false
+                    }
+                 />
+            )
+        }
+
+        if(rawModal.visible){
+            body.push(
+                <RawModal
+                    key="rawModal"
+                    modalTitle={modalTitle}
+                >
+                    <DocumentList
+                        type="grid"
+                        windowType={rawModal.type}
+                        defaultViewId={rawModal.viewId}
+                        selected={selected}
+                        setModalTitle={this.setModalTitle}
+                    />
+                </RawModal>
+            )
+        }
+
+        body.push(
+            <Window
+                key="window"
+                data={master.data}
+                layout={master.layout}
+                rowData={master.rowData}
+                tabsInfo={master.includedTabsInfo}
+                dataId={dataId}
+                isModal={false}
+                newRow={newRow}
+                handleDropFile={accepted => this.handleDropFile(accepted)}
+                handleRejectDropped={
+                    rejected => this.handleRejectDropped(rejected)
+                }
+            />
+        )
+
+        return body;
+    }
+
     render() {
         const {
-            master, modal, breadcrumb, rawModal, selected, indicator,
-            params
+            master, modal, breadcrumb, params
         } = this.props;
 
-        const {newRow, modalTitle} = this.state;
-
         const {
-            documentNoElement, docActionElement, documentSummaryElement, type
+            documentNoElement, docActionElement, documentSummaryElement
         } = master.layout;
 
         const dataId = master.docId;
@@ -176,68 +258,14 @@ class MasterWindow extends Component {
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
                 isDocumentNotSaved={
+                    dataId !== 'notfound' &&
                     !master.saveStatus.saved &&
                     !master.validStatus.initialValue
                 }
             >
-                {modal.visible &&
-                    <Modal
-                        relativeType={type}
-                        relativeDataId={dataId}
-                        triggerField={modal.triggerField}
-                        windowType={modal.type}
-                        dataId={modal.dataId ? modal.dataId : dataId}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        isAdvanced={modal.isAdvanced}
-                        viewId={null}
-                        modalViewDocumentIds={modal.viewDocumentIds}
-                        closeCallback={this.closeModalCallback}
-                        rawModalVisible={rawModal.visible}
-                        indicator={indicator}
-                        modalSaveStatus={
-                            modal.saveStatus &&
-                            modal.saveStatus.saved !== undefined ?
-                                modal.saveStatus.saved : true
-                        }
-                        isDocumentNotSaved={modal.saveStatus ?
-                            !modal.saveStatus.saved &&
-                            !modal.validStatus.initialValue : false
-                        }
-                     />
-                 }
-                 {rawModal.visible &&
-                     <RawModal
-                         modalTitle={modalTitle}
-                     >
-                         <DocumentList
-                             type="grid"
-                             windowType={parseInt(rawModal.type)}
-                             defaultViewId={rawModal.viewId}
-                             selected={selected}
-                             setModalTitle={this.setModalTitle}
-                         />
-                     </RawModal>
-                 }
-                <Window
-                    data={master.data}
-                    layout={master.layout}
-                    rowData={master.rowData}
-                    tabsInfo={master.includedTabsInfo}
-                    dataId={dataId}
-                    isModal={false}
-                    newRow={newRow}
-                    handleDropFile={accepted => this.handleDropFile(accepted)}
-                    handleRejectDropped={
-                        rejected => this.handleRejectDropped(rejected)
-                    }
-                />
+                {dataId === 'notfound' ?
+                    <BlankPage what="Document" /> : this.renderBody()
+                }
             </Container>
         );
     }
