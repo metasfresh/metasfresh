@@ -28,12 +28,20 @@ Here come the actual release notes:
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
   
 * metasfresh-webui-api
+  * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
+    * New Functionality to quickly add a quickaction for request creation to WebUI windows.
   * [#313](https://github.com/metasfresh/metasfresh-webui-api/issues/313) Handling Unit Barcode selection 1:1
     * Adding the 1:1 selection functionality to Barcode scanning and Handling Unit selection.
+  * [#314](https://github.com/metasfresh/metasfresh-webui-api/issues/314) HU attributes shall be readonly if the HUStatus is not planning
+    * Handling Unit attributes are editable as long as the Handling Unit status is 'planning'.
+  * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
+    * Adding support for password widget type in Rest-API, preparing the frontend implementation.
 
 * metasfresh-webui-frontend
   * [#291](https://github.com/metasfresh/metasfresh-webui-api/issues/291) Show value/ name in breadcrumb but edit in window
     * Adjusting the look and feel of the breadcrumb structure and navigation.
+  * [#666](https://github.com/metasfresh/metasfresh-webui-frontend/issues/666) refresh in attachments side list
+    * Now refreshing the sidelist and showing the attached files after new attachments to a record.
 
 ## Fixes
 
