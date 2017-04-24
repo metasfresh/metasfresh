@@ -213,7 +213,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		// TODO Auto-generated method stub
+		// TODO: notifyRecordsChanged: identify the sub-trees which could be affected and invalidate only those
 	}
 
 	public void invalidateAll()

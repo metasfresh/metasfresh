@@ -74,7 +74,7 @@ public interface IDocumentViewsRepository
 	List<IDocumentViewSelection> getViews();
 
 	/**
-	 * Notify all views that given records was changed.
+	 * Notify all views that given records was changed (asynchronously).
 	 */
 	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
 }

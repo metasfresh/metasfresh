@@ -69,10 +69,9 @@ public final class JSONDocumentViewChanges implements Serializable
 		{
 			fullyChanged = Boolean.TRUE;
 		}
-		// FIXME: if there are any changed IDs consider as "fullyChanged". Take it out when "changedIds" support will be implemented on frontend side.
 		else if (!changedIds.isEmpty())
 		{
-			fullyChanged = Boolean.TRUE;
+			fullyChanged = Boolean.FALSE;
 		}
 		else
 		{

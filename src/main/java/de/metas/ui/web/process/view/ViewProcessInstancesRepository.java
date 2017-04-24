@@ -21,8 +21,8 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
-import de.metas.ui.web.view.DocumentViewsRepository;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
@@ -54,7 +54,7 @@ import lombok.ToString;
 public class ViewProcessInstancesRepository implements IProcessInstancesRepository
 {
 	@Autowired
-	private DocumentViewsRepository viewsRepository;
+	private IDocumentViewsRepository viewsRepository;
 
 	private static final String PROCESS_HANDLER_TYPE = "View";
 

@@ -328,6 +328,11 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return;
 		}
 
+		// TODO: notifyRecordsChanged:
+		// get M_HU_IDs from recordRefs,
+		// find the top level records from this view which contain our HUs
+		// invalidate those top levels only
+
 		final boolean containsSomeRecords = recordRefs.stream()
 				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
 				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
@@ -336,7 +341,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return;
 		}
-
+		
 		invalidateAll();
 	}
 
