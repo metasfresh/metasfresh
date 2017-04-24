@@ -80,7 +80,7 @@ import lombok.NonNull;
 
 	private final Set<String> readonlyAttributeNames;
 
-	/* package */ HUDocumentViewAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage)
+	/* package */ HUDocumentViewAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, final boolean readonly)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
@@ -90,10 +90,10 @@ import lombok.NonNull;
 		//
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
-		final boolean readonly = extractIsReadonly(attributesStorage);
+		final boolean readonlyEffective = readonly || extractIsReadonly(attributesStorage);
 		readonlyAttributeNames = attributesStorage.getAttributes()
 				.stream()
-				.filter(attribute -> readonly || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+				.filter(attribute -> readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
 				.map(HUDocumentViewAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
 

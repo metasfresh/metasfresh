@@ -15,6 +15,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -48,7 +49,7 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 {
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
 	private final ConcurrentHashMap<DocumentViewAttributesKey, HUDocumentViewAttributes> documentViewAttributesByKey = new ConcurrentHashMap<>();
-	
+
 	@Value
 	private static final class DocumentViewAttributesKey
 	{
@@ -79,12 +80,14 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 
 		final IAttributeStorage attributesStorage = getAttributeStorageFactory().getAttributeStorage(hu);
 		attributesStorage.setSaveOnChange(true);
-		
+
 		final DocumentId documentTypeId = DocumentId.of(huId);
 		final DocumentId viewRowId = key.getViewRowId();
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.HUAttributes, documentTypeId, viewRowId);
 
-		return new HUDocumentViewAttributes(documentPath, attributesStorage);
+		final boolean readonly = !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
+
+		return new HUDocumentViewAttributes(documentPath, attributesStorage, readonly);
 	}
 
 	private IAttributeStorageFactory getAttributeStorageFactory()
