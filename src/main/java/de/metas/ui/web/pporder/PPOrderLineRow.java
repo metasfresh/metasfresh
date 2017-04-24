@@ -88,7 +88,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private final JSONLookupValue uom;
 	private final String packingInfo;
 	private final String code;
-	private final String huStatusInfo;
 	private final BigDecimal qty;
 	private final BigDecimal qtyPlan;
 
@@ -111,7 +110,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		uom = builder.uom;
 		packingInfo = builder.packingInfo;
 		code = builder.code;
-		huStatusInfo = builder.huStatusInfo;
 		qty = builder.qty;
 		qtyPlan = builder.qtyPlan;
 		values = builder.buildValuesMap();
@@ -311,7 +309,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private JSONLookupValue uom;
 		private String packingInfo;
 		private String code;
-		private String huStatusInfo;
 		private BigDecimal qty;
 		private BigDecimal qtyPlan;
 
@@ -331,7 +328,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Value, code);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Type, type.getName());
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_StatusInfo, huStatusInfo);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_M_Product_ID, product);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, uom);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_PackingInfo, packingInfo);
@@ -415,12 +411,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		public Builder setCode(final String code)
 		{
 			this.code = code;
-			return this;
-		}
-
-		public Builder setHUStatusInfo(final String huStatusInfo)
-		{
-			this.huStatusInfo = huStatusInfo;
 			return this;
 		}
 

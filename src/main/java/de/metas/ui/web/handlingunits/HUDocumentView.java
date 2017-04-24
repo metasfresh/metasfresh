@@ -241,12 +241,6 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 		return jsonHUStatus == null ? null : jsonHUStatus.getKey();
 	}
 
-	public String getHUStatusDisplayName()
-	{
-		final JSONLookupValue jsonHUStatus = getHUStatus();
-		return jsonHUStatus == null ? null : jsonHUStatus.getName();
-	}
-
 	public boolean isHUStatusPlanning()
 	{
 		return X_M_HU.HUSTATUS_Planning.equals(getHUStatusKey());

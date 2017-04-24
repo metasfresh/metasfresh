@@ -107,10 +107,6 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
 						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_StatusInfo)))
 				//
 				.build();
 	}

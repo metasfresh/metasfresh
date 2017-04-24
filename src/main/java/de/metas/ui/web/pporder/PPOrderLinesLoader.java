@@ -216,7 +216,6 @@ public class PPOrderLinesLoader
 				.setUOM(huViewRecord.getUOM())
 				.setQty(qty)
 				.setQtyPlan(qtyPlan)
-				.setHUStatusInfo(huViewRecord.getHUStatusDisplayName())
 		//
 		;
 

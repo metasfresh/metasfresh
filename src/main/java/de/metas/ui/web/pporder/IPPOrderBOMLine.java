@@ -31,5 +31,4 @@ public interface IPPOrderBOMLine
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 	String COLUMNNAME_Qty = "Qty";
 	String COLUMNNAME_QtyPlan = "QtyPlan";
-	String COLUMNNAME_StatusInfo = "StatusInfo";
 }
