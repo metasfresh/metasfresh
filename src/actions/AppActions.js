@@ -235,15 +235,18 @@ export function postImageAction (data) {
 }
 
 export function getKPIsDashboard() {
-    return () => axios.get(config.API_URL + '/dashboard/kpis');
+    return () => axios.get(config.API_URL +
+        '/dashboard/kpis?silentError=true');
 }
 
 export function getTargetIndicatorsDashboard() {
-    return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
+    return () => axios.get(config.API_URL +
+        '/dashboard/targetIndicators?silentError=true');
 }
 
 export function getKPIData(id) {
-    return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+'/data');
+    return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+
+        '/data?silentError=true');
 }
 
 export function getTargetIndicatorsData(id) {
@@ -251,7 +254,7 @@ export function getTargetIndicatorsData(id) {
         config.API_URL +
         '/dashboard/targetIndicators/' +
         id +
-        '/data'
+        '/data?silentError=true'
     );
 }
 
