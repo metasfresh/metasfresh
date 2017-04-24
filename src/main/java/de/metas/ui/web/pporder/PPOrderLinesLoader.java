@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
@@ -63,10 +64,14 @@ public class PPOrderLinesLoader
 		return new PPOrderLinesLoader(request);
 	}
 
+	//
+	// Services
 	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final transient IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	//
+	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	
 	private final transient HUDocumentViewLoader _huViewRecordLoader;
-
 	private final int _ppOrderId;
 
 	public PPOrderLinesLoader(final DocumentViewCreateRequest request)
@@ -140,13 +145,15 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlanTotal = ppOrder.getQtyOrdered();
 		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 
+		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
+		
 		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
 				.setDocumentId(documentId)
 				.ppOrder(ppOrder.getPP_Order_ID())
 				.setType(PPOrderLineType.MainProduct)
 				//
 				.setProduct(createProductLookupValue(ppOrder.getM_Product()))
-				.setPackingInfo(extractPackingInfoString(ppOrder.getM_HU_LUTU_Configuration()))
+				.setPackingInfo(extractPackingInfoString(lutuConfig))
 				.setUOM(createUOMLookupValue(ppOrder.getC_UOM()))
 				.setQty(qty)
 				.setQtyPlan(qtyPlan)
@@ -171,7 +178,8 @@ public class PPOrderLinesLoader
 				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType))
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
-			packingInfo = extractPackingInfoString(ppOrderBOMLine.getM_HU_LUTU_Configuration());
+			final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine).getCreateLUTUConfiguration();
+			packingInfo = extractPackingInfoString(lutuConfig);
 		}
 		else
 		{
