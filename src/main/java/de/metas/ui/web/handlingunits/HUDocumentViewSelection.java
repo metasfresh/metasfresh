@@ -89,7 +89,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	private final CopyOnWriteArraySet<Integer> huIds;
 	private final HUDocumentViewLoader documentViewsLoader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
-	
+
 	private final ViewActionDescriptorsList actions;
 
 	private HUDocumentViewSelection(final Builder builder)
@@ -104,7 +104,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader = builder.createDocumentViewsLoader();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
-		
+
 		this.actions = builder.actions;
 	}
 
@@ -203,13 +203,12 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return getRecords().getById(documentId);
 	}
-	
+
 	@Override
 	public List<HUDocumentView> getByIds(final Set<DocumentId> documentIds)
 	{
 		return streamByIds(documentIds).collect(ImmutableList.toImmutableList());
 	}
-
 
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
@@ -297,28 +296,28 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		huIds.add(hu.getM_HU_ID());
 		invalidateAll();
 	}
-	
+
 	public void removesHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
 	{
-		if(husToRemove == null || husToRemove.isEmpty())
+		if (husToRemove == null || husToRemove.isEmpty())
 		{
 			return;
 		}
-		
+
 		huIds.removeAll(extractHUIds(husToRemove));
 		invalidateAll();
 	}
-	
+
 	private static final Set<Integer> extractHUIds(final Collection<I_M_HU> hus)
 	{
 		if (hus == null || hus.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		return hus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
 	}
-	
+
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
@@ -341,7 +340,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return;
 		}
-		
+
 		invalidateAll();
 	}
 
@@ -399,7 +398,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	public SelectViewRowsAction actionSelectHUsByBarcode( //
 			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
 			, final Set<DocumentId> selectedDocumentIds //
-	)
+			)
 	{
 		// Search for matching rowIds by barcode
 		final Set<DocumentId> matchingRowIds = streamAllRecursive()
@@ -414,7 +413,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		// Join matching rowIds with currently selected ones
 		final Set<DocumentId> rowIds = ImmutableSet.<DocumentId> builder()
 				.addAll(matchingRowIds)
-				.addAll(selectedDocumentIds)
+				// .addAll(selectedDocumentIds) // don't keep the previously selected ones (see https://github.com/metasfresh/metasfresh-webui-api/issues/313 )
 				.build();
 
 		return SelectViewRowsAction.builder()
@@ -561,16 +560,16 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return viewId;
 		}
-		
+
 		public Builder setHUIds(final Collection<Integer> huIds)
 		{
 			this.huIds = huIds;
 			return this;
 		}
-		
+
 		private Collection<Integer> getHUIds()
 		{
-			if(huIds == null || huIds.isEmpty())
+			if (huIds == null || huIds.isEmpty())
 			{
 				return ImmutableSet.of();
 			}
@@ -596,7 +595,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
-		
+
 		public Builder setActions(@NonNull final ViewActionDescriptorsList actions)
 		{
 			this.actions = actions;
