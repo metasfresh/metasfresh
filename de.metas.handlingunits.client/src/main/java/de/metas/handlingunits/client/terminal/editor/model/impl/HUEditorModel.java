@@ -1332,6 +1332,11 @@ public class HUEditorModel implements IDisposable
 	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
 	{
 		final Set<I_M_HU> selectedHUs = getSelectedHUs();
+		
+		if (Check.isEmpty(selectedHUs))
+		{
+			throw new TerminalException("@NoSelection@");
+		}
 
 		// Make sure all HUs have ThreadInherited transaction (in order to use caching)
 		selectedHUs.stream().forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited));
@@ -1351,16 +1356,16 @@ public class HUEditorModel implements IDisposable
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
 		huContext.setDate(movementDate);
 
-		final I_C_DocType materialDisposalDocType =  Services.get(IDocTypeDAO.class)
-						.getDocTypeOrNull(
-								context.getCtx() // ctx
-								, X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory // doc basetype
-								, X_C_DocType.DOCSUBTYPE_MaterialDisposal // doc subtype
-								 // isSOTrx
-								, warehouseFrom.getAD_Client_ID() // client
-								, warehouseFrom.getAD_Org_ID() // org
-								, ITrx.TRXNAME_None // trx
-				);
+		final I_C_DocType materialDisposalDocType = Services.get(IDocTypeDAO.class)
+				.getDocTypeOrNull(
+						context.getCtx() // ctx
+						, X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory // doc basetype
+						, X_C_DocType.DOCSUBTYPE_MaterialDisposal // doc subtype
+						// isSOTrx
+						, warehouseFrom.getAD_Client_ID() // client
+						, warehouseFrom.getAD_Org_ID() // org
+						, ITrx.TRXNAME_None // trx
+		);
 
 		// Inventory allocation destination
 		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouseFrom, materialDisposalDocType);
@@ -1501,6 +1506,11 @@ public class HUEditorModel implements IDisposable
 		final List<I_M_HU> hus = new ArrayList<>();
 		hus.addAll(getSelectedHUs());
 
+		if (Check.isEmpty(hus))
+		{
+			throw new TerminalException("@NoSelection@");
+		}
+
 		final de.metas.handlingunits.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(warehouseFrom, de.metas.handlingunits.model.I_M_Warehouse.class);
 		final ReturnsWarehouseModel returnsWarehouseModel = new ReturnsWarehouseModel(_terminalContext, warehouse, hus);
 
@@ -1519,8 +1529,7 @@ public class HUEditorModel implements IDisposable
 		//
 		// Navigate back to root
 		setCurrentHUKey(getRootHUKey());
-		
-		
+
 		return returnsWarehouseModel.getMovements();
 
 	}
