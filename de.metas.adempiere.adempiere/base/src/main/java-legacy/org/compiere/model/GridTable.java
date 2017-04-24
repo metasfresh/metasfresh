@@ -1940,22 +1940,36 @@ public class GridTable extends AbstractTableModel
 			}
 			else
 			{
-				log.debug("Updating ... " + whereClause);
+				log.debug("Updating ... {}", whereClause);
 				if (manualUpdate)
 				{
 					String sql = createUpdateSql(false, whereClause);
-					int no = DB.executeUpdateEx (sql, null);	//	no Trx
+					int no = DB.executeUpdateEx (sql, ITrx.TRXNAME_None);	//	no Trx
 					if (no != 1)
 						log.error("Update #=" + no + " - " + sql);
 				}
 				else
+				{
 					rs.updateRow();
+				}
 			}
 
 			log.debug("Committing ...");
 			DB.commit(true, null);	//	no Trx
 			//
 			lobSave(whereClause);
+			
+			
+			
+//			// TODO: check if trl table and if yes, fire trl changed event ;)
+//			if ("AD_Element_Trl".equals(getTableName()))
+//			{
+//				final int adElementId = -1; // TODO
+//				final String adLanguage = null; // TODO
+//				M_Element.
+//			}
+//			ModelValidationEngine.
+			
 			
 			//	Need to re-read row to get ROWID, Key, DocumentNo, Trigger, virtual columns
 			log.debug("Reading ... " + whereClause);
