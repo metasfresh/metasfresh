@@ -32,6 +32,8 @@ Here come the actual release notes:
     * New Functionality to quickly add a quickaction for request creation to WebUI windows.
   * [#313](https://github.com/metasfresh/metasfresh-webui-api/issues/313) Handling Unit Barcode selection 1:1
     * Adding the 1:1 selection functionality to Barcode scanning and Handling Unit selection.
+  * [#314](https://github.com/metasfresh/metasfresh-webui-api/issues/314) HU attributes shall be readonly if the HUStatus is not planning
+    * Handling Unit attributes are editable as long as the Handling Unit status is 'planning'.
   * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
     * Adding support for password widget type in Rest-API, preparing the frontend implementation.
 
