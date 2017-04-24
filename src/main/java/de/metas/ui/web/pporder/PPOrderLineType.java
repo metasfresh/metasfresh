@@ -33,9 +33,9 @@ import de.metas.ui.web.view.IDocumentViewType;
 
 public enum PPOrderLineType implements IDocumentViewType
 {
-	MainProduct("MainProduct") //
-	, BOMLine_Component("BOM_Component") //
-	, BOMLine_ByCoProduct("BOM_ByCoProduct") //
+	MainProduct("MP") //
+	, BOMLine_Component("CO") //
+	, BOMLine_ByCoProduct("BY") //
 	//
 	, HU_LU(HUDocumentViewType.LU) //
 	, HU_TU(HUDocumentViewType.TU) //

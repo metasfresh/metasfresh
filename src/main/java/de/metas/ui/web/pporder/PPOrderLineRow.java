@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUDocumentViewType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentView;
@@ -89,8 +88,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private final JSONLookupValue uom;
 	private final String packingInfo;
 	private final String code;
-	private final String bomType;
-	private final HUDocumentViewType huType;
 	private final String huStatusInfo;
 	private final BigDecimal qty;
 	private final BigDecimal qtyPlan;
@@ -114,8 +111,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		uom = builder.uom;
 		packingInfo = builder.packingInfo;
 		code = builder.code;
-		bomType = builder.bomType;
-		huType = builder.huType;
 		huStatusInfo = builder.huStatusInfo;
 		qty = builder.qty;
 		qtyPlan = builder.qtyPlan;
@@ -173,11 +168,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	public PPOrderLineType getType()
 	{
 		return type;
-	}
-
-	public String getBOMLineType()
-	{
-		return bomType;
 	}
 
 	public JSONLookupValue getProduct()
@@ -321,8 +311,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private JSONLookupValue uom;
 		private String packingInfo;
 		private String code;
-		private String bomType;
-		private HUDocumentViewType huType;
 		private String huStatusInfo;
 		private BigDecimal qty;
 		private BigDecimal qtyPlan;
@@ -342,8 +330,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		{
 			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Value, code);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_BOMType, bomType);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_HUType, huType);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Type, type.getName());
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_StatusInfo, huStatusInfo);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_M_Product_ID, product);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, uom);
@@ -428,18 +415,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		public Builder setCode(final String code)
 		{
 			this.code = code;
-			return this;
-		}
-
-		public Builder setBOMType(final String bomType)
-		{
-			this.bomType = bomType;
-			return this;
-		}
-
-		public Builder setHUType(final HUDocumentViewType huType)
-		{
-			this.huType = huType;
 			return this;
 		}
 

@@ -167,7 +167,6 @@ public class PPOrderLinesLoader
 				.setDocumentId(documentId)
 				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
-				.setBOMType(componentType)
 				//
 				.setProduct(createProductLookupValue(ppOrderBOMLine.getM_Product()))
 				.setUOM(createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
@@ -212,8 +211,6 @@ public class PPOrderLinesLoader
 				.setAttributesSupplier(huViewRecord.getAttributesSupplier())
 				//
 				.setCode(huViewRecord.getValue())
-				.setBOMType(null)
-				.setHUType(huViewRecord.getType())
 				.setProduct(huViewRecord.getProduct())
 				.setPackingInfo(huViewRecord.getPackingInfo())
 				.setUOM(huViewRecord.getUOM())

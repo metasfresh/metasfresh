@@ -25,8 +25,7 @@ package de.metas.ui.web.pporder;
 public interface IPPOrderBOMLine
 {
 	String COLUMNNAME_Value = "Value";
-	String COLUMNNAME_BOMType = "BOMType";
-	String COLUMNNAME_HUType = "HUType";
+	String COLUMNNAME_Type = "Type";
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 	String COLUMNNAME_PackingInfo = "PackingInfo";
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
