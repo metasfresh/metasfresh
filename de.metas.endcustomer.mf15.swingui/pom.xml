@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.endcustomer.mf15</groupId>
-		<artifactId>de.metas.endcustomer.mf15</artifactId>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -25,7 +25,7 @@
 		<spring.jarLauncherClass>org.springframework.boot.loader.PropertiesLauncher</spring.jarLauncherClass>
 
 		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>5.5.0.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.versionInfo>5.6.0.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
 		<launch4j.preCp></launch4j.preCp>
 		
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
@@ -98,7 +98,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.base</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

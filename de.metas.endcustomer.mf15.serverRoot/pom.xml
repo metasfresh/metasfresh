@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.endcustomer.mf15</groupId>
-		<artifactId>de.metas.endcustomer.mf15</artifactId>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -23,12 +23,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.base</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 		
 		<!-- 
-		de.metas.fresh.base already comes in as transitive dependency of ${project.groupId}.base (a.k.a. de.metas.endcustomer.mf15.base),
+		de.metas.fresh.base already comes in as transitive dependency of $de.metas.endcustomer.mf15.base ,
 		but we have it here explicitly because otherwise: 
 		  if e.g. version 2.262 is building de.metas.adempiere.adempiere.serverRoot.base-2.262 was already deployed, 
 		  but de.metas.fresh.base 2.262 was not jet deployed, then this pom's metasfresh.version might be resolved to 2.262

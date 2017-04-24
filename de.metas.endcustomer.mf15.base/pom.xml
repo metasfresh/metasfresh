@@ -4,8 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.endcustomer.mf15</groupId>
-		<artifactId>de.metas.endcustomer.mf15</artifactId>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
