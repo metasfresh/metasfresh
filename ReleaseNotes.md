@@ -37,6 +37,10 @@ Here come the actual release notes:
 
 ## Fixes
 
+* metasfresh-backend
+  * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
+    * Fixing the bug that prevented the usage of document reversals.
+
 * metasfesh-webui-api
   * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
 
