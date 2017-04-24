@@ -27,8 +27,9 @@ import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
-import de.metas.ui.web.process.ProcessInstance;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -108,8 +109,11 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	@Param(parameterName = ProcessInstance.PARAM_ViewId, mandatory = true)
-	private String p_WebuiViewId;
+	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewWindowId, mandatory = true)
+	private String p_WebuiViewWindowId;
+
+	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewId, mandatory = true)
+	private String p_WebuiViewIdStr;
 
 	public WEBUI_M_HU_CreateMaterialReceipt()
 	{
@@ -121,7 +125,6 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		//
 		// Generate material receipts
 		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
@@ -141,7 +144,8 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 
 	private HUDocumentViewSelection getView()
 	{
-		return documentViewsRepo.getView(p_WebuiViewId, HUDocumentViewSelection.class);
+		final ViewId viewId = ViewId.of(p_WebuiViewWindowId, p_WebuiViewIdStr);
+		return documentViewsRepo.getView(viewId, HUDocumentViewSelection.class);
 	}
 
 	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
@@ -46,6 +45,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@lombok.Data
 public final class JSONDocumentFilter implements Serializable
 {
 	public static List<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
@@ -186,24 +186,5 @@ public final class JSONDocumentFilter implements Serializable
 		
 		this.filterId = filterId;
 		this.parameters = parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("filterId", filterId)
-				.add("parameters", parameters)
-				.toString();
-	}
-
-	public String getFilterId()
-	{
-		return filterId;
-	}
-
-	public List<JSONDocumentFilterParam> getParameters()
-	{
-		return parameters;
 	}
 }

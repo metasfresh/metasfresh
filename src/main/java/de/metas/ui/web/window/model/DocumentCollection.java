@@ -33,6 +33,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -106,17 +107,17 @@ public class DocumentCollection
 		return documentDescriptorFactory;
 	}
 
-	public final DocumentDescriptor getDocumentDescriptor(final int adWindowId)
+	public final DocumentDescriptor getDocumentDescriptor(final WindowId windowId)
 	{
-		return documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+		return documentDescriptorFactory.getDocumentDescriptor(windowId);
 	}
 
-	public final DocumentEntityDescriptor getDocumentEntityDescriptor(final int adWindowId)
+	public final DocumentEntityDescriptor getDocumentEntityDescriptor(final WindowId windowId)
 	{
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
 		return descriptor.getEntityDescriptor();
 	}
-
+	
 	public <R> R forDocumentReadonly(final DocumentPath documentPath, final Function<Document, R> documentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
@@ -245,8 +246,8 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException(documentPath, "new document ID was expected");
 		}
 
-		final int adWindowId = documentPath.getAD_Window_ID();
-		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
+		final WindowId windowId = documentPath.getWindowId();
+		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(windowId);
 		assertNewDocumentAllowed(entityDescriptor);
 		
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
@@ -269,7 +270,7 @@ public class DocumentCollection
 	/** Retrieves document from repository */
 	private Document retrieveRootDocumentFromRepository(final DocumentKey documentKey)
 	{
-		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getAD_Window_ID());
+		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getWindowId());
 
 		if (documentKey.getDocumentId().isNew())
 		{
@@ -472,10 +473,10 @@ public class DocumentCollection
 					&& Objects.equals(documentId, other.documentId);
 		}
 
-		public int getAD_Window_ID()
+		public WindowId getWindowId()
 		{
 			Check.assume(documentType == DocumentType.Window, "documentType shall be {} but it was {}", DocumentType.Window, documentType);
-			return documentTypeId.toInt();
+			return WindowId.of(documentTypeId);
 		}
 
 		public DocumentId getDocumentId()

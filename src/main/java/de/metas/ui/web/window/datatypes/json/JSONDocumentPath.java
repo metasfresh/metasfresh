@@ -9,8 +9,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -25,34 +29,39 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDocumentPath implements Serializable
 {
-	@JsonProperty("documentType")
+	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String documentType;
+	private final WindowId windowId;
+
+	@JsonProperty("processId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final ProcessId processId;
+
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String documentId;
+	private final DocumentId documentId;
 	//
 	@JsonProperty("tabid")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String tabid;
+	private final DetailId tabid;
 	//
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String rowId;
+	private final DocumentId rowId;
 
 	@JsonProperty("fieldName")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -60,14 +69,25 @@ public class JSONDocumentPath implements Serializable
 
 	@JsonCreator
 	private JSONDocumentPath(
-			@JsonProperty("documentType") final String documentType //
-			, @JsonProperty("documentId") final String documentId //
-			, @JsonProperty("tabid") final String tabid //
-			, @JsonProperty("rowId") final String rowId //
+			@JsonProperty("documentType") @Deprecated final String documentType //
+			, @JsonProperty("windowId") final WindowId windowId //
+			, @JsonProperty("processId") final ProcessId processId //
+			, @JsonProperty("documentId") final DocumentId documentId //
+			, @JsonProperty("tabid") final DetailId tabid //
+			, @JsonProperty("rowId") final DocumentId rowId //
 			, @JsonProperty("fieldName") final String fieldName)
 	{
-		super();
-		this.documentType = documentType;
+		if (windowId == null && processId == null)
+		{
+			this.windowId = WindowId.fromJson(documentType);
+			this.processId = null;
+		}
+		else
+		{
+			this.windowId = windowId;
+			this.processId = processId;
+		}
+
 		this.documentId = documentId;
 		this.tabid = tabid;
 		this.rowId = rowId;
@@ -79,7 +99,8 @@ public class JSONDocumentPath implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("documentType", documentType)
+				.add("windowId", windowId)
+				.add("processId", processId)
 				.add("documentId", documentId)
 				.add("tabid", tabid)
 				.add("rowId", rowId)
@@ -87,43 +108,19 @@ public class JSONDocumentPath implements Serializable
 				.toString();
 	}
 
-	public String getType()
-	{
-		return documentType;
-	}
-
-	public int getAD_Window_ID()
-	{
-		if (Check.isEmpty(documentType, true))
-		{
-			return -1;
-		}
-
-		return Integer.parseInt(documentType.trim());
-	}
-
-	public String getDocumentId()
-	{
-		return documentId;
-	}
-
-	public String getTabid()
-	{
-		return tabid;
-	}
-
-	public String getRowId()
-	{
-		return rowId;
-	}
-
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
 	public DocumentPath toSingleDocumentPath()
 	{
-		return DocumentPath.singleWindowDocumentPath(getAD_Window_ID(), getDocumentId(), getTabid(), getRowId());
+		if (windowId != null)
+		{
+			return DocumentPath.singleWindowDocumentPath(windowId, documentId, tabid, rowId);
+		}
+		else if (processId != null)
+		{
+			return DocumentPath.rootDocumentPath(DocumentType.Process, processId.toDocumentId(), documentId);
+		}
+		else
+		{
+			throw new IllegalStateException("Cannot create single document path from " + this);
+		}
 	}
 }

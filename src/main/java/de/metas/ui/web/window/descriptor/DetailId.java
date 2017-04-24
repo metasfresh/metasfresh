@@ -8,6 +8,7 @@ import java.util.Set;
 import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.GridTabVO;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -59,6 +60,7 @@ public final class DetailId implements Serializable
 		return new DetailId(tabNo);
 	}
 
+	@JsonCreator
 	public static final DetailId fromJson(String json)
 	{
 		if (json == null)
@@ -93,7 +95,7 @@ public final class DetailId implements Serializable
 			return ImmutableSet.of();
 		}
 		
-		return detailIds.stream().map(DetailId::toJson).collect(GuavaCollectors.toImmutableSet());
+		return detailIds.stream().map(detailId -> detailId.toJson()).collect(GuavaCollectors.toImmutableSet());
 	}
 
 	public static int getTabNo(final DetailId detailId)
@@ -123,6 +125,12 @@ public final class DetailId implements Serializable
 
 	@Override
 	public String toString()
+	{
+		return toJson(this);
+	}
+
+	@JsonCreator
+	public String toJson()
 	{
 		return toJson(this);
 	}

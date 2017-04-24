@@ -1,11 +1,16 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,18 +36,40 @@ import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 
 public interface IDocumentViewsRepository
 {
-	IDocumentViewSelection getView(String viewId);
+	JSONDocumentViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
 
-	default <T extends IDocumentViewSelection> T getView(final String viewId, final Class<T> type)
+	/** @return view or <code>null</code> */
+	IDocumentViewSelection getViewIfExists(ViewId viewId);
+
+	/** @return view; never returns null */
+	IDocumentViewSelection getView(String viewId);
+	
+	default IDocumentViewSelection getView(@NonNull final ViewId viewId)
+	{
+		final IDocumentViewSelection view = getView(viewId.getViewId());
+
+		// Make sure the windowId matches the view's windowId.
+		// NOTE: for now, if the windowId is not provided, let's not validate it because deprecate API cannot provide the windowId
+		if(!Objects.equals(viewId.getWindowId(), view.getViewId().getWindowId()))
+		{
+			throw new IllegalArgumentException("View's windowId is not matching the expected one."
+					+ "\n Expected windowId: " + viewId.getWindowId()
+					+ "\n View: " +view);
+		}
+
+		return view;
+	}
+
+	default <T extends IDocumentViewSelection> T getView(final ViewId viewId, final Class<T> type)
 	{
 		@SuppressWarnings("unchecked")
 		final T view = (T)getView(viewId);
 		return view;
 	}
 
-	IDocumentViewSelection createView(JSONCreateDocumentViewRequest jsonRequest);
+	IDocumentViewSelection createView(DocumentViewCreateRequest request);
 
-	void deleteView(String viewId);
+	void deleteView(ViewId viewId);
 
 	List<IDocumentViewSelection> getViews();
 
@@ -50,5 +77,4 @@ public interface IDocumentViewsRepository
 	 * Notify all views that given records was changed.
 	 */
 	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
-
 }

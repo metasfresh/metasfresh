@@ -20,19 +20,23 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/** Field/widget layout */
 @ApiModel("layout-type")
 public enum JSONLayoutType
 {
-	primary, secondary;
+	/** Primary layout: it will render the label and beneath the field */
+	primary,
+	/** Secondary layout: it will render the label and the field on same line */
+	secondary;
 
 	public static JSONLayoutType fromNullable(final LayoutType layoutType)
 	{

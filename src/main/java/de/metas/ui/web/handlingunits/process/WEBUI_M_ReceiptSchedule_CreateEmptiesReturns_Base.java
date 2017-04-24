@@ -84,7 +84,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 		//
 		// Create a draft "empties inout" without any line;
 		// Lines will be created manually by the user.
-		final I_M_InOut emptiesInOut = huEmptiesService.newEmptiesInOutProducer(getCtx())
+		final I_M_InOut emptiesInOut = huEmptiesService.newReturnsInOutProducer(getCtx())
 				.setC_BPartner(receiptScheduleBL.getC_BPartner_Effective(receiptSchedule))
 				.setC_BPartner_Location(receiptScheduleBL.getC_BPartner_Location_Effective(receiptSchedule))
 				.setMovementType(getReturnMovementType())

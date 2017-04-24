@@ -2,7 +2,6 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -32,26 +31,35 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 
 public interface IDocumentView
 {
+	//
+	// Document info
+	// @formatter:off
 	DocumentPath getDocumentPath();
-
 	DocumentId getDocumentId();
-	
 	IDocumentViewType getType();
-	
 	boolean isProcessed();
+	// @formatter:on
 
-	String getIdFieldNameOrNull();
-
-	Set<String> getFieldNames();
-
-	Object getFieldValueAsJson(final String fieldName);
-
+	//
+	// Fields
+	// @formatter:off
 	Map<String, Object> getFieldNameAndJsonValues();
+	// @formatter:on
 
-	boolean hasAttributes();
-
-	IDocumentViewAttributes getAttributes() throws EntityNotFoundException;
-
+	//
+	// Included documents (children)
 	List<? extends IDocumentView> getIncludedDocuments();
 
+	//
+	// Attributes
+	// @formatter:off
+	boolean hasAttributes();
+	IDocumentViewAttributes getAttributes() throws EntityNotFoundException;
+	// @formatter:on
+
+	//
+	// Attributes
+	// @formatter:off
+	boolean hasIncludedView();
+	// @formatter:on
 }

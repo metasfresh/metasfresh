@@ -1,8 +1,19 @@
 package de.metas.ui.web.handlingunits.process;
 
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Services;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
-import de.metas.ui.web.process.ViewBasedProcessTemplate;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -45,4 +56,35 @@ public abstract class HUViewProcessTemplate extends ViewBasedProcessTemplate
 	{
 		return HUDocumentView.cast(super.getSingleSelectedRow());
 	}
+	
+	protected final List<HUDocumentView> getSelectedRows()
+	{
+		final Set<DocumentId> selectedDocumentIds = getSelectedDocumentIds();
+		return getView().getByIds(selectedDocumentIds);
+	}
+	
+	protected final Set<Integer> getSelectedHUIds()
+	{
+		return getSelectedRows()
+				.stream()
+				.map(HUDocumentView::getM_HU_ID)
+				.filter(huId -> huId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected final List<I_M_HU> getSelectedHUs()
+	{
+		final Set<Integer> huIds = getSelectedHUIds();
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU.class)
+				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.list(I_M_HU.class);
+	}
+
 }

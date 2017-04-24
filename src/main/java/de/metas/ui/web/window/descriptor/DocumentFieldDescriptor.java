@@ -80,6 +80,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	/** Internal field name (aka ColumnName) */
 	private final String fieldName;
 	private final ITranslatableString caption;
+	private final ITranslatableString description;
 	/** Detail ID or null if this is a field in main sections */
 	private final DetailId detailId;
 
@@ -136,6 +137,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		super();
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
+		description = builder.getDescription();
 		detailId = builder.getDetailId();
 
 		key = builder.isKey();
@@ -184,6 +186,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	public ITranslatableString getCaption()
 	{
 		return caption;
+	}
+	
+	public ITranslatableString getDescription()
+	{
+		return description;
 	}
 
 	public DetailId getDetailId()

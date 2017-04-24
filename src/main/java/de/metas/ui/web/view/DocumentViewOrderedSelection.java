@@ -41,7 +41,7 @@ public final class DocumentViewOrderedSelection
 		return new Builder();
 	}
 
-	private final String uuid;
+	private final ViewId viewId;
 	private final long size;
 	private final ImmutableList<DocumentQueryOrderBy> orderBys;
 
@@ -51,7 +51,7 @@ public final class DocumentViewOrderedSelection
 	private DocumentViewOrderedSelection(final Builder builder)
 	{
 		super();
-		uuid = builder.getUuid();
+		viewId = builder.getViewId();
 		size = builder.getSize();
 		orderBys = builder.getOrderBys();
 
@@ -64,15 +64,15 @@ public final class DocumentViewOrderedSelection
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("uuid", uuid)
+				.add("viewId", viewId)
 				.add("size", size)
 				.add("orderBys", orderBys.isEmpty() ? null : orderBys)
 				.toString();
 	}
 
-	public String getUuid()
+	public ViewId getViewId()
 	{
-		return uuid;
+		return viewId;
 	}
 
 	public long getSize()
@@ -97,7 +97,7 @@ public final class DocumentViewOrderedSelection
 
 	public static final class Builder
 	{
-		private String uuid;
+		private ViewId viewId;
 		private long size = -1;
 		private List<DocumentQueryOrderBy> orderBys;
 
@@ -113,15 +113,15 @@ public final class DocumentViewOrderedSelection
 			return new DocumentViewOrderedSelection(this);
 		}
 
-		private String getUuid()
+		private ViewId getViewId()
 		{
-			Check.assumeNotNull(uuid, "Parameter uuid is not null");
-			return uuid;
+			Check.assumeNotNull(viewId, "Parameter viewId is not null");
+			return viewId;
 		}
 
-		public Builder setUuid(final String uuid)
+		public Builder setViewId(final ViewId viewId)
 		{
-			this.uuid = uuid;
+			this.viewId = viewId;
 			return this;
 		}
 

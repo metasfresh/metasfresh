@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,54 +47,33 @@ public final class DocumentPath
 		return new Builder();
 	}
 
-	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeIdInt, final int id)
+	public static final DocumentPath rootDocumentPath(@NonNull final WindowId windowId, final int documentIdInt)
 	{
-		if (documentTypeIdInt <= 0)
-		{
-			throw new IllegalArgumentException("documentTypeId < 0");
-		}
-		final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
-
-		final DocumentId documentId = DocumentId.of(id);
+		final DocumentId documentId = DocumentId.of(documentIdInt);
 		if (documentId.isNew())
 		{
 			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
 		}
-
-		return new DocumentPath(documentType, documentTypeId, documentId);
+		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), documentId);
 	}
 
-	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeIdInt, final String idStr)
+	public static final DocumentPath rootDocumentPath(@NonNull final WindowId windowId, final String documentIdStr)
 	{
-		if (documentTypeIdInt <= 0)
-		{
-			throw new IllegalArgumentException("documentTypeId < 0");
-		}
-		final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
-
-		final DocumentId documentId = DocumentId.of(idStr);
+		final DocumentId documentId = DocumentId.of(documentIdStr);
 		if (documentId.isNew())
 		{
 			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
 		}
-
-		return new DocumentPath(documentType, documentTypeId, documentId);
+		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), documentId);
 	}
 
-	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeIdInt, final DocumentId documentId)
+	public static final DocumentPath rootDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
 	{
-		if (documentTypeIdInt <= 0)
-		{
-			throw new IllegalArgumentException("documentTypeId < 0");
-		}
-		final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
-
-		if (documentId == null || documentId.isNew())
+		if (documentId.isNew())
 		{
 			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
 		}
-
-		return new DocumentPath(documentType, documentTypeId, documentId);
+		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), documentId);
 	}
 
 	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
@@ -106,7 +86,7 @@ public final class DocumentPath
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
 
-	public static final List<DocumentPath> rootDocumentPathsList(final DocumentType documentType, final int documentTypeId, final String documentIdsListStr)
+	public static final List<DocumentPath> rootDocumentPathsList(final WindowId windowId, final String documentIdsListStr)
 	{
 		if (documentIdsListStr == null || documentIdsListStr.isEmpty())
 		{
@@ -114,11 +94,11 @@ public final class DocumentPath
 		}
 
 		return DocumentId.streamFromCommaSeparatedString(documentIdsListStr)
-				.map(documentId -> rootDocumentPath(documentType, documentTypeId, documentId))
+				.map(documentId -> rootDocumentPath(windowId, documentId))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId, final String rowIdStr)
+	public static final DocumentPath includedDocumentPath(@NonNull final WindowId windowId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		if (Check.isEmpty(detailId, true))
 		{
@@ -130,14 +110,14 @@ public final class DocumentPath
 		}
 
 		return builder()
-				.setDocumentType(documentType, documentTypeId)
+				.setDocumentType(windowId)
 				.setDocumentId(idStr)
 				.setDetailId(detailId)
 				.setRowId(rowIdStr)
 				.build();
 	}
 
-	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId)
+	public static final DocumentPath includedDocumentPath(final WindowId windowId, final String idStr, final String detailId)
 	{
 		if (Check.isEmpty(detailId, true))
 		{
@@ -145,7 +125,7 @@ public final class DocumentPath
 		}
 
 		return builder()
-				.setDocumentType(documentType, documentTypeId)
+				.setDocumentType(windowId)
 				.setDocumentId(idStr)
 				.setDetailId(detailId)
 				.allowNullRowId()
@@ -154,20 +134,14 @@ public final class DocumentPath
 
 	/**
 	 * Creates the path of a single document (root document or included document).
-	 *
-	 * @param adWindowId
-	 * @param idStr
-	 * @param detailId
-	 * @param rowIdStr
-	 * @return single document path (root document or included document).
 	 */
-	public static final DocumentPath singleWindowDocumentPath(final int windowId, final String idStr, final String detailId, final String rowIdStr)
+	public static final DocumentPath singleWindowDocumentPath(@NonNull final WindowId windowId, final DocumentId id, final DetailId detailId, final DocumentId rowId)
 	{
 		return builder()
-				.setDocumentType(DocumentType.Window, windowId)
-				.setDocumentId(idStr)
+				.setDocumentType(windowId)
+				.setDocumentId(id)
 				.setDetailId(detailId)
-				.setRowId(rowIdStr)
+				.setRowId(rowId)
 				.build();
 	}
 
@@ -317,10 +291,22 @@ public final class DocumentPath
 		return documentTypeId;
 	}
 
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
 		Check.assume(documentType == DocumentType.Window, "Expect documentType={} for {}", DocumentType.Window, this);
-		return documentTypeId.toInt();
+		return WindowId.of(documentTypeId);
+	}
+
+	public int getAD_Window_ID(final int returnIfNotAvailable)
+	{
+		if (documentType == DocumentType.Window)
+		{
+			return documentTypeId.toIntOr(returnIfNotAvailable);
+		}
+		else
+		{
+			return returnIfNotAvailable;
+		}
 	}
 
 	public DocumentId getDocumentId()
@@ -401,21 +387,6 @@ public final class DocumentPath
 		return !rowIds.isEmpty();
 	}
 
-	public DocumentPath createChildPath(final DetailId detailId, final int rowIdInt)
-	{
-		if (detailId == null)
-		{
-			throw new IllegalArgumentException("detailId must be not empty");
-		}
-		final DocumentId rowId = DocumentId.of(rowIdInt);
-		if (rowId.isNew())
-		{
-			throw new IllegalArgumentException("new or null rowId is not accepted: " + rowId);
-		}
-
-		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
-	}
-
 	public DocumentPath createChildPath(final DetailId detailId, final DocumentId rowId)
 	{
 		if (detailId == null)
@@ -469,6 +440,11 @@ public final class DocumentPath
 		}
 	}
 
+	//
+	//
+	//
+	//
+	//
 	public static final class Builder
 	{
 		private DocumentType documentType;
@@ -539,28 +515,22 @@ public final class DocumentPath
 			return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowIds);
 		}
 
-		public Builder setAD_Window_ID(final int AD_Window_ID)
+		public Builder setDocumentType(@NonNull final WindowId windowId)
 		{
-			setDocumentType(DocumentType.Window, AD_Window_ID);
-			return this;
-		}
-
-		public Builder setDocumentType(final DocumentType documentType, final int documentTypeIdInt)
-		{
-			Preconditions.checkNotNull(documentType, "documentType not null");
-			if (documentTypeIdInt <= 0)
-			{
-				throw new IllegalArgumentException("Invalid document type ID: " + documentTypeIdInt);
-			}
-
 			this.documentType = DocumentType.Window;
-			documentTypeId = DocumentId.of(documentTypeIdInt);
+			this.documentTypeId = windowId.toDocumentId();
 			return this;
 		}
 
 		public Builder setDocumentId(final String documentIdStr)
 		{
-			documentId = DocumentId.fromNullable(documentIdStr);
+			setDocumentId(DocumentId.fromNullable(documentIdStr));
+			return this;
+		}
+
+		public Builder setDocumentId(final DocumentId documentId)
+		{
+			this.documentId = documentId;
 			return this;
 		}
 
@@ -572,7 +542,13 @@ public final class DocumentPath
 
 		public Builder setDetailId(final String detailIdStr)
 		{
-			detailId = DetailId.fromJson(detailIdStr);
+			setDetailId(DetailId.fromJson(detailIdStr));
+			return this;
+		}
+
+		public Builder setDetailId(final DetailId detailId)
+		{
+			this.detailId = detailId;
 			return this;
 		}
 

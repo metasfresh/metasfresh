@@ -30,4 +30,10 @@ package de.metas.ui.web.view;
 public interface IDocumentViewType
 {
 	String getName();
+	
+	default String getIconName()
+	{
+		return getName();
+	}
+
 }

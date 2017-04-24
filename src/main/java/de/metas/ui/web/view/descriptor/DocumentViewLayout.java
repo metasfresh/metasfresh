@@ -13,8 +13,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
  * #%L
@@ -45,12 +47,14 @@ public class DocumentViewLayout
 		return new Builder();
 	}
 
-	private final int AD_Window_ID;
+	private final WindowId windowId;
 	private final DetailId detailId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 	private final ITranslatableString emptyResultText;
 	private final ITranslatableString emptyResultHint;
+	
+	private final List<DocumentFilterDescriptor> filters;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 	
@@ -58,22 +62,28 @@ public class DocumentViewLayout
 	
 	private final boolean hasAttributesSupport;
 	private final boolean hasTreeSupport;
+	private final boolean hasIncludedViewSupport;
 
 
 	private DocumentViewLayout(final Builder builder)
 	{
 		super();
-		AD_Window_ID = builder.AD_Window_ID;
+		windowId = builder.windowId;
 		detailId = builder.getDetailId();
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
 		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
+		
 		elements = ImmutableList.copyOf(builder.buildElements());
+		
+		filters = ImmutableList.copyOf(builder.getFilters());
+		
 		idFieldName = builder.getIdFieldName();
 		
 		hasAttributesSupport = builder.hasAttributesSupport;
 		hasTreeSupport = builder.hasTreeSupport;
+		hasIncludedViewSupport = builder.hasIncludedViewSupport;
 	}
 
 	@Override
@@ -87,9 +97,9 @@ public class DocumentViewLayout
 				.toString();
 	}
 	
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
-		return AD_Window_ID;
+		return windowId;
 	}
 
 	public DetailId getDetailId()
@@ -116,6 +126,12 @@ public class DocumentViewLayout
 	{
 		return emptyResultHint.translate(adLanguage);
 	}
+	
+	public List<DocumentFilterDescriptor> getFilters()
+	{
+		return filters;
+	}
+
 
 	public List<DocumentLayoutElementDescriptor> getElements()
 	{
@@ -141,18 +157,26 @@ public class DocumentViewLayout
 	{
 		return hasTreeSupport;
 	}
+	
+	public boolean isIncludedViewSupport()
+	{
+		return hasIncludedViewSupport;
+	}
 
 	public static final class Builder
 	{
-		public Integer AD_Window_ID;
+		public WindowId windowId;
 		private DetailId detailId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 		private ITranslatableString emptyResultText;
 		private ITranslatableString emptyResultHint;
 		
+		private List<DocumentFilterDescriptor> filters = null;
+		
 		private boolean hasAttributesSupport = false;
 		private boolean hasTreeSupport = false;
+		private boolean hasIncludedViewSupport = false;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 		
@@ -187,9 +211,9 @@ public class DocumentViewLayout
 					.toString();
 		}
 		
-		public Builder setAD_Window_ID(final int AD_Window_ID)
+		public Builder setWindowId(WindowId windowId)
 		{
-			this.AD_Window_ID = AD_Window_ID;
+			this.windowId = windowId;
 			return this;
 		}
 
@@ -271,6 +295,21 @@ public class DocumentViewLayout
 		{
 			return findElementBuilderByFieldName(fieldName) != null;
 		}
+		
+		public List<DocumentFilterDescriptor> getFilters()
+		{
+			if(filters == null || filters.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+			return filters;
+		}
+		
+		public Builder setFilters(List<DocumentFilterDescriptor> filters)
+		{
+			this.filters = filters;
+			return this;
+		}
 
 		public Set<String> getFieldNames()
 		{
@@ -300,6 +339,12 @@ public class DocumentViewLayout
 		public Builder setHasTreeSupport(boolean hasTreeSupport)
 		{
 			this.hasTreeSupport = hasTreeSupport;
+			return this;
+		}
+		
+		public Builder setHasIncludedViewSupport(boolean hasIncludedViewSupport)
+		{
+			this.hasIncludedViewSupport = hasIncludedViewSupport;
 			return this;
 		}
 	}

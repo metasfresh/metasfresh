@@ -118,7 +118,7 @@ public class MenuRestController
 	@RequestMapping(value = "/elementPath", method = RequestMethod.GET)
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_Type, required = true) final JSONMenuNodeType jsonType //
-			, @RequestParam(name = PARAM_ElementId, required = true) final int elementId //
+			, @RequestParam(name = PARAM_ElementId, required = true) final String elementId //
 			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{

@@ -1,9 +1,11 @@
 package de.metas.ui.web.view;
 
-import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.view.json.JSONDocumentViewLayout;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import java.util.Collection;
+
+import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
  * #%L
@@ -18,18 +20,21 @@ import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public interface IDocumentViewSelectionFactory
 {
-	JSONDocumentViewLayout getViewLayout(int adWindowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
+	DocumentViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
 
-	IDocumentViewSelection createView(JSONCreateDocumentViewRequest jsonRequest);
+	Collection<DocumentFilterDescriptor> getViewFilters(WindowId windowId);
+
+	IDocumentViewSelection createView(DocumentViewCreateRequest request);
+
 }

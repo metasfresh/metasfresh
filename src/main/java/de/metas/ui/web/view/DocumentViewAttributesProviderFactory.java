@@ -4,12 +4,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.compiere.util.Util.ArrayKey;
 
-import de.metas.ui.web.handlingunits.HUDocumentViewAttributesProvider;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,25 +34,21 @@ public final class DocumentViewAttributesProviderFactory
 {
 	public static final transient DocumentViewAttributesProviderFactory instance = new DocumentViewAttributesProviderFactory();
 
-	private final Map<ArrayKey, Class<? extends IDocumentViewAttributesProvider>> providerClasses = new ConcurrentHashMap<>();
+	private final Map<WindowId, Class<? extends IDocumentViewAttributesProvider>> providerClasses = new ConcurrentHashMap<>();
 
 	private DocumentViewAttributesProviderFactory()
 	{
 		super();
-
-		// FIXME: hardcoded factories
-		registerProvider(DocumentType.Window, WEBUI_HU_Constants.WEBUI_HU_Window_ID, HUDocumentViewAttributesProvider.class);
 	}
 
-	public void registerProvider(final DocumentType documentType, final int documentTypeId, final Class<? extends IDocumentViewAttributesProvider> providerClass)
+	public void registerProvider(@NonNull final WindowId windowId, @NonNull final Class<? extends IDocumentViewAttributesProvider> providerClass)
 	{
-		Check.assumeNotNull(providerClass, "Parameter providerClass is not null");
-		providerClasses.put(mkKey(documentType, documentTypeId), providerClass);
+		providerClasses.put(windowId, providerClass);
 	}
 
-	public IDocumentViewAttributesProvider createProviderOrNull(final DocumentType documentType, final int documentTypeId)
+	public IDocumentViewAttributesProvider createProviderOrNull(final WindowId windowId)
 	{
-		final Class<? extends IDocumentViewAttributesProvider> providerClass = getProviderClassOrNull(documentType, documentTypeId);
+		final Class<? extends IDocumentViewAttributesProvider> providerClass = providerClasses.get(windowId);
 		if (providerClass == null)
 		{
 			return null;
@@ -69,20 +62,5 @@ public final class DocumentViewAttributesProviderFactory
 		{
 			throw new AdempiereException("Cannot instantiate " + providerClass, e);
 		}
-	}
-	
-	public boolean hasProvider(final DocumentType documentType, final int documentTypeId)
-	{
-		return getProviderClassOrNull(documentType, documentTypeId) != null;
-	}
-	
-	private final Class<? extends IDocumentViewAttributesProvider> getProviderClassOrNull(final DocumentType documentType, final int documentTypeId)
-	{
-		return providerClasses.get(mkKey(documentType, documentTypeId));
-	}
-
-	private static final ArrayKey mkKey(final DocumentType documentType, final int documentTypeId)
-	{
-		return ArrayKey.of(documentType, documentTypeId);
 	}
 }

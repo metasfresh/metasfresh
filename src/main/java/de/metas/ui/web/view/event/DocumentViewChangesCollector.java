@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -17,14 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import groovy.transform.Immutable;
 
 /*
  * #%L
@@ -116,7 +114,7 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	private final boolean autoflush;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
-	private final Map<DocumentViewChangesKey, DocumentViewChanges> viewChangesMap = new LinkedHashMap<>();
+	private final Map<ViewId, DocumentViewChanges> viewChangesMap = new LinkedHashMap<>();
 
 	private DocumentViewChangesCollector()
 	{
@@ -159,13 +157,13 @@ public class DocumentViewChangesCollector implements AutoCloseable
 
 	private DocumentViewChanges viewChanges(final IDocumentViewSelection view)
 	{
-		return viewChanges(new DocumentViewChangesKey(view.getViewId(), view.getAD_Window_ID()));
+		return viewChanges(view.getViewId());
 	}
 
-	private DocumentViewChanges viewChanges(final DocumentViewChangesKey key)
+	private DocumentViewChanges viewChanges(final ViewId viewId)
 	{
 		assertNotClosed();
-		return viewChangesMap.computeIfAbsent(key, k -> new DocumentViewChanges(key.getViewId(), key.getAD_Window_ID()));
+		return viewChangesMap.computeIfAbsent(viewId, DocumentViewChanges::new);
 	}
 
 	public void collectFullyChanged(final IDocumentViewSelection view)
@@ -184,8 +182,7 @@ public class DocumentViewChangesCollector implements AutoCloseable
 
 	private void collectFromChanges(final DocumentViewChanges changes)
 	{
-		final DocumentViewChangesKey key = new DocumentViewChangesKey(changes.getViewId(), changes.getAD_Window_ID());
-		viewChanges(key).collectFrom(changes);
+		viewChanges(changes.getViewId()).collectFrom(changes);
 
 		autoflushIfEnabled();
 	}
@@ -262,71 +259,6 @@ public class DocumentViewChangesCollector implements AutoCloseable
 		catch (final Exception ex)
 		{
 			logger.warn("Failed sending to websocket {}: {}", endpoint, jsonChangeEvent, ex);
-		}
-	}
-
-	@Immutable
-	private static final class DocumentViewChangesKey
-	{
-		private final String viewId;
-		private final int adWindowId;
-
-		private transient Integer _hashcode;
-
-		private DocumentViewChangesKey(final String viewId, final int adWindowId)
-		{
-			super();
-			this.viewId = viewId;
-			this.adWindowId = adWindowId;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("viewId", viewId)
-					.add("AD_Window_ID", adWindowId)
-					.toString();
-		}
-
-		@Override
-		public int hashCode()
-		{
-			if (_hashcode == null)
-			{
-				_hashcode = Objects.hash(viewId, adWindowId);
-			}
-			return _hashcode;
-		}
-
-		@Override
-		public boolean equals(final Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-
-			if (obj instanceof DocumentViewChangesKey)
-			{
-				final DocumentViewChangesKey other = (DocumentViewChangesKey)obj;
-				return Objects.equals(viewId, other.viewId)
-						&& adWindowId == other.adWindowId;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		public String getViewId()
-		{
-			return viewId;
-		}
-
-		public int getAD_Window_ID()
-		{
-			return adWindowId;
 		}
 	}
 }

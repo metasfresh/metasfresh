@@ -4,12 +4,14 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.process.ProcessId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -24,11 +26,11 @@ import de.metas.process.RelatedProcessDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,6 +43,7 @@ import de.metas.process.RelatedProcessDescriptor;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@lombok.Builder
 public final class WebuiRelatedProcessDescriptor
 {
 	public static final WebuiRelatedProcessDescriptor of( //
@@ -49,33 +52,37 @@ public final class WebuiRelatedProcessDescriptor
 			, final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier //
 	)
 	{
-		return new WebuiRelatedProcessDescriptor(relatedProcessDescriptor, processDescriptor, preconditionsResolutionSupplier);
-	}
-
-	private final RelatedProcessDescriptor relatedProcessDescriptor;
-	private final ProcessDescriptor processDescriptor;
-	private final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier;
-
-	private WebuiRelatedProcessDescriptor( //
-			final RelatedProcessDescriptor relatedProcessDescriptor //
-			, final ProcessDescriptor processDescriptor //
-			, final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier //
-	)
-	{
-		super();
-
 		Check.assumeNotNull(relatedProcessDescriptor, "Parameter relatedProcessDescriptor is not null");
 		Check.assumeNotNull(processDescriptor, "Parameter processDescriptor is not null");
-		Check.assume(relatedProcessDescriptor.getAD_Process_ID() == processDescriptor.getAD_Process_ID(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
-
-		this.relatedProcessDescriptor = relatedProcessDescriptor;
-		this.processDescriptor = processDescriptor;
-		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.ofJUFSupplier(preconditionsResolutionSupplier);
+		Check.assume(relatedProcessDescriptor.getProcessId() == processDescriptor.getProcessId().getProcessIdAsInt(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
+		
+		return builder()
+				.processId(processDescriptor.getProcessId())
+				.processCaption(processDescriptor.getCaption())
+				.processDescription(processDescriptor.getDescription())
+				.debugProcessClassname(processDescriptor.getProcessClassname())
+				//
+				.quickAction(relatedProcessDescriptor.isWebuiQuickAction())
+				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
+				//
+				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
+				//
+				.build();
 	}
 
-	public int getAD_Process_ID()
+	private final ProcessId processId;
+	private final ITranslatableString processCaption;
+	private final ITranslatableString processDescription;
+	private final boolean quickAction;
+	private final boolean defaultQuickAction;
+	@NonNull
+	private final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier;
+	
+	private final String debugProcessClassname;
+
+	public ProcessId getProcessId()
 	{
-		return processDescriptor.getAD_Process_ID();
+		return processId;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -86,22 +93,22 @@ public final class WebuiRelatedProcessDescriptor
 			return captionOverride;
 		}
 
-		return processDescriptor.getCaption(adLanguage);
+		return processCaption.translate(adLanguage);
 	}
 
 	public String getDescription(final String adLanguage)
 	{
-		return processDescriptor.getDescription(adLanguage);
+		return processDescription.translate(adLanguage);
 	}
 
 	public boolean isQuickAction()
 	{
-		return relatedProcessDescriptor.isWebuiQuickAction();
+		return quickAction;
 	}
 
 	public boolean isDefaultQuickAction()
 	{
-		return relatedProcessDescriptor.isWebuiDefaultQuickAction();
+		return defaultQuickAction;
 	}
 
 	private ProcessPreconditionsResolution getPreconditionsResolution()
@@ -113,19 +120,18 @@ public final class WebuiRelatedProcessDescriptor
 	{
 		return getPreconditionsResolution().isRejected();
 	}
-	
+
 	public boolean isEnabled()
 	{
 		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
 		return preconditionsResolution.isAccepted();
 	}
-	
+
 	public boolean isEnabledOrNotSilent()
 	{
 		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
 		return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
 	}
-
 
 	public String getDisabledReason(final String adLanguage)
 	{
@@ -136,10 +142,9 @@ public final class WebuiRelatedProcessDescriptor
 	{
 		final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.<String, Object> builder();
 
-		final String processClassname = processDescriptor.getProcessClassname();
-		if (processClassname != null)
+		if (debugProcessClassname != null)
 		{
-			debugProperties.put("debug-classname", processClassname);
+			debugProperties.put("debug-classname", debugProcessClassname);
 		}
 
 		return debugProperties.build();

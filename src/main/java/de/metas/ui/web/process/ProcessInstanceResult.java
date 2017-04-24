@@ -2,6 +2,7 @@ package de.metas.ui.web.process;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -9,6 +10,8 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -41,12 +44,12 @@ import lombok.Setter;
 @SuppressWarnings("serial")
 public final class ProcessInstanceResult implements Serializable
 {
-	public static final Builder builder()
+	public static final Builder builder(final DocumentId instanceId)
 	{
-		return new Builder();
+		return new Builder(instanceId);
 	}
 
-	private final int adPInstanceId;
+	private final DocumentId instanceId;
 	private final String summary;
 	private final boolean error;
 	private final ResultAction action;
@@ -54,7 +57,7 @@ public final class ProcessInstanceResult implements Serializable
 	private ProcessInstanceResult(final Builder builder)
 	{
 		super();
-		adPInstanceId = builder.adPInstanceId;
+		instanceId = builder.instanceId;
 		summary = builder.summary;
 		error = builder.error;
 
@@ -66,16 +69,16 @@ public final class ProcessInstanceResult implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("adPInstanceId", adPInstanceId)
+				.add("instanceId", instanceId)
 				.add("summary", summary)
 				.add("error", error)
 				.add("action", action)
 				.toString();
 	}
 
-	public int getAD_PInstance_ID()
+	public DocumentId getInstanceId()
 	{
-		return adPInstanceId;
+		return instanceId;
 	}
 
 	public String getSummary()
@@ -151,10 +154,17 @@ public final class ProcessInstanceResult implements Serializable
 	@lombok.Builder
 	public static final class OpenViewAction implements ResultAction
 	{
-		private final int windowId;
 		@NonNull
-		private final String viewId;
+		private final ViewId viewId;
 	}
+	
+	@lombok.Value
+	@lombok.Builder
+	public static class OpenIncludedViewAction implements ResultAction
+	{
+		private final ViewId viewId;
+	}
+
 
 	@lombok.Value
 	@lombok.Builder
@@ -163,29 +173,32 @@ public final class ProcessInstanceResult implements Serializable
 		@NonNull
 		private final DocumentPath documentPath;
 	}
+	
+	@lombok.Value
+	@lombok.Builder
+	public static final class SelectViewRowsAction implements ResultAction
+	{
+		private final ViewId viewId;
+		private final Set<DocumentId> rowIds;
+	}
 
 	public static final class Builder
 	{
-		private int adPInstanceId;
+		private DocumentId instanceId;
 		private String summary;
 		private boolean error;
 
 		private ResultAction action;
 
-		private Builder()
+		private Builder(@NonNull DocumentId instanceId)
 		{
 			super();
+			this.instanceId = instanceId;
 		}
 
 		public ProcessInstanceResult build()
 		{
 			return new ProcessInstanceResult(this);
-		}
-
-		public Builder setAD_PInstance_ID(final int adPInstanceId)
-		{
-			this.adPInstanceId = adPInstanceId;
-			return this;
 		}
 
 		public Builder setSummary(final String summary)

@@ -1,15 +1,29 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.List;
+
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
+import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
+import de.metas.ui.web.devices.JSONDeviceDescriptor;
+import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 
 /*
  * #%L
@@ -33,15 +47,68 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  * #L%
  */
 
-public final class HUDocumentViewAttributesHelper
+/**
+ * Collection of helper methods for building HU attributes layout, extracting widgetType etc.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+/* package */final class HUDocumentViewAttributesHelper
 {
 	private HUDocumentViewAttributesHelper()
 	{
 	}
 
-	public static DocumentId createAttributesKey(final int huId)
+	public static final DocumentViewAttributesLayout createLayout(final IAttributeStorage attributeStorage)
 	{
-		return DocumentId.of(huId);
+		final int warehouseId = attributeStorage.getM_Warehouse_ID();
+		final List<DocumentLayoutElementDescriptor> elements = attributeStorage.getAttributeValues()
+				.stream()
+				.map(av -> createLayoutElement(av, warehouseId))
+				.collect(GuavaCollectors.toImmutableList());
+
+		return DocumentViewAttributesLayout.of(elements);
+	}
+
+	private static final DocumentLayoutElementDescriptor createLayoutElement(final IAttributeValue attributeValue, final int warehouseId)
+	{
+		final I_M_Attribute attribute = attributeValue.getM_Attribute();
+		final IModelTranslationMap attributeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(attribute);
+		final ITranslatableString caption = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
+		final ITranslatableString description = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, attribute.getDescription());
+
+		final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
+		final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
+
+		return DocumentLayoutElementDescriptor.builder()
+				.setCaption(caption)
+				.setDescription(description)
+				.setWidgetType(widgetType)
+				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeName)
+						.setPublicField(true)
+						.addDevices(createDevices(attribute.getValue(), warehouseId)))
+				.build();
+	}
+
+	private static final List<JSONDeviceDescriptor> createDevices(final String attributeCode, final int warehouseId)
+	{
+		return Services.get(IDevicesHubFactory.class)
+				.getDefaultAttributesDevicesHub()
+				.getAttributeDeviceAccessors(attributeCode)
+				.stream(warehouseId)
+				.map(attributeDeviceAccessor -> createDevice(attributeDeviceAccessor))
+				.collect(GuavaCollectors.toImmutableList());
+
+	}
+
+	private static JSONDeviceDescriptor createDevice(final AttributeDeviceAccessor attributeDeviceAccessor)
+	{
+		final String deviceId = attributeDeviceAccessor.getPublicId();
+		return JSONDeviceDescriptor.builder()
+				.setDeviceId(deviceId)
+				.setCaption(attributeDeviceAccessor.getDisplayName())
+				.setWebsocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
+				.build();
 	}
 
 	public static String extractAttributeName(final IAttributeValue attributeValue)

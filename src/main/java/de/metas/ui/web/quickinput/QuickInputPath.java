@@ -6,7 +6,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import groovy.transform.Immutable;
 
@@ -35,13 +35,13 @@ import groovy.transform.Immutable;
 @Immutable
 public final class QuickInputPath
 {
-	public static final QuickInputPath of(final int adWindowId //
+	public static final QuickInputPath of(final String windowIdStr //
 			, final String documentIdStr //
 			, final String tabIdStr //
 			, final String quickInputIdStr //
 	)
 	{
-		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentIdStr);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentIdStr);
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
 		final DocumentId quickInputId = DocumentId.of(quickInputIdStr);
 		return new QuickInputPath(rootDocumentPath, detailId, quickInputId);

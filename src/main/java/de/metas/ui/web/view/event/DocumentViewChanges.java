@@ -7,6 +7,7 @@ import java.util.Set;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -33,17 +34,15 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 
 public class DocumentViewChanges
 {
-	private final String viewId;
-	private final int adWindowId;
+	private final ViewId viewId;
 
 	private boolean fullyChanged;
 	private Set<DocumentId> changedDocumentIds = null;
 
-	/* package */ DocumentViewChanges(final String viewId, final int adWindowId)
+	/* package */ DocumentViewChanges(final ViewId viewId)
 	{
 		super();
 		this.viewId = viewId;
-		this.adWindowId = adWindowId;
 	}
 
 	public void collectFrom(final DocumentViewChanges changes)
@@ -69,20 +68,14 @@ public class DocumentViewChanges
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("viewId", viewId)
-				.add("AD_Window_ID", adWindowId)
 				.add("fullyChanged", fullyChanged ? Boolean.TRUE : null)
 				.add("changedDocumentIds", changedDocumentIds)
 				.toString();
 	}
 
-	public String getViewId()
+	public ViewId getViewId()
 	{
 		return viewId;
-	}
-
-	public int getAD_Window_ID()
-	{
-		return adWindowId;
 	}
 
 	public void setFullyChanged()

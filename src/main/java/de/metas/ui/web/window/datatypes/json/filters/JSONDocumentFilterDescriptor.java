@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
@@ -66,6 +67,11 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 
 	@JsonProperty("frequent")
 	private final boolean frequentUsed;
+	
+	/** Type: primary, secondary */
+	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONLayoutType type = JSONLayoutType.secondary;
 
 	@JsonProperty("parameters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

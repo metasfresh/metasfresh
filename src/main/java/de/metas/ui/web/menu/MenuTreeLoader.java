@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
+import de.metas.ui.web.process.ProcessId;
 
 /*
  * #%L
@@ -33,11 +34,11 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -165,7 +166,7 @@ public final class MenuTreeLoader
 		final String action = nodeModel.getImageIndiactor();
 		if (nodeModel.isSummary())
 		{
-			builder.setType(MenuNodeType.Group, -1);
+			builder.setType(MenuNodeType.Group, null);
 		}
 		else if (depth == DEPTH_RootChildren)
 		{
@@ -174,15 +175,18 @@ public final class MenuTreeLoader
 		}
 		else if (X_AD_Menu.ACTION_Window.equals(action))
 		{
-			builder.setType(MenuNodeType.Window, nodeModel.getAD_Window_ID());
+			final String elementId = String.valueOf(nodeModel.getAD_Window_ID());
+			builder.setType(MenuNodeType.Window, elementId);
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
 		{
-			builder.setType(MenuNodeType.Process, nodeModel.getAD_Process_ID());
+			final String elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toJson();
+			builder.setType(MenuNodeType.Process, elementId);
 		}
 		else if (X_AD_Menu.ACTION_Report.equals(action))
 		{
-			builder.setType(MenuNodeType.Report, nodeModel.getAD_Process_ID());
+			final String elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toJson();
+			builder.setType(MenuNodeType.Report, elementId);
 		}
 		else
 		{
@@ -251,7 +255,7 @@ public final class MenuTreeLoader
 		{
 			return -1;
 		}
-		
+
 		return userRolePermissions.getMenu_Tree_ID();
 	}
 
@@ -260,7 +264,7 @@ public final class MenuTreeLoader
 		this._adLanguage = adLanguage;
 		return this;
 	}
-	
+
 	private String getAD_Language()
 	{
 		return _adLanguage;

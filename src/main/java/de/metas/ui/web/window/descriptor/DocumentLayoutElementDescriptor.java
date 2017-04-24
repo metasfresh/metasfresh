@@ -34,11 +34,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,18 +50,18 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return new Builder();
 	}
-	
-	public static final Builder builder(final DocumentFieldDescriptor ... fields)
+
+	public static final Builder builder(final DocumentFieldDescriptor... fields)
 	{
 		Check.assumeNotEmpty(fields, "fields is not empty");
-		
+
 		final DocumentFieldDescriptor firstField = fields[0];
-		
+
 		final Builder elementBuilder = new Builder()
 				.setCaption(firstField.getCaption())
 				// .setDescription(firstField.getDescription())
 				.setWidgetType(firstField.getWidgetType());
-		
+
 		for (final DocumentFieldDescriptor field : fields)
 		{
 			elementBuilder.addField(DocumentLayoutElementFieldDescriptor.builder(field.getFieldName())
@@ -69,10 +69,9 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 					.setLookupSource(field.getLookupSourceType())
 					.setLookupTableName(field.getLookupTableName()));
 		}
-		
+
 		return elementBuilder;
 	}
-
 
 	private final String internalName;
 
@@ -80,7 +79,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final ITranslatableString description;
 
 	private final DocumentFieldWidgetType widgetType;
-	private Optional<Integer> precision;
+	private final Optional<Integer> precision;
 	private final int buttonProcessId;
 
 	private final LayoutType layoutType;
@@ -90,7 +89,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
 	private String _captionAsFieldNames; // lazy
-
 
 	private static final Joiner JOINER_FieldNames = Joiner.on(" | ").skipNulls();
 
@@ -185,7 +183,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return !fields.isEmpty();
 	}
-	
+
 	public int getButtonProcessId()
 	{
 		return buttonProcessId;
@@ -196,8 +194,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.Builder.class);
 
 		private String _internalName;
-		private ITranslatableString _caption = ImmutableTranslatableString.empty();
-		private ITranslatableString _description = ImmutableTranslatableString.empty();
+		private ITranslatableString _caption = null;
+		private ITranslatableString _description = null;
 		private DocumentFieldWidgetType _widgetType;
 		private int buttonProcessId = -1;
 		private LayoutType _layoutType;
@@ -206,7 +204,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
 		private boolean consumed = false;
-
 
 		private Builder()
 		{
@@ -260,7 +257,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 				logger.trace("Skip adding {} to {} because it's not a public field", fieldBuilder, this);
 				return false;
 			}
-			
+
 			if (excludeSpecialFields && fieldBuilder.isSpecialField())
 			{
 				logger.trace("Skip adding {} to {} because it's a special field and we were asked to exclude special fields", fieldBuilder, this);
@@ -272,10 +269,10 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Builder setInternalName(final String internalName)
 		{
-			this._internalName = internalName;
+			_internalName = internalName;
 			return this;
 		}
-		
+
 		private String getInternalName()
 		{
 			return _internalName;
@@ -283,7 +280,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Builder setCaption(final ITranslatableString caption)
 		{
-			this._caption = caption == null ? ImmutableTranslatableString.empty() : caption;
+			_caption = caption == null ? ImmutableTranslatableString.empty() : caption;
 			return this;
 		}
 
@@ -298,32 +295,49 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			setCaption(Services.get(IMsgBL.class).translatable(adMessage));
 			return this;
 		}
-		
+
 		public Builder setCaptionNone()
 		{
-			this._caption = ImmutableTranslatableString.empty();
+			setCaption(ImmutableTranslatableString.empty());
 			return this;
 		}
 
 		private ITranslatableString getCaption()
 		{
-			return _caption;
+			if (_caption != null)
+			{
+				return _caption;
+			}
+
+			final DocumentLayoutElementFieldDescriptor.Builder firstField = getFirstField();
+			if (firstField != null)
+			{
+				final String fieldName = firstField.getFieldName();
+				return Services.get(IMsgBL.class).translatable(fieldName);
+			}
+
+			return ImmutableTranslatableString.empty();
 		}
 
 		public Builder setDescription(final ITranslatableString description)
 		{
-			this._description = description == null ? ImmutableTranslatableString.empty() : description;
+			_description = description == null ? ImmutableTranslatableString.empty() : description;
 			return this;
 		}
-		
+
 		private ITranslatableString getDescription()
 		{
-			return _description;
+			if (_description != null)
+			{
+				return _description;
+			}
+
+			return ImmutableTranslatableString.empty();
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
-			this._widgetType = widgetType;
+			_widgetType = widgetType;
 			return this;
 		}
 
@@ -331,7 +345,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return _widgetType != null;
 		}
-		
+
 		private DocumentFieldWidgetType getWidgetType()
 		{
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
@@ -345,7 +359,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Builder setLayoutType(final LayoutType layoutType)
 		{
-			this._layoutType = layoutType;
+			_layoutType = layoutType;
 			return this;
 		}
 
@@ -362,7 +376,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Builder setAdvancedField(final boolean advancedField)
 		{
-			this._advancedField = advancedField;
+			_advancedField = advancedField;
 			return this;
 		}
 
@@ -377,7 +391,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			final DocumentLayoutElementFieldDescriptor.Builder previousFieldBuilder = _fieldsBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
 			if (previousFieldBuilder != null)
 			{
-				new AdempiereException("Field " + fieldBuilder.getFieldName() + " already exists in element: " + _caption)
+				new AdempiereException("Field " + fieldBuilder.getFieldName() + " already exists in element: " + this)
 						.throwIfDeveloperModeOrLogWarningElse(logger);
 			}
 			return this;
@@ -410,7 +424,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Builder setExcludeSpecialFields()
 		{
-			this.excludeSpecialFields = true;
+			excludeSpecialFields = true;
 			return this;
 		}
 
@@ -430,35 +444,34 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		 */
 		public Builder setGridElement()
 		{
-			this._gridElement = true;
+			_gridElement = true;
 			return this;
 		}
 
 		/**
 		 * Reset the "grid element" flag.
-		 * 
+		 *
 		 * NOTE: this is false by default, but the main purpose of this method is intention revealing.
 		 *
 		 * @see #setGridElement()
 		 */
 		public Builder setNotGridElement()
 		{
-			this._gridElement = false;
+			_gridElement = false;
 			return this;
 		}
-		
+
 		private LayoutAlign getGridAlign()
 		{
 			return _gridElement ? getWidgetType().getGridAlign() : null;
 		}
 
-		
 		public Builder setButtonProcessId(final int buttonProcessId)
 		{
 			this.buttonProcessId = buttonProcessId;
 			return this;
 		}
-		
+
 		/* package */ int getButtonProcessId()
 		{
 			return buttonProcessId;

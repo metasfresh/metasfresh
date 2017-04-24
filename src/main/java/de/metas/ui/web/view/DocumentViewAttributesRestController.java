@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.view.json.JSONDocumentViewAttributes;
 import de.metas.ui.web.view.json.JSONDocumentViewAttributesLayout;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -47,6 +48,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @RequestMapping(value = DocumentViewAttributesRestController.ENDPOINT)
 public class DocumentViewAttributesRestController
 {
+	private static final String PARAM_WindowId = DocumentViewRestController.PARAM_WindowId;
 	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_DocumentId = "documentId";
 
@@ -65,12 +67,14 @@ public class DocumentViewAttributesRestController
 
 	@GetMapping("/layout")
 	public JSONDocumentViewAttributesLayout getAttributesLayout(
-			@PathVariable(PARAM_ViewId) final String viewId //
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentViewAttributesLayout layout = documentViewsRepo.getView(viewId)
 				.getById(DocumentId.of(documentIdStr))
 				.getAttributes()
@@ -80,13 +84,15 @@ public class DocumentViewAttributesRestController
 	}
 
 	@GetMapping
-	public JSONDocument getData(
-			@PathVariable(PARAM_ViewId) final String viewId //
+	public JSONDocumentViewAttributes getData(
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
@@ -96,13 +102,15 @@ public class DocumentViewAttributesRestController
 
 	@PatchMapping
 	public List<JSONDocument> processChanges(
-			@PathVariable(PARAM_ViewId) final String viewId //
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return Execution.callInNewExecution("processChanges", () -> {
 			documentViewsRepo.getView(viewId)
@@ -115,7 +123,8 @@ public class DocumentViewAttributesRestController
 
 	@GetMapping("/attribute/{attributeName}/typeahead")
 	public JSONLookupValuesList getAttributeTypeahead(
-			@PathVariable(PARAM_ViewId) final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr//
 			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -123,6 +132,7 @@ public class DocumentViewAttributesRestController
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
@@ -133,13 +143,15 @@ public class DocumentViewAttributesRestController
 
 	@GetMapping("/attribute/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
-			@PathVariable(PARAM_ViewId) final String viewId//
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 			, @PathVariable("attributeName") final String attributeName //
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)

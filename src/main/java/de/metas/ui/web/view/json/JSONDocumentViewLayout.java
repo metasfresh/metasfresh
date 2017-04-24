@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import org.compiere.util.Util;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -13,6 +15,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
@@ -47,17 +50,35 @@ public final class JSONDocumentViewLayout implements Serializable
 {
 	public static JSONDocumentViewLayout of(
 			final DocumentViewLayout gridLayout //
-			, final Collection<DocumentFilterDescriptor> filters //
+			, final Collection<DocumentFilterDescriptor> filtersOverride //
 			, final JSONOptions jsonOpts //
 	)
 	{
-		return new JSONDocumentViewLayout(gridLayout, filters, jsonOpts);
+		return new JSONDocumentViewLayout(gridLayout, filtersOverride, jsonOpts);
 	}
 
+	public static JSONDocumentViewLayout of(
+			final DocumentViewLayout gridLayout //
+			, final JSONOptions jsonOpts //
+	)
+	{
+		final Collection<DocumentFilterDescriptor> filtersOverride = null;
+		return new JSONDocumentViewLayout(gridLayout, filtersOverride, jsonOpts);
+	}
+
+	@JsonProperty("viewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String viewId;
+	//
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String type;
+	@Deprecated
+	private final WindowId type;
+	@JsonProperty("windowId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final WindowId windowId;
+
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -85,9 +106,13 @@ public final class JSONDocumentViewLayout implements Serializable
 
 	public static final String PROPERTY_supportAttributes = "supportAttributes";
 	@JsonProperty(value = PROPERTY_supportAttributes)
-	private final boolean supportAttributes;
-	@JsonProperty(value = "supportTree")
+	private boolean supportAttributes;
+	//
+	@JsonProperty("supportTree")
 	private final boolean supportTree;
+	//
+	@JsonProperty("supportIncludedView")
+	private final boolean supportIncludedView;
 
 	//
 	// New record support
@@ -99,13 +124,14 @@ public final class JSONDocumentViewLayout implements Serializable
 
 	private JSONDocumentViewLayout(
 			final DocumentViewLayout layout //
-			, final Collection<DocumentFilterDescriptor> filters //
+			, final Collection<DocumentFilterDescriptor> filtersOverride //
 			, final JSONOptions jsonOpts //
-	)
+			)
 	{
 		super();
 
-		type = String.valueOf(layout.getAD_Window_ID());
+		windowId = layout.getWindowId();
+		type = windowId;
 
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = layout.getCaption(adLanguage);
@@ -126,15 +152,17 @@ public final class JSONDocumentViewLayout implements Serializable
 		}
 		this.elements = elements;
 
-		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
+		final Collection<DocumentFilterDescriptor> filtersEffective = Util.coalesce(filtersOverride, layout.getFilters());
+		this.filters = JSONDocumentFilterDescriptor.ofCollection(filtersEffective, jsonOpts);
 
 		supportAttributes = layout.isAttributesSupport();
 		supportTree = layout.isTreeSupport();
+		supportIncludedView = layout.isIncludedViewSupport();
 	}
 
 	@JsonCreator
 	private JSONDocumentViewLayout(
-			@JsonProperty("type") final String type //
+			@JsonProperty("windowId") final WindowId windowId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("description") final String description //
 			, @JsonProperty("emptyResultText") final String emptyResultText //
@@ -143,13 +171,15 @@ public final class JSONDocumentViewLayout implements Serializable
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 			, @JsonProperty(value = PROPERTY_supportAttributes) final boolean supportAttributes //
 			, @JsonProperty(value = "supportTree") final boolean supportTree //
+			, @JsonProperty(value = "supportIncludedView") final boolean supportIncludedView //
 			//
 			, @JsonProperty("newRecordCaption") final String newRecordCaption //
 			, @JsonProperty("supportNewRecord") final boolean supportNewRecord //
-	)
+			)
 	{
 		super();
-		this.type = type;
+		this.windowId = windowId;
+		this.type = windowId;
 
 		this.caption = caption;
 		this.description = description;
@@ -161,6 +191,7 @@ public final class JSONDocumentViewLayout implements Serializable
 
 		this.supportAttributes = supportAttributes;
 		this.supportTree = supportTree;
+		this.supportIncludedView = supportIncludedView;
 
 		//
 		// New record support
@@ -220,6 +251,11 @@ public final class JSONDocumentViewLayout implements Serializable
 		return supportAttributes;
 	}
 
+	public void setSupportAttributes(boolean supportAttributes)
+	{
+		this.supportAttributes = supportAttributes;
+	}
+
 	public boolean isSupportTree()
 	{
 		return supportTree;
@@ -229,5 +265,10 @@ public final class JSONDocumentViewLayout implements Serializable
 	{
 		supportNewRecord = true;
 		this.newRecordCaption = newRecordCaption;
+	}
+	
+	public void setViewId(final String viewId)
+	{
+		this.viewId = viewId;
 	}
 }
