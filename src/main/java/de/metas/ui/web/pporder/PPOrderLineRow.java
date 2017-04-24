@@ -195,6 +195,11 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		final int uomId = getC_UOM_ID();
 		return InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
 	}
+	
+	public String getPackingInfo()
+	{
+		return packingInfo;
+	}
 
 	public BigDecimal getQty()
 	{

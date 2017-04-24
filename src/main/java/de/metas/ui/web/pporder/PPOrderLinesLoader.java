@@ -19,12 +19,16 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
+import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
+import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -115,6 +119,19 @@ public class PPOrderLinesLoader
 		return records.build();
 	}
 
+	private static final String extractPackingInfoString(final I_M_HU_LUTU_Configuration lutuConfig)
+	{
+		if (lutuConfig == null)
+		{
+			return null;
+		}
+
+		final IHUPackingInfo packingInfo = HUPackingInfos.of(lutuConfig);
+		return HUPackingInfoFormatter.newInstance()
+				.setShowLU(false)
+				.format(packingInfo);
+	}
+
 	private PPOrderLineRow createForMainProduct(final ViewId viewId, final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
 		final DocumentId documentId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
@@ -129,7 +146,7 @@ public class PPOrderLinesLoader
 				.setType(PPOrderLineType.MainProduct)
 				//
 				.setProduct(createProductLookupValue(ppOrder.getM_Product()))
-				.setPackingInfo(null)
+				.setPackingInfo(extractPackingInfoString(ppOrder.getM_HU_LUTU_Configuration()))
 				.setUOM(createUOMLookupValue(ppOrder.getC_UOM()))
 				.setQty(qty)
 				.setQtyPlan(qtyPlan)
@@ -148,15 +165,18 @@ public class PPOrderLinesLoader
 		final DocumentId documentId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBOMLine.getPP_Order_BOMLine_ID());
 
 		final PPOrderLineType lineType;
+		final String packingInfo;
 		final String componentType = ppOrderBOMLine.getComponentType();
 		if (X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
 				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType))
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
+			packingInfo = extractPackingInfoString(ppOrderBOMLine.getM_HU_LUTU_Configuration());
 		}
 		else
 		{
 			lineType = PPOrderLineType.BOMLine_Component;
+			packingInfo = null; // we don't know the packing info for what will be issued.
 		}
 
 		final BigDecimal qty = ppOrderBOMLine.getQtyDeliveredActual();
@@ -169,10 +189,11 @@ public class PPOrderLinesLoader
 				.setType(lineType)
 				//
 				.setProduct(createProductLookupValue(ppOrderBOMLine.getM_Product()))
+				.setPackingInfo(packingInfo)
 				.setUOM(createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
 				.setQty(qty)
 				.setQtyPlan(qtyPlan);
-		
+
 		ppOrderQtys.stream()
 				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));

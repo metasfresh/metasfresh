@@ -268,7 +268,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 		invalidateAll();
 	}
-	
+
 	public static final class IsSingleIssueLine implements ViewAction.Precondition
 	{
 		@Override
@@ -354,16 +354,16 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		public Stream<PPOrderLineRow> streamRecursive()
 		{
 			return records.stream()
-					.map(row -> streamIncludedRowsRecursive(row))
+					.map(row -> streamRecursive(row))
 					.reduce(Stream::concat)
 					.orElse(Stream.of());
 		}
 
-		private Stream<PPOrderLineRow> streamIncludedRowsRecursive(final PPOrderLineRow row)
+		private static Stream<PPOrderLineRow> streamRecursive(final PPOrderLineRow row)
 		{
 			return row.getIncludedDocuments()
 					.stream()
-					.map(includedRow -> streamIncludedRowsRecursive(includedRow))
+					.map(includedRow -> streamRecursive(includedRow))
 					.reduce(Stream.of(row), Stream::concat);
 		}
 
