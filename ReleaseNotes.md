@@ -36,6 +36,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#291](https://github.com/metasfresh/metasfresh-webui-api/issues/291) Show value/ name in breadcrumb but edit in window
     * Adjusting the look and feel of the breadcrumb structure and navigation.
+  * [#666](https://github.com/metasfresh/metasfresh-webui-frontend/issues/666) refresh in attachments side list
+    * Now refreshing the sidelist and showing the attached files after new attachments to a record.
 
 ## Fixes
 
