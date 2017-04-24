@@ -23,6 +23,7 @@ Here come the actual release notes:
     * Adding the product category window to WebUI.
   * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
     * Adding missing fields into advanced edit of Sales Order Window in WebUI.
+  * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
   * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
   
@@ -35,6 +36,10 @@ Here come the actual release notes:
     * Adjusting the look and feel of the breadcrumb structure and navigation.
 
 ## Fixes
+
+* metasfresh-backend
+  * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
+    * Fixing the bug that prevented the usage of document reversals.
 
 * metasfesh-webui-api
   * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
