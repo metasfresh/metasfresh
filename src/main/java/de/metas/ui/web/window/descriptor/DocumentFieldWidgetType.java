@@ -36,6 +36,7 @@ public enum DocumentFieldWidgetType
 	// Text
 	Text(LayoutAlign.Left, String.class) //
 	, LongText(LayoutAlign.Left, String.class) //
+	, Password(LayoutAlign.Left, String.class) //
 
 	//
 	// Dates
@@ -126,7 +127,7 @@ public enum DocumentFieldWidgetType
 	
 	public final boolean isText()
 	{
-		return this == Text || this == LongText;
+		return this == Text || this == LongText || this == Password;
 	}
 	
 	public final boolean isButton()
