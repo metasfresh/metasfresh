@@ -16,7 +16,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1498438348L;
+	private static final long serialVersionUID = 1523124742L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Line (Properties ctx, int M_HU_Trx_Line_ID, String trxName)
@@ -446,7 +446,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

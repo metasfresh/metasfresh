@@ -27,9 +27,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -61,6 +64,12 @@ import de.metas.product.IProductBL;
 @Validator(I_PP_Order.class)
 public class PP_Order
 {
+	@Init
+	public void registerCallouts()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order());
+	}
+	
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_PP_Order ppOrder)
 	{
@@ -142,6 +151,13 @@ public class PP_Order
 				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_AD_Org_ID))
 		{
 			ppOrderBL.updateBOMOrderLinesWarehouseAndLocator(ppOrder);
+		}
+		
+		//
+		// DocTypeTarget:
+		if (ppOrder.getC_DocTypeTarget_ID() <= 0)
+		{
+			throw new FillMandatoryException(I_PP_Order.COLUMNNAME_C_DocTypeTarget_ID);
 		}
 
 		//

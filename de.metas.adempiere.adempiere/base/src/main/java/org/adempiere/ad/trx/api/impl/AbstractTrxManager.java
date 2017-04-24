@@ -499,6 +499,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
 		call(trxName, callable);
 	}
+	
+	@Override
+	public void run(final String trxName, final Runnable runnable)
+	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
+		call(trxName, callable);
+	}
+
 
 	@Override
 	public <T> T call(final String trxName, final TrxCallable<T> callable)

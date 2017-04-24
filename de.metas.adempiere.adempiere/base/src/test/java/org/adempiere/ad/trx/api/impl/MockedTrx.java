@@ -136,14 +136,16 @@ public class MockedTrx extends PlainTrx
 		return true;
 	}
 
-	public void setOnCommitException(final Throwable onCommitException)
+	public MockedTrx setOnCommitException(final Throwable onCommitException)
 	{
 		this.onCommitException = onCommitException;
+		return this;
 	}
 
-	public void setOnRollbackException(final Throwable onRollbackException)
+	public MockedTrx setOnRollbackException(final Throwable onRollbackException)
 	{
 		this.onRollbackException = onRollbackException;
+		return this;
 	}
 
 	/**

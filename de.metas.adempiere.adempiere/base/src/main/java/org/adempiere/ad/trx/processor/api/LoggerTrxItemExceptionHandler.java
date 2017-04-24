@@ -46,31 +46,31 @@ public class LoggerTrxItemExceptionHandler implements ITrxItemExceptionHandler
 	}
 
 	@Override
-	public void onNewChunkError(final Exception e, final Object item)
+	public void onNewChunkError(final Throwable e, final Object item)
 	{
 		logger.warn("Error while trying to create a new chunk for item: " + item, e);
 	}
 
 	@Override
-	public void onItemError(final Exception e, final Object item)
+	public void onItemError(final Throwable e, final Object item)
 	{
 		logger.warn("Error while trying to process item: " + item, e);
 	}
 
 	@Override
-	public void onCompleteChunkError(final Exception e)
+	public void onCompleteChunkError(final Throwable e)
 	{
 		logger.warn("Error while completing current chunk", e);
 	}
 
 	@Override
-	public void onCommitChunkError(final Exception e)
+	public void onCommitChunkError(final Throwable e)
 	{
 		logger.info("Processor failed to commit current chunk => rollback transaction", e);
 	}
 
 	@Override
-	public void onCancelChunkError(Exception e)
+	public void onCancelChunkError(final Throwable e)
 	{
 		logger.warn("Error while cancelling current chunk. Ignored.", e);
 	}

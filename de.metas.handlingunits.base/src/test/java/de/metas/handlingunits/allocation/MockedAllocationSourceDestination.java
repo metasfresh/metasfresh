@@ -118,17 +118,4 @@ public class MockedAllocationSourceDestination implements IAllocationSource, IAl
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
-
-	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// Do nothing on this level.
-	}
-
-	@Override
-	public void unloadComplete(final IHUContext huContext) // --NOPMD
-	{
-		// Do nothing on this level.
-	}
-
 }

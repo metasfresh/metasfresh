@@ -62,6 +62,7 @@ import de.metas.dimension.IDimensionSpecAttributeDAO;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
@@ -143,7 +144,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	 */
 	private String barcode = null;
 
-	private boolean onlyLocked = false;
+	private Boolean locked = null;
 
 	//
 	//
@@ -197,7 +198,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		copy.otherFilters = otherFilters == null ? null : otherFilters.copy();
 
 		copy.barcode = barcode;
-		copy.onlyLocked = onlyLocked;
+		copy.locked = locked;
 
 		copy._errorIfNoHUs = _errorIfNoHUs;
 		copy._errorIfNoHUs_ADMessage = _errorIfNoHUs_ADMessage;
@@ -232,7 +233,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(otherFilters)
 				.append(huSubQueryFilter)
 				.append(barcode)
-				.append(onlyLocked)
+				.append(locked)
 				.append(_errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage)
 				.toHashcode();
@@ -274,7 +275,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(otherFilters, other.otherFilters)
 				.append(huSubQueryFilter, other.huSubQueryFilter)
 				.append(barcode, other.barcode)
-				.append(onlyLocked, other.onlyLocked)
+				.append(locked, other.locked)
 				.append(_errorIfNoHUs, other._errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage, other._errorIfNoHUs_ADMessage)
 				.isEqual();
@@ -543,10 +544,20 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		}
 
 		//
-		// Filter only Locked records
-		if (onlyLocked)
+		// Filter locked option
+		final Boolean locked = this.locked;
+		if(locked != null)
 		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_Locked, true);
+			// only locked
+			if (locked)
+			{
+				filters.addFilter(Services.get(IHULockBL.class).isLockedFilter());
+			}
+			// only not locked
+			else
+			{
+				filters.addFilter(Services.get(IHULockBL.class).isNotLockedFilter());
+			}
 		}
 
 		//
@@ -1065,11 +1076,19 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	}
 
 	@Override
-	public IHUQueryBuilder setOnlyLocked(final boolean onlyLocked)
+	public IHUQueryBuilder onlyLocked()
 	{
-		this.onlyLocked = onlyLocked;
+		this.locked = true;
 		return this;
 	}
+	
+	@Override
+	public IHUQueryBuilder onlyNotLocked()
+	{
+		this.locked = false;
+		return this;
+	}
+
 
 	@Override
 	public IHUQueryBuilder setErrorIfNoHUs(final String errorADMessage)

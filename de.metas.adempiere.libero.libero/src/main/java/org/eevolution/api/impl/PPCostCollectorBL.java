@@ -40,6 +40,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
+import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -55,9 +56,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	//	private final transient Logger log = CLogMgt.getLogger(getClass());
 
 	@Override
-	public IReceiptCostCollectorCandidate createReceiptCostCollectorCandidate()
+	public ReceiptCostCollectorCandidateBuilder createReceiptCostCollectorCandidate()
 	{
-		return new ReceiptCostCollectorCandidate();
+		return ReceiptCostCollectorCandidate.builder();
 	}
 
 	/**

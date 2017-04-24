@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,34 +15,42 @@ package de.metas.handlingunits.attribute;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
-import org.eevolution.model.I_PP_Order;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
-
-
+import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 
 public interface IPPOrderProductAttributeBL extends ISingletonService
 {
 
 	/**
-	 * Updates the HUAttributes of the given HU based on the PP_Order_ProductAttributes of the PPOrder
+	 * Transfer PP_Order's attributes (see {@link I_PP_Order_ProductAttribute}) to
+	 * <ul>
+	 * <li>given HUs
+	 * <li>all already received HUs
+	 * </ul>
 	 * 
 	 * @param ppOrder
-	 * @param hu
+	 * @param hus
 	 */
-	void updateHUAttributes(I_PP_Order ppOrder, I_M_HU hu);
+	void updateHUAttributes(Collection<I_M_HU> hus, final int fromPPOrderId);
+	
+	default void updateHUAttributes(final I_M_HU hu, final int fromPPOrderId)
+	{
+		updateHUAttributes(ImmutableSet.of(hu), fromPPOrderId);
+	}
 
 	/**
 	 * Create new PP_Order_ProductAttribute entries for the given cost collector
@@ -48,5 +58,6 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	 * @param costCollector
 	 */
 	void addPPOrderProductAttributes(I_PP_Cost_Collector costCollector);
+
 
 }

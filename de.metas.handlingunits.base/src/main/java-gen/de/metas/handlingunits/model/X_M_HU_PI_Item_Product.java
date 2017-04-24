@@ -16,7 +16,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1902069976L;
+	private static final long serialVersionUID = -1276359644L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -30,7 +30,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 // N
 			setM_HU_PI_Item_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
         } */
     }
@@ -204,9 +204,9 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	public void setM_HU_PI_Item_ID (int M_HU_PI_Item_ID)
 	{
 		if (M_HU_PI_Item_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_ID, null);
+			set_Value (COLUMNNAME_M_HU_PI_Item_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_ID, Integer.valueOf(M_HU_PI_Item_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Item_ID, Integer.valueOf(M_HU_PI_Item_ID));
 	}
 
 	/** Get Packvorschrift Position.
@@ -316,7 +316,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

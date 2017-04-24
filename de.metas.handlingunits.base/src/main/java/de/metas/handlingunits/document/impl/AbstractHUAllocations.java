@@ -248,7 +248,7 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	{
 		Check.assumeNotNull(huToDestroy, "huToDestroy not null");
 
-		InterfaceWrapperHelper.setThreadInheritedTrxNameMarker(huToDestroy);
+		InterfaceWrapperHelper.setThreadInheritedTrxName(huToDestroy);
 
 		removeAssignedHUs(Collections.singleton(huToDestroy));
 
