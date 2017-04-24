@@ -169,7 +169,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		{
 			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
-			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson());
+			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.isModal());
 		}
 		else if (resultAction instanceof SelectViewRowsAction)
 		{
@@ -254,12 +254,14 @@ public final class JSONProcessInstanceResult implements Serializable
 	{
 		private final WindowId windowId;
 		private final String documentId;
+		private final boolean modal;
 
-		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId)
+		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final boolean modal)
 		{
 			super("openDocument");
 			this.windowId = windowId;
 			this.documentId = documentId;
+			this.modal = modal;
 		}
 	}
 

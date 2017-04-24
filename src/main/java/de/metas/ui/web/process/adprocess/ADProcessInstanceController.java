@@ -34,6 +34,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.IProcessInstanceController;
@@ -318,7 +319,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				}
 				//
 				// View
-				else if (recordsToOpen != null && recordsToOpen.isGridView())
+				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 				{
 					final DocumentViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
 					final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
@@ -328,11 +329,22 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				}
 				//
 				// Single document
-				else if (recordsToOpen != null && !recordsToOpen.isGridView())
+				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocument)
 				{
 					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
 					resultBuilder.setAction(OpenSingleDocument.builder()
 							.documentPath(documentPath)
+							.modal(false)
+							.build());
+				}
+				//
+				// Single document
+				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocumentModal)
+				{
+					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
+					resultBuilder.setAction(OpenSingleDocument.builder()
+							.documentPath(documentPath)
+							.modal(true)
 							.build());
 				}
 			}
