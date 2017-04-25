@@ -61,6 +61,8 @@ axios.interceptors.response.use(function (response) {
 
             const errorTitle = errorMessenger(status);
 
+            console.error(data.message);
+
             // Chart disabled notifications
             if(error.response.request.responseURL.includes('silentError=true')){
                 return;
