@@ -122,7 +122,7 @@ public class ASIRepository
 			throw new EntityNotFoundException("ASI " + attributeSetInstanceId);
 		}
 
-		final ASIEditingInfo info = ASIEditingInfo.ofASI(attributeSetInstanceId);
+		final ASIEditingInfo info = ASIEditingInfo.readonlyASI(attributeSetInstanceId);
 
 		//
 		// Get the ASI descriptor
@@ -170,7 +170,7 @@ public class ASIRepository
 		else if (documentPath.getDocumentType() == DocumentType.Process)
 		{
 			final int attributeSetInstanceId = request.getTemplateId();
-			return ASIEditingInfo.ofASI(attributeSetInstanceId);
+			return ASIEditingInfo.processParameterASI(attributeSetInstanceId);
 		}
 		else
 		{
