@@ -83,11 +83,11 @@ public class HUEditorViewRepository
 		attributesProvider.invalidateAll();
 	}
 
-	public List<HUEditorRow> retrieveDocumentViews(final Set<Integer> huIds)
+	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
-				.map(hu -> createDocumentView(hu))
+				.map(hu -> createHUEditorRow(hu))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -104,7 +104,7 @@ public class HUEditorViewRepository
 			return null;
 		}
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
-		return createDocumentView(hu);
+		return createHUEditorRow(hu);
 	}
 
 	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> huIds)
@@ -130,7 +130,7 @@ public class HUEditorViewRepository
 				.list();
 	}
 
-	private HUEditorRow createDocumentView(final I_M_HU hu)
+	private HUEditorRow createHUEditorRow(final I_M_HU hu)
 	{
 		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
@@ -151,8 +151,8 @@ public class HUEditorViewRepository
 		final boolean processed = extractProcessed(hu);
 		final int huId = hu.getM_HU_ID();
 
-		final HUEditorRow.Builder huViewRecord = HUEditorRow.builder(windowId)
-				.setDocumentId(DocumentId.of(huId))
+		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
+				.setRowId(DocumentId.of(huId))
 				.setType(huRecordType)
 				.setAttributesProvider(attributesProvider)
 				.setProcessed(processed)
@@ -168,7 +168,7 @@ public class HUEditorViewRepository
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(hu);
 		if (singleProductStorage != null)
 		{
-			huViewRecord
+			huEditorRow
 					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
 					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
 					.setQtyCU(singleProductStorage.getQty());
@@ -183,8 +183,8 @@ public class HUEditorViewRepository
 					.getStorage(hu)
 					.getProductStorages()
 					.stream()
-					.map(huStorage -> createDocumentView(huId, huStorage, processed))
-					.forEach(huViewRecord::addIncludedDocument);
+					.map(huStorage -> createHUEditorRow(huId, huStorage, processed))
+					.forEach(huEditorRow::addIncludedRow);
 
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitTypeCode))
@@ -192,8 +192,8 @@ public class HUEditorViewRepository
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
-					.map(includedHU -> createDocumentView(includedHU))
-					.forEach(huViewRecord::addIncludedDocument);
+					.map(includedHU -> createHUEditorRow(includedHU))
+					.forEach(huEditorRow::addIncludedRow);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
 		{
@@ -203,8 +203,8 @@ public class HUEditorViewRepository
 					.stream()
 					.map(includedVHU -> storageFactory.getStorage(includedVHU))
 					.flatMap(vhuStorage -> vhuStorage.getProductStorages().stream())
-					.map(vhuProductStorage -> createDocumentView(huId, vhuProductStorage, processed))
-					.forEach(huViewRecord::addIncludedDocument);
+					.map(vhuProductStorage -> createHUEditorRow(huId, vhuProductStorage, processed))
+					.forEach(huEditorRow::addIncludedRow);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
 		{
@@ -215,7 +215,7 @@ public class HUEditorViewRepository
 			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
 		}
 
-		return huViewRecord.build();
+		return huEditorRow.build();
 	}
 
 	private static final String extractPackingInfo(final I_M_HU hu, final HUEditorRowType huUnitType)
@@ -271,7 +271,7 @@ public class HUEditorViewRepository
 		return productStorage;
 	}
 
-	private HUEditorRow createDocumentView(final int parent_HU_ID, final IHUProductStorage huStorage, final boolean processed)
+	private HUEditorRow createHUEditorRow(final int parent_HU_ID, final IHUProductStorage huStorage, final boolean processed)
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
@@ -279,7 +279,7 @@ public class HUEditorViewRepository
 		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
 
 		return HUEditorRow.builder(windowId)
-				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
+				.setRowId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProviderEffective)

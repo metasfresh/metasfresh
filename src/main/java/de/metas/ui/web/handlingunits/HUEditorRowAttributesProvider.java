@@ -53,7 +53,7 @@ class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 	@Value
 	private static final class DocumentViewAttributesKey
 	{
-		private DocumentId viewRowId;
+		private DocumentId huEditorRowId;
 		private DocumentId huId;
 	}
 
@@ -87,8 +87,8 @@ class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 		attributesStorage.setSaveOnChange(true);
 
 		final DocumentId documentTypeId = DocumentId.of(huId);
-		final DocumentId viewRowId = key.getViewRowId();
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.ViewRecordAttributes, documentTypeId, viewRowId);
+		final DocumentId huEditorRowId = key.getHuEditorRowId();
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.ViewRecordAttributes, documentTypeId, huEditorRowId);
 
 		final boolean readonly = !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 

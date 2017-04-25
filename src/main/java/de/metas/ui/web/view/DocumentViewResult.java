@@ -45,7 +45,7 @@ public final class DocumentViewResult
 			, final int firstRow //
 			, final int pageLength //
 			, final List<DocumentQueryOrderBy> orderBys //
-			, final List<IDocumentView> page //
+			, final List<? extends IDocumentView> page //
 	)
 	{
 		Check.assumeNotNull(page, "Parameter page is not null");
@@ -73,7 +73,7 @@ public final class DocumentViewResult
 			, final int firstRow //
 			, final int pageLength //
 			, final List<DocumentQueryOrderBy> orderBys //
-			, final List<IDocumentView> page //
+			, final List<? extends IDocumentView> page //
 	)
 	{
 		super();
