@@ -250,6 +250,12 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	{
 		return X_M_HU.HUSTATUS_Active.equals(getHUStatusKey());
 	}
+	
+	public boolean isHUStatusDestroyed()
+	{
+		return X_M_HU.HUSTATUS_Destroyed.equals(getHUStatusKey());
+	}
+
 
 	public boolean isPureHU()
 	{

@@ -2,8 +2,10 @@ package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -195,7 +197,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		final int uomId = getC_UOM_ID();
 		return InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
 	}
-	
+
 	public String getPackingInfo()
 	{
 		return packingInfo;
@@ -314,8 +316,9 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private JSONLookupValue uom;
 		private String packingInfo;
 		private String code;
-		private BigDecimal qty;
 		private BigDecimal qtyPlan;
+		private BigDecimal qty;
+		private boolean qtyAsSumOfIncludedQtys = false;
 
 		private Builder(@NonNull final ViewId viewId)
 		{
@@ -437,9 +440,43 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
+		public Builder setQtyAsSumOfIncludedQtys()
+		{
+			qtyAsSumOfIncludedQtys = true;
+
+			if (includedDocuments != null && !includedDocuments.isEmpty())
+			{
+				qty = includedDocuments.stream()
+						.map(includedDocument -> includedDocument.getQty())
+						.filter(includedQty -> includedQty != null && includedQty.signum() != 0) // non null/zero qtys only
+						.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
+			}
+
+			return this;
+		}
+
 		public Builder setQty(final BigDecimal qty)
 		{
 			this.qty = qty;
+			return this;
+		}
+
+		public Builder addQty(final BigDecimal qtyToAdd)
+		{
+			if (qtyToAdd == null)
+			{
+				return this;
+			}
+
+			if (qty == null)
+			{
+				qty = qtyToAdd;
+			}
+			else
+			{
+				qty = qty.add(qtyToAdd);
+			}
+
 			return this;
 		}
 
@@ -455,6 +492,14 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
+		/**
+		 * Adds included row.
+		 * 
+		 * If {@link #setQtyAsSumOfIncludedQtys()} was already called it will also increase the Qty.
+		 * 
+		 * @param includedDocument
+		 * @return
+		 */
 		public Builder addIncludedDocument(final PPOrderLineRow includedDocument)
 		{
 			if (includedDocuments == null)
@@ -464,6 +509,25 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 			includedDocuments.add(includedDocument);
 
+			if (qtyAsSumOfIncludedQtys)
+			{
+				addQty(includedDocument.getQty());
+			}
+
+			return this;
+		}
+
+		public <T> Builder addIncludedDocumentFrom(final Collection<T> includedDocObjs, Function<T, PPOrderLineRow> includedDocumentMapper)
+		{
+			if (includedDocObjs == null || includedDocObjs.isEmpty())
+			{
+				return this;
+			}
+
+			includedDocObjs.stream()
+					.map(includedDocumentMapper)
+					.forEach(this::addIncludedDocument);
+			
 			return this;
 		}
 
