@@ -50,6 +50,8 @@ import de.metas.movement.event.MovementProcessedEventBus;
 public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 {
 
+	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
+	
 	private I_M_Warehouse warehouseFrom;
 
 	private List<I_M_HU> hus;
@@ -100,7 +102,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
 
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
-		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found. Check your POS profile.");
+		Check.assumeNotEmpty(warehouses, ERR_No_Quality_Warehouse);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
 
 	}
