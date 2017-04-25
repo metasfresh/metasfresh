@@ -666,6 +666,11 @@ class RawWidget extends Component {
         const widgetBody = this.renderWidget();
         const {validStatus} = widgetData[0];
 
+        // We have to hardcode that exception in case of having
+        // wrong two line rendered one line widgets
+        const oneLineException =
+            ['Switch', 'YesNo', 'Label', 'Button'].indexOf(widgetType) > -1;
+
         // Unsupported widget type
         if(!widgetBody){
             console.warn(
@@ -692,7 +697,7 @@ class RawWidget extends Component {
                         key="title"
                         className={
                             'form-control-label ' +
-                            ((type === 'primary') ?
+                            ((type === 'primary' && !oneLineException) ?
                                 'col-sm-12 panel-title' : 'col-sm-3')
                         }
                         title={caption}
@@ -702,8 +707,9 @@ class RawWidget extends Component {
                 }
                 <div
                     className={
-                        ((type === 'primary' || noLabel) ?
-                            'col-sm-12 ' : 'col-sm-9 ') +
+                        (((type === 'primary' || noLabel) &&
+                            !oneLineException ) ?
+                                'col-sm-12 ' : 'col-sm-9 ') +
                         (fields[0].devices ? 'form-group-flex ': '')
                     }
                     onMouseEnter={() => this.handleErrorPopup(true)}
