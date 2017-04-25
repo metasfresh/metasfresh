@@ -11,7 +11,7 @@ class Container extends Component {
 
     render() {
         const {
-            docActionElem, docStatusData, docNoElement, docNoData,
+            docActionElem, docStatusData, docNoData,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
@@ -30,7 +30,6 @@ class Container extends Component {
                             breadcrumb, dataId, dropzoneFocused, notfound
                         }}
                         docStatus = {docActionElem}
-                        docNo = {docNoElement}
                     />
                 }
                 {connectionError && <ErrorScreen />}

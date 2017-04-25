@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import {push} from 'react-router-redux';
 
 import MenuOverlay from './MenuOverlay';
-import MasterWidget from '../widget/MasterWidget';
 import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../keymap.js';
 
@@ -87,8 +86,7 @@ class Breadcrumb extends Component {
 
     render() {
         const {
-            breadcrumb, windowType, docNo, docNoData, docSummaryData,
-            dataId, siteName
+            breadcrumb, docSummaryData, siteName
         } = this.props;
 
         const {tooltipOpen} = this.state;
@@ -109,22 +107,10 @@ class Breadcrumb extends Component {
                     {breadcrumb && breadcrumb.map((item, index) =>
                         this.renderBtn(item, index+1)
                     )}
+                </div>
 
-                    {docNo && <div className="divider">/</div>}
-
-                    {docNo && <div className="header-input-id header-input-sm">
-                        <MasterWidget
-                            entity="window"
-                            windowType={windowType}
-                            dataId={dataId}
-                            widgetData={[docNoData]}
-                            noLabel={true}
-                            icon={true}
-                            {...docNo}
-                        />
-                </div>}
-
-                    {docSummaryData && <div
+                {docSummaryData &&
+                    <div
                         className="hidden-xs-down header-breadcrumb-line"
                     >
                         <span
@@ -132,20 +118,19 @@ class Breadcrumb extends Component {
                         >
                             {docSummaryData.value}
                         </span>
-                    </div>}
+                    </div>
+                }
 
-                    {siteName && <div className="divider">/</div>}
+                {siteName && <div className="divider">/</div>}
 
-                    {siteName &&
-                        <div>
-                            <span
-                                className="header-item icon-sm"
-                            >{siteName}</span>
-                        </div>
-                    }
-                </div>
+                {siteName &&
+                    <div>
+                        <span
+                            className="header-item icon-sm"
+                        >{siteName}</span>
+                    </div>
+                }
             </div>
-
         )
     }
 }

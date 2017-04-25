@@ -239,14 +239,12 @@ class MasterWindow extends Component {
         } = this.state;
 
         const {
-            documentNoElement, docActionElement, documentSummaryElement
+            docActionElement, documentSummaryElement
         } = master.layout;
 
         const dataId = master.docId;
 
-        const docNoData = findRowByPropName(
-            master.data, documentNoElement && documentNoElement.fields[0].field
-        );
+        const docNoData = findRowByPropName(master.data, 'DocumentNo');
 
         const docStatusData = {
             'status': findRowByPropName(master.data, 'DocStatus'),
@@ -262,10 +260,9 @@ class MasterWindow extends Component {
         return (
             <Container
                 entity="window"
-                {...{dropzoneFocused, docStatusData, docNoData, docSummaryData,
-                    dataId, breadcrumb}}
+                {...{dropzoneFocused, docStatusData, docSummaryData,
+                    dataId, breadcrumb, docNoData}}
                 docActionElem = {docActionElement}
-                docNoElement = {documentNoElement}
                 windowType={params.windowType}
                 showSidelist={true}
                 showIndicator={!modal.visible}
