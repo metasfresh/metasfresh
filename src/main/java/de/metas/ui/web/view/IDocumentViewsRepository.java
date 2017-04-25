@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -43,18 +45,18 @@ public interface IDocumentViewsRepository
 
 	/** @return view; never returns null */
 	IDocumentViewSelection getView(String viewId);
-	
+
 	default IDocumentViewSelection getView(@NonNull final ViewId viewId)
 	{
 		final IDocumentViewSelection view = getView(viewId.getViewId());
 
 		// Make sure the windowId matches the view's windowId.
 		// NOTE: for now, if the windowId is not provided, let's not validate it because deprecate API cannot provide the windowId
-		if(!Objects.equals(viewId.getWindowId(), view.getViewId().getWindowId()))
+		if (!Objects.equals(viewId.getWindowId(), view.getViewId().getWindowId()))
 		{
 			throw new IllegalArgumentException("View's windowId is not matching the expected one."
 					+ "\n Expected windowId: " + viewId.getWindowId()
-					+ "\n View: " +view);
+					+ "\n View: " + view);
 		}
 
 		return view;
@@ -77,4 +79,10 @@ public interface IDocumentViewsRepository
 	 * Notify all views that given records was changed (asynchronously).
 	 */
 	void notifyRecordsChanged(Set<TableRecordReference> recordRefs);
+
+	default void notifyRecordChanged(final String tableName, final int recordId)
+	{
+		notifyRecordsChanged(ImmutableSet.of(TableRecordReference.of(tableName, recordId)));
+	}
+
 }
