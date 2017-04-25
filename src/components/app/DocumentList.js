@@ -318,7 +318,7 @@ class DocumentList extends Component {
     getData = (id, page, sortingQuery, refresh) => {
         const {dispatch, windowType, updateUri, setNotFound} = this.props;
 
-        setNotFound(false);
+        setNotFound && setNotFound(false);
 
         if(updateUri){
             id && updateUri('viewId', id);
