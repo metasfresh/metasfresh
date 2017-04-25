@@ -33,9 +33,9 @@ import de.metas.ui.web.view.IDocumentViewType;
 
 public enum PPOrderLineType implements IDocumentViewType
 {
-	MainProduct("MP") //
-	, BOMLine_Component("CO") //
-	, BOMLine_ByCoProduct("BY") //
+	MainProduct("MP", true) //
+	, BOMLine_Component("CO", false) //
+	, BOMLine_ByCoProduct("BY", true) //
 	//
 	, HU_LU(HUDocumentViewType.LU) //
 	, HU_TU(HUDocumentViewType.TU) //
@@ -46,12 +46,18 @@ public enum PPOrderLineType implements IDocumentViewType
 	private final String name;
 	private final String iconName;
 	private final HUDocumentViewType huDocumentViewType;
+	
+	private final boolean canReceive;
+	private final boolean canIssue;
 
-	private PPOrderLineType(final String name)
+	private PPOrderLineType(final String name, final boolean canReceive)
 	{
 		this.name = name;
-		this.iconName = HUDocumentViewType.LU.getIconName(); // FIXME: just use the LU icon for now
+		this.iconName = canReceive ? "PP_Order_Receive" : "PP_Order_Issue"; // see https://github.com/metasfresh/metasfresh-webui-frontend/issues/675#issuecomment-297016790
 		this.huDocumentViewType = null;
+		
+		this.canReceive = canReceive;
+		this.canIssue = !canReceive;
 	}
 
 	private PPOrderLineType(HUDocumentViewType huType)
@@ -59,6 +65,9 @@ public enum PPOrderLineType implements IDocumentViewType
 		this.name = huType.getName();
 		this.iconName = huType.getIconName();
 		this.huDocumentViewType = huType;
+		
+		canReceive = false;
+		canIssue = false;
 	}
 
 	@Override
@@ -80,12 +89,12 @@ public enum PPOrderLineType implements IDocumentViewType
 
 	public boolean canReceive()
 	{
-		return MainProduct == this || BOMLine_ByCoProduct == this;
+		return canReceive;
 	}
 
 	public boolean canIssue()
 	{
-		return BOMLine_Component == this;
+		return canIssue;
 	}
 
 	public static final PPOrderLineType ofHUDocumentViewType(final HUDocumentViewType huType)
