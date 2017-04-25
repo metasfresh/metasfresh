@@ -27,7 +27,7 @@ Here come the actual release notes:
   * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
   * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
-  
+  * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
   
 * metasfresh-webui-api
   * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
