@@ -1,8 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
-import de.metas.ui.web.pporder.PPOrderLineRow;
-import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import org.eevolution.model.X_PP_Order;
 
 /*
  * #%L
@@ -26,25 +24,10 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
-/**
- * Template class for all processes which are based on {@link PPOrderLinesView}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public abstract class WEBUI_PP_Order_Template
-		extends ViewBasedProcessTemplate
-// implements IProcessPrecondition // let the extending class to activate this interface
+public class WEBUI_PP_Order_ChangePlanningStatus_Planning extends WEBUI_PP_Order_ChangePlanningStatus_Template
 {
-	@Override
-	protected final PPOrderLinesView getView()
+	public WEBUI_PP_Order_ChangePlanningStatus_Planning()
 	{
-		return super.getView(PPOrderLinesView.class);
-	}
-
-	@Override
-	protected final PPOrderLineRow getSingleSelectedRow()
-	{
-		return PPOrderLineRow.cast(super.getSingleSelectedRow());
+		super(X_PP_Order.PLANNINGSTATUS_Planning);
 	}
 }

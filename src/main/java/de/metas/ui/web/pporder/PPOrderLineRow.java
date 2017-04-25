@@ -8,27 +8,16 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewAttributes;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -61,9 +50,9 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 {
-	public static final Builder builder(final ViewId viewId)
+	public static final Builder builder(final WindowId windowId)
 	{
-		return new Builder(viewId);
+		return new Builder(windowId);
 	}
 
 	public static final PPOrderLineRow cast(final IDocumentView viewRecord)
@@ -79,7 +68,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 	private final List<PPOrderLineRow> includedDocuments;
 
-	private final ViewId viewId;
 	private final boolean processed;
 	private final int ppOrderId;
 	private final int ppOrderBOMLineId;
@@ -95,7 +83,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 	private PPOrderLineRow(final Builder builder)
 	{
-		viewId = builder.viewId;
 		documentPath = builder.getDocumentPath();
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
@@ -118,11 +105,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 		attributesSupplier = builder.attributesSupplier;
 		includedDocuments = builder.buildIncludedDocuments();
-	}
-
-	public ViewId getViewId()
-	{
-		return viewId;
 	}
 
 	public int getPP_Order_ID()
@@ -223,11 +205,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		return getType().canIssue();
 	}
 
-	public boolean isNotProcessedCandidate()
-	{
-		return !isProcessed() && getPP_Order_Qty_ID() > 0;
-	}
-
 	@Override
 	public List<PPOrderLineRow> getIncludedDocuments()
 	{
@@ -262,39 +239,11 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		return attributes;
 	}
 
-	public IDocumentViewSelection createHUsToIssueView(final IDocumentViewsRepository viewsRepo)
-	{
-		if (!isIssue())
-		{
-			throw new IllegalStateException("Only issue lines are supported");
-		}
-
-		// TODO: move it to DAO/Repository
-		// TODO: rewrite the whole shit, this is just prototyping
-		final List<Integer> huIdsToAvailableToIssue = Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				//
-				// TODO warehouse
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addOnlyWithProductId(getM_Product_ID())
-				.setOnlyTopLevelHUs()
-				.onlyNotLocked()
-				//
-				.createQuery()
-				.listIds();
-		if (huIdsToAvailableToIssue.isEmpty())
-		{
-			throw new EntityNotFoundException("No HUs to issue found");
-		}
-
-		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
-				.setParentViewId(getViewId())
-				.setFilterOnlyIds(huIdsToAvailableToIssue)
-				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
-				.build());
-	}
-
+	//
+	//
+	//
+	//
+	//
 	public static final class Builder
 	{
 		private final WindowId windowId;
@@ -304,8 +253,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private List<PPOrderLineRow> includedDocuments = null;
 
 		private Supplier<? extends IDocumentViewAttributes> attributesSupplier;
-
-		private final ViewId viewId;
 
 		private int ppOrderId;
 		private int ppOrderBOMLineId;
@@ -320,10 +267,9 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private BigDecimal qty;
 		private boolean qtyAsSumOfIncludedQtys = false;
 
-		private Builder(@NonNull final ViewId viewId)
+		private Builder(@NonNull final WindowId windowId)
 		{
-			this.viewId = viewId;
-			windowId = viewId.getWindowId();
+			this.windowId = windowId;
 		}
 
 		public PPOrderLineRow build()

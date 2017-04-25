@@ -6,6 +6,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -22,6 +23,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
+import de.metas.ui.web.pporder.PPOrderLinesView;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 
 /*
  * #%L
@@ -51,6 +54,7 @@ public class WEBUI_PP_Order_Receipt
 {
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final transient IDocumentViewsRepository viewsRepo = Adempiere.getBean(IDocumentViewsRepository.class);
 
 	//
 	// Parameters
@@ -140,12 +144,24 @@ public class WEBUI_PP_Order_Receipt
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final PPOrderLineRow row = getSingleSelectedRow();
-		if (!row.isReceipt())
+		final PPOrderLinesView ppOrder = getView();
+		if (!(ppOrder.isStatusPlanning() || ppOrder.isStatusReview()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not planning or in review");
+		}
+
+		final PPOrderLineRow ppOrderLine = getSingleSelectedRow();
+		if (!ppOrderLine.isReceipt())
 		{
 			return ProcessPreconditionsResolution.reject("not a receipt line");
 		}
+		if (ppOrderLine.isProcessed())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("row processed");
+		}
 
+		//
+		// OK, Override caption with current packing info, if any 
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
 		if (!Check.isEmpty(packingInfo, true))
 		{
@@ -154,6 +170,8 @@ public class WEBUI_PP_Order_Receipt
 					.accept();
 		}
 
+		//
+		// OK
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -179,8 +197,16 @@ public class WEBUI_PP_Order_Receipt
 		// Create
 		receiptCandidatesProducer.createReceiptCandidatesAndPlanningHUs();
 
-		// Invalidate the view because for sure we have changes
-		getView().invalidateAll();
 		return MSG_OK;
+	}
+
+	@Override
+	protected void postProcess(boolean success)
+	{
+		// Invalidate the view because for sure we have changes
+		final PPOrderLinesView ppOrderLinesView = getView();
+		ppOrderLinesView.invalidateAll();
+
+		viewsRepo.notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPP_Order_ID());
 	}
 }
