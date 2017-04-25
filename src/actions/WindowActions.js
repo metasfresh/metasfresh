@@ -644,10 +644,19 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         ));
                         break;
                     case 'openDocument':
-                        dispatch(push(
-                            '/window/' + action.windowId +
-                            '/' + action.documentId
-                        ));
+                        if(action.modal) {
+                            dispatch(
+                                openModal(
+                                    '', action.windowId, 'window', null, null,
+                                    true, '', '', action.documentId
+                                )
+                            );
+                        } else {
+                            dispatch(push(
+                                '/window/' + action.windowId +
+                                '/' + action.documentId
+                            ));
+                        }
                         break;
                     case 'openIncludedView':
                         dispatch(setListIncludedView(
