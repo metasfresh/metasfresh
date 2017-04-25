@@ -393,6 +393,22 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
+            case 'Password':
+                return (
+                    <div className={
+                            this.getClassnames(true) +
+                            (isEdited ? 'input-focused ' : '')
+                        }
+                    >
+                        <input
+                            {...widgetProperties}
+                            type="password"
+                        />
+                        {icon &&
+                            <i className="meta-icon-edit input-icon-right"/>
+                        }
+                    </div>
+                )
             case 'Integer':
                 return (
                     <div className={
