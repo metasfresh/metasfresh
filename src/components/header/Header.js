@@ -236,7 +236,7 @@ class Header extends Component {
 
     render() {
         const {
-            docSummaryData, siteName, docNoData, docNo, docStatus,
+            docSummaryData, siteName, docNoData, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
             inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
             selectedWindowType, notfound
@@ -310,8 +310,6 @@ class Header extends Component {
                                 <Breadcrumb
                                     breadcrumb={breadcrumb}
                                     windowType={windowType}
-                                    docNo={docNo}
-                                    docNoData={docNoData}
                                     docSummaryData={docSummaryData}
                                     dataId={dataId}
                                     siteName={siteName}
