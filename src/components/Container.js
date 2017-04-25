@@ -15,7 +15,7 @@ class Container extends Component {
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
-            handleDeletedStatus, dropzoneFocused
+            handleDeletedStatus, dropzoneFocused, notfound
         } = this.props;
 
         return (
@@ -27,7 +27,7 @@ class Container extends Component {
                             handleDeletedStatus, isDocumentNotSaved,
                             showIndicator, query, siteName, showSidelist,
                             attachments, actions, references, windowType,
-                            breadcrumb, dataId, dropzoneFocused
+                            breadcrumb, dataId, dropzoneFocused, notfound
                         }}
                         docStatus = {docActionElem}
                         docNo = {docNoElement}

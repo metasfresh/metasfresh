@@ -197,12 +197,12 @@ class Subheader extends Component {
     renderActionsColumn = () => {
         const {
             windowType, dataId, selected, selectedWindowType, entity, query,
-            openModal, closeSubheader
+            openModal, closeSubheader, notfound
         } = this.props;
 
         return (
             <Actions
-                {...{windowType, entity, openModal, closeSubheader}}
+                {...{windowType, entity, openModal, closeSubheader, notfound}}
                 docId={dataId ? dataId : query && query.viewId}
                 rowId={selectedWindowType === windowType ? selected : []}
             />

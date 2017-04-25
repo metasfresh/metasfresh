@@ -25,7 +25,8 @@ class DocList extends Component {
         super(props);
 
         this.state = {
-            modalTitle: ''
+            modalTitle: '',
+            notfound: false
         }
     }
 
@@ -59,6 +60,12 @@ class DocList extends Component {
         })
     }
 
+    setNotFound = (isNotFound) => {
+        this.setState({
+            notfound: isNotFound
+        })
+    }
+
     render() {
         const {
             windowType, breadcrumb, query, modal, selected, rawModal,
@@ -66,7 +73,7 @@ class DocList extends Component {
         } = this.props;
 
         const {
-            modalTitle
+            modalTitle, notfound
         } = this.state;
 
         return (
@@ -75,6 +82,7 @@ class DocList extends Component {
                 breadcrumb={breadcrumb}
                 windowType={windowType}
                 query={query}
+                notfound={notfound}
                 showIndicator={!modal.visible && !rawModal.visible}
             >
                 {modal.visible &&
@@ -145,6 +153,8 @@ class DocList extends Component {
                      processStatus={processStatus}
                      disablePaginationShortcuts=
                         {modal.visible || rawModal.visible}
+                    setNotFound={this.setNotFound}
+                    notfound={notfound}
                  />
             </Container>
         );

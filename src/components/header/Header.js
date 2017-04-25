@@ -239,7 +239,7 @@ class Header extends Component {
             docSummaryData, siteName, docNoData, docNo, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
             inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
-            selectedWindowType
+            selectedWindowType, notfound
         } = this.props;
 
         const {
@@ -494,6 +494,7 @@ class Header extends Component {
                     entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
                     query={query}
+                    notfound={notfound}
                 />}
 
                 {showSidelist && isSideListShow && <SideList

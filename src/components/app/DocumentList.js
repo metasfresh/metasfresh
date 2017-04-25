@@ -250,7 +250,7 @@ class DocumentList extends Component {
 
     fetchLayoutAndData = (isNewFilter) => {
         const {
-            dispatch, windowType, type, setModalTitle
+            dispatch, windowType, type, setModalTitle, setNotFound
         } = this.props;
 
         const {
@@ -271,10 +271,14 @@ class DocumentList extends Component {
                 setModalTitle && setModalTitle(response.data.caption)
             })
         }).catch(() => {
-            this.mounted && this.setState({
-                layout: 'notfound',
-                data: 'notfound'
-            });
+            // We have to always update that fields to refresh that view!
+            // Check the shouldComponentUpdate method
+            this.setState({
+                data: 'notfound',
+                layout: 'notfound'
+            }, () => {
+                setNotFound && setNotFound(true);
+            })
         })
     }
     /*
@@ -312,7 +316,9 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery, refresh) => {
-        const {dispatch, windowType, updateUri} = this.props;
+        const {dispatch, windowType, updateUri, setNotFound} = this.props;
+
+        setNotFound(false);
 
         if(updateUri){
             id && updateUri('viewId', id);
@@ -418,14 +424,15 @@ class DocumentList extends Component {
         const {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
-            includedView, children, isIncluded, disablePaginationShortcuts
+            includedView, children, isIncluded, disablePaginationShortcuts,
+            notfound
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
-        if(layout === 'notfound'){
+        if(notfound || layout === 'notfound' || data === 'notfound'){
             return <BlankPage what="Document type"/>
         }
 
