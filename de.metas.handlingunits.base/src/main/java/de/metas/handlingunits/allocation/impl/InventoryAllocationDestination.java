@@ -48,7 +48,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -59,10 +58,8 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.impl.HUTransaction;
-import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.product.IProductBL;
