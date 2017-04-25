@@ -1,6 +1,7 @@
 package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -131,6 +132,8 @@ public class PPOrderLinesLoader
 		ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
 				.map(ppOrderBOMLine -> createForBOMLine(viewId, ppOrder, ppOrderBOMLine, ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID())))
+				.sorted(Comparator.<PPOrderLineRow> comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
+						.thenComparing(row -> row.getPP_Order_BOMLine_ID())) // BOM lines order
 				.forEach(records::add);
 
 		return records.build();
