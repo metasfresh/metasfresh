@@ -38,6 +38,8 @@ Here come the actual release notes:
     * Adding the 1:1 selection functionality to Barcode scanning and Handling Unit selection.
   * [#314](https://github.com/metasfresh/metasfresh-webui-api/issues/314) HU attributes shall be readonly if the HUStatus is not planning
     * Handling Unit attributes are editable as long as the Handling Unit status is 'planning'.
+  * [#315](https://github.com/metasfresh/metasfresh-webui-api/issues/315) Manufacturing Issue/Receipt: merge BOM Type and HU Type columns
+    * Merging the Handling Unit Type and BOM Type on HU Level and Issue/ Receipt Lines to 1 column called Type.
   * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
     * Adding support for password widget type in Rest-API, preparing the frontend implementation.
   * [#318](https://github.com/metasfresh/metasfresh-webui-api/issues/318) Manufacturing Issue/Receipt: show packing info for BOM components
