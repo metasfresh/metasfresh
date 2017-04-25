@@ -63,8 +63,8 @@ axios.interceptors.response.use(function (response) {
 
             console.error(data.message);
 
-            // Dashboard disabled notifications
-            if(window.location.pathname === '/'){
+            // Chart disabled notifications
+            if(error.response.request.responseURL.includes('silentError=true')){
                 return;
             }
 
