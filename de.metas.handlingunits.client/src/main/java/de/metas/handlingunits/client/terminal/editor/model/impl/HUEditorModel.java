@@ -1332,7 +1332,7 @@ public class HUEditorModel implements IDisposable
 	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
 	{
 		final Set<I_M_HU> selectedHUs = getSelectedHUs();
-		
+
 		if (Check.isEmpty(selectedHUs))
 		{
 			throw new TerminalException("@NoSelection@");
@@ -1378,9 +1378,9 @@ public class HUEditorModel implements IDisposable
 		// Unload everything from source (our HUs)
 		loader.unloadAllFromSource(huContext);
 
-		final I_M_Inventory inventory = inventoryAllocationDestination.getInventory();
+		final List<I_M_Inventory> inventories = inventoryAllocationDestination.getInventories();
 
-		if (inventory != null)
+		if (!inventories.isEmpty())
 		{
 			//
 			// Refresh the HUKeys
@@ -1390,7 +1390,7 @@ public class HUEditorModel implements IDisposable
 			// Send notifications
 			InventoryProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
-					.notify(inventory);
+					.notify(inventories);
 
 		}
 	}
