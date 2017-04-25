@@ -102,7 +102,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
 
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
-		Check.assumeNotEmpty(warehouses, ERR_No_Quality_Warehouse);
+		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
 
 	}
