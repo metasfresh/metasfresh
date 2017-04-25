@@ -63,6 +63,18 @@ public interface IPPOrderReceiptHUProducer
 	 *
 	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
+	List<I_M_HU> createReceiptCandidatesAndPlanningHUs();
+
+	/**
+	 * Creates planning HUs to be received.
+	 *
+	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
+	 * 
+	 * @param qtyToReceive precise quantity to receive
+	 * @param uom
+	 * @deprecated To be removed. Needed only for the legacy Swing UI.
+	 */
+	@Deprecated
 	List<I_M_HU> createReceiptCandidatesAndPlanningHUs(BigDecimal qtyToReceive, I_C_UOM uom);
 
 	/**

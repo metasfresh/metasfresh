@@ -17,6 +17,7 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
   * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
     * Adding the initial window layout for Bankstatement window in webUI.
   * [#1349](https://github.com/metasfresh/metasfresh/issues/1349) Create Product category webui window
@@ -26,12 +27,19 @@ Here come the actual release notes:
   * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
   * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
+  * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
   
 * metasfresh-webui-api
   * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
     * New Functionality to quickly add a quickaction for request creation to WebUI windows.
   * [#313](https://github.com/metasfresh/metasfresh-webui-api/issues/313) Handling Unit Barcode selection 1:1
     * Adding the 1:1 selection functionality to Barcode scanning and Handling Unit selection.
+  * [#314](https://github.com/metasfresh/metasfresh-webui-api/issues/314) HU attributes shall be readonly if the HUStatus is not planning
+    * Handling Unit attributes are editable as long as the Handling Unit status is 'planning'.
+  * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
+    * Adding support for password widget type in Rest-API, preparing the frontend implementation.
+  * [#318](https://github.com/metasfresh/metasfresh-webui-api/issues/318) Manufacturing Issue/Receipt: show packing info for BOM components
+    * Adding the Packaging Info Action Issue & Receipt Editor in new Manufacturing.
 
 * metasfresh-webui-frontend
   * [#291](https://github.com/metasfresh/metasfresh-webui-api/issues/291) Show value/ name in breadcrumb but edit in window
