@@ -360,6 +360,16 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		return this;
 	}
+	
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId)
+	{
+		setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(candidate -> !candidate.isProcessed()) // not already processed
+				.collect(GuavaCollectors.toImmutableList()));
+		return this;
+	}
+
 
 	private List<I_PP_Order_Qty> getCandidatesToProcess()
 	{
