@@ -38,6 +38,8 @@ Here come the actual release notes:
     * Handling Unit attributes are editable as long as the Handling Unit status is 'planning'.
   * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
     * Adding support for password widget type in Rest-API, preparing the frontend implementation.
+  * [#318](https://github.com/metasfresh/metasfresh-webui-api/issues/318) Manufacturing Issue/Receipt: show packing info for BOM components
+    * Adding the Packaging Info Action Issue & Receipt Editor in new Manufacturing.
 
 * metasfresh-webui-frontend
   * [#291](https://github.com/metasfresh/metasfresh-webui-api/issues/291) Show value/ name in breadcrumb but edit in window
