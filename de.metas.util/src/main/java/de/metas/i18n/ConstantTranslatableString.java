@@ -2,6 +2,7 @@ package de.metas.i18n;
 
 import java.util.Set;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 /*
@@ -28,29 +29,47 @@ import com.google.common.collect.ImmutableSet;
 
 /*package*/final class ConstantTranslatableString implements ITranslatableString
 {
-	public static final ConstantTranslatableString of(final String value)
+	static final ConstantTranslatableString of(final String value)
 	{
 		if(value == null || value.isEmpty())
 		{
 			return EMPTY;
 		}
-		return new ConstantTranslatableString(value);
+		
+		final boolean anyLanguage = false;
+		return new ConstantTranslatableString(value, anyLanguage);
 	}
 	
-	public static final ConstantTranslatableString EMPTY = new ConstantTranslatableString("");
+	static final ConstantTranslatableString of(final String value, final boolean anyLanguage)
+	{
+		if(value == null || value.isEmpty())
+		{
+			return EMPTY;
+		}
+		
+		return new ConstantTranslatableString(value, anyLanguage);
+	}
+
+	static final ConstantTranslatableString EMPTY = new ConstantTranslatableString("", true);
 
 	private final String value;
+	private final boolean anyLanguage;
 
-	private ConstantTranslatableString(final String value)
+	private ConstantTranslatableString(final String value, final boolean anyLanguage)
 	{
 		super();
 		this.value = value;
+		this.anyLanguage = anyLanguage;
 	}
 
 	@Override
 	public String toString()
 	{
-		return value;
+		return MoreObjects.toStringHelper("constant")
+				.omitNullValues()
+				.add("value", value)
+				.addValue(anyLanguage ? "anyLanguage" : null)
+				.toString();
 	}
 
 	@Override
@@ -69,6 +88,12 @@ import com.google.common.collect.ImmutableSet;
 	public Set<String> getAD_Languages()
 	{
 		return ImmutableSet.of();
+	}
+	
+	@Override
+	public boolean isTranslatedTo(final String adLanguage)
+	{
+		return anyLanguage;
 	}
 
 }

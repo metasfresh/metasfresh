@@ -1,12 +1,8 @@
-package org.adempiere.bpartner.model.interceptor;
+package org.adempiere.bpartner.callout;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.util.Services;
-
-import de.metas.interfaces.I_C_BPartner;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_C_BPartner;
 
 /*
  * #%L
@@ -30,16 +26,20 @@ import de.metas.interfaces.I_C_BPartner;
  * #L%
  */
 
-@Interceptor(I_C_BPartner.class)
+@Callout(I_C_BPartner.class)
 public class C_BPartner
 {
-	@Init
-	public void init()
+	/**
+	 * When user is changing the CompanyName field (and IsCompany=Y) set Name=CompanyName
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1307
+	 */
+	@CalloutMethod(columnNames = I_C_BPartner.COLUMNNAME_CompanyName)
+	public void updateNameFromCompanyName(final I_C_BPartner bpartner)
 	{
-		Services.get(ITabCalloutFactory.class)
-				.registerTabCalloutForTable(I_C_BPartner.Table_Name, org.adempiere.bpartner.callout.C_BPartner_TabCallout.class);
-
-		Services.get(IProgramaticCalloutProvider.class)
-				.registerAnnotatedCallout(new org.adempiere.bpartner.callout.C_BPartner());
+		if (bpartner.isCompany())
+		{
+			bpartner.setName(bpartner.getCompanyName());
+		}
 	}
 }

@@ -74,4 +74,10 @@ class CompositeTranslatableString implements ITranslatableString
 		}
 		return adLanguages;
 	}
+	
+	@Override
+	public boolean isTranslatedTo(final String adLanguage)
+	{
+		return list.stream().anyMatch(trl -> trl.isTranslatedTo(adLanguage));
+	}
 }

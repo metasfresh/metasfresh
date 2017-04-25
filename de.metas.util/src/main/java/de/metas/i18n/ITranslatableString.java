@@ -53,4 +53,9 @@ public interface ITranslatableString
 	public String getDefaultValue();
 
 	public Set<String> getAD_Languages();
+
+	default boolean isTranslatedTo(String adLanguage)
+	{
+		return getAD_Languages().contains(adLanguage);
+	}
 }
