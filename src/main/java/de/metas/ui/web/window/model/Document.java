@@ -375,7 +375,7 @@ public final class Document
 
 				documentCallout.onNew(asCalloutRecord());
 
-				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector());
+				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollectorOrNull());
 			}
 			//
 			// Initializing an existing loaded document
@@ -456,7 +456,7 @@ public final class Document
 		if (FieldInitializationMode.NewDocument == mode)
 		{
 			// Collect the change event, even if there was no change because we just set the initial value
-			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
+			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 			documentChangesCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
 
 			// NOTE: don't update fields flags which depend on this field because we will do it all together after all fields are initialized
@@ -932,7 +932,12 @@ public final class Document
 
 	public Object getDocumentIdAsJson()
 	{
-		return getDocumentIdAsInt();
+		final DocumentId documentId = getDocumentId();
+		if(documentId.isInt())
+		{
+			return documentId.toInt();
+		}
+		return documentId.toString();
 	}
 
 	public boolean isNew()
@@ -1113,7 +1118,7 @@ public final class Document
 		}
 
 		// collect changed value
-		final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
+		final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		documentChangesCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
 
 		// Update all dependencies

@@ -53,7 +53,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * #L%
  */
 
-/* package */class ASIDocument
+public class ASIDocument
 {
 	private static final transient Logger logger = LogManager.getLogger(ASIDocument.class);
 
@@ -103,7 +103,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		}
 	}
 	
-	public IAutoCloseable lockForReading()
+	IAutoCloseable lockForReading()
 	{
 		// assume _lock is not null
 		final ReadLock readLock = _lock.readLock();
@@ -117,7 +117,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		};
 	}
 
-	public IAutoCloseable lockForWriting()
+	IAutoCloseable lockForWriting()
 	{
 		// assume _lock is not null
 		final WriteLock writeLock = _lock.writeLock();
@@ -137,9 +137,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return new ASIDocument(this, copyMode);
 	}
 
-	public ASIDescriptor getDescriptor()
+	public ASILayout getLayout()
 	{
-		return descriptor;
+		return descriptor.getLayout();
 	}
 
 	public DocumentId getDocumentId()
@@ -152,13 +152,13 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return descriptor.getM_AttributeSet_ID();
 	}
 
-	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
+	void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
 		assertNotCompleted();
 		data.processValueChanges(events, reason);
 	}
 
-	private Collection<IDocumentFieldView> getFieldViews()
+	public Collection<IDocumentFieldView> getFieldViews()
 	{
 		return data.getFieldViews();
 	}
@@ -183,7 +183,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return completed;
 	}
 	
-	public IntegerLookupValue complete()
+	IntegerLookupValue complete()
 	{
 		assertNotCompleted();
 		

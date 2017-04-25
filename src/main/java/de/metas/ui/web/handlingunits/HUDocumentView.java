@@ -116,7 +116,7 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 		final HUDocumentViewAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
 		if (attributesProvider != null)
 		{
-			final DocumentId attributesKey = DocumentId.of(huId);
+			final DocumentId attributesKey = attributesProvider.createAttributeKey(huId);
 			attributesSupplier = () -> attributesProvider.getAttributes(documentId, attributesKey);
 		}
 		else

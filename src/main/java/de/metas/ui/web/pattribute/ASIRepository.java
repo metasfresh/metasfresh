@@ -1,8 +1,8 @@
 package de.metas.ui.web.pattribute;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -65,7 +65,7 @@ public class ASIRepository
 	@Lazy
 	private DocumentCollection documentsCollection;
 
-	private final AtomicInteger nextASIDocId = new AtomicInteger(1);
+	private final Supplier<DocumentId> nextASIDocId = DocumentId.supplier("N", 1);
 	private final CCache<DocumentId, ASIDocument> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
 
 	private static final String VERSION_DEFAULT = "0";
@@ -82,7 +82,7 @@ public class ASIRepository
 		//
 		// Create the new ASI document
 		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
-				.initializeAsNewDocument(nextASIDocId::getAndIncrement, VERSION_DEFAULT)
+				.initializeAsNewDocument(nextASIDocId, VERSION_DEFAULT)
 				.build();
 
 		//
@@ -107,9 +107,53 @@ public class ASIRepository
 		return asiDoc;
 	}
 
+	/**
+	 * Retrieves {@link ASIDocument} for given ASI. The document will be readonly and not save-able.
+	 * 
+	 * IMPORTANT: the retrieved document is not cached, so next time it will be retrieved again
+	 * 
+	 * @param attributeSetInstanceId
+	 * @return ASI document
+	 */
+	public ASIDocument loadReadonly(final int attributeSetInstanceId)
+	{
+		if (attributeSetInstanceId <= 0)
+		{
+			throw new EntityNotFoundException("ASI " + attributeSetInstanceId);
+		}
+
+		final ASIEditingInfo info = ASIEditingInfo.ofASI(attributeSetInstanceId);
+
+		//
+		// Get the ASI descriptor
+		final ASIDescriptor asiDescriptor = descriptorsFactory.getASIDescriptor(info);
+
+		//
+		// Create the new ASI document
+		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
+				.initializeAsNewDocument(() -> DocumentId.of(attributeSetInstanceId), VERSION_DEFAULT)
+				.build();
+
+		//
+		// If we have a template ASI, populate the ASI document from it
+		final MAttributeSetInstance templateASI = info.getM_AttributeSetInstance();
+		for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateASI))
+		{
+			loadASIDocumentField(asiDocData, fromAI);
+		}
+
+		//
+		// Validate, log and add the new ASI document to our index
+		asiDocData.checkAndGetValidStatus();
+		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
+
+		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
+		return asiDoc.copy(CopyMode.CheckInReadonly);
+	}
+
 	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
 	{
-		final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
+		final DocumentPath documentPath = request.getDocumentPath();
 
 		if (documentPath.getDocumentType() == DocumentType.Window)
 		{
@@ -125,12 +169,8 @@ public class ASIRepository
 		}
 		else if (documentPath.getDocumentType() == DocumentType.Process)
 		{
-			final int productId = -1;
-			final boolean isSOTrx = true;
 			final int attributeSetInstanceId = request.getTemplateId();
-			final String callerTableName = null;
-			final int callerColumnId = -1; // N/A
-			return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
+			return ASIEditingInfo.ofASI(attributeSetInstanceId);
 		}
 		else
 		{
@@ -140,7 +180,7 @@ public class ASIRepository
 
 	public ASILayout getLayout(final DocumentId asiDocId)
 	{
-		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getDescriptor().getLayout());
+		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getLayout());
 	}
 
 	private ASIDocument getASIDocumentNoLock(final DocumentId asiDocId)

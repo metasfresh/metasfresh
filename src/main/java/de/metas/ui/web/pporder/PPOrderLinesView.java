@@ -13,7 +13,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -22,6 +21,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.view.ViewAction;
+import de.metas.ui.web.view.ASIDocumentViewAttributesProvider;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -81,7 +81,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 		viewId = builder.getViewId();
 
-		loader = builder.getLoader();
+		loader = builder.createLoader();
 		ppOrderId = loader.getPP_Order_ID();
 	}
 
@@ -398,10 +398,9 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	public static final class Builder
 	{
 		private ViewId parentViewId;
-
 		private ViewId viewId;
-
-		private PPOrderLinesLoader loader;
+		private int ppOrderId;
+		private ASIDocumentViewAttributesProvider asiAttributesProvider;
 
 		private Builder()
 		{
@@ -413,7 +412,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			return new PPOrderLinesView(this);
 		}
 
-		public Builder setParentViewId(final ViewId parentViewId)
+		public Builder parentViewId(final ViewId parentViewId)
 		{
 			this.parentViewId = parentViewId;
 			return this;
@@ -424,7 +423,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			return parentViewId;
 		}
 
-		public Builder setViewId(final ViewId viewId)
+		public Builder viewId(final ViewId viewId)
 		{
 			this.viewId = viewId;
 			return this;
@@ -434,17 +433,24 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		{
 			return viewId;
 		}
-
-		public Builder setRecords(final PPOrderLinesLoader loader)
+		
+		public Builder ppOrderId(final int ppOrderId)
 		{
-			this.loader = loader;
+			this.ppOrderId = ppOrderId;
+			return this;
+		}
+		
+		public Builder asiAttributesProvider(ASIDocumentViewAttributesProvider asiAttributesProvider)
+		{
+			this.asiAttributesProvider = asiAttributesProvider;
 			return this;
 		}
 
-		private PPOrderLinesLoader getLoader()
+		private PPOrderLinesLoader createLoader()
 		{
-			Preconditions.checkNotNull(loader, "loader is null");
-			return loader;
+			return PPOrderLinesLoader.builder(getViewId().getWindowId(), ppOrderId)
+					.asiAttributesProvider(asiAttributesProvider)
+					.build();
 		}
 	}
 }

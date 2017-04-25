@@ -27,7 +27,7 @@ public enum DocumentType
 	Window("W") //
 	, Process("P") //
 	, ProductAttributes("ASI") //
-	, HUAttributes("HUA") //
+	, ViewRecordAttributes("VRA") // 
 	, Address("ADDR") //
 	, QuickInput("QI")
 	;

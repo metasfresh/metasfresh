@@ -36,6 +36,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
@@ -147,7 +148,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public JSONDocumentViewAttributes toJSONDocument()
+	public JSONDocumentViewAttributes toJSONDocument(final JSONOptions jsonOpts_NOTUSED)
 	{
 		final JSONDocumentViewAttributes jsonDocument = new JSONDocumentViewAttributes(documentPath);
 

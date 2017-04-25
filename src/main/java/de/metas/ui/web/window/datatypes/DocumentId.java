@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ import de.metas.printing.esb.base.util.Check;
 
 @Immutable
 @SuppressWarnings("serial")
+// JSON
 public abstract class DocumentId implements Serializable
 {
 	private static final transient int NEW_ID = -1;
@@ -197,6 +199,14 @@ public abstract class DocumentId implements Serializable
 		return () -> DocumentId.of(intSupplier.getAsInt());
 	}
 
+	public static final Supplier<DocumentId> supplier(final String prefix, final int firstId)
+	{
+		Check.assumeNotNull(prefix, "Parameter prefix is not null");
+
+		final AtomicInteger nextId = new AtomicInteger(firstId);
+		return () -> DocumentId.ofString(prefix + nextId.getAndIncrement());
+	}
+
 	private DocumentId()
 	{
 		super();
@@ -217,7 +227,7 @@ public abstract class DocumentId implements Serializable
 	@Override
 	public abstract boolean equals(final Object obj);
 
-	protected abstract boolean isInt();
+	public abstract boolean isInt();
 
 	public abstract int toInt();
 
@@ -272,7 +282,7 @@ public abstract class DocumentId implements Serializable
 		}
 
 		@Override
-		protected boolean isInt()
+		public boolean isInt()
 		{
 			return true;
 		}
@@ -331,7 +341,7 @@ public abstract class DocumentId implements Serializable
 		}
 
 		@Override
-		protected boolean isInt()
+		public boolean isInt()
 		{
 			return false;
 		}

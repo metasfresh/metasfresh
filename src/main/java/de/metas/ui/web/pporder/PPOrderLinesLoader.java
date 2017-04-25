@@ -7,7 +7,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -16,6 +15,7 @@ import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
@@ -30,10 +30,14 @@ import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
+import de.metas.ui.web.view.ASIDocumentViewAttributesProvider;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
+import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.Builder;
 
 /*
  * #%L
@@ -61,8 +65,17 @@ public class PPOrderLinesLoader
 {
 	public static final PPOrderLinesLoader of(final DocumentViewCreateRequest request)
 	{
-		return new PPOrderLinesLoader(request);
+		final ASIDocumentViewAttributesProvider asiAttributesProvider = null;
+		return new PPOrderLinesLoader(request.getWindowId(), request.getSingleFilterOnlyId(), asiAttributesProvider);
 	}
+	
+	public static final PPOrderLinesLoaderBuilder builder(final WindowId windowId, final int ppOrderId)
+	{
+		return new PPOrderLinesLoaderBuilder()
+				.windowId(windowId)
+				.ppOrderId(ppOrderId);
+	}
+
 
 	//
 	// Services
@@ -70,30 +83,28 @@ public class PPOrderLinesLoader
 	private final transient IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	//
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	
-	private final transient HUDocumentViewLoader _huViewRecordLoader;
-	private final int _ppOrderId;
 
-	public PPOrderLinesLoader(final DocumentViewCreateRequest request)
+	private final int _ppOrderId;
+	private final transient HUDocumentViewLoader huViewRecordLoader;
+	private final ASIDocumentViewAttributesProvider asiAttributesProvider;
+
+	@Builder
+	public PPOrderLinesLoader(final WindowId windowId, final int ppOrderId, final ASIDocumentViewAttributesProvider asiAttributesProvider)
 	{
-		_huViewRecordLoader = HUDocumentViewLoader.builder()
-				.windowId(request.getWindowId())
+		huViewRecordLoader = HUDocumentViewLoader.builder()
+				.windowId(windowId)
 				.referencingTableName(I_PP_Order.Table_Name)
 				.build();
 
-		final int ppOrderId = ListUtils.singleElement(request.getFilterOnlyIds());
-		Preconditions.checkArgument(ppOrderId > 0, "No manufacturing order ID found in %s", request);
+		Preconditions.checkArgument(ppOrderId > 0, "No manufacturing order ID provided");
 		this._ppOrderId = ppOrderId;
+
+		this.asiAttributesProvider = asiAttributesProvider;
 	}
 
 	int getPP_Order_ID()
 	{
 		return _ppOrderId;
-	}
-
-	private HUDocumentViewLoader getHUViewRecordLoader()
-	{
-		return _huViewRecordLoader;
 	}
 
 	/**
@@ -137,6 +148,18 @@ public class PPOrderLinesLoader
 				.format(packingInfo);
 	}
 
+	private final Supplier<IDocumentViewAttributes> createASIAttributesSupplier(final DocumentId documentId, final int asiId)
+	{
+		if (asiId > 0)
+		{
+			return () -> asiAttributesProvider.getAttributes(documentId, DocumentId.of(asiId));
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	private PPOrderLineRow createForMainProduct(final ViewId viewId, final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
 		final DocumentId documentId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
@@ -146,7 +169,7 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
 
 		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
-		
+
 		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
 				.setDocumentId(documentId)
 				.ppOrder(ppOrder.getPP_Order_ID())
@@ -157,6 +180,7 @@ public class PPOrderLinesLoader
 				.setUOM(createUOMLookupValue(ppOrder.getC_UOM()))
 				.setQty(qty)
 				.setQtyPlan(qtyPlan)
+				.setAttributesSupplier(createASIAttributesSupplier(documentId, ppOrder.getM_AttributeSetInstance_ID()))
 		//
 		;
 
@@ -200,7 +224,8 @@ public class PPOrderLinesLoader
 				.setPackingInfo(packingInfo)
 				.setUOM(createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
 				.setQty(qty)
-				.setQtyPlan(qtyPlan);
+				.setQtyPlan(qtyPlan)
+				.setAttributesSupplier(createASIAttributesSupplier(documentId, ppOrderBOMLine.getM_AttributeSetInstance_ID()));
 
 		ppOrderQtys.stream()
 				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
@@ -211,7 +236,7 @@ public class PPOrderLinesLoader
 
 	private PPOrderLineRow createForQty(final ViewId viewId, final I_PP_Order_Qty ppOrderQty)
 	{
-		final HUDocumentView huViewRecord = getHUViewRecordLoader().retrieveForHUId(ppOrderQty.getM_HU_ID());
+		final HUDocumentView huViewRecord = huViewRecordLoader.retrieveForHUId(ppOrderQty.getM_HU_ID());
 		return createForHUViewRecordRecursivelly(viewId, ppOrderQty, huViewRecord);
 	}
 

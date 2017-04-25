@@ -136,7 +136,7 @@ public final class DocumentView implements IDocumentView
 			throw new EntityNotFoundException("Document does not support attributes");
 		}
 
-		final IDocumentViewAttributes attributes = attributesProvider.getAttributes(documentId, documentId);
+		final IDocumentViewAttributes attributes = attributesProvider.getAttributes(documentId, null);
 		if (attributes == null)
 		{
 			throw new EntityNotFoundException("Document does not support attributes");

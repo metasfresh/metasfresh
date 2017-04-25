@@ -61,6 +61,11 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 	{
 		super();
 	}
+	
+	public DocumentId createAttributeKey(final int huId)
+	{
+		return DocumentId.of(huId);
+	}
 
 	@Override
 	public HUDocumentViewAttributes getAttributes(final DocumentId viewRowId, final DocumentId huId)
@@ -83,7 +88,7 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 
 		final DocumentId documentTypeId = DocumentId.of(huId);
 		final DocumentId viewRowId = key.getViewRowId();
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.HUAttributes, documentTypeId, viewRowId);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.ViewRecordAttributes, documentTypeId, viewRowId);
 
 		final boolean readonly = !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 

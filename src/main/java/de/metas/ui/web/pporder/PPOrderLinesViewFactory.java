@@ -3,7 +3,10 @@ package de.metas.ui.web.pporder;
 import java.util.Collection;
 
 import org.compiere.util.CCache;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.ui.web.pattribute.ASIRepository;
+import de.metas.ui.web.view.ASIDocumentViewAttributesProvider;
 import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.DocumentViewFactory;
 import de.metas.ui.web.view.IDocumentViewSelectionFactory;
@@ -42,16 +45,21 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 @DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
 public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 {
+	@Autowired
+	private ASIRepository asiRepository;
+
 	private final transient CCache<WindowId, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	@Override
 	public PPOrderLinesView createView(final DocumentViewCreateRequest request)
 	{
 		final ViewId viewId = ViewId.random(request.getWindowId());
+		
 		return PPOrderLinesView.builder()
-				.setParentViewId(request.getParentViewId())
-				.setViewId(viewId)
-				.setRecords(PPOrderLinesLoader.of(request))
+				.parentViewId(request.getParentViewId())
+				.viewId(viewId)
+				.ppOrderId(request.getSingleFilterOnlyId())
+				.asiAttributesProvider(ASIDocumentViewAttributesProvider.newInstance(asiRepository))
 				.build();
 	}
 
