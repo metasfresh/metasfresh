@@ -27,8 +27,8 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.ui.web.handlingunits.HUDocumentView;
-import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
@@ -78,14 +78,14 @@ public class PPOrderLinesLoader
 
 	//
 	private final WindowId windowId;
-	private final transient HUDocumentViewLoader huViewRecordLoader;
+	private final transient HUEditorViewRepository huEditorRepo;
 	private final ASIDocumentViewAttributesProvider asiAttributesProvider;
 
 	@Builder
 	public PPOrderLinesLoader(final WindowId windowId, final ASIDocumentViewAttributesProvider asiAttributesProvider)
 	{
 		this.windowId = windowId;
-		huViewRecordLoader = HUDocumentViewLoader.builder()
+		huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(windowId)
 				.referencingTableName(I_PP_Order.Table_Name)
 				.build();
@@ -223,24 +223,24 @@ public class PPOrderLinesLoader
 
 	private PPOrderLineRow createForQty(final I_PP_Order_Qty ppOrderQty, final boolean readonly)
 	{
-		final HUDocumentView huViewRecord = huViewRecordLoader.retrieveForHUId(ppOrderQty.getM_HU_ID());
-		final HUDocumentView parentHUViewRecord = null;
-		return createForHUViewRecordRecursivelly(ppOrderQty, huViewRecord, parentHUViewRecord, readonly);
+		final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(ppOrderQty.getM_HU_ID());
+		final HUEditorRow parentHUViewRecord = null;
+		return createForHUViewRecordRecursivelly(ppOrderQty, huEditorRow, parentHUViewRecord, readonly);
 	}
 
-	private PPOrderLineRow createForHUViewRecordRecursivelly(final I_PP_Order_Qty ppOrderQty, final HUDocumentView huViewRecord, final HUDocumentView parentHUViewRecord, final boolean readonly)
+	private PPOrderLineRow createForHUViewRecordRecursivelly(final I_PP_Order_Qty ppOrderQty, final HUEditorRow huEditorRow, final HUEditorRow parentHUEditorRow, final boolean readonly)
 	{
-		final PPOrderLineType type = PPOrderLineType.ofHUDocumentViewType(huViewRecord.getType());
+		final PPOrderLineType type = PPOrderLineType.ofHUDocumentViewType(huEditorRow.getType());
 
 		//
 		// Get HU's quantity.
 		final BigDecimal qty;
 		final JSONLookupValue qtyUOM;
-		if (huViewRecord.isHUStatusDestroyed())
+		if (huEditorRow.isHUStatusDestroyed())
 		{
 			// Top level HU which was already destroyed (i.e. it was already issued & processed)
 			// => get the Qty/UOM from PP_Order_Qty because on HU level, for sure it will be ZERO.
-			if (parentHUViewRecord == null)
+			if (parentHUEditorRow == null)
 			{
 				qty = ppOrderQty.getQty();
 				qtyUOM = createUOMLookupValue(ppOrderQty.getC_UOM());
@@ -250,31 +250,31 @@ public class PPOrderLinesLoader
 			else
 			{
 				qty = null;
-				qtyUOM = huViewRecord.getUOM();
+				qtyUOM = huEditorRow.getUOM();
 			}
 		}
 		else
 		{
-			qty = huViewRecord.getQtyCU();
-			qtyUOM = huViewRecord.getUOM();
+			qty = huEditorRow.getQtyCU();
+			qtyUOM = huEditorRow.getUOM();
 		}
 
 		//
 		return PPOrderLineRow.builder(windowId)
-				.setDocumentId(huViewRecord.getDocumentId())
+				.setDocumentId(huEditorRow.getDocumentId())
 				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
 				.processed(readonly || ppOrderQty.isProcessed())
 				.setType(type)
-				.setAttributesSupplier(huViewRecord.getAttributesSupplier())
+				.setAttributesSupplier(huEditorRow.getAttributesSupplier())
 				//
-				.setCode(huViewRecord.getValue())
-				.setProduct(huViewRecord.getProduct())
-				.setPackingInfo(huViewRecord.getPackingInfo())
+				.setCode(huEditorRow.getValue())
+				.setProduct(huEditorRow.getProduct())
+				.setPackingInfo(huEditorRow.getPackingInfo())
 				.setUOM(qtyUOM)
 				.setQtyPlan(null) // always null
 				.setQty(qty)
 				//
-				.addIncludedDocumentFrom(huViewRecord.getIncludedDocuments(), includedHUViewRecord -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUViewRecord, huViewRecord, readonly))
+				.addIncludedDocumentFrom(huEditorRow.getIncludedDocuments(), includedHUEditorRow -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUEditorRow, huEditorRow, readonly))
 				//
 				.build();
 	}

@@ -58,24 +58,24 @@ import lombok.Builder;
  * #L%
  */
 
-public class HUDocumentViewLoader
+public class HUEditorViewRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(HUDocumentViewLoader.class);
+	private static final transient Logger logger = LogManager.getLogger(HUEditorViewRepository.class);
 
 	private final WindowId windowId;
 	private final String referencingTableName;
 
-	private final HUDocumentViewAttributesProvider attributesProvider;
+	private final HUEditorRowAttributesProvider attributesProvider;
 
 	@Builder
-	private HUDocumentViewLoader(final WindowId windowId, final String referencingTableName)
+	private HUEditorViewRepository(final WindowId windowId, final String referencingTableName)
 	{
 		super();
 
 		this.windowId = windowId;
 		this.referencingTableName = referencingTableName;
 
-		this.attributesProvider = new HUDocumentViewAttributesProvider();
+		this.attributesProvider = new HUEditorRowAttributesProvider();
 	}
 	
 	public void invalidateAll()
@@ -83,7 +83,7 @@ public class HUDocumentViewLoader
 		attributesProvider.invalidateAll();
 	}
 
-	public List<HUDocumentView> retrieveDocumentViews(final Set<Integer> huIds)
+	public List<HUEditorRow> retrieveDocumentViews(final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
@@ -92,12 +92,12 @@ public class HUDocumentViewLoader
 	}
 
 	/**
-	 * Retrieves the {@link HUDocumentView} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.
+	 * Retrieves the {@link HUEditorRow} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.
 	 * 
 	 * @param huId
-	 * @return {@link HUDocumentView} or null if the huId negative or zero.
+	 * @return {@link HUEditorRow} or null if the huId negative or zero.
 	 */
-	public HUDocumentView retrieveForHUId(final int huId)
+	public HUEditorRow retrieveForHUId(final int huId)
 	{
 		if (huId <= 0)
 		{
@@ -130,19 +130,19 @@ public class HUDocumentViewLoader
 				.list();
 	}
 
-	private HUDocumentView createDocumentView(final I_M_HU hu)
+	private HUEditorRow createDocumentView(final I_M_HU hu)
 	{
 		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
 		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
-		final HUDocumentViewType huRecordType;
+		final HUEditorRowType huRecordType;
 		if (aggregatedTU)
 		{
-			huRecordType = HUDocumentViewType.TU;
+			huRecordType = HUEditorRowType.TU;
 		}
 		else
 		{
-			huRecordType = HUDocumentViewType.ofHU_UnitType(huUnitTypeCode);
+			huRecordType = HUEditorRowType.ofHU_UnitType(huUnitTypeCode);
 		}
 		final String huUnitTypeDisplayName = huRecordType.getName();
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
@@ -151,7 +151,7 @@ public class HUDocumentViewLoader
 		final boolean processed = extractProcessed(hu);
 		final int huId = hu.getM_HU_ID();
 
-		final HUDocumentView.Builder huViewRecord = HUDocumentView.builder(windowId)
+		final HUEditorRow.Builder huViewRecord = HUEditorRow.builder(windowId)
 				.setDocumentId(DocumentId.of(huId))
 				.setType(huRecordType)
 				.setAttributesProvider(attributesProvider)
@@ -218,13 +218,13 @@ public class HUDocumentViewLoader
 		return huViewRecord.build();
 	}
 
-	private static final String extractPackingInfo(final I_M_HU hu, final HUDocumentViewType huUnitType)
+	private static final String extractPackingInfo(final I_M_HU hu, final HUEditorRowType huUnitType)
 	{
 		if (!huUnitType.isPureHU())
 		{
 			return "";
 		}
-		if (huUnitType == HUDocumentViewType.VHU)
+		if (huUnitType == HUEditorRowType.VHU)
 		{
 			return "";
 		}
@@ -271,16 +271,16 @@ public class HUDocumentViewLoader
 		return productStorage;
 	}
 
-	private HUDocumentView createDocumentView(final int parent_HU_ID, final IHUProductStorage huStorage, final boolean processed)
+	private HUEditorRow createDocumentView(final int parent_HU_ID, final IHUProductStorage huStorage, final boolean processed)
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
 		final I_M_Product product = huStorage.getM_Product();
-		final HUDocumentViewAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
+		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
 
-		return HUDocumentView.builder(windowId)
+		return HUEditorRow.builder(windowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
-				.setType(HUDocumentViewType.HUStorage)
+				.setType(HUEditorRowType.HUStorage)
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProviderEffective)
 				//
@@ -299,7 +299,7 @@ public class HUDocumentViewLoader
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
 	{
 		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(IHUDocumentView.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(IHUEditorRow.HUSTATUS_AD_Reference_ID, huStatusKey);
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 

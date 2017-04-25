@@ -38,7 +38,7 @@ import de.metas.ui.web.WebRestApiApplication;
  */
 @Profile(WebRestApiApplication.PROFILE_Webui)
 public class WEBUI_M_HU_PrintReceiptLabel
-		extends HUViewProcessTemplate
+		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
 	@Param(mandatory = true, parameterName = "Copies")

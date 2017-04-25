@@ -43,7 +43,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
-import de.metas.ui.web.handlingunits.HUDocumentView;
+import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -74,7 +74,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 
 @Profile(value = WebRestApiApplication.PROFILE_Webui)
 public class WEBUI_M_HU_Transform
-		extends HUViewProcessTemplate
+		extends HUEditorProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final String SYSCONFIG_ALLOW_INFINIT_CAPACITY_TUS = "de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform.AllowNewTUsWithInfiniteCapacity";
@@ -252,7 +252,7 @@ public class WEBUI_M_HU_Transform
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final HUDocumentView row = getSingleSelectedRow();
+		final HUEditorRow row = getSingleSelectedRow();
 		final ActionType action = ActionType.valueOf(p_Action);
 		switch (action)
 		{
@@ -319,7 +319,7 @@ public class WEBUI_M_HU_Transform
 	 * @param huPlanningReceiptOwnerPM
 	 * @task https://github.com/metasfresh/metasfresh/issues/1130
 	 */
-	private void updatePlanningReceiptOwnerPM(final HUDocumentView row, final boolean huPlanningReceiptOwnerPM)
+	private void updatePlanningReceiptOwnerPM(final HUEditorRow row, final boolean huPlanningReceiptOwnerPM)
 	{
 		final I_M_HU hu = row.getM_HU();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
@@ -341,7 +341,7 @@ public class WEBUI_M_HU_Transform
 	 * @param tuHU
 	 * @param qtyCU quantity to split
 	 */
-	private void action_SplitCU_To_ExistingTU(final HUDocumentView cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
+	private void action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
 		HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -357,7 +357,7 @@ public class WEBUI_M_HU_Transform
 	 * @param cuRow
 	 * @param qtyCU
 	 */
-	private void action_SplitCU_To_NewCU(final HUDocumentView cuRow, final BigDecimal qtyCU)
+	private void action_SplitCU_To_NewCU(final HUEditorRow cuRow, final BigDecimal qtyCU)
 	{
 
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
@@ -378,7 +378,7 @@ public class WEBUI_M_HU_Transform
 	 * @param tuPIItemProductId to TU
 	 */
 	private void action_SplitCU_To_NewTUs(
-			final HUDocumentView cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final BigDecimal qtyCU, final boolean isOwnPackingMaterials)
+			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final BigDecimal qtyCU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -392,7 +392,7 @@ public class WEBUI_M_HU_Transform
 	// * existing LU (M_HU_ID)
 	// * QtyTUs
 	private void action_SplitTU_To_ExistingLU(
-			final HUDocumentView tuRow, final I_M_HU luHU, final BigDecimal qtyTU)
+			final HUEditorRow tuRow, final I_M_HU luHU, final BigDecimal qtyTU)
 	{
 		HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -412,7 +412,7 @@ public class WEBUI_M_HU_Transform
 	 * @param luPI
 	 */
 	private void action_SplitTU_To_NewLU(
-			final HUDocumentView tuRow, final I_M_HU_PI_Item huPIItem, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
+			final HUEditorRow tuRow, final I_M_HU_PI_Item huPIItem, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = HUTransferService.get(getCtx())
 				.withReferencedObjects(getM_ReceiptSchedules())
@@ -430,7 +430,7 @@ public class WEBUI_M_HU_Transform
 	 * @param tuPI
 	 */
 	private void action_SplitTU_To_NewTUs(
-			final HUDocumentView tuRow, final BigDecimal qtyTU)
+			final HUEditorRow tuRow, final BigDecimal qtyTU)
 	{
 		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
 		final I_M_HU sourceTuHU = tuRow.getM_HU();
@@ -465,7 +465,7 @@ public class WEBUI_M_HU_Transform
 
 			final boolean existsTU = getView()
 					.streamAllRecursive()
-					.anyMatch(((Predicate<HUDocumentView>)row -> row.isTU())
+					.anyMatch(((Predicate<HUEditorRow>)row -> row.isTU())
 							.and(notAlreadyOurParent()));
 
 			if (existsTU)
@@ -482,7 +482,7 @@ public class WEBUI_M_HU_Transform
 
 			final boolean existsLU = getView()
 					.streamAllRecursive()
-					.anyMatch(((Predicate<HUDocumentView>)row -> row.isLU())
+					.anyMatch(((Predicate<HUEditorRow>)row -> row.isLU())
 							.and(notAlreadyOurParent()));
 
 			if (existsLU)
@@ -520,7 +520,7 @@ public class WEBUI_M_HU_Transform
 					.streamAllRecursive()
 					.filter(row -> row.isTU()) // ..needs to be a TU
 					.filter(notAlreadyOurParent()) // ..may not be the one TU that 'cu' is already attached to
-					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
+					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -543,8 +543,8 @@ public class WEBUI_M_HU_Transform
 					.streamAllRecursive()
 					.filter(row -> row.isLU()) // ..needs to be a LU
 					.filter(notAlreadyOurParent()) // ..may not be the one LU that 'tu' is already attached to
-					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
-					.sorted(Comparator.comparing(HUDocumentView::getM_HU_ID))
+					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
+					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -555,7 +555,7 @@ public class WEBUI_M_HU_Transform
 	/**
 	 * Creates and returns a predicate to verify if a HUDocumentView is not the parent of the currently selected HU.
 	 */
-	private Predicate<HUDocumentView> notAlreadyOurParent()
+	private Predicate<HUEditorRow> notAlreadyOurParent()
 	{
 		final I_M_HU selectedHU = getSingleSelectedRow().getM_HU();
 		final I_M_HU parentOfSelectedHU = Services.get(IHandlingUnitsDAO.class).retrieveParent(selectedHU);
@@ -588,7 +588,7 @@ public class WEBUI_M_HU_Transform
 		final boolean allowInfiniteCapacity = sysConfigBL.getBooleanValue(SYSCONFIG_ALLOW_INFINIT_CAPACITY_TUS, true,
 				Env.getAD_Client_ID(getCtx()), Env.getAD_Org_ID(getCtx()));
 
-		final HUDocumentView cuRow = getSingleSelectedRow();
+		final HUEditorRow cuRow = getSingleSelectedRow();
 
 		final Stream<I_M_HU_PI_Item_Product> stream = hupiItemProductDAO
 				.retrieveTUs(getCtx(), cuRow.getM_Product(), cuRow.getM_HU().getC_BPartner(), allowInfiniteCapacity)
@@ -617,7 +617,7 @@ public class WEBUI_M_HU_Transform
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final HUDocumentView tuRow = getSingleSelectedRow();
+		final HUEditorRow tuRow = getSingleSelectedRow();
 		final I_M_HU tuHU = tuRow.getM_HU();
 		final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePIVersion(tuHU).getM_HU_PI();
 

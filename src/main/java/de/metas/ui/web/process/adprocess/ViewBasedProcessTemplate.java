@@ -17,7 +17,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUDocumentView;
+import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -158,7 +158,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final MutableInt countNotEligible = MutableInt.zero();
 
 		final long countAll = rows
-				.map(HUDocumentView::cast)
+				.map(HUEditorRow::cast)
 				.peek(row -> countNotEligible.incrementIf(!row.isCU()))
 				.count();
 		if (countAll <= 0)

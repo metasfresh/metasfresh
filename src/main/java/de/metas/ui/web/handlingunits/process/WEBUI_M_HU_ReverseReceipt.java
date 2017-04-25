@@ -23,8 +23,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
-import de.metas.ui.web.handlingunits.HUDocumentView;
-import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IDocumentViewsRepository;
@@ -77,7 +77,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 		}
 
 		final MutableInt checkedDocumentsCount = new MutableInt(0);
-		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUDocumentViewSelection.class)
+		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUEditorView.class)
 				.streamByIds(viewContext.getSelectedDocumentIds())
 				.filter(document -> document.isPureHU())
 				//
@@ -99,7 +99,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUDocumentView document)
+	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
 	{
 		if (!document.isHUStatusActive())
 		{
@@ -176,10 +176,10 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 		return MSG_OK;
 	}
 
-	private HUDocumentViewSelection getView()
+	private HUEditorView getView()
 	{
 		final ViewId viewId = ViewId.of(p_WebuiViewWindowId, p_WebuiViewIdStr);
-		return documentViewsRepo.getView(viewId, HUDocumentViewSelection.class);
+		return documentViewsRepo.getView(viewId, HUEditorView.class);
 	}
 
 	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()

@@ -26,7 +26,7 @@ import de.metas.handlingunits.model.X_M_HU;
  * #L%
  */
 
-public interface IHUDocumentView
+public interface IHUEditorRow
 {
 	String COLUMNNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	String COLUMNNAME_Value = I_M_HU.COLUMNNAME_Value;

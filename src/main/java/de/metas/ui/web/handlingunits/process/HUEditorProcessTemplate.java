@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.ui.web.handlingunits.HUDocumentView;
-import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -38,26 +38,26 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 
 /**
- * A {@link ViewBasedProcessTemplate} implementation template which add convenient functionalities around {@link HUDocumentViewSelection}.
+ * A {@link ViewBasedProcessTemplate} implementation template which add convenient functionalities around {@link HUEditorView}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class HUViewProcessTemplate extends ViewBasedProcessTemplate
+public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 {
 	@Override
-	protected final HUDocumentViewSelection getView()
+	protected final HUEditorView getView()
 	{
-		return super.getView(HUDocumentViewSelection.class);
+		return super.getView(HUEditorView.class);
 	}
 
 	@Override
-	protected final HUDocumentView getSingleSelectedRow()
+	protected final HUEditorRow getSingleSelectedRow()
 	{
-		return HUDocumentView.cast(super.getSingleSelectedRow());
+		return HUEditorRow.cast(super.getSingleSelectedRow());
 	}
 	
-	protected final List<HUDocumentView> getSelectedRows()
+	protected final List<HUEditorRow> getSelectedRows()
 	{
 		final Set<DocumentId> selectedDocumentIds = getSelectedDocumentIds();
 		return getView().getByIds(selectedDocumentIds);
@@ -67,7 +67,7 @@ public abstract class HUViewProcessTemplate extends ViewBasedProcessTemplate
 	{
 		return getSelectedRows()
 				.stream()
-				.map(HUDocumentView::getM_HU_ID)
+				.map(HUEditorRow::getM_HU_ID)
 				.filter(huId -> huId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 	}

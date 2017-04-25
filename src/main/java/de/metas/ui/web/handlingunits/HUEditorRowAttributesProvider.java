@@ -45,10 +45,10 @@ import lombok.Value;
  * #L%
  */
 
-class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvider
+class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 {
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
-	private final ConcurrentHashMap<DocumentViewAttributesKey, HUDocumentViewAttributes> documentViewAttributesByKey = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<DocumentViewAttributesKey, HUEditorRowAttributes> documentViewAttributesByKey = new ConcurrentHashMap<>();
 
 	@Value
 	private static final class DocumentViewAttributesKey
@@ -57,7 +57,7 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 		private DocumentId huId;
 	}
 
-	public HUDocumentViewAttributesProvider()
+	public HUEditorRowAttributesProvider()
 	{
 		super();
 	}
@@ -68,13 +68,13 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 	}
 
 	@Override
-	public HUDocumentViewAttributes getAttributes(final DocumentId viewRowId, final DocumentId huId)
+	public HUEditorRowAttributes getAttributes(final DocumentId viewRowId, final DocumentId huId)
 	{
 		final DocumentViewAttributesKey key = new DocumentViewAttributesKey(viewRowId, huId);
 		return documentViewAttributesByKey.computeIfAbsent(key, this::createDocumentViewAttributes);
 	}
 
-	private HUDocumentViewAttributes createDocumentViewAttributes(final DocumentViewAttributesKey key)
+	private HUEditorRowAttributes createDocumentViewAttributes(final DocumentViewAttributesKey key)
 	{
 		final int huId = key.getHuId().toInt();
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
@@ -92,7 +92,7 @@ class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvide
 
 		final boolean readonly = !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 
-		return new HUDocumentViewAttributes(documentPath, attributesStorage, readonly);
+		return new HUEditorRowAttributes(documentPath, attributesStorage, readonly);
 	}
 
 	private IAttributeStorageFactory getAttributeStorageFactory()

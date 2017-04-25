@@ -67,11 +67,11 @@ import lombok.NonNull;
  * #L%
  */
 
-/* package */ class HUDocumentViewAttributes implements IDocumentViewAttributes
+/* package */ class HUEditorRowAttributes implements IDocumentViewAttributes
 {
-	public static final HUDocumentViewAttributes cast(final IDocumentViewAttributes attributes)
+	public static final HUEditorRowAttributes cast(final IDocumentViewAttributes attributes)
 	{
-		return (HUDocumentViewAttributes)attributes;
+		return (HUEditorRowAttributes)attributes;
 	}
 	
 	private final DocumentPath documentPath;
@@ -81,12 +81,12 @@ import lombok.NonNull;
 
 	private final Set<String> readonlyAttributeNames;
 
-	/* package */ HUDocumentViewAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, final boolean readonly)
+	/* package */ HUEditorRowAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, final boolean readonly)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
 		
-		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUDocumentViewAttributesHelper.createLayout(attributesStorage));
+		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
 
 		//
 		// Extract readonly attribute names
@@ -95,7 +95,7 @@ import lombok.NonNull;
 		readonlyAttributeNames = attributesStorage.getAttributes()
 				.stream()
 				.filter(attribute -> readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
-				.map(HUDocumentViewAttributesHelper::extractAttributeName)
+				.map(HUEditorRowAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
 
 		//
@@ -164,9 +164,9 @@ import lombok.NonNull;
 
 	private final JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue)
 	{
-		final String fieldName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
-		final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
-		final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
+		final String fieldName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
+		final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
+		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
 				.setDisplayed(true)
 				.setMandatory(false)
@@ -295,9 +295,9 @@ import lombok.NonNull;
 			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
 
 			// final DocumentPath documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(storage);
-			final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
-			final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(storage, attributeValue);
-			final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
+			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
+			final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(storage, attributeValue);
+			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
 			documentChangesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
 					.setValue(jsonValue));

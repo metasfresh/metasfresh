@@ -15,8 +15,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUDocumentView;
-import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
@@ -75,7 +75,7 @@ public final class PPOrderHUsToIssueActions
 	 * @param selectedHURowIds
 	 */
 	@ViewAction(caption = "PPOrderIncludedHUEditorActions.issueSelectedHUs", precondition = HasSelectedHUs.class)
-	public static void issueSelectedHUs(final HUDocumentViewSelection husView, final Set<DocumentId> selectedHURowIds)
+	public static void issueSelectedHUs(final HUEditorView husView, final Set<DocumentId> selectedHURowIds)
 	{
 		final PPOrderLinesView ppOrderView = getPPOrderView(husView).get();
 		final int ppOrderId = ppOrderView.getPP_Order_ID();
@@ -103,10 +103,10 @@ public final class PPOrderHUsToIssueActions
 			return ImmutableSet.of();
 		}
 
-		final HUDocumentViewSelection huView = HUDocumentViewSelection.cast(view);
+		final HUEditorView huView = HUEditorView.cast(view);
 		return huView.getByIds(selectedHURowIds)
 				.stream()
-				.map(HUDocumentView::getM_HU_ID)
+				.map(HUEditorRow::getM_HU_ID)
 				.filter(huId -> huId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -126,7 +126,7 @@ public final class PPOrderHUsToIssueActions
 				.list(I_M_HU.class);
 	}
 
-	private static Optional<PPOrderLinesView> getPPOrderView(final HUDocumentViewSelection husView)
+	private static Optional<PPOrderLinesView> getPPOrderView(final HUEditorView husView)
 	{
 		final ViewId parentViewId = husView.getParentViewId();
 		if (parentViewId == null)

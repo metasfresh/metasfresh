@@ -28,7 +28,7 @@ import de.metas.ui.web.view.IDocumentViewType;
  */
 
 
-public enum HUDocumentViewType implements IDocumentViewType
+public enum HUEditorRowType implements IDocumentViewType
 {
 	LU("LU", true) //
 	, TU("TU", true) //
@@ -39,7 +39,7 @@ public enum HUDocumentViewType implements IDocumentViewType
 	private final String name;
 	private final boolean pureHU;
 
-	private HUDocumentViewType(final String name, final boolean pureHU)
+	private HUEditorRowType(final String name, final boolean pureHU)
 	{
 		this.name = name;
 		this.pureHU = pureHU;
@@ -62,7 +62,7 @@ public enum HUDocumentViewType implements IDocumentViewType
 		return this == VHU || this == HUStorage;
 	}
 
-	public static final HUDocumentViewType ofHU_UnitType(final String huUnitType)
+	public static final HUEditorRowType ofHU_UnitType(final String huUnitType)
 	{
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
 		{
@@ -78,7 +78,7 @@ public enum HUDocumentViewType implements IDocumentViewType
 		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert HU_UnitType '" + huUnitType + "' to " + HUDocumentViewType.class);
+			throw new IllegalArgumentException("Cannot convert HU_UnitType '" + huUnitType + "' to " + HUEditorRowType.class);
 		}
 	}
 }
