@@ -255,6 +255,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final WindowId windowId;
 		private final String documentId;
 		private final boolean modal;
+		private final boolean advanced = false;
 
 		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final boolean modal)
 		{
