@@ -91,6 +91,8 @@ class Modal extends Component {
             relativeType, isAdvanced, modalViewId, modalViewDocumentIds
         } = this.props;
 
+        console.log('modal');
+
         switch(modalType){
             case 'window':
                 dispatch(createWindow(
