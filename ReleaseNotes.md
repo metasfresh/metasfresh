@@ -58,6 +58,7 @@ Here come the actual release notes:
     * Fixing the bug that prevented the usage of document reversals.
   * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
     * Fixes a Bug that did not allow to add split-off Transport Units to be added to a new Logistic Unit.
+  * [#1378](https://github.com/metasfresh/metasfresh/issues/1378) Packing item not displayed in receipt jasper if none was ordered
   * [#1379](https://github.com/metasfresh/metasfresh/issues/1379) Problem creating FK reference on DLM'ed table
 
 * metasfesh-webui-api
