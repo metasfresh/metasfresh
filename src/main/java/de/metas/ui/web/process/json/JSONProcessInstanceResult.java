@@ -73,41 +73,6 @@ public final class JSONProcessInstanceResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONResultAction action;
 
-	//
-	// Report
-	@JsonProperty("reportFilename")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private String reportFilename;
-	@JsonProperty("reportContentType")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private String reportContentType;
-
-	//
-	// Open view
-	@JsonProperty("openViewWindowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private WindowId openViewWindowId;
-	//
-	@JsonProperty("openViewId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private String openViewId;
-
-	//
-	// Open single document
-	@JsonProperty("openDocumentWindowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private WindowId openDocumentWindowId;
-	//
-	@JsonProperty("openDocumentId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private String openDocumentId;
-
 	private JSONProcessInstanceResult(final ProcessInstanceResult result)
 	{
 		pinstanceId = result.getInstanceId().toJson();
@@ -116,31 +81,6 @@ public final class JSONProcessInstanceResult implements Serializable
 		error = result.isError();
 
 		action = toJSONResultAction(result.getAction());
-
-		//
-		// Update action related deprecated fields:
-		if (action == null)
-		{
-			// nothing
-		}
-		else if (action instanceof JSONOpenReportAction)
-		{
-			final JSONOpenReportAction openReportAction = (JSONOpenReportAction)action;
-			reportFilename = openReportAction.getFilename();
-			reportContentType = openReportAction.getContentType();
-		}
-		else if (action instanceof JSONOpenViewAction)
-		{
-			final JSONOpenViewAction openViewAction = (JSONOpenViewAction)action;
-			openViewWindowId = openViewAction.getWindowId();
-			openViewId = openViewAction.getViewId();
-		}
-		else if (action instanceof JSONOpenSingleDocumentAction)
-		{
-			final JSONOpenSingleDocumentAction openSingleDocumentAction = (JSONOpenSingleDocumentAction)action;
-			openDocumentWindowId = openSingleDocumentAction.getWindowId();
-			openDocumentId = openSingleDocumentAction.getDocumentId();
-		}
 	}
 
 	/** Converts {@link ResultAction} to JSON */
@@ -255,6 +195,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final WindowId windowId;
 		private final String documentId;
 		private final boolean modal;
+		private final boolean advanced = false;
 
 		public JSONOpenSingleDocumentAction(final WindowId windowId, final String documentId, final boolean modal)
 		{
