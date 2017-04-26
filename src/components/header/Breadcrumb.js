@@ -107,7 +107,6 @@ class Breadcrumb extends Component {
                     {breadcrumb && breadcrumb.map((item, index) =>
                         this.renderBtn(item, index+1)
                     )}
-                </div>
 
                 {docSummaryData &&
                     <div
@@ -131,6 +130,7 @@ class Breadcrumb extends Component {
                     </div>
                 }
             </div>
+        </div>
         )
     }
 }
