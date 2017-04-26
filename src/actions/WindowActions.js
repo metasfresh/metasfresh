@@ -648,7 +648,8 @@ export function handleProcessResponse(response, type, id, successCallback) {
                             dispatch(
                                 openModal(
                                     '', action.windowId, 'window', null, null,
-                                    true, '', '', action.documentId
+                                    action.advanced ? action.advanced : false,
+                                    '', '', action.documentId
                                 )
                             );
                         } else {
