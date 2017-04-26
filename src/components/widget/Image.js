@@ -163,35 +163,31 @@ class Image extends Component{
 
     renderUsingCameraControls(){
         return <div>
-            <div className="col-sm-12">
-                <div
-                    className="btn btn-meta-outline-secondary btn-sm btn-distance-3"
-                    onClick={() => this.takeSnapshot()}
-                >
-                    <i className="meta-icon-photo"/>
-                    Capture
-                </div>
-                <div
-                    className="btn btn-meta-outline-secondary btn-sm"
-                    onClick={() => this.stopUsingCamera()}
-                >
-                    <i className="meta-icon-close-alt"/>
-                    Cancel
-                </div>
+            <div
+                className="btn btn-meta-outline-secondary btn-sm btn-distance-3"
+                onClick={() => this.takeSnapshot()}
+            >
+                <i className="meta-icon-photo"/>
+                Capture
+            </div>
+            <div
+                className="btn btn-meta-outline-secondary btn-sm"
+                onClick={() => this.stopUsingCamera()}
+            >
+                <i className="meta-icon-close-alt"/>
+                Cancel
             </div>
         </div>
     }
 
     renderRegularCameraControl(){
-        return <div className="col-sm-12">
-            <div
-                className="btn btn-meta-outline-secondary btn-sm"
+        return <div
+                className="btn btn-block btn-meta-outline-secondary btn-sm"
                 onClick={() => this.handleCamera()}
             >
                 <i className="meta-icon-photo"/>
                 Take from camera
             </div>
-        </div>
     }
 
     render(){
@@ -199,52 +195,49 @@ class Image extends Component{
         const { fields, readonly } = this.props;
 
         return(
-            <div className="row">
-                <div className="col-sm-4 form-control-label">
-                    {imageSrc ?
+            <div className="form-control-label image-widget">
+                {imageSrc ?
+                    <div className="image-preview">
                         <img
                             src={imageSrc}
                             alt="image"
                             className="img-fluid"
-                        /> :
-                        <div className="image-placeholder">
-                            <div
-                                className="placeholder-value"
-                            >{fields[0].emptyText}</div>
-                        </div>
-                    }
-                </div>
+                        />
+                    </div>
+                    :
+                    <div className="image-placeholder">
+                        <div
+                            className="placeholder-value"
+                        >{fields[0].emptyText}</div>
+                    </div>
+                }
 
                 {usingCamera && this.renderVideoPreview()}
 
                 {!readonly && <div
-                    className="col-sm-4 form-control-label image-source-options"
+                    className=" image-source-options"
                 >
-                    <div className="row">
-                        <div className="col-sm-12">
-                            <label
-                                className="btn btn-meta-outline-secondary btn-sm"
-                            >
-                                <input
-                                    className="input"
-                                    type="file"
-                                    onChange={(e) => this.handleUploadFile(e)}
-                                    ref={c => this.imageInput = c}
-                                />
-                                <div className="text-content">
-                                    <i className="meta-icon-upload" />
-                                    Upload a photo
-                                </div>
-                            </label>
+                    <label
+                        className="btn btn-meta-outline-secondary btn-sm"
+                    >
+                        <input
+                            className="input"
+                            type="file"
+                            onChange={(e) => this.handleUploadFile(e)}
+                            ref={c => this.imageInput = c}
+                        />
+                        <div className="text-content">
+                            <i className="meta-icon-upload" />
+                            Upload a photo
                         </div>
-                        {
-                            this.isCameraAvailable() &&
-                            (usingCamera ?
-                                this.renderUsingCameraControls() :
-                                this.renderRegularCameraControl()
-                            )
-                        }
-                    </div>
+                    </label>
+                    {
+                        this.isCameraAvailable() &&
+                        (usingCamera ?
+                            this.renderUsingCameraControls() :
+                            this.renderRegularCameraControl()
+                        )
+                    }
                 </div>}
             </div>
         )

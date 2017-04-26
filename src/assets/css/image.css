@@ -1,3 +1,7 @@
+.image-source-options {
+    margin: 0 .5rem .5rem .5rem;
+}
+
 .image-source-options .input{
     display: none;
 }
@@ -16,7 +20,7 @@
     height: 150px;
     border: solid 1px $brand-light-color;
     border-radius: 4px;
-    margin: 0 auto;
+    margin: 0 .5rem;
     display: table;
 }
 
@@ -33,6 +37,7 @@
     width: 400px;
     height: 300px;
     cursor: pointer;
+    z-index:1000;
 }
 
 .camera-preview video{
@@ -60,4 +65,14 @@
 
 .camera-preview.loading .preview-loader{
     opacity: 1;
+}
+
+.image-widget {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+}
+
+.image-preview {
+    width: 200px;
 }
