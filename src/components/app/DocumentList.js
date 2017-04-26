@@ -73,7 +73,8 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch, includedView, selectedWindowType
+            inBackground, dispatch, includedView, selectedWindowType,
+            disconnectFromState
         } = props;
         const {page, sort, viewId, cachedSelection, layout} = this.state;
 
@@ -89,7 +90,7 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-                dispatch(selectTableItems([], null))
+                !disconnectFromState && dispatch(selectTableItems([], null))
                 this.fetchLayoutAndData();
             });
         }
@@ -133,7 +134,7 @@ class DocumentList extends Component {
         ) {
             if(!inBackground){
                 // In case of preventing cached selection restore
-                cachedSelection &&
+                cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
                     cachedSelection: undefined
@@ -425,7 +426,7 @@ class DocumentList extends Component {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
             includedView, children, isIncluded, disablePaginationShortcuts,
-            notfound
+            notfound, disconnectFromState
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
@@ -498,28 +499,29 @@ class DocumentList extends Component {
                             keyProperty="id"
                             onDoubleClick={(id) =>
                                     !isIncluded && this.redirectToDocument(id)}
-                            isModal={isModal}
-                            isIncluded={isIncluded}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
-                            page={page}
                             mainTable={true}
                             updateDocList={this.fetchLayoutAndData}
                             sort={this.sortData}
                             orderBy={data.orderBy}
                             tabIndex={0}
-                            open={open}
-                            closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={cachedSelection ?
                                 cachedSelection : selected}
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
+                            disconnectFromState={disconnectFromState}
+                            isIncluded={isIncluded}
+                            isModal={isModal}
+                            disablePaginationShortcuts={
+                                disablePaginationShortcuts}
                             inBackground={inBackground}
-                            disablePaginationShortcuts=
-                                {disablePaginationShortcuts}
+                            closeOverlays={closeOverlays}
+                            open={open}
+                            page={page}
                         >
                             {layout.supportAttributes && !isIncluded &&
                                 !hasIncluded &&

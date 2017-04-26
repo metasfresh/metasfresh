@@ -53,6 +53,7 @@ class Header extends Component {
 
     componentWillUnmount() {
         document.removeEventListener('scroll', this.handleScroll);
+        this.toggleScrollScope(false);
     }
 
     componentWillUpdate = (nextProps) => {

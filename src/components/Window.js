@@ -75,6 +75,7 @@ class Window extends Component {
                             queryOnActivate={queryOnActivate}
                             supportQuickInput={supportQuickInput}
                             tabInfo={tabsInfo && tabsInfo[tabid]}
+                            disconnectFromState={true}
                         />
                     )
                 })}
