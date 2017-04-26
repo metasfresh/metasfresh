@@ -90,6 +90,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
 		final LayoutFactory rootLayoutFactory = LayoutFactory.ofMainTab(gridWindowVO, mainTabVO);
 		{
+			layoutBuilder.setCaption(rootLayoutFactory.getWindowCaption());
 			layoutBuilder.addSections(rootLayoutFactory.layoutSectionsList());
 			layoutBuilder.setGridView(rootLayoutFactory.layoutGridView());
 			layoutBuilder.setAdvancedView(rootLayoutFactory.layoutAdvancedView());

@@ -102,6 +102,7 @@ public class LayoutFactory
 	// Parameters
 	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
 	private final int _adWindowId;
+	private final ITranslatableString windowCaption;
 
 	//
 	// Build parameters
@@ -114,6 +115,7 @@ public class LayoutFactory
 
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
 		_adWindowId = gridTabVO.getAD_Window_ID();
+		windowCaption = ImmutableTranslatableString.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -171,6 +173,11 @@ public class LayoutFactory
 	private int getAD_Window_ID()
 	{
 		return _adWindowId;
+	}
+	
+	public ITranslatableString getWindowCaption()
+	{
+		return windowCaption;
 	}
 
 	/**
