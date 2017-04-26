@@ -56,22 +56,26 @@ class Table extends Component {
         this.getIndentData(true);
     }
 
-    componentWillUpdate(nextProps, nextState) {
-        const {dispatch, type} = this.props;
+    componentDidUpdate(prevProps, prevState) {
+        const {
+            mainTable, open, rowData, defaultSelected, disconnectFromState,
+            dispatch, type
+        } = this.props;
 
-        if(
-            JSON.stringify(nextState.selected) !==
-            JSON.stringify(this.state.selected)
-        ){
-            dispatch(selectTableItems(nextState.selected, type));
-        }
-    }
-
-    componentDidUpdate(prevProps) {
-        const {mainTable, open, rowData, defaultSelected} = this.props;
+        const {
+            selected
+        } = this.state;
 
         if(mainTable && open){
             this.table.focus();
+        }
+
+        if(
+            !disconnectFromState &&
+            (JSON.stringify(prevState.selected) !==
+            JSON.stringify(selected))
+        ){
+            dispatch(selectTableItems(selected, type));
         }
 
         if(
@@ -148,13 +152,13 @@ class Table extends Component {
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
-        const {dispatch, type} = this.props;
+        const {dispatch, type, disconnectFromState} = this.props;
 
         this.setState(prevState => ({
             selected: prevState.selected.concat([id])
         }), () => {
             const {selected} = this.state;
-            dispatch(selectTableItems(selected, type))
+            !disconnectFromState && dispatch(selectTableItems(selected, type))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }

@@ -58,6 +58,8 @@ class SideList extends Component {
                         (pagination && pagination.windowType === windowType) ?
                             pagination.page : null
                     }
+                    selected={[docId]}
+                    disconnectFromState={true}
                     {...{open, windowType, closeOverlays, closeSideList,
                     isSideListShow}}
                 />
@@ -92,7 +94,7 @@ class SideList extends Component {
         return (
             <div
                 ref={(c) => this.panel = c}
-                className="order-list-panel overlay-shadow order-list-panel-open"
+                className="order-list-panel overlay-shadow order-list-panel-open js-not-unselect"
             >
                 <div className="order-list-panel-body">
                     <div className="order-list-nav">

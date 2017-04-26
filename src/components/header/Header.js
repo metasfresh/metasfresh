@@ -53,6 +53,7 @@ class Header extends Component {
 
     componentWillUnmount() {
         document.removeEventListener('scroll', this.handleScroll);
+        this.toggleScrollScope(false);
     }
 
     componentWillUpdate = (nextProps) => {
@@ -503,7 +504,7 @@ class Header extends Component {
 
                 <GlobalContextShortcuts
                     handleSidelistToggle={(id) =>
-                        this.handleSidelistToggle(id, sideListTab)}
+                        showSidelist && this.handleSidelistToggle(id, sideListTab)}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
