@@ -3,6 +3,7 @@ package de.metas.handlingunits.impl;
 import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 
 import com.google.common.base.Preconditions;
@@ -55,7 +56,7 @@ public class HULockBL implements IHULockBL
 		Preconditions.checkNotNull(hu, "hu is null");
 		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
-		
+
 		Services.get(ILockManager.class)
 				.lock()
 				.setOwner(lockOwner)
@@ -65,18 +66,18 @@ public class HULockBL implements IHULockBL
 				.setRecordByModel(hu)
 				.acquire();
 	}
-	
+
 	@Override
 	public void lockAll(final Collection<I_M_HU> hus, final LockOwner lockOwner)
 	{
-		if(hus.isEmpty())
+		if (hus.isEmpty())
 		{
 			return;
 		}
-		
+
 		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
-		
+
 		Services.get(ILockManager.class)
 				.lock()
 				.setOwner(lockOwner)
@@ -87,32 +88,49 @@ public class HULockBL implements IHULockBL
 				.acquire();
 	}
 
-
 	@Override
 	public void unlock(final I_M_HU hu, final LockOwner lockOwner)
 	{
 		Preconditions.checkNotNull(hu, "hu is null");
 		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
-		
+
+		final int huId = hu.getM_HU_ID();
+		unlock0(huId, lockOwner);
+	}
+
+	@Override
+	public void unlockOnAfterCommit(final int huId, final LockOwner lockOwner)
+	{
+		Preconditions.checkNotNull(huId > 0, "huId shall be > 0");
+		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
+		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
+
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.onAfterCommit(() -> unlock0(huId, lockOwner));
+	}
+
+	private final void unlock0(final int huId, final LockOwner lockOwner)
+	{
 		Services.get(ILockManager.class)
 				.unlock()
 				.setOwner(lockOwner)
-				.setRecordByModel(hu)
+				.setRecordByTableRecordId(I_M_HU.Table_Name, huId)
 				.release();
 	}
-	
+
 	@Override
 	public void unlockAll(final Collection<I_M_HU> hus, final LockOwner lockOwner)
 	{
-		if(hus.isEmpty())
+		if (hus.isEmpty())
 		{
 			return;
 		}
-		
+
 		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
-		
+
 		Services.get(ILockManager.class)
 				.unlock()
 				.setOwner(lockOwner)
@@ -120,13 +138,12 @@ public class HULockBL implements IHULockBL
 				.release();
 	}
 
-
 	@Override
 	public IQueryFilter<I_M_HU> isLockedFilter()
 	{
 		return Services.get(ILockManager.class).getLockedByFilter(I_M_HU.class, LockOwner.ANY);
 	}
-	
+
 	@Override
 	public IQueryFilter<I_M_HU> isNotLockedFilter()
 	{
