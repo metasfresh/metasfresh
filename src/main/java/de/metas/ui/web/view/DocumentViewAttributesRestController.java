@@ -97,7 +97,7 @@ public class DocumentViewAttributesRestController
 		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
 				.getAttributes()
-				.toJSONDocument();
+				.toJSONDocument(newJSONOptions());
 	}
 
 	@PatchMapping

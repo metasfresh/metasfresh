@@ -13,6 +13,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Preconditions;
@@ -199,11 +200,18 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	}
 
 	@Override
+	@Async
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
 		Check.assumeNotEmpty(recordRefs, "Parameter recordRefs is not empty");
 
-		views.asMap().values().stream()
-				.forEach(view -> view.notifyRecordsChanged(recordRefs));
+		final Collection<IDocumentViewSelection> views = this.views.asMap().values();
+		
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("Notifing {} views about changed records: {}", views.size(), recordRefs);
+		}
+		
+		views.forEach(view -> view.notifyRecordsChanged(recordRefs));
 	}
 }

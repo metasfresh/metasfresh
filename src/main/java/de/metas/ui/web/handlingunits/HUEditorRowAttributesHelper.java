@@ -53,9 +53,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/* package */final class HUDocumentViewAttributesHelper
+/* package */final class HUEditorRowAttributesHelper
 {
-	private HUDocumentViewAttributesHelper()
+	private HUEditorRowAttributesHelper()
 	{
 	}
 
@@ -77,8 +77,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 		final ITranslatableString caption = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
 		final ITranslatableString description = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, attribute.getDescription());
 
-		final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
-		final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
+		final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
+		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(caption)

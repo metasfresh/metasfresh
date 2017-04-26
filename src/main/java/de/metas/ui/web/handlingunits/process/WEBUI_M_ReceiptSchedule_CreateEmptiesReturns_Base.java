@@ -12,6 +12,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 
 /*
@@ -97,8 +98,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 
 		//
 		// Notify frontend that the empties document shall be opened in single document layout (not grid)
-		final boolean gridView = false; // single document
-		getResult().setRecordToOpen(TableRecordReference.of(emptiesInOut), getTargetWindowId(), gridView);
+		getResult().setRecordToOpen(TableRecordReference.of(emptiesInOut), getTargetWindowId(), OpenTarget.SingleDocument);
 
 		return MSG_OK;
 	}

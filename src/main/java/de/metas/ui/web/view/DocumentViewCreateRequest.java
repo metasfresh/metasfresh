@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.collections.ListUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -113,6 +114,11 @@ public final class DocumentViewCreateRequest
 			// NOTE: preserving the old logic and returning the first documentPath
 			return referencingDocumentPaths.iterator().next();
 		}
+	}
+	
+	public int getSingleFilterOnlyId()
+	{
+		return ListUtils.singleElement(getFilterOnlyIds());		
 	}
 
 	//

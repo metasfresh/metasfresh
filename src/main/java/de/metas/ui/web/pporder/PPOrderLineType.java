@@ -6,7 +6,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.handlingunits.HUDocumentViewType;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.view.IDocumentViewType;
 
 /*
@@ -33,32 +33,41 @@ import de.metas.ui.web.view.IDocumentViewType;
 
 public enum PPOrderLineType implements IDocumentViewType
 {
-	MainProduct("MainProduct") //
-	, BOMLine_Component("BOM_Component") //
-	, BOMLine_ByCoProduct("BOM_ByCoProduct") //
+	MainProduct("MP", true) //
+	, BOMLine_Component("CO", false) //
+	, BOMLine_ByCoProduct("BY", true) //
 	//
-	, HU_LU(HUDocumentViewType.LU) //
-	, HU_TU(HUDocumentViewType.TU) //
-	, HU_VHU(HUDocumentViewType.VHU) //
-	, HU_Storage(HUDocumentViewType.HUStorage) //
+	, HU_LU(HUEditorRowType.LU) //
+	, HU_TU(HUEditorRowType.TU) //
+	, HU_VHU(HUEditorRowType.VHU) //
+	, HU_Storage(HUEditorRowType.HUStorage) //
 	;
 
 	private final String name;
 	private final String iconName;
-	private final HUDocumentViewType huDocumentViewType;
+	private final HUEditorRowType huType;
+	
+	private final boolean canReceive;
+	private final boolean canIssue;
 
-	private PPOrderLineType(final String name)
+	private PPOrderLineType(final String name, final boolean canReceive)
 	{
 		this.name = name;
-		this.iconName = HUDocumentViewType.LU.getIconName(); // FIXME: just use the LU icon for now
-		this.huDocumentViewType = null;
+		this.iconName = canReceive ? "PP_Order_Receive" : "PP_Order_Issue"; // see https://github.com/metasfresh/metasfresh-webui-frontend/issues/675#issuecomment-297016790
+		this.huType = null;
+		
+		this.canReceive = canReceive;
+		this.canIssue = !canReceive;
 	}
 
-	private PPOrderLineType(HUDocumentViewType huType)
+	private PPOrderLineType(HUEditorRowType huType)
 	{
 		this.name = huType.getName();
 		this.iconName = huType.getIconName();
-		this.huDocumentViewType = huType;
+		this.huType = huType;
+		
+		canReceive = false;
+		canIssue = false;
 	}
 
 	@Override
@@ -80,15 +89,15 @@ public enum PPOrderLineType implements IDocumentViewType
 
 	public boolean canReceive()
 	{
-		return MainProduct == this || BOMLine_ByCoProduct == this;
+		return canReceive;
 	}
 
 	public boolean canIssue()
 	{
-		return BOMLine_Component == this;
+		return canIssue;
 	}
 
-	public static final PPOrderLineType ofHUDocumentViewType(final HUDocumentViewType huType)
+	public static final PPOrderLineType ofHUDocumentViewType(final HUEditorRowType huType)
 	{
 		PPOrderLineType type = huType2type.get(huType);
 		if(type == null)
@@ -98,7 +107,7 @@ public enum PPOrderLineType implements IDocumentViewType
 		return type;
 	}
 	
-	private static final ImmutableMap<HUDocumentViewType, PPOrderLineType> huType2type = Stream.of(values())
-			.filter(type -> type.huDocumentViewType != null)
-			.collect(GuavaCollectors.toImmutableMapByKey(type -> type.huDocumentViewType));
+	private static final ImmutableMap<HUEditorRowType, PPOrderLineType> huType2type = Stream.of(values())
+			.filter(type -> type.huType != null)
+			.collect(GuavaCollectors.toImmutableMapByKey(type -> type.huType));
 }

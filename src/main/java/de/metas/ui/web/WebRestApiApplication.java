@@ -19,6 +19,7 @@ import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletCon
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -50,10 +51,11 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 		WebRestApiApplication.class // this one
 		, org.adempiere.ad.dao.IQueryStatisticsLogger.class // FIXME: hardcoded because else SQL tracing is not working and atm i am not confident to scan the whole de.metas/org.compiere/org.adempiere trees.
 })
+@EnableAsync
 public class WebRestApiApplication
 {
 	/**
-	 * By default, we run in headless mode. But using this system property, we can also run with headless=false. 
+	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "webui-api-run-headless";

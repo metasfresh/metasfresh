@@ -26,6 +26,12 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
+/**
+ * Template class for all processes which are based on {@link PPOrderLinesView}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public abstract class WEBUI_PP_Order_Template
 		extends ViewBasedProcessTemplate
 // implements IProcessPrecondition // let the extending class to activate this interface
@@ -41,12 +47,4 @@ public abstract class WEBUI_PP_Order_Template
 	{
 		return PPOrderLineRow.cast(super.getSingleSelectedRow());
 	}
-
-	@Override
-	protected String doIt() throws Exception
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

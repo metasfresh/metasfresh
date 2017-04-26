@@ -2,32 +2,22 @@ package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUDocumentViewType;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewAttributes;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -60,9 +50,9 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 {
-	public static final Builder builder(final ViewId viewId)
+	public static final Builder builder(final WindowId windowId)
 	{
-		return new Builder(viewId);
+		return new Builder(windowId);
 	}
 
 	public static final PPOrderLineRow cast(final IDocumentView viewRecord)
@@ -78,7 +68,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 	private final List<PPOrderLineRow> includedDocuments;
 
-	private final ViewId viewId;
 	private final boolean processed;
 	private final int ppOrderId;
 	private final int ppOrderBOMLineId;
@@ -89,15 +78,11 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private final JSONLookupValue uom;
 	private final String packingInfo;
 	private final String code;
-	private final String bomType;
-	private final HUDocumentViewType huType;
-	private final String huStatusInfo;
 	private final BigDecimal qty;
 	private final BigDecimal qtyPlan;
 
 	private PPOrderLineRow(final Builder builder)
 	{
-		viewId = builder.viewId;
 		documentPath = builder.getDocumentPath();
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
@@ -114,20 +99,12 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		uom = builder.uom;
 		packingInfo = builder.packingInfo;
 		code = builder.code;
-		bomType = builder.bomType;
-		huType = builder.huType;
-		huStatusInfo = builder.huStatusInfo;
 		qty = builder.qty;
 		qtyPlan = builder.qtyPlan;
 		values = builder.buildValuesMap();
 
 		attributesSupplier = builder.attributesSupplier;
 		includedDocuments = builder.buildIncludedDocuments();
-	}
-
-	public ViewId getViewId()
-	{
-		return viewId;
 	}
 
 	public int getPP_Order_ID()
@@ -175,11 +152,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		return type;
 	}
 
-	public String getBOMLineType()
-	{
-		return bomType;
-	}
-
 	public JSONLookupValue getProduct()
 	{
 		return product;
@@ -208,6 +180,11 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		return InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
 	}
 
+	public String getPackingInfo()
+	{
+		return packingInfo;
+	}
+
 	public BigDecimal getQty()
 	{
 		return qty;
@@ -226,11 +203,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	public boolean isIssue()
 	{
 		return getType().canIssue();
-	}
-
-	public boolean isNotProcessedCandidate()
-	{
-		return !isProcessed() && getPP_Order_Qty_ID() > 0;
 	}
 
 	@Override
@@ -267,39 +239,11 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		return attributes;
 	}
 
-	public IDocumentViewSelection createHUsToIssueView(final IDocumentViewsRepository viewsRepo)
-	{
-		if (!isIssue())
-		{
-			throw new IllegalStateException("Only issue lines are supported");
-		}
-
-		// TODO: move it to DAO/Repository
-		// TODO: rewrite the whole shit, this is just prototyping
-		final List<Integer> huIdsToAvailableToIssue = Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				//
-				// TODO warehouse
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addOnlyWithProductId(getM_Product_ID())
-				.setOnlyTopLevelHUs()
-				.onlyNotLocked()
-				//
-				.createQuery()
-				.listIds();
-		if (huIdsToAvailableToIssue.isEmpty())
-		{
-			throw new EntityNotFoundException("No HUs to issue found");
-		}
-
-		return viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
-				.setParentViewId(getViewId())
-				.setFilterOnlyIds(huIdsToAvailableToIssue)
-				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
-				.build());
-	}
-
+	//
+	//
+	//
+	//
+	//
 	public static final class Builder
 	{
 		private final WindowId windowId;
@@ -310,8 +254,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 		private Supplier<? extends IDocumentViewAttributes> attributesSupplier;
 
-		private final ViewId viewId;
-
 		private int ppOrderId;
 		private int ppOrderBOMLineId;
 		private int ppOrderQtyId;
@@ -321,16 +263,13 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		private JSONLookupValue uom;
 		private String packingInfo;
 		private String code;
-		private String bomType;
-		private HUDocumentViewType huType;
-		private String huStatusInfo;
-		private BigDecimal qty;
 		private BigDecimal qtyPlan;
+		private BigDecimal qty;
+		private boolean qtyAsSumOfIncludedQtys = false;
 
-		private Builder(@NonNull final ViewId viewId)
+		private Builder(@NonNull final WindowId windowId)
 		{
-			this.viewId = viewId;
-			windowId = viewId.getWindowId();
+			this.windowId = windowId;
 		}
 
 		public PPOrderLineRow build()
@@ -342,9 +281,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 		{
 			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Value, code);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_BOMType, bomType);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_HUType, huType);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_StatusInfo, huStatusInfo);
+			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Type, type.getName());
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_M_Product_ID, product);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, uom);
 			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_PackingInfo, packingInfo);
@@ -431,24 +368,6 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
-		public Builder setBOMType(final String bomType)
-		{
-			this.bomType = bomType;
-			return this;
-		}
-
-		public Builder setHUType(final HUDocumentViewType huType)
-		{
-			this.huType = huType;
-			return this;
-		}
-
-		public Builder setHUStatusInfo(final String huStatusInfo)
-		{
-			this.huStatusInfo = huStatusInfo;
-			return this;
-		}
-
 		public Builder setProduct(final JSONLookupValue product)
 		{
 			this.product = product;
@@ -467,9 +386,43 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
+		public Builder setQtyAsSumOfIncludedQtys()
+		{
+			qtyAsSumOfIncludedQtys = true;
+
+			if (includedDocuments != null && !includedDocuments.isEmpty())
+			{
+				qty = includedDocuments.stream()
+						.map(includedDocument -> includedDocument.getQty())
+						.filter(includedQty -> includedQty != null && includedQty.signum() != 0) // non null/zero qtys only
+						.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
+			}
+
+			return this;
+		}
+
 		public Builder setQty(final BigDecimal qty)
 		{
 			this.qty = qty;
+			return this;
+		}
+
+		public Builder addQty(final BigDecimal qtyToAdd)
+		{
+			if (qtyToAdd == null)
+			{
+				return this;
+			}
+
+			if (qty == null)
+			{
+				qty = qtyToAdd;
+			}
+			else
+			{
+				qty = qty.add(qtyToAdd);
+			}
+
 			return this;
 		}
 
@@ -485,6 +438,14 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
+		/**
+		 * Adds included row.
+		 * 
+		 * If {@link #setQtyAsSumOfIncludedQtys()} was already called it will also increase the Qty.
+		 * 
+		 * @param includedDocument
+		 * @return
+		 */
 		public Builder addIncludedDocument(final PPOrderLineRow includedDocument)
 		{
 			if (includedDocuments == null)
@@ -494,6 +455,25 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 			includedDocuments.add(includedDocument);
 
+			if (qtyAsSumOfIncludedQtys)
+			{
+				addQty(includedDocument.getQty());
+			}
+
+			return this;
+		}
+
+		public <T> Builder addIncludedDocumentFrom(final Collection<T> includedDocObjs, Function<T, PPOrderLineRow> includedDocumentMapper)
+		{
+			if (includedDocObjs == null || includedDocObjs.isEmpty())
+			{
+				return this;
+			}
+
+			includedDocObjs.stream()
+					.map(includedDocumentMapper)
+					.forEach(this::addIncludedDocument);
+			
 			return this;
 		}
 

@@ -45,7 +45,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  */
 
 @DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
+public class HUEditorViewFactory implements IDocumentViewSelectionFactory
 {
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
@@ -84,7 +84,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(IHUDocumentView.COLUMNNAME_M_HU_ID)
+				.setIdFieldName(IHUEditorRow.COLUMNNAME_M_HU_ID)
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -93,22 +93,22 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 						.setCaption("Code")
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_Value)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_Value)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("M_Product_ID")
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_M_Product_ID)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_M_Product_ID)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("M_HU_PI_Item_Product_ID")
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_PackingInfo)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_PackingInfo)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("QtyCU")
 						.setWidgetType(DocumentFieldWidgetType.Quantity)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_QtyCU)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_QtyCU)))
 				//
 				.build();
 	}
@@ -120,7 +120,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(IHUDocumentView.COLUMNNAME_M_HU_ID)
+				.setIdFieldName(IHUEditorRow.COLUMNNAME_M_HU_ID)
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -129,44 +129,44 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 						.setCaption("Code")
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_Value)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_Value)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("M_Product_ID")
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_M_Product_ID)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_M_Product_ID)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("HU_UnitType")
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_HU_UnitType)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_HU_UnitType)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("M_HU_PI_Item_Product_ID")
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_PackingInfo)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_PackingInfo)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("QtyCU")
 						.setWidgetType(DocumentFieldWidgetType.Quantity)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_QtyCU)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_QtyCU)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaptionFromAD_Message("C_UOM_ID")
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_C_UOM_ID)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_C_UOM_ID)))
 				//
 				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message(IHUDocumentView.COLUMNNAME_HUStatus)
+						.setCaptionFromAD_Message(IHUEditorRow.COLUMNNAME_HUStatus)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUDocumentView.COLUMNNAME_HUStatus)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_HUStatus)))
 				//
 				.build();
 	}
 
 	@Override
-	public HUDocumentViewSelection createView(final DocumentViewCreateRequest request)
+	public HUEditorView createView(final DocumentViewCreateRequest request)
 	{
 		final WindowId windowId = request.getWindowId();
 		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))
@@ -191,7 +191,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 			referencingTableName = null;
 		}
 		
-		return HUDocumentViewSelection.builder()
+		return HUEditorView.builder()
 				.setParentViewId(request.getParentViewId())
 				.setViewId(viewId)
 				.setHUIds(request.getFilterOnlyIds())

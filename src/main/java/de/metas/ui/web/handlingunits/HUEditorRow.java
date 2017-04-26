@@ -55,26 +55,26 @@ import lombok.NonNull;
  */
 
 /**
- * Instances of this class are created by {@link HUDocumentViewLoader}.
+ * HU Editor's row
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class HUDocumentView implements IDocumentView, IHUDocumentView
+public final class HUEditorRow implements IDocumentView, IHUEditorRow
 {
 	public static final Builder builder(final WindowId windowId)
 	{
 		return new Builder(windowId);
 	}
 
-	public static final HUDocumentView cast(final IDocumentView document)
+	public static final HUEditorRow cast(final IDocumentView viewRow)
 	{
-		return (HUDocumentView)document;
+		return (HUEditorRow)viewRow;
 	}
 
 	private final DocumentPath documentPath;
-	private final DocumentId documentId;
-	private final HUDocumentViewType type;
+	private final DocumentId rowId;
+	private final HUEditorRowType type;
 	private final boolean processed;
 
 	private final Map<String, Object> values;
@@ -87,17 +87,17 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	private final JSONLookupValue uom;
 	private final BigDecimal qtyCU;
 
-	private final Supplier<HUDocumentViewAttributes> attributesSupplier;
+	private final Supplier<HUEditorRowAttributes> attributesSupplier;
 
-	private final List<HUDocumentView> includedDocuments;
+	private final List<HUEditorRow> includedRows;
 
 	private transient String _summary; // lazy
 
-	private HUDocumentView(final Builder builder)
+	private HUEditorRow(final Builder builder)
 	{
 		documentPath = builder.getDocumentPath();
-
-		documentId = documentPath.getDocumentId();
+		rowId = documentPath.getDocumentId();
+		
 		type = builder.getType();
 		processed = builder.isProcessed();
 
@@ -111,13 +111,13 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
 
-		includedDocuments = builder.buildIncludedDocuments();
+		includedRows = builder.buildIncludedRows();
 
-		final HUDocumentViewAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
+		final HUEditorRowAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
 		if (attributesProvider != null)
 		{
-			final DocumentId attributesKey = DocumentId.of(huId);
-			attributesSupplier = () -> attributesProvider.getAttributes(documentId, attributesKey);
+			final DocumentId attributesKey = attributesProvider.createAttributeKey(huId);
+			attributesSupplier = () -> attributesProvider.getAttributes(rowId, attributesKey);
 		}
 		else
 		{
@@ -134,14 +134,14 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	@Override
 	public DocumentId getDocumentId()
 	{
-		return documentId;
+		return rowId;
 	}
 
 	/**
-	 * @return {@link HUDocumentViewType}; never returns null.
+	 * @return {@link HUEditorRowType}; never returns null.
 	 */
 	@Override
-	public HUDocumentViewType getType()
+	public HUEditorRowType getType()
 	{
 		return type;
 	}
@@ -170,22 +170,22 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	}
 
 	@Override
-	public HUDocumentViewAttributes getAttributes() throws EntityNotFoundException
+	public HUEditorRowAttributes getAttributes() throws EntityNotFoundException
 	{
 		if (attributesSupplier == null)
 		{
-			throw new EntityNotFoundException("Document does not support attributes");
+			throw new EntityNotFoundException("row does not support attributes");
 		}
 
-		final HUDocumentViewAttributes attributes = attributesSupplier.get();
+		final HUEditorRowAttributes attributes = attributesSupplier.get();
 		if (attributes == null)
 		{
-			throw new EntityNotFoundException("Document does not support attributes");
+			throw new EntityNotFoundException("row does not support attributes");
 		}
 		return attributes;
 	}
 
-	public Supplier<HUDocumentViewAttributes> getAttributesSupplier()
+	public Supplier<HUEditorRowAttributes> getAttributesSupplier()
 	{
 		return attributesSupplier;
 	}
@@ -197,9 +197,9 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	}
 
 	@Override
-	public List<HUDocumentView> getIncludedDocuments()
+	public List<HUEditorRow> getIncludedDocuments()
 	{
-		return includedDocuments;
+		return includedRows;
 	}
 
 	/**
@@ -241,12 +241,6 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 		return jsonHUStatus == null ? null : jsonHUStatus.getKey();
 	}
 
-	public String getHUStatusDisplayName()
-	{
-		final JSONLookupValue jsonHUStatus = getHUStatus();
-		return jsonHUStatus == null ? null : jsonHUStatus.getName();
-	}
-
 	public boolean isHUStatusPlanning()
 	{
 		return X_M_HU.HUSTATUS_Planning.equals(getHUStatusKey());
@@ -256,6 +250,12 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	{
 		return X_M_HU.HUSTATUS_Active.equals(getHUStatusKey());
 	}
+	
+	public boolean isHUStatusDestroyed()
+	{
+		return X_M_HU.HUSTATUS_Destroyed.equals(getHUStatusKey());
+	}
+
 
 	public boolean isPureHU()
 	{
@@ -269,12 +269,12 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 
 	public boolean isTU()
 	{
-		return getType() == HUDocumentViewType.TU;
+		return getType() == HUEditorRowType.TU;
 	}
 
 	public boolean isLU()
 	{
-		return getType() == HUDocumentViewType.LU;
+		return getType() == HUEditorRowType.LU;
 	}
 
 	public String getSummary()
@@ -429,8 +429,8 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 	public static final class Builder
 	{
 		private final WindowId windowId;
-		private DocumentId _documentId;
-		private HUDocumentViewType type;
+		private DocumentId _rowId;
+		private HUEditorRowType type;
 		private Boolean processed;
 
 		private Integer huId;
@@ -442,32 +442,32 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
 
-		private List<HUDocumentView> includedDocuments = null;
+		private List<HUEditorRow> includedRows = null;
 
-		private HUDocumentViewAttributesProvider attributesProvider;
+		private HUEditorRowAttributesProvider attributesProvider;
 
 		private Builder(@NonNull final WindowId windowId)
 		{
 			this.windowId = windowId;
 		}
 
-		public HUDocumentView build()
+		public HUEditorRow build()
 		{
-			return new HUDocumentView(this);
+			return new HUEditorRow(this);
 		}
 
 		private ImmutableMap<String, Object> buildValuesMap()
 		{
 			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_M_HU_ID, huId);
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_Value, code);
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_HU_UnitType, huUnitType);
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_HUStatus, huStatus);
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_PackingInfo, packingInfo);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_M_HU_ID, huId);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_Value, code);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_HU_UnitType, huUnitType);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_HUStatus, huStatus);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_PackingInfo, packingInfo);
 
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_M_Product_ID, product);
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_C_UOM_ID, uom);
-			putIfNotNull(map, IHUDocumentView.COLUMNNAME_QtyCU, qtyCU);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_M_Product_ID, product);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_C_UOM_ID, uom);
+			putIfNotNull(map, IHUEditorRow.COLUMNNAME_QtyCU, qtyCU);
 
 			return map.build();
 		}
@@ -483,30 +483,30 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 
 		private DocumentPath getDocumentPath()
 		{
-			final DocumentId documentId = getDocumentId();
-			return DocumentPath.rootDocumentPath(windowId, documentId);
+			final DocumentId rowId = getRowId();
+			return DocumentPath.rootDocumentPath(windowId, rowId);
 		}
 
-		public Builder setDocumentId(final DocumentId documentId)
+		public Builder setRowId(final DocumentId rowId)
 		{
-			_documentId = documentId;
+			_rowId = rowId;
 			return this;
 		}
 
-		/** @return view row ID */
-		private DocumentId getDocumentId()
+		/** @return row ID */
+		private DocumentId getRowId()
 		{
-			Check.assumeNotNull(_documentId, "Parameter _documentId is not null");
-			return _documentId;
+			Check.assumeNotNull(_rowId, "Parameter rowId is not null");
+			return _rowId;
 		}
 
-		private HUDocumentViewType getType()
+		private HUEditorRowType getType()
 		{
 			Check.assumeNotNull(type, "Parameter type is not null");
 			return type;
 		}
 
-		public Builder setType(final HUDocumentViewType type)
+		public Builder setType(final HUEditorRowType type)
 		{
 			this.type = type;
 			return this;
@@ -580,37 +580,37 @@ public final class HUDocumentView implements IDocumentView, IHUDocumentView
 			return this;
 		}
 
-		private HUDocumentViewAttributesProvider getAttributesProviderOrNull()
+		private HUEditorRowAttributesProvider getAttributesProviderOrNull()
 		{
 			return attributesProvider;
 		}
 
-		public Builder setAttributesProvider(@Nullable final HUDocumentViewAttributesProvider attributesProvider)
+		public Builder setAttributesProvider(@Nullable final HUEditorRowAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
 			return this;
 		}
 
-		public Builder addIncludedDocument(final HUDocumentView includedDocument)
+		public Builder addIncludedRow(final HUEditorRow includedRow)
 		{
-			if (includedDocuments == null)
+			if (includedRows == null)
 			{
-				includedDocuments = new ArrayList<>();
+				includedRows = new ArrayList<>();
 			}
 
-			includedDocuments.add(includedDocument);
+			includedRows.add(includedRow);
 
 			return this;
 		}
 
-		private List<HUDocumentView> buildIncludedDocuments()
+		private List<HUEditorRow> buildIncludedRows()
 		{
-			if (includedDocuments == null || includedDocuments.isEmpty())
+			if (includedRows == null || includedRows.isEmpty())
 			{
 				return ImmutableList.of();
 			}
 
-			return ImmutableList.copyOf(includedDocuments);
+			return ImmutableList.copyOf(includedRows);
 		}
 	}
 }
