@@ -101,8 +101,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public <T extends I_AD_User> T retrieveDefaultContactOrNull(
-			final I_C_BPartner bPartner, final Class<T> clazz)
+	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
