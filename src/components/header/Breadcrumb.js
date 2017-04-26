@@ -11,7 +11,9 @@ class Breadcrumb extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tooltipOpen: false
+            tooltipOpen: false,
+            tooltipOnFirstlevel: false,
+            tooltipOnFirstlevelPositionLeft: 0
         }
     }
 
@@ -23,6 +25,32 @@ class Breadcrumb extends Component {
     toggleTooltip = (tooltip) => {
         this.setState({
             tooltipOpen: tooltip
+        })
+    }
+
+    toggleTooltipOnFirstLevel = (showTooltip) => {
+        const breadcrumbWrapper =
+            document.getElementsByClassName('header-breadcrumb-wrapper')[0];
+        const breadcrumbWrapperLeft =
+            breadcrumbWrapper && breadcrumbWrapper.getBoundingClientRect().left;
+        const elem =
+             document.getElementsByClassName('header-item-last-level')[0];
+        const elemWidth = elem && elem.offsetWidth;
+        const elemLeft = elem && elem.getBoundingClientRect().left;
+
+        const tooltipPositionLeft =
+            elemLeft + 0.5*elemWidth - breadcrumbWrapperLeft;
+
+        this.setState({
+            tooltipOnFirstlevel: showTooltip,
+            tooltipOnFirstlevelPositionLeft: tooltipPositionLeft
+        })
+    }
+
+    closeTooltips = () => {
+        this.setState({
+            tooltipOpen: false,
+            tooltipOnFirstlevel: false
         })
     }
 
@@ -43,7 +71,7 @@ class Breadcrumb extends Component {
     renderBtn = (menu, index) => {
         const {
             handleMenuOverlay, menuOverlay, siteName, openModal, windowType,
-            docId
+            breadcrumb, docId
         } = this.props;
 
         return (<div key={index}>
@@ -56,11 +84,16 @@ class Breadcrumb extends Component {
                     className={'header-item-container pointer ' +
                         (menuOverlay === menu.nodeId ?
                             'header-item-open ' : '') +
-                        (!index ? 'header-item-container-static ': '')
+                        (!index ? 'header-item-container-static ': '') +
+                        (index===breadcrumb.length?'header-item-last-level':'')
                     }
                     onClick={(e) => this.handleClick(e, menu)}
-                    onMouseEnter={index ? '' : () => this.toggleTooltip(true)}
-                    onMouseLeave={() => this.toggleTooltip(false)}
+                    onMouseEnter={index ?
+                        ()=> this.toggleTooltipOnFirstLevel(
+                            index===breadcrumb.length
+                            ) :
+                        () => this.toggleTooltip(true)}
+                    onMouseLeave={this.closeTooltips}
                 >
                     <span className="header-item icon-sm">
                         {index ?
@@ -88,7 +121,9 @@ class Breadcrumb extends Component {
             breadcrumb, docSummaryData, siteName
         } = this.props;
 
-        const {tooltipOpen} = this.state;
+        const {
+            tooltipOpen, tooltipOnFirstlevel, tooltipOnFirstlevelPositionLeft
+        } = this.state;
 
         return (
             <div className="header-breadcrumb-wrapper">
@@ -100,6 +135,16 @@ class Breadcrumb extends Component {
                         type={''}
                     />
                 }
+                {tooltipOnFirstlevel &&
+                    <Tooltips
+                        {...{tooltipOnFirstlevelPositionLeft}}
+                        name=""
+                        action={'Go to default documents list'}
+                        type={''}
+                        delay={100}
+                    />
+                }
+
                 <div className="header-breadcrumb">
                     {this.renderBtn({nodeId: '0'}, 0)}
 
