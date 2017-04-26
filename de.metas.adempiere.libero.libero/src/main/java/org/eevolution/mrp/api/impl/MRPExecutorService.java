@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
@@ -41,8 +42,6 @@ import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
-
-import org.slf4j.Logger;
 
 public class MRPExecutorService implements IMRPExecutorService
 {
@@ -58,10 +57,13 @@ public class MRPExecutorService implements IMRPExecutorService
 	 *
 	 * @return {@link IMRPExecutor} instance
 	 */
-	protected IMRPExecutor createMRPExecutor()
-	{
-		return new MRPExecutor();
-	}
+//	protected IMRPExecutor createMRPExecutor()
+//	{
+//		final MRPExecutor mrpExecutor = new MRPExecutor();
+//		Adempiere.autowire(mrpExecutor);
+//
+//		return mrpExecutor;
+//	}
 
 	private final void setCurrentMRPExecutor(final IMRPExecutor mrpExecutor)
 	{
@@ -93,11 +95,13 @@ public class MRPExecutorService implements IMRPExecutorService
 	@Override
 	public IMRPResult run(final List<IMaterialPlanningContext> mrpContexts)
 	{
-		final IMRPExecutor mrpExecutor = createMRPExecutor();
+		final IMRPExecutor mrpExecutor = Adempiere
+				.getSpringApplicationContext()
+				.getBean(IMRPExecutor.class);
 
 		//
 		// Cleanup all MRP segments before starting to plan on them
-		// NOTE: we do this once at the start because of some MRP Demands which are not bounded to a particular Plant (e.g. Sales Orders)
+		// NOTE: we do this once at the start because of some MRP Demands which are not bound to a particular Plant (e.g. Sales Orders)
 		// and which will be balanced by first who can do this and then it will be marked as not available for others.
 		// If we are not doing this, we risk to reset the IsAvailable flag and that demand could be balanced more then one time.
 		cleanup(mrpContexts, mrpExecutor);
@@ -132,7 +136,11 @@ public class MRPExecutorService implements IMRPExecutorService
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 		final List<IMaterialPlanningContext> mrpContexts = Collections.singletonList(mrpContext);
-		final IMRPExecutor mrpExecutor = createMRPExecutor();
+
+		final IMRPExecutor mrpExecutor = Adempiere
+				.getSpringApplicationContext()
+				.getBean(IMRPExecutor.class);
+		
 		cleanup(mrpContexts, mrpExecutor);
 		return mrpExecutor.getMRPResult();
 	}

@@ -98,12 +98,12 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 				.setDD_NetworkDistribution(masterData.ddNetwork)
 				.build();
 
-		mrpExecutor.setDisallowMRPNotes(true);
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.setDisallowMRPNotes(true);
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setM_Warehouse(masterData.warehouse_rawMaterials01)
 				.setM_Product(masterData.pTomato)
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setM_Warehouse(masterData.warehouse_rawMaterials01)
 				.setM_Product(masterData.pOnion)
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
@@ -274,7 +274,7 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 
 		//
 		// Run MRP again
-		mrpExecutor.createAllowMRPNodeRule() // ignore MRP-060 on DD Orders, because they are in Draft status atm
+		helper.mrpExecutor.createAllowMRPNodeRule() // ignore MRP-060 on DD Orders, because they are in Draft status atm
 				.setMRPCode(MRPExecutor.MRP_ERROR_060_SupplyDueButNotReleased)
 				.setM_Product(masterData.pSalad_2xTomato_1xOnion)
 				.setM_Warehouse(masterData.warehouse_picking01);

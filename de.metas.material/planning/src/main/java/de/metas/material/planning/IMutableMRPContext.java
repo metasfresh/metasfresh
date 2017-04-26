@@ -10,18 +10,17 @@ package de.metas.material.planning;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -85,7 +84,7 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 	I_PP_MRP getPP_MRP();
 
 	/**
-	 * 
+	 *
 	 * @param mrp
 	 * @see #getPP_MRP()
 	 */
@@ -95,7 +94,6 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 	List<I_PP_MRP> getMRPDemands();
 
 	void setMRPDemands(List<I_PP_MRP> mrpDemands);
-
 
 	@Override
 	I_S_Resource getPlant();
@@ -140,7 +138,7 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 	boolean isSubsequentMRPExecutorCall();
 
 	/**
-	 * 
+	 *
 	 * @param subsequentMRPExecutorCall
 	 * @see #isSubsequentMRPExecutorCall()
 	 */
@@ -148,7 +146,7 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 
 	/**
 	 * Sets if MRP is allowed to run an MRP cleanup on this context/segment
-	 * 
+	 *
 	 * @param allowCleanup
 	 * @see #isAllowCleanup()
 	 */

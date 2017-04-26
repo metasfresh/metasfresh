@@ -140,7 +140,6 @@ public class MRPTestRun
 				.setMaxSavepoints(1)
 				.setAllowTrxAfterThreadEnd(false);
 
-		//
 		;
 	}
 

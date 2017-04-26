@@ -42,21 +42,18 @@ import org.compiere.util.TrxRunnable;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alternative;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPAllocDAO;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPContextRunnable;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
-import de.metas.logging.LogManager;
-
 import de.metas.product.IProductBL;
 
 public class MRPBL implements IMRPBL
@@ -222,26 +219,6 @@ public class MRPBL implements IMRPBL
 		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP alternative record shall have the Product set: {}", mrpAlternative);
 		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
 		return productUOM;
-	}
-
-	/**
-	 * Duration to have this Qty available (i.e. Lead Time + Transfer Time)
-	 * 
-	 * @param qty quantity
-	 * @param productPlanningData product planning sheet
-	 * @return return duration [days]
-	 */
-	@Override
-	public int calculateDurationDays(final int leadtimeDays, final I_PP_Product_Planning productPlanningData)
-	{
-		Check.assume(leadtimeDays >= 0, LiberoException.class, "leadtimeDays >= 0");
-		Check.assumeNotNull(productPlanningData, "productPlanningData not null");
-
-		final int transferTimeDays = productPlanningData.getTransfertTime().intValueExact();
-		Check.assume(transferTimeDays >= 0, LiberoException.class, "transferTimeDays >= 0");
-
-		final int durationDays = leadtimeDays + transferTimeDays;
-		return durationDays;
 	}
 
 	@Override

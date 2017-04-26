@@ -25,12 +25,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import lombok.NonNull;
 
 /**
  * This class has the job to figure out if a particular supply "proposal" creates a kind of circle.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -64,7 +64,7 @@ public class SupplyProposalEvaluator
 	 * That makes no sense and this method shall therefore return {@code false} on such a folly.
 	 * </li>
 	 * </ul>
-	 * 
+	 *
 	 * @param proposal
 	 * @return
 	 */
@@ -107,23 +107,47 @@ public class SupplyProposalEvaluator
 		return true;
 	}
 
-	private Candidate searchRecursive(Candidate candidate, CandidatesSegment searchTarget)
+	private Candidate searchRecursive(final Candidate candidate, final CandidatesSegment searchTarget)
 	{
 		if (searchTarget.matches(candidate))
 		{
 			return candidate;
 		}
-		if (candidate.getParentIdNotNull() <= 0)
+
+		if (candidate.getParentIdNotNull() > 0)
 		{
-			return null;
+			final Candidate foundSearchTarget = searchRecursive(candidateRepository.retrieve(candidate.getParentId()), searchTarget);
+			if (foundSearchTarget != null)
+			{
+				return foundSearchTarget;
+			}
 		}
-		return searchRecursive(candidateRepository.retrieve(candidate.getParentId()), searchTarget);
+		else /* the "else" is important to avoid a stack overflow error */
+		if (candidate.getGroupIdNotNull() > 0)
+		{
+			final List<Candidate> group = candidateRepository.retrieveGroup(candidate.getGroupIdNotNull());
+			for (final Candidate groupMember : group)
+			{
+				if (groupMember.getId() <= candidate.getId())
+				{
+					continue; // avoid a stack overflow error
+				}
+
+				final Candidate foundSearchTarget = searchRecursive(groupMember, searchTarget);
+				if (foundSearchTarget != null)
+				{
+					return foundSearchTarget;
+				}
+			}
+		}
+
+		return null;
 
 	}
 
 	/**
 	 * This class defines how the evaluator wants to receive it's proposals.
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */

@@ -36,7 +36,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.exceptions.LiberoException;
@@ -46,6 +45,7 @@ import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_Workflow;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 

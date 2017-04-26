@@ -21,9 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateFactory;
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.Candidate.Type;
 
 /*
@@ -113,7 +110,7 @@ public class CandidateFactoryTests
 		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(candidate);
 		assertThat(newCandidateBefore.getQuantity(), comparesEqualTo(new BigDecimal("1")));
 	}
-	
+
 	/**
 	 * Verifies that if a new stock candidate is created with a time after and existing candidates, then that candidate is creates with the predecessor's quantity.
 	 */

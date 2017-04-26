@@ -30,8 +30,8 @@ import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBOMBL;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 
 /* package */abstract class AbstractProductionMaterial implements IProductionMaterial

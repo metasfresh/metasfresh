@@ -39,15 +39,6 @@ public interface IMRPBL extends ISingletonService
 	String toString(final I_PP_MRP mrp);
 
 	/**
-	 * Duration to have this Qty available (i.e. Lead Time + Transfer Time)
-	 * 
-	 * @param leadtimeDays lead time in days
-	 * @param productPlanningData
-	 * @return duration [days]
-	 */
-	int calculateDurationDays(final int leadtimeDays, final I_PP_Product_Planning productPlanningData);
-
-	/**
 	 * Sets MRP's Quantity
 	 * 
 	 * @param mrp

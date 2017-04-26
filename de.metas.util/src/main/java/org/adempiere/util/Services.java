@@ -24,6 +24,8 @@ package org.adempiere.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -112,6 +114,11 @@ public class Services
 
 	private static LoadingCache<Class<? extends IService>, Object> services = newServicesCache();
 
+	/**
+	 * See {@link #registerServicePermanently(Class, ISingletonService)}.
+	 */
+	private static Map<Class<? extends IService>, Object> permanentServices = new HashMap<>();
+
 	public static IServiceInterceptor getInterceptor()
 	{
 		return interceptor;
@@ -138,7 +145,7 @@ public class Services
 	 *
 	 * @param serviceInterfaceClass
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>if <code>T</code> extends {@link ISingletonService} then this method returns a cached instance of that service implementation
 	 *         <li>If <code>T</code> extends {@link IMultitonService}, then this method returns a NEW instance of that service implementation
 	 *         </ul>
@@ -188,6 +195,11 @@ public class Services
 	{
 		try
 		{
+			if (permanentServices.containsKey(serviceInterfaceClass))
+			{
+				return (T)permanentServices.get(serviceInterfaceClass);
+			}
+
 			final T serviceImpl = (T)services.get(serviceInterfaceClass);
 			return serviceImpl;
 		}
@@ -273,6 +285,11 @@ public class Services
 	 */
 	public static <T extends ISingletonService> boolean isAvailable(final Class<T> serviceInterfaceClass)
 	{
+		if (permanentServices.containsKey(serviceInterfaceClass))
+		{
+			return true;
+		}
+
 		@SuppressWarnings("unchecked")
 		final T service = (T)services.getIfPresent(serviceInterfaceClass);
 		return service != null;
@@ -282,18 +299,22 @@ public class Services
 	 * Register a new service class and an implementing instance.
 	 * If there is another implementation already registered, it will be silently replaced with the given implementation.
 	 *
-	 * WARNING: the service implementation WILL NOT be intercepted.
+	 * <b>Important</b> the service implementation WILL NOT be:
+	 * <ul>
+	 * <li>intercepted (i.e. won't be cached)</li>
+	 * <li>affected by {@link #clear()}</li>
+	 * </ul>
 	 *
 	 * @param serviceInterfaceClass the API class that will later on be used to get the implementation.
-	 * @param serviceImpl an actual instance of a class extending 'clazz'.
-	 * @return the implementation that was previously registered or <code>null</code>.
+	 * @param serviceImpl an actual instance of a class extending {@code serviceInterfaceClass}.
+	 * 
 	 */
 	public static <T extends ISingletonService> void registerService(final Class<T> serviceInterfaceClass, final T serviceImpl)
 	{
 		assertValidServiceInterfaceClass(serviceInterfaceClass);
 		assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
 
-		services.put(serviceInterfaceClass, serviceImpl);
+		permanentServices.put(serviceInterfaceClass, serviceImpl);
 		loadService(serviceInterfaceClass, serviceImpl);
 	}
 

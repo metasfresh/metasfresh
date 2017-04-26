@@ -34,12 +34,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
 /**
  * {@link I_PP_Order_BOMLine}'s Key

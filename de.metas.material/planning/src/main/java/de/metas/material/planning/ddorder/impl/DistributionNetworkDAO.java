@@ -10,18 +10,17 @@ package de.metas.material.planning.ddorder.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,7 +87,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 	@Override
 	public List<I_DD_NetworkDistributionLine> retrieveNetworkLinesByTargetWarehouse(final I_DD_NetworkDistribution distributionNetwork, final int targetWarehouseId)
 	{
-		final List<I_DD_NetworkDistributionLine> result = new ArrayList<I_DD_NetworkDistributionLine>();
+		final List<I_DD_NetworkDistributionLine> result = new ArrayList<>();
 		for (final I_DD_NetworkDistributionLine line : retrieveAllNetworkLines(distributionNetwork))
 		{
 			// Skip inactive lines
@@ -108,7 +107,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 	@Override
 	public List<I_DD_NetworkDistributionLine> retrieveNetworkLinesBySourceWarehouse(final I_DD_NetworkDistribution distributionNetwork, final int sourceWarehouseId)
 	{
-		final List<I_DD_NetworkDistributionLine> result = new ArrayList<I_DD_NetworkDistributionLine>();
+		final List<I_DD_NetworkDistributionLine> result = new ArrayList<>();
 		for (final I_DD_NetworkDistributionLine line : retrieveAllNetworkLines(distributionNetwork))
 		{
 			// Skip inactive lines
@@ -138,7 +137,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @return target M_Warehouse_ID to source warehouses (from network lines which have IsKeepTargetPlant set)
 	 */
@@ -177,7 +176,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 			List<I_M_Warehouse> sourceWarehouses = targetWarehouseId2sourceWarehouses.get(targetWarehouseId);
 			if (sourceWarehouses == null)
 			{
-				sourceWarehouses = new ArrayList<I_M_Warehouse>();
+				sourceWarehouses = new ArrayList<>();
 				targetWarehouseId2sourceWarehouses.put(targetWarehouseId, sourceWarehouses);
 			}
 

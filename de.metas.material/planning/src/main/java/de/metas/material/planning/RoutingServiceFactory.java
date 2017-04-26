@@ -1,4 +1,4 @@
-package org.eevolution.model;
+package de.metas.material.planning;
 
 /*
  * #%L
@@ -10,37 +10,39 @@ package org.eevolution.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashMap;
 import java.util.Properties;
 
 import org.compiere.util.Env;
-import org.eevolution.exceptions.LiberoException;
+
+import de.metas.material.planning.exception.MrpException;
+import de.metas.material.planning.impl.DefaultRoutingServiceImpl;
 
 /**
  * Routing Service Factory
+ * 
  * @author Teo Sarca
  */
 public class RoutingServiceFactory
 {
-	public static final String DEFAULT_ServiceName = "org.eevolution.model.impl.DefaultRoutingServiceImpl";
+	public static final String DEFAULT_ServiceName = DefaultRoutingServiceImpl.class.getName();
 
 	public static RoutingServiceFactory s_instance = null;
-	private static final HashMap<Integer, String> s_serviceClassnames = new HashMap<Integer, String>(5);
-	private static final HashMap<Integer, RoutingService> s_services = new HashMap<Integer, RoutingService>(5);
-	
+	private static final HashMap<Integer, String> s_serviceClassnames = new HashMap<>(5);
+	private static final HashMap<Integer, RoutingService> s_services = new HashMap<>(5);
+
 	public static RoutingServiceFactory get()
 	{
 		if (s_instance == null)
@@ -49,55 +51,58 @@ public class RoutingServiceFactory
 		}
 		return s_instance;
 	}
-	
-	public static void registerServiceClassname(int AD_Client_ID, String serviceClassname)
+
+	public static void registerServiceClassname(final int AD_Client_ID, final String serviceClassname)
 	{
 		s_serviceClassnames.put(AD_Client_ID > 0 ? AD_Client_ID : 0, serviceClassname);
 	}
-	
+
 	private RoutingServiceFactory()
 	{
 	}
-	
-	private final String getRoutingServiceClassname(int AD_Client_ID)
+
+	private final String getRoutingServiceClassname(final int AD_Client_ID)
 	{
 		String classname = s_serviceClassnames.get(AD_Client_ID);
 		if (classname == null && AD_Client_ID != 0)
+		{
 			classname = s_serviceClassnames.get(0);
+		}
 		if (classname == null)
+		{
 			classname = DEFAULT_ServiceName;
+		}
 		return classname;
 	}
-	
-	
+
 	@SuppressWarnings("unchecked")
-	public RoutingService getRoutingService(int AD_Client_ID)
+	public RoutingService getRoutingService(final int AD_Client_ID)
 	{
 		RoutingService service = s_services.get(AD_Client_ID);
 		if (service != null)
 		{
 			return service;
 		}
-		String classname = getRoutingServiceClassname(AD_Client_ID);
-		
+		final String classname = getRoutingServiceClassname(AD_Client_ID);
+
 		try
 		{
-			Class<? extends RoutingService> cl = (Class<? extends RoutingService>) getClass().getClassLoader().loadClass(classname);
+			final Class<? extends RoutingService> cl = (Class<? extends RoutingService>)getClass().getClassLoader().loadClass(classname);
 			service = cl.newInstance();
 			s_services.put(AD_Client_ID, service);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			throw new LiberoException(e);
+			throw new MrpException(e);
 		}
 		return service;
 	}
-	
-	public RoutingService getRoutingService(Properties ctx)
+
+	public RoutingService getRoutingService(final Properties ctx)
 	{
 		return getRoutingService(Env.getAD_Client_ID(ctx));
 	}
-	
+
 	public RoutingService getRoutingService()
 	{
 		return getRoutingService(Env.getCtx());

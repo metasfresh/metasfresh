@@ -45,6 +45,6 @@ public class ReceiptScheduleEvent implements MaterialEvent
 
 	@NonNull
 	private MaterialDescriptor materialDescr;
-	
+
 	private final boolean receiptScheduleDeleted;
 }

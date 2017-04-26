@@ -65,6 +65,7 @@ import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import lombok.NonNull;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder
 {
@@ -394,7 +395,7 @@ import de.metas.material.planning.IMaterialPlanningContext;
 	}
 
 	@Override
-	public int updateMRPRecords(IQueryUpdater<I_PP_MRP> queryUpdater)
+	public int updateMRPRecords(@NonNull final IQueryUpdater<I_PP_MRP> queryUpdater)
 	{
 		return createQueryBuilder()
 				.create() // create query

@@ -47,7 +47,6 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowBL;
@@ -59,6 +58,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.IProductBL;
 
 @Validator(I_PP_Order.class)
@@ -93,7 +93,7 @@ public class PP_Order
 		}
 
 		//
-		// If Warehouse chaged or Locator was never set, set it now
+		// If Warehouse changed or Locator was never set, set it now
 		if (ppOrder.getM_Locator_ID() <= 0 || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID))
 		{
 			final I_M_Warehouse warehouse = ppOrder.getM_Warehouse();

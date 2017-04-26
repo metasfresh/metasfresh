@@ -49,7 +49,7 @@ import de.metas.material.planning.exception.MrpException;
 
 /**
  * It's possible to create instances of this class directly (intended for testing), but generally, please use a factory to do it.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -145,7 +145,7 @@ public final class MRPContext implements IMutableMRPContext
 		sb.append("\n date=" + date);
 		sb.append("\n requireDRP=" + requireDRP);
 
-		sb.append("\n MRP Demands(" + (this.mrpDemands == null ? 0 : this.mrpDemands.size()) + "): ").append(this.mrpDemands);
+		sb.append("\n MRP Demands(" + (mrpDemands == null ? 0 : mrpDemands.size()) + "): ").append(mrpDemands);
 		sb.append("\n PP_MRP_ID=");
 		if (mrp == null)
 		{
@@ -351,11 +351,11 @@ public final class MRPContext implements IMutableMRPContext
 		// Update PP_MRP record
 		if (this.mrpDemands != null && this.mrpDemands.size() == 1)
 		{
-			this.mrp = this.mrpDemands.get(0);
+			mrp = this.mrpDemands.get(0);
 		}
 		else
 		{
-			this.mrp = null;
+			mrp = null;
 		}
 
 	}
@@ -367,7 +367,7 @@ public final class MRPContext implements IMutableMRPContext
 		{
 			return Collections.emptyList();
 		}
-		return this.mrpDemands;
+		return mrpDemands;
 	}
 
 	@Override
@@ -459,7 +459,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public void setQtyProjectOnHand(BigDecimal qtyProjectOnHand)
+	public void setQtyProjectOnHand(final BigDecimal qtyProjectOnHand)
 	{
 		Check.assumeNotNull(qtyProjectOnHand, MrpException.class, "qtyProjectOnHand not null");
 		this.qtyProjectOnHand = qtyProjectOnHand;
@@ -484,7 +484,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public void setSubsequentMRPExecutorCall(boolean subsequentMRPExecutorCall)
+	public void setSubsequentMRPExecutorCall(final boolean subsequentMRPExecutorCall)
 	{
 		this.subsequentMRPExecutorCall = subsequentMRPExecutorCall;
 	}
@@ -496,7 +496,7 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public void setAllowCleanup(boolean allowCleanup)
+	public void setAllowCleanup(final boolean allowCleanup)
 	{
 		this.allowCleanup = allowCleanup;
 	}

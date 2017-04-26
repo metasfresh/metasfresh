@@ -28,12 +28,12 @@ import java.sql.Timestamp;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.materialtracking.impl.MaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IPPOrderQualityFields;
 import de.metas.materialtracking.model.I_M_Material_Tracking;

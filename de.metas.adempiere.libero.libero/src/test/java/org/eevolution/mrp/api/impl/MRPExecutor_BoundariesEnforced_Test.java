@@ -121,8 +121,8 @@ public class MRPExecutor_BoundariesEnforced_Test extends AbstractMRPTestBase
 	@Test
 	public void test_NoBoundariesEnforced()
 	{
-		mrpExecutor.setDisallowMRPNotes(true);
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.setDisallowMRPNotes(true);
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
 
 		// Demand on Plant 1
@@ -158,8 +158,8 @@ public class MRPExecutor_BoundariesEnforced_Test extends AbstractMRPTestBase
 	@Test
 	public void test_BoundariesEnforced()
 	{
-		mrpExecutor.setDisallowMRPNotes(true);
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.setDisallowMRPNotes(true);
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
 
 		// Demand on Plant 1

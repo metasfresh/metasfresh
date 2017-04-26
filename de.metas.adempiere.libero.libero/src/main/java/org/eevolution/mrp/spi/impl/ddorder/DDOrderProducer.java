@@ -33,12 +33,12 @@ import de.metas.material.planning.ddorder.DDOrderLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,12 +47,12 @@ import de.metas.material.planning.ddorder.DDOrderLine;
 
 public class DDOrderProducer
 {
-	public I_DD_Order createDDOrder(DDOrder pojo,
-			IMRPCreateSupplyRequest request,
-			int docTypeDO_ID)
+	public I_DD_Order createDDOrder(final DDOrder pojo,
+			final IMRPCreateSupplyRequest request,
+			final int docTypeDO_ID)
 	{
 		final IMaterialPlanningContext mrpContext = request.getMRPContext();
-		
+
 		final I_DD_Order order = InterfaceWrapperHelper.newInstance(I_DD_Order.class, mrpContext);
 		order.setMRP_Generated(true);
 		order.setMRP_AllowCleanup(true);
@@ -84,7 +84,7 @@ public class DDOrderProducer
 			ddOrderline.setDD_Order(order);
 			ddOrderline.setC_BPartner_ID(linePojo.getDemandBPartnerId());
 			ddOrderline.setC_OrderLineSO_ID(linePojo.getSalesOrderLineId());
-			
+
 			//
 			// Locator From/To
 			ddOrderline.setM_Locator_ID(linePojo.getFromLocatorId());
@@ -93,9 +93,9 @@ public class DDOrderProducer
 			//
 			// Product, UOM, Qty
 			// NOTE: we assume qtyToMove is in "mrpContext.getC_UOM()" which shall be the Product's stocking UOM
-			
+
 			final I_M_Product product = InterfaceWrapperHelper.create(mrpContext.getCtx(), linePojo.getProductId(), I_M_Product.class, mrpContext.getTrxName());
-			
+
 			ddOrderline.setM_Product_ID(linePojo.getProductId());
 			ddOrderline.setC_UOM_ID(product.getC_UOM_ID());
 			ddOrderline.setQtyEntered(linePojo.getQty());
@@ -116,9 +116,9 @@ public class DDOrderProducer
 			//
 			// Save DD Order Line
 			InterfaceWrapperHelper.save(ddOrderline);
-			
+
 			final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
-			
+
 			//
 			// Create DD_OrderLine_Alternatives
 			// NOTE: demand MRP line is available only in lot-for-lot order policy
@@ -126,7 +126,7 @@ public class DDOrderProducer
 			final I_PP_MRP parentMRPDemand = request.getMRPDemandRecordOrNull();
 			if (parentMRPDemand != null)
 			{
-				
+
 				final List<I_PP_MRP_Alternative> mrpAlternatives = mrpDAO.retrieveMRPAlternativesQuery(parentMRPDemand).create().list();
 				for (final I_PP_MRP_Alternative mrpAlternative : mrpAlternatives)
 				{
@@ -135,7 +135,7 @@ public class DDOrderProducer
 			}
 
 			final Timestamp supplyDateFinishSchedule = TimeUtil.asTimestamp(request.getDemandDate());
-			
+
 			//
 			// Set Correct Planning Dates
 			final Timestamp supplyDateStartSchedule = TimeUtil.addDays(supplyDateFinishSchedule, 0 - linePojo.getDurationDays());
@@ -151,11 +151,11 @@ public class DDOrderProducer
 
 		return order;
 	}
-	
-	private void createDD_OrderLine_Alternative(IMaterialPlanningContext mrpContext, I_DD_OrderLine ddOrderLine, I_PP_MRP_Alternative mrpAlternative)
+
+	private void createDD_OrderLine_Alternative(final IMaterialPlanningContext mrpContext, final I_DD_OrderLine ddOrderLine, final I_PP_MRP_Alternative mrpAlternative)
 	{
 		final IMRPBL mrpBL = Services.get(IMRPBL.class);
-		
+
 		final I_DD_OrderLine_Alternative ddOrderLineAlt = InterfaceWrapperHelper.newInstance(I_DD_OrderLine_Alternative.class, ddOrderLine);
 		ddOrderLineAlt.setAD_Org_ID(mrpAlternative.getAD_Org_ID());
 		ddOrderLineAlt.setDD_OrderLine(ddOrderLine);

@@ -1,7 +1,8 @@
 package de.metas.material.dispo.event;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -31,6 +32,7 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
 
@@ -44,12 +46,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,7 +60,7 @@ import lombok.NonNull;
 
 /**
  * This is kind of a bunch of "module tests".
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -71,18 +73,24 @@ public class MDEEventListenerTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private static final Date t1 = SystemTime.asDate();
+	public static final Date t0 = SystemTime.asDate();
 
-	private static final Date t2 = TimeUtil.addMinutes(t1, 10);
+	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
 
-	private static final Date t3 = TimeUtil.addMinutes(t1, 20);
+	private static final Date t2 = TimeUtil.addMinutes(t0, 20);
+
+	private static final Date t3 = TimeUtil.addMinutes(t0, 30);
 
 	public static final int fromWarehouseId = 10;
 	public static final int intermediateWarehouseId = 20;
 	public static final int toWarehouseId = 30;
 
 	public static final int productId = 40;
-	
+
+	public static final int rawProduct1Id = 50;
+
+	public static final int rawProduct2Id = 55;
+
 	@Autowired
 	private MDEventListener mdEventListener;
 
@@ -212,7 +220,7 @@ public class MDEEventListenerTests
 
 	/**
 	 * Contains the actual test for {@link #testTwoDistibutionPlanEvents()}. I moved this into a static method because i want to use the code to set the stage for other tests.
-	 * 
+	 *
 	 * @param mdEventListener
 	 */
 	public static void performTestTwoDistibutionPlanEvents(final MDEventListener mdEventListener)
@@ -272,6 +280,7 @@ public class MDEEventListenerTests
 		assertThat(filter(Type.DEMAND, t2).size(), is(1));
 		final I_MD_Candidate t2Demand = filter(Type.DEMAND, t2).get(0);
 		assertThat(t2Demand.getMD_Candidate_Parent_ID(), is(t3Supply.getMD_Candidate_ID())); // t2Demand => t3Supply
+		assertThat(t2Demand.getMD_Candidate_GroupId(), is(t3Supply.getMD_Candidate_GroupId())); // t2Demand and t3Suppy belong to the same group
 		assertThat(t2Demand.getQty(), comparesEqualTo(BigDecimal.TEN));
 
 		assertThat(filter(Type.STOCK, t2).size(), is(1));
@@ -287,6 +296,7 @@ public class MDEEventListenerTests
 		assertThat(filter(Type.DEMAND, t1).size(), is(1));
 		final I_MD_Candidate t1Demand = filter(Type.DEMAND, t1).get(0);
 		assertThat(t1Demand.getMD_Candidate_Parent_ID(), is(t2Supply.getMD_Candidate_ID())); // t1Demand => t2Supply
+		assertThat(t1Demand.getMD_Candidate_GroupId(), is(t2Supply.getMD_Candidate_GroupId())); // t2Demand and t3Suppy belong to the same group
 		assertThat(t1Demand.getQty(), comparesEqualTo(BigDecimal.TEN));
 
 		assertThat(filter(Type.STOCK, t1).size(), is(1));
@@ -295,18 +305,103 @@ public class MDEEventListenerTests
 		assertThat(t1Stock.getMD_Candidate_Parent_ID(), is(t1Demand.getMD_Candidate_ID()));
 	}
 
-	private static List<I_MD_Candidate> filter(@NonNull final Type type)
+	@Test
+	public void testProductionPlanEvent()
 	{
-		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
-		return allRecords.stream().filter(r -> type.toString().equals(r.getMD_Candidate_Type())).collect(Collectors.toList());
+		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
+
+		final MaterialDescriptor inputDescr1 = MaterialDescriptor.builder()
+				.date(t1)
+				.orgId(20)
+				.productId(rawProduct1Id)
+				.qty(BigDecimal.TEN)
+				.warehouseId(intermediateWarehouseId)
+				.build();
+
+		final BigDecimal eleven = BigDecimal.TEN.add(BigDecimal.ONE);
+		final MaterialDescriptor inputDescr2 = inputDescr1
+				.withProductId(rawProduct2Id)
+				.withQty(eleven);
+
+		final MaterialDescriptor outputDescr = inputDescr1
+				.withDate(t2)
+				.withProductId(productId)
+				.withQty(BigDecimal.ONE);
+
+		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
+				.productionInput(inputDescr1)
+				.productionInput(inputDescr2)
+				.productionOutput(outputDescr)
+				.reference(reference)
+				.when(Instant.now())
+				.build();
+
+		mdEventListener.onEvent(productionPlanEvent);
+
+		assertThat(filter(Type.SUPPLY).size(), is(1)); //
+		assertThat(filter(Type.DEMAND).size(), is(2)); // we have two different inputs
+		assertThat(filter(Type.STOCK).size(), is(3)); // one stock record per supply, one per demand
+
+		final I_MD_Candidate t2Stock = filter(Type.STOCK, t2).get(0);
+		assertThat(t2Stock.getQty(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(t2Stock.getM_Product_ID(), is(productId));
+		assertThat(t2Stock.getMD_Candidate_GroupId(), lessThanOrEqualTo(0));
+		assertThat(t2Stock.getMD_Candidate_Parent_ID(), lessThanOrEqualTo(0));
+
+		final I_MD_Candidate t2Supply = filter(Type.SUPPLY, t2).get(0);
+		assertThat(t2Supply.getQty(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(t2Supply.getM_Product_ID(), is(productId));
+		assertThat(t2Supply.getMD_Candidate_Parent_ID(), is(t2Stock.getMD_Candidate_ID()));
+
+		final int groupId = t2Supply.getMD_Candidate_GroupId();
+		assertThat(groupId, greaterThan(0));
+
+		final I_MD_Candidate t1Product1Demand = filter(Type.DEMAND, t1, rawProduct1Id).get(0);
+		assertThat(t1Product1Demand.getQty(), comparesEqualTo(BigDecimal.TEN));
+		assertThat(t1Product1Demand.getM_Product_ID(), is(rawProduct1Id));
+		assertThat(t1Product1Demand.getMD_Candidate_GroupId(), is(groupId));
+		// no parent relationship between production supply and demand because it can be m:n
+		// assertThat(t1Product1Demand.getMD_Candidate_Parent_ID(), is(t2Supply.getMD_Candidate_ID())); 
+
+		final I_MD_Candidate t1Product1Stock = filter(Type.STOCK, t1, rawProduct1Id).get(0);
+		assertThat(t1Product1Stock.getQty(), comparesEqualTo(BigDecimal.TEN.negate()));
+		assertThat(t1Product1Stock.getM_Product_ID(), is(rawProduct1Id));
+		assertThat(t1Product1Stock.getMD_Candidate_GroupId(), lessThanOrEqualTo(0));
+		assertThat(t1Product1Stock.getMD_Candidate_Parent_ID(), is(t1Product1Demand.getMD_Candidate_ID()));
+
+		final I_MD_Candidate t1Product2Demand = filter(Type.DEMAND, t1, rawProduct2Id).get(0);
+		assertThat(t1Product2Demand.getQty(), comparesEqualTo(eleven));
+		assertThat(t1Product2Demand.getM_Product_ID(), is(rawProduct2Id));
+		assertThat(t1Product2Demand.getMD_Candidate_GroupId(), is(groupId));
+		// no parent relationship between production supply and demand because it can be m:n
+		// assertThat(t1Product2Demand.getMD_Candidate_Parent_ID(), is(t2Supply.getMD_Candidate_ID()));
+
+		final I_MD_Candidate t1Product2Stock = filter(Type.STOCK, t1, rawProduct2Id).get(0);
+		assertThat(t1Product2Stock.getQty(), comparesEqualTo(eleven.negate()));
+		assertThat(t1Product2Stock.getM_Product_ID(), is(rawProduct2Id));
+		assertThat(t1Product2Stock.getMD_Candidate_GroupId(), lessThanOrEqualTo(0));
+		assertThat(t1Product2Stock.getMD_Candidate_Parent_ID(), is(t1Product2Demand.getMD_Candidate_ID()));
 	}
 
-	private static List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date)
+	private static List<I_MD_Candidate> filter(@NonNull final Type type)
 	{
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
 		return allRecords.stream()
 				.filter(r -> type.toString().equals(r.getMD_Candidate_Type()))
+				.collect(Collectors.toList());
+	}
+
+	private static List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date)
+	{
+		return filter(type).stream()
 				.filter(r -> date.getTime() == r.getDateProjected().getTime())
+				.collect(Collectors.toList());
+	}
+
+	private static List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date, final int productId)
+	{
+		return filter(type, date).stream()
+				.filter(r -> r.getM_Product_ID() == productId)
 				.collect(Collectors.toList());
 	}
 

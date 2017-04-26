@@ -23,15 +23,16 @@ package org.eevolution.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -43,6 +44,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
+
+/**
+ * This class tests {@link IPPOrderBOMBL} in convert with {@link IPPOrderBOMDAO}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PPOrderBOMBLTest
 {
 	private MRPTestHelper helper;
@@ -208,7 +218,9 @@ public class PPOrderBOMBLTest
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+
+		setCommonProperties(ppOrder);
+		
 		ppOrder.setM_Product(product);
 		ppOrder.setPP_Product_BOM(productBOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
@@ -223,6 +235,16 @@ public class PPOrderBOMBLTest
 		return ppOrder;
 	}
 
+	private void setCommonProperties(final I_PP_Order ppOrder)
+	{
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+		
+		// required to avoid an NPE when building the lightweight PPOrder pojo
+		final Timestamp t1 = SystemTime.asTimestamp();
+		ppOrder.setDateOrdered(t1);
+		ppOrder.setDateStartSchedule(t1);
+	}
+	
 	private I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
 	{
 		final I_C_UOM uom = helper.createUOM(name);

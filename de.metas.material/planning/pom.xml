@@ -8,12 +8,17 @@
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<artifactId>metasfresh-material-planning</artifactId>
 	<packaging>jar</packaging>
 
 	<description>This component shall leverage the libero code to generate production and distribution suggestions for the material-dispo service
 Not sure if this shall be a dedicated service..it depends on how well we will be able to cope with having more and more of them.</description>
+
+	<properties>
+		<migration-sql-basedir>75-material-planning</migration-sql-basedir>
+	</properties>
+
 	<dependencies>
 	
 		<!-- metasfresh -->
@@ -28,7 +33,31 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 		
+		<!-- we need to include this now because we need UOM-conversion; 
+		The UOM-conversion logic is coupled with the product logic (because of product specific conversion rates) and i don't want to pull all of this code into base.
+		We will rather extract the stuff into a dedicated product and/or UOM library.
+		-->
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>1.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>

@@ -7,14 +7,15 @@ import java.util.Set;
 import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
 
-@Component
-/* package */class MRPNoteBuilder extends SimpleMRPNoteBuilder
+class MRPNoteBuilder extends SimpleMRPNoteBuilder
 {
 	public static final MRPNoteBuilder cast(final IMRPNoteBuilder builder)
 	{

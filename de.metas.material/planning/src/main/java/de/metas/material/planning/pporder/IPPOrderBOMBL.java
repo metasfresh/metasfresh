@@ -1,4 +1,4 @@
-package org.eevolution.api;
+package de.metas.material.planning.pporder;
 
 /*
  * #%L
@@ -10,29 +10,28 @@ package org.eevolution.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
 
 public interface IPPOrderBOMBL extends ISingletonService
@@ -48,30 +47,30 @@ public interface IPPOrderBOMBL extends ISingletonService
 	boolean isCoOrByProduct(I_PP_Order_BOMLine bomLine);
 
 	/**
-	 * 
+	 *
 	 * @param bomLine
 	 * @return true if given BOM Line is a alternative/variant for a main component line
 	 */
 	boolean isVariant(I_PP_Order_BOMLine bomLine);
 
 	/**
-	 * 
+	 *
 	 * @param bomLine
 	 * @return true if given Order BOM Line is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
 	 */
-	boolean isReceipt(I_PP_Order_BOMLine bomLine);
-	
-	default boolean isIssue(final I_PP_Order_BOMLine bomLine)
+	boolean isReceipt(String bomLineComponentType);
+
+	default boolean isIssue(final String bomLineComponentType)
 	{
-		return !isReceipt(bomLine);
+		return !isReceipt(bomLineComponentType);
 	}
 
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.
-	 * 
+	 *
 	 * @param bomLine
 	 * @see #isReceipt(I_PP_Order_BOMLine)
-	 * @throws LiberoException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
+	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
 	void assertReceipt(I_PP_Order_BOMLine bomLine);
 
@@ -88,16 +87,16 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
-	 * 
+	 *
 	 * Same as {@link #getQtyToIssue(I_PP_Order_BOMLine, BigDecimal)} but it will use the standard required quantity (i.e. {@link I_PP_Order_BOMLine#getQtyRequiered()}).
-	 * 
+	 *
 	 * @return Qty Open (Requiered - Delivered)
 	 */
 	BigDecimal getQtyToIssue(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets Qty Open (i.e. Qty To Issue).
-	 * 
+	 *
 	 * @param orderBOMLine order bom line
 	 * @param qtyToIssueRequiered quantity required to be considered (instead of standard qty required to issue from BOM Line)
 	 * @return Qty Open (Requiered - Delivered)
@@ -106,7 +105,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	/**
 	 * Gets qty which is required to issue (i.e. target quantity), without considering how much was issued until now.
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @return qty required to issue (positive value)
 	 */
@@ -114,19 +113,19 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	/**
 	 * Gets Qty To Receive
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @return Qty To Receive (positive)
-	 * @throws LiberoException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
+	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
 	BigDecimal getQtyToReceive(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
 	 * Gets qty which is required to receive (i.e. target quantity).
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @return Qty required to receive (positive)
-	 * @throws LiberoException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
+	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
 	BigDecimal getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
@@ -134,16 +133,16 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param description text
 	 */
 	void addDescription(I_PP_Order_BOMLine orderBOMLine, String description);
 
 	/**
 	 * set Order BOM Line's Warehouse and Locator from {@link I_PP_Order} (manufacturing order header).
-	 * 
+	 *
 	 * NOTE: this method is not saving <code>orderBOMLine</code>.
-	 * 
+	 *
 	 * @param orderBOMLine
 	 */
 	void updateWarehouseAndLocator(I_PP_Order_BOMLine orderBOMLine);
@@ -154,7 +153,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * Returns the negated value of the given <code>qty</code>.
 	 * <p>
 	 * Note: In case of Co/By-Products, we need to issue negative Qtys
-	 * 
+	 *
 	 * @param qty
 	 * @return
 	 */
@@ -162,7 +161,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	/**
 	 * Adds given Qtys to {@link I_PP_Order_BOMLine}.
-	 * 
+	 *
 	 * @param ppOrderBOMLine
 	 * @param isUsageVariance true if these quantities are coming from a usage variance cost collector
 	 * @param qtyDeliveredToAdd
@@ -185,7 +184,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * Now, consider that quantity of finished goods produced is 110 (more then ordered).<br/>
 	 * In this case projected quantity required will consider the quantity actually produced instead of quantity ordered, because it's bigger.<br/>
 	 * So the result will be 110(quantity produced) x 350mm.<br/>
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @return projected quantity required.
 	 */
@@ -193,7 +192,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	/**
 	 * Calculates how much qty we STILL have to issue to cover proportionally the quantity of finished goods that was already received.
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @param uom
 	 * @return qty to issue (in given <code>uom</code>)
@@ -205,4 +204,14 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void unclose(I_PP_Order_BOMLine line);
 
 	void reserveStock(List<I_PP_Order_BOMLine> lines);
+
+	/**
+	 * Computes the quantity for the given {@code ppOrderLinePojo} based on infos from all three paramaters.
+	 *
+	 * @param ppOrderLinePojo
+	 * @param ppOrderPojo
+	 * @param qtyFinishedGood
+	 * @return
+	 */
+	BigDecimal calculateQtyRequired(PPOrderLine ppOrderLinePojo, PPOrder ppOrderPojo, BigDecimal qtyFinishedGood);
 }

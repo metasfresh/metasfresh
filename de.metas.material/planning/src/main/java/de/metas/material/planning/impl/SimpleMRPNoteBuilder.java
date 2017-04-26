@@ -16,6 +16,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_Org;
@@ -27,7 +28,6 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -49,18 +49,17 @@ import de.metas.material.planning.exception.MrpException;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 public class SimpleMRPNoteBuilder implements IMRPNoteBuilder
 {
 
@@ -71,8 +70,8 @@ public class SimpleMRPNoteBuilder implements IMRPNoteBuilder
 
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@Autowired
-	private transient ProductPlanningBL productPlanningBL;
+	// @Autowired this annotation doesn't work unless this class is a component
+	private transient ProductPlanningBL productPlanningBL = Adempiere.getSpringApplicationContext().getBean(ProductPlanningBL.class);
 
 	//
 	// Parameters: context
@@ -94,12 +93,12 @@ public class SimpleMRPNoteBuilder implements IMRPNoteBuilder
 	private boolean _duplicate = false;
 
 	private final Function<Collection<I_PP_MRP>, Set<String>> _ducomentNosSupplier;
-	
-	public SimpleMRPNoteBuilder(final IMRPNotesCollector mrpNotesCollector, Function<Collection<I_PP_MRP>, Set<String>> documentNosSupplier)
+
+	public SimpleMRPNoteBuilder(final IMRPNotesCollector mrpNotesCollector, final Function<Collection<I_PP_MRP>, Set<String>> documentNosSupplier)
 	{
 		Check.assumeNotNull(mrpNotesCollector, "mrpNotesCollector not null");
 		_mrpNotesCollector = mrpNotesCollector;
-		_ducomentNosSupplier =documentNosSupplier;
+		_ducomentNosSupplier = documentNosSupplier;
 	}
 
 	@Override

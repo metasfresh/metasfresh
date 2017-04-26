@@ -13,15 +13,14 @@ package org.eevolution.mrp.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -32,6 +31,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -111,10 +111,10 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 				.build();
 
 		// MRP error exception: we don't care for BOM product "Salad_2xTomato_1xOnion"
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setM_Product(masterData.pSalad_2xTomato_1xOnion);
 		// MRP error exception: we don't care about balancing raw materials warehouses
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning)
 				.setM_Warehouse(masterData.warehouse_rawMaterials01);
 	}
@@ -135,7 +135,9 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+		
+		setCommonProperties(ppOrder);
+		
 		ppOrder.setM_Product(masterData.pSalad_2xTomato_1xOnion);
 		ppOrder.setPP_Product_BOM(masterData.pSalad_2xTomato_1xOnion_BOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
@@ -212,7 +214,9 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+	
+		setCommonProperties(ppOrder);
+		
 		ppOrder.setM_Product(masterData.pSalad_2xTomato_1xOnion);
 		ppOrder.setPP_Product_BOM(masterData.pSalad_2xTomato_1xOnion_BOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
@@ -282,7 +286,9 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+
+		setCommonProperties(ppOrder);
+		
 		ppOrder.setM_Product(masterData.pSalad_2xTomato_1xOnion);
 		ppOrder.setPP_Product_BOM(masterData.pSalad_2xTomato_1xOnion_BOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
@@ -293,6 +299,7 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
 		ppOrder.setDocAction(DocAction.ACTION_Complete);
 		ppOrder.setDescription("Triggering manufacturing order");
+
 		InterfaceWrapperHelper.save(ppOrder);
 
 		// Check initial Demand
@@ -317,6 +324,16 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 				.assertExpected();
 	}
 
+	private void setCommonProperties(final I_PP_Order ppOrder)
+	{
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+		
+		// required to avoid an NPE when building the lightweight PPOrder pojo
+		final Timestamp t1 = SystemTime.asTimestamp();
+		ppOrder.setDateOrdered(t1);
+		ppOrder.setDateStartSchedule(t1);
+	}
+
 	/**
 	 * Test case:
 	 * <ul>
@@ -331,7 +348,9 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
 		ppOrder.setAD_Org(masterData.adOrg01);
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+	
+		setCommonProperties(ppOrder);
+		
 		ppOrder.setM_Product(masterData.pSalad_2xTomato_1xOnion);
 		ppOrder.setPP_Product_BOM(masterData.pSalad_2xTomato_1xOnion_BOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);

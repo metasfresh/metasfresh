@@ -9,9 +9,6 @@ import org.junit.Test;
 
 import de.metas.event.Event;
 import de.metas.event.jms.JsonEventSerializer;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.impl.ManufactoringEventSerializerTests;
 import de.metas.material.event.impl.MaterialEventSerializer;
 

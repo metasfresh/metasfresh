@@ -33,6 +33,7 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -57,6 +58,7 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 
 import de.metas.adempiere.service.IRequisitionBL;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanningBL;
 
 public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -187,9 +189,12 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private int calculateDurationDays(final IMaterialPlanningContext mrpContext)
 	{
-		I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+		final ProductPlanningBL productPlanningBL = Adempiere.getSpringApplicationContext().getBean(ProductPlanningBL.class);
+		
+		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
-		final int durationTotalDays = mrpBL.calculateDurationDays(leadtimeDays, productPlanningData);
+		final int durationTotalDays = productPlanningBL.calculateDurationDays(leadtimeDays, productPlanningData);
+
 		return durationTotalDays;
 	}
 

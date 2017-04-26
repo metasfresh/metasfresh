@@ -29,11 +29,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
 /**
  * Product storage for a manufacturing order BOM Line.
@@ -76,7 +76,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 
 		final BigDecimal qtyCapacity;
 		final BigDecimal qtyToIssueOrReceive;
-		if (ppOrderBOMBL.isReceipt(orderBOMLine))
+		if (ppOrderBOMBL.isReceipt(orderBOMLine.getComponentType()))
 		{
 			qtyCapacity = ppOrderBOMBL.getQtyRequiredToReceive(orderBOMLine);
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToReceive(orderBOMLine);

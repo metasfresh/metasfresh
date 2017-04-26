@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.Type;
@@ -61,6 +62,7 @@ public class CandidateRepository
 	 * @return a candidate with
 	 *         <ul>
 	 *         <li>the {@code id} of the persisted data record
+	 *         <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or (if the given candidates doesn't have a groupId) the given candidate's ID.
 	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made
 	 *         </ul>
 	 */
@@ -74,8 +76,15 @@ public class CandidateRepository
 		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate);
 		InterfaceWrapperHelper.save(synchedRecord);
 
+		if (candidate.getType() != Type.STOCK && synchedRecord.getMD_Candidate_GroupId() <= 0)
+		{
+			synchedRecord.setMD_Candidate_GroupId(synchedRecord.getMD_Candidate_ID());
+			InterfaceWrapperHelper.save(synchedRecord);
+		}
+
 		return candidate
 				.withId(synchedRecord.getMD_Candidate_ID())
+				.withGroupId(synchedRecord.getMD_Candidate_GroupId())
 				.withQuantity(qtyDelta);
 	}
 
@@ -84,10 +93,39 @@ public class CandidateRepository
 		return fromCandidateRecord(retrieveExact(candidate));
 	}
 
-	public Candidate retrieve(@NonNull final Integer parentId)
+	/**
+	 * Load and return the candidate with the given ID.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public Candidate retrieve(@NonNull final Integer id)
 	{
-		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.create(Env.getCtx(), parentId, I_MD_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.create(Env.getCtx(), id, I_MD_Candidate.class, ITrx.TRXNAME_ThreadInherited);
 		return fromCandidateRecord(Optional.of(candidateRecord)).get();
+	}
+
+	/**
+	 * 
+	 * @param groupId
+	 * @return
+	 */
+	public List<Candidate> retrieveGroup(final Integer groupId)
+	{
+		if (groupId == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, groupId)
+				.orderBy().addColumn(I_MD_Candidate.COLUMN_MD_Candidate_ID).endOrderBy()
+				.create()
+				.stream().map(r -> fromCandidateRecord(Optional.of(r)).get())
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -171,6 +209,12 @@ public class CandidateRepository
 			candidateRecordToUse.setAD_Table_ID(referencedRecord.getAD_Table_ID());
 			candidateRecordToUse.setRecord_ID(referencedRecord.getRecord_ID());
 		}
+
+		if (candidate.getGroupId() != null)
+		{
+			candidateRecordToUse.setMD_Candidate_GroupId(candidate.getGroupId());
+		}
+
 		return candidateRecordToUse;
 	}
 
@@ -197,6 +241,8 @@ public class CandidateRepository
 				.quantity(candidateRecord.getQty())
 				.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
+				// if the record has a group id, then set it. otherwise set null, because a "vanilla" candidate without groupId also has null here (null and not zero)
+				.groupId(candidateRecord.getMD_Candidate_GroupId() <= 0 ? null : candidateRecord.getMD_Candidate_GroupId())
 
 				// make sure to add a Date and not a Timestamp to make sure not to confuse Candidate's equals() and hashCode() methods
 				.date(new Date(candidateRecord.getDateProjected().getTime()));
@@ -242,7 +288,7 @@ public class CandidateRepository
 
 	/**
 	 * turns the given segment into the "where part" of a big query builder. Does not specify the ordering.
-	 * 
+	 *
 	 * @param segment
 	 * @return
 	 */
@@ -314,7 +360,7 @@ public class CandidateRepository
 
 	/**
 	 * Deletes all records that reference the given {@code referencedRecord}.
-	 * 
+	 *
 	 * @param reference
 	 */
 	public void deleteForReference(@NonNull final TableRecordReference referencedRecord)
@@ -333,4 +379,5 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, reference.getAD_Table_ID())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, reference.getRecord_ID());
 	}
+
 }

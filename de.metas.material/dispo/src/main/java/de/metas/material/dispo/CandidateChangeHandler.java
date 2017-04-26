@@ -130,7 +130,7 @@ public class CandidateChangeHandler
 	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
 	 *
 	 * @param candidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
-	 * 
+	 *
 	 * @return a candidate with type {@link Type#STOCK} that reflects what was persisted in the DB.<br>
 	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
 	 *         Note: this method does not establish a parent-child relationship between any two records
@@ -141,7 +141,7 @@ public class CandidateChangeHandler
 
 		final Candidate candidateToPersist = candidateFactory.createStockCandidate(candidate);
 
-		final Candidate savedCandidate = candidateRepository.addOrReplace(candidateToPersist);
+		final Candidate savedCandidate = candidateRepository.addOrReplace(candidateToPersist.withGroupId(null));
 
 		final BigDecimal delta;
 		if (previousCandidate.isPresent())

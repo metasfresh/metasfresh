@@ -84,6 +84,8 @@ public class Candidate
 
 	private final Integer parentId;
 
+	private final Integer groupId;
+
 	/**
 	 * The projected date at which we expect this candidate's {@link #getQuantity()}.
 	 */
@@ -92,7 +94,7 @@ public class Candidate
 
 	/**
 	 * Does not create a parent segment, even if this candidate has a parent.
-	 * 
+	 *
 	 * @return
 	 */
 	public CandidatesSegment.CandidatesSegmentBuilder mkSegmentBuilder()
@@ -106,6 +108,18 @@ public class Candidate
 	public int getParentIdNotNull()
 	{
 		return getParentId() == null ? 0 : getParentId();
+	}
 
+	public int getGroupIdNotNull()
+	{
+		if (type == Type.STOCK)
+		{
+			return 0;
+		}
+		if (groupId != null && groupId > 0)
+		{
+			return groupId;
+		}
+		return id == null ? 0 : id;
 	}
 }

@@ -318,7 +318,7 @@ public class CandidateChangeHandlerTests
 
 		{
 			invokeUpdateStock(t3, new BigDecimal("-3"));
-			
+
 			final List<I_MD_Candidate> records = retriveRecords();
 			assertThat(records.size(), is(3));
 

@@ -93,11 +93,11 @@ public class CandidatesSegment
 	/**
 	 * This method ignores parent {@link #getParentProductId()}, {@link #getParentWarehouseId()},
 	 * because we don't need it right now and it would mean that we had to fetch the given {@code candidate}'s parent from the repo.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
-	public boolean matches(Candidate candidate)
+	public boolean matches(final Candidate candidate)
 	{
 		final boolean dateMatches;
 		switch (dateOperator)

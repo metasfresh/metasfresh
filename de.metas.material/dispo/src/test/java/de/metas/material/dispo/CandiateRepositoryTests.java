@@ -1,7 +1,7 @@
 package de.metas.material.dispo;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -17,6 +18,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,6 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.model.I_MD_Candidate;
 
 /*
  * #%L
@@ -129,7 +132,7 @@ public class CandiateRepositoryTests
 	 * Verifies that a candidate can be replaced with another candidate that has the same product, type, timestamp and locator.
 	 */
 	@Test
-	public void add_update()
+	public void addOrReplace_update()
 	{
 		// guard
 		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).isPresent(), is(true));
@@ -147,6 +150,61 @@ public class CandiateRepositoryTests
 		assertThat(stockAfterReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
 	}
 
+	/**
+	 * Verifies that if a candidate with a groupID is persisted, then that candidate groupId is also persisted.
+	 * And if the respective candidate does no yet have a groupId, then the persisted candidate's Id is assigned to be its groupId.
+	 */
+	@Test
+	public void addOrReplace_groupId_nonStockCandidate()
+	{
+		final Candidate candidateWithOutGroupId = stockCandidate
+				.withType(Type.DEMAND)
+				.withDate(TimeUtil.addMinutes(later, 1)) // pick a different time from the other candidates
+				.withGroupId(null);
+
+		final Candidate result1 = candidateRepository.addOrReplace(candidateWithOutGroupId);
+		// result1 was assigned an id and a groupId
+		assertThat(result1.getId(), greaterThan(0));
+		assertThat(result1.getGroupId(), is(result1.getId()));
+
+		final Candidate candidateWithGroupId = candidateWithOutGroupId
+				.withDate(TimeUtil.addMinutes(later, 2)) // pick a different time from the other candidates
+				.withGroupId(result1.getGroupId());
+
+		final Candidate result2 = candidateRepository.addOrReplace(candidateWithGroupId);
+		// result2 also has id & groupId, but its ID is unique whereas its groupId is the same as result1's groupId
+		assertThat(result2.getId(), greaterThan(0));
+		assertThat(result2.getGroupId(), not(is(result2.getId())));
+		assertThat(result2.getGroupId(), is(result1.getGroupId()));
+
+		final I_MD_Candidate result1Record = InterfaceWrapperHelper.create(Env.getCtx(), result1.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
+		assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
+		assertThat(result1Record.getMD_Candidate_GroupId(), is(result1.getGroupId()));
+
+		final I_MD_Candidate result2Record = InterfaceWrapperHelper.create(Env.getCtx(), result2.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
+		assertThat(result2Record.getMD_Candidate_ID(), is(result2.getId()));
+		assertThat(result2Record.getMD_Candidate_GroupId(), is(result2.getGroupId()));
+	}
+
+	/**
+	 * Verifies that candidates with type {@link Type#STOCK} do not receive a groupId, because they might belong to different supply/demand candidates with different group ids
+	 */
+	@Test
+	public void addOrReplace_groupId_stockCandidate()
+	{
+		final Candidate candidateWithOutGroupId = stockCandidate
+				.withDate(TimeUtil.addMinutes(later, 1)) // pick a different time from the other candidates
+				.withGroupId(null);
+		
+		final Candidate result1 = candidateRepository.addOrReplace(candidateWithOutGroupId);
+		assertThat(result1.getId(), greaterThan(0));
+		assertThat(result1.getGroupId(), lessThanOrEqualTo(0));
+		
+		final I_MD_Candidate result1Record = InterfaceWrapperHelper.create(Env.getCtx(), result1.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
+		assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
+		assertThat(result1Record.getMD_Candidate_GroupId(), lessThanOrEqualTo(0));
+	}
+	
 	/**
 	 * Verifies that {@link CandidateRepository#retrieveStockAt(CandidatesSegment)} returns the oldest stock candidate with a date before the given {@link CandidatesSegment}'s date
 	 */
@@ -169,7 +227,7 @@ public class CandiateRepositoryTests
 	}
 
 	/**
-	 * 
+	 *
 	 * @param candidate
 	 * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
 	 */
@@ -215,7 +273,7 @@ public class CandiateRepositoryTests
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 	}
-	
+
 	private CandidatesSegment mkStockUntilSegment(final Date date)
 	{
 		return CandidatesSegment.builder()
@@ -225,7 +283,7 @@ public class CandiateRepositoryTests
 				.date(date).dateOperator(DateOperator.until)
 				.build();
 	}
-	
+
 	private CandidatesSegment mkStockFromSegment(final Date date)
 	{
 		return CandidatesSegment.builder()

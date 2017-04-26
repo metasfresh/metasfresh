@@ -35,12 +35,12 @@ import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,7 +60,6 @@ public class SupplyProposalEvaluatorTests
 	private final Date t2 = TimeUtil.addMinutes(t1, 10);
 	private final Date t3 = TimeUtil.addMinutes(t1, 20);
 	private final Date t4 = TimeUtil.addMinutes(t1, 30);
-
 
 	private static final int SUPPLY_WAREHOUSE_ID = 4;
 
@@ -228,13 +227,13 @@ public class SupplyProposalEvaluatorTests
 	public void testWithChainOpposite()
 	{
 		MDEEventListenerTests.performTestTwoDistibutionPlanEvents(mdEventListener);
-		// we now have an unbalanced demand with a stock of -10  in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
+		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
-		
-		// propose what the planner would create create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
-		// note that we don't need to look at the qty at all 
+
+		// now assume that the planner would create create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
+		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
-				.date(t1)
+				.date(MDEEventListenerTests.t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
 				.sourceWarehouseId(MDEEventListenerTests.toWarehouseId)
 				.destWarehouseId(MDEEventListenerTests.fromWarehouseId)
 				.productId(MDEEventListenerTests.productId)

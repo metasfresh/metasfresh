@@ -49,8 +49,6 @@ public class MockedMRPExecutor extends MRPExecutor
 
 	public MockedMRPExecutor()
 	{
-		super();
-
 		allowMRPNoteMatchers.setAnd(false); // any of predicates shall be matched
 	}
 

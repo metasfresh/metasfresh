@@ -42,7 +42,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
@@ -53,6 +52,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
@@ -123,7 +123,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		final Set<Integer> productIds = new HashSet<Integer>();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
-			if (ppOrderBOMBL.isReceipt(orderBOMLine))
+			if (ppOrderBOMBL.isReceipt(orderBOMLine.getComponentType()))
 			{
 				continue;
 			}

@@ -63,8 +63,6 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
@@ -81,6 +79,8 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer

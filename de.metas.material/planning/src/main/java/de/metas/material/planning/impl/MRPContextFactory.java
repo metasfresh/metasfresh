@@ -23,7 +23,7 @@ public class MRPContextFactory implements IMRPContextFactory
 {
 	@Autowired
 	private ProductPlanningBL productPlanningBL;
-	
+
 	@Override
 	public IMutableMRPContext createInitialMRPContext()
 	{
@@ -43,7 +43,7 @@ public class MRPContextFactory implements IMRPContextFactory
 		mrpContextNew.setLogger(context.getLogger());
 		mrpContextNew.setDate(context.getDate());
 		mrpContextNew.setAllowCleanup(context.isAllowCleanup());
-		
+
 		mrpContextNew.setAD_Client_ID(context.getAD_Client_ID());
 		mrpContextNew.setAD_Org(context.getAD_Org());
 		mrpContextNew.setRequireDRP(context.isRequireDRP());
@@ -54,7 +54,7 @@ public class MRPContextFactory implements IMRPContextFactory
 		mrpContextNew.setPP_MRP(context.getPP_MRP());
 		mrpContextNew.setEnforced_PP_MRP_Demand_ID(context.getEnforced_PP_MRP_Demand_ID());
 
-		//mrpContextNew.setQtyToSupply(context.getQtyToSupply());
+		// mrpContextNew.setQtyToSupply(context.getQtyToSupply());
 		mrpContextNew.setQtyProjectOnHand(context.getQtyProjectOnHand());
 
 		mrpContextNew.setPlant(context.getPlant());
@@ -80,8 +80,6 @@ public class MRPContextFactory implements IMRPContextFactory
 
 		return mrpContextNew;
 	}
-
-	
 
 	@Override
 	public IMaterialPlanningContext createMRPContext(final IMaterialPlanningContext mrpContext0, final IMRPSegment mrpSegment)

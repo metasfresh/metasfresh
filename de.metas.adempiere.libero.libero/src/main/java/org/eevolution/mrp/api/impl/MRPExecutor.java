@@ -13,15 +13,14 @@ package org.eevolution.mrp.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -40,6 +39,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Workflow;
@@ -47,7 +47,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.eevolution.LiberoConstants;
@@ -77,10 +76,12 @@ import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMRPSegment;
@@ -88,9 +89,12 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
-public /* package */class MRPExecutor implements IMRPExecutor
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class MRPExecutor implements IMRPExecutor
 {
 	/**
 	 * MRP-020 - {@link I_PP_Product_Planning#isCreatePlan()} is <code>false</code> but we have a net requirements quantity to satisfy.
@@ -136,18 +140,20 @@ public /* package */class MRPExecutor implements IMRPExecutor
 	private final transient IMRPBL mrpBL = Services.get(IMRPBL.class);
 	private final transient IMRPDemandAggregationFactory mrpDemandAggregationFactory = Services.get(IMRPDemandAggregationFactory.class);
 	private final transient IMRPSupplyProducerFactory _mrpSupplyProducerFactory = Services.get(IMRPSupplyProducerFactory.class);
-	private final transient IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
+
+	@Autowired
+	private transient MRPContextFactory mrpContextFactory;
+
 	// Database/Trx services:
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final ITrxConstraintsBL trxConstraintsBL = Services.get(ITrxConstraintsBL.class);
+
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final IPPWorkflowDAO ppWorkflowDAO = Services.get(IPPWorkflowDAO.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	
+
 	@Autowired
 	private transient ProductPlanningBL productPlanningBL;
-	//
 
 	//
 	// Common parameters
@@ -219,13 +225,15 @@ public /* package */class MRPExecutor implements IMRPExecutor
 				&& mrpContext.isAllowCleanup();
 		final boolean deleteDocuments = mrpContext.isAllowCleanup();
 
+		final ITrxConstraintsBL trxConstraintsBL = Services.get(ITrxConstraintsBL.class);
 		trxConstraintsBL.saveConstraints();
 		try
 		{
 			// Because we are running out of transaction we need to allow local transactions
 			if (trxManager.isNull(mrpContextForCleanup.getTrxName()))
 			{
-				trxConstraintsBL.getConstraints().addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
+				final ITrxConstraints constraints = trxConstraintsBL.getConstraints();
+				constraints.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 			}
 
 			// Cleanup Quantity On Hand Reservations
@@ -813,11 +821,11 @@ public /* package */class MRPExecutor implements IMRPExecutor
 			if (isPurchasedActual)
 			{
 				int C_BPartner_ID = -1;
-								
-				//FRESH-334: Make sure the BP_Product if of the product's org or org * 
+
+				// FRESH-334: Make sure the BP_Product if of the product's org or org *
 				final int orgId = product.getAD_Org_ID();
 				final int productId = product.getM_Product_ID();
-								
+
 				final List<I_C_BPartner_Product> partnerProducts = bpartnerProductDAO.retrieveBPartnerForProduct(ctx, 0, productId, orgId);
 				// task cg : 05952 : end
 				for (final I_C_BPartner_Product bpp : partnerProducts)
@@ -827,7 +835,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 						C_BPartner_ID = bpp.getC_BPartner_ID();
 						productPlanningActual.setDeliveryTime_Promised(BigDecimal.valueOf(bpp.getDeliveryTime_Promised()));
 						productPlanningActual.setOrder_Min(bpp.getOrder_Min());
-						productPlanningActual.setOrder_Max(Env.ZERO);
+						productPlanningActual.setOrder_Max(BigDecimal.ZERO);
 						productPlanningActual.setOrder_Pack(bpp.getOrder_Pack());
 						productPlanningActual.setC_BPartner_ID(C_BPartner_ID);
 						break;
@@ -873,7 +881,7 @@ public /* package */class MRPExecutor implements IMRPExecutor
 		// Get how much of that QtyOnHand was already reserved for other demands
 		final BigDecimal qtyOnHandReserved = mrpDAO.createMRPQueryBuilder()
 				.setContextProvider(mrpContext)
-				.setSkipIfMRPExcluded(true)  
+				.setSkipIfMRPExcluded(true)
 				.setM_Warehouse_ID(warehouse.getM_Warehouse_ID())
 				.setM_Product_ID(product.getM_Product_ID())
 				.setTypeMRP(X_PP_MRP.TYPEMRP_Supply)

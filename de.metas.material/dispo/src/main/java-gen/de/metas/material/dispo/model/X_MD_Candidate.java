@@ -16,7 +16,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1356688068L;
+	private static final long serialVersionUID = 540200188L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -29,7 +29,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 			setM_Warehouse_ID (0);
 			setMD_Candidate_ID (0);
 			setMD_Candidate_Type (null);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
+			setQty_Planner (BigDecimal.ZERO);
         } */
     }
 
@@ -99,6 +100,43 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.sql.Timestamp getDateProjected () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateProjected);
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Merkmale.
+		@param M_AttributeSetInstance_ID 
+		Merkmals Ausprägungen zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -175,6 +213,25 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		return ii.intValue();
 	}
 
+	/** Set Gruppen-ID.
+		@param MD_Candidate_GroupId Gruppen-ID	  */
+	@Override
+	public void setMD_Candidate_GroupId (int MD_Candidate_GroupId)
+	{
+		set_Value (COLUMNNAME_MD_Candidate_GroupId, Integer.valueOf(MD_Candidate_GroupId));
+	}
+
+	/** Get Gruppen-ID.
+		@return Gruppen-ID	  */
+	@Override
+	public int getMD_Candidate_GroupId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_GroupId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Dispositionskandidat.
 		@param MD_Candidate_ID Dispositionskandidat	  */
 	@Override
@@ -229,6 +286,32 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * MD_Candidate_Status AD_Reference_ID=540715
+	 * Reference name: MD_Candidate_Status
+	 */
+	public static final int MD_CANDIDATE_STATUS_AD_Reference_ID=540715;
+	/** fact = fact */
+	public static final String MD_CANDIDATE_STATUS_Fact = "fact";
+	/** planned = planned */
+	public static final String MD_CANDIDATE_STATUS_Planned = "planned";
+	/** Set Status.
+		@param MD_Candidate_Status Status	  */
+	@Override
+	public void setMD_Candidate_Status (java.lang.String MD_Candidate_Status)
+	{
+
+		set_Value (COLUMNNAME_MD_Candidate_Status, MD_Candidate_Status);
+	}
+
+	/** Get Status.
+		@return Status	  */
+	@Override
+	public java.lang.String getMD_Candidate_Status () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_Status);
 	}
 
 	/** 
@@ -305,7 +388,45 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge Abw..
+		@param Qty_Override Menge Abw.	  */
+	@Override
+	public void setQty_Override (java.math.BigDecimal Qty_Override)
+	{
+		set_Value (COLUMNNAME_Qty_Override, Qty_Override);
+	}
+
+	/** Get Menge Abw..
+		@return Menge Abw.	  */
+	@Override
+	public java.math.BigDecimal getQty_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Override);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Planmenge.
+		@param Qty_Planner Planmenge	  */
+	@Override
+	public void setQty_Planner (java.math.BigDecimal Qty_Planner)
+	{
+		set_Value (COLUMNNAME_Qty_Planner, Qty_Planner);
+	}
+
+	/** Get Planmenge.
+		@return Planmenge	  */
+	@Override
+	public java.math.BigDecimal getQty_Planner () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planner);
+		if (bd == null)
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

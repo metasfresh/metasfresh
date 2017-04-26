@@ -87,17 +87,17 @@ public class MRPExecutor_2Plants_LookBetweenPlants_Test extends AbstractMRPTestB
 
 		//
 		// Configure the executor
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setM_Warehouse(warehouseRawMaterials)
 				.setM_Product(null) // any product
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setM_Warehouse(warehouseSalad)
 				.setM_Product(pCheeseGrana)
 				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
 		
 		// FIXME: we get cycles detected here, but the result is ok. We are ignoring it for now.
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setM_Warehouse(warehouseSalad)
 				.setMRPCode(MRPExecutorService.MRP_ERROR_MRPExecutorMaxIterationsExceeded);
 	}

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResourceType;
 import org.compiere.model.MResourceUnAvailable;
@@ -55,6 +56,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPOrderNode;
+
+import de.metas.material.planning.IResourceProductService;
 
 
 /**
@@ -86,9 +89,11 @@ public class CRPReasoner
 
 	private String getSQLDayRestriction(Timestamp dateTime, I_S_Resource r, List<Object> params)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
 		final MResourceType rt = MResourceType.get(getCtx(), r.getS_ResourceType_ID());
-		Timestamp dayStart = rt.getDayStart(dateTime);
-		Timestamp dayEnd = rt.getDayEnd(dateTime);
+		final Timestamp dayStart = resourceProductService.getDayStartForResourceType(rt, dateTime);
+		final Timestamp dayEnd = resourceProductService.getDayEndForResourceType(rt, dateTime);
 		
 		String whereClause;
 		
@@ -202,14 +207,18 @@ public class CRPReasoner
 
 	public boolean isAvailable(I_S_Resource r, Timestamp dateTime)
 	{
-		MResourceType t = MResourceType.get(getCtx(r), r.getS_ResourceType_ID());
-		return t.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(r, dateTime);
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
+		final MResourceType t = MResourceType.get(getCtx(r), r.getS_ResourceType_ID());
+		return resourceProductService.isDayAvailableForResourceType(t, dateTime) && !MResourceUnAvailable.isUnAvailable(r, dateTime);
 	}
 
 	public boolean isAvailable(I_S_Resource r)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
 		MResourceType t = MResourceType.get(getCtx(r), r.getS_ResourceType_ID());
-		return t.isAvailable();
+		return resourceProductService.isAvailableForResourceType(t);
 	}
 
 	/**
@@ -221,9 +230,11 @@ public class CRPReasoner
 	 */
 	private Timestamp getAvailableDate(MResourceType t, Timestamp dateTime, boolean isScheduleBackward)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
 		Timestamp date = dateTime;
 		int direction = isScheduleBackward ? -1 : +1; 
-		if (!t.isDayAvailable(date))
+		if (!resourceProductService.isDayAvailableForResourceType(t, date))
 		{
 			for (int i = 1; i <= 7; i++)
 			{

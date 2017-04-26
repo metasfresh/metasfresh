@@ -66,8 +66,6 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	public DDOrderMRPSupplyProducer()
 	{
-		super();
-
 		addSourceColumnNames(I_DD_Order.class,
 				I_DD_Order.COLUMN_PP_Plant_ID,
 				I_DD_Order.COLUMN_DocStatus);

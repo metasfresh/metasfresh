@@ -49,8 +49,6 @@ import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 
-import org.slf4j.Logger;
-
 public class MRPSupplyReservator
 {
 	// services

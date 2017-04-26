@@ -15,8 +15,8 @@ import org.compiere.model.I_AD_Table;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
 

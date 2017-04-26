@@ -27,7 +27,6 @@ package org.eevolution.model;
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -78,12 +77,12 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.IProductBL;
 
 /**

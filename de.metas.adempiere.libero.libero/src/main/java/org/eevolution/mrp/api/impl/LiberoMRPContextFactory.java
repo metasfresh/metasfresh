@@ -10,6 +10,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.ILiberoMRPContextFactory;
 import org.eevolution.mrp.api.IMRPBL;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.exception.MrpException;
@@ -36,7 +37,7 @@ import de.metas.material.planning.impl.MRPContextFactory;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Service
 public class LiberoMRPContextFactory implements ILiberoMRPContextFactory
 {
 	@Autowired 

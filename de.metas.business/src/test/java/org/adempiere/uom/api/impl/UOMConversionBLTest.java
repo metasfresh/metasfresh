@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UOMConstants;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.QuantityExpectation;
@@ -43,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.quantity.Quantity;
+import de.metas.uom.UOMConstants;
 
 public class UOMConversionBLTest extends UOMTestBase
 {

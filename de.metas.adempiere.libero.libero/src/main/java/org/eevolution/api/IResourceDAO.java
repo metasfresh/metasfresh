@@ -27,15 +27,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 
 public interface IResourceDAO extends ISingletonService
 {
-
 	List<I_S_Resource> retrievePlants(Properties ctx);
 
 	I_S_Resource retrievePlant(Properties ctx, int resourceId);
-
-	I_M_Product retrieveProductForResource(final Properties ctx, final int S_Resource_ID);
 }

@@ -12,6 +12,7 @@ import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
+import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.TransactionEvent;
@@ -67,9 +68,57 @@ public class MDEventListener implements MaterialEventListener
 		{
 			handleDistributionPlanEvent((DistributionPlanEvent)event);
 		}
+		else if (event instanceof ProductionPlanEvent)
+		{
+			handleProductionPlanEvent((ProductionPlanEvent)event);
+		}
 	}
 
-	private void handleDistributionPlanEvent(DistributionPlanEvent event)
+	private void handleProductionPlanEvent(final ProductionPlanEvent event)
+	{
+		Integer groupId = null;
+		
+		for (final MaterialDescriptor outputDescr : event.getProductionOutputs())
+		{
+			final Candidate supplyCandidate = Candidate.builder()
+					.type(Type.SUPPLY)
+					.subType(SubType.PRODUCTION)
+					.groupId(groupId)
+					.date(outputDescr.getDate())
+					.orgId(outputDescr.getOrgId())
+					.productId(outputDescr.getProductId())
+					.quantity(outputDescr.getQty())
+					.warehouseId(outputDescr.getWarehouseId())
+					.reference(event.getReference())
+					.build();
+			
+			// this might cause 'candidateChangeHandler' to trigger another event
+			final Candidate candidateWithGroupId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+			if (groupId == null)
+			{
+				groupId = candidateWithGroupId.getGroupId();
+			}
+		}
+
+		for (final MaterialDescriptor inputDescr : event.getProductionInputs())
+		{
+			final Candidate demandCandidate = Candidate.builder()
+					.type(Type.DEMAND)
+					.subType(SubType.PRODUCTION)
+					.groupId(groupId) // may be null on the first loop iteration
+					.date(inputDescr.getDate())
+					.orgId(inputDescr.getOrgId())
+					.productId(inputDescr.getProductId())
+					.quantity(inputDescr.getQty())
+					.warehouseId(inputDescr.getWarehouseId())
+					.reference(event.getReference())
+					.build();
+
+			candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
+		}
+	}
+
+	private void handleDistributionPlanEvent(final DistributionPlanEvent event)
 	{
 		final MaterialDescriptor materialDescr = event.getMaterialDescr();
 
@@ -108,7 +157,8 @@ public class MDEventListener implements MaterialEventListener
 
 		final Candidate demandCandidate = supplyCandidate
 				.withType(Type.DEMAND)
-				.withSubType(null)
+				.withSubType(SubType.DISTRIBUTION)
+				.withGroupId(supplyCandidateWithId.getGroupId())
 				.withParentId(supplyCandidateWithId.getId())
 				.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 				.withDate(event.getDistributionStart())

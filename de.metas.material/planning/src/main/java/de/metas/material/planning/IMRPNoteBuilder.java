@@ -10,18 +10,17 @@ package de.metas.material.planning;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,11 +34,11 @@ import org.eevolution.model.I_PP_MRP;
 
 /**
  * MRP Note ({@link I_AD_Note}) builder.
- * 
+ *
  * Has convenient methods to add information to the MRP note which will be created.
- * 
+ *
  * NOTE: after you set all infos that you need please call {@link #collect()} to ask the MRP notes collector to collect this note.
- * 
+ *
  * @author tsa
  *
  */
@@ -56,9 +55,9 @@ public interface IMRPNoteBuilder
 
 	/**
 	 * Create and save the MRP's AD_Note.
-	 * 
+	 *
 	 * NOTE: DON'T call it directly. It's called by API. Use {@link #collect()} instead.
-	 * 
+	 *
 	 * @return created and saved note
 	 */
 	I_AD_Note createMRPNote();
@@ -86,14 +85,14 @@ public interface IMRPNoteBuilder
 	IMRPNoteBuilder addMRPRecords(List<I_PP_MRP> mrps);
 
 	/**
-	 * 
+	 *
 	 * @return true if this MRP note was found that is a duplicate of a MRP note which was already reported
 	 */
 	boolean isDuplicate();
 
 	/**
 	 * Flag this note as duplicate.
-	 * 
+	 *
 	 * @param duplicate
 	 */
 	void setDuplicate();

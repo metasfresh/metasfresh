@@ -33,7 +33,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -56,6 +55,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.quantity.Quantity;
 
 /**
@@ -246,7 +246,7 @@ import de.metas.quantity.Quantity;
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		targetOrderBOMLines.forEach(bomLine -> {
-			if (!ppOrderBOMBL.isIssue(bomLine))
+			if (!ppOrderBOMBL.isIssue(bomLine.getComponentType()))
 			{
 				throw new IllegalArgumentException("Not an issue BOM line: " + bomLine);
 			}
@@ -283,7 +283,7 @@ import de.metas.quantity.Quantity;
 
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
-				.filter(ppOrderBOMBL::isIssue)
+				.filter(line -> ppOrderBOMBL.isIssue(line.getComponentType()))
 				.collect(GuavaCollectors.toImmutableList());
 
 		return setTargetOrderBOMLines(ppOrderBOMLines);

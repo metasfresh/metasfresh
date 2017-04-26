@@ -10,18 +10,17 @@ package de.metas.material.planning;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -39,7 +38,7 @@ public interface IProductPlanningDAO extends ISingletonService
 
 	/**
 	 * Find best matching product planning.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adOrgId
 	 * @param warehouseId
@@ -52,7 +51,7 @@ public interface IProductPlanningDAO extends ISingletonService
 
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adOrgId
 	 * @param warehouseId
@@ -64,7 +63,7 @@ public interface IProductPlanningDAO extends ISingletonService
 
 	/**
 	 * Retrieve all warehouses which are directly assigned to our Org and Plant.
-	 * 
+	 *
 	 * @param ctx
 	 * @param org
 	 * @param plant

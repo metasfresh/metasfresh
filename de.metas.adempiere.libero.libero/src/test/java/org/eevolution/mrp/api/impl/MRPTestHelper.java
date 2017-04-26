@@ -69,8 +69,6 @@ import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
-import org.eevolution.mrp.api.IMRPExecutor;
-import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.expectations.MRPExpectation;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
@@ -123,8 +121,9 @@ public class MRPTestHelper
 	public IQueryBL queryBL;
 	public PlainDocActionBL docActionBL;
 	//
-	public MRPExecutorService mrpExecutorService;
-	public MockedMRPExecutor mrpExecutor;
+	public MRPExecutorService mrpExecutorService = new MRPExecutorService();
+	
+	public MockedMRPExecutor mrpExecutor = new MockedMRPExecutor();
 
 	//
 	// Master Data
@@ -220,17 +219,6 @@ public class MRPTestHelper
 
 	private void setupMRPExecutorService()
 	{
-		mrpExecutor = new MockedMRPExecutor();
-
-		Services.registerService(IMRPExecutorService.class, new MRPExecutorService()
-		{
-			@Override
-			protected IMRPExecutor createMRPExecutor()
-			{
-				return mrpExecutor;
-			}
-		});
-		mrpExecutorService = (MRPExecutorService)Services.get(IMRPExecutorService.class);
 		LogManager.setLoggerLevel(getMRPLogger(), Level.INFO);
 	}
 
