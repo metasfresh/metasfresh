@@ -317,7 +317,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 				// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
 				// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
-				// getting the git-sha1 like this is a workaround until https://issues.jenkins-ci.org/browse/JENKINS-26100 is done
+				// getting the commit_sha1 like this is a workaround until https://issues.jenkins-ci.org/browse/JENKINS-26100 is done
 				// thanks to
 				// https://issues.jenkins-ci.org/browse/JENKINS-34455?focusedCommentId=256522&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-256522
 				// for the workaround
@@ -350,10 +350,11 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 </ul>""";
 
 				// gh #968:
-				// set env variables which bill be available to a possible upstream job that might have called us
+				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 				env.BUILD_VERSION="${BUILD_VERSION}"
-            }
+				env.BUILD_GIT_SHA1="${commit_sha1}";
+      }
 		}
 	}
  } // node
