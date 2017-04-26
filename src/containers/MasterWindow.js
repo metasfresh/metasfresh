@@ -264,6 +264,7 @@ class MasterWindow extends Component {
                     dataId, breadcrumb, docNoData}}
                 docActionElem = {docActionElement}
                 windowType={params.windowType}
+                docId={params.docId}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
