@@ -42,7 +42,8 @@ class Breadcrumb extends Component {
 
     renderBtn = (menu, index) => {
         const {
-            handleMenuOverlay, menuOverlay, siteName, openModal, windowType
+            handleMenuOverlay, menuOverlay, siteName, openModal, windowType,
+            docId
         } = this.props;
 
         return (<div key={index}>
@@ -70,14 +71,12 @@ class Breadcrumb extends Component {
                 </div>
                 {menuOverlay === menu.nodeId &&
                     <MenuOverlay
+                        {...{siteName, handleMenuOverlay, openModal, windowType,
+                            docId}}
                         nodeId={menu.nodeId}
                         node={menu}
                         onClickOutside={e => handleMenuOverlay(e, '')}
                         disableOnClickOutside={menuOverlay !== menu.nodeId}
-                        siteName={siteName}
-                        handleMenuOverlay={handleMenuOverlay}
-                        openModal={openModal}
-                        windowType={windowType}
                     />
                 }
             </div>
@@ -107,7 +106,6 @@ class Breadcrumb extends Component {
                     {breadcrumb && breadcrumb.map((item, index) =>
                         this.renderBtn(item, index+1)
                     )}
-                </div>
 
                 {docSummaryData &&
                     <div
@@ -131,6 +129,7 @@ class Breadcrumb extends Component {
                     </div>
                 }
             </div>
+        </div>
         )
     }
 }

@@ -11,7 +11,7 @@ class Container extends Component {
 
     render() {
         const {
-            docActionElem, docStatusData, docNoData,
+            docActionElem, docStatusData, docNoData, docId,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
@@ -27,7 +27,7 @@ class Container extends Component {
                             handleDeletedStatus, isDocumentNotSaved,
                             showIndicator, query, siteName, showSidelist,
                             attachments, actions, references, windowType,
-                            breadcrumb, dataId, dropzoneFocused, notfound
+                            breadcrumb, dataId, dropzoneFocused, notfound, docId
                         }}
                         docStatus = {docActionElem}
                     />
