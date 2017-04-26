@@ -784,7 +784,6 @@ class Table extends Component {
                             }
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
-                            onFocus={this.handleFocus}
                             ref={c => this.table = c}
                             onCopy={this.handleCopy}
                         >

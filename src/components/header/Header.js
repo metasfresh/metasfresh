@@ -500,6 +500,7 @@ class Header extends Component {
                     disableOnClickOutside={!showSidelist}
                     docId={dataId}
                     defaultTab={sideListTab}
+                    open={true}
                 />}
 
                 <GlobalContextShortcuts
