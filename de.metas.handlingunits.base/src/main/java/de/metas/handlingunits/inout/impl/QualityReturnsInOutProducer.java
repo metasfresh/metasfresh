@@ -1,6 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -22,11 +21,13 @@ import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -83,24 +84,34 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 	/**
 	 * List of handling units that have to be returned to vendor
 	 */
-	private final List<I_M_HU> husToReturn;
+	//private List<I_M_HU> husToReturn = new ArrayList<>();
+	
+	private final List<I_M_HU_Assignment> huAssignments;
 
-	public QualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU> hus)
+	public QualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
 	{
 		super();
 
 		Check.assumeNotNull(ctx, "ctx not null");
 		setCtx(ctx);
 
-		husToReturn = Collections.unmodifiableList(hus);
+		this.huAssignments = huAssignments;
+		
+		//husToReturn = Collections.unmodifiableList(hus);
 	}
 
 	@Override
 	protected void createLines()
 	{
 
-		for (final I_M_HU hu : husToReturn)
+		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
+			
+			final I_M_HU hu = handlingUnitsBL.getTopLevelParent(huAssignment.getM_HU());
+			
+			// we know for sure the huAssignments are for inoutlines
+			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huAssignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
+
 			// Step 1: Prepare the packing material lines based on the HU configuration
 			{
 				// take the details from the LU-TU configuration
@@ -169,7 +180,7 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 				final List<IHUProductStorage> productStorages = huStorage.getProductStorages();
 				for (final IHUProductStorage productStorage : productStorages)
 				{
-					inoutLinesBuilder.addHUProductStorage(productStorage);
+					inoutLinesBuilder.addHUProductStorage(productStorage, inOutLine);
 				}
 			}
 

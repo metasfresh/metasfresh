@@ -60,7 +60,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private Properties _ctx;
+	protected Properties _ctx;
 	protected boolean executed = false;
 
 	protected I_C_BPartner _bpartner = null;
@@ -81,7 +81,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		this._ctx = ctx;
 	}
 
-	private final Properties getCtx()
+	protected final Properties getCtx()
 	{
 		return _ctx;
 	}

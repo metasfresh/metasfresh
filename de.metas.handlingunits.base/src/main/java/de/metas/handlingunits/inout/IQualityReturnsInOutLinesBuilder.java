@@ -2,6 +2,7 @@ package de.metas.handlingunits.inout;
 
 import de.metas.handlingunits.inout.impl.QualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inout.model.I_M_InOutLine;
 
 /*
  * #%L
@@ -32,9 +33,10 @@ public interface IQualityReturnsInOutLinesBuilder
 	 * Create quality return inout line based on the given product storage.
 	 * 
 	 * @param productStorage
+	 * @param originInOutLine
 	 * @return
 	 */
-	QualityReturnsInOutLinesBuilder addHUProductStorage(IHUProductStorage productStorage);
+	QualityReturnsInOutLinesBuilder addHUProductStorage(IHUProductStorage productStorage, final I_M_InOutLine originInOutLine);
 
 	/**
 	 * Check if this builder is empty.

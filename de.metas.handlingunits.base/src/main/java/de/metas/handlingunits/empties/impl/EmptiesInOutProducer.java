@@ -39,7 +39,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 
 	private final EmptiesInOutLinesProducer inoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
 
-	private Properties _ctx;
+	
 
 	public EmptiesInOutProducer(final Properties ctx)
 	{
@@ -50,11 +50,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		_ctx = ctx;
 	}
 
-	private final Properties getCtx()
-	{
-		return _ctx;
-	}
-
+	
 	@Override
 	protected IContextAware getContextProvider()
 	{
