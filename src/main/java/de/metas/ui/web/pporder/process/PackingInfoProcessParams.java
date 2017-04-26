@@ -10,7 +10,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
@@ -25,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 
