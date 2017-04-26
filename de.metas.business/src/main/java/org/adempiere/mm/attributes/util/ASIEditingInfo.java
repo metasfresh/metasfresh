@@ -80,7 +80,7 @@ public final class ASIEditingInfo
 				.build();
 	}
 
-	public static final ASIEditingInfo ofASI(final int attributeSetInstanceId)
+	public static final ASIEditingInfo readonlyASI(final int attributeSetInstanceId)
 	{
 		return builder()
 				.type(WindowType.StrictASIAttributes)
@@ -88,6 +88,16 @@ public final class ASIEditingInfo
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 	}
+	
+	public static final ASIEditingInfo processParameterASI(final int attributeSetInstanceId)
+	{
+		return builder()
+				.type(WindowType.ProcessParameter)
+				.isSOTrx(true)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.build();
+	}
+
 
 	// Parameters
 	private final WindowType _type;

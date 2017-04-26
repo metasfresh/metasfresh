@@ -152,11 +152,23 @@ public class Adempiere
 	 */
 	public static final void autowire(final Object bean)
 	{
-		if (getSpringApplicationContext() == null)
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		if (springApplicationContext == null)
 		{
 			return;
 		}
-		getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
+	}
+	
+	public static final <T> T getBean(final Class<T> requiredType)
+	{
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		if (springApplicationContext == null)
+		{
+			throw new IllegalStateException("springApplicationContext not configured yet");
+		}
+		
+		return springApplicationContext.getBean(requiredType);
 	}
 
 	//
