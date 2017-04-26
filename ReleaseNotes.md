@@ -20,6 +20,8 @@ Here come the actual release notes:
   * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
   * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
     * Adding the initial window layout for Bankstatement window in webUI.
+  * [#1322](https://github.com/metasfresh/metasfresh/issues/1382) Make Packing Item editable in Manufacturing Order Header
+    * Making the Field Packing Item editable in Manufacturing Order header.
   * [#1349](https://github.com/metasfresh/metasfresh/issues/1349) Create Product category webui window
     * Adding the product category window to WebUI.
   * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
@@ -28,9 +30,7 @@ Here come the actual release notes:
   * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
   * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
-  * [#1322](https://github.com/metasfresh/metasfresh/issues/1382) Make Packing Item editable in Manufacturing Order Header
-    * Making the Field Packing Item editable in Manufacturing Order header.
-  
+ 
 * metasfresh-webui-api
   * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
     * New Functionality to quickly add a quickaction for request creation to WebUI windows.
@@ -58,6 +58,7 @@ Here come the actual release notes:
     * Fixing the bug that prevented the usage of document reversals.
   * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
     * Fixes a Bug that did not allow to add split-off Transport Units to be added to a new Logistic Unit.
+  * [#1379](https://github.com/metasfresh/metasfresh/issues/1379) Problem creating FK reference on DLM'ed table
 
 * metasfesh-webui-api
   * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
