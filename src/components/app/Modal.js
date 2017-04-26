@@ -255,7 +255,7 @@ class Modal extends Component {
 
     renderPanel = () => {
         const {
-            data, modalTitle, modalType, isDocumentNotSaved
+            data, modalTitle, modalType, isDocumentNotSaved, layout
         } = this.props;
 
         const {
@@ -274,7 +274,7 @@ class Modal extends Component {
                     }
                 >
                     <span className="panel-modal-header-title">
-                        {modalTitle ? modalTitle : 'Modal'}
+                        {modalTitle ? modalTitle : layout.caption}
                     </span>
                     <div className="items-row-2">
                         <button
