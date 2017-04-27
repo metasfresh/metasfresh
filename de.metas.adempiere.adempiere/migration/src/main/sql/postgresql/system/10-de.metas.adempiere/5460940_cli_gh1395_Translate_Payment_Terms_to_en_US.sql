@@ -1,3 +1,5 @@
+UPDATE C_PaymentTerm_Trl SET Updated=TO_TIMESTAMP('2017-04-27 18:04:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100,Name='30 days net',IsTranslated='Y' WHERE C_PaymentTerm_ID=1000002 AND AD_Language='en_US'
+;
 -- 2017-04-27T18:04:40.121
 -- URL zum Konzept
 UPDATE C_PaymentTerm_Trl SET Updated=TO_TIMESTAMP('2017-04-27 18:04:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100,Name='10 days net',IsTranslated='Y' WHERE C_PaymentTerm_ID=1000003 AND AD_Language='en_US'
