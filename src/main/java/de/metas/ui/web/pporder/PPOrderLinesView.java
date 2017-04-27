@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
@@ -286,7 +287,8 @@ public class PPOrderLinesView implements IDocumentViewSelection
 		final List<Integer> huIdsToAvailableToIssue = Services.get(IHUPPOrderBL.class).retrieveHUsAvailableToIssue(selectedRow.getM_Product_ID());
 		if (huIdsToAvailableToIssue.isEmpty())
 		{
-			throw new EntityNotFoundException("No HUs to issue found");
+			// NOTE: don't throw EntityNotFoundException because that one would be ignored by frontend.
+			throw new AdempiereException("No HUs to issue found");
 		}
 
 		final IDocumentViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IDocumentViewsRepository.class); // TODO dirty workaround
