@@ -88,6 +88,7 @@ class DocList extends Component {
                 {modal.visible &&
                     <Modal
                         windowType={modal.type}
+                        dataId={modal.dataId ? modal.dataId : ''}
                         data={modal.data}
                         layout={modal.layout}
                         rowData={modal.rowData}

@@ -300,9 +300,11 @@ export function createWindow(
                         response.data, getScope(isModal)
                     ))
                 ).then(response => {
-                    dispatch(initTabs(
-                        response.layout.tabs, windowType, docId, isModal
-                    ))
+                    if(!isModal){
+                        dispatch(initTabs(
+                            response.layout.tabs, windowType, docId, isModal
+                        ))
+                    }
                 })
         });
     }
@@ -648,7 +650,8 @@ export function handleProcessResponse(response, type, id, successCallback) {
                             dispatch(
                                 openModal(
                                     '', action.windowId, 'window', null, null,
-                                    true, '', '', action.documentId
+                                    action.advanced ? action.advanced : false,
+                                    '', '', action.documentId
                                 )
                             );
                         } else {
