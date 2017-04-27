@@ -14,7 +14,7 @@ import {
     openModal
 } from '../../../actions/WindowActions';
 
-import LookupInput from './LookupInput';
+import RawLookup from './RawLookup';
 
 import LookupList from './LookupList';
 
@@ -25,105 +25,108 @@ class Lookup extends Component {
         const {properties} = this.props;
 
         this.state = {
-            query: '',
-            list: [],
             isInputEmpty: true,
-            selected: null,
-            model: null,
-            property: '',
-            properts: {},
-            loading: false,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
-            oldValue: '',
-            isOpen: false,
-            shouldBeFocused: true,
-            validLocal: true
+            mainProperty: getItemsByProperty(properties, 'source', 'lookup')
         }
 
+        // console.log(this.state.propertiesCopy);
+        // console.log(this.state.mainProperty);
+        // console.log(properties);
     }
-
-    componentDidMount() {
-     
-    }
-
-    componentDidUpdate() {
-        
-    }
-
-    handleSelect = (select) => {
-        
-    }
-
- 
-
-
-
 
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
-            filterWidget, mandatory, rowId, tabIndex, validStatus,
-            newRecordCaption
+            filterWidget, mandatory, rowId, tabIndex, validStatus, recent, onChange,
+            newRecordCaption, properties, windowType, parameterName, entity, dataId
         } = this.props;
 
-        const {
-            propertiesCopy, isInputEmpty, list, query, loading, selected,
-            isOpen, validLocal
-        } = this.state;
+        const {isInputEmpty} = this.props;
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                onClick={()=> this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 className={
-                    'input-dropdown-container ' +
-                    (isOpen ? 'input-focused ' : '') +
-                    (readonly ? 'input-disabled ' : '') +
-                    (rowId ? 'input-dropdown-container-static ' : '') +
-                    ((rowId && !isModal)? 'input-table ' : '')
-                }
-            >
-                <div className={
-                    'input-dropdown input-block input-' +
+                    'input-dropdown-container input-flex input-' +
                     (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
-                    (filterWidget ? ' input-full' : '') +
-                    (mandatory && (isInputEmpty ||
+                    (filterWidget ? ' input-full' : '')+
+                    (mandatory && (
                         (validStatus.initialValue && !validStatus.valid)) ?
                         ' input-mandatory ' : '') +
                     ((validStatus &&
                         (
-                            (!validStatus.valid && !validStatus.initialValue) ||
-                             !validLocal
+                            (!validStatus.valid && !validStatus.initialValue)
                         )
                     ) ? ' input-error ' : '')
-                }>
-                    <div className={
-                        'input-editable ' +
-                        (align ? 'text-xs-' + align + ' ' : '')
-                    }>
-                        <input
-                            type="text"
-                            className="input-field js-input-field font-weight-semibold"
-                            onChange={this.handleChange}
-                            onFocus={this.handleFocus}
-                            ref={(c) => this.inputSearch = c}
-                            placeholder={placeholder}
-                            disabled={readonly}
-                            tabIndex={tabIndex}
-                        />
-                    </div>
+                }
+            >
 
-                    <LookupInput/>
+            {
+                properties && properties.map(item => {
+                    console.log('asa');
+                    {
+                        <RawLookup
+                        newRecordCaption={newRecordCaption}
+                        defaultValue={defaultValue}
+                        properties={properties}
+                        placeholder={placeholder}
+                        readonly={readonly}
+                        tabIndex={tabIndex}
+                        windowType={windowType}
+                        parameterName={parameterName}
+                        entity={entity}
+                        dataId={dataId}
+                        isModal={isModal}
+                        recent={recent}
+                        rank={rank}
+                        updated={updated}
+                        filterWidget={filterWidget}
+                        mandatory={mandatory}
+                        validStatus={validStatus}
+                        align={align}
+                        onChange={onChange}
+                    />
+                    }
+                })
+            }
 
-                 
+            <RawLookup
+                        newRecordCaption={newRecordCaption}
+                        defaultValue={defaultValue}
+                        properties={properties}
+                        placeholder={placeholder}
+                        readonly={readonly}
+                        tabIndex={tabIndex}
+                        windowType={windowType}
+                        parameterName={parameterName}
+                        entity={entity}
+                        dataId={dataId}
+                        isModal={isModal}
+                        recent={recent}
+                        rank={rank}
+                        updated={updated}
+                        filterWidget={filterWidget}
+                        mandatory={mandatory}
+                        validStatus={validStatus}
+                        align={align}
+                        onChange={onChange}
+                    />
 
-                    
-                </div>
-                
-                
+                    {isInputEmpty ?
+                        <div className="input-icon input-icon-lg">
+                            <i className="meta-icon-preview" />
+                        </div> :
+                        <div className="input-icon input-icon-lg">
+                            {!readonly && <i
+                                onClick={this.handleClear}
+                                className="meta-icon-close-alt"
+                            />}
+                        </div>
+                    }
+                      
             </div>
         )
     }

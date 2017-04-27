@@ -639,6 +639,12 @@ input:checked + .input-slider:before {
     overflow-y: auto;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+    left: 0;
+    top: calc(100% + 1px);
+}
+
+.input-flex {
+    display: flex;
 }
 .input-field {
     border: 0;
