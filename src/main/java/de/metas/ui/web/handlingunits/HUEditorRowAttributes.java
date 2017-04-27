@@ -25,9 +25,9 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.ui.web.view.IDocumentViewAttributes;
-import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
-import de.metas.ui.web.view.json.JSONDocumentViewAttributes;
+import de.metas.ui.web.view.IViewRowAttributes;
+import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
+import de.metas.ui.web.view.json.JSONViewRowAttributes;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -67,9 +67,9 @@ import lombok.NonNull;
  * #L%
  */
 
-/* package */ class HUEditorRowAttributes implements IDocumentViewAttributes
+/* package */ class HUEditorRowAttributes implements IViewRowAttributes
 {
-	public static final HUEditorRowAttributes cast(final IDocumentViewAttributes attributes)
+	public static final HUEditorRowAttributes cast(final IViewRowAttributes attributes)
 	{
 		return (HUEditorRowAttributes)attributes;
 	}
@@ -77,7 +77,7 @@ import lombok.NonNull;
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
 
-	private final Supplier<DocumentViewAttributesLayout> layoutSupplier;
+	private final Supplier<ViewRowAttributesLayout> layoutSupplier;
 
 	private final Set<String> readonlyAttributeNames;
 
@@ -136,7 +136,7 @@ import lombok.NonNull;
 	}
 	
 	@Override
-	public DocumentViewAttributesLayout getLayout()
+	public ViewRowAttributesLayout getLayout()
 	{
 		return layoutSupplier.get();
 	}
@@ -148,9 +148,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public JSONDocumentViewAttributes toJSONDocument(final JSONOptions jsonOpts_NOTUSED)
+	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts_NOTUSED)
 	{
-		final JSONDocumentViewAttributes jsonDocument = new JSONDocumentViewAttributes(documentPath);
+		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 
 		final List<JSONDocumentField> jsonFields = attributesStorage.getAttributeValues()
 				.stream()
@@ -294,7 +294,6 @@ import lombok.NonNull;
 		{
 			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
 
-			// final DocumentPath documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(storage);
 			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
 			final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(storage, attributeValue);
 			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);

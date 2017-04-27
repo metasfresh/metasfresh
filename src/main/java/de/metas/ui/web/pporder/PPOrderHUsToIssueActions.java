@@ -18,8 +18,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.view.ViewAction;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -57,7 +57,7 @@ public final class PPOrderHUsToIssueActions
 	public static class HasSelectedHUs implements ViewAction.Precondition
 	{
 		@Override
-		public ProcessPreconditionsResolution matches(final IDocumentViewSelection view, final Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
 		{
 			final Set<Integer> huIds = extractHUIds(view, selectedDocumentIds);
 			if (huIds.isEmpty())
@@ -96,7 +96,7 @@ public final class PPOrderHUsToIssueActions
 
 	}
 
-	private static final Set<Integer> extractHUIds(final IDocumentViewSelection view, final Set<DocumentId> selectedHURowIds)
+	private static final Set<Integer> extractHUIds(final IView view, final Set<DocumentId> selectedHURowIds)
 	{
 		if (selectedHURowIds.isEmpty())
 		{
@@ -111,7 +111,7 @@ public final class PPOrderHUsToIssueActions
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static final List<I_M_HU> extractHUs(final IDocumentViewSelection view, final Set<DocumentId> selectedHURowIds)
+	private static final List<I_M_HU> extractHUs(final IView view, final Set<DocumentId> selectedHURowIds)
 	{
 		final Set<Integer> huIds = extractHUIds(view, selectedHURowIds);
 		if (huIds.isEmpty())
@@ -134,7 +134,7 @@ public final class PPOrderHUsToIssueActions
 			return Optional.empty();
 		}
 
-		final IDocumentViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IDocumentViewsRepository.class);
+		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class);
 		final PPOrderLinesView ppOrderView = viewsRepo.getView(parentViewId, PPOrderLinesView.class);
 		return Optional.of(ppOrderView);
 	}

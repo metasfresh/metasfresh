@@ -26,7 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -90,7 +90,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 
-	private final SqlDocumentViewBinding documentViewBinding;
+	private final SqlViewBinding viewBinding;
 	
 	private final Optional<String> sqlSelectVersionById;
 
@@ -122,7 +122,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		
 		sqlSelectVersionById = builder.getSqlSelectVersionById();
 		
-		documentViewBinding = builder.buildDocumentViewBinding();
+		viewBinding = builder.buildViewBinding();
 	}
 
 	@Override
@@ -264,9 +264,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return field;
 	}
 	
-	public SqlDocumentViewBinding getDocumentViewBinding()
+	public SqlViewBinding getViewBinding()
 	{
-		return documentViewBinding;
+		return viewBinding;
 	}
 	
 	public Optional<String> getSqlSelectVersionById()
@@ -298,7 +298,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private final LinkedHashMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlDocumentFieldDataBindingDescriptor _keyField;
 		
-		private SqlDocumentViewBinding.Builder documentViewBinding = SqlDocumentViewBinding.builder();
+		private SqlViewBinding.Builder viewBinding = SqlViewBinding.builder();
 
 		private Builder()
 		{
@@ -447,7 +447,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 			_sqlTableName = sqlTableName;
-			documentViewBinding.setTableName(sqlTableName);
+			viewBinding.setTableName(sqlTableName);
 			return this;
 		}
 
@@ -460,7 +460,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 			_tableAlias = sqlTableAlias;
-			documentViewBinding.setTableAlias(sqlTableAlias);
+			viewBinding.setTableAlias(sqlTableAlias);
 			return this;
 		}
 
@@ -531,7 +531,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				setKeyField(sqlField);
 			}
 			
-			documentViewBinding.addField(sqlField);
+			viewBinding.addField(sqlField);
 
 			return this;
 		}
@@ -553,9 +553,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return _keyField == null ? null : _keyField.getColumnName();
 		}
 		
-		private SqlDocumentViewBinding buildDocumentViewBinding()
+		private SqlViewBinding buildViewBinding()
 		{
-			return documentViewBinding.build();
+			return viewBinding.build();
 		}
 		
 		private Optional<String> getSqlSelectVersionById()

@@ -5,7 +5,7 @@ import java.util.Set;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodArgumentExtractor;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
@@ -74,7 +74,7 @@ public final class ViewActionParamDescriptor
 
 	}
 
-	public Object extractArgument(final IDocumentViewSelection view, final Document processParameters, final Set<DocumentId> selectedDocumentIds)
+	public Object extractArgument(final IView view, final Document processParameters, final Set<DocumentId> selectedDocumentIds)
 	{
 		return methodArgumentExtractor.extractArgument(view, processParameters, selectedDocumentIds);
 	}

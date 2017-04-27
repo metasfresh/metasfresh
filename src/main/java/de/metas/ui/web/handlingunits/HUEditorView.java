@@ -28,10 +28,10 @@ import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.process.view.ViewActionParam;
-import de.metas.ui.web.view.DocumentViewResult;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.event.DocumentViewChangesCollector;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -62,14 +62,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public class HUEditorView implements IDocumentViewSelection
+public class HUEditorView implements IView
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static HUEditorView cast(final IDocumentViewSelection view)
+	public static HUEditorView cast(final IView view)
 	{
 		return (HUEditorView)view;
 	}
@@ -148,13 +148,13 @@ public class HUEditorView implements IDocumentViewSelection
 	}
 
 	@Override
-	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final List<HUEditorRow> page = rowsBuffer
 				.streamPage(firstRow, pageLength, orderBys)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
+		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
 	}
 
 	@Override
@@ -230,7 +230,7 @@ public class HUEditorView implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 
-		DocumentViewChangesCollector.getCurrentOrAutoflush()
+		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
 	}
 

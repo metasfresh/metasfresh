@@ -10,7 +10,7 @@ import java.util.Set;
 
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -53,7 +53,7 @@ public @interface ViewAction
 
 	public interface Precondition
 	{
-		ProcessPreconditionsResolution matches(IDocumentViewSelection view, Set<DocumentId> selectedDocumentIds);
+		ProcessPreconditionsResolution matches(IView view, Set<DocumentId> selectedDocumentIds);
 	}
 
 	public static final class AlwaysAllowPrecondition implements Precondition
@@ -61,7 +61,7 @@ public @interface ViewAction
 		public static final transient ViewAction.AlwaysAllowPrecondition instance = new ViewAction.AlwaysAllowPrecondition();
 
 		@Override
-		public ProcessPreconditionsResolution matches(IDocumentViewSelection view, Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(IView view, Set<DocumentId> selectedDocumentIds)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}

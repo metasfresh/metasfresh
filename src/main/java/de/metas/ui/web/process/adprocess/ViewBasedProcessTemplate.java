@@ -18,10 +18,10 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
-import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -56,7 +56,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 public abstract class ViewBasedProcessTemplate extends JavaProcess
 {
 	@Autowired
-	private transient IDocumentViewsRepository documentViewsRepo;
+	private transient IViewsRepository viewsRepo;
 
 	//
 	// View (internal) parameters
@@ -72,7 +72,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	@Param(parameterName = PARAM_ViewSelectedIds, mandatory = true)
 	private String p_WebuiViewSelectedIdsStr;
 
-	private IDocumentViewSelection _view;
+	private IView _view;
 	private transient Set<DocumentId> _selectedDocumentIds;
 
 	protected ViewBasedProcessTemplate()
@@ -103,7 +103,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		super.init(context);
 
 		// Fetch and set view and view selected IDs from autowired process parameters
-		final DocumentViewAsPreconditionsContext viewContext = DocumentViewAsPreconditionsContext.cast(context);
+		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.cast(context);
 		setView(viewContext.getView(), viewContext.getSelectedDocumentIds());
 	}
 
@@ -114,26 +114,26 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 		// Fetch and set view and view selected IDs from autowired process parameters
 		// NOTE: we assume a view ID is always provided
-		final IDocumentViewSelection view = documentViewsRepo.getView(p_WebuiViewId);
+		final IView view = viewsRepo.getView(p_WebuiViewId);
 		final Set<DocumentId> selectedDocumentIds = DocumentId.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr);
 		setView(view, selectedDocumentIds);
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected void setView(final IDocumentViewSelection view, final Set<DocumentId> selectedDocumentIds)
+	protected void setView(final IView view, final Set<DocumentId> selectedDocumentIds)
 	{
 		_view = view;
 		_selectedDocumentIds = selectedDocumentIds;
 	}
 
-	protected final <T extends IDocumentViewSelection> T getView(final Class<T> type)
+	protected final <T extends IView> T getView(final Class<T> type)
 	{
 		Check.assumeNotNull(_view, "View loaded");
 		return type.cast(_view);
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected IDocumentViewSelection getView()
+	protected IView getView()
 	{
 		Check.assumeNotNull(_view, "View loaded");
 		return _view;
@@ -146,14 +146,14 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected IDocumentView getSingleSelectedRow()
+	protected IViewRow getSingleSelectedRow()
 	{
 		final Set<DocumentId> selectedDocumentIds = getSelectedDocumentIds();
 		final DocumentId documentId = ListUtils.singleElement(selectedDocumentIds);
 		return getView().getById(documentId);
 	}
 	
-	protected static <T extends IDocumentView> ProcessPreconditionsResolution checkRowsEligible(final Stream<T> rows, final Predicate<T> isEligible)
+	protected static <T extends IViewRow> ProcessPreconditionsResolution checkRowsEligible(final Stream<T> rows, final Predicate<T> isEligible)
 	{
 		final MutableInt countNotEligible = MutableInt.zero();
 

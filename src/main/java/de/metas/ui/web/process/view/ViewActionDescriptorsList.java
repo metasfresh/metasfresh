@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import lombok.ToString;
 
@@ -91,7 +91,7 @@ public final class ViewActionDescriptorsList
 		return action;
 	}
 
-	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final DocumentViewAsPreconditionsContext viewContext)
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final ViewAsPreconditionsContext viewContext)
 	{
 		return viewActionsByActionId.values().stream()
 				.map(viewActionDescriptor -> viewActionDescriptor.toWebuiRelatedProcessDescriptor(viewContext));

@@ -149,7 +149,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		return streamAllRecursive()
 				.filter(row -> row.matchesBarcode(barcode))
-				.map(row -> row.getDocumentId())
+				.map(HUEditorRow::getId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -247,7 +247,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		private Stream<HUEditorRow> streamRecursive(final HUEditorRow row)
 		{
-			return row.getIncludedDocuments()
+			return row.getIncludedRows()
 					.stream()
 					.map(includedRow -> streamRecursive(includedRow))
 					.reduce(Stream.of(row), Stream::concat);
@@ -272,8 +272,8 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, HUEditorRow> collector, final HUEditorRow row)
 		{
-			collector.put(row.getDocumentId(), row);
-			row.getIncludedDocuments()
+			collector.put(row.getId(), row);
+			row.getIncludedRows()
 					.forEach(includedRecord -> indexByIdRecursively(collector, includedRecord));
 		}
 	}

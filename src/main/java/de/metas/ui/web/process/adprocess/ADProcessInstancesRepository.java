@@ -36,8 +36,8 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -85,7 +85,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
-	private IDocumentViewsRepository documentViewsRepo;
+	private IViewsRepository viewsRepo;
 	//
 	private final ADProcessDescriptorsFactory processDescriptorFactory = new ADProcessDescriptorsFactory();
 
@@ -159,7 +159,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setProcessDescriptor(processDescriptor)
 					.setInstanceId(adPInstanceId)
 					.setParameters(parametersDoc)
-					.setViewsRepo(documentViewsRepo)
+					.setViewsRepo(viewsRepo)
 					.setView(request.getViewId(), request.getViewDocumentIds())
 					.setProcessClassInstance(processClassInstance)
 					.build();
@@ -190,7 +190,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
 		if (viewId != null)
 		{
-			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+			final IView view = viewsRepo.getView(viewId);
 			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
 			viewSelectedIdsAsStr = DocumentId.toCommaSeparatedString(viewDocumentIds);
 			tableName = view.getTableName();
@@ -299,7 +299,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setProcessDescriptor(processDescriptor)
 					.setInstanceId(adPInstanceId)
 					.setParameters(parametersDoc)
-					.setViewsRepo(documentViewsRepo)
+					.setViewsRepo(viewsRepo)
 					.setView(viewId, viewSelectedIds)
 					.setProcessClassInstance(processClassInstance)
 					.build();

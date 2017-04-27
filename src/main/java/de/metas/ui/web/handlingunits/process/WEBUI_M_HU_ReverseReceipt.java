@@ -25,9 +25,9 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -65,7 +65,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final DocumentViewAsPreconditionsContext viewContext = DocumentViewAsPreconditionsContext.castOrNull(context);
+		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.castOrNull(context);
 		if (viewContext == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("webui view not available");
@@ -110,7 +110,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	}
 
 	@Autowired
-	private IDocumentViewsRepository documentViewsRepo;
+	private IViewsRepository viewsRepo;
 	@Autowired
 	private DocumentCollection documentsCollection;
 
@@ -164,7 +164,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 				getView().invalidateAll();
 
 				// Notify all active views that given receipt schedules were changed
-				documentViewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
+				viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
 			}
 		}
 
@@ -179,7 +179,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	private HUEditorView getView()
 	{
 		final ViewId viewId = ViewId.of(p_WebuiViewWindowId, p_WebuiViewIdStr);
-		return documentViewsRepo.getView(viewId, HUEditorView.class);
+		return viewsRepo.getView(viewId, HUEditorView.class);
 	}
 
 	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()

@@ -103,7 +103,7 @@ import lombok.NonNull;
 
 	private static Stream<PPOrderLineRow> streamRecursive(final PPOrderLineRow row)
 	{
-		return row.getIncludedDocuments()
+		return row.getIncludedRows()
 				.stream()
 				.map(includedRow -> streamRecursive(includedRow))
 				.reduce(Stream.of(row), Stream::concat);
@@ -128,8 +128,8 @@ import lombok.NonNull;
 
 	private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow record)
 	{
-		collector.put(record.getDocumentId(), record);
-		record.getIncludedDocuments()
+		collector.put(record.getId(), record);
+		record.getIncludedRows()
 				.forEach(includedRecord -> indexByIdRecursively(collector, includedRecord));
 	}
 }

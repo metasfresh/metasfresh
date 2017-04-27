@@ -27,7 +27,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
-import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -421,12 +421,12 @@ public class LayoutFactory
 		return fields;
 	}
 
-	public DocumentViewLayout.Builder layoutGridView()
+	public ViewLayout.Builder layoutGridView()
 	{
 		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
 		logger.trace("Generating grid view layout for {}", entityDescriptor);
 
-		final DocumentViewLayout.Builder layout = DocumentViewLayout.builder()
+		final ViewLayout.Builder layout = ViewLayout.builder()
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
@@ -602,9 +602,9 @@ public class LayoutFactory
 		return layoutElementFieldBuilder;
 	}
 
-	public final DocumentViewLayout layoutSideListView()
+	public final ViewLayout layoutSideListView()
 	{
-		final DocumentViewLayout.Builder layoutBuilder = DocumentViewLayout.builder()
+		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
 				.setWindowId(WindowId.of(getAD_Window_ID()))
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);

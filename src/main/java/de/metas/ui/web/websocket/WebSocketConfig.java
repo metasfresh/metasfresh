@@ -62,7 +62,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 
 	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
-	private static final String TOPIC_DocumentView = "/view";
+	private static final String TOPIC_View = "/view";
 	public static final String TOPIC_Devices = "/devices";
 
 	public static final String buildNotificationsTopicName(final int adUserId)
@@ -70,10 +70,10 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		return TOPIC_Notifications + "/" + adUserId;
 	}
 
-	public static final String buildDocumentViewNotificationsTopicName(final String viewId)
+	public static final String buildViewNotificationsTopicName(final String viewId)
 	{
 		Check.assumeNotEmpty(viewId, "viewId is not empty");
-		return TOPIC_DocumentView + "/" + viewId;
+		return TOPIC_View + "/" + viewId;
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		// use the /topic prefix for outgoing WebSocket communication
 		config.enableSimpleBroker( //
 				TOPIC_Notifications //
-				, TOPIC_DocumentView //
+				, TOPIC_View //
 				, TOPIC_Devices //
 		);
 
