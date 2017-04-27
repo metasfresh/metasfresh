@@ -1,10 +1,11 @@
 package de.metas.material.dispo.event;
 
 import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -22,13 +23,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateChangeHandler;
+import de.metas.material.dispo.CandidateFactory;
+import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.DistributionPlanEvent;
@@ -64,9 +63,6 @@ import de.metas.material.event.ShipmentScheduleEvent;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest()
-@ActiveProfiles("test")
 public class MDEEventListenerTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -91,13 +87,20 @@ public class MDEEventListenerTests
 
 	public static final int rawProduct2Id = 55;
 
-	@Autowired
 	private MDEventListener mdEventListener;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		final CandidateRepository candidateRepository = new CandidateRepository();
+		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
+
+		mdEventListener = new MDEventListener(
+				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository)),
+				candidateRepository,
+				supplyProposalEvaluator);
 	}
 
 	/**
@@ -130,7 +133,7 @@ public class MDEEventListenerTests
 
 		assertThat(demandRecord.getSeqNo(), is(stockRecord.getSeqNo() - 1)); // the demand record shall be displayed first
 		assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
-		
+
 		assertThat(demandRecord.getQty(), comparesEqualTo(BigDecimal.TEN));
 		assertThat(stockRecord.getQty(), comparesEqualTo(BigDecimal.TEN.negate())); // the stock is unbalanced, because there is no existing stock and no supply
 	}
@@ -373,7 +376,7 @@ public class MDEEventListenerTests
 		assertThat(t2Supply.getM_Product_ID(), is(productId));
 		assertThat(t2Supply.getMD_Candidate_Parent_ID(), is(t2Stock.getMD_Candidate_ID()));
 		assertThat(t2Supply.getMD_Candidate_GroupId(), not(is(t2Stock.getMD_Candidate_GroupId()))); // stock candidates' groupIds are different from supply/demand groups' groupIds
-		
+
 		final int supplyDemandGroupId = t2Supply.getMD_Candidate_GroupId();
 		assertThat(supplyDemandGroupId, greaterThan(0));
 
@@ -390,9 +393,9 @@ public class MDEEventListenerTests
 		assertThat(t1Product1Stock.getMD_Candidate_GroupId(), greaterThan(0));  // stock candidates have their own groupIds too
 		assertThat(t1Product1Stock.getMD_Candidate_GroupId(), not(is(supplyDemandGroupId)));  // stock candidates' groupIds are different from supply/demand groups' groupIds
 		assertThat(t1Product1Stock.getMD_Candidate_GroupId(), not(is(t2Stock.getMD_Candidate_GroupId())));  // stock candidates' groupIds are different if they are about different products or warehouses
-		
+
 		assertThat(t1Product1Stock.getMD_Candidate_Parent_ID(), is(t1Product1Demand.getMD_Candidate_ID()));
-		
+
 		final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(Type.DEMAND, t1, rawProduct2Id).get(0);
 		assertThat(t1Product2Demand.getQty(), comparesEqualTo(eleven));
 		assertThat(t1Product2Demand.getM_Product_ID(), is(rawProduct2Id));

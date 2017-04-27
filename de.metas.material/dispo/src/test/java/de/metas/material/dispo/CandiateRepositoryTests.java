@@ -1,7 +1,9 @@
 package de.metas.material.dispo;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -24,11 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
@@ -56,9 +53,6 @@ import de.metas.material.dispo.model.I_MD_Candidate;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest()
-@ActiveProfiles("test")
 public class CandiateRepositoryTests
 {
 
@@ -79,8 +73,7 @@ public class CandiateRepositoryTests
 	private Candidate stockCandidate;
 	private Candidate laterStockCandidate;
 
-	@Autowired
-	private CandidateRepository candidateRepository;
+	private CandidateRepository candidateRepository = new CandidateRepository();
 
 	@Before
 	public void init()
@@ -226,15 +219,15 @@ public class CandiateRepositoryTests
 		assertThat(laterStock.get(), is(laterStockCandidate));
 	}
 
-//	/**
-//	 *
-//	 * @param candidate
-//	 * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
-//	 */
-//	private Candidate toCandidateWithoutIds(final Candidate candidate)
-//	{
-//		return candidate.withId(null).withParentId(null);
-//	}
+	// /**
+	// *
+	// * @param candidate
+	// * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
+	// */
+	// private Candidate toCandidateWithoutIds(final Candidate candidate)
+	// {
+	// return candidate.withId(null).withParentId(null);
+	// }
 
 	@Test
 	public void retrieveStockFrom()

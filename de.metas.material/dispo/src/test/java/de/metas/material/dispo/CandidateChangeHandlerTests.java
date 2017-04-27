@@ -28,11 +28,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
@@ -61,11 +56,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest()
-@ActiveProfiles("test")
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(classes = Application.class)
+
 public class CandidateChangeHandlerTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -84,10 +75,8 @@ public class CandidateChangeHandlerTests
 
 	private I_C_UOM uom;
 
-	@Autowired
 	private CandidateRepository candidateRepository;
 
-	@Autowired
 	private CandidateChangeHandler candidateChangeHandler;
 
 	@Before
@@ -106,6 +95,9 @@ public class CandidateChangeHandlerTests
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
+		
+		candidateRepository = new CandidateRepository();
+		candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository));
 	}
 
 	/**

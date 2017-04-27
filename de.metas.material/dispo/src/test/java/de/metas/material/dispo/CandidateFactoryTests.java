@@ -15,11 +15,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.dispo.Candidate.Type;
 
@@ -45,9 +40,6 @@ import de.metas.material.dispo.Candidate.Type;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest()
-@ActiveProfiles("test")
 public class CandidateFactoryTests
 {
 	private final Date now = SystemTime.asDate();
@@ -60,10 +52,8 @@ public class CandidateFactoryTests
 
 	private I_M_Warehouse warehouse;
 
-	@Autowired
 	private CandidateRepository candidateRepository;
 
-	@Autowired
 	private CandidateFactory candidateFactory;
 
 	@Before
@@ -81,6 +71,9 @@ public class CandidateFactoryTests
 		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
 		InterfaceWrapperHelper.save(warehouse);
 
+		candidateRepository = new CandidateRepository();
+		candidateFactory = new CandidateFactory(candidateRepository);
+		
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.orgId(1)

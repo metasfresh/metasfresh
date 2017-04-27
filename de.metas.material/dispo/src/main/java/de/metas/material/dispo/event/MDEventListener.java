@@ -1,6 +1,5 @@
 package de.metas.material.dispo.event;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
@@ -44,14 +43,20 @@ import lombok.NonNull;
 public class MDEventListener implements MaterialEventListener
 {
 
-	@Autowired
-	private CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeHandler candidateChangeHandler;
 
-	@Autowired
-	private CandidateRepository candidateRepository;
+	private final CandidateRepository candidateRepository;
 
-	@Autowired
-	private SupplyProposalEvaluator supplyProposalEvaluator;
+	private final SupplyProposalEvaluator supplyProposalEvaluator;
+
+	public MDEventListener(@NonNull final CandidateChangeHandler candidateChangeHandler,
+			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator)
+	{
+		this.candidateChangeHandler = candidateChangeHandler;
+		this.candidateRepository = candidateRepository;
+		this.supplyProposalEvaluator = supplyProposalEvaluator;
+	}
 
 	@Override
 	public void onEvent(@NonNull final MaterialEvent event)
@@ -111,7 +116,7 @@ public class MDEventListener implements MaterialEventListener
 					.type(Type.DEMAND)
 					.subType(SubType.PRODUCTION)
 					.groupId(groupId)
-					.seqNo(seqNo+1)
+					.seqNo(seqNo + 1)
 					.date(inputDescr.getDate())
 					.orgId(inputDescr.getOrgId())
 					.productId(inputDescr.getProductId())

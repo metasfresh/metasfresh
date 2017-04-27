@@ -3,11 +3,11 @@ package de.metas.material.dispo;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,8 +34,12 @@ import de.metas.material.dispo.CandidatesSegment.DateOperator;
 @Service
 public class CandidateFactory
 {
-	@Autowired
-	private CandidateRepository candidateRepository;
+	private final CandidateRepository candidateRepository;
+
+	public CandidateFactory(@NonNull final CandidateRepository candidateRepository)
+	{
+		this.candidateRepository = candidateRepository;
+	}
 
 	/**
 	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger (or same-age!) stock candidate that has the same product and warehouse.
@@ -44,7 +48,7 @@ public class CandidateFactory
 	 * @param candidate
 	 * @return
 	 */
-	public Candidate createStockCandidate(final Candidate candidate)
+	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
 		final Optional<Candidate> stock = candidateRepository.retrieveLatestMatch(candidate.mkSegmentBuilder()
 				.type(Type.STOCK)

@@ -14,14 +14,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateChangeHandler;
+import de.metas.material.dispo.CandidateFactory;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
 
@@ -46,9 +43,7 @@ import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest()
-@ActiveProfiles("test")
+
 public class SupplyProposalEvaluatorTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -65,22 +60,28 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	@Autowired
 	private MDEventListener mdEventListener;
 
 	/**
 	 * This is the code under test
 	 */
-	@Autowired
+
 	private SupplyProposalEvaluator supplyProposalEvaluator;
 
-	@Autowired
 	private CandidateRepository candidateRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		candidateRepository = new CandidateRepository();
+		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
+
+		mdEventListener = new MDEventListener(
+				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository)),
+				candidateRepository,
+				supplyProposalEvaluator);
 	}
 
 	/**

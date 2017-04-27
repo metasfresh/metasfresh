@@ -3,7 +3,6 @@ package de.metas.material.dispo.event;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
@@ -49,9 +48,13 @@ public class SupplyProposalEvaluator
 	/**
 	 * Needed so the evaluator can check what's already there.
 	 */
-	@Autowired
-	private CandidateRepository candidateRepository;
+	private final CandidateRepository candidateRepository;
 
+	public SupplyProposalEvaluator(@NonNull final CandidateRepository candidateRepository)
+	{
+		this.candidateRepository=candidateRepository;
+	}
+	
 	/**
 	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b> and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
 	 * <p>
@@ -68,7 +71,7 @@ public class SupplyProposalEvaluator
 	 * @param proposal
 	 * @return
 	 */
-	public boolean evaluateSupply(final SupplyProposal proposal)
+	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
 	{
 		final CandidatesSegment demandSegment = CandidatesSegment.builder()
 				.type(Type.DEMAND)
@@ -107,7 +110,7 @@ public class SupplyProposalEvaluator
 		return true;
 	}
 
-	private Candidate searchRecursive(final Candidate candidate, final CandidatesSegment searchTarget)
+	private Candidate searchRecursive(@NonNull final  Candidate candidate, @NonNull final  CandidatesSegment searchTarget)
 	{
 		if (searchTarget.matches(candidate))
 		{

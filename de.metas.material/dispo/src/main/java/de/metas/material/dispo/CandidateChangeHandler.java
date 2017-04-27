@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -43,13 +42,17 @@ import lombok.NonNull;
 @Service
 public class CandidateChangeHandler
 {
-	@Autowired
-	private CandidateRepository candidateRepository;
+	private final CandidateRepository candidateRepository;
 
-	@Autowired
-	private CandidateFactory candidateFactory;
+	private final CandidateFactory candidateFactory;
 
-	public Candidate onDemandCandidateNewOrChange(final Candidate demandCandidate)
+	public CandidateChangeHandler(@NonNull final CandidateRepository candidateRepository, @NonNull final CandidateFactory candidateFactory)
+	{
+		this.candidateRepository = candidateRepository;
+		this.candidateFactory = candidateFactory;
+	}
+
+	public Candidate onDemandCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
 		Preconditions.checkArgument(demandCandidate.getType() == Type.DEMAND, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", demandCandidate.getType(), demandCandidate);
 
@@ -114,7 +117,7 @@ public class CandidateChangeHandler
 	 *
 	 * @param supplyCandidate
 	 */
-	public Candidate onSupplyCandidateNewOrChange(final Candidate supplyCandidate)
+	public Candidate onSupplyCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(supplyCandidate.getType() == Type.SUPPLY, "Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s", supplyCandidate.getType(), supplyCandidate);
 
