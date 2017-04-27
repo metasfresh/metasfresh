@@ -60,6 +60,8 @@ public interface IUnlockCommand
 	IUnlockCommand setRecordsByModels(Collection<?> models);
 
 	IUnlockCommand setRecordByTableRecordId(int tableId, int recordId);
+	
+	IUnlockCommand setRecordByTableRecordId(String tableName, int recordId);
 
 	Iterator<ITableRecordReference> getRecordsToUnlockIterator();
 
@@ -68,5 +70,6 @@ public interface IUnlockCommand
 	int getSelectionToUnlock_AD_Table_ID();
 
 	int getSelectionToUnlock_AD_PInstance_ID();
+
 
 }

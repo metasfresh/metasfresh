@@ -136,7 +136,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
-				.addOnlyInWarehouseId(warehouseId);
+				.addOnlyInWarehouseId(warehouseId)
+				.onlyNotLocked() // skip those locked because usually those were planned for something...
+		;
 
 		//
 		// if the ppOrder is already associated to a material tracking, then don't allow the user to add others
