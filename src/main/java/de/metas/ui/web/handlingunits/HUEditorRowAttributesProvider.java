@@ -45,7 +45,7 @@ import lombok.Value;
  * #L%
  */
 
-class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
+public class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 {
 	public static final HUEditorRowAttributesProvider newInstance()
 	{

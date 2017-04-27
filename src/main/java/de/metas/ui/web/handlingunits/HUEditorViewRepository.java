@@ -79,11 +79,6 @@ public class HUEditorViewRepository
 		this.attributesProvider = attributesProvider;
 	}
 	
-	public void invalidateAll()
-	{
-		attributesProvider.invalidateAll();
-	}
-
 	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)

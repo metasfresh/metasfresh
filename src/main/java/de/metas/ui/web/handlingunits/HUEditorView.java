@@ -82,7 +82,7 @@ public class HUEditorView implements IDocumentViewSelection
 
 	private final ViewActionDescriptorsList actions;
 	private final HUEditorViewBuffer rowsBuffer;
-	private final HUEditorRowAttributesProvider attributesProvider;
+	private final HUEditorRowAttributesProvider huAttributesProvider;
 
 	private HUEditorView(final Builder builder)
 	{
@@ -91,11 +91,11 @@ public class HUEditorView implements IDocumentViewSelection
 		parentViewId = builder.getParentViewId();
 		viewId = builder.getViewId();
 		
-		this.attributesProvider = HUEditorRowAttributesProvider.newInstance();
+		this.huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(viewId.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
-				.attributesProvider(attributesProvider)
+				.attributesProvider(huAttributesProvider)
 				.build();
 
 		rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, builder.getHUIds());
@@ -236,7 +236,7 @@ public class HUEditorView implements IDocumentViewSelection
 
 	private void invalidateAllNoNotify()
 	{
-		attributesProvider.invalidateAll();
+		huAttributesProvider.invalidateAll();
 		rowsBuffer.invalidateAll();
 	}
 
@@ -341,10 +341,7 @@ public class HUEditorView implements IDocumentViewSelection
 			)
 	{
 		// Search for matching rowIds by barcode
-		final Set<DocumentId> matchingRowIds = streamAllRecursive()
-				.filter(row -> row.matchesBarcode(barcode))
-				.map(row -> row.getDocumentId())
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<DocumentId> matchingRowIds = rowsBuffer.getRowIdsMatchingBarcode(barcode);
 		if (matchingRowIds.isEmpty())
 		{
 			throw new AdempiereException("Nothing found for '" + barcode + "'");

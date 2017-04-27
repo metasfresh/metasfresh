@@ -557,8 +557,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		private SqlDocumentViewFieldValueLoader getDocumentViewFieldValueLoaders()
 		{
-			return getViewFieldsBinding()
-					.getValueLoaders();
+			return getViewFieldsBinding().getValueLoaders();
 		}
 
 		private SqlDocumentQueryBuilder getQueryBuilder()
@@ -657,7 +656,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return getViewFieldsBinding()
 					.getSqlPagedSelect()
 					.evaluate(evalCtx, OnVariableNotFound.Fail);
-
 		}
 
 		private String buildSqlSelectPage()

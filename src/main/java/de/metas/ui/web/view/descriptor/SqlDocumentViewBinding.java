@@ -42,6 +42,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
+import lombok.Value;
 
 /*
  * #%L
@@ -97,7 +98,7 @@ public class SqlDocumentViewBinding
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 		_keyField = builder.getKeyField();
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -144,8 +145,11 @@ public class SqlDocumentViewBinding
 
 	public ViewFieldsBinding getViewFieldsBinding(final Collection<String> fieldNames)
 	{
-		final ImmutableSet<String> fieldNamesEffective = ImmutableSet.copyOf(fieldNames);
-		return _viewFieldsBindings.computeIfAbsent(fieldNamesEffective, ViewFieldsBinding::new);
+		return _viewFieldsBindings.computeIfAbsent(ImmutableSet.copyOf(fieldNames), fieldNamesEffective -> {
+			IStringExpression sqlPagedSelect = buildSqlPagedSelect(fieldNamesEffective);
+			SqlDocumentViewFieldValueLoader valueLoaders = createDocumentViewFieldValueLoaders(fieldNamesEffective);
+			return new ViewFieldsBinding(sqlPagedSelect, valueLoaders);
+		});
 	}
 
 	private IStringExpression buildSqlPagedSelect(final Set<String> fieldNames)
@@ -208,8 +212,10 @@ public class SqlDocumentViewBinding
 
 	private SqlDocumentViewFieldValueLoader createDocumentViewFieldValueLoaders(final Set<String> fieldNames)
 	{
-		final List<SqlDocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
-		for (final SqlDocumentFieldDataBindingDescriptor field : getFields())
+		final Collection<SqlDocumentFieldDataBindingDescriptor> fields = getFields();
+
+		final List<SqlDocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>(fields.size());
+		for (final SqlDocumentFieldDataBindingDescriptor field : fields)
 		{
 			if (field == null)
 			{
@@ -249,7 +255,7 @@ public class SqlDocumentViewBinding
 			, final boolean keyColumn //
 			, final DocumentFieldValueLoader fieldValueLoader //
 			, final boolean isDisplayColumnAvailable //
-	)
+			)
 	{
 		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
 
@@ -398,7 +404,10 @@ public class SqlDocumentViewBinding
 
 		//
 		// Enforce a LIMIT, to not affect server performances on huge tables
-		final int queryLimit = extractQueryLimit(queryBuilder.getPermissions());
+		final int queryLimit = queryBuilder.getPermissions()
+				.getConstraint(WindowMaxQueryRecordsConstraint.class)
+				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
+				.getMaxQueryRecordsPerRole();
 		if (queryLimit > 0)
 		{
 			sqlBuilder.append("\n LIMIT ?");
@@ -424,13 +433,6 @@ public class SqlDocumentViewBinding
 				.setOrderBys(orderBys)
 				.setQueryLimit(queryLimit, queryLimitHit)
 				.build();
-	}
-
-	private int extractQueryLimit(final IUserRolePermissions permissions)
-	{
-		return permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
-				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
-				.getMaxQueryRecordsPerRole();
 	}
 
 	public IDocumentViewOrderedSelectionFactory createOrderedSelectionFactory(final Evaluatee evalCtx)
@@ -528,27 +530,11 @@ public class SqlDocumentViewBinding
 		}
 	}
 
-	public final class ViewFieldsBinding
+	@Value
+	public static final class ViewFieldsBinding
 	{
 		private final IStringExpression sqlPagedSelect;
 		private final SqlDocumentViewFieldValueLoader valueLoaders;
-
-		private ViewFieldsBinding(final Set<String> viewFieldNames)
-		{
-			super();
-			sqlPagedSelect = buildSqlPagedSelect(viewFieldNames);
-			valueLoaders = createDocumentViewFieldValueLoaders(viewFieldNames);
-		}
-
-		public IStringExpression getSqlPagedSelect()
-		{
-			return sqlPagedSelect;
-		}
-
-		public SqlDocumentViewFieldValueLoader getValueLoaders()
-		{
-			return valueLoaders;
-		}
 	}
 
 	public static final class Builder

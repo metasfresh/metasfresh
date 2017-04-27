@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
@@ -79,15 +80,19 @@ public class PPOrderLinesLoader
 	//
 	private final WindowId windowId;
 	private final transient HUEditorViewRepository huEditorRepo;
+	private final HUEditorRowAttributesProvider huAttributesProvider;
 	private final ASIDocumentViewAttributesProvider asiAttributesProvider;
 
 	@Builder
 	public PPOrderLinesLoader(final WindowId windowId, final ASIDocumentViewAttributesProvider asiAttributesProvider)
 	{
 		this.windowId = windowId;
+		
+		huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
 		huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(windowId)
 				.referencingTableName(I_PP_Order.Table_Name)
+				.attributesProvider(huAttributesProvider)
 				.build();
 
 

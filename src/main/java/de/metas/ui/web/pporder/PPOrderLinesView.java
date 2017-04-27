@@ -257,11 +257,12 @@ public class PPOrderLinesView implements IDocumentViewSelection
 
 	private void invalidateAllNoNotify()
 	{
-		dataSupplier.forget();
 		if (asiAttributesProvider != null)
 		{
 			asiAttributesProvider.invalidateAll();
 		}
+		
+		dataSupplier.forget();
 	}
 
 	private PPOrderLinesViewData getData()
