@@ -26,6 +26,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -57,7 +58,7 @@ import de.metas.material.planning.exception.MrpException;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Service
 public class DDOrderPojoSupplier
 {
 

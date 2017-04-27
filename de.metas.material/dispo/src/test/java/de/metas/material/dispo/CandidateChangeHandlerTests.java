@@ -1,7 +1,9 @@
 package de.metas.material.dispo;
 
 import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -36,6 +38,7 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,6 +64,8 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 @RunWith(SpringRunner.class)
 @SpringBootTest()
 @ActiveProfiles("test")
+//@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration(classes = Application.class)
 public class CandidateChangeHandlerTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -110,81 +115,100 @@ public class CandidateChangeHandlerTests
 	@Test
 	public void testApplyDeltaToLaterStockCandidates()
 	{
-		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
-				.orgId(1)
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
-				.quantity(new BigDecimal("10"))
-				.date(t2)
-				.build();
-		candidateRepository.addOrReplace(candidate);
+		final Candidate earlierCandidate;
+		final Candidate candidate;
+		final Candidate evenLaterCandidate;
+		final Candidate evenLaterCandidateWithDifferentWarehouse;
 
-		final Candidate earlierCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.orgId(1)
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
-				.quantity(new BigDecimal("10"))
-				.date(t1)
-				.build();
-		candidateRepository.addOrReplace(earlierCandidate);
+		// preparations
+		{
+			candidate = Candidate.builder()
+					.type(Type.STOCK)
+					.orgId(1)
+					.productId(product.getM_Product_ID())
+					.warehouseId(warehouse.getM_Warehouse_ID())
+					.quantity(new BigDecimal("10"))
+					.date(t2)
+					.build();
+			candidateRepository.addOrReplace(candidate);
 
-		final Candidate laterCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.orgId(1)
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
-				.quantity(new BigDecimal("10"))
-				.date(t3)
-				.build();
-		candidateRepository.addOrReplace(laterCandidate);
+			earlierCandidate = candidateRepository
+					.addOrReplace(Candidate.builder()
+							.type(Type.STOCK)
+							.orgId(1)
+							.productId(product.getM_Product_ID())
+							.warehouseId(warehouse.getM_Warehouse_ID())
+							.quantity(new BigDecimal("10"))
+							.date(t1)
+							.build());
 
-		final Candidate evenLaterCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.orgId(1)
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
-				.quantity(new BigDecimal("12"))
-				.date(t4)
-				.build();
-		candidateRepository.addOrReplace(evenLaterCandidate);
+			final Candidate laterCandidate = Candidate.builder()
+					.type(Type.STOCK)
+					.orgId(1)
+					.productId(product.getM_Product_ID())
+					.warehouseId(warehouse.getM_Warehouse_ID())
+					.quantity(new BigDecimal("10"))
+					.date(t3)
+					.build();
+			candidateRepository.addOrReplace(laterCandidate);
 
-		final Candidate evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
-				.type(Type.STOCK)
-				.orgId(1)
-				.productId(product.getM_Product_ID())
-				.warehouseId(otherWarehouse.getM_Warehouse_ID())
-				.quantity(new BigDecimal("12"))
-				.date(t4)
-				.build();
-		candidateRepository.addOrReplace(evenLaterCandidateWithDifferentWarehouse);
+			evenLaterCandidate = Candidate.builder()
+					.type(Type.STOCK)
+					.orgId(1)
+					.productId(product.getM_Product_ID())
+					.warehouseId(warehouse.getM_Warehouse_ID())
+					.quantity(new BigDecimal("12"))
+					.date(t4)
+					.build();
+			candidateRepository.addOrReplace(evenLaterCandidate);
 
+			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
+					.type(Type.STOCK)
+					.orgId(1)
+					.productId(product.getM_Product_ID())
+					.warehouseId(otherWarehouse.getM_Warehouse_ID())
+					.quantity(new BigDecimal("12"))
+					.date(t4)
+					.build();
+			candidateRepository.addOrReplace(evenLaterCandidateWithDifferentWarehouse);
+		}
+
+		// do the test
 		candidateChangeHandler.applyDeltaToLaterStockCandidates(
 				product.getM_Product_ID(),
 				warehouse.getM_Warehouse_ID(),
 				t2,
+				earlierCandidate.getGroupId(),
 				new BigDecimal("3"));
 
+		// assert that every stock record got some groupId
+		DispoTestUtils.retrieveAllRecords().forEach(r -> assertThat(r.getMD_Candidate_GroupId(), greaterThan(0)));
+		
 		final Optional<Candidate> earlierCandidateAfterChange = candidateRepository.retrieveLatestMatch(mkStockUntilSegment(t1, warehouse));
 		assertThat(earlierCandidateAfterChange.isPresent(), is(true));
 		assertThat(earlierCandidateAfterChange.get().getQuantity(), is(earlierCandidate.getQuantity())); // quantity shall be unchanged
+		assertThat(earlierCandidateAfterChange.get().getGroupId(), is(earlierCandidate.getGroupId())); // basically the same candidate
 
 		final I_MD_Candidate candidateRecordAfterChange = candidateRepository.retrieveExact(candidate).get();
 		assertThat(candidateRecordAfterChange.getQty(), is(new BigDecimal("10"))); // quantity shall be unchanged, because that method shall only update *later* records
+		assertThat(candidateRecordAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
 
 		final Optional<Candidate> laterCandidateAfterChange = candidateRepository.retrieveLatestMatch(mkStockUntilSegment(t3, warehouse));
 		assertThat(laterCandidateAfterChange.isPresent(), is(true));
 		assertThat(laterCandidateAfterChange.get().getQuantity(), is(new BigDecimal("13"))); // quantity shall be plus 3
+		assertThat(laterCandidateAfterChange.get().getGroupId(), is(earlierCandidate.getGroupId()));
 
-		final I_MD_Candidate evenLaterCandidateWithOutLocatorRecordAfterChange = candidateRepository.retrieveExact(evenLaterCandidate).get();
-		assertThat(evenLaterCandidateWithOutLocatorRecordAfterChange.getQty(), is(new BigDecimal("15"))); // quantity shall be plus 3 too
+		final I_MD_Candidate evenLaterCandidateRecordAfterChange = candidateRepository.retrieveExact(evenLaterCandidate).get();
+		assertThat(evenLaterCandidateRecordAfterChange.getQty(), is(new BigDecimal("15"))); // quantity shall be plus 3 too
+		assertThat(evenLaterCandidateRecordAfterChange.getMD_Candidate_GroupId(), is(earlierCandidate.getGroupId()));
 
-		final I_MD_Candidate evenLaterCandidateWithDifferentLocatorRecordAfterChange = candidateRepository.retrieveExact(evenLaterCandidateWithDifferentWarehouse).get();
-		assertThat(evenLaterCandidateWithDifferentLocatorRecordAfterChange.getQty(), is(new BigDecimal("12"))); // quantity shall be unchanged, because we changed another warehouse and this one should not have been matched
+		final I_MD_Candidate evenLaterCandidateWithDifferentWarehouseAfterChange = candidateRepository.retrieveExact(evenLaterCandidateWithDifferentWarehouse).get();
+		assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getQty(), is(new BigDecimal("12"))); // quantity shall be unchanged, because we changed another warehouse and this one should not have been matched
+		assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
+
 	}
 
-	private CandidatesSegment mkStockUntilSegment(final Date timestamp, final I_M_Warehouse warehouse)
+	private CandidatesSegment mkStockUntilSegment(@NonNull final Date timestamp, @NonNull final I_M_Warehouse warehouse)
 	{
 		return CandidatesSegment.builder()
 				.type(Type.STOCK)
@@ -259,7 +283,7 @@ public class CandidateChangeHandlerTests
 		invokeUpdateStock(t3, new BigDecimal("-3"));
 		invokeUpdateStock(t2, new BigDecimal("-4"));
 
-		final List<I_MD_Candidate> records = retriveRecords();
+		final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 		assertThat(records.size(), is(4));
 
 		assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
@@ -273,6 +297,11 @@ public class CandidateChangeHandlerTests
 
 		assertThat(records.get(3).getDateProjected().getTime(), is(t4.getTime()));
 		assertThat(records.get(3).getQty(), comparesEqualTo(new BigDecimal("5")));
+
+		// all these stock records need to have the same group-ID
+		final int groupId = records.get(0).getMD_Candidate_GroupId();
+		assertThat(groupId, greaterThan(0));
+		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId(), is(groupId)));
 	}
 
 	private Candidate invokeUpdateStock(final Date t, final BigDecimal qty)
@@ -298,7 +327,7 @@ public class CandidateChangeHandlerTests
 		{
 			invokeUpdateStock(t1, new BigDecimal("10"));
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records.size(), is(1));
 			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
 			assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
@@ -307,19 +336,18 @@ public class CandidateChangeHandlerTests
 		{
 			invokeUpdateStock(t4, new BigDecimal("2"));
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records.size(), is(2));
 			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
 			assertThat(records.get(0).getQty(), comparesEqualTo(new BigDecimal("10")));
 			assertThat(records.get(1).getDateProjected().getTime(), is(t4.getTime()));
 			assertThat(records.get(1).getQty(), comparesEqualTo(new BigDecimal("12")));
-
 		}
 
 		{
 			invokeUpdateStock(t3, new BigDecimal("-3"));
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records.size(), is(3));
 
 			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
@@ -333,7 +361,7 @@ public class CandidateChangeHandlerTests
 		{
 			invokeUpdateStock(t3, new BigDecimal("-4")); // same time again!
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records.size(), is(3));
 
 			assertThat(records.get(0).getDateProjected().getTime(), is(t1.getTime()));
@@ -345,8 +373,30 @@ public class CandidateChangeHandlerTests
 			assertThat(records.get(2).getDateProjected().getTime(), is(t4.getTime()));
 			assertThat(records.get(2).getQty(), comparesEqualTo(new BigDecimal("5")));
 		}
+
+		// all these stock records need to have the same group-ID
+		final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
+		final int groupId = records.get(0).getMD_Candidate_GroupId();
+		assertThat(groupId, greaterThan(0));
+		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId(), is(groupId)));
 	}
 
+	public List<I_MD_Candidate> retrieveAllRecordsSorted()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_MD_Candidate.class)
+				.orderBy()
+				.addColumn(I_MD_Candidate.COLUMN_DateProjected)
+				.addColumn(I_MD_Candidate.COLUMN_MD_Candidate_ID)
+				.endOrderBy()
+				.create()
+				.list();
+	}
+
+	/**
+	 * Verifies that {@link CandidateChangeHandler#updateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
+	 */
 	@Test
 	public void testOnStockCandidateNewOrChangedNotStockType()
 	{
@@ -367,19 +417,6 @@ public class CandidateChangeHandlerTests
 		assertThat(processedCandidate.getWarehouseId(), is(warehouse.getM_Warehouse_ID()));
 	}
 
-	private List<I_MD_Candidate> retriveRecords()
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL
-				.createQueryBuilder(I_MD_Candidate.class)
-				.orderBy()
-				.addColumn(I_MD_Candidate.COLUMN_DateProjected)
-				.addColumn(I_MD_Candidate.COLUMN_MD_Candidate_ID)
-				.endOrderBy()
-				.create()
-				.list();
-	}
-
 	@Test
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords()
 	{
@@ -396,14 +433,15 @@ public class CandidateChangeHandlerTests
 				.build();
 		candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
 
-		final List<I_MD_Candidate> records = retriveRecords();
+		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(2));
-		final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
-		final I_MD_Candidate supplyRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.SUPPLY.toString())).findFirst().get();
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
 		assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+		assertThat(supplyRecord.getSeqNo() - 1, is(stockRecord.getSeqNo())); // when we sort by SeqNo, the stock needs to be first
 	}
 
 	@Test
@@ -425,14 +463,16 @@ public class CandidateChangeHandlerTests
 
 			candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
-			final I_MD_Candidate supplyRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.SUPPLY.toString())).findFirst().get();
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
 
 			assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
 			assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+
+			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 		};
 
 		doTest.accept(candidatee); // 1st invocation
@@ -458,14 +498,16 @@ public class CandidateChangeHandlerTests
 
 			candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
-			final I_MD_Candidate supplyRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.SUPPLY.toString())).findFirst().get();
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
 
 			assertThat(supplyRecord.getQty(), comparesEqualTo(exptectedQty));
 			assertThat(stockRecord.getQty(), comparesEqualTo(exptectedQty)); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+
+			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 		};
 
 		doTest.accept(candidatee, qty); // 1st invocation
@@ -488,7 +530,7 @@ public class CandidateChangeHandlerTests
 				.quantity(olderStockQty)
 				.date(t1)
 				.build();
-		final Candidate persistedOlderStockCandidate = candidateChangeHandler.updateStock(olderStockCandidate);
+		candidateChangeHandler.updateStock(olderStockCandidate);
 
 		final BigDecimal supplyQty = new BigDecimal("23");
 
@@ -503,15 +545,17 @@ public class CandidateChangeHandlerTests
 				.build();
 		candidateChangeHandler.onSupplyCandidateNewOrChange(candidate);
 
-		final List<I_MD_Candidate> records = retriveRecords();
+		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(3));
-		final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString()) && r.getMD_Candidate_ID() != persistedOlderStockCandidate.getId()).findFirst().get();
-		final I_MD_Candidate supplyRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.SUPPLY.toString())).findFirst().get();
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK, t2).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty(), comparesEqualTo(supplyQty));
 		assertThat(supplyRecord.getMD_Candidate_SubType(), is(SubType.PRODUCTION.toString()));
 		assertThat(stockRecord.getQty(), comparesEqualTo(new BigDecimal("34")));
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+
+		assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 	}
 
 	@Test
@@ -531,14 +575,120 @@ public class CandidateChangeHandlerTests
 				.build();
 		candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
 
-		final List<I_MD_Candidate> records = retriveRecords();
+		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(2));
-		final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
-		final I_MD_Candidate demandRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.DEMAND.toString())).findFirst().get();
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
 
 		assertThat(demandRecord.getQty(), comparesEqualTo(qty));
 		assertThat(stockRecord.getQty(), comparesEqualTo(qty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
 		assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
+
+		assertThat(stockRecord.getSeqNo(), is(demandRecord.getSeqNo() + 1)); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
+	}
+
+	/**
+	 * Similar to {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()}, but then adds an accompanying demand and verifies the SeqNo values
+	 */
+	@Test
+	public void testDemandCandidateThenSupplyCandidate()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+		final Date t = t1;
+
+		final Candidate candidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.reference(TableRecordReference.of(1, 2))
+				.build();
+		candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
+		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
+		assertThat(DispoTestUtils.retrieveAllRecords().size(), is(2)); // one demand, one stock
+
+		final Candidate supplyCandidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.reference(TableRecordReference.of(1, 2))
+				.build();
+
+		candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+		{
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
+			assertThat(records.size(), is(3)); // one demand, one supply and one shared stock
+
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+
+			// first the the demand then the stock, then the supply; i.e. the demand has the smallest SeqNo, the supply has the biggest
+			assertThat(stockRecord.getSeqNo(), is(demandRecord.getSeqNo() + 1));
+			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1));
+
+			assertThat(stockRecord.getQty(), comparesEqualTo(BigDecimal.ZERO)); // shall be balanced between the demand and the supply
+		}
+	}
+
+	/**
+	 * Similar to {@link #testDemandCandidateThenSupplyCandidate()}, but this time, we first add the supply candidate.
+	 * Therefore its {@link I_MD_Candidate} records gets to be persisted first. still, the {@code SeqNo} needs to be "stable".
+	 */
+	@Test
+	public void testSupplyCandidateThenDemandCandidate()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+		final Date t = t1;
+
+		final Candidate supplyCandidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.reference(TableRecordReference.of(1, 2))
+				.build();
+		candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+
+		{
+			assertThat(DispoTestUtils.retrieveAllRecords().size(), is(2)); // one supply, one stock
+
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1));
+		}
+
+		final Candidate demandCandidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.orgId(1)
+				.productId(product.getM_Product_ID())
+				.warehouseId(warehouse.getM_Warehouse_ID())
+				.quantity(qty)
+				.date(t)
+				.reference(TableRecordReference.of(1, 2))
+				.build();
+		candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
+
+		{
+			assertThat(DispoTestUtils.retrieveAllRecords().size(), is(3)); // one demand, one supply and one shared stock
+
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
+
+			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // as before
+			assertThat(stockRecord.getSeqNo(), is(demandRecord.getSeqNo() + 1));
+
+			assertThat(stockRecord.getQty(), comparesEqualTo(BigDecimal.ZERO)); // shall be balanced between the demand and the supply
+		}
 	}
 
 	/**
@@ -564,14 +714,16 @@ public class CandidateChangeHandlerTests
 		final Consumer<Candidate> doTest = candidate -> {
 			candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
-			final I_MD_Candidate demandRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.DEMAND.toString())).findFirst().get();
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
 
 			assertThat(demandRecord.getQty(), comparesEqualTo(qty));
 			assertThat(stockRecord.getQty(), comparesEqualTo(qty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
+
+			assertThat(stockRecord.getSeqNo(), is(demandRecord.getSeqNo() + 1)); // when we sort by SeqNo, the demand needs to be first and thus have a smaller value
 		};
 
 		doTest.accept(candidatee); // first invocation
@@ -601,14 +753,16 @@ public class CandidateChangeHandlerTests
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, expectedQty) -> {
 			candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
 
-			final List<I_MD_Candidate> records = retriveRecords();
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.STOCK.toString())).findFirst().get();
-			final I_MD_Candidate demandRecord = records.stream().filter(r -> r.getMD_Candidate_Type().equals(Type.DEMAND.toString())).findFirst().get();
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
 
 			assertThat(demandRecord.getQty(), comparesEqualTo(expectedQty));
 			assertThat(stockRecord.getQty(), comparesEqualTo(expectedQty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(stockRecord.getMD_Candidate_Parent_ID(), is(demandRecord.getMD_Candidate_ID()));
+
+			assertThat(stockRecord.getSeqNo(), is(demandRecord.getSeqNo() + 1)); // when we sort by SeqNo, the demand needs to be first and thus have the smaller number
 		};
 
 		doTest.accept(candidatee, qty); // first invocation

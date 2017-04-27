@@ -38,12 +38,10 @@ public class CandidateFactory
 	private CandidateRepository candidateRepository;
 
 	/**
-	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger (or same-age!) stock candidate that has the same product and locator.
+	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger (or same-age!) stock candidate that has the same product and warehouse.
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
-	 * @param product
-	 * @param locator
-	 * @param projectedDate
+	 * @param candidate
 	 * @return
 	 */
 	public Candidate createStockCandidate(final Candidate candidate)
@@ -57,6 +55,10 @@ public class CandidateFactory
 				? stock.get().getQuantity()
 				: BigDecimal.ZERO;
 
+		final Integer groupId = stock.isPresent()
+				? stock.get().getGroupId()
+				: null;
+
 		return Candidate.builder()
 				.type(Type.STOCK)
 				.orgId(candidate.getOrgId())
@@ -66,6 +68,8 @@ public class CandidateFactory
 				.quantity(formerQuantity.add(candidate.getQuantity()))
 				.reference(candidate.getReference())
 				.parentId(candidate.getParentId())
+				.seqNo(candidate.getSeqNo())
+				.groupId(groupId)
 				.build();
 	}
 }

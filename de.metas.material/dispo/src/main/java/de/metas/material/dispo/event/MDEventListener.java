@@ -7,6 +7,7 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateChangeHandler;
+import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -47,6 +48,9 @@ public class MDEventListener implements MaterialEventListener
 	private CandidateChangeHandler candidateChangeHandler;
 
 	@Autowired
+	private CandidateRepository candidateRepository;
+
+	@Autowired
 	private SupplyProposalEvaluator supplyProposalEvaluator;
 
 	@Override
@@ -77,13 +81,13 @@ public class MDEventListener implements MaterialEventListener
 	private void handleProductionPlanEvent(final ProductionPlanEvent event)
 	{
 		Integer groupId = null;
-		
+		Integer seqNo = null;
 		for (final MaterialDescriptor outputDescr : event.getProductionOutputs())
 		{
 			final Candidate supplyCandidate = Candidate.builder()
 					.type(Type.SUPPLY)
-					.subType(SubType.PRODUCTION)
 					.groupId(groupId)
+					.subType(SubType.PRODUCTION)
 					.date(outputDescr.getDate())
 					.orgId(outputDescr.getOrgId())
 					.productId(outputDescr.getProductId())
@@ -91,12 +95,13 @@ public class MDEventListener implements MaterialEventListener
 					.warehouseId(outputDescr.getWarehouseId())
 					.reference(event.getReference())
 					.build();
-			
+
 			// this might cause 'candidateChangeHandler' to trigger another event
 			final Candidate candidateWithGroupId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
 			if (groupId == null)
 			{
 				groupId = candidateWithGroupId.getGroupId();
+				seqNo = candidateWithGroupId.getSeqNo();
 			}
 		}
 
@@ -105,7 +110,8 @@ public class MDEventListener implements MaterialEventListener
 			final Candidate demandCandidate = Candidate.builder()
 					.type(Type.DEMAND)
 					.subType(SubType.PRODUCTION)
-					.groupId(groupId) // may be null on the first loop iteration
+					.groupId(groupId)
+					.seqNo(seqNo+1)
 					.date(inputDescr.getDate())
 					.orgId(inputDescr.getOrgId())
 					.productId(inputDescr.getProductId())
@@ -155,6 +161,10 @@ public class MDEventListener implements MaterialEventListener
 			return;
 		}
 
+		// we expect the demand candidate to go with the supplyCandidates SeqNo + 1,
+		// *but* it might also be the case that the demandCandidate attaches to an existing stock and in that case would need to get another SeqNo
+		final int expectedSeqNoForDemandCandidate = supplyCandidateWithId.getSeqNo() + 1;
+
 		final Candidate demandCandidate = supplyCandidate
 				.withType(Type.DEMAND)
 				.withSubType(SubType.DISTRIBUTION)
@@ -162,10 +172,25 @@ public class MDEventListener implements MaterialEventListener
 				.withParentId(supplyCandidateWithId.getId())
 				.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 				.withDate(event.getDistributionStart())
+				.withSeqNo(expectedSeqNoForDemandCandidate)
 				.withWarehouseId(event.getFromWarehouseId());
 
 		// this might cause 'candidateChangeHandler' to trigger another event
-		candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
+		final Candidate demandCandidateWithId = candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
+		if (expectedSeqNoForDemandCandidate == demandCandidateWithId.getSeqNo())
+		{
+			return; // we are done
+		}
+
+		// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
+		candidateRepository.addOrReplace(supplyCandidateWithId
+				.withSeqNo(demandCandidateWithId.getSeqNo() - 1),
+				false);
+
+		candidateRepository.addOrReplace(candidateRepository
+				.retrieve(supplyCandidateWithId.getParentId())
+				.withSeqNo(demandCandidateWithId.getSeqNo() - 2),
+				false);
 	}
 
 	private void handleTransactionEvent(@NonNull final TransactionEvent event)
@@ -227,6 +252,7 @@ public class MDEventListener implements MaterialEventListener
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.subType(SubType.SHIPMENT)
 				.orgId(materialDescr.getOrgId())
 				.date(materialDescr.getDate())
 				.warehouseId(materialDescr.getWarehouseId())

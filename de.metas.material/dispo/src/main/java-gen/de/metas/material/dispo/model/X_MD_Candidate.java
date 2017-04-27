@@ -16,7 +16,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 540200188L;
+	private static final long serialVersionUID = -1110913149L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -325,6 +325,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_SUBTYPE_PRODUCTION = "PRODUCTION";
 	/** RECEIPT = RECEIPT */
 	public static final String MD_CANDIDATE_SUBTYPE_RECEIPT = "RECEIPT";
+	/** SHIPMENT = SHIPMENT */
+	public static final String MD_CANDIDATE_SUBTYPE_SHIPMENT = "SHIPMENT";
 	/** Set Untertyp.
 		@param MD_Candidate_SubType Untertyp	  */
 	@Override
@@ -450,6 +452,28 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

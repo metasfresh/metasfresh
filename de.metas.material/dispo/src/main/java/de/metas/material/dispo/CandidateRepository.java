@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.Candidate.CandidateBuilder;
+import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import lombok.NonNull;
@@ -54,29 +55,43 @@ import lombok.NonNull;
 @Service
 public class CandidateRepository
 {
+	public Candidate addOrReplace(@NonNull final Candidate candidate)
+	{
+		return addOrReplace(candidate, false);
+	}
+
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.
 	 *
 	 * @param candidate
+	 * @param preserveExistingSeqNo if {@code false} and the given {@code candidate} specifies a {@link Candidate#getSeqNo()}, then that value will be persisted, even if there is already a different value stored in the underlying {@link I_MD_Candidate} record.<br>
+	 *            If {@code true}, then the given {@code candidate}'s {@code seqNo} (if specified at all) will only be persisted if none is stored yet.
 	 * @return a candidate with
 	 *         <ul>
-	 *         <li>the {@code id} of the persisted data record
-	 *         <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or (if the given candidates doesn't have a groupId) the given candidate's ID.
-	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made
+	 *         <li>the {@code id} of the persisted data record</li>
+	 *         <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or the given candidate's ID (in case the given candiate didn't have a groupId)</li>
+	 *         <li>the {@code seqNo} The rules are similar to groupId, but if there was a persisted {@link I_MD_Candidate} with a different seqno, that different seqno might also be returned, depending on the {@code preserveExistingSeqNo} parameter.</li>
+	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
 	 *         </ul>
 	 */
-	public Candidate addOrReplace(@NonNull final Candidate candidate)
+	public Candidate addOrReplace(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
 	{
 		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
 
 		final BigDecimal oldqty = oldCandidateRecord.isPresent() ? oldCandidateRecord.get().getQty() : BigDecimal.ZERO;
 		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);
 
-		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate);
+		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate, preserveExistingSeqNo);
 		InterfaceWrapperHelper.save(synchedRecord);
 
-		if (candidate.getType() != Type.STOCK && synchedRecord.getMD_Candidate_GroupId() <= 0)
+		if (synchedRecord.getSeqNo() <= 0)
+		{
+			synchedRecord.setSeqNo(synchedRecord.getMD_Candidate_ID());
+			InterfaceWrapperHelper.save(synchedRecord);
+		}
+
+		if (synchedRecord.getMD_Candidate_GroupId() <= 0)
 		{
 			synchedRecord.setMD_Candidate_GroupId(synchedRecord.getMD_Candidate_ID());
 			InterfaceWrapperHelper.save(synchedRecord);
@@ -85,6 +100,7 @@ public class CandidateRepository
 		return candidate
 				.withId(synchedRecord.getMD_Candidate_ID())
 				.withGroupId(synchedRecord.getMD_Candidate_GroupId())
+				.withSeqNo(synchedRecord.getSeqNo())
 				.withQuantity(qtyDelta);
 	}
 
@@ -169,12 +185,16 @@ public class CandidateRepository
 	}
 
 	/**
+	 * Writes the given {@code candidate}'s properties to the given {@code candidateRecord}, but does not save that record.
 	 *
 	 * @param candidateRecord
 	 * @param candidate
 	 * @return either returns the record contained in the given candidateRecord (but updated) or a new record.
 	 */
-	private I_MD_Candidate syncToRecord(final Optional<I_MD_Candidate> candidateRecord, final Candidate candidate)
+	private I_MD_Candidate syncToRecord(
+			@NonNull final Optional<I_MD_Candidate> candidateRecord,
+			@NonNull final Candidate candidate,
+			final boolean preserveExistingSeqNo)
 	{
 		Preconditions.checkState(
 				!candidateRecord.isPresent()
@@ -201,6 +221,16 @@ public class CandidateRepository
 		if (candidate.getParentId() != null)
 		{
 			candidateRecordToUse.setMD_Candidate_Parent_ID(candidate.getParentId());
+		}
+
+		// if the candidate has a SeqNo to sync and
+		// if candidateRecordToUse does not yet have one, or if the existing seqNo is not protected by 'preserveExistingSeqNo', then (over)write it.
+		if (candidate.getSeqNo() != null)
+		{
+			if (candidateRecordToUse.getSeqNo() <= 0 || !preserveExistingSeqNo)
+			{
+				candidateRecordToUse.setSeqNo(candidate.getSeqNo());
+			}
 		}
 
 		final ITableRecordReference referencedRecord = candidate.getReference();
@@ -236,22 +266,32 @@ public class CandidateRepository
 		CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
-				.parentId(candidateRecord.getMD_Candidate_Parent_ID())
 				.productId(candidateRecord.getM_Product_ID())
 				.quantity(candidateRecord.getQty())
+				.seqNo(candidateRecord.getSeqNo())
 				.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
+
 				// if the record has a group id, then set it. otherwise set null, because a "vanilla" candidate without groupId also has null here (null and not zero)
 				.groupId(candidateRecord.getMD_Candidate_GroupId() <= 0 ? null : candidateRecord.getMD_Candidate_GroupId())
 
-				// make sure to add a Date and not a Timestamp to make sure not to confuse Candidate's equals() and hashCode() methods
+				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(new Date(candidateRecord.getDateProjected().getTime()));
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
+		{
+			builder = builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
+		}
 
 		if (candidateRecord.getRecord_ID() > 0)
 		{
 			builder = builder.reference(TableRecordReference.ofReferenced(candidateRecord));
 		}
 
+		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
+		{
+			builder = builder.subType(SubType.valueOf(candidateRecord.getMD_Candidate_SubType()));
+		}
 		return Optional.of(builder.build());
 	}
 

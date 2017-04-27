@@ -50,7 +50,7 @@ public class Candidate
 	 */
 	public enum SubType
 	{
-		DISTRIBUTION, PRODUCTION, RECEIPT
+		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT
 	};
 
 	@NonNull
@@ -85,6 +85,8 @@ public class Candidate
 	private final Integer parentId;
 
 	private final Integer groupId;
+	
+	private final Integer seqNo;
 
 	/**
 	 * The projected date at which we expect this candidate's {@link #getQuantity()}.

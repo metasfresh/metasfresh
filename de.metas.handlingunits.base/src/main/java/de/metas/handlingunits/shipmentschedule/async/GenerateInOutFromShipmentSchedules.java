@@ -385,6 +385,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			return true;
 		}
 
+		if (huToVerify == null)
+		{
+			return true; // this *might* happen with our "minidumps" there we don't have the HU data in our DB
+		}
+		
 		return X_M_HU.HUSTATUS_Picked.equals(huToVerify.getHUStatus()) || X_M_HU.HUSTATUS_Shipped.equals(huToVerify.getHUStatus());
 	}
 

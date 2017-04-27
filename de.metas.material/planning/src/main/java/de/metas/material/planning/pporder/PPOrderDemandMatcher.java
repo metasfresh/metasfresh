@@ -4,6 +4,7 @@ import org.adempiere.util.Loggables;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
+import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
@@ -37,6 +38,7 @@ import de.metas.material.planning.IMaterialPlanningContext;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Service
 public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 {
 

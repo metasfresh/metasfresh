@@ -115,7 +115,7 @@ public class CandiateRepositoryTests
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.addOrReplace(stockCandidate);
+		stockCandidate = candidateRepository.addOrReplace(stockCandidate);
 
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
@@ -125,7 +125,7 @@ public class CandiateRepositoryTests
 				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
-		candidateRepository.addOrReplace(laterStockCandidate);
+		laterStockCandidate = candidateRepository.addOrReplace(laterStockCandidate);
 	}
 
 	/**
@@ -136,18 +136,18 @@ public class CandiateRepositoryTests
 	{
 		// guard
 		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).isPresent(), is(true));
-		assertThat(toCandidateWithoutIds(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get()), is(stockCandidate));
+		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get(), is(stockCandidate));
 		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
 		assertThat(stockBeforeReplacement.size(), is(2));
-		assertThat(stockBeforeReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
+		assertThat(stockBeforeReplacement.stream().collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
 
 		final Candidate replacementCandidate = stockCandidate.withQuantity(BigDecimal.ONE);
 		candidateRepository.addOrReplace(replacementCandidate);
 
-		assertThat(toCandidateWithoutIds(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get()), is(replacementCandidate));
+		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get(), is(replacementCandidate));
 		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
 		assertThat(stockAfterReplacement.size(), is(2));
-		assertThat(stockAfterReplacement.stream().map(c -> toCandidateWithoutIds(c)).collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
+		assertThat(stockAfterReplacement.stream().collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class CandiateRepositoryTests
 	}
 
 	/**
-	 * Verifies that candidates with type {@link Type#STOCK} do not receive a groupId, because they might belong to different supply/demand candidates with different group ids
+	 * Verifies that candidates with type {@link Type#STOCK} do receive a groupId
 	 */
 	@Test
 	public void addOrReplace_groupId_stockCandidate()
@@ -195,16 +195,16 @@ public class CandiateRepositoryTests
 		final Candidate candidateWithOutGroupId = stockCandidate
 				.withDate(TimeUtil.addMinutes(later, 1)) // pick a different time from the other candidates
 				.withGroupId(null);
-		
+
 		final Candidate result1 = candidateRepository.addOrReplace(candidateWithOutGroupId);
 		assertThat(result1.getId(), greaterThan(0));
-		assertThat(result1.getGroupId(), lessThanOrEqualTo(0));
-		
+		assertThat(result1.getGroupId(), greaterThan(0));
+
 		final I_MD_Candidate result1Record = InterfaceWrapperHelper.create(Env.getCtx(), result1.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
 		assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
-		assertThat(result1Record.getMD_Candidate_GroupId(), lessThanOrEqualTo(0));
+		assertThat(result1Record.getMD_Candidate_GroupId(), is(result1.getGroupId()));
 	}
-	
+
 	/**
 	 * Verifies that {@link CandidateRepository#retrieveStockAt(CandidatesSegment)} returns the oldest stock candidate with a date before the given {@link CandidatesSegment}'s date
 	 */
@@ -218,23 +218,23 @@ public class CandiateRepositoryTests
 		final CandidatesSegment sameTimeQuery = mkStockUntilSegment(now);
 		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveLatestMatch(sameTimeQuery);
 		assertThat(sameTimeStock.isPresent(), is(true));
-		assertThat(toCandidateWithoutIds(sameTimeStock.get()), is(stockCandidate));
+		assertThat(sameTimeStock.get(), is(stockCandidate));
 
 		final CandidatesSegment laterQuery = mkStockUntilSegment(later);
 		final Optional<Candidate> laterStock = candidateRepository.retrieveLatestMatch(laterQuery);
 		assertThat(laterStock.isPresent(), is(true));
-		assertThat(toCandidateWithoutIds(laterStock.get()), is(laterStockCandidate));
+		assertThat(laterStock.get(), is(laterStockCandidate));
 	}
 
-	/**
-	 *
-	 * @param candidate
-	 * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
-	 */
-	private Candidate toCandidateWithoutIds(final Candidate candidate)
-	{
-		return candidate.withId(null).withParentId(null);
-	}
+//	/**
+//	 *
+//	 * @param candidate
+//	 * @return returns a version of the given candidate that has {@code null}-Ids; background: we need to "dump it down" to be comparable with the "original"
+//	 */
+//	private Candidate toCandidateWithoutIds(final Candidate candidate)
+//	{
+//		return candidate.withId(null).withParentId(null);
+//	}
 
 	@Test
 	public void retrieveStockFrom()
@@ -246,7 +246,7 @@ public class CandiateRepositoryTests
 			assertThat(stockFrom.size(), is(2));
 
 			// what we retrieved, but without the IDs. To be used to compare with our "originals"
-			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> toCandidateWithoutIds(from)).collect(Collectors.toList());
+			final List<Candidate> stockFromWithOutIds = stockFrom.stream().collect(Collectors.toList());
 
 			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
@@ -257,7 +257,7 @@ public class CandiateRepositoryTests
 			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(sameTimeQuery);
 			assertThat(stockFrom.size(), is(2));
 
-			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> toCandidateWithoutIds(from)).collect(Collectors.toList());
+			final List<Candidate> stockFromWithOutIds = stockFrom.stream().collect(Collectors.toList());
 			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
 			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
@@ -268,9 +268,8 @@ public class CandiateRepositoryTests
 			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(laterQuery);
 			assertThat(stockFrom.size(), is(1));
 
-			final List<Candidate> stockFromWithOutIds = stockFrom.stream().map(from -> from.withId(null).withParentId(null)).collect(Collectors.toList());
-			assertThat(stockFromWithOutIds.contains(stockCandidate), is(false));
-			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
+			assertThat(stockFrom.contains(stockCandidate), is(false));
+			assertThat(stockFrom.contains(laterStockCandidate), is(true));
 		}
 	}
 

@@ -2,6 +2,7 @@ package de.metas.material.planning.event;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
@@ -71,10 +73,28 @@ import de.metas.material.planning.pporder.PPOrderPojoSupplier;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+/**
+ * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Service
 public class MaterialDemandListener implements MaterialEventListener
 {
 	private static final transient Logger logger = LogManager.getLogger(MaterialDemandListener.class);
+
+	@Autowired
+	private DDOrderDemandMatcher ddOrderDemandMatcher;
+
+	@Autowired
+	private DDOrderPojoSupplier ddOrderPojoSupplier;
+
+	@Autowired
+	private PPOrderDemandMatcher ppOrderDemandMatcher;
+
+	@Autowired
+	private PPOrderPojoSupplier ppOrderPojoSupplier;
 
 	@Override
 	public void onEvent(final MaterialEvent event)
@@ -90,12 +110,11 @@ public class MaterialDemandListener implements MaterialEventListener
 
 	private void handleMaterialDemandEvent(final MaterialDemandEvent materialDemandEvent)
 	{
-
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandEvent);
 
-		if (new DDOrderDemandMatcher().matches(mrpContext))
+		if (ddOrderDemandMatcher.matches(mrpContext))
 		{
-			final List<DDOrder> ddOrders = new DDOrderPojoSupplier()
+			final List<DDOrder> ddOrders = ddOrderPojoSupplier
 					.supplyPojos(
 							mkRequest(materialDemandEvent, mrpContext),
 							mkMRPNotesCollector());
@@ -110,6 +129,7 @@ public class MaterialDemandListener implements MaterialEventListener
 					final I_M_Locator toLocator = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getToLocatorId(), I_M_Locator.class, mrpContext.getTrxName());
 
 					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
+							.when(Instant.now())
 							.fromWarehouseId(fromLocator.getM_Warehouse_ID())
 							.distributionStart(orderLineStartDate)
 							.materialDescr(MaterialDescriptor.builder()
@@ -126,9 +146,10 @@ public class MaterialDemandListener implements MaterialEventListener
 				}
 			}
 		}
-		else if (new PPOrderDemandMatcher().matches(mrpContext))
+
+		if (ppOrderDemandMatcher.matches(mrpContext))
 		{
-			final PPOrder ppOrder = new PPOrderPojoSupplier()
+			final PPOrder ppOrder = ppOrderPojoSupplier
 					.supplyPPOrderPojoWithLines(
 							mkRequest(materialDemandEvent, mrpContext),
 							mkMRPNotesCollector());
@@ -141,13 +162,16 @@ public class MaterialDemandListener implements MaterialEventListener
 			final BigDecimal productQty = calculateProductQty(ppOrder.getProductId(), ppOrder.getUomId(), ppOrder.getQuantity());
 
 			final ProductionPlanEventBuilder builder = ProductionPlanEvent.builder();
-			builder.productionOutput(MaterialDescriptor.builder()
-					.date(ppOrder.getDatePromised())
-					.orgId(orgId)
-					.productId(ppOrder.getProductId())
-					.qty(productQty)
-					.warehouseId(warehouseId)
-					.build());
+			builder
+					.when(Instant.now())
+					.productionOutput(MaterialDescriptor.builder()
+							.date(ppOrder.getDatePromised())
+							.orgId(orgId)
+							.productId(ppOrder.getProductId())
+							.qty(productQty)
+							.warehouseId(warehouseId)
+							.build())
+					.reference(materialDemandEvent.getReference());
 
 			for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 			{
