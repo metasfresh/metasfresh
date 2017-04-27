@@ -52,7 +52,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -491,7 +490,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				if (order.getM_Product_ID() != ol.getM_Product_ID())
 				{
 					order.setDescription("");
-					Services.get(IPPOrderBL.class).setQtyEntered(order, Env.ZERO);
+					Services.get(IPPOrderBL.class).setQtyEntered(order, BigDecimal.ZERO);
 					order.setC_OrderLine(null);
 					order.setC_OrderLine_MTO(null);
 

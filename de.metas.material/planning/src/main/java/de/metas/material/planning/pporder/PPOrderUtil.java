@@ -46,16 +46,6 @@ import lombok.experimental.UtilityClass;
 public class PPOrderUtil
 {
 
-	public BigDecimal calculateQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final BigDecimal qtyFinishedGood, final I_C_UOM uomFinishedGood)
-	{
-		final PPOrderPojoSupplier ppOrderPojoSupplier = new PPOrderPojoSupplier();
-
-		final PPOrderLine ppOrderLinePojo = ppOrderPojoSupplier.of(orderBOMLine);
-		final PPOrder ppOrderPojo = ppOrderPojoSupplier.of(orderBOMLine.getPP_Order());
-
-		return calculateQtyRequired(ppOrderLinePojo, ppOrderPojo, qtyFinishedGood, uomFinishedGood.getC_UOM_ID());
-	}
-
 	/**
 	 * Calculates how much qty is required (standard) for given BOM Line, considering the given quantity of finished goods.
 	 *

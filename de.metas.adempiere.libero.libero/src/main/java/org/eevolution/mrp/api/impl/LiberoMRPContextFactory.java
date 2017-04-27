@@ -9,12 +9,12 @@ import org.adempiere.util.time.SystemTime;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.ILiberoMRPContextFactory;
 import org.eevolution.mrp.api.IMRPBL;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.impl.MRPContextFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,22 +29,26 @@ import de.metas.material.planning.impl.MRPContextFactory;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Service
 public class LiberoMRPContextFactory implements ILiberoMRPContextFactory
 {
-	@Autowired 
-	private MRPContextFactory mrpContexFactory;
-	
+	private final MRPContextFactory mrpContexFactory;
+
+	public LiberoMRPContextFactory(@NonNull final MRPContextFactory mrpContexFactory)
+	{
+		this.mrpContexFactory = mrpContexFactory;
+	}
+
 	@Override
-	public IMutableMRPContext createMRPContextFromDemand(final I_PP_MRP mrpDemand)
+	public IMutableMRPContext createMRPContextFromDemand(@NonNull final I_PP_MRP mrpDemand)
 	{
 		Check.assumeNotNull(mrpDemand, MrpException.class, "mrpDemand not null");
 

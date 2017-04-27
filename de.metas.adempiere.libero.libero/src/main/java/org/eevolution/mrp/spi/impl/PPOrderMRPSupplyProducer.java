@@ -36,6 +36,7 @@ import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
@@ -520,7 +521,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final IMaterialPlanningContext mrpContext = request.getMRPContext();
 		final IMRPExecutor executor = request.getMRPExecutor();
 
-		final PPOrder ppOrderPojo = new PPOrderPojoSupplier()
+		final PPOrderPojoSupplier ppOrderPojoSupplier = Adempiere.getBean(PPOrderPojoSupplier.class);
+
+		final PPOrder ppOrderPojo = ppOrderPojoSupplier
 				.supplyPPOrderPojo(request,
 						executor.getMRPNotesCollector());
 

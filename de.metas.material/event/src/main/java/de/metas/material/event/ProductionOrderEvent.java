@@ -34,7 +34,7 @@ import lombok.Singular;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order}.
+ * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -42,9 +42,9 @@ import lombok.Singular;
 @Data
 @AllArgsConstructor
 @Builder
-final public class ProductionPlanEvent implements MaterialEvent
+public class ProductionOrderEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionPlanEvent";
+	public static final String TYPE = "ProductionOrderEvent";
 
 	@NonNull
 	private final Instant when;

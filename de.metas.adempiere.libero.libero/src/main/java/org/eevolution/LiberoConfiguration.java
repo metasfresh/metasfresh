@@ -1,11 +1,12 @@
 package org.eevolution;
 
-import org.adempiere.util.Services;
-import org.eevolution.mrp.api.ILiberoMRPContextFactory;
 import org.eevolution.mrp.api.impl.LiberoMRPContextFactory;
 import org.eevolution.mrp.api.impl.MRPExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import de.metas.material.planning.impl.MRPContextFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,12 +39,9 @@ public class LiberoConfiguration
 	}
 
 	@Bean
-	public LiberoMRPContextFactory liberoMRPContextFactory()
+	public LiberoMRPContextFactory liberoMRPContextFactory(@NonNull final MRPContextFactory mrpContexFactory)
 	{
-		final LiberoMRPContextFactory liberoMRPContextFactory = new LiberoMRPContextFactory();
-		Services.registerService(ILiberoMRPContextFactory.class, liberoMRPContextFactory);
-
+		final LiberoMRPContextFactory liberoMRPContextFactory = new LiberoMRPContextFactory(mrpContexFactory);
 		return liberoMRPContextFactory;
 	}
-
 }

@@ -48,6 +48,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -63,10 +64,18 @@ import de.metas.product.IStorageBL;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
+@Service
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
+	private final PPOrderPojoSupplier ppOrderPojoSupplier;
+	
 	private final transient Logger log = LogManager.getLogger(getClass());
-
+	
+	public PPOrderBOMBL(@NonNull final PPOrderPojoSupplier ppOrderPojoSupplier)
+	{
+		this.ppOrderPojoSupplier = ppOrderPojoSupplier;
+	}
+	
 	private I_PP_Order_BOM createOrderBOM(final I_PP_Order ppOrder, final I_PP_Product_BOM bom)
 	{
 		final I_PP_Order_BOM orderBOM = InterfaceWrapperHelper.newInstance(I_PP_Order_BOM.class, ppOrder);
@@ -185,7 +194,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public I_PP_Order_BOM createOrderBOMAndLines(final I_PP_Order ppOrder)
 	{
-		final PPOrderPojoSupplier ppOrderPojoSupplier = new PPOrderPojoSupplier();
+		
 		final PPOrder ppOrderPojo = ppOrderPojoSupplier.of(ppOrder);
 		final I_PP_Product_BOM productBOM = ppOrderPojoSupplier.retriveAndVerifyBOM(ppOrderPojo);
 
@@ -233,7 +242,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@VisibleForTesting
 	/* package */BigDecimal calculateQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final BigDecimal qtyFinishedGood)
 	{
-		final PPOrderPojoSupplier ppOrderPojoSupplier = new PPOrderPojoSupplier();
 		final PPOrderLine ppOrderLinePojo = ppOrderPojoSupplier.of(orderBOMLine);
 		final PPOrder ppOrderPojo = ppOrderPojoSupplier.of(orderBOMLine.getPP_Order());
 
@@ -333,7 +341,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@VisibleForTesting
 	public BigDecimal getQtyMultiplier(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final PPOrderLine ppOrderLinePojo = new PPOrderPojoSupplier().of(orderBOMLine);
+		final PPOrderLine ppOrderLinePojo = ppOrderPojoSupplier.of(orderBOMLine);
 
 		final I_PP_Order_BOM ppOrderBOM = orderBOMLine.getPP_Order_BOM();
 		final int endProductId = ppOrderBOM.getM_Product_ID(); // identical with the PP_Order's product

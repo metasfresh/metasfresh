@@ -1,10 +1,7 @@
 package de.metas.material.planning;
 
-import org.adempiere.util.Services;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import de.metas.material.planning.impl.MRPContextFactory;
 
 /*
  * #%L
@@ -28,26 +25,8 @@ import de.metas.material.planning.impl.MRPContextFactory;
  * #L%
  */
 @Configuration
+@ComponentScan // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
 public class MaterialPlanningConfiguration
 {
-
-	@Bean
-	public ProductPlanningBL productPlanningBL()
-	{
-		return new ProductPlanningBL();
-	}
-
-	/**
-	 * Creates a the {@link MRPContextFactory} registers it to {@link Services}.
-	 * 
-	 * @return
-	 */
-	@Bean
-	public MRPContextFactory mrpContextFactory()
-	{
-		final MRPContextFactory serviceImpl = new MRPContextFactory();
-		Services.registerService(IMRPContextFactory.class, serviceImpl);
-		return serviceImpl;
-	}
 
 }

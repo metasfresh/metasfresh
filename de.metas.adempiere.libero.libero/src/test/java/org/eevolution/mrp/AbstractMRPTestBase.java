@@ -43,8 +43,6 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 
 @RunWith(SpringRunner.class)
-//@SpringBootApplication
-//@ComponentScan(basePackages = { "org.eevolution", "de.metas.material" })
 @SpringBootTest(classes = { LiberoConfiguration.class, LiberoTestConfiguration.class, MaterialPlanningConfiguration.class })
 @ActiveProfiles("test")
 public abstract class AbstractMRPTestBase

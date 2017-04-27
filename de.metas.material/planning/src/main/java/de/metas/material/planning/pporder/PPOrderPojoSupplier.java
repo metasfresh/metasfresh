@@ -24,7 +24,6 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
@@ -63,10 +62,14 @@ import lombok.NonNull;
 @Service
 public class PPOrderPojoSupplier
 {
-	@Autowired
-	private transient ProductPlanningBL productPlanningBL;
-	
 	private static final transient Logger logger = LogManager.getLogger(PPOrderPojoSupplier.class);
+
+	private final ProductPlanningBL productPlanningBL;
+
+	public PPOrderPojoSupplier(@NonNull final ProductPlanningBL productPlanningBL)
+	{
+		this.productPlanningBL = productPlanningBL;
+	}
 
 	public PPOrder supplyPPOrderPojo(
 			@NonNull final IMaterialRequest request,

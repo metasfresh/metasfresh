@@ -32,6 +32,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
+import org.eevolution.LiberoConfiguration;
+import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
@@ -43,7 +45,13 @@ import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 
@@ -53,14 +61,19 @@ import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { LiberoConfiguration.class, LiberoTestConfiguration.class, MaterialPlanningConfiguration.class })
+@ActiveProfiles("test")
 public class PPOrderBOMBLTest
 {
 	private MRPTestHelper helper;
 	private MRPTestDataSimple masterData;
 
 	/** Service under test */
+	@Autowired
 	private PPOrderBOMBL ppOrderBOMBL;
 	// Other services
+	
 	private IPPOrderBOMDAO ppOrderBOMDAO;
 
 	@Before
@@ -70,7 +83,7 @@ public class PPOrderBOMBLTest
 		helper = new MRPTestHelper();
 		masterData = new MRPTestDataSimple(helper);
 
-		this.ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
+		//this.ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
 
 		this.ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	}

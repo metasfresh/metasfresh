@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Date;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_DD_Order;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,11 @@ import lombok.NonNull;
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
+ */
+/**
+ * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Data
 @Builder
