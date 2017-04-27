@@ -211,7 +211,7 @@ public class PackingInfoProcessParams
 		{
 			throw new AdempiereException("Quantity to receive was not determined");
 		}
-		
+
 		return qtyCUsTotal;
 	}
 
@@ -230,15 +230,11 @@ public class PackingInfoProcessParams
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
 
 		// Validate parameters
-		final int M_LU_HU_PI_ID = getLU_HU_PI_ID();
+		final int M_LU_HU_PI_ID = getLU_HU_PI_ID(); // not mandatory
 		final int M_HU_PI_Item_Product_ID = getTU_HU_PI_Item_Product_ID();
 		final BigDecimal qtyCU = getQtyCU();
 		final BigDecimal qtyTU = getQtyTU();
-		final BigDecimal qtyLU = getQtyLU();
-		if (M_LU_HU_PI_ID <= 0)
-		{
-			throw new FillMandatoryException(PARAM_M_LU_HU_PI_ID);
-		}
+		
 		if (M_HU_PI_Item_Product_ID <= 0)
 		{
 			throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
@@ -250,10 +246,6 @@ public class PackingInfoProcessParams
 		if (qtyTU == null || qtyTU.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyTU);
-		}
-		if (qtyLU == null || qtyLU.signum() <= 0)
-		{
-			throw new FillMandatoryException(PARAM_QtyLU);
 		}
 
 		final I_M_HU_LUTU_Configuration lutuConfigNew = InterfaceWrapperHelper.copy()
@@ -277,6 +269,12 @@ public class PackingInfoProcessParams
 		// LU
 		if (M_LU_HU_PI_ID > 0)
 		{
+			final BigDecimal qtyLU = getQtyLU();
+			if (qtyLU == null || qtyLU.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_QtyLU);
+			}
+			
 			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(Env.getCtx(), M_LU_HU_PI_ID, I_M_HU_PI.class, ITrx.TRXNAME_None);
 
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -304,7 +302,7 @@ public class PackingInfoProcessParams
 		{
 			lutuConfigNew.setM_LU_HU_PI(null);
 			lutuConfigNew.setM_LU_HU_PI_Item(null);
-			lutuConfigNew.setQtyLU(null);
+			lutuConfigNew.setQtyLU(BigDecimal.ZERO);
 		}
 
 		lutuConfigurationFactory.save(lutuConfigNew);
