@@ -300,9 +300,11 @@ export function createWindow(
                         response.data, getScope(isModal)
                     ))
                 ).then(response => {
-                    dispatch(initTabs(
-                        response.layout.tabs, windowType, docId, isModal
-                    ))
+                    if(!isModal){
+                        dispatch(initTabs(
+                            response.layout.tabs, windowType, docId, isModal
+                        ))
+                    }
                 })
         });
     }
