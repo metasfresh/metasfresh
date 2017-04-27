@@ -199,21 +199,6 @@ class TableItem extends Component {
         }
     }
 
-    getIconClassName = (huType) => {
-        switch(huType){
-            case 'LU':
-                return 'meta-icon-palette';
-            case 'TU':
-                return 'meta-icon-package';
-            case 'CU':
-                return 'meta-icon-product';
-            case 'PP_Order_Receive':
-                return 'meta-icon-receipt';
-            case 'PP_Order_Issue':
-                return 'meta-icon-issue';
-        }
-    }
-
     renderTree = (huType) => {
         const {
             indent, lastSibling, includedDocuments, indentSupported, rowId
@@ -255,11 +240,7 @@ class TableItem extends Component {
                     <div
                         className="indent-icon"
                     >
-<<<<<<< Updated upstream
                         <i className={this.getIconClassName(huType)} />
-=======
-                        {<i className={this.getIconClassName(huType)} />}
->>>>>>> Stashed changes
                     </div>
                 </div>
             );
