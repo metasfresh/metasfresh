@@ -106,3 +106,37 @@ UPDATE AD_PrintFormatItem pi SET PrintName='VendorReturn_Origin_InOutLine_ID', N
 /* DDL */ SELECT public.db_alter_table('m_inoutline','ALTER TABLE public.M_InOutLine ADD COLUMN VendorReturn_Origin_InOutLine_ID NUMERIC(10)')
 ;
 
+
+
+
+-- 2017-04-27T10:52:58.462
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2017-04-27 10:52:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556514
+;
+
+-- 2017-04-27T11:03:49.127
+-- URL zum Konzept
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540716,TO_TIMESTAMP('2017-04-27 11:03:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y','N','M_InOutLine_Origin',TO_TIMESTAMP('2017-04-27 11:03:49','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2017-04-27T11:03:49.134
+-- URL zum Konzept
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Reference_ID=540716 AND NOT EXISTS (SELECT * FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- 2017-04-27T11:04:27.758
+-- URL zum Konzept
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Display,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy) VALUES (0,3529,3529,0,540716,320,TO_TIMESTAMP('2017-04-27 11:04:27','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y','N',TO_TIMESTAMP('2017-04-27 11:04:27','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-04-27T11:05:15.548
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_Value_ID=540716,Updated=TO_TIMESTAMP('2017-04-27 11:05:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556514
+;
+
+-- 2017-04-27T11:06:53.135
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET IsValueDisplayed='Y',Updated=TO_TIMESTAMP('2017-04-27 11:06:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540716
+;
+
+
