@@ -35,6 +35,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -68,14 +69,14 @@ public class HUEditorViewRepository
 	private final HUEditorRowAttributesProvider attributesProvider;
 
 	@Builder
-	private HUEditorViewRepository(final WindowId windowId, final String referencingTableName)
+	private HUEditorViewRepository(@NonNull final WindowId windowId, final String referencingTableName, final HUEditorRowAttributesProvider attributesProvider)
 	{
 		super();
 
 		this.windowId = windowId;
 		this.referencingTableName = referencingTableName;
 
-		this.attributesProvider = new HUEditorRowAttributesProvider();
+		this.attributesProvider = attributesProvider;
 	}
 	
 	public void invalidateAll()

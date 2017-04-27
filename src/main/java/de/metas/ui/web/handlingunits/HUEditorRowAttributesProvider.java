@@ -47,6 +47,11 @@ import lombok.Value;
 
 class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 {
+	public static final HUEditorRowAttributesProvider newInstance()
+	{
+		return new HUEditorRowAttributesProvider();
+	}
+	
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
 	private final ConcurrentHashMap<DocumentViewAttributesKey, HUEditorRowAttributes> documentViewAttributesByKey = new ConcurrentHashMap<>();
 
@@ -57,7 +62,7 @@ class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 		private DocumentId huId;
 	}
 
-	public HUEditorRowAttributesProvider()
+	private HUEditorRowAttributesProvider()
 	{
 		super();
 	}
