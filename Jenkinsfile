@@ -298,8 +298,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
-			stage('Set versions and build metasfresh-webui-api')
-            {
+				stage('Set versions and build metasfresh-webui-api')
+        {
 				if(!isRepoExists(MF_MAVEN_REPO_NAME))
 				{
 					createRepo(MF_MAVEN_REPO_NAME);
@@ -330,11 +330,28 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// set the artifact version of everything below the webui's pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
+				// getting the commit_sha1 like this is a workaround until https://issues.jenkins-ci.org/browse/JENKINS-26100 is done
+				// thanks to
+				// https://issues.jenkins-ci.org/browse/JENKINS-34455?focusedCommentId=256522&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-256522
+				// for the workaround
+				sh 'git rev-parse HEAD > git-commit-sha1.txt';
+				final commit_sha1 = readFile('git-commit-sha1.txt')
+															.replaceAll('\\s',''); // get rid of all whisespaces
+
+				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
+
+				// gh #968:
+				// set env variables which will be available to a possible upstream job that might have called us
+				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
+				// note: we do it here, because we also expect these vars to end up in the application.properties within our artifact
+				env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
+				env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
+				env.BUILD_VERSION="${BUILD_VERSION}";
+				env.BUILD_GIT_SHA1="${commit_sha1}";
+
 				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-
-				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
 
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 currentBuild.description="""artifacts (if not yet cleaned up)
@@ -343,14 +360,7 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
-
-				// gh #968:
-				// set env variables which will be available to a possible upstream job that might have called us
-				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-				env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
-				env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
-				env.BUILD_VERSION="${BUILD_VERSION}";
-            }
+      }
 		}
 	}
  } // node
