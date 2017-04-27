@@ -89,8 +89,6 @@ class Image extends Component{
     takeSnapshot() {
         const width = this.camera.offsetWidth;
         const height = this.camera.offsetHeight;
-        
-        console.log(width, height);
 
         let canvas = document.createElement('canvas');
         canvas.width = width;
