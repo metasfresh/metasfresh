@@ -141,12 +141,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		//
 		// Attributes
-		attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(defaultSelection.getViewId().getWindowId());
+		attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(defaultSelection.getWindowId());
 
 		//
 		// Cache
 		cache_documentViewsById = CCache.newLRUCache( //
-				tableName + "#DocumentViewById#viewId=" + defaultSelection.getViewId() // cache name
+				tableName + "#DocumentViewById#viewId=" + defaultSelection.getSelectionId() // cache name
 				, 100 // maxSize
 				, 2 // expireAfterMinutes
 		);
@@ -267,11 +267,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		final DocumentViewOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 		logger.debug("Using: {}", orderedSelection);
 
-		final ViewId viewId = orderedSelection.getViewId();
+		final String selectionId = orderedSelection.getSelectionId();
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + pageLength;
 
-		final Object[] sqlParams = new Object[] { viewId.getViewId(), firstSeqNo, lastSeqNo };
+		final Object[] sqlParams = new Object[] { selectionId, firstSeqNo, lastSeqNo };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

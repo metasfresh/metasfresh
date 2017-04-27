@@ -69,7 +69,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	{
 		return (PPOrderLinesView)view;
 	}
-
+	
 	private final ViewId parentViewId;
 
 	private final ViewId viewId;
