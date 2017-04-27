@@ -78,3 +78,18 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-04-27 17:53:38'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-04-27 17:53:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Address' WHERE AD_Field_ID=557954 AND AD_Language='en_US'
 ;
 
+-- 2017-04-27T18:21:28.982
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-04-27 18:21:28','YYYY-MM-DD HH24:MI:SS'),Name='New Businesspartner' WHERE AD_Window_ID=540327 AND AD_Language='en_US'
+;
+
+-- 2017-04-27T18:21:59.329
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-04-27 18:21:59','YYYY-MM-DD HH24:MI:SS'),Name='New Business Partner' WHERE AD_Window_ID=540327 AND AD_Language='en_US'
+;
+
+-- 2017-04-27T18:24:33.434
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-04-27 18:24:33','YYYY-MM-DD HH24:MI:SS'),Name='New Business Partner' WHERE AD_Tab_ID=540791 AND AD_Language='en_US'
+;
+
