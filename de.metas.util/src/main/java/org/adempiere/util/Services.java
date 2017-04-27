@@ -24,8 +24,6 @@ package org.adempiere.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -67,6 +65,39 @@ public class Services
 
 	/** Services interceptor */
 	private static IServiceInterceptor interceptor = new JavaAssistInterceptor();
+
+	/**
+	 * Can be used to provide service implementations from the outside. Concrete goal: allow us to provide spring managed service implementations via {@link Services#get(Class)}.
+	 * 
+	 * @see Services#setExternalServiceImplProvider(IServiceImplProvider)
+	 * @task https://github.com/metasfresh/metasfresh/issues/427
+	 */
+	@FunctionalInterface
+	public interface IServiceImplProvider
+	{
+		/**
+		 * 
+		 * @param serviceClazz
+		 * @return a service implementation class, or {@code null} if none can't be provided.
+		 */
+		<T extends IService> T provideServiceImpl(Class<T> serviceClazz);
+	}
+
+	private static IServiceImplProvider externalServiceImplProvider;
+
+	/**
+	 * This method can optionally be called so that invocations of the {@link #get(Class)} method are able to receive service implementations that are not coming right out of this class.
+	 * 
+	 * If a service implementation was not yet cached within {@link Services} and is required, then the external service implementation provider (if one was set via this method) will be invoked first and if it returns a non null result, that result will be cached.
+	 * 
+	 * @param externalServiceImplProvider
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/427
+	 */
+	public static void setExternalServiceImplProvider(final IServiceImplProvider externalServiceImplProvider)
+	{
+		Services.externalServiceImplProvider = externalServiceImplProvider;
+	}
 
 	/**
 	 * Map from "service interface class" to "service implementation constructor"
@@ -113,11 +144,6 @@ public class Services
 	}
 
 	private static LoadingCache<Class<? extends IService>, Object> services = newServicesCache();
-
-	/**
-	 * See {@link #registerServicePermanently(Class, ISingletonService)}.
-	 */
-	private static Map<Class<? extends IService>, Object> permanentServices = new HashMap<>();
 
 	public static IServiceInterceptor getInterceptor()
 	{
@@ -195,11 +221,6 @@ public class Services
 	{
 		try
 		{
-			if (permanentServices.containsKey(serviceInterfaceClass))
-			{
-				return (T)permanentServices.get(serviceInterfaceClass);
-			}
-
 			final T serviceImpl = (T)services.get(serviceInterfaceClass);
 			return serviceImpl;
 		}
@@ -213,15 +234,26 @@ public class Services
 	{
 		try
 		{
-			//
-			// Get the service implementation constructor
-			@SuppressWarnings("unchecked")
-			final Constructor<T> serviceImplConstructor = (Constructor<T>)serviceInterface2implementionClassCtor.get(serviceInterfaceClass);
+			T serviceImpl = null;
+			
+			// gh #427 first check if an external service implementation provider was given to us, and if so, see what it has to offer.
+			if (externalServiceImplProvider != null)
+			{
+				serviceImpl = externalServiceImplProvider.provideServiceImpl(serviceInterfaceClass);
+			}
 
-			//
-			// Create service implementation instance
-			final T serviceImpl = serviceImplConstructor.newInstance();
-			assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
+			if (serviceImpl == null)
+			{
+				// if we did not get an implementation via externalServiceImplProvider, try our legacy way of looking up and invoking the implementation's default constructor
+				// Get the service implementation constructor
+				@SuppressWarnings("unchecked")
+				final Constructor<T> serviceImplConstructor = (Constructor<T>)serviceInterface2implementionClassCtor.get(serviceInterfaceClass);
+
+				//
+				// Create service implementation instance
+				serviceImpl = serviceImplConstructor.newInstance();
+				assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
+			}
 
 			//
 			// Load service
@@ -285,11 +317,6 @@ public class Services
 	 */
 	public static <T extends ISingletonService> boolean isAvailable(final Class<T> serviceInterfaceClass)
 	{
-		if (permanentServices.containsKey(serviceInterfaceClass))
-		{
-			return true;
-		}
-
 		@SuppressWarnings("unchecked")
 		final T service = (T)services.getIfPresent(serviceInterfaceClass);
 		return service != null;
@@ -299,22 +326,18 @@ public class Services
 	 * Register a new service class and an implementing instance.
 	 * If there is another implementation already registered, it will be silently replaced with the given implementation.
 	 *
-	 * <b>Important</b> the service implementation WILL NOT be:
-	 * <ul>
-	 * <li>intercepted (i.e. won't be cached)</li>
-	 * <li>affected by {@link #clear()}</li>
-	 * </ul>
+	 * WARNING: the service implementation WILL NOT be intercepted.
 	 *
 	 * @param serviceInterfaceClass the API class that will later on be used to get the implementation.
-	 * @param serviceImpl an actual instance of a class extending {@code serviceInterfaceClass}.
-	 * 
+	 * @param serviceImpl an actual instance of a class extending 'clazz'.
+	 * @return the implementation that was previously registered or <code>null</code>.
 	 */
 	public static <T extends ISingletonService> void registerService(final Class<T> serviceInterfaceClass, final T serviceImpl)
 	{
 		assertValidServiceInterfaceClass(serviceInterfaceClass);
 		assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
 
-		permanentServices.put(serviceInterfaceClass, serviceImpl);
+		services.put(serviceInterfaceClass, serviceImpl);
 		loadService(serviceInterfaceClass, serviceImpl);
 	}
 

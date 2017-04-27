@@ -37,7 +37,9 @@ import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
+import org.adempiere.util.IService;
 import org.adempiere.util.Services;
+import org.adempiere.util.Services.IServiceImplProvider;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
@@ -54,12 +56,15 @@ import org.compiere.util.SecureInterface;
 import org.compiere.util.Splash;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -134,8 +139,9 @@ public class Adempiere
 	}
 
 	/**
-	 * Inject the application context from outside.
-	 * currently seems to be requried because currently the client startup procedure needs to be decomposed more.
+	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
+	 * 
+	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 *
 	 * @param applicationContext
@@ -143,6 +149,30 @@ public class Adempiere
 	public void setApplicationContext(final ApplicationContext applicationContext)
 	{
 		this.applicationContext = applicationContext;
+
+		// gh #427: allow service implementations to be managed by spring.
+		// note that I'm doing it via anonymous class because it seems as if we can't do lambda, see http://stackoverflow.com/a/22588738/1012103
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(@NonNull final Class<T> serviceClazz)
+			{
+				try
+				{
+					return getBean(serviceClazz);
+				}
+				catch (final NoUniqueBeanDefinitionException e)
+				{
+					// not ok; we have > 1 matching beans defined in the spring context. So far that always indicated some sort of mistake, so let's escalate.
+					throw e;  
+				}
+				catch (final NoSuchBeanDefinitionException e)
+				{
+					// ok; the bean is not in the spring context, so let's just return null
+					return null; 
+				}
+			}
+		});
 	}
 
 	/**
@@ -159,7 +189,7 @@ public class Adempiere
 		}
 		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
 	}
-	
+
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getSpringApplicationContext();
@@ -167,7 +197,7 @@ public class Adempiere
 		{
 			throw new IllegalStateException("springApplicationContext not configured yet");
 		}
-		
+
 		return springApplicationContext.getBean(requiredType);
 	}
 
@@ -394,7 +424,7 @@ public class Adempiere
 		return System.getProperty("java.vm.name") // e.g. Java HotSpot(TM) 64-Bit Server VM
 				+ " " + System.getProperty("java.version") // e.g. 1.7.0_21
 				+ "/" + System.getProperty("java.vm.version") // e.g. 23.21-b01
-				;
+		;
 	}	// getJavaInfo
 
 	/**
@@ -407,7 +437,7 @@ public class Adempiere
 		return System.getProperty("os.name") // e.g. Windows 7
 				+ " " + System.getProperty("os.version") // e.g. 6.1
 				+ " " + System.getProperty("sun.os.patch.level") // e.g. Service Pack 1
-				;
+		;
 	}	// getJavaInfo
 
 	/**
@@ -614,10 +644,6 @@ public class Adempiere
 		// which will lead us to weird behaviour
 		// So, instead of manually instantiating and registering here the services, it's much more safer to use AutodetectServices.
 		Services.setAutodetectServices(true);
-		// Services.registerService(ISysConfigBL.class, new SysConfigBL()); // metas 02367
-		// Services.registerService(ITrxManager.class, new TrxManager());
-		// Services.registerService(ITrxConstraintsBL.class, new TrxConstraintsBL()); // metas 02367
-		// Services.registerService(IOpenTrxBL.class, new OpenTrxBL()); // metas 02367
 		Services.registerService(IDeveloperModeBL.class, DeveloperModeBL.instance); // we need this during AIT
 
 		final boolean runmodeClient = runMode == RunMode.SWING_CLIENT;
