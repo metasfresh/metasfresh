@@ -183,6 +183,21 @@ class TableItem extends Component {
         e.stopPropagation();
         handleSelect(this.nestedSelect(elem).concat([id]));
     }
+    
+    getIconClassName = (huType) => {
+        switch(huType){
+            case 'LU':
+                return 'meta-icon-pallete';
+            case 'TU':
+                return 'meta-icon-package';
+            case 'CU':
+                return 'meta-icon-product';
+            case 'PP_Order_Receive':
+                return 'meta-icon-receive';
+            case 'PP_Order_Issue':
+                return 'meta-icon-issue';
+        }
+    }
 
     getIconClassName = (huType) => {
         switch(huType){
@@ -240,7 +255,11 @@ class TableItem extends Component {
                     <div
                         className="indent-icon"
                     >
+<<<<<<< Updated upstream
                         <i className={this.getIconClassName(huType)} />
+=======
+                        {<i className={this.getIconClassName(huType)} />}
+>>>>>>> Stashed changes
                     </div>
                 </div>
             );

@@ -1,19 +1,19 @@
-@charset "UTF-8";
+@charset 'UTF-8';
 
 @font-face {
-  font-family: "meta";
-  src:url("fonts/meta.eot");
-  src:url("fonts/meta.eot?#iefix") format("embedded-opentype"),
-    url("fonts/meta.woff") format("woff"),
-    url("fonts/meta.ttf") format("truetype"),
-    url("fonts/meta.svg#meta") format("svg");
+  font-family: 'metasfresh';
+  src:url('fonts/metasfresh.eot');
+  src:url('fonts/metasfresh.eot?#iefix') format('embedded-opentype'),
+    url('fonts/metasfresh.woff') format('woff'),
+    url('fonts/metasfresh.ttf') format('truetype'),
+    url('fonts/metasfresh.svg#metasfresh') format('svg');
   font-weight: normal;
   font-style: normal;
 
 }
 
 [data-icon]:before {
-  font-family: "meta" !important;
+  font-family: 'metasfresh' !important;
   content: attr(data-icon);
   font-style: normal !important;
   font-weight: normal !important;
@@ -25,9 +25,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-[class^="meta-"]:before,
-[class*=" meta-"]:before {
-  font-family: "meta" !important;
+[class^='meta-icon-']:before,
+[class*=' meta-icon-']:before {
+  font-family: 'metasfresh' !important;
   font-style: normal !important;
   font-weight: normal !important;
   font-variant: normal !important;
@@ -38,174 +38,171 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.meta-icon-accept:before {
+  content: '\61';
+}
 .meta-icon-add:before {
-  content: "\61";
+  content: '\62';
 }
 .meta-icon-attachments:before {
-  content: "\62";
-}
-.meta-icon-calendar:before {
-  content: "\63";
-}
-.meta-icon-close-alt:before {
-  content: "\66";
-}
-.meta-icon-delete:before {
-  content: "\67";
-}
-.meta-icon-duplicate:before {
-  content: "\69";
-}
-.meta-icon-edit:before {
-  content: "\6a";
-}
-.meta-icon-file:before {
-  content: "\6b";
-}
-.meta-icon-fullscreen:before {
-  content: "\6c";
-}
-.meta-icon-generate:before {
-  content: "\6d";
-}
-.meta-icon-list:before {
-  content: "\6e";
-}
-.meta-icon-logout:before {
-  content: "\6f";
-}
-.meta-icon-message:before {
-  content: "\70";
-}
-.meta-icon-more:before {
-  content: "\71";
-}
-.meta-icon-preview:before {
-  content: "\72";
-}
-.meta-icon-print:before {
-  content: "\73";
-}
-.meta-icon-profile:before {
-  content: "\74";
-}
-.meta-icon-report:before {
-  content: "\75";
-}
-.meta-icon-report-1:before {
-  content: "\76";
-}
-.meta-icon-settings:before {
-  content: "\77";
-}
-.meta-icon-share:before {
-  content: "\78";
-}
-.meta-icon-trash:before {
-  content: "\79";
-}
-.meta-icon-chevron-1:before {
-  content: "\7a";
-}
-.meta-icon-close-1:before {
-  content: "\41";
-}
-.meta-icon-down-1:before {
-  content: "\42";
-}
-.meta-icon-checkbox:before {
-  content: "\64";
-}
-.meta-icon-checkbox-1:before {
-  content: "\65";
-}
-.meta-icon-left:before {
-  content: "\68";
-}
-.meta-icon-menu:before {
-  content: "\43";
-}
-.meta-icon-notifications:before {
-  content: "\44";
-}
-.meta-icon-right:before {
-  content: "\45";
-}
-.meta-icon-listing-down:before {
-  content: "\46";
-}
-.meta-icon-listing-up:before {
-  content: "\47";
+  content: '\63';
 }
 .meta-icon-beschaffung:before {
-  content: "\48";
+  content: '\64';
 }
-.meta-icon-crm:before {
-  content: "\49";
+.meta-icon-calendar:before {
+  content: '\65';
 }
-.meta-icon-fakturierung:before {
-  content: "\4a";
+.meta-icon-checkbox:before {
+  content: '\66';
 }
-.meta-icon-finanzen:before {
-  content: "\4b";
+.meta-icon-checkbox-1:before {
+  content: '\67';
 }
-.meta-icon-langerverwaltung:before {
-  content: "\4c";
+.meta-icon-chevron-1:before {
+  content: '\68';
 }
-.meta-icon-lieferung:before {
-  content: "\4d";
+.meta-icon-close-1:before {
+  content: '\69';
 }
-.meta-icon-production:before {
-  content: "\4e";
-}
-.meta-icon-produktverwaltung:before {
-  content: "\4f";
-}
-.meta-icon-sales:before {
-  content: "\50";
-}
-.meta-icon-system:before {
-  content: "\51";
-}
-.meta-icon-vertragsverwaltung:before {
-  content: "\52";
-}
-.meta-icon-wareneingang:before {
-  content: "\53";
-}
-.meta-icon-important:before {
-  content: "\54";
+.meta-icon-close-alt:before {
+  content: '\6a';
 }
 .meta-icon-collapse:before {
-  content: "\55";
+  content: '\6b';
 }
-.meta-icon-package:before {
-  content: "\56";
+.meta-icon-crm:before {
+  content: '\6c';
 }
-.meta-icon-palette:before {
-  content: "\57";
+.meta-icon-delete:before {
+  content: '\6d';
 }
-.meta-icon-product:before {
-  content: "\58";
+.meta-icon-down-1:before {
+  content: '\6e';
 }
-.meta-icon-photo:before {
-  content: "\59";
+.meta-icon-duplicate:before {
+  content: '\6f';
 }
-.meta-icon-upload:before {
-  content: "\5a";
+.meta-icon-edit:before {
+  content: '\70';
 }
-.meta-icon-accept:before {
-  content: "\30";
+.meta-icon-fakturierung:before {
+  content: '\71';
 }
-.meta-icon-upload-1:before {
-  content: "\31";
+.meta-icon-file:before {
+  content: '\72';
 }
-.meta-icon-save:before {
-  content: "\32";
+.meta-icon-finanzen:before {
+  content: '\73';
+}
+.meta-icon-fullscreen:before {
+  content: '\74';
+}
+.meta-icon-generate:before {
+  content: '\75';
+}
+.meta-icon-important:before {
+  content: '\76';
 }
 .meta-icon-issue:before {
-  content: "\33";
+  content: '\77';
 }
-.meta-icon-receipt:before {
-  content: "\34";
+.meta-icon-langerverwaltung:before {
+  content: '\78';
+}
+.meta-icon-left:before {
+  content: '\79';
+}
+.meta-icon-lieferung:before {
+  content: '\7a';
+}
+.meta-icon-list:before {
+  content: '\41';
+}
+.meta-icon-listing-down:before {
+  content: '\42';
+}
+.meta-icon-listing-up:before {
+  content: '\43';
+}
+.meta-icon-logout:before {
+  content: '\44';
+}
+.meta-icon-menu:before {
+  content: '\45';
+}
+.meta-icon-message:before {
+  content: '\46';
+}
+.meta-icon-more:before {
+  content: '\47';
+}
+.meta-icon-notifications:before {
+  content: '\48';
+}
+.meta-icon-package:before {
+  content: '\49';
+}
+.meta-icon-pallete:before {
+  content: '\4a';
+}
+.meta-icon-preview:before {
+  content: '\4b';
+}
+.meta-icon-print:before {
+  content: '\4c';
+}
+.meta-icon-product:before {
+  content: '\4d';
+}
+.meta-icon-production:before {
+  content: '\4e';
+}
+.meta-icon-produktverwaltung:before {
+  content: '\4f';
+}
+.meta-icon-profile:before {
+  content: '\50';
+}
+.meta-icon-receive:before {
+  content: '\51';
+}
+.meta-icon-report:before {
+  content: '\52';
+}
+.meta-icon-report-1:before {
+  content: '\53';
+}
+.meta-icon-right:before {
+  content: '\54';
+}
+.meta-icon-sales:before {
+  content: '\55';
+}
+.meta-icon-save:before {
+  content: '\56';
+}
+.meta-icon-settings:before {
+  content: '\57';
+}
+.meta-icon-share:before {
+  content: '\58';
+}
+.meta-icon-trash:before {
+  content: '\59';
+}
+.meta-icon-upload:before {
+  content: '\5a';
+}
+.meta-icon-upload-1:before {
+  content: '\30';
+}
+.meta-icon-vertragsverwaltung:before {
+  content: '\31';
+}
+.meta-icon-wereneingang:before {
+  content: '\32';
+}
+.meta-icon-photo:before {
+  content: '\33';
 }
