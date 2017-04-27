@@ -51,6 +51,9 @@ Here come the actual release notes:
   * [#666](https://github.com/metasfresh/metasfresh-webui-frontend/issues/666) refresh in attachments side list
     * Now refreshing the sidelist and showing the attached files after new attachments to a record.
 
+* other
+  * [metasfresh/metasfresh-dist-orgs#8] (https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
+
 ## Fixes
 
 * metasfresh-backend
