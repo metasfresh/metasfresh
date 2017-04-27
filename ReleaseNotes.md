@@ -52,7 +52,7 @@ Here come the actual release notes:
     * Now refreshing the sidelist and showing the attached files after new attachments to a record.
 
 * other
-  * [metasfresh/metasfresh-dist-orgs#8] (https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
+  * [metasfresh/metasfresh-dist-orgs#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
 
 ## Fixes
 
