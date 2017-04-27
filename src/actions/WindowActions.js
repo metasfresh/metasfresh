@@ -240,7 +240,6 @@ export function selectTableItems(ids, windowType) {
 export function createWindow(
     windowType, docId = 'NEW', tabId, rowId, isModal = false, isAdvanced
 ) {
-    console.log(docId);
     return (dispatch) => {
         if (docId == 'new') {
             docId = 'NEW';
@@ -301,9 +300,11 @@ export function createWindow(
                         response.data, getScope(isModal)
                     ))
                 ).then(response => {
-                    dispatch(initTabs(
-                        response.layout.tabs, windowType, docId, isModal
-                    ))
+                    if(!isModal){
+                        dispatch(initTabs(
+                            response.layout.tabs, windowType, docId, isModal
+                        ))
+                    }
                 })
         });
     }
@@ -626,7 +627,6 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
 }
 
 export function handleProcessResponse(response, type, id, successCallback) {
-    console.log('handleProcessResponse');
     return (dispatch) => {
         const {
             error, summary, action
