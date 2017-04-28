@@ -1,4 +1,4 @@
-package org.eevolution.api.impl;
+package de.metas.material.planning.pporder.impl;
 
 /*
  * #%L
@@ -82,8 +82,6 @@ public class PPOrderBOMBLTest
 		// NOTE: after this, model validators will be also registered
 		helper = new MRPTestHelper();
 		masterData = new MRPTestDataSimple(helper);
-
-		//this.ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
 
 		this.ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	}

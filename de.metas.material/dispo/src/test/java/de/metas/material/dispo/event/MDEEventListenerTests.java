@@ -34,6 +34,8 @@ import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
 
 /*
  * #%L
@@ -93,7 +95,7 @@ public class MDEEventListenerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
@@ -333,28 +335,34 @@ public class MDEEventListenerTests
 	{
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 
-		final MaterialDescriptor inputDescr1 = MaterialDescriptor.builder()
-				.date(t1)
-				.orgId(20)
-				.productId(rawProduct1Id)
-				.qty(BigDecimal.TEN)
-				.warehouseId(intermediateWarehouseId)
-				.build();
-
 		final BigDecimal eleven = BigDecimal.TEN.add(BigDecimal.ONE);
-		final MaterialDescriptor inputDescr2 = inputDescr1
-				.withProductId(rawProduct2Id)
-				.withQty(eleven);
-
-		final MaterialDescriptor outputDescr = inputDescr1
-				.withDate(t2)
-				.withProductId(productId)
-				.withQty(BigDecimal.ONE);
 
 		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
-				.productionInput(inputDescr1)
-				.productionInput(inputDescr2)
-				.productionOutput(outputDescr)
+				.ppOrder(PPOrder.builder()
+						.orgId(20)
+						.datePromised(t2)
+						.dateStartSchedule(t1)
+						.productId(productId)
+						.quantity(BigDecimal.ONE)
+						.warehouseId(intermediateWarehouseId)
+						.plantId(120)
+						.uomId(130)
+						.productPlanningId(140)
+						.line(PPOrderLine.builder()
+								.description("descr1")
+								.productId(rawProduct1Id)
+								.qtyRequired(BigDecimal.TEN)
+								.productBomLineId(1020)
+								.receipt(false)
+								.build())
+						.line(PPOrderLine.builder()
+								.description("descr2")
+								.productId(rawProduct2Id)
+								.qtyRequired(eleven)
+								.productBomLineId(1030)
+								.receipt(false)
+								.build())
+						.build())
 				.reference(reference)
 				.when(Instant.now())
 				.build();

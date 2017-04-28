@@ -16,9 +16,9 @@ public interface I_MD_Candidate
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org
+    /** AccessLevel = 1 - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
@@ -506,7 +506,7 @@ public interface I_MD_Candidate
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setSeqNo (int SeqNo);
@@ -517,7 +517,7 @@ public interface I_MD_Candidate
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getSeqNo();

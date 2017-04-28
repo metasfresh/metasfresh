@@ -4,17 +4,18 @@ package org.eevolution.mrp.spi.impl.pporder;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOM;
-import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 
-import de.metas.material.planning.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrder;
 
 /*
  * #%L
@@ -45,7 +46,10 @@ public class PPOrderProducer
 			final int docTypeMO_ID)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		
+
+		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper
+				.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None);
+
 		//
 		// Create PP Order
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, request.getMRPContext());
@@ -58,7 +62,7 @@ public class PPOrderProducer
 		ppOrder.setAD_Org_ID(pojo.getOrgId());
 		ppOrder.setS_Resource_ID(pojo.getPlantId());
 		ppOrder.setM_Warehouse_ID(pojo.getWarehouseId());
-		ppOrder.setPlanner_ID(pojo.getPlannerId());
+		ppOrder.setPlanner_ID(productPlanning.getPlanner_ID());
 
 		//
 		// Document Type & Status
@@ -76,12 +80,12 @@ public class PPOrderProducer
 
 		//
 		// BOM & Workflow
-		ppOrder.setPP_Product_BOM_ID(pojo.getProductBomId());
-		ppOrder.setAD_Workflow_ID(pojo.getWorkflowId());
+		ppOrder.setPP_Product_BOM_ID(productPlanning.getPP_Product_BOM_ID());
+		ppOrder.setAD_Workflow_ID(productPlanning.getAD_Workflow_ID());
 
 		//
 		// Dates
-		ppOrder.setDateOrdered(new Timestamp(pojo.getDateOrdered().getTime()));
+		ppOrder.setDateOrdered(request.getMRPContext().getDateAsTimestamp());
 
 		final Timestamp dateFinishSchedule = new Timestamp(pojo.getDatePromised().getTime());
 		ppOrder.setDatePromised(dateFinishSchedule);
@@ -108,13 +112,13 @@ public class PPOrderProducer
 		// Save the manufacturing order
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
 		InterfaceWrapperHelper.save(ppOrder);
-		
+
 		return ppOrder;
 	}
-	
+
 	public void createPPOrderLines()
 	{
-		
+
 	}
-	
+
 }

@@ -1,19 +1,15 @@
-package de.metas.material.event;
+package de.metas.material.event.pporder;
 
-import java.time.Instant;
+import java.math.BigDecimal;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.eevolution.model.I_PP_Order;
-
-import de.metas.material.event.pporder.PPOrder;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.experimental.Wither;
 
 /*
  * #%L
- * metasfresh-material-event
+ * metasfresh-material-planning
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -32,25 +28,41 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order}.
- * 
+ * Not needed, because itcan be taken directly from the parent ppOrder:
+ * <ul>
+ * <li>orgId</li>
+ * <li>warehouseId</li>
+ * <li>locatorId</li>
+ * </ul>
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Data
-@AllArgsConstructor
 @Builder
-final public class ProductionPlanEvent implements MaterialEvent
+@Wither
+public class PPOrderLine
 {
-	public static final String TYPE = "ProductionPlanEvent";
+	private final String description;
 
 	@NonNull
-	private final Instant when;
+	private final Integer productBomLineId;
+
+	/**
+	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.<br>
+	 * Note that this is somewhat redundant with the {@link #getComponentType()} properties, but in material-dispo
+	 * we don't want to depend on the BL to evaluate the component type.
+	 */
+	private final boolean receipt;
 
 	@NonNull
-	private final TableRecordReference reference;
+	private final Integer productId;
+
+	private final Integer attributeSetInstanceId;
 
 	@NonNull
-	private final PPOrder ppOrder;
+	private final BigDecimal qtyRequired;
+
 }

@@ -9,9 +9,10 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
-import de.metas.material.planning.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrder;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -70,10 +71,17 @@ public class PPOrderBOMBL_TestUtils
 		//
 		// ppOrderBOMLine.setPP_Order_BOM(ppOrderBOM);
 
-		if (Check.isEmpty(ppOrderBOMLine.getIssueMethod()))
-		{
-			ppOrderBOMLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_Issue);
-		}
+//		if (ppOrderBOMLine.getPP_Product_BOMLine_ID() <= 0)
+//		{
+//			final I_PP_Product_BOMLine ppProductBomLine = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMLine.class);
+//			ppProductBomLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_Issue);
+//			InterfaceWrapperHelper.save(ppProductBomLine);
+//			ppOrderBOMLine.setPP_Product_BOMLine(ppProductBomLine);
+//		}
+//		if (Check.isEmpty(ppOrderBOMLine.getIssueMethod()))
+//		{
+//			ppOrderBOMLine.setIssueMethod();
+//		}
 
 		ppOrderBOMLine.setValidFrom(Timestamp.valueOf("0000-01-01 00:00:00"));
 		ppOrderBOMLine.setValidTo(Timestamp.valueOf("9999-12-31 23:59:59"));

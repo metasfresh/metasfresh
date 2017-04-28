@@ -29,6 +29,7 @@ import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.NonNull;
 
 /*
@@ -55,6 +56,12 @@ import lombok.NonNull;
 @Service
 public class CandidateRepository
 {
+	/**
+	 * Invokes {@link #addOrReplace(Candidate, boolean)} with {@code preserveExistingSeqNo == false}.
+	 * 
+	 * @param candidate
+	 * @return
+	 */
 	public Candidate addOrReplace(@NonNull final Candidate candidate)
 	{
 		return addOrReplace(candidate, false);
@@ -97,11 +104,47 @@ public class CandidateRepository
 			InterfaceWrapperHelper.save(synchedRecord);
 		}
 
+		if (candidate.getSubType() == SubType.PRODUCTION && candidate.getProductionDetail() != null)
+		{
+			addOrRecplaceProductionDetail(candidate, synchedRecord);
+		}
+
 		return candidate
 				.withId(synchedRecord.getMD_Candidate_ID())
 				.withGroupId(synchedRecord.getMD_Candidate_GroupId())
 				.withSeqNo(synchedRecord.getSeqNo())
 				.withQuantity(qtyDelta);
+	}
+
+	private void addOrRecplaceProductionDetail(final Candidate candidate, final I_MD_Candidate synchedRecord)
+	{
+		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
+		final I_MD_Candidate_Prod_Detail existingDetail = retrieveProductiondetail(synchedRecord);
+		if (existingDetail == null)
+		{
+			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
+			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+		}
+		else
+		{
+			detailRecordToUpdate = existingDetail;
+		}
+		final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
+		detailRecordToUpdate.setDescription(productionDetail.getDescription());
+		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
+		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
+		detailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
+		InterfaceWrapperHelper.save(detailRecordToUpdate);
+	}
+
+	private I_MD_Candidate_Prod_Detail retrieveProductiondetail(final I_MD_Candidate synchedRecord)
+	{
+		final I_MD_Candidate_Prod_Detail existingDetail = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
+				.create()
+				.firstOnly(I_MD_Candidate_Prod_Detail.class); // we have a UC in place..
+		return existingDetail;
 	}
 
 	public Optional<Candidate> retrieve(@NonNull final Candidate candidate)
@@ -288,10 +331,26 @@ public class CandidateRepository
 			builder = builder.reference(TableRecordReference.ofReferenced(candidateRecord));
 		}
 
+		SubType subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
 		{
-			builder = builder.subType(SubType.valueOf(candidateRecord.getMD_Candidate_SubType()));
+			subType = SubType.valueOf(candidateRecord.getMD_Candidate_SubType());
+			builder = builder.subType(subType);
 		}
+		if (subType == SubType.PRODUCTION)
+		{
+			final I_MD_Candidate_Prod_Detail productiondetail = retrieveProductiondetail(candidateRecord);
+			if (productiondetail != null)
+			{
+				builder.productionDetail(ProductionCandidateDetail.builder()
+						.description(productiondetail.getDescription())
+						.plantId(productiondetail.getPP_Plant_ID())
+						.productBomLineId(productiondetail.getPP_Product_BOMLine_ID())
+						.productPlanningId(productiondetail.getPP_Product_Planning_ID())
+						.build());
+			}
+		}
+
 		return Optional.of(builder.build());
 	}
 

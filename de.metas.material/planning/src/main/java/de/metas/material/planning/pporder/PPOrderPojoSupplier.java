@@ -18,8 +18,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -27,6 +25,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
@@ -35,7 +36,6 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
-import de.metas.material.planning.pporder.PPOrder.PPOrderBuilder;
 import lombok.NonNull;
 
 /*
@@ -86,8 +86,7 @@ public class PPOrderPojoSupplier
 
 		//
 		// BOM
-		final int ppProductBomId = productPlanningData.getPP_Product_BOM_ID();
-		if (ppProductBomId <= 0)
+		if (productPlanningData.getPP_Product_BOM_ID() <= 0)
 		{
 			throw new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + product.getValue() + ")");
 		}
@@ -113,26 +112,19 @@ public class PPOrderPojoSupplier
 				// Planning dimension
 				.plantId(mrpContext.getPlant_ID())
 				.warehouseId(mrpContext.getM_Warehouse_ID())
-				.plannerId(productPlanningData.getPlanner_ID())
+				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 				//
 				// Product, UOM, ASI
 				.productId(product.getM_Product_ID())
 				.uomId(uom.getC_UOM_ID())
-				//
-				// BOM & Workflow
-				.productBomId(ppProductBomId)
-				.workflowId(adWorkflowId)
+
 				//
 				// Dates
-				.dateOrdered(mrpContext.getDateAsTimestamp())
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 				//
 				// Qtys
-				.quantity(qtyToSupply)
-
-				.productBomUomId(productPlanningData.getPP_Product_BOM().getC_UOM_ID()); // we store this within the ppOrderPojo because it's the only item we currently need from PP_Order_BOM
-		;
+				.quantity(qtyToSupply);
 
 		return ppOrderPojoBuilder.build();
 	}
@@ -176,52 +168,6 @@ public class PPOrderPojoSupplier
 		return leadtimeCalc.intValueExact();
 	}
 
-	public PPOrder of(@NonNull final I_PP_Order ppOrder)
-	{
-		return PPOrder.builder()
-				.dateOrdered(ppOrder.getDateOrdered())
-				.datePromised(ppOrder.getDatePromised())
-				.dateStartSchedule(ppOrder.getDateStartSchedule())
-				.orgId(ppOrder.getAD_Org_ID())
-				.plannerId(ppOrder.getPlanner_ID())
-				.plantId(ppOrder.getS_Resource_ID())
-				.productBomId(ppOrder.getPP_Product_BOM_ID())
-				.productId(ppOrder.getM_Product_ID())
-				.quantity(ppOrder.getQtyOrdered())
-				.productBomUomId(ppOrder.getPP_Product_BOM().getC_UOM_ID())
-				.uomId(ppOrder.getC_UOM_ID())
-				.warehouseId(ppOrder.getM_Warehouse_ID())
-				.workflowId(ppOrder.getAD_Workflow_ID())
-				.build();
-	}
-
-	public PPOrderLine of(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
-	{
-		return PPOrderLine.builder()
-				.assay(ppOrderBOMLine.getAssay())
-				.attributeSetInstanceId(ppOrderBOMLine.getM_AttributeSetInstance_ID())
-				.backflushGroup(ppOrderBOMLine.getBackflushGroup())
-				.changeNoticeId(ppOrderBOMLine.getM_ChangeNotice_ID())
-				.componentType(ppOrderBOMLine.getComponentType())
-				.critical(ppOrderBOMLine.isCritical())
-				.description(ppOrderBOMLine.getDescription())
-				.forecast(ppOrderBOMLine.getForecast())
-				.help(ppOrderBOMLine.getHelp())
-				.issueMethod(ppOrderBOMLine.getIssueMethod())
-				.leadTimeOffset(ppOrderBOMLine.getLeadTimeOffset())
-				.productId(ppOrderBOMLine.getM_Product_ID())
-				.qtyBatch(ppOrderBOMLine.getQtyBatch())
-				.qtyBOM(ppOrderBOMLine.getQtyBOM())
-				.qtyPercentage(ppOrderBOMLine.isQtyPercentage())
-				.qtyRequired(ppOrderBOMLine.getQtyRequiered())
-				.scrap(ppOrderBOMLine.getScrap())
-				.uomId(ppOrderBOMLine.getC_UOM_ID())
-				.validFrom(ppOrderBOMLine.getValidFrom())
-				.validTo(ppOrderBOMLine.getValidTo())
-				.variantGroup(ppOrderBOMLine.getVariantGroup())
-				.build();
-	}
-
 	public List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)
 	{
 		final I_PP_Product_BOM productBOM = retriveAndVerifyBOM(ppOrder);
@@ -231,36 +177,19 @@ public class PPOrderPojoSupplier
 		final List<PPOrderLine> result = new ArrayList<>();
 
 		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class).retrieveLines(productBOM);
-		for (final I_PP_Product_BOMLine bomLine : productBOMLines)
+		for (final I_PP_Product_BOMLine productBomLine : productBOMLines)
 		{
-			if (!productBOMBL.isValidFromTo(bomLine, ppOrder.getDateStartSchedule()))
+			if (!productBOMBL.isValidFromTo(productBomLine, ppOrder.getDateStartSchedule()))
 			{
-				logger.debug("BOM Line skiped - " + bomLine);
+				logger.debug("BOM Line skiped - " + productBomLine);
 				continue;
 			}
 
 			final PPOrderLine ppOrderLine = PPOrderLine.builder()
-					// this logic was taken from /de.metas.adempiere.libero.libero/src/main/java/org/eevolution/api/impl/PPOrderBOMBL.java method updateOrderBOMLine()
-					.changeNoticeId(bomLine.getM_ChangeNotice_ID())
-					.description(bomLine.getDescription())
-					.help(bomLine.getHelp())
-					.assay(bomLine.getAssay())
-					.qtyBatch(bomLine.getQtyBatch())
-					.qtyBOM(bomLine.getQtyBOM())
-					.qtyPercentage(bomLine.isQtyPercentage())
-					.componentType(bomLine.getComponentType())
-					.uomId(bomLine.getC_UOM_ID())
-					.forecast(bomLine.getForecast())
-					.critical(bomLine.isCritical())
-					.issueMethod(bomLine.getIssueMethod())
-					.leadTimeOffset(bomLine.getLeadTimeOffset())
-					.productId(bomLine.getM_Product_ID())
-					.scrap(bomLine.getScrap())
-					.validFrom(bomLine.getValidFrom())
-					.validTo(bomLine.getValidTo())
-					.backflushGroup(bomLine.getBackflushGroup())
-					.variantGroup(bomLine.getVariantGroup()) // 06005
-					.attributeSetInstanceId(bomLine.getM_AttributeSetInstance_ID())
+					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())
+					.description(productBomLine.getDescription())
+					.productId(productBomLine.getM_Product_ID())
+					.attributeSetInstanceId(productBomLine.getM_AttributeSetInstance_ID())
 					.qtyRequired(BigDecimal.ZERO) // is computed in the next step
 					.build();
 
@@ -275,7 +204,9 @@ public class PPOrderPojoSupplier
 
 	public I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
-		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper.create(Env.getCtx(), ppOrder.getProductBomId(), I_PP_Product_BOM.class, ITrx.TRXNAME_None);
+		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
+				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)
+				.getPP_Product_BOM();
 
 		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
 		if (ppOrder.getProductId() != productBOM.getM_Product_ID())

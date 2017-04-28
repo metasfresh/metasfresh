@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -56,6 +55,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.quantity.Quantity;
 
 /**
@@ -68,8 +68,6 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueProducer.class);
-	//
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	//
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	//
@@ -250,7 +248,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		targetOrderBOMLines.forEach(bomLine -> {
-			if (!ppOrderBOMBL.isIssue(bomLine.getComponentType()))
+			if (!PPOrderUtil.isIssue(bomLine.getComponentType()))
 			{
 				throw new IllegalArgumentException("Not an issue BOM line: " + bomLine);
 			}
@@ -287,7 +285,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
-				.filter(line -> ppOrderBOMBL.isIssue(line.getComponentType()))
+				.filter(line -> PPOrderUtil.isIssue(line.getComponentType()))
 				.collect(GuavaCollectors.toImmutableList());
 
 		return setTargetOrderBOMLines(ppOrderBOMLines);

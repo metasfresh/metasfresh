@@ -44,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 {
@@ -138,7 +139,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final HUPPOrderReceiptCUKey createCoProductCUKey(final I_PP_Order_BOMLine ppOrderBOMLine, final I_PP_Order ppOrder)
 	{
 		// Make sure we can receive on this BOM Line
-		if (!ppOrderBOMBL.isReceipt(ppOrderBOMLine.getComponentType()))
+		if (!PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
 		{
 			return null;
 		}

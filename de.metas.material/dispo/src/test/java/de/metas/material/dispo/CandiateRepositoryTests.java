@@ -4,18 +4,23 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -27,9 +32,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.X_MD_Candidate;
 
 /*
  * #%L
@@ -141,6 +149,77 @@ public class CandiateRepositoryTests
 		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
 		assertThat(stockAfterReplacement.size(), is(2));
 		assertThat(stockAfterReplacement.stream().collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
+	}
+
+	/**
+	 * Verifies that {@link ProductionCandidateDetail} data is also persisted
+	 */
+	@Test
+	public void addOrReplace_with_ProductionDetail()
+	{
+		final Candidate productionCandidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.subType(SubType.PRODUCTION)
+				.date(now)
+				.orgId(20)
+				.productId(23)
+				.attributeSetInstanceId(35)
+				.quantity(BigDecimal.TEN)
+				.reference(TableRecordReference.of("someTable", 40))
+				.warehouseId(50)
+				.productionDetail(ProductionCandidateDetail.builder()
+						.description("description")
+						.plantId(60)
+						.productBomLineId(70)
+						.productPlanningId(80)
+						.build())
+				.build();
+		final Candidate addOrReplaceResult = candidateRepository.addOrReplace(productionCandidate);
+
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
+		assertThat(filtered.size(), is(1));
+
+		final I_MD_Candidate record = filtered.get(0);
+		assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
+		assertThat(record.getMD_Candidate_SubType(), is(productionCandidate.getSubType().toString()));
+		assertThat(record.getM_Product_ID(), is(productionCandidate.getProductId()));
+
+		final I_MD_Candidate_Prod_Detail productionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class).create().firstOnly(I_MD_Candidate_Prod_Detail.class);
+		assertThat(productionDetailRecord, notNullValue());
+		assertThat(productionDetailRecord.getDescription(), is("description"));
+		assertThat(productionDetailRecord.getPP_Plant_ID(), is(60));
+		assertThat(productionDetailRecord.getPP_Product_BOMLine_ID(), is(70));
+		assertThat(productionDetailRecord.getPP_Product_Planning_ID(), is(80));
+	}
+
+	@Test
+	public void retrieve_with_ProductionDetail()
+	{
+		final I_MD_Candidate record = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
+		record.setM_Product_ID(24);
+		record.setM_Warehouse_ID(51);
+		record.setDateProjected(new Timestamp(now.getTime()));
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
+		InterfaceWrapperHelper.save(record);
+		
+		final I_MD_Candidate_Prod_Detail productionDetailRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Prod_Detail.class);
+		productionDetailRecord.setDescription("description1");
+		productionDetailRecord.setPP_Plant_ID(61);
+		productionDetailRecord.setPP_Product_BOMLine_ID(71);
+		productionDetailRecord.setPP_Product_Planning_ID(81);
+		productionDetailRecord.setMD_Candidate(record);
+		InterfaceWrapperHelper.save(productionDetailRecord);
+		
+		final Candidate cand = candidateRepository.retrieve(record.getMD_Candidate_ID());
+		assertThat(cand, notNullValue());
+		assertThat(cand.getProductId(), is(24));
+		assertThat(cand.getWarehouseId(), is(51));
+		assertThat(cand.getDate(), is(now));
+		assertThat(cand.getProductionDetail(), notNullValue());
+		assertThat(cand.getProductionDetail().getDescription(), is("description1"));
+		assertThat(cand.getProductionDetail().getProductBomLineId(), is(71));
+		assertThat(cand.getProductionDetail().getProductPlanningId(), is(81));
 	}
 
 	/**

@@ -40,6 +40,7 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**
  * {@link I_PP_Order_BOMLine}'s Key
@@ -85,7 +86,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 		final int orderBOMLineId = orderBOMLine.getPP_Order_BOMLine_ID();
 		value = new KeyNamePair(orderBOMLineId, productName);
 
-		coProduct = ppOrderBOMLineBL.isCoOrByProduct(orderBOMLine);
+		coProduct = PPOrderUtil.isCoOrByProduct(orderBOMLine);
 		qtyRequired = orderBOMLine.getQtyRequiered();
 		qtyDelivered = orderBOMLine.getQtyDelivered();
 

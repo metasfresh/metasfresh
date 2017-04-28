@@ -56,12 +56,13 @@ import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 
+import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrder;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -360,10 +361,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private String getTypeMRP(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 		final String typeMRP;
 
-		if (orderBOMBL.isReceipt(orderBOMLine.getComponentType()))
+		if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 		{
 			typeMRP = X_PP_MRP.TYPEMRP_Supply;
 		}
@@ -380,7 +380,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 		final BigDecimal qtyTarget;
-		if (orderBOMBL.isReceipt(ppOrderBOMLine.getComponentType()))
+		if (PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
 		{
 			qtyTarget = orderBOMBL.getQtyRequiredToReceive(ppOrderBOMLine);
 		}
@@ -405,7 +405,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 		final BigDecimal qty;
-		if (orderBOMBL.isReceipt(ppOrderBOMLine.getComponentType()))
+		if (PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
 		{
 			qty = orderBOMBL.getQtyToReceive(ppOrderBOMLine);
 		}
@@ -671,9 +671,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private final boolean isAlternative(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
-
-		final boolean alternative = orderBOMBL.isVariant(orderBOMLine);
+		final boolean alternative = PPOrderUtil.isVariant(orderBOMLine);
 		return alternative;
 	}
 

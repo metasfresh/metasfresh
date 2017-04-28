@@ -59,6 +59,8 @@ public class Candidate
 	@NonNull
 	private final Integer productId;
 
+	private final Integer attributeSetInstanceId;
+	
 	@NonNull
 	private final Integer warehouseId;
 
@@ -85,8 +87,13 @@ public class Candidate
 	private final Integer parentId;
 
 	private final Integer groupId;
-	
+
 	private final Integer seqNo;
+
+	/**
+	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
+	 */
+	private final ProductionCandidateDetail productionDetail;
 
 	/**
 	 * The projected date at which we expect this candidate's {@link #getQuantity()}.

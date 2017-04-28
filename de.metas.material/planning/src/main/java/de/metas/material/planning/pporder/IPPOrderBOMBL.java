@@ -31,55 +31,13 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
-	boolean isComponent(final I_PP_Order_BOMLine bomLine);
-
-	boolean isByProduct(final I_PP_Order_BOMLine bomLine);
-
-	boolean isByProduct(String componentType);
-
-	boolean isCoProduct(final I_PP_Order_BOMLine bomLine);
-
-	boolean isCoOrByProduct(I_PP_Order_BOMLine bomLine);
-
-	/**
-	 *
-	 * @param bomLine
-	 * @return true if given BOM Line is a alternative/variant for a main component line
-	 */
-	boolean isVariant(I_PP_Order_BOMLine bomLine);
-
-	/**
-	 *
-	 * @param bomLine
-	 * @return true if given Order BOM Line is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
-	 */
-	boolean isReceipt(String bomLineComponentType);
-
-	default boolean isIssue(final String bomLineComponentType)
-	{
-		return !isReceipt(bomLineComponentType);
-	}
-
-	/**
-	 * Asserts given <code>bomLine</code> is receipt.
-	 *
-	 * @param bomLine
-	 * @see #isReceipt(I_PP_Order_BOMLine)
-	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
-	 */
-	void assertReceipt(I_PP_Order_BOMLine bomLine);
-
-	/**
-	 * @param orderBOMLine
-	 * @param componentTypes one or more component types
-	 * @return true of Component Type is any of following types
-	 */
-	boolean isComponentType(final I_PP_Order_BOMLine orderBOMLine, String... componentTypes);
 
 	I_PP_Order_BOM createOrderBOMAndLines(I_PP_Order ppOrder);
 

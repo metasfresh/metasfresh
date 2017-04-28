@@ -1,16 +1,15 @@
 package de.metas.material.event;
 
 import java.time.Instant;
-import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.event.pporder.PPOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.Singular;
 
 /*
  * #%L
@@ -53,11 +52,6 @@ public class ProductionOrderEvent implements MaterialEvent
 	private final TableRecordReference reference;
 
 	@NonNull
-	@Singular
-	private final List<MaterialDescriptor> productionOutputs;
-
-	@NonNull
-	@Singular
-	private final List<MaterialDescriptor> productionInputs;
+	private final PPOrder ppOrder;
 
 }

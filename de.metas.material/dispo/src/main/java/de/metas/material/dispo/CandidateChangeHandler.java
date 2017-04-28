@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,22 @@ public class CandidateChangeHandler
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateFactory = candidateFactory;
+	}
+
+	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	{
+		switch (candidate.getType())
+		{
+			case DEMAND:
+				return onDemandCandidateNewOrChange(candidate);
+
+			case SUPPLY:
+				return onSupplyCandidateNewOrChange(candidate);
+
+			default:
+				Check.errorIf(true, "Param 'candidate' has unexpected type={}; candidate={}", candidate.getType(), candidate);
+				return null;
+		}
 	}
 
 	public Candidate onDemandCandidateNewOrChange(@NonNull final Candidate demandCandidate)

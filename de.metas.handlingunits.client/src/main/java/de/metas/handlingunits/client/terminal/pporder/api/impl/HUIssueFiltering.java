@@ -52,7 +52,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
@@ -115,7 +115,6 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	@Override
 	public IHUQueryBuilder getHUsForIssueQuery(final I_PP_Order ppOrder, final List<I_PP_Order_BOMLine> orderBOMLines, final int warehouseId)
 	{
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		//
@@ -123,7 +122,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		final Set<Integer> productIds = new HashSet<Integer>();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
-			if (ppOrderBOMBL.isReceipt(orderBOMLine.getComponentType()))
+			if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 			{
 				continue;
 			}

@@ -34,6 +34,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**
  * Product storage for a manufacturing order BOM Line.
@@ -76,7 +77,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 
 		final BigDecimal qtyCapacity;
 		final BigDecimal qtyToIssueOrReceive;
-		if (ppOrderBOMBL.isReceipt(orderBOMLine.getComponentType()))
+		if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 		{
 			qtyCapacity = ppOrderBOMBL.getQtyRequiredToReceive(orderBOMLine);
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToReceive(orderBOMLine);

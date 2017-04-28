@@ -10,10 +10,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -33,7 +31,7 @@ import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
-import de.metas.material.event.ProductionPlanEvent.ProductionPlanEventBuilder;
+import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
@@ -46,10 +44,8 @@ import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrder;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
-import de.metas.material.planning.pporder.PPOrderLine;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
 
 /*
@@ -95,6 +91,9 @@ public class MaterialDemandListener implements MaterialEventListener
 
 	@Autowired
 	private PPOrderPojoSupplier ppOrderPojoSupplier;
+
+	@Autowired
+	private PPOrderPojoConverter ppOrderPojoConverter;
 
 	@Override
 	public void onEvent(final MaterialEvent event)
@@ -154,60 +153,10 @@ public class MaterialDemandListener implements MaterialEventListener
 							mkRequest(materialDemandEvent, mrpContext),
 							mkMRPNotesCollector());
 
-			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+			final ProductionPlanEvent event = ppOrderPojoConverter.asProductionPlanEvent(ppOrder, materialDemandEvent.getReference());
 
-			final Integer orgId = ppOrder.getOrgId();
-			final Integer warehouseId = ppOrder.getWarehouseId();
-
-			final BigDecimal productQty = calculateProductQty(ppOrder.getProductId(), ppOrder.getUomId(), ppOrder.getQuantity());
-
-			final ProductionPlanEventBuilder builder = ProductionPlanEvent.builder();
-			builder
-					.when(Instant.now())
-					.productionOutput(MaterialDescriptor.builder()
-							.date(ppOrder.getDatePromised())
-							.orgId(orgId)
-							.productId(ppOrder.getProductId())
-							.qty(productQty)
-							.warehouseId(warehouseId)
-							.build())
-					.reference(materialDemandEvent.getReference());
-
-			for (final PPOrderLine ppOrderLine : ppOrder.getLines())
-			{
-				final BigDecimal lineProductQty = calculateProductQty(ppOrderLine.getProductId(), ppOrderLine.getUomId(), ppOrderLine.getQtyRequired());
-
-				final MaterialDescriptor lineMaterialDescriptor = MaterialDescriptor.builder()
-						.orgId(orgId)
-						.date(ppOrder.getDateStartSchedule())
-						.productId(ppOrderLine.getProductId())
-						.qty(lineProductQty)
-						.warehouseId(warehouseId)
-						.build();
-				if (ppOrderBOMBL.isIssue(ppOrderLine.getComponentType()))
-				{
-					builder.productionInput(lineMaterialDescriptor);
-				}
-				else
-				{
-					builder.productionOutput(lineMaterialDescriptor);
-				}
-			}
-
-			MaterialEventService.get().fireEvent(builder.build());
+			MaterialEventService.get().fireEvent(event);
 		}
-	}
-
-	private BigDecimal calculateProductQty(final Integer productId, final Integer uomId, final BigDecimal quantity)
-	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
-		final I_C_UOM uomSource = InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
-
-		// in material-dispo we currently don't care for UOMs, so it always has to be the product's UOM.
-		final BigDecimal productQty = uomConversionBL.convertToProductUOM(Env.getCtx(), product, uomSource, quantity);
-		return productQty;
 	}
 
 	private IMutableMRPContext mkMRPContext(final MaterialDemandEvent materialDemandEvent)

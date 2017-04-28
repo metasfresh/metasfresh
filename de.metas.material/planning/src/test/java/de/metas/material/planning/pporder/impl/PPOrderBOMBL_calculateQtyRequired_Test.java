@@ -28,7 +28,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -40,7 +39,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPOrderPojoSupplier;
 
 /**
  * Test {@link PPOrderBOMBL#calculateQtyRequiredProjected(I_PP_Order_BOMLine)}.
@@ -74,7 +75,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		// NOTE: after this, model validators will be also registered
 		helper = new UOMTestHelper(Env.getCtx());
 
-		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
+		ppOrderBOMBL = new PPOrderBOMBL(new PPOrderPojoSupplier(new ProductPlanningBL()), new PPOrderPojoConverter());
 
 		createMasterData();
 	}

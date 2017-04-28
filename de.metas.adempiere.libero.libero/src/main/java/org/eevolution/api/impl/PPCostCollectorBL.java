@@ -50,6 +50,7 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
@@ -80,8 +81,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		}
 		else
 		{
-			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			if (ppOrderBOMBL.isComponentType(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product))
+			if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product))
 			{
 				costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
 			}
@@ -268,7 +268,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		// Get and validate the BOM Line
 		final I_PP_Order_BOMLine orderBOMLine = candidate.getPP_Order_BOMLine();
 		Check.assumeNotNull(orderBOMLine, LiberoException.class, "orderBOMLine not null");
-		ppOrderBOMBL.assertReceipt(orderBOMLine);
+		PPOrderUtil.assertReceipt(orderBOMLine);
 
 		//
 		// Validate Product

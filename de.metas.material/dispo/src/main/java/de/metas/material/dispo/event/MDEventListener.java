@@ -7,6 +7,7 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -16,6 +17,8 @@ import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
 /*
@@ -85,47 +88,52 @@ public class MDEventListener implements MaterialEventListener
 
 	private void handleProductionPlanEvent(final ProductionPlanEvent event)
 	{
-		Integer groupId = null;
-		Integer seqNo = null;
-		for (final MaterialDescriptor outputDescr : event.getProductionOutputs())
+		final PPOrder ppOrder = event.getPpOrder();
+
+		// ppOrder.getProductBomUomId(); // TODO
+
+		final Candidate supplyCandidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.subType(SubType.PRODUCTION)
+				.date(ppOrder.getDatePromised())
+				.orgId(ppOrder.getOrgId())
+				.productId(ppOrder.getProductId())
+
+				.quantity(ppOrder.getQuantity())
+				.warehouseId(ppOrder.getWarehouseId())
+				.reference(event.getReference())
+				.productionDetail(ProductionCandidateDetail.builder()
+						.plantId(ppOrder.getPlantId())
+						.productPlanningId(ppOrder.getProductPlanningId())
+						.build())
+				.build();
+
+		// this might cause 'candidateChangeHandler' to trigger another event
+		final Candidate candidateWithGroupId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+
+		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final Candidate supplyCandidate = Candidate.builder()
-					.type(Type.SUPPLY)
-					.groupId(groupId)
+			Candidate lineCandidate = Candidate.builder()
+					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
 					.subType(SubType.PRODUCTION)
-					.date(outputDescr.getDate())
-					.orgId(outputDescr.getOrgId())
-					.productId(outputDescr.getProductId())
-					.quantity(outputDescr.getQty())
-					.warehouseId(outputDescr.getWarehouseId())
+
+					.groupId(candidateWithGroupId.getGroupId())
+					.seqNo(candidateWithGroupId.getSeqNo() + 1)
+
+					.date(ppOrder.getDateStartSchedule())
+					.orgId(ppOrder.getOrgId())
+					.productId(ppOrderLine.getProductId())
+					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())
+					.quantity(ppOrderLine.getQtyRequired())
+					.warehouseId(ppOrder.getWarehouseId())
 					.reference(event.getReference())
+					.productionDetail(ProductionCandidateDetail.builder()
+							.productBomLineId(ppOrderLine.getProductBomLineId())
+							.description(ppOrderLine.getDescription())
+							.build())
 					.build();
 
-			// this might cause 'candidateChangeHandler' to trigger another event
-			final Candidate candidateWithGroupId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
-			if (groupId == null)
-			{
-				groupId = candidateWithGroupId.getGroupId();
-				seqNo = candidateWithGroupId.getSeqNo();
-			}
-		}
-
-		for (final MaterialDescriptor inputDescr : event.getProductionInputs())
-		{
-			final Candidate demandCandidate = Candidate.builder()
-					.type(Type.DEMAND)
-					.subType(SubType.PRODUCTION)
-					.groupId(groupId)
-					.seqNo(seqNo + 1)
-					.date(inputDescr.getDate())
-					.orgId(inputDescr.getOrgId())
-					.productId(inputDescr.getProductId())
-					.quantity(inputDescr.getQty())
-					.warehouseId(inputDescr.getWarehouseId())
-					.reference(event.getReference())
-					.build();
-
-			candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
+			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
 		}
 	}
 

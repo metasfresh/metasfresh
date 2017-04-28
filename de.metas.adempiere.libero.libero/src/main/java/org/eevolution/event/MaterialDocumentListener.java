@@ -8,6 +8,7 @@ import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.pporder.PPOrder;
 
 /*
  * #%L
@@ -55,6 +56,8 @@ public class MaterialDocumentListener implements MaterialEventListener
 
 	private void handleProductionOrderEvent(final ProductionOrderEvent event)
 	{
+		PPOrder.builder();
+		
 		// TODO Auto-generated method stub
 		
 	}

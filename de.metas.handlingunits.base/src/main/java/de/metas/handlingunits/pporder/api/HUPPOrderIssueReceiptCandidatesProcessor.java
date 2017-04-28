@@ -59,6 +59,7 @@ import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
@@ -172,7 +173,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private boolean isMaterialReceipt(final I_PP_Order_Qty candidate)
 	{
 		final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine = candidate.getPP_Order_BOMLine();
-		return ppOrderBOMLine == null || ppOrderBOMBL.isReceipt(ppOrderBOMLine.getComponentType());
+		return ppOrderBOMLine == null || PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType());
 	}
 
 	private final void markProcessedAndSave(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
@@ -393,7 +394,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private static final class IssueCandidatesBuilder
 	{
 		// Services
-		private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 		private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
 		//
@@ -486,7 +486,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Make sure it's a issue line (shall not happen)
-			if (!ppOrderBOMBL.isIssue(ppOrderBOMLine.getComponentType()))
+			if (!PPOrderUtil.isIssue(ppOrderBOMLine.getComponentType()))
 			{
 				throw new HUException("BOM line does not allow issuing materials."
 						+ "\n @PP_Order_BOMLine_ID@: " + ppOrderBOMLine);

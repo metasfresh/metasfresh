@@ -1,8 +1,19 @@
 package de.metas.material.dispo;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.material.dispo.Candidate.SubType;
+import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderLine.PPOrderLineBuilder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,37 +39,52 @@ import com.google.common.annotations.VisibleForTesting;
 
 public class CandidateService
 {
+	private final CandidateRepository candidateRepository;
+
+	public CandidateService(@NonNull final CandidateRepository candidateRepository)
+	{
+		this.candidateRepository = candidateRepository;
+	}
+
+	public void requestOrder(final Integer groupId)
+	{
+		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
+		if (group.isEmpty())
+		{
+			return;
+		}
+
+		switch (group.get(0).getSubType())
+		{
+			case PRODUCTION:
+				requestProductionOrder(group);
+				break;
+
+			default:
+				break;
+		}
+
+	}
+
 	/**
-	 * Invalidate the candidates that directly match the given segment. Their invalidation will create events that can lead to the invalidation of further candidates.
-	 *
-	 * @param segment
+	 * 
+	 * @param group a non-empty list of candidates that all have {@link SubType#PRODUCTION}, 
+	 * all have the same {@link Candidate#getGroupId()}
+	 * and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
+	 * @return
 	 */
-	public void invalidateMatches(final CandidatesSegment segment)
-	{
-		final Stream<Candidate> directMatches = retrieveDirectMatches(segment);
-		directMatches
-				.forEach(candidate -> {
-
-					// fire an invalidation event for 'candidate'
-
-					retrieveChildren(candidate)
-							.forEach(childCandidate -> {
-								// fire an invalidation event for childCandidate
-							});;
-				});
-	}
-
-	private Stream<Candidate> retrieveChildren(final Candidate candidate)
-	{
-		// TODO Auto-generated method stub
-		return null;
-
-	}
-
 	@VisibleForTesting
-	/* package */ Stream<Candidate> retrieveDirectMatches(final CandidatesSegment segment)
+	ProductionOrderEvent requestProductionOrder(List<Candidate> group)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
+		final PPOrderLineBuilder ppOrderLineBuilder = PPOrderLine.builder();
+
+		for (final Candidate groupMember : group)
+		{
+
+		}
+		return ProductionOrderEvent.builder()
+				.when(Instant.now())
+				.build();
 	}
 }
