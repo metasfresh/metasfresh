@@ -133,7 +133,7 @@ Since we now work with a range, we now declare the dependencies here where range
 			<version>${metasfresh-procurement-webui.version}</version>
 			<type>jar</type>
 		</dependency>
-		
+
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
@@ -603,7 +603,7 @@ note: when adding new records, please roughly order them by alphabet.
 								<!-- gh metasfresh/metasfresh#968 -->
 								de.metas.procurement.webui,
 								metasfresh-webui-frontend,
-								metasfresh-webui-api
+								metasfresh-webui-api,
 								<!-- gh metasfresh/metasfresh#523 -->
 								metasfresh-material-dispo
 							</includeArtifactIds>
