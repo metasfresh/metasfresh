@@ -33,7 +33,7 @@ class SideList extends Component {
 
     renderBody = () => {
         const {
-            open, windowType, closeOverlays, closeSideList, isSideListShow,
+            windowType, closeOverlays, closeSideList, isSideListShow,
             docId, pagination, sorting, viewId
         } = this.props;
 
@@ -60,7 +60,8 @@ class SideList extends Component {
                     }
                     selected={[docId]}
                     disconnectFromState={true}
-                    {...{open, windowType, closeOverlays, closeSideList,
+                    autofocus={true}
+                    {...{windowType, closeOverlays, closeSideList,
                     isSideListShow}}
                 />
             case 1:
@@ -127,7 +128,9 @@ class SideList extends Component {
                             }
                         </div>)}
                     </div>
-                    {this.renderBody()}
+                    <div className="order-list-body">
+                        {this.renderBody()}
+                    </div>
                 </div>
             </div>
         )
