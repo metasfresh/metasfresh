@@ -505,7 +505,8 @@ class Header extends Component {
 
                 <GlobalContextShortcuts
                     handleSidelistToggle={(id) =>
-                        showSidelist && this.handleSidelistToggle(id, sideListTab)}
+                        showSidelist &&
+                        this.handleSidelistToggle(id, sideListTab)}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',

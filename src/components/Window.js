@@ -188,7 +188,7 @@ class Window extends Component {
     render() {
         const {sections, tabs} = this.props.layout;
         const {
-            handleDropFile, handleRejectDropped, handleDragStart
+            handleDropFile, handleRejectDropped, handleDragStart, isModal
         } = this.props;
 
         return (
@@ -202,10 +202,12 @@ class Window extends Component {
                         {sections && this.renderSections(sections)}
                     </div>
                 </Dropzone>
-
-                <div className="mt-1 tabs-wrapper">
-                    {tabs && this.renderTabs(tabs)}
-                </div>
+                {
+                    !isModal &&
+                    <div className="mt-1 tabs-wrapper">
+                        {tabs && this.renderTabs(tabs)}
+                    </div>
+                }
             </div>
         );
     }
