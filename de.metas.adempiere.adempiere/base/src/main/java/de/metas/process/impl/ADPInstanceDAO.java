@@ -302,7 +302,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Check which type of Parameter we have, and if the instPara value differs from the piPara value
 		// apply the piPara Value to the instPara value and save. If not, do nothing.
 
-		if (value instanceof java.util.Date
+		if(value == null && valueTo == null)
+		{
+			hasChanges = true;
+		}
+		else if (value instanceof java.util.Date
 				&& (!value.equals(adPInstanceParam.getP_Date()) || !Objects.equals(valueTo, adPInstanceParam.getP_Date_To())) // value changed
 		)
 		{
