@@ -20,6 +20,7 @@ Here come the actual release notes:
   * [#427](https://github.com/metasfresh/metasfresh/issues/427) Integrate spring DI with metasfresh Services helper class
     * Now integrated Sprint Dependancy Injection into metasfresh Services.
   * [#880](https://github.com/metasfresh/metasfresh/issues/880) Improve IProcessPrecondition framework
+    * Improvements on Process Framework and issue handling.
   * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
     * Adjustment of the Tour Planning Preparation Date calculation. Now taking the earliest Tour preparation time according to the date promised.
   * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
@@ -39,7 +40,9 @@ Here come the actual release notes:
   * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
     * Adding missing fields into advanced edit of Sales Order Window in WebUI.
   * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
+    * Translated the Request Names into Language en_US.
   * [#1382](https://github.com/metasfresh/metasfresh/issues/1382) Make Packing Item editable in Manufacturing Order Header
+    * Allowing to edit the Packing Instruction in Manufacturing Order.
   * [#1393](https://github.com/metasfresh/metasfresh/issues/1393) Translate New Partner Quick Input window to en_US
     * Translating the Quickentry for new Business Partners to en_US Language.
   * [#1395](https://github.com/metasfresh/metasfresh/issues/1395) Translate Payment Terms to en_US
@@ -47,6 +50,7 @@ Here come the actual release notes:
  
 * metasfresh-webui-api
   * [#261](https://github.com/metasfresh/metasfresh-webui-api/issues/261) Date offset in Dashboard KPI because of missing Timezone
+    * Adjustment of Dashboard KPI, now ofsetting the Date because of missing Timezone.
   * [#291](https://github.com/metasfresh/metasfresh-webui-api/issues/291) Show value/ name in breadcrumb but edit in window
     * Adjusting the look and feel of the breadcrumb structure and navigation.
   * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
@@ -60,14 +64,21 @@ Here come the actual release notes:
   * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
     * Adding support for password widget type in Rest-API, preparing the frontend implementation.
   * [#317](https://github.com/metasfresh/metasfresh-webui-api/issues/317) Manufacturing Issue/Receipt: drop StatusInfo column
+    * Adjustment in Manufacturing Issue and receipt, drpping the status info column in WebUI.
   * [#318](https://github.com/metasfresh/metasfresh-webui-api/issues/318) Manufacturing Issue/Receipt: show packing info for BOM components
     * Adding the Packaging Info Action Issue & Receipt Editor in new Manufacturing.
   * [#319](https://github.com/metasfresh/metasfresh-webui-api/issues/319) Manufacturing Issue/Receipt: show BOM line attributes if any
+    * Adding BOM line Attributes to manufacturing Order WebUI.
   * [#321](https://github.com/metasfresh/metasfresh-webui-api/issues/321) Manufacturing Issue/Receipt: introduce planning status
+    * Introducing the planning status to manufacturing Order WebUI.
   * [#322](https://github.com/metasfresh/metasfresh-webui-api/issues/322) Manufacturing Issue/Receipt: Fix Qty and QtyPlan columns
+    * Adding Fix Qty and Qty Plan to manufacturing Order WebUI.
   * [#323](https://github.com/metasfresh/metasfresh-webui-api/issues/323) Manufacturing Issue/Receipt: receipt lines shall be displayed first
+    * Reordering the manufacturing order ui, now ordered by receipt lines first.
   * [#326](https://github.com/metasfresh/metasfresh-webui-api/issues/326) technical: Remove JSONProcessInstanceResult deprecated properties
+    * Technical issue for further improvement of JSON Messaging in Rest-API.
   * [#332](https://github.com/metasfresh/metasfresh-webui-api/issues/332) Empties window without pre-selection possible
+    * Adding a new Functioanlity to allow empties receive without having preselected material receipt lines.
   
 * metasfresh-webui-frontend
   * [#248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/248) Handle Password Fields in WebUI
