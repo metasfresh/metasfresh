@@ -60,11 +60,21 @@ public final class ViewResult
 		return new ViewResult(view);
 	}
 
-	private final IView view;
-	private final int firstRow;
-	private final int pageLength;
+	//
+	// View info
+	private final ViewId viewId;
+	private final ViewId parentViewId;
+	private final long size;
+	private final int queryLimit;
+	private final boolean queryLimitHit;
+	
 	private final List<DocumentFilter> filters;
 	private final List<DocumentQueryOrderBy> orderBys;
+
+	//
+	// Page info
+	private final int firstRow;
+	private final int pageLength;
 	private final List<IViewRow> page;
 
 	/** View and loaded page constructor */
@@ -77,7 +87,12 @@ public final class ViewResult
 	)
 	{
 		super();
-		this.view = view;
+		this.viewId = view.getViewId();
+		this.parentViewId = view.getParentViewId();
+		this.size = view.size();
+		this.queryLimit = view.getQueryLimit();
+		this.queryLimitHit = view.isQueryLimitHit();
+		
 		filters = ImmutableList.copyOf(view.getFilters());
 		this.orderBys = ImmutableList.copyOf(orderBys);
 
@@ -92,7 +107,12 @@ public final class ViewResult
 	private ViewResult(final IView view)
 	{
 		super();
-		this.view = view;
+		this.viewId = view.getViewId();
+		this.parentViewId = view.getParentViewId();
+		this.size = view.size();
+		this.queryLimit = view.getQueryLimit();
+		this.queryLimitHit = view.isQueryLimitHit();
+		
 		filters = ImmutableList.copyOf(view.getFilters());
 		orderBys = view.getDefaultOrderBys();
 
@@ -110,7 +130,7 @@ public final class ViewResult
 				.omitNullValues()
 				//
 				// View info
-				.add("view", view)
+				.add("viewId", viewId)
 				.add("filters", filters)
 				.add("orderBys", orderBys)
 				//
@@ -122,9 +142,19 @@ public final class ViewResult
 				.toString();
 	}
 
-	public IView getView()
+	public ViewId getViewId()
 	{
-		return view;
+		return viewId;
+	}
+	
+	public ViewId getParentViewId()
+	{
+		return parentViewId;
+	}
+	
+	public long getSize()
+	{
+		return size;
 	}
 
 	public int getFirstRow()
@@ -164,14 +194,14 @@ public final class ViewResult
 		}
 		return page;
 	}
-	
+
 	public int getQueryLimit()
 	{
-		return view.getQueryLimit();
+		return queryLimit;
 	}
-	
+
 	public boolean isQueryLimitHit()
 	{
-		return view.isQueryLimitHit();
+		return queryLimitHit;
 	}
 }

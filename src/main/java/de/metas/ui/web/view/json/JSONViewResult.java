@@ -1,23 +1,16 @@
 package de.metas.ui.web.view.json;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 
@@ -110,27 +103,22 @@ public final class JSONViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer queryLimit;
 
-	//
-	// Debug properties
-	private final Map<String, Object> debugPropeties;
-
 	public JSONViewResult(final ViewResult viewResult)
 	{
 		super();
 
 		//
 		// View informations
-		final IView view = viewResult.getView();
-		final ViewId viewId = view.getViewId(); 
+		final ViewId viewId = viewResult.getViewId(); 
 		this.viewId = viewId.getViewId();
 		this.windowId = viewId.getWindowId();
 		type = windowId;
 		
-		final ViewId parentViewId = view.getParentViewId();
+		final ViewId parentViewId = viewResult.getParentViewId();
 		this.parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
 		this.parentViewId = parentViewId == null?null : parentViewId.getViewId();
 
-		final long size = view.size();
+		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
 
 		filters = JSONDocumentFilter.ofList(viewResult.getFilters());
@@ -155,17 +143,6 @@ public final class JSONViewResult implements Serializable
 		// Query limit informations
 		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
 		queryLimitHit = viewResult.isQueryLimitHit() ? Boolean.TRUE : null;
-
-		//
-		// Debugging informations
-		if (WindowConstants.isProtocolDebugging())
-		{
-			debugPropeties = ImmutableMap.<String, Object> of("debug-view-info", view.toString());
-		}
-		else
-		{
-			debugPropeties = ImmutableMap.of();
-		}
 	}
 
 	@JsonCreator
@@ -213,12 +190,6 @@ public final class JSONViewResult implements Serializable
 		// Query limit hit
 		this.queryLimit = queryLimit;
 		this.queryLimitHit = queryLimitHit;
-
-		//
-		// Debug informations
-		// NOTE: initialize as mutable.
-		// The actual debug properties will be loaded by calling #putDebugProperty(...)
-		debugPropeties = new HashMap<>();
 	}
 
 	@Override
@@ -238,17 +209,5 @@ public final class JSONViewResult implements Serializable
 				.add("result", result)
 				//
 				.toString();
-	}
-
-	@JsonAnyGetter
-	public Map<String, Object> getDebugPropeties()
-	{
-		return debugPropeties;
-	}
-
-	@JsonAnySetter
-	private void putDebugProperty(final String name, final Object value)
-	{
-		debugPropeties.put(name, value);
 	}
 }
