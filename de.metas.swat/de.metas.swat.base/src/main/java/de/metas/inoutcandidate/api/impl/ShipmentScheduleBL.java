@@ -54,7 +54,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.api.IMsgBL;
@@ -81,15 +80,12 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
@@ -143,7 +139,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		final IInOutCandHandlerBL inOutCandHandlerBL = Services.get(IInOutCandHandlerBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
@@ -372,7 +367,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
 				final int bpLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
 
-				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(contextAwareSched, isSOTrx, deliveryDate, bpLocationId);
+				final Timestamp dateOrdered = sched.getCreated();
+				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(contextAwareSched, isSOTrx, dateOrdered, deliveryDate, bpLocationId);
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
 				sched.setPreparationDate_Override(preparationDate);

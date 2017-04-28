@@ -10,8 +10,11 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 
@@ -60,11 +63,28 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#PP_Order_ID", expireMinutes = 10)
 	List<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, final int ppOrderId, @CacheTrx final String trxName)
 	{
+		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId shall be > 0");
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Qty.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Qty.COLUMN_PP_Order_ID, ppOrderId)
 				.create()
 				.listImmutable(I_PP_Order_Qty.class);
+	}
+
+	@Override
+	public I_PP_Order_Qty retrieveOrderQtyForCostCollector(final int ppOrderId, final int costCollectorId)
+	{
+		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId shall be > 0");
+		Preconditions.checkArgument(costCollectorId > 0, "costCollectorId shall be > 0");
+
+		return retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(cand -> cand.getPP_Cost_Collector_ID() == costCollectorId)
+				// .peek(cand -> Check.assume(cand.isProcessed(), "Candidate was expected to be processed: {}", cand))
+				.reduce((cand1, cand2) -> {
+					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
+				})
+				.orElse(null);
 	}
 }

@@ -45,6 +45,8 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	}
 
 	List<I_PP_Order_Qty> retrieveOrderQtys(int ppOrderId);
+	
+	I_PP_Order_Qty retrieveOrderQtyForCostCollector(int ppOrderId, final int costCollectorId);
 
 	default Stream<I_PP_Order_Qty> streamOrderQtys(final int ppOrderId)
 	{

@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.spi.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -37,7 +38,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
@@ -88,10 +88,10 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 
 		//
 		// Fetched AD_Ref_List record
-		final I_AD_Ref_List adRefList = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(ctx, I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, adrRegionValue);
+		final ADRefListItem adRefList = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, adrRegionValue);
 		Check.assumeNotNull(adRefList, "adRefList not null");
 
-		final String adrRegionName = adRefList.getName();
+		final String adrRegionName = adRefList.getName().getDefaultValue();
 
 		final I_M_AttributeValue adrAttributeValue = InterfaceWrapperHelper.create(ctx, I_M_AttributeValue.class, trxName);
 		adrAttributeValue.setM_Attribute(adrAttribute);

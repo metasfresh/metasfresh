@@ -11,7 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContext;
@@ -42,12 +42,12 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,9 +57,9 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 /**
  * Producer for vendor returns.
  * Used when some products were received from a vendor and it was decided they are not respecting the quality standards they can be sent back to the vendor.
- * 
+ *
  * Introduced in #1062
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -140,7 +140,7 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 
 					if (!materialItems.isEmpty())
 					{
-						I_M_HU_PackingMaterial huPackingMaterial = materialItems.get(0).getM_HU_PackingMaterial();
+						final I_M_HU_PackingMaterial huPackingMaterial = materialItems.get(0).getM_HU_PackingMaterial();
 
 						if (huPackingMaterial != null)
 						{
@@ -188,19 +188,19 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 	}
 
 	@Override
-	protected int getReturnsDocTypeId(final IContextAware contextProvider, final boolean isSOTrx, final I_M_InOut inout, final String docBaseType)
+	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
 		// in the case of returns the docSubType is null
 		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
 
 		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
 				.getDocTypeOrNullForSOTrx(
-						contextProvider.getCtx() // ctx
+						Env.getCtx() // ctx
 						, docBaseType // doc basetype
 						, docSubType // doc subtype
 						, isSOTrx // isSOTrx
-						, inout.getAD_Client_ID() // client
-						, inout.getAD_Org_ID() // org
+						, adClientId // client
+						, adOrgId // org
 						, ITrx.TRXNAME_None // trx
 		);
 
@@ -228,7 +228,7 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 			return;
 		}
 
-		IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 		final I_M_HU_Item parentHUItem = null; // no parent

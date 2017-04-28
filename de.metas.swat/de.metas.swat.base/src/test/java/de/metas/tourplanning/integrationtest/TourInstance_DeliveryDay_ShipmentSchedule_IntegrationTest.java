@@ -97,7 +97,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		// Create and test Order's PreparationDate
 		final I_C_Order order = createOrder(
 				"08.09.2014 23:59:59.999", // date promised
-				dd1.getDeliveryDate() // preparation date expected
+				dd2.getDeliveryDate() // preparation date expected
 		);
 
 		//
@@ -147,6 +147,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 
 		//
 		// Create and test a second Order, similar with first one
+		// Note: because the tour instance was processed, the delivery date from d2 is no longer available!
 		final I_C_Order order2 = createOrder(
 				"08.09.2014 23:59:59.999", // date promised
 				dd1.getDeliveryDate() // preparation date expected
@@ -208,7 +209,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		}
 	}
 
-	private I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setC_BPartner(bpartner);

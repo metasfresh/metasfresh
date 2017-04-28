@@ -101,6 +101,11 @@ public interface IStringExpression extends IExpression<String>
 
 	@Override
 	Set<String> getParameters();
+	
+	default boolean requiresParameter(final String parameterName)
+	{
+		return getParameters().contains(parameterName);
+	}
 
 	@Override
 	default boolean isNoResult(final Object result)

@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.I_C_UOM;
@@ -41,6 +40,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
@@ -51,6 +51,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 
@@ -187,16 +188,16 @@ public class PP_Cost_Collector
 				});
 
 		//
-		// Reverse PP_Order_Qty records
+		// Delete receipt candidates
 		final Set<Integer> huIds = hus.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
 		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 		huPPOrderQtyDAO
 				.retrieveOrderQtys(cc.getPP_Order_ID())
 				.stream()
-				.filter(candidate -> huIds.contains(candidate.getM_HU_ID()))
-				.forEach(candidate -> {
-					candidate.setProcessed(false);
-					huPPOrderQtyDAO.delete(candidate);
+				.filter(receiptCandidate -> huIds.contains(receiptCandidate.getM_HU_ID()))
+				.forEach(receiptCandidate -> {
+					receiptCandidate.setProcessed(false);
+					huPPOrderQtyDAO.delete(receiptCandidate);
 				});
 	}
 
@@ -205,36 +206,32 @@ public class PP_Cost_Collector
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
 
-		final int costCollectorId = cc.getPP_Cost_Collector_ID();
-
 		//
-		// Un-process the candidate
+		// Delete issue candidate
 		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-		final I_PP_Order_Qty candidate = huPPOrderQtyDAO
-				.retrieveOrderQtys(cc.getPP_Order_ID())
-				.stream()
-				.filter(cand -> cand.getPP_Cost_Collector_ID() == costCollectorId)
-				.peek(cand -> Check.assume(cand.isProcessed(), "Candidate was expected to be processed: {}", cand))
-				.reduce((cand1, cand2) -> {
-					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
-				})
-				.orElse(null);
-		if(candidate != null)
+		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(cc.getPP_Order_ID(), cc.getPP_Cost_Collector_ID());
+		if(issueCandidate != null)
 		{
-			final I_M_HU hu = candidate.getM_HU();
+			//
+			// Make sure the HU is valid
+			final I_M_HU hu = issueCandidate.getM_HU();
 			if(!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 			{
 				throw new HUException("Expected the HU to be active again but it wasn't")
 					.setParameter("HU", hu)
 					.setParameter("HUStatus", hu.getHUStatus())
-					.setParameter("candidate", candidate)
+					.setParameter("candidate", issueCandidate)
 					.setParameter("costCollector", cc)
 					.appendParametersToMessage();
 			}
 			
-			candidate.setPP_Cost_Collector(null);
-			candidate.setProcessed(false);
-			huPPOrderQtyDAO.save(candidate);
+			//candidate.setPP_Cost_Collector(null);
+			issueCandidate.setProcessed(false);
+			huPPOrderQtyDAO.delete(issueCandidate);
+			
+			//
+			// Make sure the HU will be unlocked (if not already)
+			Services.get(IHULockBL.class).unlockOnAfterCommit(hu.getM_HU_ID(), HUPPOrderIssueProducer.lockOwner);
 		}
 	}
 

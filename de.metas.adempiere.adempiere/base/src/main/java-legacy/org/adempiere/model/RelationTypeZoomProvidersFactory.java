@@ -14,18 +14,23 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+import org.compiere.model.X_AD_RelationType;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 
 /*
@@ -152,6 +157,7 @@ public final class RelationTypeZoomProvidersFactory
 
 	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
 	{
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class); 
 		final Properties ctx = Env.getCtx();
 
 		final List<RelationTypeZoomProvider> result = new ArrayList<>();
@@ -166,6 +172,12 @@ public final class RelationTypeZoomProvidersFactory
 			}
 
 			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(ctx, adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
+			
+			final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
+			final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
+			
+			final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
+			final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
 			result.add(RelationTypeZoomProvider.builder()
 					.setDirected(relationType.isDirected())
@@ -173,10 +185,10 @@ public final class RelationTypeZoomProvidersFactory
 					.setInternalName(relationType.getInternalName())
 					//
 					.setSource_Reference_AD(relationType.getAD_Reference_Source_ID())
-					.setSourceRoleDisplayName(relationType.getRole_Source())
+					.setSourceRoleDisplayName(roleSourceDisplayName)
 					//
 					.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
-					.setTargetRoleDisplayName(relationType.getRole_Target())
+					.setTargetRoleDisplayName(roleTargetDisplayName)
 					//
 					.build());
 		}
