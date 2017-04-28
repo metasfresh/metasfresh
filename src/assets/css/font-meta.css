@@ -104,105 +104,105 @@
 .meta-icon-important:before {
     content: '\76';
 }
-.meta-icon-issue:before {
+.meta-icon-langerverwaltung:before {
     content: '\77';
 }
-.meta-icon-langerverwaltung:before {
+.meta-icon-left:before {
     content: '\78';
 }
-.meta-icon-left:before {
+.meta-icon-lieferung:before {
     content: '\79';
 }
-.meta-icon-lieferung:before {
+.meta-icon-list:before {
     content: '\7a';
 }
-.meta-icon-list:before {
+.meta-icon-listing-down:before {
     content: '\41';
 }
-.meta-icon-listing-down:before {
+.meta-icon-listing-up:before {
     content: '\42';
 }
-.meta-icon-listing-up:before {
+.meta-icon-logout:before {
     content: '\43';
 }
-.meta-icon-logout:before {
+.meta-icon-menu:before {
     content: '\44';
 }
-.meta-icon-menu:before {
+.meta-icon-message:before {
     content: '\45';
 }
-.meta-icon-message:before {
+.meta-icon-more:before {
     content: '\46';
 }
-.meta-icon-more:before {
+.meta-icon-notifications:before {
     content: '\47';
 }
-.meta-icon-notifications:before {
+.meta-icon-package:before {
     content: '\48';
 }
-.meta-icon-package:before {
+.meta-icon-pallete:before {
     content: '\49';
 }
-.meta-icon-pallete:before {
+.meta-icon-preview:before {
     content: '\4a';
 }
-.meta-icon-preview:before {
+.meta-icon-print:before {
     content: '\4b';
 }
-.meta-icon-print:before {
+.meta-icon-product:before {
     content: '\4c';
 }
-.meta-icon-product:before {
+.meta-icon-production:before {
     content: '\4d';
 }
-.meta-icon-production:before {
+.meta-icon-produktverwaltung:before {
     content: '\4e';
 }
-.meta-icon-produktverwaltung:before {
+.meta-icon-profile:before {
     content: '\4f';
 }
-.meta-icon-profile:before {
+.meta-icon-report:before {
     content: '\50';
 }
-.meta-icon-receive:before {
+.meta-icon-report-1:before {
     content: '\51';
 }
-.meta-icon-report:before {
+.meta-icon-right:before {
     content: '\52';
 }
-.meta-icon-report-1:before {
+.meta-icon-sales:before {
     content: '\53';
 }
-.meta-icon-right:before {
+.meta-icon-save:before {
     content: '\54';
 }
-.meta-icon-sales:before {
+.meta-icon-settings:before {
     content: '\55';
 }
-.meta-icon-save:before {
+.meta-icon-share:before {
     content: '\56';
 }
-.meta-icon-settings:before {
+.meta-icon-trash:before {
     content: '\57';
 }
-.meta-icon-share:before {
+.meta-icon-upload:before {
     content: '\58';
 }
-.meta-icon-trash:before {
+.meta-icon-upload-1:before {
     content: '\59';
 }
-.meta-icon-upload:before {
+.meta-icon-vertragsverwaltung:before {
     content: '\5a';
 }
-.meta-icon-upload-1:before {
+.meta-icon-wereneingang:before {
     content: '\30';
 }
-.meta-icon-vertragsverwaltung:before {
+.meta-icon-photo:before {
     content: '\31';
 }
-.meta-icon-wereneingang:before {
+.meta-icon-receive:before {
     content: '\32';
 }
-.meta-icon-photo:before {
+.meta-icon-issue:before {
     content: '\33';
 }
