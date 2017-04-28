@@ -88,128 +88,17 @@ class RawLookup extends Component {
                 console.log(mainProperty[0].field);
                 console.log(select);
 
-                if(property === '') {
-                    const promise = onChange(
+                
+                    onChange(
                         mainProperty[0].field, select, this.getAllDropdowns
                     );
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
 
-                    // handle case when there is no call to Api
-                    // by the cached value
-                    if(!promise){
-                        if(!subentity){
-                            this.getAllDropdowns();
-                        }
-                    }else{
-                        promise.then(() => {
-                            if(!subentity){
-                                this.getAllDropdowns();
-                            }
-                        }
-                    )}
-                } else {
-                    onChange(property, select);
-
-                    this.setState((prevState) => update(this.state, {
-                        properts: {$apply: item => {
-                            delete item[prevState.property];
-                            return item;
-                        }},
-                        list: {$set: []},
-                        property: {$set: ''}
-                    }), () => {
-                        this.generatingPropsSelection();
-                    });
-                }
+                    this.handleBlur();
+                
             }
         });
-    }
-
-    getAllDropdowns = () => {
-        const {
-            dispatch, windowType, dataId, select, tabId, rowId, entity,
-            subentity, subentityId, defaultValue, closeTableField
-        } = this.props;
-
-        const {
-            propertiesCopy
-        } = this.state;
-
-        // need to have property which has no default value
-        let propertiesArray = [];
-
-        // call for more properties
-        if(propertiesCopy.length > 0){
-            const batchArray = propertiesCopy.filter((item, index) => {
-                const objectValue = getItemsByProperty(
-                    defaultValue, 'field', item.field
-                )[0].value;
-                if(objectValue) {
-                    return false;
-                } else {
-                    propertiesArray.push(propertiesCopy[index]);
-                    return true;
-                }
-            }).map((item) => {
-                return dispatch(dropdownRequest(
-                    windowType, item.field, dataId, tabId, rowId, entity,
-                    subentity, subentityId
-                ))
-            });
-
-            Promise.all(batchArray).then(props => {
-                const newProps = {};
-                props.map((prop, index) => {
-                    if(propertiesArray.length > 0){
-                        newProps[propertiesArray[index].field] =
-                            prop.data.values;
-                    }
-                });
-
-                this.setState({
-                    properts: newProps,
-                    model: select
-                }, () => {
-                    this.generatingPropsSelection();
-                });
-            });
-        }else{
-            this.handleBlur(closeTableField);
-        }
-    }
-
-    generatingPropsSelection = () => {
-        const {onChange} = this.props;
-        const {properts} = this.state;
-        const propertiesKeys = Object.keys(properts);
-
-        // Chcecking properties model if there is some
-        // unselected properties and handling further
-        // selection
-        if(propertiesKeys.length === 0){
-            this.setState({
-                property: ''
-            });
-
-            this.handleBlur();
-            return;
-        }
-
-        for(let i=0; i < propertiesKeys.length; i++){
-
-            if(properts[propertiesKeys[i]].length > 1){
-                // Generating list of props choice
-                this.setState({
-                    list: properts[propertiesKeys[i]],
-                    property: propertiesKeys[i]
-                });
-                break;
-            }else{
-                onChange(propertiesKeys[i], properts[propertiesKeys[i]][0]);
-                this.handleBlur();
-            }
-        }
     }
 
     handleAddNew = () => {
