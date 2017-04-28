@@ -183,7 +183,7 @@ class TableItem extends Component {
         e.stopPropagation();
         handleSelect(this.nestedSelect(elem).concat([id]));
     }
-    
+
     getIconClassName = (huType) => {
         switch(huType){
             case 'LU':
