@@ -3,18 +3,24 @@ package org.eevolution.mrp.spi.impl.pporder;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
-import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
+import org.springframework.stereotype.Service;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.pporder.PPOrder;
 import lombok.NonNull;
 
@@ -39,13 +45,12 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Service
 public class PPOrderProducer
 {
 	public I_PP_Order createPPOrder(
 			@NonNull final PPOrder pojo,
-			@NonNull final IMRPCreateSupplyRequest request,
-			final int docTypeMO_ID)
+			@NonNull final Date dateOrdered)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
@@ -54,7 +59,7 @@ public class PPOrderProducer
 
 		//
 		// Create PP Order
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, request.getMRPContext());
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		ppOrder.setMRP_Generated(true);
 		ppOrder.setMRP_AllowCleanup(true);
 		ppOrder.setLine(10);
@@ -69,8 +74,9 @@ public class PPOrderProducer
 		//
 		// Document Type & Status
 
-		ppOrder.setC_DocTypeTarget_ID(docTypeMO_ID);
-		ppOrder.setC_DocType_ID(docTypeMO_ID);
+		final int docTypeId = getC_DocType_ID(pojo.getOrgId());
+		ppOrder.setC_DocTypeTarget_ID(docTypeId);
+		ppOrder.setC_DocType_ID(docTypeId);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 
@@ -87,7 +93,7 @@ public class PPOrderProducer
 
 		//
 		// Dates
-		ppOrder.setDateOrdered(request.getMRPContext().getDateAsTimestamp());
+		ppOrder.setDateOrdered(new Timestamp(dateOrdered.getTime()));
 
 		final Timestamp dateFinishSchedule = new Timestamp(pojo.getDatePromised().getTime());
 		ppOrder.setDatePromised(dateFinishSchedule);
@@ -107,8 +113,9 @@ public class PPOrderProducer
 
 		//
 		// Inherit values from MRP demand
-		ppOrder.setC_OrderLine_ID(request.getMRPDemandOrderLineSOId());
-		ppOrder.setC_BPartner_ID(request.getMRPDemandBPartnerId());
+		// TODO
+//		ppOrder.setC_OrderLine_ID(request.getMRPDemandOrderLineSOId());
+//		ppOrder.setC_BPartner_ID(request.getMRPDemandBPartnerId());
 
 		//
 		// Save the manufacturing order
@@ -118,9 +125,12 @@ public class PPOrderProducer
 		return ppOrder;
 	}
 
-	public void createPPOrderLines()
+	private int getC_DocType_ID(final int orgId)
 	{
+		final Properties ctx = Env.getCtx();
 
+		final I_AD_Org org = Services.get(IOrgDAO.class).retrieveOrg(ctx, orgId);
+
+		return Services.get(IDocTypeDAO.class).getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId,  ITrx.TRXNAME_None);
 	}
-
 }

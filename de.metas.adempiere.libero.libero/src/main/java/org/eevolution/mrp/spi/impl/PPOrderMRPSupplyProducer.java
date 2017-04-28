@@ -39,7 +39,6 @@ import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
@@ -527,13 +526,13 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				.supplyPPOrderPojo(request,
 						executor.getMRPNotesCollector());
 
-		final int docTypeMO_ID = getC_DocType_ID(mrpContext, X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
 		final PPOrderProducer ppOrderProducer = new PPOrderProducer();
 
 		// note that the PP_OrderBOM and PP_OrderBOMLines are currently created via model interceptor
-		final I_PP_Order ppOrder = ppOrderProducer.createPPOrder(ppOrderPojo, request, docTypeMO_ID);
+		final I_PP_Order ppOrder = ppOrderProducer.createPPOrder(ppOrderPojo, mrpContext.getDate());
 		executor.addGeneratedSupplyDocument(ppOrder);
 		//
 		// If we are asked to complete it, enqueue the MO for completion after MRP runs

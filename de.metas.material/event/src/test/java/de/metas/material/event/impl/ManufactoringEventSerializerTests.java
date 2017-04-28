@@ -17,8 +17,12 @@ import org.junit.Test;
 
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
 
 /*
  * #%L
@@ -113,5 +117,91 @@ public class ManufactoringEventSerializerTests
 				.when(Instant.now())
 				.build();
 		return evt;
+	}
+
+	@Test
+	public void testProductionOrderEvent()
+	{
+		final ProductionOrderEvent event = ProductionOrderEvent.builder()
+				.when(Instant.now())
+				.reference(TableRecordReference.of("table", 24))
+				.ppOrder(PPOrder.builder()
+						.datePromised(SystemTime.asDate())
+						.dateStartSchedule(SystemTime.asDate())
+						.orgId(100)
+						.plantId(110)
+						.productId(120)
+						.productPlanningId(130)
+						.quantity(BigDecimal.TEN)
+						.uomId(140)
+						.warehouseId(150)
+						.warehouseId(160)
+						.line(PPOrderLine.builder()
+								.attributeSetInstanceId(270)
+								.description("desc1")
+								.productBomLineId(280)
+								.productId(290)
+								.qtyRequired(BigDecimal.valueOf(220))
+								.receipt(true)
+								.build())
+						.line(PPOrderLine.builder()
+								.attributeSetInstanceId(370)
+								.description("desc2")
+								.productBomLineId(380)
+								.productId(390)
+								.qtyRequired(BigDecimal.valueOf(320))
+								.receipt(false)
+								.build())
+						.build())
+				.build();
+
+		final String serializedEvt = MaterialEventSerializer.get().serialize(event);
+
+		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
+		
+		assertThat(deserializedEvt, is(event));
+	}
+	
+	@Test
+	public void testProductionPlanEvent()
+	{
+		final ProductionPlanEvent event = ProductionPlanEvent.builder()
+				.when(Instant.now())
+				.reference(TableRecordReference.of("table", 24))
+				.ppOrder(PPOrder.builder()
+						.datePromised(SystemTime.asDate())
+						.dateStartSchedule(SystemTime.asDate())
+						.orgId(100)
+						.plantId(110)
+						.productId(120)
+						.productPlanningId(130)
+						.quantity(BigDecimal.TEN)
+						.uomId(140)
+						.warehouseId(150)
+						.warehouseId(160)
+						.line(PPOrderLine.builder()
+								.attributeSetInstanceId(270)
+								.description("desc1")
+								.productBomLineId(280)
+								.productId(290)
+								.qtyRequired(BigDecimal.valueOf(220))
+								.receipt(true)
+								.build())
+						.line(PPOrderLine.builder()
+								.attributeSetInstanceId(370)
+								.description("desc2")
+								.productBomLineId(380)
+								.productId(390)
+								.qtyRequired(BigDecimal.valueOf(320))
+								.receipt(false)
+								.build())
+						.build())
+				.build();
+
+		final String serializedEvt = MaterialEventSerializer.get().serialize(event);
+
+		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
+		
+		assertThat(deserializedEvt, is(event));
 	}
 }

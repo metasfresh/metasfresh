@@ -266,7 +266,7 @@ public class MRPTestHelper
 
 		modelInterceptorRegistry.addModelInterceptor(new org.adempiere.model.validator.AdempiereBaseValidator(), client);
 		modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.LiberoValidator(), client);
-		modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.validator.MRPInterceptor(), client);
+		//modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.validator.MRPInterceptor(), client);
 	}
 
 	public Timestamp getToday()

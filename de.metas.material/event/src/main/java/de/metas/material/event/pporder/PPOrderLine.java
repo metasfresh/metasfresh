@@ -2,6 +2,7 @@ package de.metas.material.event.pporder;
 
 import java.math.BigDecimal;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -43,6 +44,7 @@ import lombok.experimental.Wither;
 @Data
 @Builder
 @Wither
+@AllArgsConstructor // used by jackson when it deserializes a string
 public class PPOrderLine
 {
 	private final String description;

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.compiere.model.I_S_Resource;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -36,6 +37,7 @@ import lombok.experimental.Wither;
 @Data
 @Builder
 @Wither
+@AllArgsConstructor // used by jackson when it deserializes a string
 public class PPOrder
 {
 	@NonNull

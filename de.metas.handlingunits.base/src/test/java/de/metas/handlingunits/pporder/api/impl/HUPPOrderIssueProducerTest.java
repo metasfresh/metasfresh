@@ -39,6 +39,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -50,6 +51,10 @@ import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -57,6 +62,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HandlingunitsTestConfiguration;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -67,6 +73,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { HandlingunitsTestConfiguration.class, LiberoTestConfiguration.class })
+@ActiveProfiles("test")
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
 	private MRPTestDataSimple masterData;
@@ -433,7 +442,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	{
 		final I_M_Product product = productBOM.getM_Product();
 		final I_C_UOM uom = productBOM.getC_UOM();
-		
+
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
 		InterfaceWrapperHelper.save(docType);
@@ -451,6 +460,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
 		ppOrder.setDocAction(DocAction.ACTION_Complete);
 		ppOrder.setC_UOM(uom);
+		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
 		InterfaceWrapperHelper.save(ppOrder);
 		return ppOrder;
 	}

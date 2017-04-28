@@ -33,20 +33,29 @@ import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
+import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_MRP;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.handlingunits.HandlingunitsTestConfiguration;
 import de.metas.handlingunits.client.terminal.ddorder.model.DDOrderTableRow;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.expectations.PackingMaterialsExpectation;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
-import de.metas.handlingunits.util.TraceUtils;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { HandlingunitsTestConfiguration.class, LiberoTestConfiguration.class })
+@ActiveProfiles("test")
+@Ignore
 public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProcessIntegrationTest
 {
 	@Override

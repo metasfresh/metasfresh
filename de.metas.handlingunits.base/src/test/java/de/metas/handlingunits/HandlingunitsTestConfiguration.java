@@ -1,12 +1,12 @@
-package org.eevolution;
+package de.metas.handlingunits;
 
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.eevolution.mrp.api.impl.MRPExecutor;
 import org.eevolution.mrp.api.impl.MockedMRPExecutor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -32,14 +32,23 @@ import org.springframework.context.annotation.Profile;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+/**
+ * This spring configuration shall be used by those test cases that require spring boot.
+ * <p>
+ * Also see <a href="https://spring.io/blog/2016/04/15/testing-improvements-in-spring-boot-1-4">this blog post</a> to learn how to simplify and (where possible) avoid spring dependencies in tests.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Configuration
 @Profile("test")
-@ComponentScan
-public class LiberoTestConfiguration
+public class HandlingunitsTestConfiguration
 {
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	@Bean
-	public Adempiere adempiere(final ApplicationContext applicationContext)
+	public Adempiere adempiere()
 	{
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);

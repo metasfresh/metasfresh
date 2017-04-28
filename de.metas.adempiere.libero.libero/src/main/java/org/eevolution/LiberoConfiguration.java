@@ -1,12 +1,9 @@
 package org.eevolution;
 
-import org.eevolution.mrp.api.impl.LiberoMRPContextFactory;
-import org.eevolution.mrp.api.impl.MRPExecutor;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import de.metas.material.planning.impl.MRPContextFactory;
-import lombok.NonNull;
+import de.metas.material.planning.MaterialPlanningConfiguration;
 
 /*
  * #%L
@@ -30,18 +27,7 @@ import lombok.NonNull;
  * #L%
  */
 @Configuration
+@ComponentScan(basePackageClasses = { LiberoConstants.class, MaterialPlanningConfiguration.class })// scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
 public class LiberoConfiguration
 {
-	@Bean
-	public MRPExecutor mrpExecutor()
-	{
-		return new MRPExecutor();
-	}
-
-	@Bean
-	public LiberoMRPContextFactory liberoMRPContextFactory(@NonNull final MRPContextFactory mrpContexFactory)
-	{
-		final LiberoMRPContextFactory liberoMRPContextFactory = new LiberoMRPContextFactory(mrpContexFactory);
-		return liberoMRPContextFactory;
-	}
 }
