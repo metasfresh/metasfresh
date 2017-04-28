@@ -47,22 +47,22 @@ import lombok.NonNull;
 public class PPOrderPojoConverter
 {
 
-	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrder)
-	{
-		return PPOrder.builder()
-				.datePromised(ppOrder.getDatePromised())
-				.dateStartSchedule(ppOrder.getDateStartSchedule())
-				.orgId(ppOrder.getAD_Org_ID())
-				
-				// .productPlanningId(productPlanningId)
-				.plantId(ppOrder.getS_Resource_ID())
-							.productId(ppOrder.getM_Product_ID())
-				.quantity(ppOrder.getQtyOrdered())
-				.uomId(ppOrder.getC_UOM_ID())
-				.warehouseId(ppOrder.getM_Warehouse_ID())
-			
-				.build();
-	}
+//	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrder)
+//	{
+//		return PPOrder.builder()
+//				.datePromised(ppOrder.getDatePromised())
+//				.dateStartSchedule(ppOrder.getDateStartSchedule())
+//				.orgId(ppOrder.getAD_Org_ID())
+//				
+//				// .productPlanningId(productPlanningId)
+//				.plantId(ppOrder.getS_Resource_ID())
+//							.productId(ppOrder.getM_Product_ID())
+//				.quantity(ppOrder.getQtyOrdered())
+//				.uomId(ppOrder.getC_UOM_ID())
+//				.warehouseId(ppOrder.getM_Warehouse_ID())
+//			
+//				.build();
+//	}
 
 	public PPOrderLine asPPOrderLinePojo(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{

@@ -57,8 +57,6 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.planning.pporder.PPOrderPojoSupplier;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
@@ -69,19 +67,6 @@ import lombok.NonNull;
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
 	private final static Logger log = LogManager.getLogger(PPOrderBOMBL.class);
-	
-	private final PPOrderPojoSupplier ppOrderPojoSupplier;
-
-	private final PPOrderPojoConverter ppOrderPojoConverter;
-
-
-	public PPOrderBOMBL(
-			@NonNull final PPOrderPojoSupplier ppOrderPojoSupplier,
-			@NonNull final PPOrderPojoConverter ppOrderPojoConverter)
-	{
-		this.ppOrderPojoSupplier = ppOrderPojoSupplier;
-		this.ppOrderPojoConverter = ppOrderPojoConverter;
-	}
 
 	private I_PP_Order_BOM createOrderBOM(final I_PP_Order ppOrder, final I_PP_Product_BOM bom)
 	{
@@ -165,7 +150,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	// public for testing
 	public final void updateOrderBOMLine(
-			@NonNull final I_PP_Order_BOMLine orderBOMLine, 
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_PP_Product_BOMLine bomLine)
 	{
 		orderBOMLine.setM_ChangeNotice_ID(bomLine.getM_ChangeNotice_ID());
@@ -203,9 +188,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public I_PP_Order_BOM createOrderBOMAndLines(final I_PP_Order ppOrder)
 	{
-
-		final PPOrder ppOrderPojo = ppOrderPojoConverter.asPPOrderPojo(ppOrder);
-		final I_PP_Product_BOM productBOM = ppOrderPojoSupplier.retriveAndVerifyBOM(ppOrderPojo);
+		final I_PP_Product_BOM productBOM = PPOrderUtil
+				.verifyProductBOM(ppOrder.getM_Product_ID(), ppOrder.getDateStartSchedule(), ppOrder.getPP_Product_BOM());
 
 		//
 		// Create BOM Head
@@ -255,7 +239,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		final BigDecimal multiplier = getQtyMultiplier(orderBOMLine);
 
-		//final I_PP_Product_BOMLine productBomLine = PPOrderUtil.getProductBomLine(ppOrderLinePojo);
+		// final I_PP_Product_BOMLine productBomLine = PPOrderUtil.getProductBomLine(ppOrderLinePojo);
 
 		final BigDecimal qtyRequired;
 		if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine.getComponentType(),
@@ -294,7 +278,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		throw new UnsupportedOperationException("calculateQtyRequired");
 	}
 
-
 	@Override
 	public BigDecimal calculateQtyRequiredProjected(final I_PP_Order_BOMLine orderBOMLine)
 	{
@@ -308,7 +291,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	@Override
 	public Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(
-			@NonNull final I_PP_Order_BOMLine orderBOMLine, 
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_C_UOM uom)
 	{
 		PPOrderUtil.assertIssue(orderBOMLine); // only issuing is supported
@@ -378,8 +361,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		}
 		return qty;
 	}
-
-	
 
 	/**
 	 * Explode Phantom Items.

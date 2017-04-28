@@ -17,10 +17,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.planning.ProductPlanningBL;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.planning.pporder.PPOrderPojoSupplier;
-
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -47,7 +43,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 {
 	private UOMTestHelper helper;
 
-	private final PPOrderBOMBL ppOrderBOMBL = new PPOrderBOMBL(new PPOrderPojoSupplier(new ProductPlanningBL()), new PPOrderPojoConverter());
+	private final PPOrderBOMBL ppOrderBOMBL = new PPOrderBOMBL();
 
 	//
 	// Master data

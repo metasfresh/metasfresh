@@ -39,10 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.planning.ProductPlanningBL;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.planning.pporder.PPOrderPojoSupplier;
-
 /**
  * Test {@link PPOrderBOMBL#calculateQtyRequiredProjected(I_PP_Order_BOMLine)}.
  *
@@ -75,7 +71,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		// NOTE: after this, model validators will be also registered
 		helper = new UOMTestHelper(Env.getCtx());
 
-		ppOrderBOMBL = new PPOrderBOMBL(new PPOrderPojoSupplier(new ProductPlanningBL()), new PPOrderPojoConverter());
+		ppOrderBOMBL = new PPOrderBOMBL();
 
 		createMasterData();
 	}

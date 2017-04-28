@@ -2,6 +2,7 @@ package de.metas.material.planning.pporder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,11 +15,13 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -255,5 +258,34 @@ public class PPOrderUtil
 	public I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderLinePojo)
 	{
 		return InterfaceWrapperHelper.create(Env.getCtx(), ppOrderLinePojo.getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
+	}
+	
+	public I_PP_Product_BOM verifyProductBOM(
+			@NonNull final Integer ppOrderProductId, 
+			@NonNull final Date ppOrderStartSchedule, 
+			@NonNull final I_PP_Product_BOM ppOrderProductBOM)
+	{
+		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
+		if (ppOrderProductId != ppOrderProductBOM.getM_Product_ID())
+		{
+			throw new MrpException("@NotMatch@ @PP_Product_BOM_ID@ , @M_Product_ID@");
+		}
+
+		// Product BOM Configuration should be verified - teo_sarca [ 2817870 ]
+		final I_M_Product product = ppOrderProductBOM.getM_Product();
+		if (!product.isVerified())
+		{
+			throw new MrpException("Product BOM Configuration not verified. Please verify the product first - " + product.getValue()); // TODO: translate
+		}
+
+		//
+		// Create BOM Head
+		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+		if (!productBOMBL.isValidFromTo(ppOrderProductBOM, ppOrderStartSchedule))
+		{
+			throw new BOMExpiredException(ppOrderProductBOM, ppOrderStartSchedule);
+		}
+
+		return ppOrderProductBOM;
 	}
 }

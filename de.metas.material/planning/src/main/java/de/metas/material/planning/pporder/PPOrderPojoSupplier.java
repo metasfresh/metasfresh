@@ -26,15 +26,14 @@ import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
+import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
-import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import lombok.NonNull;
 
@@ -202,34 +201,15 @@ public class PPOrderPojoSupplier
 		return result;
 	}
 
-	public I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
+	private I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
+		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
+		final Integer ppOrderProductId = ppOrder.getProductId();
+		
 		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
 				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)
 				.getPP_Product_BOM();
 
-		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
-		if (ppOrder.getProductId() != productBOM.getM_Product_ID())
-		{
-			throw new MrpException("@NotMatch@ @PP_Product_BOM_ID@ , @M_Product_ID@");
-		}
-
-		// Product BOM Configuration should be verified - teo_sarca [ 2817870 ]
-		final I_M_Product product = productBOM.getM_Product();
-		if (!product.isVerified())
-		{
-			throw new MrpException("Product BOM Configuration not verified. Please verify the product first - " + product.getValue()); // TODO: translate
-		}
-
-		//
-		// Create BOM Head
-		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
-		if (!productBOMBL.isValidFromTo(productBOM, dateStartSchedule))
-		{
-			throw new BOMExpiredException(productBOM, dateStartSchedule);
-		}
-
-		return productBOM;
+		return PPOrderUtil.verifyProductBOM(ppOrderProductId, dateStartSchedule, productBOM);
 	}
 }
