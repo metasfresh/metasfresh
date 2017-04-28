@@ -120,7 +120,7 @@ public class C_Flatrate_Term
 			}
 
 			final POInfo docTypePOInfo = POInfo.getPOInfo(localCtx, I_C_DocType.Table_Name);
-			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(localCtx, docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 					+ " (" + org.getValue() + ")";
 			final org.compiere.model.I_C_DocType newType = documentPA.createDocType(localCtx, "de.metas.flatrate",
 					name,

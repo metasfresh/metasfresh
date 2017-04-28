@@ -54,6 +54,7 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.RPL_Constants;
@@ -62,7 +63,6 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_EXP_Format;
 import org.compiere.model.I_EXP_FormatLine;
@@ -266,7 +266,7 @@ public class CanonicalXSDGenerator
 				"'name' param '" + name + "' equals '" + toJavaName(name) + "'");
 
 		final Properties ctx = Env.getCtx();
-		final List<I_AD_Ref_List> listValues = new ArrayList<>(adReferenceDAO.retrieveListItems(ctx, AD_Reference_ID));
+		final List<ADRefListItem> listValues = new ArrayList<>(adReferenceDAO.retrieveListItems(AD_Reference_ID));
 		if (listValues.isEmpty())
 		{
 			return null;
@@ -277,7 +277,7 @@ public class CanonicalXSDGenerator
 
 		for (int index = 0; index < listValues.size(); index++)
 		{
-			final I_AD_Ref_List listValue = listValues.get(index);
+			final ADRefListItem listValue = listValues.get(index);
 			final String value = listValue.getValue();
 			final String valueName = listValue.getValueName(); // 08456: Take valueName instead of name when generating enumerations (Names can be equal!)
 

@@ -57,11 +57,9 @@ import org.compiere.model.POInfo;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -70,6 +68,7 @@ import com.google.common.base.Suppliers;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.logging.LogManager;
 
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
@@ -171,7 +170,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
 			final int paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
 
-			final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(Env.getCtx(), paymentRuleReferenceId);
+			final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(paymentRuleReferenceId);
 			if (paymentRules == null || paymentRules.isEmpty())
 			{
 				throw new AdempiereException("No active payment rules were found");

@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -55,6 +56,7 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
@@ -293,6 +295,12 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			snapshotId = husSource.getSnapshotId();
 		}
+		
+		//
+		// Unlock the HU
+		{
+			Services.get(IHULockBL.class).unlockOnAfterCommit(hu.getM_HU_ID(), HUPPOrderIssueProducer.lockOwner);
+		}
 
 		//
 		// Create cost collectors and mark the candidate as processed
@@ -360,6 +368,16 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		return this;
 	}
+	
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId)
+	{
+		setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(candidate -> !candidate.isProcessed()) // not already processed
+				.collect(GuavaCollectors.toImmutableList()));
+		return this;
+	}
+
 
 	private List<I_PP_Order_Qty> getCandidatesToProcess()
 	{

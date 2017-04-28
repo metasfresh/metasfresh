@@ -14,9 +14,93 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-17**
 
-# metasfresh 5.6 (2017-16)
+## Features
 
-**this week's release candidate
+* metasfresh-backend
+  * [#427](https://github.com/metasfresh/metasfresh/issues/427) Integrate spring DI with metasfresh Services helper class
+    * Now integrated Sprint Dependancy Injection into metasfresh Services.
+  * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
+    * Adjustment of the Tour Planning Preparation Date calculation. Now taking the earliest Tour preparation time according to the date promised.
+  * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
+    * Adding the initial window layout for Bankstatement window in webUI.
+  * [#1322](https://github.com/metasfresh/metasfresh/issues/1382) Make Packing Item editable in Manufacturing Order Header
+    * Making the Field Packing Item editable in Manufacturing Order header.
+  * [#1349](https://github.com/metasfresh/metasfresh/issues/1349) Create Product category webui window
+    * Adding the product category window to WebUI.
+  * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+    * Attributes which have IsTransferWhenNull=Y are now also transferred during propagation to the received product in manufacturing.
+  * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
+    * The creation of Business Partner Groups are now possible without mandatory Pricing System.
+  * [#1358](https://github.com/metasfresh/metasfresh/issues/1358) Drop de.metas.order.callout.CheckDouble
+  * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
+    * Adding the Translation of en_US for the order to shipment workflow.
+  * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
+    * Adding missing fields into advanced edit of Sales Order Window in WebUI.
+  * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
+  * [#1393](https://github.com/metasfresh/metasfresh/issues/1393) Translate New Partner Quick Input window to en_US
+    * Translating the Quickentry for new Business Partners to en_US Language.
+  * [#1395](https://github.com/metasfresh/metasfresh/issues/1395) Translate Payment Terms to en_US
+    * Adding the Translation for Payment Terms of language en_US.
+ 
+* metasfresh-webui-api
+  * [#291](https://github.com/metasfresh/metasfresh-webui-api/issues/291) Show value/ name in breadcrumb but edit in window
+    * Adjusting the look and feel of the breadcrumb structure and navigation.
+  * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
+    * New Functionality to quickly add a quickaction for request creation to WebUI windows.
+  * [#313](https://github.com/metasfresh/metasfresh-webui-api/issues/313) Handling Unit Barcode selection 1:1
+    * Adding the 1:1 selection functionality to Barcode scanning and Handling Unit selection.
+  * [#314](https://github.com/metasfresh/metasfresh-webui-api/issues/314) HU attributes shall be readonly if the HUStatus is not planning
+    * Handling Unit attributes are editable as long as the Handling Unit status is 'planning'.
+  * [#315](https://github.com/metasfresh/metasfresh-webui-api/issues/315) Manufacturing Issue/Receipt: merge BOM Type and HU Type columns
+    * Merging the Handling Unit Type and BOM Type on HU Level and Issue/ Receipt Lines to 1 column called Type.
+  * [#316](https://github.com/metasfresh/metasfresh-webui-api/issues/316) Implement password widgetType support
+    * Adding support for password widget type in Rest-API, preparing the frontend implementation.
+  * [#318](https://github.com/metasfresh/metasfresh-webui-api/issues/318) Manufacturing Issue/Receipt: show packing info for BOM components
+    * Adding the Packaging Info Action Issue & Receipt Editor in new Manufacturing.
+  * [#321](https://github.com/metasfresh/metasfresh-webui-api/issues/321) Manufacturing Issue/Receipt: introduce planning status
+  * [#322](https://github.com/metasfresh/metasfresh-webui-api/issues/322) Manufacturing Issue/Receipt: Fix Qty and QtyPlan columns
+  * [#332](https://github.com/metasfresh/metasfresh-webui-api/issues/332) Empties window without pre-selection possible
+  
+* metasfresh-webui-frontend
+  * [#411](https://github.com/metasfresh/metasfresh-webui-frontend/issues/411) Make the parameter names visible in filters
+  * [#666](https://github.com/metasfresh/metasfresh-webui-frontend/issues/666) refresh in attachments side list
+    * Now refreshing the sidelist and showing the attached files after new attachments to a record.
+  * [#676](https://github.com/metasfresh/metasfresh-webui-frontend/issues/676) Process result: implement openDocument as modal
+  * [#683](https://github.com/metasfresh/metasfresh-webui-frontend/issues/683) Tooltip on first level breadcrumb
+  * [#695](https://github.com/metasfresh/metasfresh-webui-frontend/issues/695) Lager photo preview screen/ modal overlay
+  * [#682](https://github.com/metasfresh/metasfresh-webui-frontend/issues/682) Sidelist opening shall automatically have the first line selected
+  
+* other
+  * [#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
+    * Adding Traning Management window, tab and field changes to metasfresh.
+
+## Fixes
+
+* metasfresh-backend
+  * [#1343](https://github.com/metasfresh/metasfresh/issues/1343) Cannot reverse documents
+    * Fixing the bug that prevented the usage of document reversals.
+  * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
+    * Fixes a Bug that did not allow to add split-off Transport Units to be added to a new Logistic Unit.
+  * [#1378](https://github.com/metasfresh/metasfresh/issues/1378) Packing item not displayed in receipt jasper if none was ordered
+    * Decoupling the Packing Instructions in Material Receipt from orderline Packing Instructions.
+  * [#1379](https://github.com/metasfresh/metasfresh/issues/1379) Problem creating FK reference on DLM'ed table
+    * Fixing a issue when creating foreign key constraints on tables which are referenced to data lifecyle mangement.
+  * [#1387](https://github.com/metasfresh/metasfresh/issues/1387) Permission Tabs not displayed in window Role
+  * [#1388](https://github.com/metasfresh/metasfresh/issues/1388) HU from Cost Collector is locked and cannot be selected anymore after the CC was reversed
+  
+* metasfesh-webui-api
+  * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
+    * Now showing an eror message to the user when printing is not possible.
+  * [#328](https://github.com/metasfresh/metasfresh-webui-api/issues/328) Manufacturing receipt mandatory Field not filled
+  * [#324](https://github.com/metasfresh/metasfresh-webui-api/issues/324) File Size Limit
+  
+* other
+  * [#7](https://github.com/metasfresh/metasfresh-dist/issues/7) metasfresh-dist parent pom.xml's artifact name shall be metasfresh-dist
+    * Now making sure that by default, the project is imported (into eclipse) as "metasfresh-dist" that name is used in some .launch files, e.g. the one to start the swing client.
+  * [#6](https://github.com/metasfresh/metasfresh-parent/issues/6) still using metasfresh-snapshots repo
+    * Eliminating the dependancy to metasfresh-snapshots repo.
+
+# metasfresh 5.6 (2017-16)
 
 ## Features
 

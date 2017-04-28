@@ -73,7 +73,7 @@ import de.metas.tourplanning.model.I_M_Tour_Instance;
  * @author tsa
  *
  */
-public abstract class TourPlanningTestBase
+public abstract class TourPlanningTestBase 
 {
 	protected IContextAware contextProvider;
 	protected DateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSSS");
@@ -87,6 +87,12 @@ public abstract class TourPlanningTestBase
 	protected ITourDAO tourDAO;
 	protected ITourInstanceBL tourInstanceBL;
 	protected ITourInstanceDAO tourInstanceDAO;
+	
+	// Master data
+	protected I_M_Tour tour;
+	protected I_M_TourVersion tourVersion;
+	protected I_C_BPartner bpartner;
+	protected I_C_BPartner_Location bpLocation;
 
 	@Rule
 	public TestWatcher testWatchman = new AdempiereTestWatcher();
@@ -246,5 +252,29 @@ public abstract class TourPlanningTestBase
 			}
 		});
 	}
+	
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	{
+		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
+		deliveryDay.setIsActive(true);
+		deliveryDay.setC_BPartner(bpLocation.getC_BPartner());
+		deliveryDay.setC_BPartner_Location(bpLocation);
+		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
+		deliveryDay.setBufferHours(bufferHours);
+		deliveryDay.setIsManual(false);
+		deliveryDay.setIsToBeFetched(false);
+		deliveryDay.setM_Tour(tour);
+		deliveryDay.setM_TourVersion(tourVersion);
+		deliveryDay.setM_Tour_Instance(null);
+		deliveryDay.setProcessed(false);
+
+		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
+		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
+
+		InterfaceWrapperHelper.save(deliveryDay);
+
+		return deliveryDay;
+	}
+
 
 }

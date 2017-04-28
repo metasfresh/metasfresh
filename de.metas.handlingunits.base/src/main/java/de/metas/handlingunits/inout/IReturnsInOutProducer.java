@@ -41,11 +41,18 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 public interface IReturnsInOutProducer
 {
 	/**
-	 * Creates Shipment/Receipt.
+	 * Creates material return.
 	 *
-	 * @return created {@link I_M_InOut} or null.
+	 * @return material return or null
 	 */
 	I_M_InOut create();
+
+	/**
+	 * Fills a given material returns header using the informations provided to this producer.
+	 * 
+	 * @param returnsInOut
+	 */
+	void fillReturnsInOutHeader(final I_M_InOut returnsInOut);
 
 	/**
 	 * Set partner for the return inout.
