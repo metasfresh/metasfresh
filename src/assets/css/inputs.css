@@ -643,9 +643,39 @@ input:checked + .input-slider:before {
     top: calc(100% + 1px);
 }
 
-.input-flex {
+.lookup-wrapper {
     display: flex;
+    padding: 0;
 }
+
+.raw-lookup-wrapper {
+    display: flex;
+    align-items: center;
+    padding: .3rem .50rem;
+}
+
+.raw-lookup-wrapper-bcg:hover {
+    background: $brand-pulse-effect;
+}
+
+.raw-lookup-wrapper .input-dropdown-container {
+    min-width: 0;
+}
+
+.lookup-wrapper .input-dropdown-container {
+    position: static;
+}
+
+.lookup-wrapper .input-dropdown-container .input-dropdown{
+    position: static;
+    margin: 0;
+    border-bottom: none;
+}
+
+.lookup-wrapper .meta-icon-down-1 {
+    display: none;
+}
+
 .input-field {
     border: 0;
     width: 100%;

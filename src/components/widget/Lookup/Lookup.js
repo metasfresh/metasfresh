@@ -17,6 +17,7 @@ import {
 import RawLookup from './RawLookup';
 
 import LookupList from './LookupList';
+import List from '../List/List';
 
 class Lookup extends Component {
     constructor(props) {
@@ -39,17 +40,21 @@ class Lookup extends Component {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
             filterWidget, mandatory, rowId, tabIndex, validStatus, recent, onChange,
-            newRecordCaption, properties, windowType, parameterName, entity, dataId
+            newRecordCaption, properties, windowType, parameterName, entity, dataId, tabId,
+            subentity, subentityId, viewId
         } = this.props;
 
         const {isInputEmpty} = this.props;
+
+        console.log('defaultValue');
+        console.log(defaultValue);
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
                 ref={(c) => this.dropdown = c}
                 className={
-                    'input-dropdown-container input-flex input-' +
+                    'input-dropdown-container lookup-wrapper input-' +
                     (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '')+
@@ -65,67 +70,80 @@ class Lookup extends Component {
             >
 
             {
-                properties && properties.map(item => {
-                    console.log('asa');
+                properties && properties.map((item, index) => {
                     {
-                        <RawLookup
-                        newRecordCaption={newRecordCaption}
-                        defaultValue={defaultValue}
-                        properties={properties}
-                        placeholder={placeholder}
-                        readonly={readonly}
-                        tabIndex={tabIndex}
-                        windowType={windowType}
-                        parameterName={parameterName}
-                        entity={entity}
-                        dataId={dataId}
-                        isModal={isModal}
-                        recent={recent}
-                        rank={rank}
-                        updated={updated}
-                        filterWidget={filterWidget}
-                        mandatory={mandatory}
-                        validStatus={validStatus}
-                        align={align}
-                        onChange={onChange}
-                    />
+                        if(item.source === 'lookup'){
+                            return <RawLookup
+                                key={index}
+                                newRecordCaption={newRecordCaption}
+                                defaultValue={defaultValue}
+                                properties={properties}
+                                placeholder={placeholder}
+                                readonly={readonly}
+                                tabIndex={tabIndex}
+                                windowType={windowType}
+                                parameterName={parameterName}
+                                entity={entity}
+                                dataId={dataId}
+                                isModal={isModal}
+                                recent={recent}
+                                rank={rank}
+                                updated={updated}
+                                filterWidget={filterWidget}
+                                mandatory={mandatory}
+                                validStatus={validStatus}
+                                align={align}
+                                onChange={onChange}
+                                item={item}
+                            />
+
+                        } else if (item.source === 'list') {
+
+                            const objectValue = getItemsByProperty(
+                                defaultValue, 'field', item.field
+                            )[0].value;
+
+                            console.log('objectValue');
+                            console.log(objectValue);
+
+
+                            return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
+                                    <List
+                                        dataId={dataId}
+                                        entity={entity}
+                                        windowType={windowType}
+                                        filterWidget={filterWidget}
+                                        properties={[item]}
+                                        tabId={tabId}
+                                        rowId={rowId}
+                                        subentity={subentity}
+                                        subentityId={subentityId}
+                                        viewId={viewId}
+                                        onChange={onChange}
+                                        lookupList={true}
+                                        defaultValue={objectValue[Object.keys(objectValue)[0]]}
+                                    />
+                                </div>
+                        }
+                        
+                        
                     }
                 })
             }
 
-            <RawLookup
-                        newRecordCaption={newRecordCaption}
-                        defaultValue={defaultValue}
-                        properties={properties}
-                        placeholder={placeholder}
-                        readonly={readonly}
-                        tabIndex={tabIndex}
-                        windowType={windowType}
-                        parameterName={parameterName}
-                        entity={entity}
-                        dataId={dataId}
-                        isModal={isModal}
-                        recent={recent}
-                        rank={rank}
-                        updated={updated}
-                        filterWidget={filterWidget}
-                        mandatory={mandatory}
-                        validStatus={validStatus}
-                        align={align}
-                        onChange={onChange}
-                    />
+    
 
-                    {isInputEmpty ?
-                        <div className="input-icon input-icon-lg">
-                            <i className="meta-icon-preview" />
-                        </div> :
-                        <div className="input-icon input-icon-lg">
-                            {!readonly && <i
-                                onClick={this.handleClear}
-                                className="meta-icon-close-alt"
-                            />}
-                        </div>
-                    }
+            {isInputEmpty ?
+                <div className="input-icon input-icon-lg raw-lookup-wrapper">
+                    <i className="meta-icon-preview" />
+                </div> :
+                <div className="input-icon input-icon-lg raw-lookup-wrapper">
+                    {!readonly && <i
+                        onClick={this.handleClear}
+                        className="meta-icon-close-alt"
+                    />}
+                </div>
+            }
                       
             </div>
         )

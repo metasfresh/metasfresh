@@ -38,7 +38,7 @@ class RawLookup extends Component {
     }
 
     componentDidMount() {
-        const {selected} = this.props;
+        const {selected, item} = this.props;
 
         this.handleValueChanged();
 
@@ -84,6 +84,9 @@ class RawLookup extends Component {
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
+
+                console.log(mainProperty[0].field);
+                console.log(select);
 
                 if(property === '') {
                     const promise = onChange(
@@ -248,8 +251,9 @@ class RawLookup extends Component {
     handleChange = (handleChangeOnFocus) => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
-            tabId, rowId, entity, subentity, subentityId, viewId
+            tabId, rowId, entity, subentity, subentityId, viewId, item
         } = this.props;
+
 
         const {mainProperty} = this.state;
 
@@ -402,10 +406,9 @@ class RawLookup extends Component {
         }
     }
 
-
     render() {
         const { handleAddNew, onClickOutside, disableOnClickOutside, isModal, rank, updated, filterWidget, mandatory, validStatus, align,
-        creatingNewDisabled, newRecordCaption, placeholder, readonly, tabIndex} = this.props;
+        creatingNewDisabled, newRecordCaption, placeholder, readonly, tabIndex, item} = this.props;
 
         const {
             propertiesCopy, isInputEmpty, list, query, loading, selected,
@@ -413,7 +416,7 @@ class RawLookup extends Component {
         } = this.state;
 
         return (
-        <div>
+        <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg">
             <div className={
                     'input-dropdown input-block' 
                     
@@ -422,17 +425,19 @@ class RawLookup extends Component {
                         'input-editable ' +
                         (align ? 'text-xs-' + align + ' ' : '')
                     }>
-                        <input 
-                            type="text"
-                            className="input-field js-input-field font-weight-semibold"
-                            onChange={this.handleChange}
-                            onFocus={this.handleFocus}
-                            ref={(c) => this.inputSearch = c}
-                            placeholder={placeholder}
-                            disabled={readonly}
-                            tabIndex={tabIndex}
-                    
-                        />
+                       
+                            <input
+                                type="text"
+                                className="input-field js-input-field font-weight-semibold"
+                                onChange={this.handleChange}
+                                onFocus={this.handleFocus}
+                                ref={(c) => this.inputSearch = c}
+                                placeholder={placeholder}
+                                disabled={readonly}
+                                tabIndex={tabIndex}
+                        
+                            />
+
                     </div>
 
                     

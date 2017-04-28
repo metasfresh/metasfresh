@@ -117,7 +117,6 @@ export function autocompleteRequest(
     docType, propertyName, query, docId, tabId, rowId, entity, subentity,
     subentityId, viewId
 ) {
-    console.log(entity);
     return () => axios.get(
         config.API_URL +
         '/' + entity +
