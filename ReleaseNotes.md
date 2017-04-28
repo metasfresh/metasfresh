@@ -145,23 +145,37 @@ Here come the actual release notes:
   * [#324](https://github.com/metasfresh/metasfresh-webui-api/issues/324) File Size Limit
     * Raising the file size limit for uploading attachments to webUI.
   * [#329](https://github.com/metasfresh/metasfresh-webui-api/issues/329) Issue HU 404 not found
-    * Fixinf a 404 Page not found Bug when trying to issue product 2 times.
+    * Fixing a 404 Page not found Bug when trying to issue product 2 times.
   
 * metasfresh-webui-frontend
   * [#433](https://github.com/metasfresh/metasfresh-webui-frontend/issues/433) ShipmentSchedule: Only displayed after "No data" showing up
+    * Eliminating the "No data" page when loading correctly. It should only be displayed if there actually is no data.
   * [#551](https://github.com/metasfresh/metasfresh-webui-frontend/issues/551) Error when recording Swiss location in webUI
+    * Fixing a Bug when recording new locations via Business Partner Quick Input.
   * [#567](https://github.com/metasfresh/metasfresh-webui-frontend/issues/567) Date attribute is not correctly rendered
+    * Fixes the rendering of the Date attribute Field.
   * [#579](https://github.com/metasfresh/metasfresh-webui-frontend/issues/579) DocumentNo field is not updated
+    * Fixes the creation of new Business Partner search values.
   * [#596](https://github.com/metasfresh/metasfresh-webui-frontend/issues/596) red line appears on document only after refresh
+    * Fixes the behavior of the save indicator. Now showing the Red save eroror indicators also whithout need to refresh.
   * [#641](https://github.com/metasfresh/metasfresh-webui-frontend/issues/641) Shortcuts behavior sometimes weird
+    * Fixes a weird behavior of shortcut usage and navigation in WebUI action bar menues.
   * [#644](https://github.com/metasfresh/metasfresh-webui-frontend/issues/644) Creating a new Discount record error
+    * Fixes a Bug when creating a new Discount.
   * [#664](https://github.com/metasfresh/metasfresh-webui-frontend/issues/664) process doesn't open directly
+    * Fixing a weird behavior when opening processes, only worked when pressing something else in menu after first try.
   * [#672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/672) Process error not displayed
+    * Now responding errors to the user when trying to start a process without filling all mandatory fields.
   * [#673](https://github.com/metasfresh/metasfresh-webui-frontend/issues/673) Wrong report file endpoint is called for processes which are started from main menu
+    * Fixes a Bug that opens a printing preview report pdf with the completely wrong URL.
   * [#680](https://github.com/metasfresh/metasfresh-webui-frontend/issues/680) Navigation breadcrumb vs. Navigation Menu
+    * Unifying the behavior between opening windows via Breadcrumb menue and Navigation menue.
   * [#685](https://github.com/metasfresh/metasfresh-webui-frontend/issues/685) Cannot open manufacturing modal overlay anymore
+    * Fixing a Bug that disallowed the opening of manufacturing modal overlay.
   * [#688](https://github.com/metasfresh/metasfresh-webui-frontend/issues/688) Main page /dashboard is broken
+    * Fixes the main Page/ Dashboard layout.
   * [#689](https://github.com/metasfresh/metasfresh-webui-frontend/issues/689) Image widget is missing right border
+    * Adding the right border to image widget.
   
   
 * other
