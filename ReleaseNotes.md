@@ -10,9 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.7 (2017-17)
+# metasfresh 5.8 (2017-18)
 
-**upcoming release for week 2017-17**
+**upcoming release for week 2017-18**
+
+
+# metasfresh 5.7 (2017-17)
 
 ## Features
 
