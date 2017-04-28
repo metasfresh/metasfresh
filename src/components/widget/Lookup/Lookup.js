@@ -36,13 +36,62 @@ class Lookup extends Component {
         // console.log(properties);
     }
 
+    componentDidMount() {
+        const {defaultValue} = this.props;
+        console.log(defaultValue);
+
+        this.checkIfDefaultValue();
+    }
+
+    handleInputEmptyStatus = (isEmpty) => {
+        this.setState({
+            isInputEmpty: isEmpty
+        })
+    }
+
+    checkIfDefaultValue = () => {
+        const {defaultValue} = this.props;
+        defaultValue.map(item => {
+            if(item.value){
+                this.setState({
+                    isInputEmpty: false
+                })
+                console.log(item.value);
+            }
+            
+        });
+    }
+
+    // componentDidUpdate(prevProps) {
+    //     const {defaultValue} = this.props;
+    //     console.log(prevProps.defaultValue);
+
+    //     if(JSON.stringify(prevProps.defaultValue) !==
+    //         JSON.stringify(defaultValue)){
+    //         this.checkIfDefaultValue();
+    //     }
+        
+
+    //     // defaultValue.map(item => {
+    //     //     if(item.value){
+    //     //         this.setState({
+    //     //             isInputEmpty: false
+    //     //         })
+    //     //         console.log(item.value);
+    //     //     }
+            
+    //     // });
+    // }
+
     handleClear = (e) => {
+        console.log('handleClear');
         const {onChange, properties} = this.props;
-        e && e.preventDefault();
-
         onChange(properties, null, false);
+        this.setState({
+            isInputEmpty: true
+        });
 
-        this.handleBlur(this.clearState);
+        
     }
 
     render() {
@@ -53,10 +102,7 @@ class Lookup extends Component {
             subentity, subentityId, viewId
         } = this.props;
 
-        const {isInputEmpty} = this.props;
-
-        console.log('defaultValue');
-        console.log(defaultValue);
+        const {isInputEmpty} = this.state;
 
         return (
             <div
@@ -104,6 +150,7 @@ class Lookup extends Component {
                                 align={align}
                                 onChange={onChange}
                                 item={item}
+                                handleInputEmptyStatus={this.handleInputEmptyStatus}
                             />
 
                         } else if (item.source === 'list') {
@@ -111,10 +158,6 @@ class Lookup extends Component {
                             const objectValue = getItemsByProperty(
                                 defaultValue, 'field', item.field
                             )[0].value;
-
-                            console.log('objectValue');
-                            console.log(objectValue);
-
 
                             return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
                                     <List

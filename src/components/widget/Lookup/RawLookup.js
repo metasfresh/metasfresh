@@ -65,7 +65,7 @@ class RawLookup extends Component {
 
     handleSelect = (select) => {
         const {
-            onChange, filterWidget, parameterName, subentity
+            onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus
         } = this.props;
 
         const {
@@ -80,6 +80,7 @@ class RawLookup extends Component {
                 onChange(parameterName, select);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
+                handleInputEmptyStatus(false);
 
                 this.handleBlur();
             } else {
@@ -94,6 +95,7 @@ class RawLookup extends Component {
                     );
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
+                    handleInputEmptyStatus(false);
 
                     this.handleBlur();
                 

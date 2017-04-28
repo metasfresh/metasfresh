@@ -42,9 +42,7 @@ class List extends Component {
 
     handleSelect = (option) => {
         const {onChange, lookupList, properties} = this.props;
-        console.log('handleSelect');
-        console.log(option);
-        console.log(option[Object.keys(option)[0]]);
+
         if(lookupList){
             onChange(properties[0].field, option);
             this.setState({
@@ -62,9 +60,6 @@ class List extends Component {
             emptyText, tabIndex, mandatory, validStatus, lookupList
         } = this.props;
         const {list, loading, selectedItem} = this.state;
-
-console.log('defaultValue');
-console.log(defaultValue);
 
         return (
             <RawList
