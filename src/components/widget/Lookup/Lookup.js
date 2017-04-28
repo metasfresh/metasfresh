@@ -36,6 +36,15 @@ class Lookup extends Component {
         // console.log(properties);
     }
 
+    handleClear = (e) => {
+        const {onChange, properties} = this.props;
+        e && e.preventDefault();
+
+        onChange(properties, null, false);
+
+        this.handleBlur(this.clearState);
+    }
+
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
