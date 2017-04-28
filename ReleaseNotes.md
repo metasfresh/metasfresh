@@ -18,7 +18,9 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#427](https://github.com/metasfresh/metasfresh/issues/427) Integrate spring DI with metasfresh Services helper class
+    * Now integrated Sprint Dependancy Injection into metasfresh Services.
   * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
+    * Adjustment of the Tour Planning Preparation Date calculation. Now taking the earliest Tour preparation time according to the date promised.
   * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
     * Adding the initial window layout for Bankstatement window in webUI.
   * [#1322](https://github.com/metasfresh/metasfresh/issues/1382) Make Packing Item editable in Manufacturing Order Header
@@ -26,9 +28,12 @@ Here come the actual release notes:
   * [#1349](https://github.com/metasfresh/metasfresh/issues/1349) Create Product category webui window
     * Adding the product category window to WebUI.
   * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+    * Attributes which have IsTransferWhenNull=Y are now also transferred during propagation to the received product in manufacturing.
   * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
+    * The creation of Business Partner Groups are now possible without mandatory Pricing System.
   * [#1358](https://github.com/metasfresh/metasfresh/issues/1358) Drop de.metas.order.callout.CheckDouble
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
+    * Adding the Translation of en_US for the order to shipment workflow.
   * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
     * Adding missing fields into advanced edit of Sales Order Window in WebUI.
   * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
@@ -66,7 +71,8 @@ Here come the actual release notes:
   * [#682](https://github.com/metasfresh/metasfresh-webui-frontend/issues/682) Sidelist opening shall automatically have the first line selected
   
 * other
-  * [metasfresh/metasfresh-dist-orgs#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
+  * [#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
+    * Adding Traning Management window, tab and field changes to metasfresh.
 
 ## Fixes
 
@@ -76,18 +82,23 @@ Here come the actual release notes:
   * [#1346](https://github.com/metasfresh/metasfresh/issues/1346) Cannot "LU zuteilen" (Swing HU Editor)
     * Fixes a Bug that did not allow to add split-off Transport Units to be added to a new Logistic Unit.
   * [#1378](https://github.com/metasfresh/metasfresh/issues/1378) Packing item not displayed in receipt jasper if none was ordered
+    * Decoupling the Packing Instructions in Material Receipt from orderline Packing Instructions.
   * [#1379](https://github.com/metasfresh/metasfresh/issues/1379) Problem creating FK reference on DLM'ed table
+    * Fixing a issue when creating foreign key constraints on tables which are referenced to data lifecyle mangement.
   * [#1387](https://github.com/metasfresh/metasfresh/issues/1387) Permission Tabs not displayed in window Role
   * [#1388](https://github.com/metasfresh/metasfresh/issues/1388) HU from Cost Collector is locked and cannot be selected anymore after the CC was reversed
   
 * metasfesh-webui-api
   * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
+    * Now showing an eror message to the user when printing is not possible.
   * [#328](https://github.com/metasfresh/metasfresh-webui-api/issues/328) Manufacturing receipt mandatory Field not filled
   * [#324](https://github.com/metasfresh/metasfresh-webui-api/issues/324) File Size Limit
   
 * other
-  * [metasfresh/metasfresh-dist#7](https://github.com/metasfresh/metasfresh-dist/issues/7) metasfresh-dist parent pom.xml's artifact name shall be metasfresh-dist
-  * [metasfresh/metasfresh-parent#6](https://github.com/metasfresh/metasfresh-parent/issues/6) still using metasfresh-snapshots repo
+  * [#7](https://github.com/metasfresh/metasfresh-dist/issues/7) metasfresh-dist parent pom.xml's artifact name shall be metasfresh-dist
+    * Now making sure that by default, the project is imported (into eclipse) as "metasfresh-dist" that name is used in some .launch files, e.g. the one to start the swing client.
+  * [#6](https://github.com/metasfresh/metasfresh-parent/issues/6) still using metasfresh-snapshots repo
+    * Eliminating the dependancy to metasfresh-snapshots repo.
 
 # metasfresh 5.6 (2017-16)
 
