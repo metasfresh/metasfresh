@@ -82,17 +82,27 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/248) Handle Password Fields in WebUI
+    * New widget for Password Handling in WebUI.
   * [#411](https://github.com/metasfresh/metasfresh-webui-frontend/issues/411) Make the parameter names visible in filters
+    * Improvement in Process Parameter dropdown, now allowing to define the Parameter layout with primary/ secondary indicator.
   * [#537](https://github.com/metasfresh/metasfresh-webui-frontend/issues/537) KPI: implement a non intrusive way to display KPI related errors
+    * Improvement for the KPI error Handling.
   * [#649](https://github.com/metasfresh/metasfresh-webui-frontend/issues/649) windowId shall be handled as a string and not as a number
+    * Changing the format of window ID, now representing as string and not numbers.
   * [#666](https://github.com/metasfresh/metasfresh-webui-frontend/issues/666) refresh in attachments side list
     * Now refreshing the sidelist and showing the attached files after new attachments to a record.
   * [#667](https://github.com/metasfresh/metasfresh-webui-frontend/issues/667) Change /rest/api/pattribute request message	
+    * Internal improvement of the Rest-API request message.
   * [#676](https://github.com/metasfresh/metasfresh-webui-frontend/issues/676) Process result: implement openDocument as modal
+    * New functionality for the openDocument Implementation, now allowing the modal overlay usage.
   * [#678](https://github.com/metasfresh/metasfresh-webui-frontend/issues/678) Get rid of deprecated static docNo input in header.
+    * Housekeeping issue, getting rid of deprecated document No Field.
   * [#683](https://github.com/metasfresh/metasfresh-webui-frontend/issues/683) Tooltip on first level breadcrumb
-  * [#695](https://github.com/metasfresh/metasfresh-webui-frontend/issues/695) Lager photo preview screen/ modal overlay
+    * New Tooltip on first level breadcrumb.
+  * [#695](https://github.com/metasfresh/metasfresh-webui-frontend/issues/695) Larger photo preview screen/ modal overlay
+    * Resizing the preview image in material receipt, allowing to preview in modal full width.
   * [#682](https://github.com/metasfresh/metasfresh-webui-frontend/issues/682) Sidelist opening shall automatically have the first line selected
+    * When opening the sidelist, the first line is now automatically preselected, so the user can use arrow down directly to navigate.
   
 * other
   * [#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
@@ -110,21 +120,32 @@ Here come the actual release notes:
   * [#1379](https://github.com/metasfresh/metasfresh/issues/1379) Problem creating FK reference on DLM'ed table
     * Fixing a issue when creating foreign key constraints on tables which are referenced to data lifecyle mangement.
   * [#1387](https://github.com/metasfresh/metasfresh/issues/1387) Permission Tabs not displayed in window Role
+    * Adding the permission Tabs to window Role in webUI.
   * [#1388](https://github.com/metasfresh/metasfresh/issues/1388) HU from Cost Collector is locked and cannot be selected anymore after the CC was reversed
+    * After reversing a Cost Collerctor the referenced HU is now not locked anymore.
   * [#1348](https://github.com/metasfresh/metasfresh/issues/1348) M_ShipmentSchedule_EnqueueSelection ignores role's org access
   
 * metasfesh-webui-api
   * [#151](https://github.com/metasfresh/metasfresh-webui-api/issues/151) grid view websocket notifications: fullyChanged shall not be set when changedIds is set
+    * Internal websocket improvement for grid view handling.
   * [#267](https://github.com/metasfresh/metasfresh-webui-api/issues/267) Show an error or message for user when printing not possible bc of missing config
     * Now showing an eror message to the user when printing is not possible.
-  * [#268](https://github.com/metasfresh/metasfresh-webui-api/issues/268) HU attributes shall always provide the WidgetType along with the data/changes[#268](https://github.com/metasfresh/metasfresh-webui-api/issues/268) HU attributes shall always provide the WidgetType along with the data/changes
+  * [#268](https://github.com/metasfresh/metasfresh-webui-api/issues/268) HU attributes shall always provide the WidgetType along with the data/changes
+    * WebUI Improvement of Handling Unit Attributes Widget.
   * [#270](https://github.com/metasfresh/metasfresh-webui-api/issues/270) cannot add trading unit with batch entry after using add new
+    * Fix for Sales Order Batch entry in WebUI, now also allowing to add Trade Unit Packing Material after adding via "add new".
   * [#306](https://github.com/metasfresh/metasfresh-webui-api/issues/306) Address missing in 'Adresse' for bpartner created on-the-fly
+    * Fix for quickentry of Business Partner and Locations via Sales Order now also adding the location name.
   * [#310](https://github.com/metasfresh/metasfresh-webui-api/issues/310) Switching language does not translate document references
+    * Fix for the new Language change switch. Now also translating document references in WebUI.
   * [#311](https://github.com/metasfresh/metasfresh-webui-api/issues/311) Switching language does not translate document lookup values
+    * Fix for the new Language change switch. Now also translating document lookup values in WebUI.
   * [#328](https://github.com/metasfresh/metasfresh-webui-api/issues/328) Manufacturing receipt mandatory Field not filled
+    * Fix for manufacturing action_receipt. Now filling all mandatory fields.
   * [#324](https://github.com/metasfresh/metasfresh-webui-api/issues/324) File Size Limit
+    * Raising the file size limit for uploading attachments to webUI.
   * [#329](https://github.com/metasfresh/metasfresh-webui-api/issues/329) Issue HU 404 not found
+    * Fixinf a 404 Page not found Bug when trying to issue product 2 times.
   
 * metasfresh-webui-frontend
   * [#433](https://github.com/metasfresh/metasfresh-webui-frontend/issues/433) ShipmentSchedule: Only displayed after "No data" showing up
