@@ -172,6 +172,7 @@ public class CandiateRepositoryTests
 						.plantId(60)
 						.productBomLineId(70)
 						.productPlanningId(80)
+						.uomId(90)
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrReplace(productionCandidate);
@@ -190,6 +191,7 @@ public class CandiateRepositoryTests
 		assertThat(productionDetailRecord.getPP_Plant_ID(), is(60));
 		assertThat(productionDetailRecord.getPP_Product_BOMLine_ID(), is(70));
 		assertThat(productionDetailRecord.getPP_Product_Planning_ID(), is(80));
+		assertThat(productionDetailRecord.getC_UOM_ID(), is(90));
 	}
 
 	@Test
@@ -208,6 +210,7 @@ public class CandiateRepositoryTests
 		productionDetailRecord.setPP_Plant_ID(61);
 		productionDetailRecord.setPP_Product_BOMLine_ID(71);
 		productionDetailRecord.setPP_Product_Planning_ID(81);
+		productionDetailRecord.setC_UOM_ID(91);
 		productionDetailRecord.setMD_Candidate(record);
 		InterfaceWrapperHelper.save(productionDetailRecord);
 		
@@ -220,6 +223,7 @@ public class CandiateRepositoryTests
 		assertThat(cand.getProductionDetail().getDescription(), is("description1"));
 		assertThat(cand.getProductionDetail().getProductBomLineId(), is(71));
 		assertThat(cand.getProductionDetail().getProductPlanningId(), is(81));
+		assertThat(cand.getProductionDetail().getUomId(), is(91));
 	}
 
 	/**

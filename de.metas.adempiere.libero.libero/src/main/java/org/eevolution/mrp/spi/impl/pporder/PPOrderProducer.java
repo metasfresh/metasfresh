@@ -16,6 +16,7 @@ import org.eevolution.model.X_PP_Order;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 
 import de.metas.material.event.pporder.PPOrder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,8 +42,9 @@ import de.metas.material.event.pporder.PPOrder;
 
 public class PPOrderProducer
 {
-	public I_PP_Order createPPOrder(final PPOrder pojo,
-			final IMRPCreateSupplyRequest request,
+	public I_PP_Order createPPOrder(
+			@NonNull final PPOrder pojo,
+			@NonNull final IMRPCreateSupplyRequest request,
 			final int docTypeMO_ID)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);

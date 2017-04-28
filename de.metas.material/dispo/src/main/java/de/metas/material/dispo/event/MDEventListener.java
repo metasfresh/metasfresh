@@ -113,14 +113,14 @@ public class MDEventListener implements MaterialEventListener
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			Candidate lineCandidate = Candidate.builder()
+			final Candidate lineCandidate = Candidate.builder()
 					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
 					.subType(SubType.PRODUCTION)
 
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 
-					.date(ppOrder.getDateStartSchedule())
+					.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
 					.orgId(ppOrder.getOrgId())
 					.productId(ppOrderLine.getProductId())
 					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())

@@ -134,6 +134,7 @@ public class CandidateRepository
 		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
+		detailRecordToUpdate.setC_UOM_ID(productionDetail.getUomId());
 		InterfaceWrapperHelper.save(detailRecordToUpdate);
 	}
 
@@ -347,6 +348,7 @@ public class CandidateRepository
 						.plantId(productiondetail.getPP_Plant_ID())
 						.productBomLineId(productiondetail.getPP_Product_BOMLine_ID())
 						.productPlanningId(productiondetail.getPP_Product_Planning_ID())
+						.uomId(productiondetail.getC_UOM_ID())
 						.build());
 			}
 		}

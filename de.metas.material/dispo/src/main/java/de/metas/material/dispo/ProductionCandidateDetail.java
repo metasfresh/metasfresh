@@ -28,8 +28,13 @@ import lombok.Data;
 @Builder
 public class ProductionCandidateDetail
 {
+	/**
+	 * Only set if this instance related to a ppOrder header.
+	 */
 	private final int plantId;
 
+	private final int uomId;
+	
 	private final int productPlanningId;
 
 	private final int productBomLineId;

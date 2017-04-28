@@ -1,12 +1,15 @@
 package de.metas.material.dispo;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 import java.math.BigDecimal;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.Candidate.SubType;
@@ -41,7 +44,7 @@ public class CandidateServiceTests
 	@Test
 	public void testReqestPPOrder()
 	{
-	
+
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
 		final Candidate candidate = Candidate.builder()
@@ -53,17 +56,28 @@ public class CandidateServiceTests
 				.date(SystemTime.asDate())
 				.quantity(BigDecimal.valueOf(15))
 				.reference(TableRecordReference.of("someTable", 23))
+				.productionDetail(ProductionCandidateDetail.builder()
+						.plantId(210)
+						.productPlanningId(220)
+						.uomId(230)
+						.build())
 				.build();
 
 		final Candidate candidate2 = candidate
 				.withType(Type.DEMAND)
 				.withProductId(310)
-				.withQuantity(BigDecimal.valueOf(20));
+				.withQuantity(BigDecimal.valueOf(20))
+				.withProductionDetail(ProductionCandidateDetail.builder()
+						.productBomLineId(500)
+						.build());
 
 		final Candidate candidate3 = candidate
 				.withType(Type.DEMAND)
 				.withProductId(320)
-				.withQuantity(BigDecimal.valueOf(10));
+				.withQuantity(BigDecimal.valueOf(10))
+				.withProductionDetail(ProductionCandidateDetail.builder()
+						.productBomLineId(600)
+						.build());
 
 		final CandidateService candidateService = new CandidateService(candidateRepository);
 		final ProductionOrderEvent productionOrderEvent = candidateService.requestProductionOrder(ImmutableList.of(candidate, candidate2, candidate3));
@@ -71,7 +85,9 @@ public class CandidateServiceTests
 
 		final PPOrder ppOrder = productionOrderEvent.getPpOrder();
 		assertThat(ppOrder, notNullValue());
-		assertThat(productionOrderEvent.getPpOrder().getOrgId(), is(30));
+		assertThat(ppOrder.getOrgId(), is(30));
+		assertThat(ppOrder.getProductId(), is(300));
+		assertThat(ppOrder.getLines().size(), is(2));
 
 	}
 }

@@ -2,17 +2,16 @@ package de.metas.material.dispo;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.event.ProductionOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderLine.PPOrderLineBuilder;
 import lombok.NonNull;
 
 /*
@@ -46,7 +45,7 @@ public class CandidateService
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void requestOrder(final Integer groupId)
+	public void requestOrder(@NonNull final Integer groupId)
 	{
 		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
 		if (group.isEmpty())
@@ -68,23 +67,61 @@ public class CandidateService
 
 	/**
 	 * 
-	 * @param group a non-empty list of candidates that all have {@link SubType#PRODUCTION}, 
-	 * all have the same {@link Candidate#getGroupId()}
-	 * and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
+	 * @param group a non-empty list of candidates that all have {@link SubType#PRODUCTION},
+	 *            all have the same {@link Candidate#getGroupId()}
+	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
 	 * @return
 	 */
 	@VisibleForTesting
-	ProductionOrderEvent requestProductionOrder(List<Candidate> group)
+	ProductionOrderEvent requestProductionOrder(@NonNull final List<Candidate> group)
 	{
-		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
-		final PPOrderLineBuilder ppOrderLineBuilder = PPOrderLine.builder();
+		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
+
+		PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
 		for (final Candidate groupMember : group)
 		{
+			final ProductionCandidateDetail prodDetail = groupMember.getProductionDetail();
+			if (prodDetail.getPlantId() > 0)
+			{
+				// we talk about a ppOrder (header)
+				ppOrderBuilder = ppOrderBuilder
+						.productPlanningId(prodDetail.getProductPlanningId())
+						.datePromised(groupMember.getDate())
+						.orgId(groupMember.getOrgId())
+						.plantId(prodDetail.getPlantId())
+						.productId(groupMember.getProductId())
+						.quantity(groupMember.getQuantity())
+						.uomId(prodDetail.getUomId())
+						.warehouseId(groupMember.getWarehouseId());
+			}
+			else
+			{
+				final boolean receipt = groupMember.getType() == Type.SUPPLY;
+				if (receipt)
+				{
+					ppOrderBuilder.datePromised(groupMember.getDate());
+				}
+				else
+				{
+					ppOrderBuilder.dateStartSchedule(groupMember.getDate());
+				}
 
+				ppOrderBuilder.line(
+						PPOrderLine.builder()
+								.description(prodDetail.getDescription())
+								.productBomLineId(prodDetail.getProductBomLineId())
+								.productId(groupMember.getProductId())
+								.qtyRequired(groupMember.getQuantity())
+								.productBomLineId(prodDetail.getProductBomLineId())
+								.receipt(receipt)
+								.build());
+			}
 		}
 		return ProductionOrderEvent.builder()
+				.ppOrder(ppOrderBuilder.build())
 				.when(Instant.now())
+				.reference(group.get(0).getReference())
 				.build();
 	}
 }
