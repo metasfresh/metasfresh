@@ -553,7 +553,7 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
-	 * Creates and returns a predicate to verify if a HUDocumentView is not the parent of the currently selected HU.
+	 * Creates and returns a predicate to verify if a {@link HUEditorRow} is not the parent of the currently selected HU.
 	 */
 	private Predicate<HUEditorRow> notAlreadyOurParent()
 	{

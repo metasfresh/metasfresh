@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Stream;
 
@@ -12,7 +13,9 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -137,10 +140,23 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
+	public Set<DocumentId> getRowIdsMatchingBarcode(@NonNull final String barcode)
+	{
+		if (Check.isEmpty(barcode, true))
+		{
+			throw new IllegalArgumentException("Invalid barcode");
+		}
+
+		return streamAllRecursive()
+				.filter(row -> row.matchesBarcode(barcode))
+				.map(HUEditorRow::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public void invalidateAll()
 	{
 		rowsSupplier.forget();
-		huEditorRepo.invalidateAll();
 	}
 
 	@Override
@@ -231,7 +247,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		private Stream<HUEditorRow> streamRecursive(final HUEditorRow row)
 		{
-			return row.getIncludedDocuments()
+			return row.getIncludedRows()
 					.stream()
 					.map(includedRow -> streamRecursive(includedRow))
 					.reduce(Stream.of(row), Stream::concat);
@@ -256,8 +272,8 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, HUEditorRow> collector, final HUEditorRow row)
 		{
-			collector.put(row.getDocumentId(), row);
-			row.getIncludedDocuments()
+			collector.put(row.getId(), row);
+			row.getIncludedRows()
 					.forEach(includedRecord -> indexByIdRecursively(collector, includedRecord));
 		}
 	}

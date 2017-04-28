@@ -8,7 +8,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.IViewsRepository;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import de.metas.ui.web.view.IDocumentViewsRepository;
 class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final IDocumentViewsRepository viewsRepo = Adempiere.getBean(IDocumentViewsRepository.class);
+	private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
 	private final String targetPlanningStatus;
 	

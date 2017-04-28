@@ -25,7 +25,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.IViewsRepository;
 
 /*
  * #%L
@@ -55,7 +55,7 @@ public class WEBUI_PP_Order_Receipt
 {
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final transient IDocumentViewsRepository viewsRepo = Adempiere.getBean(IDocumentViewsRepository.class);
+	private final transient IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
 	//
 	// Parameters

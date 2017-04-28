@@ -23,7 +23,7 @@ import de.metas.ui.web.process.view.ViewAction.AlwaysAllowPrecondition;
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionDescriptorBuilder;
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodArgumentExtractor;
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodReturnTypeConverter;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IView;
 import lombok.NonNull;
 
 /*
@@ -198,7 +198,7 @@ public class ViewActionDescriptorsFactory
 		}
 		//
 		// View parameter
-		else if (IDocumentViewSelection.class.isAssignableFrom(parameterType))
+		else if (IView.class.isAssignableFrom(parameterType))
 		{
 			return (view, processParameters, selectedDocumentIds) -> view;
 		}

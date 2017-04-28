@@ -7,7 +7,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.view.IDocumentViewType;
+import de.metas.ui.web.view.IViewRowType;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import de.metas.ui.web.view.IDocumentViewType;
  * #L%
  */
 
-public enum PPOrderLineType implements IDocumentViewType
+public enum PPOrderLineType implements IViewRowType
 {
 	MainProduct("MP", true) //
 	, BOMLine_Component("CO", false) //
@@ -82,7 +82,7 @@ public enum PPOrderLineType implements IDocumentViewType
 		return iconName;
 	}
 
-	public static final PPOrderLineType cast(final IDocumentViewType type)
+	public static final PPOrderLineType cast(final IViewRowType type)
 	{
 		return (PPOrderLineType)type;
 	}
@@ -97,7 +97,7 @@ public enum PPOrderLineType implements IDocumentViewType
 		return canIssue;
 	}
 
-	public static final PPOrderLineType ofHUDocumentViewType(final HUEditorRowType huType)
+	public static final PPOrderLineType ofHUEditorRowType(final HUEditorRowType huType)
 	{
 		PPOrderLineType type = huType2type.get(huType);
 		if(type == null)

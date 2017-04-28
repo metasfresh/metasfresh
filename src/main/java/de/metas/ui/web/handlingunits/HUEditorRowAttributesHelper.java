@@ -18,7 +18,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
-import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -59,7 +59,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 	{
 	}
 
-	public static final DocumentViewAttributesLayout createLayout(final IAttributeStorage attributeStorage)
+	public static final ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage)
 	{
 		final int warehouseId = attributeStorage.getM_Warehouse_ID();
 		final List<DocumentLayoutElementDescriptor> elements = attributeStorage.getAttributeValues()
@@ -67,7 +67,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 				.map(av -> createLayoutElement(av, warehouseId))
 				.collect(GuavaCollectors.toImmutableList());
 
-		return DocumentViewAttributesLayout.of(elements);
+		return ViewRowAttributesLayout.of(elements);
 	}
 
 	private static final DocumentLayoutElementDescriptor createLayoutElement(final IAttributeValue attributeValue, final int warehouseId)

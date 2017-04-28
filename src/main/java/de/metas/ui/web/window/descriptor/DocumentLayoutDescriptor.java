@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 
@@ -68,9 +68,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/** Single row layout: header sections */
 	private final List<DocumentLayoutSectionDescriptor> sections;
 	private final DocumentLayoutDetailDescriptor advancedView;
-	private final DocumentViewLayout gridView;
+	private final ViewLayout gridView;
 	/** Side list layout */
-	private final DocumentViewLayout sideListView;
+	private final ViewLayout sideListView;
 
 	/** Single row layout: included tabs */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
@@ -146,12 +146,12 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/**
 	 * @return the layout for grid view (for header documents)
 	 */
-	public DocumentViewLayout getGridViewLayout()
+	public ViewLayout getGridViewLayout()
 	{
 		return gridView;
 	}
 
-	public DocumentViewLayout getSideListViewLayout()
+	public ViewLayout getSideListViewLayout()
 	{
 		return sideListView;
 	}
@@ -202,9 +202,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private DocumentLayoutElementDescriptor docActionElement;
 
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
-		private DocumentViewLayout.Builder _gridView;
+		private ViewLayout.Builder _gridView;
 		private DocumentLayoutDetailDescriptor.Builder _advancedView;
-		private DocumentViewLayout _sideListView;
+		private ViewLayout _sideListView;
 
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 
@@ -345,13 +345,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return findSectionElementBuilderByFieldName(fieldName) != null;
 		}
 
-		public Builder setGridView(final DocumentViewLayout.Builder gridView)
+		public Builder setGridView(final ViewLayout.Builder gridView)
 		{
 			this._gridView = gridView;
 			return this;
 		}
 		
-		private DocumentViewLayout.Builder getGridView()
+		private ViewLayout.Builder getGridView()
 		{
 			return _gridView;
 		}
@@ -389,13 +389,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setSideListView(final DocumentViewLayout sideListViewLayout)
+		public Builder setSideListView(final ViewLayout sideListViewLayout)
 		{
 			this._sideListView = sideListViewLayout;
 			return this;
 		}
 
-		private DocumentViewLayout getSideList()
+		private ViewLayout getSideList()
 		{
 			Preconditions.checkNotNull(_sideListView, "sideList");
 			return _sideListView;

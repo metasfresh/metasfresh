@@ -28,10 +28,10 @@ import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.process.view.ViewActionParam;
-import de.metas.ui.web.view.DocumentViewResult;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.event.DocumentViewChangesCollector;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -62,14 +62,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public class HUEditorView implements IDocumentViewSelection
+public class HUEditorView implements IView
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static HUEditorView cast(final IDocumentViewSelection view)
+	public static HUEditorView cast(final IView view)
 	{
 		return (HUEditorView)view;
 	}
@@ -82,7 +82,7 @@ public class HUEditorView implements IDocumentViewSelection
 
 	private final ViewActionDescriptorsList actions;
 	private final HUEditorViewBuffer rowsBuffer;
-	private final HUEditorRowAttributesProvider attributesProvider;
+	private final HUEditorRowAttributesProvider huAttributesProvider;
 
 	private HUEditorView(final Builder builder)
 	{
@@ -91,11 +91,11 @@ public class HUEditorView implements IDocumentViewSelection
 		parentViewId = builder.getParentViewId();
 		viewId = builder.getViewId();
 		
-		this.attributesProvider = HUEditorRowAttributesProvider.newInstance();
+		this.huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(viewId.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
-				.attributesProvider(attributesProvider)
+				.attributesProvider(huAttributesProvider)
 				.build();
 
 		rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, builder.getHUIds());
@@ -148,13 +148,13 @@ public class HUEditorView implements IDocumentViewSelection
 	}
 
 	@Override
-	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final List<HUEditorRow> page = rowsBuffer
 				.streamPage(firstRow, pageLength, orderBys)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
+		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
 	}
 
 	@Override
@@ -230,13 +230,13 @@ public class HUEditorView implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 
-		DocumentViewChangesCollector.getCurrentOrAutoflush()
+		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
 	}
 
 	private void invalidateAllNoNotify()
 	{
-		attributesProvider.invalidateAll();
+		huAttributesProvider.invalidateAll();
 		rowsBuffer.invalidateAll();
 	}
 
@@ -341,10 +341,7 @@ public class HUEditorView implements IDocumentViewSelection
 			)
 	{
 		// Search for matching rowIds by barcode
-		final Set<DocumentId> matchingRowIds = streamAllRecursive()
-				.filter(row -> row.matchesBarcode(barcode))
-				.map(row -> row.getDocumentId())
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<DocumentId> matchingRowIds = rowsBuffer.getRowIdsMatchingBarcode(barcode);
 		if (matchingRowIds.isEmpty())
 		{
 			throw new AdempiereException("Nothing found for '" + barcode + "'");

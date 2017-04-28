@@ -28,12 +28,13 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
-import de.metas.ui.web.view.ASIDocumentViewAttributesProvider;
-import de.metas.ui.web.view.IDocumentViewAttributes;
+import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -79,15 +80,19 @@ public class PPOrderLinesLoader
 	//
 	private final WindowId windowId;
 	private final transient HUEditorViewRepository huEditorRepo;
-	private final ASIDocumentViewAttributesProvider asiAttributesProvider;
+	private final HUEditorRowAttributesProvider huAttributesProvider;
+	private final ASIViewRowAttributesProvider asiAttributesProvider;
 
 	@Builder
-	public PPOrderLinesLoader(final WindowId windowId, final ASIDocumentViewAttributesProvider asiAttributesProvider)
+	public PPOrderLinesLoader(final WindowId windowId, final ASIViewRowAttributesProvider asiAttributesProvider)
 	{
 		this.windowId = windowId;
+		
+		huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
 		huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(windowId)
 				.referencingTableName(I_PP_Order.Table_Name)
+				.attributesProvider(huAttributesProvider)
 				.build();
 
 
@@ -139,7 +144,7 @@ public class PPOrderLinesLoader
 				.format(packingInfo);
 	}
 
-	private final Supplier<IDocumentViewAttributes> createASIAttributesSupplier(final DocumentId documentId, final int asiId)
+	private final Supplier<IViewRowAttributes> createASIAttributesSupplier(final DocumentId documentId, final int asiId)
 	{
 		if (asiId > 0)
 		{
@@ -159,7 +164,7 @@ public class PPOrderLinesLoader
 		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
 
 		return PPOrderLineRow.builder(windowId)
-				.setDocumentId(documentId)
+				.setRowId(documentId)
 				.ppOrder(ppOrder.getPP_Order_ID())
 				.setType(PPOrderLineType.MainProduct)
 				.setProcessed(readonly)
@@ -202,7 +207,7 @@ public class PPOrderLinesLoader
 		}
 
 		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(windowId)
-				.setDocumentId(documentId)
+				.setRowId(documentId)
 				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
 				.setProcessed(readonly)
@@ -230,7 +235,7 @@ public class PPOrderLinesLoader
 
 	private PPOrderLineRow createForHUViewRecordRecursivelly(final I_PP_Order_Qty ppOrderQty, final HUEditorRow huEditorRow, final HUEditorRow parentHUEditorRow, final boolean readonly)
 	{
-		final PPOrderLineType type = PPOrderLineType.ofHUDocumentViewType(huEditorRow.getType());
+		final PPOrderLineType type = PPOrderLineType.ofHUEditorRowType(huEditorRow.getType());
 
 		//
 		// Get HU's quantity.
@@ -261,7 +266,7 @@ public class PPOrderLinesLoader
 
 		//
 		return PPOrderLineRow.builder(windowId)
-				.setDocumentId(huEditorRow.getDocumentId())
+				.setRowId(huEditorRow.getId())
 				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
 				.processed(readonly || ppOrderQty.isProcessed())
 				.setType(type)
@@ -274,7 +279,7 @@ public class PPOrderLinesLoader
 				.setQtyPlan(null) // always null
 				.setQty(qty)
 				//
-				.addIncludedDocumentFrom(huEditorRow.getIncludedDocuments(), includedHUEditorRow -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUEditorRow, huEditorRow, readonly))
+				.addIncludedDocumentFrom(huEditorRow.getIncludedRows(), includedHUEditorRow -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUEditorRow, huEditorRow, readonly))
 				//
 				.build();
 	}

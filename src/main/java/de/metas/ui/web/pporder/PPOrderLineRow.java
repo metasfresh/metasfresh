@@ -16,8 +16,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.IDocumentViewAttributes;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -48,23 +48,23 @@ import lombok.ToString;
  */
 
 @ToString
-public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
+public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 {
 	public static final Builder builder(final WindowId windowId)
 	{
 		return new Builder(windowId);
 	}
 
-	public static final PPOrderLineRow cast(final IDocumentView viewRecord)
+	public static final PPOrderLineRow cast(final IViewRow viewRecord)
 	{
 		return (PPOrderLineRow)viewRecord;
 	}
 
 	private final DocumentPath documentPath;
-	private final DocumentId documentId;
+	private final DocumentId rowId;
 	private final PPOrderLineType type;
 
-	private final Supplier<? extends IDocumentViewAttributes> attributesSupplier;
+	private final Supplier<? extends IViewRowAttributes> attributesSupplier;
 
 	private final List<PPOrderLineRow> includedDocuments;
 
@@ -84,7 +84,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	private PPOrderLineRow(final Builder builder)
 	{
 		documentPath = builder.getDocumentPath();
-		documentId = documentPath.getDocumentId();
+		rowId = documentPath.getDocumentId();
 		type = builder.getType();
 
 		ppOrderId = builder.ppOrderId;
@@ -129,9 +129,9 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	}
 
 	@Override
-	public DocumentId getDocumentId()
+	public DocumentId getId()
 	{
-		return documentId;
+		return rowId;
 	}
 
 	@Override
@@ -206,7 +206,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	}
 
 	@Override
-	public List<PPOrderLineRow> getIncludedDocuments()
+	public List<PPOrderLineRow> getIncludedRows()
 	{
 		return includedDocuments;
 	}
@@ -224,14 +224,14 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	}
 
 	@Override
-	public IDocumentViewAttributes getAttributes() throws EntityNotFoundException
+	public IViewRowAttributes getAttributes() throws EntityNotFoundException
 	{
 		if (attributesSupplier == null)
 		{
 			throw new EntityNotFoundException("Document does not support attributes");
 		}
 
-		final IDocumentViewAttributes attributes = attributesSupplier.get();
+		final IViewRowAttributes attributes = attributesSupplier.get();
 		if (attributes == null)
 		{
 			throw new EntityNotFoundException("Document does not support attributes");
@@ -247,12 +247,12 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 	public static final class Builder
 	{
 		private final WindowId windowId;
-		private DocumentId _documentId;
+		private DocumentId _rowId;
 		private PPOrderLineType type;
 
 		private List<PPOrderLineRow> includedDocuments = null;
 
-		private Supplier<? extends IDocumentViewAttributes> attributesSupplier;
+		private Supplier<? extends IViewRowAttributes> attributesSupplier;
 
 		private int ppOrderId;
 		private int ppOrderBOMLineId;
@@ -328,21 +328,21 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 
 		private DocumentPath getDocumentPath()
 		{
-			final DocumentId documentId = getDocumentId();
-			return DocumentPath.rootDocumentPath(windowId, documentId);
+			final DocumentId rowId = getRowId();
+			return DocumentPath.rootDocumentPath(windowId, rowId);
 		}
 
-		public Builder setDocumentId(final DocumentId documentId)
+		public Builder setRowId(final DocumentId rowId)
 		{
-			_documentId = documentId;
+			_rowId = rowId;
 			return this;
 		}
 
 		/** @return view row ID */
-		private DocumentId getDocumentId()
+		private DocumentId getRowId()
 		{
-			Check.assumeNotNull(_documentId, "Parameter _documentId is not null");
-			return _documentId;
+			Check.assumeNotNull(_rowId, "Parameter rowId is not null");
+			return _rowId;
 		}
 
 		private PPOrderLineType getType()
@@ -432,7 +432,7 @@ public class PPOrderLineRow implements IDocumentView, IPPOrderBOMLine
 			return this;
 		}
 
-		public Builder setAttributesSupplier(final Supplier<? extends IDocumentViewAttributes> attributesSupplier)
+		public Builder setAttributesSupplier(final Supplier<? extends IViewRowAttributes> attributesSupplier)
 		{
 			this.attributesSupplier = attributesSupplier;
 			return this;

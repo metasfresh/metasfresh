@@ -24,14 +24,14 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.view.ViewAction;
-import de.metas.ui.web.view.ASIDocumentViewAttributesProvider;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.DocumentViewResult;
-import de.metas.ui.web.view.IDocumentView;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.ViewCreateRequest;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.event.DocumentViewChangesCollector;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -63,19 +63,19 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PPOrderLinesView implements IDocumentViewSelection
+public class PPOrderLinesView implements IView
 {
-	public static PPOrderLinesView cast(final IDocumentViewSelection view)
+	public static PPOrderLinesView cast(final IView view)
 	{
 		return (PPOrderLinesView)view;
 	}
-
+	
 	private final ViewId parentViewId;
 
 	private final ViewId viewId;
 	private final int ppOrderId;
 
-	private final ASIDocumentViewAttributesProvider asiAttributesProvider;
+	private final ASIViewRowAttributesProvider asiAttributesProvider;
 	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
 
 	@Builder
@@ -83,7 +83,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			final ViewId parentViewId //
 			, @NonNull final ViewId viewId //
 			, final int ppOrderId //
-			, final ASIDocumentViewAttributesProvider asiAttributesProvider //
+			, final ASIViewRowAttributesProvider asiAttributesProvider //
 	)
 	{
 		this.parentViewId = parentViewId; // might be null
@@ -164,15 +164,15 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	}
 
 	@Override
-	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Stream<PPOrderLineRow> stream = getData().stream()
 				.skip(firstRow)
 				.limit(pageLength);
 
-		final List<IDocumentView> page = stream.collect(GuavaCollectors.toImmutableList());
+		final List<IViewRow> page = stream.collect(GuavaCollectors.toImmutableList());
 
-		return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
+		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
 	}
 
 	@Override
@@ -251,17 +251,18 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 
-		DocumentViewChangesCollector.getCurrentOrAutoflush()
+		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
 	}
 
 	private void invalidateAllNoNotify()
 	{
-		dataSupplier.forget();
 		if (asiAttributesProvider != null)
 		{
 			asiAttributesProvider.invalidateAll();
 		}
+		
+		dataSupplier.forget();
 	}
 
 	private PPOrderLinesViewData getData()
@@ -291,8 +292,8 @@ public class PPOrderLinesView implements IDocumentViewSelection
 			throw new AdempiereException("No HUs to issue found");
 		}
 
-		final IDocumentViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IDocumentViewsRepository.class); // TODO dirty workaround
-		final IDocumentViewSelection husToIssueView = viewsRepo.createView(DocumentViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
+		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class); // TODO dirty workaround
+		final IView husToIssueView = viewsRepo.createView(ViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 				.setParentViewId(getViewId())
 				.setFilterOnlyIds(huIdsToAvailableToIssue)
 				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
@@ -306,7 +307,7 @@ public class PPOrderLinesView implements IDocumentViewSelection
 	public static final class IsSingleIssueLine implements ViewAction.Precondition
 	{
 		@Override
-		public ProcessPreconditionsResolution matches(final IDocumentViewSelection view, final Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
 		{
 			if (selectedDocumentIds.size() != 1)
 			{

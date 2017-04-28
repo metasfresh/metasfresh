@@ -3,7 +3,7 @@ package de.metas.ui.web.handlingunits;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.ui.web.view.IDocumentViewType;
+import de.metas.ui.web.view.IViewRowType;
 
 /*
  * #%L
@@ -28,7 +28,7 @@ import de.metas.ui.web.view.IDocumentViewType;
  */
 
 
-public enum HUEditorRowType implements IDocumentViewType
+public enum HUEditorRowType implements IViewRowType
 {
 	LU("LU", true) //
 	, TU("TU", true) //

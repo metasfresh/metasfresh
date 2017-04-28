@@ -1,9 +1,12 @@
 package de.metas.ui.web.handlingunits.process;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.empties.IHUEmptiesService;
@@ -14,6 +17,10 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -42,6 +49,11 @@ import de.metas.process.ProcessPreconditionsResolution;
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
@@ -53,6 +65,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 	// services
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final DocumentCollection documentsRepo = Adempiere.getBean(DocumentCollection.class);
 
 	private final String _returnMovementType;
 	private final int _targetWindowId;
@@ -80,26 +93,63 @@ import de.metas.process.ProcessPreconditionsResolution;
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_ReceiptSchedule receiptSchedule = getRecord(I_M_ReceiptSchedule.class);
+		final I_M_ReceiptSchedule receiptSchedule = getProcessInfo().getRecordIfApplies(I_M_ReceiptSchedule.class, ITrx.TRXNAME_ThreadInherited).orElse(null);
 
+		final int emptiesInOutId;
+		if (receiptSchedule == null)
+		{
+			emptiesInOutId = createDraftEmptiesDocument();
+		}
+		else
+		{
+			emptiesInOutId = createDraftEmptiesInOutFromReceiptSchedule(receiptSchedule);
+		}
+
+		//
+		// Notify frontend that the empties document shall be opened in single document layout (not grid)
+		if (emptiesInOutId > 0)
+		{
+			getResult().setRecordToOpen(TableRecordReference.of(I_M_InOut.Table_Name, emptiesInOutId), getTargetWindowId(), OpenTarget.SingleDocument);
+		}
+
+		return MSG_OK;
+	}
+
+	private int createDraftEmptiesDocument()
+	{
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setDocumentType(WindowId.of(getTargetWindowId()))
+				.setDocumentId(DocumentId.NEW_ID_STRING)
+				.allowNewDocumentId()
+				.build();
+
+		final DocumentId documentId = documentsRepo.forDocumentWritable(documentPath, document -> {
+			huEmptiesService.newReturnsInOutProducer(getCtx())
+					.setMovementType(getReturnMovementType())
+					.setMovementDate(SystemTime.asDayTimestamp())
+					.fillReturnsInOutHeader(InterfaceWrapperHelper.create(document, I_M_InOut.class));
+			return document.getDocumentId();
+		});
+
+		return documentId.toInt();
+	}
+
+	private int createDraftEmptiesInOutFromReceiptSchedule(final I_M_ReceiptSchedule receiptSchedule)
+	{
 		//
 		// Create a draft "empties inout" without any line;
 		// Lines will be created manually by the user.
 		final I_M_InOut emptiesInOut = huEmptiesService.newReturnsInOutProducer(getCtx())
+				.setMovementType(getReturnMovementType())
+				.setMovementDate(SystemTime.asDayTimestamp())
 				.setC_BPartner(receiptScheduleBL.getC_BPartner_Effective(receiptSchedule))
 				.setC_BPartner_Location(receiptScheduleBL.getC_BPartner_Location_Effective(receiptSchedule))
-				.setMovementType(getReturnMovementType())
 				.setM_Warehouse(receiptScheduleBL.getM_Warehouse_Effective(receiptSchedule))
-				.setMovementDate(SystemTime.asDayTimestamp())
 				.setC_Order(receiptSchedule.getC_Order())
 				//
 				.dontComplete()
 				.create();
 
-		//
-		// Notify frontend that the empties document shall be opened in single document layout (not grid)
-		getResult().setRecordToOpen(TableRecordReference.of(emptiesInOut), getTargetWindowId(), OpenTarget.SingleDocument);
-
-		return MSG_OK;
+		return emptiesInOut == null ? -1 : emptiesInOut.getM_InOut_ID();
 	}
 }

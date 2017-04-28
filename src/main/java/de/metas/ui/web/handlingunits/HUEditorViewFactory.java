@@ -7,11 +7,11 @@ import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.DocumentViewFactory;
-import de.metas.ui.web.view.IDocumentViewSelectionFactory;
+import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewCreateRequest;
+import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -44,16 +44,16 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@DocumentViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class HUEditorViewFactory implements IDocumentViewSelectionFactory
+@ViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+public class HUEditorViewFactory implements IViewFactory
 {
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
-	private final transient CCache<ArrayKey, DocumentViewLayout> layouts = CCache.newLRUCache("HUDocumentViewSelectionFactory#Layouts", 10, 0);
+	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
 	@Override
-	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
 		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
 		return layouts.getOrLoad(key, () -> createHUViewLayout(windowId, viewDataType));
@@ -65,7 +65,7 @@ public class HUEditorViewFactory implements IDocumentViewSelectionFactory
 		return null; // not supported
 	}
 
-	private final DocumentViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
+	private final ViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
 	{
 		if (viewDataType == JSONViewDataType.includedView)
 		{
@@ -77,9 +77,9 @@ public class HUEditorViewFactory implements IDocumentViewSelectionFactory
 		}
 	}
 
-	private final DocumentViewLayout createHUViewLayout_IncludedView(final WindowId windowId)
+	private final ViewLayout createHUViewLayout_IncludedView(final WindowId windowId)
 	{
-		return DocumentViewLayout.builder()
+		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
@@ -113,9 +113,9 @@ public class HUEditorViewFactory implements IDocumentViewSelectionFactory
 				.build();
 	}
 
-	private final DocumentViewLayout createHUViewLayout_Grid(final WindowId windowId)
+	private final ViewLayout createHUViewLayout_Grid(final WindowId windowId)
 	{
-		return DocumentViewLayout.builder()
+		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
@@ -166,7 +166,7 @@ public class HUEditorViewFactory implements IDocumentViewSelectionFactory
 	}
 
 	@Override
-	public HUEditorView createView(final DocumentViewCreateRequest request)
+	public HUEditorView createView(final ViewCreateRequest request)
 	{
 		final WindowId windowId = request.getWindowId();
 		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))

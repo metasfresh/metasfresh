@@ -17,7 +17,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.ui.web.view.IDocumentViewAttributesProvider;
+import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -45,7 +45,7 @@ import lombok.Value;
  * #L%
  */
 
-class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
+public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 {
 	public static final HUEditorRowAttributesProvider newInstance()
 	{
@@ -53,10 +53,10 @@ class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 	}
 	
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
-	private final ConcurrentHashMap<DocumentViewAttributesKey, HUEditorRowAttributes> documentViewAttributesByKey = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<ViewRowAttributesKey, HUEditorRowAttributes> rowAttributesByKey = new ConcurrentHashMap<>();
 
 	@Value
-	private static final class DocumentViewAttributesKey
+	private static final class ViewRowAttributesKey
 	{
 		private DocumentId huEditorRowId;
 		private DocumentId huId;
@@ -75,11 +75,11 @@ class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 	@Override
 	public HUEditorRowAttributes getAttributes(final DocumentId viewRowId, final DocumentId huId)
 	{
-		final DocumentViewAttributesKey key = new DocumentViewAttributesKey(viewRowId, huId);
-		return documentViewAttributesByKey.computeIfAbsent(key, this::createDocumentViewAttributes);
+		final ViewRowAttributesKey key = new ViewRowAttributesKey(viewRowId, huId);
+		return rowAttributesByKey.computeIfAbsent(key, this::createRowAttributes);
 	}
 
-	private HUEditorRowAttributes createDocumentViewAttributes(final DocumentViewAttributesKey key)
+	private HUEditorRowAttributes createRowAttributes(final ViewRowAttributesKey key)
 	{
 		final int huId = key.getHuId().toInt();
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
@@ -128,6 +128,6 @@ class HUEditorRowAttributesProvider implements IDocumentViewAttributesProvider
 
 		//
 		// Destroy attribute documents
-		documentViewAttributesByKey.clear();
+		rowAttributesByKey.clear();
 	}
 }
