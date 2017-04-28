@@ -32,6 +32,8 @@ Here come the actual release notes:
   * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
   * [#1393](https://github.com/metasfresh/metasfresh/issues/1393) Translate New Partner Quick Input window to en_US
     * Translating the Quickentry for new Business Partners to en_US Language.
+  * [#1395](https://github.com/metasfresh/metasfresh/issues/1395) Translate Payment Terms to en_US
+    * Adding the Translation for Payment Terms of language en_US.
  
 * metasfresh-webui-api
   * [#300](https://github.com/metasfresh/metasfresh-webui-api/issues/300) Quickaction new Request in BPartner Window
