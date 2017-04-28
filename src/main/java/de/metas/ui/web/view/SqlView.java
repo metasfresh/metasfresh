@@ -509,9 +509,17 @@ class SqlView implements IView
 				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
 				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
 				.collect(GuavaCollectors.toImmutableSet());
+		
+		if(rowIds.isEmpty())
+		{
+			return;
+		}
 
-		ViewChangesCollector.getCurrentOrAutoflush()
-				.collectRowsChanged(this, rowIds);
+		// Invalidate local rowsById cache
+		rowIds.forEach(cache_rowsById::remove);
+
+		// Collect event
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
 	}
 
 	//
