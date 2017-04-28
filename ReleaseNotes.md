@@ -17,6 +17,7 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#427](https://github.com/metasfresh/metasfresh/issues/427) Integrate spring DI with metasfresh Services helper class
   * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
   * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
     * Adding the initial window layout for Bankstatement window in webUI.
