@@ -19,6 +19,7 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#427](https://github.com/metasfresh/metasfresh/issues/427) Integrate spring DI with metasfresh Services helper class
   * [#1211](https://github.com/metasfresh/metasfresh/issues/1211) Preparation Time: Change to first possible on same Day as Promised Date-Time
+    * Adjustment of the Tour Planning Preparation Date calculation. Now taking the earliest Tour preparation time according to the date promised.
   * [#1300](https://github.com/metasfresh/metasfresh/issues/1300) Bank Statement Window in WebUI
     * Adding the initial window layout for Bankstatement window in webUI.
   * [#1322](https://github.com/metasfresh/metasfresh/issues/1382) Make Packing Item editable in Manufacturing Order Header
@@ -28,8 +29,11 @@ Here come the actual release notes:
   * [#1366](https://github.com/metasfresh/metasfresh/issues/1366) Fields missing in Sales Order WebUI for advanced Edit
     * Adding missing fields into advanced edit of Sales Order Window in WebUI.
   * [#1351](https://github.com/metasfresh/metasfresh/issues/1351) IsTransferWhenNull not working correctly anymore
+    * Attributes which have IsTransferWhenNull=Y are now also transferred during propagation to the received product in manufacturing.
   * [#1355](https://github.com/metasfresh/metasfresh/issues/1355) Allow Business Partner group without setting price system
+    * The creation of Business Partner Groups are now possible without mandatory Pricing System.
   * [#1360](https://github.com/metasfresh/metasfresh/issues/1360) Translating processes and windows for order to shipment process to en_US
+    * Adding the Translation of en_US for the order to shipment workflow.
   * [#1370](https://github.com/metasfresh/metasfresh/issues/1370) Make request type names translatable
   * [#1393](https://github.com/metasfresh/metasfresh/issues/1393) Translate New Partner Quick Input window to en_US
     * Translating the Quickentry for new Business Partners to en_US Language.
