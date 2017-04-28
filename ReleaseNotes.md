@@ -62,7 +62,7 @@ Here come the actual release notes:
     * Now refreshing the sidelist and showing the attached files after new attachments to a record.
 
 * other
-  * [metasfresh/metasfresh-dist-orgs#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
+  * [#8](https://github.com/metasfresh/metasfresh-dist-orgs/issues/8) add trainings management
     * Adding Traning Management window, tab and field changes to metasfresh.
 
 ## Fixes
@@ -82,9 +82,9 @@ Here come the actual release notes:
     * Now showing an eror message to the user when printing is not possible.
 
 * other
-  * [metasfresh/metasfresh-dist#7](https://github.com/metasfresh/metasfresh-dist/issues/7) metasfresh-dist parent pom.xml's artifact name shall be metasfresh-dist
+  * [#7](https://github.com/metasfresh/metasfresh-dist/issues/7) metasfresh-dist parent pom.xml's artifact name shall be metasfresh-dist
     * Now making sure that by default, the project is imported (into eclipse) as "metasfresh-dist" that name is used in some .launch files, e.g. the one to start the swing client.
-  * [metasfresh/metasfresh-parent#6](https://github.com/metasfresh/metasfresh-parent/issues/6) still using metasfresh-snapshots repo
+  * [#6](https://github.com/metasfresh/metasfresh-parent/issues/6) still using metasfresh-snapshots repo
     * Eliminating the dependancy to metasfresh-snapshots repo.
 
 # metasfresh 5.6 (2017-16)
