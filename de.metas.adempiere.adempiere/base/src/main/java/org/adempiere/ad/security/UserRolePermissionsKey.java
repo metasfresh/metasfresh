@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -61,6 +62,17 @@ public final class UserRolePermissionsKey implements Serializable
 	public static UserRolePermissionsKey fromString(final String permissionsKeyStr)
 	{
 		return new UserRolePermissionsKey(permissionsKeyStr);
+	}
+	
+	public static UserRolePermissionsKey fromEvaluatee(final Evaluatee evaluatee, final String variableName)
+	{
+		final Object permissionsKeyStrObj = evaluatee.get_ValueIfExists(variableName, String.class).orElse(null);
+		if(permissionsKeyStrObj == null)
+		{
+			throw new IllegalArgumentException("No permissions key found for "+variableName+" in "+evaluatee);
+		}
+		
+		return UserRolePermissionsKey.fromString(permissionsKeyStrObj.toString());
 	}
 
 	public static final String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
