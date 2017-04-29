@@ -5,8 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -55,8 +53,6 @@ public final class ViewRow implements IViewRow
 
 	private final Map<String, Object> values;
 
-	private final IViewRowAttributesProvider attributesProvider;
-
 	private final List<IViewRow> includedRows;
 
 	private ViewRow(final Builder builder)
@@ -66,11 +62,9 @@ public final class ViewRow implements IViewRow
 		type = builder.getType();
 		processed = builder.isProcessed();
 
-		values = ImmutableMap.copyOf(builder.values);
+		values = ImmutableMap.copyOf(builder.getValues());
 
 		includedRows = builder.buildIncludedRows();
-
-		attributesProvider = builder.getAttributesProviderOrNull();
 	}
 
 	@Override
@@ -81,7 +75,6 @@ public final class ViewRow implements IViewRow
 				.add("id", rowId)
 				.add("type", type)
 				.add("values", values)
-				.add("attributesProvider", attributesProvider)
 				.add("includedRows.count", includedRows.size())
 				.add("processed", processed)
 				.toString();
@@ -120,27 +113,13 @@ public final class ViewRow implements IViewRow
 	@Override
 	public boolean hasAttributes()
 	{
-		return attributesProvider != null;
+		return false;
 	}
 
 	@Override
 	public IViewRowAttributes getAttributes()
 	{
-		if (rowId == null)
-		{
-			throw new EntityNotFoundException("row does not support attributes");
-		}
-		if (attributesProvider == null)
-		{
-			throw new EntityNotFoundException("row does not support attributes");
-		}
-
-		final IViewRowAttributes attributes = attributesProvider.getAttributes(rowId, null);
-		if (attributes == null)
-		{
-			throw new EntityNotFoundException("row does not support attributes");
-		}
-		return attributes;
+		throw new EntityNotFoundException("row does not support attributes");
 	}
 
 	@Override
@@ -164,15 +143,11 @@ public final class ViewRow implements IViewRow
 	public static final class Builder
 	{
 		private final WindowId windowId;
-		private DocumentId _rowId;
+		private DocumentId rowId;
 		private IViewRowType type;
 		private Boolean processed;
-
-		private final Map<String, Object> values = new LinkedHashMap<>();
-
+		private final Map<String, Object> values = new LinkedHashMap<>(); // preserve the insertion order of fields
 		private List<IViewRow> includedRows = null;
-
-		private IViewRowAttributesProvider attributesProvider;
 
 		private Builder(@NonNull final WindowId windowId)
 		{
@@ -192,7 +167,7 @@ public final class ViewRow implements IViewRow
 
 		public Builder setRowId(final DocumentId rowId)
 		{
-			_rowId = rowId;
+			this.rowId = rowId;
 			return this;
 		}
 
@@ -232,11 +207,11 @@ public final class ViewRow implements IViewRow
 		/** @return view row ID */
 		private DocumentId getRowId()
 		{
-			if (_rowId == null)
+			if (rowId == null)
 			{
 				throw new IllegalStateException("No rowId was provided for " + this);
 			}
-			return _rowId;
+			return rowId;
 		}
 
 		private IViewRowType getType()
@@ -284,15 +259,9 @@ public final class ViewRow implements IViewRow
 			return this;
 		}
 
-		private IViewRowAttributesProvider getAttributesProviderOrNull()
+		private Map<String, Object> getValues()
 		{
-			return attributesProvider;
-		}
-
-		public Builder setAttributesProvider(@Nullable final IViewRowAttributesProvider attributesProvider)
-		{
-			this.attributesProvider = attributesProvider;
-			return this;
+			return values;
 		}
 
 		public Builder addIncludedRow(final IViewRow includedRow)

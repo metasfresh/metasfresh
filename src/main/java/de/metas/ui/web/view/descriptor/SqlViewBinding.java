@@ -12,33 +12,22 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
-import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.view.IViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.SqlViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.filters.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
@@ -77,13 +66,11 @@ public class SqlViewBinding implements SqlEntityBinding
 		return new Builder();
 	}
 
-	private static final Logger logger = LogManager.getLogger(SqlViewBinding.class);
-
 	//
 	// Paging constants
-	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
-	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
-	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
+	private static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
+	private static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
+	private static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 
 	public static final String PLACEHOLDER_OrderBy = "/* ORDER BY PLACEHOLDER */";
 
@@ -97,7 +84,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final IStringExpression sqlSelectById;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
-	private final List<DocumentQueryOrderBy> defaultOrderBys;
+	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 
 	private SqlViewBinding(final Builder builder)
@@ -301,110 +288,17 @@ public class SqlViewBinding implements SqlEntityBinding
 	{
 		return filterDescriptors;
 	}
-
-	public ViewRowIdsOrderedSelection createOrderedSelection( //
-			final SqlViewEvaluationCtx viewEvalCtx //
-			, final WindowId windowId //
-			, final List<DocumentFilter> filters //
-			)
+	
+	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
-		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
-		final String sqlTableName = getTableName();
-		final String sqlTableAlias = getTableAlias();
-		final String keyColumnNameFQ = getKeyColumnName();
-
-		final ViewId viewId = ViewId.random(windowId);
-
-		//
-		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
-		final List<Object> sqlParams = new ArrayList<>();
-		final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
-				.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
-						+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
-						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
-						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
-						+ ")");
-
-		//
-		// SELECT ... FROM ... WHERE 1=1
-		{
-			IStringExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this).buildSqlOrderBy(defaultOrderBys);
-			if (sqlOrderBy.isNullExpression())
-			{
-				sqlOrderBy = ConstantStringExpression.of(keyColumnNameFQ);
-			}
-
-			sqlBuilder.append(
-					IStringExpression.composer()
-							.append("\n SELECT ")
-							.append("\n  ?") // UUID
-							.append("\n, ").append("row_number() OVER (ORDER BY ").append(sqlOrderBy).append(")") // Line
-							.append("\n, ").append(keyColumnNameFQ) // Record_ID
-							.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
-							.append("\n WHERE 1=1 ")
-							.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
-			);
-			sqlParams.add(viewId.getViewId());
-		}
-
-		//
-		// WHERE clause (from query)
-		{
-			final List<Object> sqlWhereClauseParams = new ArrayList<>();
-			final String sqlWhereClause = SqlDocumentFiltersBuilder.newInstance(this)
-					.addFilters(filters)
-					.buildSqlWhereClause(sqlWhereClauseParams);
-
-			if (!Check.isEmpty(sqlWhereClause, true))
-			{
-				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
-				sqlParams.addAll(sqlWhereClauseParams);
-			}
-		}
-
-		//
-		// Enforce a LIMIT, to not affect server performances on huge tables
-		final int queryLimit;
-		{
-			final UserRolePermissionsKey permissionsKey = UserRolePermissionsKey.fromEvaluatee(evalCtx, AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName());
-			final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
-
-			queryLimit = permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
-					.or(WindowMaxQueryRecordsConstraint.DEFAULT)
-					.getMaxQueryRecordsPerRole();
-			if (queryLimit > 0)
-			{
-				sqlBuilder.append("\n LIMIT ?");
-				sqlParams.add(queryLimit);
-			}
-		}
-
-		//
-		// Evaluate the final SQL query
-		final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
-
-		//
-		// Execute it, so we insert in our T_WEBUI_ViewSelection
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
-		stopwatch.stop();
-		final boolean queryLimitHit = queryLimit > 0 && rowsCount >= queryLimit;
-		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", viewId, rowsCount, stopwatch, sql, sqlParams);
-
-		return ViewRowIdsOrderedSelection.builder()
-				.setViewId(viewId)
-				.setSize(rowsCount)
-				.setOrderBys(defaultOrderBys)
-				.setQueryLimit(queryLimit, queryLimitHit)
-				.build();
+		return defaultOrderBys;
 	}
 
-	public IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(final SqlViewEvaluationCtx viewEvalCtx)
+	public Map<String, String> getSqlOrderBysIndexedByFieldName(final SqlViewEvaluationCtx viewEvalCtx)
 	{
 		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
-		final String sqlCreateFromViewId = getSqlCreateSelectionFromSelection();
-
-		final ImmutableMap.Builder<String, String> sqlOrderBysByFieldName = ImmutableMap.builder();
+		
+		final ImmutableMap.Builder<String, String> sqlOrderBysIndexedByFieldName = ImmutableMap.builder();
 		for (final SqlViewRowFieldBinding fieldBinding : getFields())
 		{
 			final String fieldOrderBy = fieldBinding.getSqlOrderBy().evaluate(evalCtx, OnVariableNotFound.Fail);
@@ -414,13 +308,13 @@ public class SqlViewBinding implements SqlEntityBinding
 			}
 
 			final String fieldName = fieldBinding.getFieldName();
-			sqlOrderBysByFieldName.put(fieldName, fieldOrderBy);
+			sqlOrderBysIndexedByFieldName.put(fieldName, fieldOrderBy);
 		}
-
-		return new SqlViewRowIdsOrderedSelectionFactory(sqlCreateFromViewId, sqlOrderBysByFieldName.build());
+		
+		return sqlOrderBysIndexedByFieldName.build();
 	}
 
-	private String getSqlCreateSelectionFromSelection()
+	public String getSqlCreateSelectionFromSelection()
 	{
 		final String sqlTableName = getTableName();
 		final String sqlTableAlias = getTableAlias();
@@ -452,6 +346,79 @@ public class SqlViewBinding implements SqlEntityBinding
 		}
 
 		return sqlBuilder.toString();
+	}
+	
+	public String getSqlCreateSelectionFrom( //
+			final List<Object> sqlParams //
+			, final SqlViewEvaluationCtx viewEvalCtx //
+			, final ViewId newViewId //
+			, final List<DocumentFilter> filters //
+			, final int queryLimit //
+			)
+	{
+		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
+		final String sqlTableName = getTableName();
+		final String sqlTableAlias = getTableAlias();
+		final String keyColumnNameFQ = getKeyColumnName();
+
+		//
+		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
+		final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
+				.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
+						+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
+						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
+						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
+						+ ")");
+
+		//
+		// SELECT ... FROM ... WHERE 1=1
+		{
+			IStringExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this).buildSqlOrderBy(defaultOrderBys);
+			if (sqlOrderBy.isNullExpression())
+			{
+				sqlOrderBy = ConstantStringExpression.of(keyColumnNameFQ);
+			}
+
+			sqlBuilder.append(
+					IStringExpression.composer()
+							.append("\n SELECT ")
+							.append("\n  ?") // UUID
+							.append("\n, ").append("row_number() OVER (ORDER BY ").append(sqlOrderBy).append(")") // Line
+							.append("\n, ").append(keyColumnNameFQ) // Record_ID
+							.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
+							.append("\n WHERE 1=1 ")
+							.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+			);
+			sqlParams.add(newViewId.getViewId());
+		}
+
+		//
+		// WHERE clause (from query)
+		{
+			final List<Object> sqlWhereClauseParams = new ArrayList<>();
+			final String sqlWhereClause = SqlDocumentFiltersBuilder.newInstance(this)
+					.addFilters(filters)
+					.buildSqlWhereClause(sqlWhereClauseParams);
+
+			if (!Check.isEmpty(sqlWhereClause, true))
+			{
+				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
+				sqlParams.addAll(sqlWhereClauseParams);
+			}
+		}
+
+		//
+		// Enforce a LIMIT, to not affect server performances on huge tables
+		if (queryLimit > 0)
+		{
+			sqlBuilder.append("\n LIMIT ?");
+			sqlParams.add(queryLimit);
+		}
+
+		//
+		// Evaluate the final SQL query
+		final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
+		return sql;
 	}
 
 	//

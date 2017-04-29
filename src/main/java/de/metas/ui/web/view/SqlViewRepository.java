@@ -3,18 +3,26 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -22,6 +30,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
+import de.metas.ui.web.view.descriptor.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -76,21 +85,48 @@ class SqlViewRepository
 		return sqlBindings.getSqlWhereClause(viewId.getViewId(), rowIds);
 	}
 
-	public IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(final SqlViewEvaluationCtx evalCtx)
+	public IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(final SqlViewEvaluationCtx viewEvalCtx)
 	{
-		return sqlBindings.createOrderedSelectionFactory(evalCtx);
+		final String sqlCreateFromViewId = sqlBindings.getSqlCreateSelectionFromSelection();
+		final Map<String, String> sqlOrderBysByFieldName = sqlBindings.getSqlOrderBysIndexedByFieldName(viewEvalCtx);
+		return new SqlViewRowIdsOrderedSelectionFactory(sqlCreateFromViewId, sqlOrderBysByFieldName);
 	}
 
 	public ViewRowIdsOrderedSelection createOrderedSelection(final SqlViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
 	{
-		return sqlBindings.createOrderedSelection(viewEvalCtx, windowId, filters);
+		final ViewId viewId = ViewId.random(windowId);
+		
+		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
+		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
+		final int queryLimit = permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
+				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
+				.getMaxQueryRecordsPerRole();
+
+		//
+		//
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = sqlBindings.getSqlCreateSelectionFrom(sqlParams, viewEvalCtx, viewId, filters, queryLimit);
+
+		//
+		// Execute it, so we insert in our T_WEBUI_ViewSelection
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		stopwatch.stop();
+		final boolean queryLimitHit = queryLimit > 0 && rowsCount >= queryLimit;
+		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", viewId, rowsCount, stopwatch, sql, sqlParams);
+
+		return ViewRowIdsOrderedSelection.builder()
+				.setViewId(viewId)
+				.setSize(rowsCount)
+				.setOrderBys(sqlBindings.getDefaultOrderBys())
+				.setQueryLimit(queryLimit, queryLimitHit)
+				.build();
 	}
 
 	public IViewRow retrieveById(final SqlViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
 		final WindowId windowId = viewId.getWindowId();
 		final String viewSelectionId = viewId.getViewId();
-		final IViewRowAttributesProvider attributesProvider = null; // TODO
 
 		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
 		final String sql = sqlBindings.getSqlSelectById().evaluate(evalCtx, OnVariableNotFound.Fail);
@@ -109,7 +145,7 @@ class SqlViewRepository
 			IViewRow firstDocument = null;
 			while (rs.next())
 			{
-				final IViewRow document = loadViewRow(rs, windowId, attributesProvider);
+				final IViewRow document = loadViewRow(rs, windowId);
 				if (document == null)
 				{
 					continue;
@@ -144,10 +180,9 @@ class SqlViewRepository
 		}
 	}
 
-	private IViewRow loadViewRow(final ResultSet rs, final WindowId windowId, final IViewRowAttributesProvider attributesProvider) throws SQLException
+	private IViewRow loadViewRow(final ResultSet rs, final WindowId windowId) throws SQLException
 	{
-		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId)
-				.setAttributesProvider(attributesProvider);
+		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
 
 		for (final SqlViewRowFieldBinding field : sqlBindings.getFields())
 		{
@@ -184,8 +219,6 @@ class SqlViewRepository
 		final WindowId windowId = orderedSelection.getWindowId();
 		final String viewSelectionId = orderedSelection.getSelectionId();
 
-		final IViewRowAttributesProvider attributesProvider = null; // TODO
-
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + pageLength;
 
@@ -205,7 +238,7 @@ class SqlViewRepository
 			final ImmutableList.Builder<IViewRow> pageBuilder = ImmutableList.builder();
 			while (rs.next())
 			{
-				final IViewRow row = loadViewRow(rs, windowId, attributesProvider);
+				final IViewRow row = loadViewRow(rs, windowId);
 				if (row == null)
 				{
 					continue;

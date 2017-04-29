@@ -40,12 +40,12 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
  * #L%
  */
 
-class SqlViewRowIdsOrderedSelectionFactory implements IViewRowIdsOrderedSelectionFactory
+public class SqlViewRowIdsOrderedSelectionFactory implements IViewRowIdsOrderedSelectionFactory
 {
 	private final String sqlCreateFromViewId;
 	private final Map<String, String> sqlOrderBysByFieldName;
 
-	SqlViewRowIdsOrderedSelectionFactory(final String sqlCreateFromViewId, final Map<String, String> sqlOrderBysByFieldName)
+	public SqlViewRowIdsOrderedSelectionFactory(final String sqlCreateFromViewId, final Map<String, String> sqlOrderBysByFieldName)
 	{
 		super();
 		this.sqlCreateFromViewId = sqlCreateFromViewId;

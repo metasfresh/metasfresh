@@ -62,6 +62,11 @@ public class SqlViewEvaluationCtx
 				.add("permissionsKey", permissionsKey)
 				.toString();
 	}
+	
+	public UserRolePermissionsKey getPermissionsKey()
+	{
+		return permissionsKey;
+	}
 
 	public Evaluatee toEvaluatee()
 	{
