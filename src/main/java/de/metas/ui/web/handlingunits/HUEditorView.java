@@ -28,9 +28,9 @@ import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.process.view.ViewActionParam;
-import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -304,7 +304,7 @@ public class HUEditorView implements IView
 	@Override
 	public Stream<HUEditorRow> streamByIds(final Collection<DocumentId> rowIds)
 	{
-		return rowsBuffer.streamByIds(rowIds);
+		return rowsBuffer.streamByIdsExcludingIncludedRows(rowIds);
 	}
 
 	/** @return top level rows and included rows recursive stream */
