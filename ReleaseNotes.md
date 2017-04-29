@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Adding the Translation of Request Type in webUI for language en_US.
   * [#1399](https://github.com/metasfresh/metasfresh/issues/1399) DocumentNo not generated for PP_Orders in WebUI
     * Adding Document No. control to all manufacturing Document Types.
+  * [#1400](https://github.com/metasfresh/metasfresh/issues/1400) DocumentNo not generated for empties in WebUI
+    * Adding the Document No. control to the empties return document.
 
 
 # metasfresh 5.7 (2017-17)
