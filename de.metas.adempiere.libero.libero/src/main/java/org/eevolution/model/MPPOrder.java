@@ -49,7 +49,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -245,7 +244,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		// New
 		if (PP_Order_ID == 0)
 		{
-			setDefault();
+			Services.get(IPPOrderBL.class).setDefaults(this);
 		}
 	} // PP_Order
 
@@ -342,22 +341,6 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	private List<I_PP_Order_BOMLine> getLines()
 	{
 		return getLines(true);
-	}
-
-	public void setC_DocTypeTarget_ID(String docBaseType)
-	{
-		if (getC_DocTypeTarget_ID() > 0)
-			return;
-
-		MDocType[] doc = MDocType.getOfDocBaseType(getCtx(), docBaseType);
-		if (doc == null)
-		{
-			throw new DocTypeNotFoundException(docBaseType, "");
-		}
-		else
-		{
-			setC_DocTypeTarget_ID(doc[0].get_ID());
-		}
 	}
 
 	@Override
@@ -1176,30 +1159,6 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	public boolean isDelivered()
 	{
 		return Services.get(IPPOrderBL.class).isDelivered(this);
-	}
-
-	/**
-	 * Set default value and reset values whe copy record
-	 */
-	public void setDefault()
-	{
-		setLine(10);
-		setPriorityRule(PRIORITYRULE_Medium);
-		setDescription("");
-		setQtyDelivered(Env.ZERO);
-		setQtyReject(Env.ZERO);
-		setQtyScrap(Env.ZERO);
-		setIsSelected(false);
-		setIsSOTrx(false);
-		setIsApproved(false);
-		setIsPrinted(false);
-		setProcessed(false);
-		setProcessing(false);
-		setPosted(false);
-		setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_ManufacturingOrder);
-		setC_DocType_ID(getC_DocTypeTarget_ID());
-		setDocStatus(DOCSTATUS_Drafted);
-		setDocAction(DOCACTION_Complete);
 	}
 
 	@Deprecated
