@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-18**
 
 * metasfresh-backend
+  * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
+    * Adding the Translation of Request Type in webUI for language en_US.
   * [#1399](https://github.com/metasfresh/metasfresh/issues/1399) DocumentNo not generated for PP_Orders in WebUI
     * Adding Document No. control to all manufacturing Document Types.
 
