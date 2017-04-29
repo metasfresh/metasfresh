@@ -352,13 +352,13 @@ public class SqlDocumentQueryBuilder
 			return queryOrderBys;
 		}
 
-		return entityBinding.getOrderBys();
+		return entityBinding.getDefaultOrderBys();
 	}
 
 	public IStringExpression getSqlOrderByEffective()
 	{
 		final List<DocumentQueryOrderBy> orderBys = getOrderBysEffective();
-		return entityBinding.buildSqlOrderBy(orderBys);
+		return SqlDocumentOrderByBuilder.newInstance(entityBinding).buildSqlOrderBy(orderBys);
 	}
 
 	public SqlDocumentEntityDataBindingDescriptor getEntityBinding()

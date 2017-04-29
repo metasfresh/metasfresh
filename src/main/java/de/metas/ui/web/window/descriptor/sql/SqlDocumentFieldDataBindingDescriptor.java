@@ -285,24 +285,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.build();
 	}
 
-	/**
-	 * @param ascending
-	 * @return ORDER BY sql which consist of full column SQL definition instead of just the column name / display name
-	 */
-	public final IStringExpression buildSqlFullOrderBy(final boolean ascending)
-	{
-		final IStringExpression orderByExpr = getSqlFullOrderBy();
-		if (orderByExpr.isNullExpression())
-		{
-			return orderByExpr;
-		}
-
-		return IStringExpression.composer()
-				.append("(").append(orderByExpr).append(")").append(ascending ? " ASC" : " DESC")
-				.build();
-	}
-
-	public IStringExpression getSqlFullOrderBy()
+	@Override
+	public IStringExpression getSqlOrderBy()
 	{
 		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.of(getColumnSql());
 		return orderByExpr;

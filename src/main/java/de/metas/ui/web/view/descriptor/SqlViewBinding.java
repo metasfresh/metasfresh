@@ -41,11 +41,11 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.filters.NullDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import de.metas.ui.web.window.model.sql.SqlDocumentFiltersBuilder;
+import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 import lombok.NonNull;
 
 /*
@@ -97,7 +97,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final IStringExpression sqlSelectById;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
-	private final List<DocumentQueryOrderBy> orderBys;
+	private final List<DocumentQueryOrderBy> defaultOrderBys;
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 
 	private SqlViewBinding(final Builder builder)
@@ -144,7 +144,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		}
 		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
 
-		orderBys = ImmutableList.copyOf(builder.getOrderBys());
+		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 		filterDescriptors = builder.getFilterDescriptors();
 	}
 
@@ -260,22 +260,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		}
 	}
 
-	private final IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
-	{
-		if (orderBys.isEmpty())
-		{
-			return null;
-		}
-
-		final IStringExpression sqlOrderByFinal = orderBys
-				.stream()
-				.map(orderBy -> getFieldByFieldName(orderBy.getFieldName()).getSqlOrderBy(orderBy.isAscending()))
-				.filter(sql -> sql != null && !sql.isNullExpression())
-				.collect(IStringExpression.collectJoining(", "));
-
-		return sqlOrderByFinal;
-	}
-
 	public IStringExpression getSqlSelectByPage()
 	{
 		return sqlSelectByPage;
@@ -313,11 +297,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		return rowFieldLoaders;
 	}
 
-	public List<DocumentQueryOrderBy> getOrderBys()
-	{
-		return orderBys;
-	}
-
 	public DocumentFilterDescriptorsProvider getFilterDescriptors()
 	{
 		return filterDescriptors;
@@ -349,7 +328,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		//
 		// SELECT ... FROM ... WHERE 1=1
 		{
-			IStringExpression sqlOrderBy = buildSqlOrderBy(orderBys);
+			IStringExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this).buildSqlOrderBy(defaultOrderBys);
 			if (sqlOrderBy.isNullExpression())
 			{
 				sqlOrderBy = ConstantStringExpression.of(keyColumnNameFQ);
@@ -415,7 +394,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return ViewRowIdsOrderedSelection.builder()
 				.setViewId(viewId)
 				.setSize(rowsCount)
-				.setOrderBys(orderBys)
+				.setOrderBys(defaultOrderBys)
 				.setQueryLimit(queryLimit, queryLimitHit)
 				.build();
 	}
@@ -490,7 +469,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private final Map<String, SqlViewRowFieldBinding> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlViewRowFieldBinding _keyField;
 
-		private List<DocumentQueryOrderBy> orderBys;
+		private List<DocumentQueryOrderBy> defaultOrderBys;
 		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 
 		private Builder()
@@ -549,35 +528,28 @@ public class SqlViewBinding implements SqlEntityBinding
 		{
 			return _fieldsByFieldName;
 		}
-
-		private final Builder addField(final SqlDocumentFieldDataBindingDescriptor field)
+		
+		public final Builder addField(SqlViewRowFieldBinding field)
 		{
-			final boolean isDisplayColumnAvailable = getDisplayFieldNames().contains(field.getFieldName());
-			final SqlViewRowFieldBinding rowFieldBinding = SqlViewRowFieldBinding.of(field, isDisplayColumnAvailable);
+			Check.assumeNotNull(field, "Parameter field is not null");
 
-			_fieldsByFieldName.put(rowFieldBinding.getFieldName(), rowFieldBinding);
-			if (rowFieldBinding.isKeyColumn())
+			_fieldsByFieldName.put(field.getFieldName(), field);
+			if (field.isKeyColumn())
 			{
-				_keyField = rowFieldBinding;
+				_keyField = field;
 			}
 			return this;
 		}
 
-		public Builder addFields(final Collection<SqlDocumentFieldDataBindingDescriptor> fields)
+		public Builder setOrderBys(final List<DocumentQueryOrderBy> defaultOrderBys)
 		{
-			fields.forEach(this::addField);
+			this.defaultOrderBys = defaultOrderBys;
 			return this;
 		}
 
-		public Builder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
+		private List<DocumentQueryOrderBy> getDefaultOrderBys()
 		{
-			this.orderBys = orderBys;
-			return this;
-		}
-
-		private List<DocumentQueryOrderBy> getOrderBys()
-		{
-			return orderBys == null ? ImmutableList.of() : orderBys;
+			return defaultOrderBys == null ? ImmutableList.of() : defaultOrderBys;
 		}
 
 		public Builder setFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)

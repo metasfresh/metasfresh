@@ -86,7 +86,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
-	private final List<DocumentQueryOrderBy> orderBys;
+	private final List<DocumentQueryOrderBy> defaultOrderBys;
 
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 
@@ -116,7 +116,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlWhereClause = builder.getSqlWhereClauseExpression()
 				.caching();
 
-		orderBys = ImmutableList.copyOf(builder.getOrderBysList());
+		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 
 		sqlSelectVersionById = builder.getSqlSelectVersionById();
 	}
@@ -185,66 +185,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlTableName + "." + sqlKeyColumnName + " = " + recordId;
 	}
 
-	public List<DocumentQueryOrderBy> getOrderBys()
+	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
-		return orderBys;
-	}
-
-	public final IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
-	{
-		if (orderBys.isEmpty())
-		{
-			return IStringExpression.NULL;
-		}
-
-		final IStringExpression sqlOrderByFinal = orderBys
-				.stream()
-				.map(orderBy -> buildSqlOrderBy(orderBy))
-				.filter(sql -> sql != null && !sql.isNullExpression())
-				.collect(IStringExpression.collectJoining(", "));
-
-		return sqlOrderByFinal;
-	}
-
-	public final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
-	{
-		final String fieldName = orderBy.getFieldName();
-		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
-		return fieldBinding.buildSqlOrderBy(orderBy.isAscending());
-	}
-
-	public final IStringExpression buildSqlFullOrderBy(final List<DocumentQueryOrderBy> orderBys)
-	{
-		if (orderBys.isEmpty())
-		{
-			return null;
-		}
-
-		final IStringExpression sqlOrderByFinal = orderBys
-				.stream()
-				.map(orderBy -> buildSqlFullOrderBy(orderBy))
-				.filter(sql -> sql != null && !sql.isNullExpression())
-				.collect(IStringExpression.collectJoining(", "));
-
-		return sqlOrderByFinal;
-	}
-
-	private final IStringExpression buildSqlFullOrderBy(final DocumentQueryOrderBy orderBy)
-	{
-		final String fieldName = orderBy.getFieldName();
-		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
-		return fieldBinding.buildSqlFullOrderBy(orderBy.isAscending());
-	}
-
-	public String replaceTableNameWithTableAlias(final String sql)
-	{
-		if (sql == null || sql.isEmpty())
-		{
-			return sql;
-		}
-
-		final String sqlFixed = sql.replace(getTableName() + ".", getTableAlias() + ".");
-		return sqlFixed;
+		return defaultOrderBys;
 	}
 
 	@Override
@@ -412,7 +355,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlWhereClauseExpr;
 		}
 
-		private List<DocumentQueryOrderBy> getOrderBysList()
+		private List<DocumentQueryOrderBy> getDefaultOrderBys()
 		{
 			// Build the ORDER BY from fields
 			return getFieldsByFieldName()

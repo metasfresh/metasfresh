@@ -3,15 +3,12 @@ package de.metas.ui.web.view.descriptor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.util.Check;
 
-import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,11 +34,6 @@ import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 
 public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 {
-	static final SqlViewRowFieldBinding of(final SqlDocumentFieldDataBindingDescriptor fieldDataBinding, final boolean isDisplayColumnAvailable)
-	{
-		return new SqlViewRowFieldBinding(fieldDataBinding, isDisplayColumnAvailable);
-	}
-	
 	/**
 	 * Retrieves a particular field from given {@link ResultSet}.
 	 */
@@ -56,52 +48,46 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	private final String columnSql;
 	private final boolean keyColumn;
 	private final DocumentFieldWidgetType widgetType;
-	
+
 	private final Class<?> sqlValueClass;
 	private final String sqlSelectValue;
 	private final IStringExpression sqlSelectDisplayValue;
 	private final boolean usingDisplayColumn;
 
-	private final IExpression<String> sqlOrderBy;
-	private final IStringExpression sqlOrderByAsc;
-	private final IStringExpression sqlOrderByDesc;
+	private final IStringExpression sqlOrderBy;
 
 	private final SqlViewRowFieldLoader fieldLoader;
 
-	private SqlViewRowFieldBinding(final SqlDocumentFieldDataBindingDescriptor fieldDataBinding, final boolean isDisplayColumnAvailable)
+	@Builder
+	private SqlViewRowFieldBinding(
+			@NonNull final String fieldName //
+			, @NonNull final String columnName //
+			, @NonNull final String columnSql //
+			, final boolean keyColumn //
+			, @NonNull final DocumentFieldWidgetType widgetType //
+			//
+			, @NonNull final Class<?> sqlValueClass //
+			, @NonNull final String sqlSelectValue //
+			, @NonNull final IStringExpression sqlSelectDisplayValue //
+			, final boolean usingDisplayColumn //
+			//
+			, @NonNull final IStringExpression sqlOrderBy //
+			, @NonNull final SqlViewRowFieldLoader fieldLoader //
+	)
 	{
-		fieldName = fieldDataBinding.getFieldName();
-		columnName = fieldDataBinding.getColumnName();
-		columnSql = fieldDataBinding.getColumnSql();
-		keyColumn = fieldDataBinding.isKeyColumn();
-		widgetType = fieldDataBinding.getWidgetType();
+		this.fieldName = fieldName;
+		this.columnName = columnName;
+		this.columnSql = columnSql;
+		this.keyColumn = keyColumn;
+		this.widgetType = widgetType;
 
-		sqlValueClass = fieldDataBinding.getSqlValueClass();
-		sqlSelectValue = fieldDataBinding.getSqlSelectValue();
-		usingDisplayColumn = fieldDataBinding.isUsingDisplayColumn(); // TODO: shall we use displayColumnAvailable instead?
-		sqlSelectDisplayValue = fieldDataBinding.getSqlSelectDisplayValue();
+		this.sqlValueClass = sqlValueClass;
+		this.sqlSelectValue = sqlSelectValue;
+		this.sqlSelectDisplayValue = sqlSelectDisplayValue;
+		this.usingDisplayColumn = usingDisplayColumn;
 
-		sqlOrderBy = fieldDataBinding.getSqlFullOrderBy();
-		sqlOrderByAsc = fieldDataBinding.buildSqlFullOrderBy(true);
-		sqlOrderByDesc = fieldDataBinding.buildSqlFullOrderBy(false);
-
-		final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
-		fieldLoader = createRowFieldLoader(fieldValueLoader, isDisplayColumnAvailable);
-	}
-
-	/**
-	 * NOTE to developer: keep this method static and provide only primitive or lambda parameters
-	 *
-	 * @param fieldValueLoader
-	 * @param isDisplayColumnAvailable
-	 */
-	private static SqlViewRowFieldLoader createRowFieldLoader(final DocumentFieldValueLoader fieldValueLoader, final boolean isDisplayColumnAvailable)
-	{
-		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
-		return rs -> {
-			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable);
-			return Values.valueToJsonObject(fieldValue);
-		};
+		this.sqlOrderBy = sqlOrderBy;
+		this.fieldLoader = fieldLoader;
 	}
 
 	public String getFieldName()
@@ -119,19 +105,19 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	{
 		return keyColumn;
 	}
-	
+
 	@Override
 	public String getColumnSql()
 	{
 		return columnSql;
 	}
-	
+
 	@Override
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
 	}
-	
+
 	@Override
 	public Class<?> getSqlValueClass()
 	{
@@ -158,13 +144,9 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		return fieldLoader;
 	}
 
-	public IExpression<String> getSqlOrderBy()
+	@Override
+	public IStringExpression getSqlOrderBy()
 	{
 		return sqlOrderBy;
-	}
-
-	public IStringExpression getSqlOrderBy(final boolean ascending)
-	{
-		return ascending ? sqlOrderByAsc : sqlOrderByDesc;
 	}
 }
