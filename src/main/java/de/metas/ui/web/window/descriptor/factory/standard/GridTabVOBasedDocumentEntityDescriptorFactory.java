@@ -7,11 +7,8 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridFieldVO;
@@ -23,7 +20,6 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -62,7 +58,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
 	private final Map<Integer, String> _adFieldId2columnName;
@@ -71,7 +66,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 	//
 	// State
-	private final Builder _documentEntryBuilder;
+	private final DocumentEntityDescriptor.Builder _documentEntryBuilder;
 
 	public GridTabVOBasedDocumentEntityDescriptorFactory(final GridTabVO gridTabVO, final GridTabVO parentTabVO, final boolean isSOTrx)
 	{
@@ -323,7 +318,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			orderBySortNo = Integer.MAX_VALUE;
 		}
 
-		final IStringExpression sqlColumnSql = expressionFactory.compile(gridFieldVO.getColumnSQL(false), IStringExpression.class);
+		final String sqlColumnSql = gridFieldVO.getColumnSQL(false);
 
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
@@ -335,6 +330,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
+				.setSqlValueClass(entityBindings.getPOInfo().getColumnClass(sqlColumnName))
 				.setLookupDescriptor(lookupDescriptor)
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())

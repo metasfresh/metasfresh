@@ -10,10 +10,11 @@ import org.adempiere.util.Check;
 import org.compiere.util.DB;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.IViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -42,13 +43,13 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 class SqlViewRowIdsOrderedSelectionFactory implements IViewRowIdsOrderedSelectionFactory
 {
 	private final String sqlCreateFromViewId;
-	private final Map<String, String> fieldName2sqlDictionary;
+	private final Map<String, String> sqlOrderBysByFieldName;
 
-	SqlViewRowIdsOrderedSelectionFactory(final String sql, final Map<String, String> fieldName2sqlDictionary)
+	SqlViewRowIdsOrderedSelectionFactory(final String sqlCreateFromViewId, final Map<String, String> sqlOrderBysByFieldName)
 	{
 		super();
-		this.sqlCreateFromViewId = sql;
-		this.fieldName2sqlDictionary = fieldName2sqlDictionary;
+		this.sqlCreateFromViewId = sqlCreateFromViewId;
+		this.sqlOrderBysByFieldName = ImmutableMap.copyOf(sqlOrderBysByFieldName);
 	}
 
 	@Override
@@ -56,7 +57,7 @@ class SqlViewRowIdsOrderedSelectionFactory implements IViewRowIdsOrderedSelectio
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("sql", sqlCreateFromViewId)
-				.add("fieldName2sqlDictionary", fieldName2sqlDictionary)
+				.add("sqlOrderBysByFieldName", sqlOrderBysByFieldName)
 				.toString();
 	}
 
@@ -98,10 +99,10 @@ class SqlViewRowIdsOrderedSelectionFactory implements IViewRowIdsOrderedSelectio
 	private final String buildOrderBy(final DocumentQueryOrderBy orderBy)
 	{
 		final String fieldName = orderBy.getFieldName();
-		final String fieldSql = fieldName2sqlDictionary.get(fieldName);
+		final String fieldSql = sqlOrderBysByFieldName.get(fieldName);
 		if (fieldSql == null)
 		{
-			throw new DBException("No SQL field mapping found for: " + fieldName + ". Available fields are: " + fieldName2sqlDictionary);
+			throw new DBException("No SQL field mapping found for: " + fieldName + ". Available fields are: " + sqlOrderBysByFieldName.keySet());
 		}
 
 		return "(" + fieldSql + ") " + (orderBy.isAscending() ? " ASC" : " DESC");

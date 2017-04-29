@@ -17,6 +17,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -159,10 +160,10 @@ public final class ViewRow implements IViewRow
 	//
 	//
 	//
+	@ToString
 	public static final class Builder
 	{
 		private final WindowId windowId;
-		private String idFieldName;
 		private DocumentId _rowId;
 		private IViewRowType type;
 		private Boolean processed;
@@ -189,55 +190,53 @@ public final class ViewRow implements IViewRow
 			return DocumentPath.rootDocumentPath(windowId, documentId);
 		}
 
-		public Builder setIdFieldName(final String idFieldName)
-		{
-			this.idFieldName = idFieldName;
-			return this;
-		}
-
 		public Builder setRowId(final DocumentId rowId)
 		{
 			_rowId = rowId;
 			return this;
 		}
 
-		/** @return view row ID */
-		private DocumentId getRowId()
+		public Builder setRowIdFromObject(final Object jsonRowIdObj)
 		{
-			if (_rowId != null)
-			{
-				return _rowId;
-			}
+			setRowId(convertToRowId(jsonRowIdObj));
+			return this;
+		}
 
-			if (idFieldName == null)
+		private static final DocumentId convertToRowId(@NonNull final Object jsonRowIdObj)
+		{
+			if (jsonRowIdObj instanceof DocumentId)
 			{
-				throw new IllegalStateException("No idFieldName was specified");
+				return (DocumentId)jsonRowIdObj;
 			}
-
-			final Object idJson = values.get(idFieldName);
-
-			if (idJson == null)
+			else if (jsonRowIdObj instanceof Integer)
 			{
-				throw new IllegalArgumentException("No ID found for " + idFieldName);
+				return DocumentId.of((Integer)jsonRowIdObj);
 			}
-			if (idJson instanceof Integer)
+			else if (jsonRowIdObj instanceof String)
 			{
-				return DocumentId.of((Integer)idJson);
+				return DocumentId.of(jsonRowIdObj.toString());
 			}
-			else if (idJson instanceof String)
-			{
-				return DocumentId.of(idJson.toString());
-			}
-			else if (idJson instanceof JSONLookupValue)
+			else if (jsonRowIdObj instanceof JSONLookupValue)
 			{
 				// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-				final JSONLookupValue jsonLookupValue = (JSONLookupValue)idJson;
+				final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
 				return DocumentId.of(jsonLookupValue.getKey());
 			}
 			else
 			{
-				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' (" + idJson.getClass() + ") to integer");
+				throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
 			}
+
+		}
+
+		/** @return view row ID */
+		private DocumentId getRowId()
+		{
+			if (_rowId == null)
+			{
+				throw new IllegalStateException("No rowId was provided for " + this);
+			}
+			return _rowId;
 		}
 
 		private IViewRowType getType()
