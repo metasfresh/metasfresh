@@ -112,14 +112,13 @@ class SqlViewRepository
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		stopwatch.stop();
-		final boolean queryLimitHit = queryLimit > 0 && rowsCount >= queryLimit;
 		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", viewId, rowsCount, stopwatch, sql, sqlParams);
 
 		return ViewRowIdsOrderedSelection.builder()
 				.setViewId(viewId)
 				.setSize(rowsCount)
 				.setOrderBys(sqlBindings.getDefaultOrderBys())
-				.setQueryLimit(queryLimit, queryLimitHit)
+				.setQueryLimit(queryLimit)
 				.build();
 	}
 

@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import org.adempiere.ad.expression.api.IStringExpression;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -30,4 +32,10 @@ public interface SqlEntityBinding
 
 	/** @return field binding or throws exception in case it was not found */
 	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
+	
+	default IStringExpression getFieldOrderBy(String fieldName)
+	{
+		return getFieldByFieldName(fieldName).getSqlOrderBy();
+	}
+
 }

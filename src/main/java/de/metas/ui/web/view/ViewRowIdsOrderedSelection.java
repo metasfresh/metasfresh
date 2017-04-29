@@ -113,7 +113,6 @@ public final class ViewRowIdsOrderedSelection
 		private List<DocumentQueryOrderBy> orderBys;
 
 		private int queryLimit;
-		private boolean queryLimitHit;
 
 		private Builder()
 		{
@@ -149,7 +148,7 @@ public final class ViewRowIdsOrderedSelection
 
 		private ImmutableList<DocumentQueryOrderBy> getOrderBys()
 		{
-			return ImmutableList.copyOf(orderBys);
+			return orderBys == null ? ImmutableList.of() : ImmutableList.copyOf(orderBys);
 		}
 
 		public Builder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
@@ -158,10 +157,9 @@ public final class ViewRowIdsOrderedSelection
 			return this;
 		}
 
-		public Builder setQueryLimit(final int queryLimit, final boolean queryLimitHit)
+		public Builder setQueryLimit(final int queryLimit)
 		{
 			this.queryLimit = queryLimit;
-			this.queryLimitHit = queryLimitHit;
 			return this;
 		}
 
@@ -172,7 +170,9 @@ public final class ViewRowIdsOrderedSelection
 
 		private boolean isQueryLimitHit()
 		{
-			return queryLimitHit;
+			return queryLimit > 0
+					&& size > 0
+					&& size >= queryLimit;
 		}
 	}
 }

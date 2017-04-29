@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.expression.api.IStringExpression;
 
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
-import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -35,14 +34,25 @@ public class SqlDocumentOrderByBuilder
 {
 	public static final SqlDocumentOrderByBuilder newInstance(final SqlEntityBinding entityBinding)
 	{
-		return new SqlDocumentOrderByBuilder(entityBinding);
+		return new SqlDocumentOrderByBuilder(entityBinding::getFieldOrderBy);
+	}
+	
+	public static final SqlDocumentOrderByBuilder newInstance(final SqlOrderByBindings bindings)
+	{
+		return new SqlDocumentOrderByBuilder(bindings);
 	}
 
-	private final SqlEntityBinding entityBinding;
-
-	private SqlDocumentOrderByBuilder(@NonNull final SqlEntityBinding entityBinding)
+	
+	public static interface SqlOrderByBindings
 	{
-		this.entityBinding = entityBinding;
+		IStringExpression getFieldOrderBy(String fieldName);
+	}
+
+	private final SqlOrderByBindings bindings;
+
+	private SqlDocumentOrderByBuilder(@NonNull final SqlOrderByBindings bindings)
+	{
+		this.bindings = bindings;
 	}
 	
 	public IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
@@ -64,8 +74,7 @@ public class SqlDocumentOrderByBuilder
 	private final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
 	{
 		final String fieldName = orderBy.getFieldName();
-		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName); 
-		final IStringExpression sqlExpression = fieldBinding.getSqlOrderBy();
+		final IStringExpression sqlExpression = bindings.getFieldOrderBy(fieldName);
 		return SqlDocumentOrderByBuilder.buildSqlOrderBy(sqlExpression, orderBy.isAscending());
 	}
 

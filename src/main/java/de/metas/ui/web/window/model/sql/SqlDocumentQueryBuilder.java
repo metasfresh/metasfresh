@@ -358,7 +358,7 @@ public class SqlDocumentQueryBuilder
 	public IStringExpression getSqlOrderByEffective()
 	{
 		final List<DocumentQueryOrderBy> orderBys = getOrderBysEffective();
-		return SqlDocumentOrderByBuilder.newInstance(entityBinding).buildSqlOrderBy(orderBys);
+		return SqlDocumentOrderByBuilder.newInstance(entityBinding::getFieldOrderBy).buildSqlOrderBy(orderBys);
 	}
 
 	public SqlDocumentEntityDataBindingDescriptor getEntityBinding()

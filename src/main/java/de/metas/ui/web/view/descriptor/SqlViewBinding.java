@@ -373,7 +373,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		//
 		// SELECT ... FROM ... WHERE 1=1
 		{
-			IStringExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this).buildSqlOrderBy(defaultOrderBys);
+			IStringExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy).buildSqlOrderBy(defaultOrderBys);
 			if (sqlOrderBy.isNullExpression())
 			{
 				sqlOrderBy = ConstantStringExpression.of(keyColumnNameFQ);
