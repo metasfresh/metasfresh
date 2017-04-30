@@ -1,12 +1,7 @@
 package de.metas.material.event.impl;
 
-import org.adempiere.util.Services;
-
 import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.QueueableForwardingEventBus;
-import de.metas.event.Topic;
-import de.metas.event.Type;
 
 /*
  * #%L
@@ -32,19 +27,7 @@ import de.metas.event.Type;
 
 public class MaterialEventBus extends QueueableForwardingEventBus
 {
-	private static final String EVENTBUS_TOPIC_NAME = "de.metas.manufacturing.dispo";
-
-	/** Topic used to send notifications about sales and purchase orders that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName(EVENTBUS_TOPIC_NAME)
-			.setType(Type.REMOTE)
-			.build();
-
-	public static final MaterialEventBus newInstance()
-	{
-		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new MaterialEventBus(eventBus);
-	}
+	public static final String EVENTBUS_TOPIC_NAME = "de.metas.manufacturing.dispo";
 
 	private MaterialEventBus(final IEventBus delegate)
 	{

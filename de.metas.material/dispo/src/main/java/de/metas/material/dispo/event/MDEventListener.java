@@ -105,6 +105,8 @@ public class MDEventListener implements MaterialEventListener
 				.productionDetail(ProductionCandidateDetail.builder()
 						.plantId(ppOrder.getPlantId())
 						.productPlanningId(ppOrder.getProductPlanningId())
+						.ppOrderId(ppOrder.getPpOrderId())
+						.ppOrderDocStatus(ppOrder.getDocStatus())
 						.build())
 				.build();
 
@@ -130,6 +132,9 @@ public class MDEventListener implements MaterialEventListener
 					.productionDetail(ProductionCandidateDetail.builder()
 							.productBomLineId(ppOrderLine.getProductBomLineId())
 							.description(ppOrderLine.getDescription())
+							.ppOrderId(ppOrder.getPpOrderId())
+							.ppOrderDocStatus(ppOrder.getDocStatus())
+							.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 							.build())
 					.build();
 

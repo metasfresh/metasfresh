@@ -91,7 +91,7 @@ public class PPOrderBOMBLTest
 	 * Tests {@link PPOrderBOMBL#getQtyMultiplier(I_PP_Order_BOMLine, I_PP_Product_BOMLine)}.
 	 */
 	@Test
-	@Ignore // doesn't work right now, and we might drop it in future
+	@Ignore // gh #523: test doesn't work right now, and we might drop it in future
 	public void qualityMultiplierTest()
 	{
 		// Mocking the AB Alicesalat 250g case from db

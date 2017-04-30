@@ -8,6 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -65,7 +66,9 @@ public class M_ShipmentSchedule
 				.when(Instant.now())
 				.build();
 
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		MaterialEventService.get().fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterCommit(event, trxName);
 	}
 }

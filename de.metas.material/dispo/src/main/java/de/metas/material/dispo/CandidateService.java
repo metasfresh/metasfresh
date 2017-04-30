@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.ProductionOrderRequested;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -45,7 +45,7 @@ public class CandidateService
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void requestOrder(@NonNull final Integer groupId)
+	public void requestPPOrder(@NonNull final Integer groupId)
 	{
 		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
 		if (group.isEmpty())
@@ -73,7 +73,7 @@ public class CandidateService
 	 * @return
 	 */
 	@VisibleForTesting
-	ProductionOrderEvent requestProductionOrder(@NonNull final List<Candidate> group)
+	ProductionOrderRequested requestProductionOrder(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -118,7 +118,7 @@ public class CandidateService
 								.build());
 			}
 		}
-		return ProductionOrderEvent.builder()
+		return ProductionOrderRequested.builder()
 				.ppOrder(ppOrderBuilder.build())
 				.when(Instant.now())
 				.reference(group.get(0).getReference())

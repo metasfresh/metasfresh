@@ -226,6 +226,83 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_MD_Candidate_Prod_Detail_ID = "MD_Candidate_Prod_Detail_ID";
 
 	/**
+	 * Set Manufacturing Order BOM Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
+
+	/**
+	 * Get Manufacturing Order BOM Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Order_BOMLine_ID();
+
+	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine();
+
+	public void setPP_Order_BOMLine(org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine);
+
+    /** Column definition for PP_Order_BOMLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.eevolution.model.I_PP_Order_BOMLine> COLUMN_PP_Order_BOMLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.eevolution.model.I_PP_Order_BOMLine>(I_MD_Candidate_Prod_Detail.class, "PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order_BOMLine.class);
+    /** Column name PP_Order_BOMLine_ID */
+    public static final String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
+
+	/**
+	 * Set Belegstatus.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Order_DocStatus (java.lang.String PP_Order_DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPP_Order_DocStatus();
+
+    /** Column definition for PP_Order_DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_PP_Order_DocStatus = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "PP_Order_DocStatus", null);
+    /** Column name PP_Order_DocStatus */
+    public static final String COLUMNNAME_PP_Order_DocStatus = "PP_Order_DocStatus";
+
+	/**
+	 * Set Produktionsauftrag.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Order_ID (int PP_Order_ID);
+
+	/**
+	 * Get Produktionsauftrag.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Order_ID();
+
+	public org.eevolution.model.I_PP_Order getPP_Order();
+
+	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
+
+    /** Column definition for PP_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.eevolution.model.I_PP_Order>(I_MD_Candidate_Prod_Detail.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+    /** Column name PP_Order_ID */
+    public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+
+	/**
 	 * Set Produktionsstätte.
 	 *
 	 * <br>Type: Search

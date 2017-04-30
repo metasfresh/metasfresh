@@ -1,14 +1,16 @@
-package org.eevolution;
+package de.metas.material.event;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 
-import de.metas.material.event.MaterialEventConfiguration;
-import de.metas.material.planning.MaterialPlanningConfiguration;
+import de.metas.event.Type;
 
 /*
  * #%L
- * de.metas.adempiere.libero.libero
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -27,12 +29,25 @@ import de.metas.material.planning.MaterialPlanningConfiguration;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Configuration
 @ComponentScan(basePackageClasses = {
-		LiberoConfiguration.class, // scan the classes in *this* package and its subpackages
-		MaterialPlanningConfiguration.class, // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
-		MaterialEventConfiguration.class
-})
-public class LiberoConfiguration
+		MaterialEventConfiguration.class })
+public class MaterialEventConfiguration
 {
+
+	@Bean(name = "materialEventService")
+	@Profile("test")
+	public MaterialEventService materialEventServiceLocal()
+	{
+		return new MaterialEventService(Type.LOCAL);
+	}
+
+	@Bean()
+	@Lazy // needed to avoid problem on startup when SysConfigBL etc is not yet available
+	@Profile("!test")
+	public MaterialEventService materialEventService()
+	{
+		return new MaterialEventService(Type.REMOTE);
+	}
 }

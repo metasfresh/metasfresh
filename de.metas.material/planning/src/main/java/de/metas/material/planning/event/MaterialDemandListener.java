@@ -21,6 +21,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
@@ -71,11 +72,12 @@ import de.metas.material.planning.pporder.PPOrderPojoSupplier;
  */
 /**
  * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Service
+@Lazy // .. because MaterialEventService needs to be lazy
 public class MaterialDemandListener implements MaterialEventListener
 {
 	private static final transient Logger logger = LogManager.getLogger(MaterialDemandListener.class);
@@ -94,6 +96,10 @@ public class MaterialDemandListener implements MaterialEventListener
 
 	@Autowired
 	private PPOrderPojoConverter ppOrderPojoConverter;
+
+	@Autowired
+	private MaterialEventService materialEventService;
+
 
 	@Override
 	public void onEvent(final MaterialEvent event)
@@ -141,7 +147,7 @@ public class MaterialDemandListener implements MaterialEventListener
 							.reference(materialDemandEvent.getReference())
 							.build();
 
-					MaterialEventService.get().fireEvent(distributionPlanEvent);
+					materialEventService.fireEvent(distributionPlanEvent);
 				}
 			}
 		}
@@ -155,7 +161,7 @@ public class MaterialDemandListener implements MaterialEventListener
 
 			final ProductionPlanEvent event = ppOrderPojoConverter.asProductionPlanEvent(ppOrder, materialDemandEvent.getReference());
 
-			MaterialEventService.get().fireEvent(event);
+			materialEventService.fireEvent(event);
 		}
 	}
 

@@ -31,7 +31,7 @@ import lombok.experimental.Wither;
  */
 
 /**
- * Not needed, because itcan be taken directly from the parent ppOrder:
+ * Not needed, because it can be taken directly from the parent ppOrder:
  * <ul>
  * <li>orgId</li>
  * <li>warehouseId</li>
@@ -51,6 +51,12 @@ public class PPOrderLine
 
 	@NonNull
 	private final Integer productBomLineId;
+
+	/**
+	 * Can contain the {@code PP_Order_BOMLine_ID} of the production order document line this is all about, but also note that there might not yet exist one.
+	 */
+	private final int ppOrderLineId;
+
 
 	/**
 	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.<br>

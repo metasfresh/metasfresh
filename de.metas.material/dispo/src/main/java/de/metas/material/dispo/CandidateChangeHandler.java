@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -41,16 +42,24 @@ import lombok.NonNull;
  * #L%
  */
 @Service
+@Lazy // .. because MaterialEventService needs to be lazy
 public class CandidateChangeHandler
 {
 	private final CandidateRepository candidateRepository;
 
 	private final CandidateFactory candidateFactory;
 
-	public CandidateChangeHandler(@NonNull final CandidateRepository candidateRepository, @NonNull final CandidateFactory candidateFactory)
+	private final MaterialEventService materialEventService;
+
+	public CandidateChangeHandler(
+			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateFactory candidateFactory,
+			@NonNull final MaterialEventService materialEventService
+			)
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateFactory = candidateFactory;
+		this.materialEventService = materialEventService;
 	}
 
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
@@ -120,7 +129,7 @@ public class CandidateChangeHandler
 					.reference(demandCandidate.getReference())
 					.build();
 
-			MaterialEventService.get().fireEvent(materialDemandEvent);
+			materialEventService.fireEvent(materialDemandEvent);
 		}
 		return demandCandidateToReturn;
 	}

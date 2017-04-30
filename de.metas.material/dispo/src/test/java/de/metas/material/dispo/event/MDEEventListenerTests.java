@@ -32,10 +32,12 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -91,6 +93,9 @@ public class MDEEventListenerTests
 
 	private MDEventListener mdEventListener;
 
+	@Mocked
+	private MaterialEventService materialEventService;
+
 	@Before
 	public void init()
 	{
@@ -100,7 +105,7 @@ public class MDEEventListenerTests
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		mdEventListener = new MDEventListener(
-				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository)),
+				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService),
 				candidateRepository,
 				supplyProposalEvaluator);
 	}

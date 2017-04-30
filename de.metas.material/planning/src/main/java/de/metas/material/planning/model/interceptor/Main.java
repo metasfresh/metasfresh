@@ -50,7 +50,10 @@ public class Main extends AbstractModuleInterceptor
 		{
 			return; // event based material planning can only run in the backend as of now
 		}
-		final MaterialDemandListener materialDemandListener = Adempiere.getSpringApplicationContext().getBean(MaterialDemandListener.class);
-		MaterialEventService.get().registerListener(materialDemandListener);
+
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final MaterialDemandListener materialDemandListener = Adempiere.getBean(MaterialDemandListener.class);
+
+		materialEventService.registerListener(materialDemandListener);
 	}
 }

@@ -122,7 +122,7 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 	 * </ul>
 	 */
 	@Test
-	@Ignore // doesn't work right now, and we might drop it in future
+	@Ignore // gh #523: test doesn't work right now, and we might drop it in future
 	public final void test_100xBP01_100xBP01_100xBP02_100xBP01_SameDate()
 	{
 		helper.assumeMRP_POQ_Enabled();
@@ -227,7 +227,7 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 	}
 
 	@Test
-	@Ignore // doesn't work right now, and we might drop it in future
+	@Ignore // gh #523: test doesn't work right now, and we might drop it in future
 	public void test_3x100Demands_CompleteTheMO_FullyReceiveMO_New100Demand()
 	{
 		helper.assumeMRP_POQ_Enabled();
@@ -287,7 +287,7 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 	}
 
 	@Test
-	@Ignore // doesn't work right now, and we might drop it in future
+	@Ignore // gh #523: test doesn't work right now, and we might drop it in future
 	public void test_3x100Demands_CompleteTheMO_PartiallyReceiveMO_PartiallyShipTheDemands_RunMRPAgain()
 	{
 		//

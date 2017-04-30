@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
@@ -68,7 +69,9 @@ public class M_Transaction
 				.when(Instant.now())
 				.build();
 
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
-		MaterialEventService.get().fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterCommit(event, trxName);
 	}
 }

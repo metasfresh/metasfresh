@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -42,7 +43,9 @@ public class M_ReceiptSchedule
 				.receiptScheduleDeleted(deleted)
 				.build();
 
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		MaterialEventService.get().fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterCommit(event, trxName);
 	}
 }

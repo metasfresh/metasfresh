@@ -15,7 +15,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.ProductionOrderRequested;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ProductionPlanEvent.ProductionPlanEventBuilder;
 import de.metas.material.event.pporder.PPOrder;
@@ -75,7 +75,7 @@ public class PPOrderPojoConverter
 				.build();
 	}
 
-	public PPOrder asPPOrderPojo(@NonNull final ProductionOrderEvent event)
+	public PPOrder asPPOrderPojo(@NonNull final ProductionOrderRequested event)
 	{
 		return event.getPpOrder();
 	}

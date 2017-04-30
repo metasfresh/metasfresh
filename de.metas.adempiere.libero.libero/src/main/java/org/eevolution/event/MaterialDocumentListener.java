@@ -1,5 +1,8 @@
 package org.eevolution.event;
 
+import static org.compiere.process.DocAction.ACTION_Complete;
+import static org.compiere.process.DocAction.STATUS_Completed;
+
 import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -12,11 +15,12 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.ProductionOrderRequested;
 import de.metas.material.event.pporder.PPOrder;
 import lombok.NonNull;
 
@@ -43,7 +47,7 @@ import lombok.NonNull;
  */
 /**
  * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -62,13 +66,13 @@ public class MaterialDocumentListener implements MaterialEventListener
 	@Override
 	public void onEvent(final MaterialEvent event)
 	{
-		if (!(event instanceof ProductionOrderEvent))
+		if (!(event instanceof ProductionOrderRequested))
 		{
 			return;
 		}
 		logger.info("Received event {}", event);
 
-		final ProductionOrderEvent productionOrderEvent = (ProductionOrderEvent)event;
+		final ProductionOrderRequested productionOrderEvent = (ProductionOrderRequested)event;
 		createProductionOrderInTrx(productionOrderEvent.getPpOrder(), Date.from(productionOrderEvent.getWhen()));
 	}
 
@@ -86,12 +90,23 @@ public class MaterialDocumentListener implements MaterialEventListener
 		return result.getValue();
 	}
 
+	/**
+	 * Creates a production order. Note that is does not fire an event, because production orders can be created and changed for mand reson, and therefore we leave the event-firing to a model interceptor.
+	 *
+	 * @param ppOrder
+	 * @param dateOrdered
+	 * @return
+	 */
 	@VisibleForTesting
 	I_PP_Order createProductionOrder(
-			@NonNull final PPOrder ppOrder, 
+			@NonNull final PPOrder ppOrder,
 			@NonNull final Date dateOrdered)
 	{
 		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
+		if (ppOrderRecord.getPP_Product_Planning().isDocComplete())
+		{
+			Services.get(IDocActionBL.class).processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
+		}
 		return ppOrderRecord;
 	}
 }

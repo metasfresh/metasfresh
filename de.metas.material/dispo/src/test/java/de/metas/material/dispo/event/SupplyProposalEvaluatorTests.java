@@ -21,6 +21,8 @@ import de.metas.material.dispo.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateFactory;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
+import de.metas.material.event.MaterialEventService;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -70,6 +72,9 @@ public class SupplyProposalEvaluatorTests
 
 	private CandidateRepository candidateRepository;
 
+	@Mocked
+	private MaterialEventService materialEventService;
+
 	@Before
 	public void init()
 	{
@@ -79,7 +84,7 @@ public class SupplyProposalEvaluatorTests
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		mdEventListener = new MDEventListener(
-				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository)),
+				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService),
 				candidateRepository,
 				supplyProposalEvaluator);
 	}

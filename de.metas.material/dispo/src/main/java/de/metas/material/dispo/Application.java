@@ -65,7 +65,10 @@ public class Application
 	}
 
 	@Autowired
-	MDEventListener eventListener;
+	private MDEventListener eventListener;
+
+	@Autowired
+	private MaterialEventService eventService;
 
 	@Bean
 	@Profile("!test")
@@ -78,7 +81,7 @@ public class Application
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
-		MaterialEventService.get().registerListener(eventListener);
+		eventService.registerListener(eventListener);
 
 		return adempiere;
 	}

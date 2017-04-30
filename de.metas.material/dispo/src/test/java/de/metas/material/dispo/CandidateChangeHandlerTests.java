@@ -33,7 +33,9 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -79,6 +81,9 @@ public class CandidateChangeHandlerTests
 
 	private CandidateChangeHandler candidateChangeHandler;
 
+	@Mocked
+	private MaterialEventService materialEventService;
+
 	@Before
 	public void init()
 	{
@@ -95,9 +100,12 @@ public class CandidateChangeHandlerTests
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
-		
+
 		candidateRepository = new CandidateRepository();
-		candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository));
+		candidateChangeHandler = new CandidateChangeHandler(
+				candidateRepository,
+				new CandidateFactory(candidateRepository),
+				materialEventService);
 	}
 
 	/**
@@ -175,7 +183,7 @@ public class CandidateChangeHandlerTests
 
 		// assert that every stock record got some groupId
 		DispoTestUtils.retrieveAllRecords().forEach(r -> assertThat(r.getMD_Candidate_GroupId(), greaterThan(0)));
-		
+
 		final Optional<Candidate> earlierCandidateAfterChange = candidateRepository.retrieveLatestMatch(mkStockUntilSegment(t1, warehouse));
 		assertThat(earlierCandidateAfterChange.isPresent(), is(true));
 		assertThat(earlierCandidateAfterChange.get().getQuantity(), is(earlierCandidate.getQuantity())); // quantity shall be unchanged

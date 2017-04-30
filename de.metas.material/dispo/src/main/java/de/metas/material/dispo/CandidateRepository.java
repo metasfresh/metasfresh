@@ -58,7 +58,7 @@ public class CandidateRepository
 {
 	/**
 	 * Invokes {@link #addOrReplace(Candidate, boolean)} with {@code preserveExistingSeqNo == false}.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
@@ -135,6 +135,9 @@ public class CandidateRepository
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
 		detailRecordToUpdate.setC_UOM_ID(productionDetail.getUomId());
+		detailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
+		detailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
+		detailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
 		InterfaceWrapperHelper.save(detailRecordToUpdate);
 	}
 
@@ -155,7 +158,7 @@ public class CandidateRepository
 
 	/**
 	 * Load and return the candidate with the given ID.
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 */
@@ -166,7 +169,7 @@ public class CandidateRepository
 	}
 
 	/**
-	 * 
+	 *
 	 * @param groupId
 	 * @return
 	 */
@@ -349,6 +352,9 @@ public class CandidateRepository
 						.productBomLineId(productiondetail.getPP_Product_BOMLine_ID())
 						.productPlanningId(productiondetail.getPP_Product_Planning_ID())
 						.uomId(productiondetail.getC_UOM_ID())
+						.ppOrderId(productiondetail.getPP_Order_ID())
+						.ppOrderLineId(productiondetail.getPP_Order_BOMLine_ID())
+						.ppOrderDocStatus(productiondetail.getPP_Order_DocStatus())
 						.build());
 			}
 		}

@@ -10,6 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -61,8 +62,8 @@ public class PPOrderUtil
 	 * @return standard quantity required to be issued (standard UOM)
 	 */
 	public BigDecimal calculateQtyRequired(
-			@NonNull final PPOrderLine ppOrderLinePojo, 
-			@NonNull final PPOrder ppOrderPojo, 
+			@NonNull final PPOrderLine ppOrderLinePojo,
+			@NonNull final PPOrder ppOrderPojo,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
 		final Integer uomId = ppOrderPojo.getUomId();
@@ -71,15 +72,15 @@ public class PPOrderUtil
 	}
 
 	private BigDecimal calculateQtyRequired(
-			@NonNull final PPOrderLine ppOrderLinePojo, 
-			@NonNull final PPOrder ppOrderPojo, 
-			@NonNull final BigDecimal qtyFinishedGood, 
+			@NonNull final PPOrderLine ppOrderLinePojo,
+			@NonNull final PPOrder ppOrderPojo,
+			@NonNull final BigDecimal qtyFinishedGood,
 			@NonNull final Integer uomId)
 	{
 		final BigDecimal multiplier = getQtyMultiplier(ppOrderLinePojo, ppOrderPojo.getProductId(), uomId);
 
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderLinePojo);
-		
+
 		final BigDecimal qtyRequired;
 		if (isComponentTypeOneOf(productBomLine.getComponentType(),
 				X_PP_Order_BOMLine.COMPONENTTYPE_Component, X_PP_Order_BOMLine.COMPONENTTYPE_Phantom, X_PP_Order_BOMLine.COMPONENTTYPE_Packing, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
@@ -125,9 +126,9 @@ public class PPOrderUtil
 			@NonNull final Integer endProductUomId)
 	{
 		BigDecimal qty;
-		
+
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderLinePojo);
-		
+
 		if (productBomLine.isQtyPercentage())
 		{
 			qty = productBomLine.getQtyBatch().divide(Env.ONEHUNDRED, 8, RoundingMode.HALF_UP);
@@ -181,29 +182,25 @@ public class PPOrderUtil
 		}
 		return false;
 	}
-	
 
-	public boolean isCoProduct(@NonNull final  I_PP_Order_BOMLine bomLine)
+	public boolean isCoProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
 	}
 
-
-	public boolean isByProduct(@NonNull final  I_PP_Order_BOMLine bomLine)
+	public boolean isByProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		Check.assumeNotNull(bomLine, "bomLine not null");
 		final String componentType = bomLine.getComponentType();
 		return isByProduct(componentType);
 	}
 
-
-	public boolean isByProduct(@NonNull final  String componentType)
+	public boolean isByProduct(@NonNull final String componentType)
 	{
 		return X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType);
 	}
 
-
-	public boolean isCoOrByProduct(@NonNull final  I_PP_Order_BOMLine bomLine)
+	public boolean isCoOrByProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
 	}
@@ -213,7 +210,7 @@ public class PPOrderUtil
 	 * @param bomLine
 	 * @return true if given BOM Line is a alternative/variant for a main component line
 	 */
-	public boolean isVariant(@NonNull final  I_PP_Order_BOMLine bomLine)
+	public boolean isVariant(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Variant);
 	}
@@ -223,15 +220,16 @@ public class PPOrderUtil
 	 * @param bomLine
 	 * @return true if given Order BOM Line is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
 	 */
-	public boolean isReceipt(@NonNull final  String bomLineComponentType)
+	public boolean isReceipt(@NonNull final String bomLineComponentType)
 	{
 		return isComponentTypeOneOf(bomLineComponentType, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
 	}
-	
-	public boolean isIssue(@NonNull final  String bomLineComponentType)
+
+	public boolean isIssue(@NonNull final String bomLineComponentType)
 	{
 		return !isReceipt(bomLineComponentType);
 	}
+
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.
 	 *
@@ -239,30 +237,37 @@ public class PPOrderUtil
 	 * @see #isReceipt(I_PP_Order_BOMLine)
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
-	public void assertReceipt(@NonNull final  I_PP_Order_BOMLine bomLine)
+	public void assertReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		Check.assume(isReceipt(bomLine.getComponentType()), MrpException.class, "BOM Line shall be of type receipt: {}", bomLine);
 	}
 
-	public void assertIssue(@NonNull final  I_PP_Order_BOMLine bomLine)
+	public void assertIssue(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		Check.assume(!isReceipt(bomLine.getComponentType()), MrpException.class, "BOM Line shall be of type issue: {}", bomLine);
 	}
-
 
 	public boolean isComponent(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Component, X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
 	}
-	
+
 	public I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderLinePojo)
 	{
 		return InterfaceWrapperHelper.create(Env.getCtx(), ppOrderLinePojo.getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
 	}
-	
+
+	/**
+	 * Verifies that the given three parameters fit together.
+	 *
+	 * @param ppOrderProductId the {@code M_Product_ID} of a given ppOrder
+	 * @param ppOrderStartSchedule the {@code M_Product_ID} of a given ppOrder
+	 * @param ppOrderProductBOM the {@code DateStartSchedule} of a given ppOrder
+	 * @return
+	 */
 	public I_PP_Product_BOM verifyProductBOM(
-			@NonNull final Integer ppOrderProductId, 
-			@NonNull final Date ppOrderStartSchedule, 
+			@NonNull final Integer ppOrderProductId,
+			@NonNull final Date ppOrderStartSchedule,
 			@NonNull final I_PP_Product_BOM ppOrderProductBOM)
 	{
 		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
@@ -275,7 +280,10 @@ public class PPOrderUtil
 		final I_M_Product product = ppOrderProductBOM.getM_Product();
 		if (!product.isVerified())
 		{
-			throw new MrpException("Product BOM Configuration not verified. Please verify the product first - " + product.getValue()); // TODO: translate
+			throw new MrpException(
+					StringUtils.formatMessage(
+							"Product with Value={} of Product BOM Configuration not verified; PP_Product_BOM={}; product={}",
+							product.getValue(), ppOrderProductBOM, product));
 		}
 
 		//

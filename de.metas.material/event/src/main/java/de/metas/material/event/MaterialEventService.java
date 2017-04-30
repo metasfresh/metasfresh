@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 
@@ -12,8 +13,11 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.material.event.impl.MaterialEventBus;
 import de.metas.material.event.impl.MaterialEventSerializer;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,14 +40,15 @@ import de.metas.material.event.impl.MaterialEventSerializer;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Service
 public class MaterialEventService
 {
 	public static final String MANUFACTURING_DISPOSITION_EVENT = "ManufacturingDispositionEvent";
 
-	private static final MaterialEventService INSTANCE = new MaterialEventService();
-
 	private final List<MaterialEventListener> listeners = new ArrayList<>();
+
+	/** Topic used to send notifications about sales and purchase orders that were generated/reversed asynchronously */
+	private final Topic eventBusTopic;
 
 	private final IEventListener internalListener = new IEventListener()
 	{
@@ -57,14 +62,21 @@ public class MaterialEventService
 		}
 	};
 
-	private MaterialEventService()
+	/**
+	 * Can be called to create a local-only event service which will not try to set up or connect to a message broker. Useful for testing.
+	 * <p>
+	 * This constructor is supposed to be invoked by {@link MaterialEventConfiguration}.
+	 *
+	 * @param eventType
+	 */
+	public MaterialEventService(@NonNull final Type eventType)
 	{
-		getEventBus().subscribe(internalListener);
-	}
+		eventBusTopic = Topic.builder()
+				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
+				.setType(eventType)
+				.build();
 
-	public static MaterialEventService get()
-	{
-		return INSTANCE;
+		getEventBus().subscribe(internalListener);
 	}
 
 	public void registerListener(final MaterialEventListener materialDemandListener)
@@ -96,7 +108,8 @@ public class MaterialEventService
 	private IEventBus getEventBus()
 	{
 		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-		final IEventBus eventBus = eventBusFactory.getEventBus(MaterialEventBus.EVENTBUS_TOPIC);
+
+		final IEventBus eventBus = eventBusFactory.getEventBus(eventBusTopic);
 		return eventBus;
 	}
 

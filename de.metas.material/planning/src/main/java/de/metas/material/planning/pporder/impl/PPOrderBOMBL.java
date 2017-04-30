@@ -186,10 +186,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public I_PP_Order_BOM createOrderBOMAndLines(final I_PP_Order ppOrder)
+	public I_PP_Order_BOM createOrderBOMAndLines(@NonNull final I_PP_Order ppOrder)
 	{
-		final I_PP_Product_BOM productBOM = PPOrderUtil
-				.verifyProductBOM(ppOrder.getM_Product_ID(), ppOrder.getDateStartSchedule(), ppOrder.getPP_Product_BOM());
+		final I_PP_Product_BOM productBOM = PPOrderUtil.verifyProductBOM(
+				ppOrder.getM_Product_ID(),
+				ppOrder.getDateStartSchedule(),
+				ppOrder.getPP_Product_BOM());
 
 		//
 		// Create BOM Head
@@ -327,11 +329,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	/**
 	 * Return Unified BOM Qty Multiplier.
-	 * 
+	 *
 	 * i.e. how much of this component is needed for 1 item of finished good.
-	 * 
+	 *
 	 * @param orderBOMLine
-	 * 
+	 *
 	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
 	 */
 	/* package */BigDecimal getQtyMultiplier(final I_PP_Order_BOMLine orderBOMLine)

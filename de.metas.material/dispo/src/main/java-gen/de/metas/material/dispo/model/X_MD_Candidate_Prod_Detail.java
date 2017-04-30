@@ -14,7 +14,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1403979416L;
+	private static final long serialVersionUID = -265625769L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)
@@ -145,6 +145,120 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	public int getMD_Candidate_Prod_Detail_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Prod_Detail_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
+	}
+
+	@Override
+	public void setPP_Order_BOMLine(org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class, PP_Order_BOMLine);
+	}
+
+	/** Set Manufacturing Order BOM Line.
+		@param PP_Order_BOMLine_ID Manufacturing Order BOM Line	  */
+	@Override
+	public void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID)
+	{
+		if (PP_Order_BOMLine_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, Integer.valueOf(PP_Order_BOMLine_ID));
+	}
+
+	/** Get Manufacturing Order BOM Line.
+		@return Manufacturing Order BOM Line	  */
+	@Override
+	public int getPP_Order_BOMLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_BOMLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * PP_Order_DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int PP_ORDER_DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String PP_ORDER_DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String PP_ORDER_DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String PP_ORDER_DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String PP_ORDER_DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String PP_ORDER_DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String PP_ORDER_DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String PP_ORDER_DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String PP_ORDER_DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String PP_ORDER_DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String PP_ORDER_DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String PP_ORDER_DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String PP_ORDER_DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param PP_Order_DocStatus Belegstatus	  */
+	@Override
+	public void setPP_Order_DocStatus (java.lang.String PP_Order_DocStatus)
+	{
+
+		set_Value (COLUMNNAME_PP_Order_DocStatus, PP_Order_DocStatus);
+	}
+
+	/** Get Belegstatus.
+		@return Belegstatus	  */
+	@Override
+	public java.lang.String getPP_Order_DocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_DocStatus);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	/** Set Produktionsauftrag.
+		@param PP_Order_ID Produktionsauftrag	  */
+	@Override
+	public void setPP_Order_ID (int PP_Order_ID)
+	{
+		if (PP_Order_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+	}
+
+	/** Get Produktionsauftrag.
+		@return Produktionsauftrag	  */
+	@Override
+	public int getPP_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

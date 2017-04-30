@@ -21,7 +21,7 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.ProductionOrderRequested;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -151,7 +151,7 @@ public class PPOrderPojoConverterTests
 
 		assertThat(productionPlanEvent, notNullValue());
 
-		final ProductionOrderEvent productionOrderEvent = ProductionOrderEvent.builder()
+		final ProductionOrderRequested productionOrderEvent = ProductionOrderRequested.builder()
 				.ppOrder(productionPlanEvent.getPpOrder())
 				.reference(productionPlanEvent.getReference())
 				.when(productionPlanEvent.getWhen())

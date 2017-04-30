@@ -33,8 +33,8 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order}.
- * 
+ * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -48,7 +48,7 @@ final public class ProductionPlanEvent implements MaterialEvent
 	@NonNull
 	private final Instant when;
 
-	@NonNull
+
 	private final TableRecordReference reference;
 
 	@NonNull

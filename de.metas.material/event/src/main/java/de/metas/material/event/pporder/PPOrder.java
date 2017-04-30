@@ -62,23 +62,26 @@ public class PPOrder
 	private final Integer uomId;
 
 	/**
-	 * The end product's UOM according to the underlying BOM (whose ID is in {@link #getProductBomId()}). Might differ from {@link #getUomId()}.
+	 * In a build-to-order scenario, this is the ID of the order line which this all is about.
 	 */
-	// @NonNull
-	// private Integer productBomUomId;
+	private final int orderLineId;
 
-	// @NonNull
-	// private final Integer productBomId;
+	/**
+	 * Can contain the {@code PP_Order_ID} of the production order document this is all about, but also note that there might not yet exist one.
+	 */
+	private final int ppOrderId;
 
-	// @NonNull
-	// private final Integer workflowId;
+	private final String docStatus;
 
-	// @NonNull
-	// private final Date dateOrdered;
-
+	/**
+	 * This is usually the respective supply candidates' date value.
+	 */
 	@NonNull
 	private final Date datePromised;
 
+	/**
+	 * This is usually the respective demand candiates' date value.
+	 */
 	@NonNull
 	private final Date dateStartSchedule;
 

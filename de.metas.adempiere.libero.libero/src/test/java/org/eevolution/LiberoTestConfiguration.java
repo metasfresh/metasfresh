@@ -6,7 +6,6 @@ import org.eevolution.mrp.api.impl.MRPExecutor;
 import org.eevolution.mrp.api.impl.MockedMRPExecutor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -21,12 +20,12 @@ import org.springframework.context.annotation.Profile;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +33,7 @@ import org.springframework.context.annotation.Profile;
  */
 @Configuration
 @Profile("test")
-@ComponentScan
+//@ComponentScan not needed because the basic LiberoConfiguration already does it
 public class LiberoTestConfiguration
 {
 
@@ -49,7 +48,7 @@ public class LiberoTestConfiguration
 
 	/**
 	 * Create a {@link MockedMRPExecutor} if the test profile is active, then prefer this mocked MRP executor.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean

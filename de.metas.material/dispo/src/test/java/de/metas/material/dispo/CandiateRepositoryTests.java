@@ -173,6 +173,9 @@ public class CandiateRepositoryTests
 						.productBomLineId(70)
 						.productPlanningId(80)
 						.uomId(90)
+						.ppOrderId(100)
+						.ppOrderLineId(110)
+						.ppOrderDocStatus("ppOrderDocStatus")
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrReplace(productionCandidate);
@@ -192,6 +195,9 @@ public class CandiateRepositoryTests
 		assertThat(productionDetailRecord.getPP_Product_BOMLine_ID(), is(70));
 		assertThat(productionDetailRecord.getPP_Product_Planning_ID(), is(80));
 		assertThat(productionDetailRecord.getC_UOM_ID(), is(90));
+		assertThat(productionDetailRecord.getPP_Order_ID(), is(100));
+		assertThat(productionDetailRecord.getPP_Order_BOMLine_ID(), is(110));
+		assertThat(productionDetailRecord.getPP_Order_DocStatus(), is("ppOrderDocStatus"));
 	}
 
 	@Test
@@ -204,7 +210,7 @@ public class CandiateRepositoryTests
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
 		InterfaceWrapperHelper.save(record);
-		
+
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Prod_Detail.class);
 		productionDetailRecord.setDescription("description1");
 		productionDetailRecord.setPP_Plant_ID(61);
@@ -212,8 +218,11 @@ public class CandiateRepositoryTests
 		productionDetailRecord.setPP_Product_Planning_ID(81);
 		productionDetailRecord.setC_UOM_ID(91);
 		productionDetailRecord.setMD_Candidate(record);
+		productionDetailRecord.setPP_Order_ID(101);
+		productionDetailRecord.setPP_Order_BOMLine_ID(111);
+		productionDetailRecord.setPP_Order_DocStatus("ppOrderDocStatus1");
 		InterfaceWrapperHelper.save(productionDetailRecord);
-		
+
 		final Candidate cand = candidateRepository.retrieve(record.getMD_Candidate_ID());
 		assertThat(cand, notNullValue());
 		assertThat(cand.getProductId(), is(24));
@@ -224,6 +233,9 @@ public class CandiateRepositoryTests
 		assertThat(cand.getProductionDetail().getProductBomLineId(), is(71));
 		assertThat(cand.getProductionDetail().getProductPlanningId(), is(81));
 		assertThat(cand.getProductionDetail().getUomId(), is(91));
+		assertThat(cand.getProductionDetail().getPpOrderId(), is(101));
+		assertThat(cand.getProductionDetail().getPpOrderLineId(), is(111));
+		assertThat(cand.getProductionDetail().getPpOrderDocStatus(), is("ppOrderDocStatus1"));
 	}
 
 	/**

@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.ProductionOrderEvent;
+import de.metas.material.event.ProductionOrderRequested;
 import de.metas.material.event.pporder.PPOrder;
 
 /*
@@ -80,7 +80,7 @@ public class CandidateServiceTests
 						.build());
 
 		final CandidateService candidateService = new CandidateService(candidateRepository);
-		final ProductionOrderEvent productionOrderEvent = candidateService.requestProductionOrder(ImmutableList.of(candidate, candidate2, candidate3));
+		final ProductionOrderRequested productionOrderEvent = candidateService.requestProductionOrder(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
 
 		final PPOrder ppOrder = productionOrderEvent.getPpOrder();

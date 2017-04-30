@@ -34,12 +34,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,6 +60,8 @@ public class PPOrderProducer
 		//
 		// Create PP Order
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
+		ppOrder.setPP_Product_Planning(productPlanning);
+
 		ppOrder.setMRP_Generated(true);
 		ppOrder.setMRP_AllowCleanup(true);
 		ppOrder.setLine(10);
@@ -73,8 +75,8 @@ public class PPOrderProducer
 
 		//
 		// Document Type & Status
-
 		final int docTypeId = getC_DocType_ID(pojo.getOrgId());
+
 		ppOrder.setC_DocTypeTarget_ID(docTypeId);
 		ppOrder.setC_DocType_ID(docTypeId);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
@@ -88,8 +90,8 @@ public class PPOrderProducer
 
 		//
 		// BOM & Workflow
-		ppOrder.setPP_Product_BOM_ID(productPlanning.getPP_Product_BOM_ID());
-		ppOrder.setAD_Workflow_ID(productPlanning.getAD_Workflow_ID());
+		ppOrder.setPP_Product_BOM(productPlanning.getPP_Product_BOM());
+		ppOrder.setAD_Workflow(productPlanning.getAD_Workflow());
 
 		//
 		// Dates
@@ -98,6 +100,7 @@ public class PPOrderProducer
 		final Timestamp dateFinishSchedule = new Timestamp(pojo.getDatePromised().getTime());
 		ppOrder.setDatePromised(dateFinishSchedule);
 		ppOrder.setDateFinishSchedule(dateFinishSchedule);
+		ppOrder.setPreparationDate(dateFinishSchedule);
 
 		final Timestamp dateStartSchedule = new Timestamp(pojo.getDateStartSchedule().getTime());
 		ppOrder.setDateStartSchedule(dateStartSchedule);
@@ -113,9 +116,11 @@ public class PPOrderProducer
 
 		//
 		// Inherit values from MRP demand
-		// TODO
-//		ppOrder.setC_OrderLine_ID(request.getMRPDemandOrderLineSOId());
-//		ppOrder.setC_BPartner_ID(request.getMRPDemandBPartnerId());
+		ppOrder.setC_OrderLine_ID(pojo.getOrderLineId());
+		if (pojo.getOrderLineId() > 0)
+		{
+			ppOrder.setC_BPartner_ID(ppOrder.getC_OrderLine().getC_BPartner_ID());
+		}
 
 		//
 		// Save the manufacturing order
@@ -129,8 +134,10 @@ public class PPOrderProducer
 	{
 		final Properties ctx = Env.getCtx();
 
-		final I_AD_Org org = Services.get(IOrgDAO.class).retrieveOrg(ctx, orgId);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final I_AD_Org org = orgDAO.retrieveOrg(ctx, orgId);
 
-		return Services.get(IDocTypeDAO.class).getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId,  ITrx.TRXNAME_None);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		return docTypeDAO.getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId, ITrx.TRXNAME_None);
 	}
 }
