@@ -64,7 +64,7 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-/* package */class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
+public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueProducer.class);
@@ -78,12 +78,12 @@ import de.metas.logging.LogManager;
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
-	private static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
+	public static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
 
 	private Date movementDate;
 	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
 
-	public HUPPOrderIssueProducer()
+	HUPPOrderIssueProducer()
 	{
 		super();
 	}
@@ -106,9 +106,15 @@ import de.metas.logging.LogManager;
 			return ImmutableList.of();
 		}
 		
-		trxManager.assertThreadInheritedTrxNotExists();
+		// NOTE: we would prefer to always run this out of transactions,
+		// but in some cases like issuing from Swing POS we cannot enforce it because in that case
+		// the candidates are created and processed in one uber-transaction
+		// trxManager.assertThreadInheritedTrxNotExists();
 
+		// Lock the HUs first, to make sure nobody else is changing them
+		// The lock shall stay until the issue candidate is processed.
 		huLockBL.lockAll(hus, lockOwner);
+		
 		boolean success = false;
 		try
 		{
@@ -125,6 +131,7 @@ import de.metas.logging.LogManager;
 		}
 		finally
 		{
+			// In case of failure, unlock the HUs.
 			if (!success)
 			{
 				huLockBL.unlockAll(hus, lockOwner);

@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrg;
@@ -38,6 +37,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_POProcessor;
@@ -193,7 +193,7 @@ public class POProcessorDispacher implements ModelValidator
 
 		if (!registeredProcessors.containsKey(registerClassName))
 		{
-			final IPOProcessor processorImpl = MiscUtils.getInstanceOrNull(IPOProcessor.class, registerClassName);
+			final IPOProcessor processorImpl = Util.getInstanceOrNull(IPOProcessor.class, registerClassName);
 			if (processorImpl == null)
 			{
 				// TODO -> AD_Message

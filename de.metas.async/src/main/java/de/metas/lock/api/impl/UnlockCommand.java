@@ -132,6 +132,14 @@ public class UnlockCommand implements IUnlockCommand
 		_recordsToUnlock.setRecordByTableRecordId(tableId, recordId);
 		return this;
 	}
+	
+	@Override
+	public IUnlockCommand setRecordByTableRecordId(final String tableName, final int recordId)
+	{
+		_recordsToUnlock.setRecordByTableRecordId(tableName, recordId);
+		return this;
+	}
+
 
 	@Override
 	public IUnlockCommand setRecordsBySelection(final Class<?> modelClass, final int adPIstanceId)

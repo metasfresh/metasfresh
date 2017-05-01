@@ -86,6 +86,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 		final ITableRecordReference record = new TableRecordReference(tableId, recordId);
 		setRecords(Collections.singleton(record));
 	}
+	
+	public void setRecordByTableRecordId(final String tableName, final int recordId)
+	{
+		final ITableRecordReference record = new TableRecordReference(tableName, recordId);
+		setRecords(Collections.singleton(record));
+	}
+
 
 	private final void setRecords(final Collection<ITableRecordReference> records)
 	{
