@@ -97,6 +97,7 @@ public class Services
 	public static void setExternalServiceImplProvider(final IServiceImplProvider externalServiceImplProvider)
 	{
 		Services.externalServiceImplProvider = externalServiceImplProvider;
+		logger.info("Registered external service implementation provider: {}", externalServiceImplProvider);
 	}
 
 	/**
