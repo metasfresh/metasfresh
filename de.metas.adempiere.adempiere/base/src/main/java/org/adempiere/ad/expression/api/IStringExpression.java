@@ -153,4 +153,9 @@ public interface IStringExpression extends IExpression<String>
 				.replace("\r", "")
 				.replace("\n", "");
 	}
+	
+	default CompositeStringExpression.Builder toComposer()
+	{
+		return composer().append(this);
+	}
 }

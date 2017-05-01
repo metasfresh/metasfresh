@@ -82,6 +82,7 @@
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
@@ -89,6 +90,7 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+		-->
 
 		<!--
 			Lombok
