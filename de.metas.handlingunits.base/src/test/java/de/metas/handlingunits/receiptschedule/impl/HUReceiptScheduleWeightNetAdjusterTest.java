@@ -28,13 +28,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.junit.Test;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.quantity.Quantity;
 
 /**
  * Asserts correct behavior of NET Weight when adjusting ReceiptSchedule Quantity

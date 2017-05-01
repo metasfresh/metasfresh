@@ -52,9 +52,10 @@ import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.I_PP_WF_Node_Asset;
 import org.eevolution.model.I_PP_WF_Node_Product;
 import org.eevolution.model.MPPOrderNode;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Order_Workflow;
+
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
 
 public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 {

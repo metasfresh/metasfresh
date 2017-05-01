@@ -171,7 +171,7 @@ public class Services
 	 *
 	 * @param serviceInterfaceClass
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>if <code>T</code> extends {@link ISingletonService} then this method returns a cached instance of that service implementation
 	 *         <li>If <code>T</code> extends {@link IMultitonService}, then this method returns a NEW instance of that service implementation
 	 *         </ul>

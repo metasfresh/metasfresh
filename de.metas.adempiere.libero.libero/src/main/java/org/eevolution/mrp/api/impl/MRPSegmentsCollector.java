@@ -33,8 +33,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.eevolution.exceptions.LiberoException;
-import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
+
+import de.metas.material.planning.IMRPSegment;
 
 /* package */class MRPSegmentsCollector
 {

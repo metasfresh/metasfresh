@@ -718,6 +718,52 @@ public interface I_PP_Order
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set DLM_Level.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDLM_Level (int DLM_Level);
+
+	/**
+	 * Get DLM_Level.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDLM_Level();
+
+    /** Column definition for DLM_Level */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_DLM_Level = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "DLM_Level", null);
+    /** Column name DLM_Level */
+    public static final String COLUMNNAME_DLM_Level = "DLM_Level";
+
+	/**
+	 * Set Partition.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDLM_Partition_ID (int DLM_Partition_ID);
+
+	/**
+	 * Get Partition.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDLM_Partition_ID();
+
+    /** Column definition for DLM_Partition_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_DLM_Partition_ID = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "DLM_Partition_ID", null);
+    /** Column name DLM_Partition_ID */
+    public static final String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
+
+	/**
 	 * Set Belegverarbeitung.
 	 * The targeted status of the document
 	 *
@@ -1376,6 +1422,33 @@ public interface I_PP_Order
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_BOM>(I_PP_Order.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
     /** Column name PP_Product_BOM_ID */
     public static final String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
+
+	/**
+	 * Set Product Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
+
+	/**
+	 * Get Product Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Product_Planning_ID();
+
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
+
+	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
+
+    /** Column definition for PP_Product_Planning_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_Planning>(I_PP_Order.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
+    /** Column name PP_Product_Planning_ID */
+    public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
 	 * Set Bereitstellungsdatum.

@@ -30,7 +30,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.impl.PPOrderBOMBL;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -40,6 +39,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.storage.ProductStorageExpectation;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 
 /**
  * Tests {@link PPOrderBOMBL#calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.

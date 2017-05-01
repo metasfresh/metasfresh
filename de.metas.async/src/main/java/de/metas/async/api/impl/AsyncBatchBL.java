@@ -258,7 +258,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		// Case: when did not pass enough time between fist enqueue time and now
 		final Timestamp now = SystemTime.asTimestamp();
-		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMinutess(now, -2 * PROCESSEDTIME_OFFSET_Min);
+		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMinutes(now, -2 * PROCESSEDTIME_OFFSET_Min);
 		if (firstEnqueued.compareTo(minTimeAfterFirstEnqueued) > 0)
 		{
 			return false;
@@ -286,7 +286,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		// Case: when did not pass enough time between last processed time and now - offset
 		// take a bigger time for checking processed because thread could be locked by other thread and we could have some bigger delay
-		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMinutess(now, -3 * PROCESSEDTIME_OFFSET_Min);
+		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMinutes(now, -3 * PROCESSEDTIME_OFFSET_Min);
 		if (lastProcessed.compareTo(minTimeAfterLastProcessed) > 0)
 		{
 			return false;

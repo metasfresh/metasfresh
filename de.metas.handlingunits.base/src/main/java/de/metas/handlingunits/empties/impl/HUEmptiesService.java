@@ -15,7 +15,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 
 /*
  * #%L

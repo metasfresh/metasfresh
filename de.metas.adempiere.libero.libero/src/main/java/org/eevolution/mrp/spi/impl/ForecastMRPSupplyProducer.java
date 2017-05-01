@@ -38,12 +38,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 
+import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.product.IProductBL;
 
 public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
@@ -76,7 +76,7 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 
 	@Override
-	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		// forecast can never balance demand
 		notAppliesReason.setValue(MSG_ForcastNoBalanceDemand);
@@ -97,7 +97,7 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		// nothing
 	}

@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
@@ -53,11 +54,12 @@ import org.eevolution.exceptions.CRPException;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPOrderNode;
 import org.eevolution.model.MPPOrderWorkflow;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.reasoner.CRPReasoner;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.process.JavaProcess;
 
 /**
@@ -308,6 +310,8 @@ public class CRP extends JavaProcess
 	
 	private Timestamp scheduleForward(final Timestamp start, final long nodeDurationMillis, MResource r)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
 		MResourceType t = r.getResourceType();
 		int iteration = 0; // statistical interation count
 		Timestamp currentDate = start;
@@ -315,9 +319,11 @@ public class CRP extends JavaProcess
 		long remainingMillis = nodeDurationMillis;
 		do
 		{
+			
 			currentDate = reasoner.getAvailableDate(r, currentDate, false);
-			Timestamp dayStart = t.getDayStart(currentDate);
-			Timestamp dayEnd = t.getDayEnd(currentDate);
+			Timestamp dayStart = resourceProductService.getDayStartForResourceType(t, currentDate);
+			final Timestamp dayEnd = resourceProductService.getDayEndForResourceType(t, currentDate);
+			
 			// If working has already began at this day and the value is in the range of the 
 			// resource's availability, switch start time to the given again
 			if(currentDate.after(dayStart) && currentDate.before(dayEnd))
@@ -362,6 +368,8 @@ public class CRP extends JavaProcess
 	 */
 	private Timestamp scheduleBackward(final Timestamp end, final long nodeDurationMillis, MResource r)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
 		MResourceType t = r.getResourceType();
 		log.info("--> ResourceType " + t);
 		Timestamp start = null;
@@ -375,8 +383,10 @@ public class CRP extends JavaProcess
 	
 			currentDate = reasoner.getAvailableDate(r, currentDate, true);
 			log.info("--> end(available)=" + currentDate);
-			Timestamp dayEnd = t.getDayEnd(currentDate);
-			Timestamp dayStart = t.getDayStart(currentDate);
+			
+			Timestamp dayEnd = resourceProductService.getDayEndForResourceType(t, currentDate);
+			Timestamp dayStart = resourceProductService.getDayStartForResourceType(t, currentDate);
+			
 			log.info("--> dayStart=" + dayStart + ", dayEnd=" + dayEnd);
 			
 			// If working has already began at this day and the value is in the range of the 

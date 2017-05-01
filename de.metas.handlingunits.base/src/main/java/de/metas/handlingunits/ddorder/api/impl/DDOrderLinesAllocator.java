@@ -33,9 +33,9 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;

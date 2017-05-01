@@ -10,21 +10,21 @@ package org.eevolution.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -48,7 +48,6 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowBL;
@@ -58,8 +57,15 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.material.event.ProductionPlanEvent;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 
 @Validator(I_PP_Order.class)
@@ -72,7 +78,7 @@ public class PP_Order
 		
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);
 	}
-	
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_PP_Order ppOrder)
 	{
@@ -96,7 +102,7 @@ public class PP_Order
 		}
 
 		//
-		// If Warehouse chaged or Locator was never set, set it now
+		// If Warehouse changed or Locator was never set, set it now
 		if (ppOrder.getM_Locator_ID() <= 0 || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID))
 		{
 			final I_M_Warehouse warehouse = ppOrder.getM_Warehouse();
@@ -155,7 +161,7 @@ public class PP_Order
 		{
 			ppOrderBL.updateBOMOrderLinesWarehouseAndLocator(ppOrder);
 		}
-		
+
 		//
 		// DocTypeTarget:
 		if (ppOrder.getC_DocTypeTarget_ID() <= 0)
@@ -279,7 +285,7 @@ public class PP_Order
 
 	/**
 	 * When manufacturing order is completed by the user, complete supply DD Orders.
-	 * 
+	 *
 	 * @param ppOrder
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -298,6 +304,51 @@ public class PP_Order
 		// Complete DD Orders
 		final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 		ddOrderBL.completeDDOrdersIfNeeded(ddOrders);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_CLOSE,
+			ModelValidator.TIMING_AFTER_UNCLOSE })
+	public void fireMaterialEvent(final I_PP_Order ppOrder)
+	{
+
+		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
+				.datePromised(ppOrder.getDatePromised())
+				.dateStartSchedule(ppOrder.getDateStartSchedule())
+				.docStatus(ppOrder.getDocStatus())
+				.orderLineId(ppOrder.getC_OrderLine_ID())
+				.orgId(ppOrder.getAD_Org_ID())
+				.plantId(ppOrder.getS_Resource_ID())
+				.ppOrderId(ppOrder.getPP_Order_ID())
+				.productId(ppOrder.getM_Product_ID())
+				.productPlanningId(ppOrder.getPP_Product_Planning_ID())
+				.quantity(ppOrder.getQtyOrdered())
+				.uomId(ppOrder.getC_UOM_ID())
+				.warehouseId(ppOrder.getM_Warehouse_ID());
+
+		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
+		for (I_PP_Order_BOMLine line : orderBOMLines)
+		{
+			ppOrderPojoBuilder.line(PPOrderLine.builder()
+					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+					.description(line.getDescription())
+					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
+					.productBomLineId(line.getPP_Product_BOMLine_ID())
+					.productId(line.getM_Product_ID())
+					.qtyRequired(line.getQtyRequiered())
+					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
+					.build());
+		}
+
+		final ProductionPlanEvent event = ProductionPlanEvent.builder()
+				.when(Instant.now())
+				.ppOrder(ppOrderPojoBuilder.build())
+		// .reference(reference)
+				.build();
+
+
+		;
 	}
 
 }

@@ -13,17 +13,17 @@ package de.metas.inoutcandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -31,36 +31,43 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ReceiptScheduleEvent;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = {
-					I_M_ReceiptSchedule.COLUMNNAME_Processed, // on line close we want to recalculate Qty Over/Under Delivery
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_M_ReceiptSchedule.COLUMNNAME_Processed, // on line close we want to recalculate Qty Over/Under Delivery
 
-					// https://github.com/metasfresh/metasfresh/issues/315:
-					// call: onReceiptScheduleChanged if *any* for the "input" columns changed
-					I_M_ReceiptSchedule.COLUMNNAME_QtyOrdered,
-					I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override,
-					I_M_ReceiptSchedule.COLUMNNAME_QtyMoved
-			})
+			// https://github.com/metasfresh/metasfresh/issues/315:
+			// call: onReceiptScheduleChanged if *any* for the "input" columns changed
+			I_M_ReceiptSchedule.COLUMNNAME_QtyOrdered,
+			I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override,
+			I_M_ReceiptSchedule.COLUMNNAME_QtyMoved
+	})
 	public void updateQtys(final I_M_ReceiptSchedule sched)
 	{
 		final IReceiptScheduleQtysBL receiptScheduleQtysHandler = Services.get(IReceiptScheduleQtysBL.class);
 		receiptScheduleQtysHandler.onReceiptScheduleChanged(sched);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }
-			, ifColumnsChanged = {
-					I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder
-			})
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE,
+			ModelValidator.TYPE_AFTER_DELETE
+	}, ifColumnsChanged = {
+			I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder
+	})
 	public void propagateQtysToOrderLine(final I_M_ReceiptSchedule sched, final int timing)
 	{
 		//
@@ -93,46 +100,36 @@ public class M_ReceiptSchedule
 		InterfaceWrapperHelper.save(orderLine);
 	}
 
-	@ModelChange(
-			timings = {
-					ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE
-			}
-			, ifColumnsChanged = {
-					I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID
-					, I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_Location_ID
-					, I_M_ReceiptSchedule.COLUMNNAME_AD_User_ID
-			})
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID, I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_Location_ID, I_M_ReceiptSchedule.COLUMNNAME_AD_User_ID
+	})
 	public void updateBPartnerAddress(final I_M_ReceiptSchedule sched)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		receiptScheduleBL.updateBPartnerAddress(sched);
 	}
 
-	@ModelChange(
-			timings = {
-					ModelValidator.TYPE_BEFORE_NEW,
-					ModelValidator.TYPE_BEFORE_CHANGE
-			}
-			, ifColumnsChanged = {
-					I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID
-			})
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID
+	})
 	public void updatePreparationTime(final I_M_ReceiptSchedule sched)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		receiptScheduleBL.updatePreparationTime(sched);
 	}
 
-	@ModelChange(
-			timings = {
-					// ModelValidator.TYPE_BEFORE_NEW, // not needed because we don't set overwrites on NEW
-					ModelValidator.TYPE_BEFORE_CHANGE
-			}
-			, ifColumnsChanged = {
-					I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_Override_ID
-					, I_M_ReceiptSchedule.COLUMNNAME_C_BP_Location_Override_ID
-					, I_M_ReceiptSchedule.COLUMNNAME_AD_User_Override_ID
-			})
+	@ModelChange(timings = {
+			// ModelValidator.TYPE_BEFORE_NEW, // not needed because we don't set overwrites on NEW
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_Override_ID, I_M_ReceiptSchedule.COLUMNNAME_C_BP_Location_Override_ID, I_M_ReceiptSchedule.COLUMNNAME_AD_User_Override_ID
+	})
 	public void updateBPartnerAddressOverride(final I_M_ReceiptSchedule sched)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);

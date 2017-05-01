@@ -25,7 +25,6 @@ package de.metas.handlingunits.allocation.transfer;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -33,6 +32,7 @@ import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.quantity.Quantity;
 
 /**
  * Implementors perform HU merges. In a merge, we load stuff from source HUs to an <b>already existing</b> destination HU.<br>

@@ -28,6 +28,9 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
+
 public interface IMRPSegmentBL extends ISingletonService
 {
 	/**
@@ -38,7 +41,7 @@ public interface IMRPSegmentBL extends ISingletonService
 	 */
 	IMRPSegment createMRPSegment(int adClientId);
 
-	IMRPSegment createMRPSegment(IMRPContext mrpContext);
+	IMRPSegment createMRPSegment(IMaterialPlanningContext mrpContext);
 
 	/**
 	 * Creates fully defined {@link IMRPSegment}s.

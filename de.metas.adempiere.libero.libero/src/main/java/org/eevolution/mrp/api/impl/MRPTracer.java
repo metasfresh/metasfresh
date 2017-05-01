@@ -42,7 +42,8 @@ import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
-import org.eevolution.mrp.api.IMRPSegment;
+
+import de.metas.material.planning.IMRPSegment;
 
 /**
  * Helper class to help developer tracing shits while debugging.

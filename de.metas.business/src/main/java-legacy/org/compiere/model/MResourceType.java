@@ -19,14 +19,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.CCache;
-import org.compiere.util.TimeUtil;
 
 
 /**
@@ -90,202 +85,18 @@ public class MResourceType extends X_S_ResourceType
 		super(ctx, rs, trxName);
 	}	//	MResourceType
 	
-	@Override
-	protected boolean beforeSave(boolean newRecord)
-	{
-		if (isTimeSlot())
-		{
-			Timestamp start = getTimeSlotStart();
-			if (start == null)
-				throw new FillMandatoryException(COLUMNNAME_TimeSlotStart);
-			Timestamp end = getTimeSlotEnd();
-			if (end == null)
-				throw new FillMandatoryException(COLUMNNAME_TimeSlotEnd);
-			if (start.compareTo(end) >= 0)
-			{
-				throw new AdempiereException("@TimeSlotStart@ > @TimeSlotEnd@"); 
-			}
-		}
-		return true;
-	}
-
-	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
-	{
-		if (!success)
-			return false;
-		
-		//	Update Products
-		if (!newRecord)
-		{
-			MProduct[] products = MProduct.get(getCtx(), "S_Resource_ID IN "
-				+ "(SELECT S_Resource_ID FROM S_Resource WHERE S_ResourceType_ID=" 
-				+ getS_ResourceType_ID() + ")", get_TrxName());
-			for (int i = 0; i < products.length; i++)
-			{
-				MProduct product = products[i];
-				if (product.setResource(this))
-				{
-					product.saveEx(get_TrxName());
-				}
-			}
-		}
-		
-		return success;
-	}	//	afterSave
 	
-	public Timestamp getDayStart(Timestamp date)
-	{
-		if(isTimeSlot())
-		{
-			return TimeUtil.getDayBorder(date, getTimeSlotStart(), false);
-		}
-		else
-		{
-			return TimeUtil.getDayBorder(date, null, false);
-		}
-	}
 	
-	public Timestamp getDayEnd(Timestamp date)
-	{
-		if(isTimeSlot())
-		{
-			return TimeUtil.getDayBorder(date, getTimeSlotEnd(), true);
-		}
-		else
-		{
-			return TimeUtil.getDayBorder(date, null, true);
-		}
-	}
-	
-	public long getDayDurationMillis()
-	{
-		if (isTimeSlot())
-		{
-			return getTimeSlotEnd().getTime() - getTimeSlotStart().getTime();
-		}
-		else
-		{
-			return 24*60*60*1000; // 24 hours
-		}
-	}
-
-	/**
-	 * Get how many hours/day a is available.
-	 * Minutes, secords and millis are discarded.  
-	 * @return available hours
-	 */
-	public int getTimeSlotHours()
-	{
-		long hours;
-		 if (isTimeSlot())                			
-			 hours = (getTimeSlotEnd().getTime() - getTimeSlotStart().getTime()) / (60 * 60 * 1000);
-		 else 
-			 hours  = 24;
-		 return (int) hours;
-	}
-	
-	/**
-	 * Get available days / week.
-	 * @return available days / week
-	 */
-	public int getAvailableDaysWeek()
-	{
-		int availableDays = 0;
-		if (isDateSlot())
-		{
-			if (isOnMonday())
-				availableDays += 1; 
-			if (isOnTuesday())
-				availableDays += 1;
-			if (isOnThursday())
-				availableDays += 1;
-			if (isOnWednesday())	
-				availableDays += 1;
-			if (isOnFriday())	 
-				availableDays += 1;
-			if (isOnSaturday())	
-				availableDays += 1;
-			if (isOnSunday())
-				availableDays += 1;
-		}
-		else
-		{
-			availableDays = 7;
-		}
-		return availableDays;
-	}
-	
-	public boolean isDayAvailable(Timestamp dateTime)
-	{
-		if (!isActive())
-		{
-			return false;
-		}
-		if(!isDateSlot())
-		{
-			return true;
-		}
-
-		GregorianCalendar gc = new GregorianCalendar();
-		gc.setTimeInMillis(dateTime.getTime());
-
-		boolean retValue = false;
-		switch(gc.get(Calendar.DAY_OF_WEEK)) {
-		case Calendar.SUNDAY:
-			retValue = isOnSunday();
-			break;
-
-		case Calendar.MONDAY:
-			retValue = isOnMonday();
-			break;
-
-		case Calendar.TUESDAY:
-			retValue = isOnTuesday();
-			break;
-
-		case Calendar.WEDNESDAY:
-			retValue = isOnWednesday();
-			break;
-
-		case Calendar.THURSDAY:
-			retValue = isOnThursday();
-			break;
-
-		case Calendar.FRIDAY:
-			retValue = isOnFriday();
-			break;
-
-		case Calendar.SATURDAY:
-			retValue = isOnSaturday();	
-			break;
-		} 
-
-		return retValue;
-	}
-
-	/**
-	 * @return true if a resource of this type is generally available
-	 * 			(i.e. active, at least 1 day available, at least 1 hour available) 
-	 */
-	public boolean isAvailable()
-	{
-		if (!isActive())
-		{
-			return false;
-		}
-		return getAvailableDaysWeek() > 0
-				&& getTimeSlotHours() > 0;
-	}
-
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
+		
 		sb.append("MResourceType[")
 			.append(get_ID())
 			.append(",Value=").append(getValue())
 			.append(",Name=").append(getName());
+		
 		if (isTimeSlot())
 		{
 			SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
