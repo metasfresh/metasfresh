@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
@@ -29,11 +30,11 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -80,6 +81,11 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
 	@JsonProperty("readonly")
 	private final boolean readonly;
+
+	/** Type: primary, secondary */
+	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONLayoutType type = JSONLayoutType.primary; // default "primary", see https://github.com/metasfresh/metasfresh-webui-api/issues/334
 
 	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{

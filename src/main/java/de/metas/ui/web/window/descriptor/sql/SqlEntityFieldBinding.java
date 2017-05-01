@@ -1,11 +1,8 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Collection;
+import org.adempiere.ad.expression.api.IStringExpression;
 
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -17,24 +14,28 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IViewFactory
+public interface SqlEntityFieldBinding
 {
-	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
+	String getColumnName();
 
-	Collection<DocumentFilterDescriptor> getViewFilters(WindowId windowId, JSONViewDataType viewDataType);
+	String getColumnSql();
 
-	IView createView(ViewCreateRequest request);
+	DocumentFieldWidgetType getWidgetType();
 
+	Class<?> getSqlValueClass();
+
+	/** @return field's SQL expression to be used in ORDER BY constructions */
+	IStringExpression getSqlOrderBy();
 }

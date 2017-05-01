@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -70,7 +70,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	}
 
 	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
+	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		return null; // not supported
 	}

@@ -1,22 +1,34 @@
 package de.metas.ui.web.view;
 
 import java.util.Collection;
+import java.util.Set;
 
+import org.adempiere.ad.expression.api.NullStringExpression;
+import org.adempiere.util.Check;
+import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
+import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
+import lombok.Value;
 
 /*
  * #%L
@@ -40,6 +52,12 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  * #L%
  */
 
+/**
+ * View factory which is based on {@link DocumentEntityDescriptor} having SQL repository.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Service
 public class SqlViewFactory implements IViewFactory
 {
@@ -47,6 +65,16 @@ public class SqlViewFactory implements IViewFactory
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
+
+	@Value
+	private static final class SqlViewBindingKey
+	{
+		private final WindowId windowId;
+		private final Characteristic requiredFieldCharacteristic;
+	}
+
+	//
+	private final transient CCache<SqlViewBindingKey, SqlViewBinding> viewBindings = CCache.newCache("SqlViewBindings", 20, 0);
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
@@ -70,12 +98,10 @@ public class SqlViewFactory implements IViewFactory
 	}
 
 	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
+	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
-		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
-		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
-		return filters;
+		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewType.getRequiredFieldCharacteristic());
+		return getViewBinding(sqlViewBindingKey).getFilterDescriptors().getAll();
 	}
 
 	@Override
@@ -86,16 +112,12 @@ public class SqlViewFactory implements IViewFactory
 			throw new IllegalArgumentException("Filtering by Ids are not supported: " + request);
 		}
 
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(request.getWindowId());
-		return SqlView.builder(entityDescriptor)
-				//
+		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(request.getWindowId(), request.getViewTypeRequiredFieldCharacteristic());
+		return SqlView.builder(getViewBinding(sqlViewBindingKey))
+				.setWindowId(request.getWindowId())
 				.setParentViewId(request.getParentViewId())
-				//
-				.setViewFieldsByCharacteristic(request.getViewTypeRequiredFieldCharacteristic())
-				//
-				.setStickyFilter(extractReferencedDocumentFilter(entityDescriptor.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
+				.setStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
 				.setFiltersFromJSON(request.getFilters())
-				//
 				.build();
 	}
 
@@ -112,4 +134,71 @@ public class SqlViewFactory implements IViewFactory
 		}
 	}
 
+	private SqlViewBinding getViewBinding(final SqlViewBindingKey key)
+	{
+		return viewBindings.getOrLoad(key, () -> createViewBinding(key));
+	}
+
+	private SqlViewBinding createViewBinding(final SqlViewBindingKey key)
+	{
+		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(key.getWindowId());
+		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
+
+		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+
+		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
+				.setTableName(entityBinding.getTableName())
+				.setTableAlias(entityBinding.getTableAlias())
+				.setDisplayFieldNames(displayFieldNames)
+				.setFilterDescriptors(entityDescriptor.getFiltersProvider())
+				.setOrderBys(entityBinding.getDefaultOrderBys());
+
+		entityBinding.getFields()
+				.stream()
+				.map(documentField -> createViewFieldBinding(documentField, displayFieldNames))
+				.forEach(fieldBinding -> builder.addField(fieldBinding));
+
+		return builder.build();
+	}
+
+	private static final SqlViewRowFieldBinding createViewFieldBinding(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)
+	{
+		final String fieldName = documentField.getFieldName();
+		final boolean isDisplayColumnAvailable = documentField.isUsingDisplayColumn() && availableDisplayColumnNames.contains(fieldName);
+		final SqlViewRowFieldLoader fieldLoader = createViewRowFieldLoader(documentField.getDocumentFieldValueLoader(), isDisplayColumnAvailable);
+
+		return SqlViewRowFieldBinding.builder()
+				.fieldName(fieldName)
+				.columnName(documentField.getColumnName())
+				.columnSql(documentField.getColumnSql())
+				.keyColumn(documentField.isKeyColumn())
+				.widgetType(documentField.getWidgetType())
+				//
+				.sqlValueClass(documentField.getSqlValueClass())
+				.sqlSelectValue(documentField.getSqlSelectValue())
+				.usingDisplayColumn(isDisplayColumnAvailable)
+				.sqlSelectDisplayValue(isDisplayColumnAvailable ? documentField.getSqlSelectDisplayValue() : NullStringExpression.instance)
+				//
+				.sqlOrderBy(documentField.getSqlOrderBy())
+				//
+				.fieldLoader(fieldLoader)
+				//
+				.build();
+
+	}
+
+	/**
+	 * NOTE to developer: keep this method static and provide only primitive or lambda parameters
+	 *
+	 * @param fieldValueLoader
+	 * @param isDisplayColumnAvailable
+	 */
+	private static SqlViewRowFieldLoader createViewRowFieldLoader(final DocumentFieldValueLoader fieldValueLoader, final boolean isDisplayColumnAvailable)
+	{
+		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
+		return rs -> {
+			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable);
+			return Values.valueToJsonObject(fieldValue);
+		};
+	}
 }

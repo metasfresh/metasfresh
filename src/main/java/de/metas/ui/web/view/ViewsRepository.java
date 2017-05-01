@@ -26,8 +26,8 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
@@ -129,7 +129,7 @@ public class ViewsRepository implements IViewsRepository
 	{
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		final ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
-		final Collection<DocumentFilterDescriptor> viewFilters = factory.getViewFilters(windowId);
+		final Collection<DocumentFilterDescriptor> viewFilters = factory.getViewFilters(windowId, viewDataType);
 
 		final JSONViewLayout jsonLayout = JSONViewLayout.of(viewLayout, viewFilters, jsonOpts);
 		//

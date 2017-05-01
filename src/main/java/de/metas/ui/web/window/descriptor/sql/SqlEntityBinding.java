@@ -1,11 +1,6 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Collection;
-
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import org.adempiere.ad.expression.api.IStringExpression;
 
 /*
  * #%L
@@ -29,12 +24,18 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-public interface IViewFactory
+public interface SqlEntityBinding
 {
-	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
+	String getTableName();
 
-	Collection<DocumentFilterDescriptor> getViewFilters(WindowId windowId, JSONViewDataType viewDataType);
+	String getTableAlias();
 
-	IView createView(ViewCreateRequest request);
+	/** @return field binding or throws exception in case it was not found */
+	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
+	
+	default IStringExpression getFieldOrderBy(String fieldName)
+	{
+		return getFieldByFieldName(fieldName).getSqlOrderBy();
+	}
 
 }
