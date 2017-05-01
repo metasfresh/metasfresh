@@ -314,6 +314,7 @@ node('agent && linux && libc6-i386')
 				MF_ARTIFACT_URLS['metasfresh-webui'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar";
 				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz";
 				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-material-dispo']= "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar";
 
 				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
 				// See
@@ -323,10 +324,13 @@ node('agent && linux && libc6-i386')
 <h3>Version infos</h3>
 <ul>
   <li>endcustomer.mf15: version <b>${BUILD_VERSION}</b></li>
-  <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li>
-  <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b>
-  <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b>
-  <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b>
+  <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li></li>
+  <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b></li>
+  <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b></li>
+  <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b></li>
+	<li><ul>
+		<li>metasfresh-material-dispo (always the same as metasfresh base): version <b>${mavenProps['metasfresh.version']}</b></li>
+	</ul></li>
 </ul>
 <p>
 <h3>Deployable artifacts</h3>
@@ -337,6 +341,8 @@ node('agent && linux && libc6-i386')
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-material-dispo']}\">metasfresh-material-dispo.jar</a> (also included in the dist-tar.gz)</li>
 </ul>
 <p>
 <h3>Deploy</h3>
