@@ -22,6 +22,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
@@ -98,10 +99,10 @@ public class SqlViewFactory implements IViewFactory
 	}
 
 	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId, final JSONViewDataType viewType)
+	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewType.getRequiredFieldCharacteristic());
-		return getViewBinding(sqlViewBindingKey).getFilterDescriptors().getAll();
+		return getViewBinding(sqlViewBindingKey).getViewFilterDescriptors().getAll();
 	}
 
 	@Override
@@ -113,7 +114,10 @@ public class SqlViewFactory implements IViewFactory
 		}
 
 		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(request.getWindowId(), request.getViewTypeRequiredFieldCharacteristic());
-		return SqlView.builder(getViewBinding(sqlViewBindingKey))
+		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
+		final SqlViewDataRepository sqlViewDataRepository = new SqlViewDataRepository(sqlViewBinding);
+		
+		return DefaultView.builder(sqlViewDataRepository)
 				.setWindowId(request.getWindowId())
 				.setParentViewId(request.getParentViewId())
 				.setStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
@@ -143,14 +147,14 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(key.getWindowId());
 		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
-
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
-
+		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFiltersProvider();
+		
 		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
 				.setTableName(entityBinding.getTableName())
 				.setTableAlias(entityBinding.getTableAlias())
 				.setDisplayFieldNames(displayFieldNames)
-				.setFilterDescriptors(entityDescriptor.getFiltersProvider())
+				.setViewFilterDescriptors(filterDescriptors)
 				.setOrderBys(entityBinding.getDefaultOrderBys());
 
 		entityBinding.getFields()

@@ -33,7 +33,7 @@ public interface IViewFactory
 {
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
 
-	Collection<DocumentFilterDescriptor> getViewFilters(WindowId windowId, JSONViewDataType viewDataType);
+	Collection<DocumentFilterDescriptor> getViewFilterDescriptors(WindowId windowId, JSONViewDataType viewDataType);
 
 	IView createView(ViewCreateRequest request);
 

@@ -15,7 +15,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
@@ -24,7 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.view.SqlViewEvaluationCtx;
+import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -85,7 +84,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
-	private final DocumentFilterDescriptorsProvider filterDescriptors;
+	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 
 	private SqlViewBinding(final Builder builder)
 	{
@@ -132,7 +131,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
 
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
-		filterDescriptors = builder.getFilterDescriptors();
+		viewFilterDescriptors = builder.getViewFilterDescriptors();
 	}
 
 	@Override
@@ -284,9 +283,9 @@ public class SqlViewBinding implements SqlEntityBinding
 		return rowFieldLoaders;
 	}
 
-	public DocumentFilterDescriptorsProvider getFilterDescriptors()
+	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
-		return filterDescriptors;
+		return viewFilterDescriptors;
 	}
 	
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
@@ -294,14 +293,12 @@ public class SqlViewBinding implements SqlEntityBinding
 		return defaultOrderBys;
 	}
 
-	public Map<String, String> getSqlOrderBysIndexedByFieldName(final SqlViewEvaluationCtx viewEvalCtx)
+	public Map<String, String> getSqlOrderBysIndexedByFieldName(final ViewEvaluationCtx viewEvalCtx)
 	{
-		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
-		
 		final ImmutableMap.Builder<String, String> sqlOrderBysIndexedByFieldName = ImmutableMap.builder();
 		for (final SqlViewRowFieldBinding fieldBinding : getFields())
 		{
-			final String fieldOrderBy = fieldBinding.getSqlOrderBy().evaluate(evalCtx, OnVariableNotFound.Fail);
+			final String fieldOrderBy = fieldBinding.getSqlOrderBy().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 			if (Check.isEmpty(fieldOrderBy, true))
 			{
 				continue;
@@ -350,13 +347,12 @@ public class SqlViewBinding implements SqlEntityBinding
 	
 	public String getSqlCreateSelectionFrom( //
 			final List<Object> sqlParams //
-			, final SqlViewEvaluationCtx viewEvalCtx //
+			, final ViewEvaluationCtx viewEvalCtx //
 			, final ViewId newViewId //
 			, final List<DocumentFilter> filters //
 			, final int queryLimit //
 			)
 	{
-		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
 		final String sqlTableName = getTableName();
 		final String sqlTableAlias = getTableAlias();
 		final String keyColumnNameFQ = getKeyColumnName();
@@ -417,7 +413,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		//
 		// Evaluate the final SQL query
-		final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
+		final String sql = sqlBuilder.build().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 		return sql;
 	}
 
@@ -437,7 +433,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlViewRowFieldBinding _keyField;
 
 		private List<DocumentQueryOrderBy> defaultOrderBys;
-		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
+		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 
 		private Builder()
 		{
@@ -519,15 +515,15 @@ public class SqlViewBinding implements SqlEntityBinding
 			return defaultOrderBys == null ? ImmutableList.of() : defaultOrderBys;
 		}
 
-		public Builder setFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)
+		public Builder setViewFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
 		{
-			this.filterDescriptors = filterDescriptors;
+			this.viewFilterDescriptors = viewFilterDescriptors;
 			return this;
 		}
 
-		private DocumentFilterDescriptorsProvider getFilterDescriptors()
+		private DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 		{
-			return filterDescriptors;
+			return viewFilterDescriptors;
 		}
 	}
 

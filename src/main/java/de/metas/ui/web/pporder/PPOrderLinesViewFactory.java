@@ -70,7 +70,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	}
 
 	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId, final JSONViewDataType viewType)
+	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		return null; // not supported
 	}

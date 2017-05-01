@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -15,10 +17,10 @@ import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -33,6 +35,7 @@ import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoa
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import lombok.NonNull;
 
@@ -58,13 +61,13 @@ import lombok.NonNull;
  * #L%
  */
 
-class SqlViewRepository
+class SqlViewDataRepository implements IViewDataRepository
 {
-	private static final Logger logger = LogManager.getLogger(SqlViewRepository.class);
+	private static final Logger logger = LogManager.getLogger(SqlViewDataRepository.class);
 
 	private final SqlViewBinding sqlBindings;
 
-	SqlViewRepository(@NonNull final SqlViewBinding sqlBindings)
+	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		this.sqlBindings = sqlBindings;
 	}
@@ -75,27 +78,31 @@ class SqlViewRepository
 		return MoreObjects.toStringHelper(this).addValue(sqlBindings).toString();
 	}
 
+	@Override
 	public String getTableName()
 	{
 		return sqlBindings.getTableName();
 	}
 
+	@Override
 	public String getSqlWhereClause(final ViewId viewId, final Collection<DocumentId> rowIds)
 	{
 		return sqlBindings.getSqlWhereClause(viewId.getViewId(), rowIds);
 	}
 
-	public IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(final SqlViewEvaluationCtx viewEvalCtx)
+	@Override
+	public IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(final ViewEvaluationCtx viewEvalCtx)
 	{
 		final String sqlCreateFromViewId = sqlBindings.getSqlCreateSelectionFromSelection();
 		final Map<String, String> sqlOrderBysByFieldName = sqlBindings.getSqlOrderBysIndexedByFieldName(viewEvalCtx);
 		return new SqlViewRowIdsOrderedSelectionFactory(sqlCreateFromViewId, sqlOrderBysByFieldName);
 	}
 
-	public ViewRowIdsOrderedSelection createOrderedSelection(final SqlViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
+	@Override
+	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
 	{
 		final ViewId viewId = ViewId.random(windowId);
-		
+
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
 		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
 		final int queryLimit = permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
@@ -122,13 +129,13 @@ class SqlViewRepository
 				.build();
 	}
 
-	public IViewRow retrieveById(final SqlViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
+	@Override
+	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
 		final WindowId windowId = viewId.getWindowId();
 		final String viewSelectionId = viewId.getViewId();
 
-		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
-		final String sql = sqlBindings.getSqlSelectById().evaluate(evalCtx, OnVariableNotFound.Fail);
+		final String sql = sqlBindings.getSqlSelectById().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 
 		final Object[] sqlParams = new Object[] { viewSelectionId, rowId.toInt() };
 		PreparedStatement pstmt = null;
@@ -206,8 +213,15 @@ class SqlViewRepository
 
 		return viewRowBuilder.build();
 	}
+	
+	@Override
+	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
+	{
+		return sqlBindings.getViewFilterDescriptors();
+	}
 
-	public List<IViewRow> retrievePage(final SqlViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength) throws DBException
+	@Override
+	public List<IViewRow> retrievePage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength) throws DBException
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 
@@ -221,8 +235,7 @@ class SqlViewRepository
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + pageLength;
 
-		final Evaluatee evalCtx = viewEvalCtx.toEvaluatee();
-		final String sql = sqlBindings.getSqlSelectByPage().evaluate(evalCtx, OnVariableNotFound.Fail);
+		final String sql = sqlBindings.getSqlSelectByPage().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 		final Object[] sqlParams = new Object[] { viewSelectionId, firstSeqNo, lastSeqNo };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -258,6 +271,27 @@ class SqlViewRepository
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@Override
+	public <T> List<T> retrieveModelsByIds(final ViewId viewId, final Collection<DocumentId> rowIds, final Class<T> modelClass)
+	{
+		if (rowIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final String sqlWhereClause = getSqlWhereClause(viewId, rowIds);
+		if (Check.isEmpty(sqlWhereClause, true))
+		{
+			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
+				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))
+				.create()
+				.list(modelClass);
 	}
 
 }

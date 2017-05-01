@@ -44,6 +44,6 @@ public @interface ViewFactory
 {
 	String windowId();
 
-	/** supported view types (empty means all */
+	/** supported view types (empty means all) */
 	JSONViewDataType[] viewTypes() default {};
 }

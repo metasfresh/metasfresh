@@ -31,7 +31,6 @@ import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -89,16 +88,11 @@ public class ViewsRepository implements IViewsRepository
 				viewTypes = JSONViewDataType.values();
 			}
 
-			registerFactory(windowId, viewTypes, factory);
-		}
-	}
-
-	public void registerFactory(final WindowId windowId, final JSONViewDataType[] viewTypes, @NonNull final IViewFactory factory)
-	{
-		for (final JSONViewDataType viewType : viewTypes)
-		{
-			factories.put(mkFactoryKey(windowId, viewType), factory);
-			logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
+			for (final JSONViewDataType viewType : viewTypes)
+			{
+				factories.put(mkFactoryKey(windowId, viewType), factory);
+				logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
+			}
 		}
 	}
 
@@ -129,9 +123,9 @@ public class ViewsRepository implements IViewsRepository
 	{
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		final ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
-		final Collection<DocumentFilterDescriptor> viewFilters = factory.getViewFilters(windowId, viewDataType);
+		final Collection<DocumentFilterDescriptor> viewFilterDescriptors = factory.getViewFilterDescriptors(windowId, viewDataType);
 
-		final JSONViewLayout jsonLayout = JSONViewLayout.of(viewLayout, viewFilters, jsonOpts);
+		final JSONViewLayout jsonLayout = JSONViewLayout.of(viewLayout, viewFilterDescriptors, jsonOpts);
 		//
 		// Enable new record if supported
 		menuTreeRepo.getUserSessionMenuTree()

@@ -34,20 +34,22 @@ import lombok.NonNull;
  * #L%
  */
 
-public class SqlViewEvaluationCtx
+public class ViewEvaluationCtx
 {
-	public static final SqlViewEvaluationCtx of(final Properties ctx)
+	public static final ViewEvaluationCtx of(final Properties ctx)
 	{
 		final String adLanguage = Env.getAD_Language(ctx);
 		final UserRolePermissionsKey permissionsKey = UserRolePermissionsKey.of(ctx);
-		return new SqlViewEvaluationCtx(ctx, adLanguage, permissionsKey);
+		return new ViewEvaluationCtx(ctx, adLanguage, permissionsKey);
 	}
 
 	private final Properties ctx; // needed for global context vars
 	private final String adLanguage;
 	private final UserRolePermissionsKey permissionsKey;
+	
+	private Evaluatee _evaluatee; // lazy
 
-	private SqlViewEvaluationCtx(@NonNull final Properties ctx, @NonNull final String adLanguage, @NonNull final UserRolePermissionsKey permissionsKey)
+	private ViewEvaluationCtx(@NonNull final Properties ctx, @NonNull final String adLanguage, @NonNull final UserRolePermissionsKey permissionsKey)
 	{
 		this.ctx = ctx;
 		this.adLanguage = adLanguage;
@@ -62,7 +64,7 @@ public class SqlViewEvaluationCtx
 				.add("permissionsKey", permissionsKey)
 				.toString();
 	}
-	
+
 	public UserRolePermissionsKey getPermissionsKey()
 	{
 		return permissionsKey;
@@ -70,11 +72,19 @@ public class SqlViewEvaluationCtx
 
 	public Evaluatee toEvaluatee()
 	{
-		return Evaluatees.mapBuilder()
-				.put(Env.CTXNAME_AD_Language, adLanguage)
-				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
-				.build()
-				// Fallback to global context
-				.andComposeWith(Evaluatees.ofCtx(ctx));
+		Evaluatee evaluatee = _evaluatee;
+		
+		if (evaluatee == null)
+		{
+			evaluatee = _evaluatee = Evaluatees.mapBuilder()
+					.put(Env.CTXNAME_AD_Language, adLanguage)
+					.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
+					.build()
+					// Fallback to global context
+					.andComposeWith(Evaluatees.ofCtx(ctx));
+			return evaluatee;
+		}
+		
+		return evaluatee;
 	}
 }

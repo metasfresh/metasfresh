@@ -10,12 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
@@ -27,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -60,18 +54,25 @@ import lombok.NonNull;
  * #L%
  */
 
-class SqlView implements IView
+/**
+ * Default {@link IView} implementation.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+class DefaultView implements IView
 {
-	public static final Builder builder(final SqlViewBinding sqlViewBinding)
+	public static final Builder builder(final IViewDataRepository viewDataRepository)
 	{
-		return new Builder(sqlViewBinding);
+		return new Builder(viewDataRepository);
 	}
 
-	private static final Logger logger = LogManager.getLogger(SqlView.class);
+	private static final Logger logger = LogManager.getLogger(DefaultView.class);
+
+	private final IViewDataRepository viewDataRepository;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final ViewId parentViewId;
-	private final SqlViewRepository viewRowsRepo;
 
 	private final transient IViewRowIdsOrderedSelectionFactory orderedSelectionFactory;
 	private final transient ViewRowIdsOrderedSelection defaultSelection;
@@ -79,15 +80,11 @@ class SqlView implements IView
 
 	//
 	// Filters
-	private final transient DocumentFilterDescriptorsProvider filterDescriptors;
+	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	/** Sticky filters (i.e. active filters which cannot be changed) */
 	private final List<DocumentFilter> stickyFilters;
 	/** Active filters */
 	private final List<DocumentFilter> filters;
-
-	//
-	// Attributes
-	private final transient IViewRowAttributesProvider attributesProvider;
 
 	//
 	// Misc
@@ -97,24 +94,24 @@ class SqlView implements IView
 	// Caching
 	private final transient CCache<DocumentId, IViewRow> cache_rowsById;
 
-	private SqlView(final Builder builder)
+	private DefaultView(final Builder builder)
 	{
-		viewRowsRepo = new SqlViewRepository(builder.getSqlViewBinding());
+		viewDataRepository = builder.getViewDataRepository();
 		parentViewId = builder.getParentViewId();
 
 		//
 		// Filters
-		filterDescriptors = builder.getFilterDescriptors();
+		viewFilterDescriptors = builder.getViewFilterDescriptors();
 		stickyFilters = ImmutableList.copyOf(builder.getStickyFilters());
 		filters = ImmutableList.copyOf(builder.getFilters());
 
 		//
 		// Selection
 		{
-			final SqlViewEvaluationCtx evalCtx = SqlViewEvaluationCtx.of(Env.getCtx());
-			orderedSelectionFactory = viewRowsRepo.createOrderedSelectionFactory(evalCtx);
+			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+			orderedSelectionFactory = viewDataRepository.createOrderedSelectionFactory(evalCtx);
 
-			defaultSelection = viewRowsRepo.createOrderedSelection(
+			defaultSelection = viewDataRepository.createOrderedSelection(
 					evalCtx //
 					, builder.getWindowId() //
 					, ImmutableList.<DocumentFilter> builder().addAll(stickyFilters).addAll(filters).build() //
@@ -123,13 +120,9 @@ class SqlView implements IView
 		}
 
 		//
-		// Attributes
-		attributesProvider = ViewRowAttributesProviderFactory.instance.createProviderOrNull(defaultSelection.getWindowId());
-
-		//
 		// Cache
 		cache_rowsById = CCache.newLRUCache( //
-				viewRowsRepo.getTableName() + "#rowById#viewId=" + defaultSelection.getSelectionId() // cache name
+				viewDataRepository.getTableName() + "#rowById#viewId=" + defaultSelection.getSelectionId() // cache name
 				, 100 // maxSize
 				, 2 // expireAfterMinutes
 		);
@@ -142,14 +135,13 @@ class SqlView implements IView
 	{
 		if (_toString == null)
 		{
+			// NOTE: keep it short
 			_toString = MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("viewId", defaultSelection.getViewId())
-					.add("tableName", viewRowsRepo.getTableName())
+					.add("tableName", viewDataRepository.getTableName())
 					.add("parentViewId", parentViewId)
 					.add("defaultSelection", defaultSelection)
-					// .add("sql", sqlSelectPage) // too long..
-					// .add("fieldLoaders", fieldLoaders) // no point to show them because all are lambdas
 					.toString();
 		}
 		return _toString;
@@ -170,7 +162,7 @@ class SqlView implements IView
 	@Override
 	public String getTableName()
 	{
-		return viewRowsRepo.getTableName();
+		return viewDataRepository.getTableName();
 	}
 
 	@Override
@@ -232,14 +224,14 @@ class SqlView implements IView
 	}
 
 	@Override
-	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys) throws DBException
+	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		assertNotClosed();
 
-		final SqlViewEvaluationCtx evalCtx = SqlViewEvaluationCtx.of(Env.getCtx());
+		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 
-		final List<IViewRow> page = viewRowsRepo.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
+		final List<IViewRow> page = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
 
 		// Add to cache
 		page.forEach(row -> cache_rowsById.put(row.getId(), row));
@@ -257,12 +249,12 @@ class SqlView implements IView
 	private final IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
 		return cache_rowsById.getOrLoad(rowId, () -> {
-			final SqlViewEvaluationCtx evalCtx = SqlViewEvaluationCtx.of(Env.getCtx());
-			return viewRowsRepo.retrieveById(evalCtx, getViewId(), rowId);
+			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+			return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
 		});
 	}
 
-	private ViewRowIdsOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys) throws DBException
+	private ViewRowIdsOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys)
 	{
 		if (orderBys == null || orderBys.isEmpty())
 		{
@@ -274,14 +266,13 @@ class SqlView implements IView
 			return defaultSelection;
 		}
 
-		final ImmutableList<DocumentQueryOrderBy> orderBysImmutable = ImmutableList.copyOf(orderBys);
-		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
+		return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
 	}
 
 	@Override
 	public String getSqlWhereClause(final Collection<DocumentId> rowIds)
 	{
-		return viewRowsRepo.getSqlWhereClause(getViewId(), rowIds);
+		return viewDataRepository.getSqlWhereClause(getViewId(), rowIds);
 	}
 
 	@Override
@@ -289,7 +280,7 @@ class SqlView implements IView
 	{
 		assertNotClosed();
 
-		return filterDescriptors.getByFilterId(filterId)
+		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.findEntities(ctx);
@@ -300,7 +291,7 @@ class SqlView implements IView
 	{
 		assertNotClosed();
 
-		return filterDescriptors.getByFilterId(filterId)
+		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.findEntities(ctx, query);
@@ -309,7 +300,7 @@ class SqlView implements IView
 	@Override
 	public boolean hasAttributesSupport()
 	{
-		return attributesProvider != null;
+		return false;
 	}
 
 	@Override
@@ -340,17 +331,7 @@ class SqlView implements IView
 	@Override
 	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> rowIds, final Class<T> modelClass)
 	{
-		if (rowIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final String sqlWhereClause = getSqlWhereClause(rowIds);
-
-		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
-				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))
-				.create()
-				.list(modelClass);
+		return viewDataRepository.retrieveModelsByIds(getViewId(), rowIds, modelClass);
 	}
 
 	@Override
@@ -385,19 +366,19 @@ class SqlView implements IView
 	{
 		private WindowId windowId;
 		private ViewId parentViewId;
-		private final SqlViewBinding sqlViewBinding;
+		private final IViewDataRepository viewDataRepository;
 
 		private List<DocumentFilter> _stickyFilters;
 		private List<DocumentFilter> _filters;
 
-		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
+		private Builder(@NonNull final IViewDataRepository viewDataRepository)
 		{
-			this.sqlViewBinding = sqlViewBinding;
+			this.viewDataRepository = viewDataRepository;
 		}
 
-		public SqlView build()
+		public DefaultView build()
 		{
-			return new SqlView(this);
+			return new DefaultView(this);
 		}
 
 		public Builder setParentViewId(final ViewId parentViewId)
@@ -422,14 +403,14 @@ class SqlView implements IView
 			return parentViewId;
 		}
 
-		private SqlViewBinding getSqlViewBinding()
+		private IViewDataRepository getViewDataRepository()
 		{
-			return sqlViewBinding;
+			return viewDataRepository;
 		}
 
-		private DocumentFilterDescriptorsProvider getFilterDescriptors()
+		private DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 		{
-			return sqlViewBinding.getFilterDescriptors();
+			return viewDataRepository.getViewFilterDescriptors();
 		}
 
 		public Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
@@ -451,7 +432,7 @@ class SqlView implements IView
 
 		public Builder setFiltersFromJSON(final List<JSONDocumentFilter> jsonFilters)
 		{
-			setFilters(JSONDocumentFilter.unwrapList(jsonFilters, getFilterDescriptors()));
+			setFilters(JSONDocumentFilter.unwrapList(jsonFilters, getViewFilterDescriptors()));
 			return this;
 		}
 
