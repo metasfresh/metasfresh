@@ -25,9 +25,14 @@ class DropzoneWrapper extends Component {
         }
     }
 
-    handleDragStart(){
+    handleDragStart = () => {
+        const { handleDragStart } = this.props;
+        const { dragActive } = this.state;
+
         this.setState({
             dragActive: true
+        }, () => {
+            dragActive && handleDragStart();
         })
     }
 

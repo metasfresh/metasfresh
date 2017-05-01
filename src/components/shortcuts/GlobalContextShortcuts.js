@@ -25,7 +25,6 @@ class GlobalContextShortcuts extends Component {
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
                 closeOverlays('', ()=> handleInboxOpen(true));
-
                 break;
             case 'OPEN_SIDEBAR_MENU_0':
                 event.preventDefault();

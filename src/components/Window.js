@@ -75,6 +75,7 @@ class Window extends Component {
                             queryOnActivate={queryOnActivate}
                             supportQuickInput={supportQuickInput}
                             tabInfo={tabsInfo && tabsInfo[tabid]}
+                            disconnectFromState={true}
                         />
                     )
                 })}
@@ -186,21 +187,27 @@ class Window extends Component {
 
     render() {
         const {sections, tabs} = this.props.layout;
-        const {handleDropFile, handleRejectDropped} = this.props;
+        const {
+            handleDropFile, handleRejectDropped, handleDragStart, isModal
+        } = this.props;
+
         return (
             <div key="window" className="window-wrapper">
                 <Dropzone
                     handleDropFile={handleDropFile}
                     handleRejectDropped={handleRejectDropped}
+                    handleDragStart={handleDragStart}
                 >
                     <div className="sections-wrapper">
                         {sections && this.renderSections(sections)}
                     </div>
                 </Dropzone>
-
-                <div className="mt-1 tabs-wrapper">
-                    {tabs && this.renderTabs(tabs)}
-                </div>
+                {
+                    !isModal &&
+                    <div className="mt-1 tabs-wrapper">
+                        {tabs && this.renderTabs(tabs)}
+                    </div>
+                }
             </div>
         );
     }

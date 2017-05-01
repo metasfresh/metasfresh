@@ -140,7 +140,7 @@ class FiltersItem extends Component {
                             widgetType={item.widgetType}
                             fields={[item]}
                             windowType={windowType}
-                            type={filter.type}
+                            type={item.type}
                             widgetData={[item]}
                             key={index}
                             id={index}

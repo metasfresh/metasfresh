@@ -18,9 +18,11 @@ class Actions extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType, entity, docId, rowId} = this.props;
+        const {
+            dispatch, windowType, entity, docId, rowId, notfound
+        } = this.props;
 
-        if(!windowType){
+        if(!windowType || docId === 'notfound' || notfound){
             return;
         }
 

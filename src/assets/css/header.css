@@ -70,10 +70,6 @@
     flex:1;
 }
 
-.header-breadcrumb-sitename {
-    position: absolute;
-}
-
 @media (max-width: $breakpoint){
     .header-breadcrumb{
         top: 25px;

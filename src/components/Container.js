@@ -11,11 +11,11 @@ class Container extends Component {
 
     render() {
         const {
-            docActionElem, docStatusData, docNoElement, docNoData,
+            docActionElem, docStatusData, docNoData, docId,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
-            handleDeletedStatus
+            handleDeletedStatus, dropzoneFocused, notfound
         } = this.props;
 
         return (
@@ -23,24 +23,13 @@ class Container extends Component {
                 {
                     // Forcing refresh component
                     !hideHeader && <Header
-                        entity={entity}
+                        {...{entity, docStatusData, docNoData, docSummaryData,
+                            handleDeletedStatus, isDocumentNotSaved,
+                            showIndicator, query, siteName, showSidelist,
+                            attachments, actions, references, windowType,
+                            breadcrumb, dataId, dropzoneFocused, notfound, docId
+                        }}
                         docStatus = {docActionElem}
-                        docStatusData = {docStatusData}
-                        docNo = {docNoElement}
-                        docNoData = {docNoData}
-                        docSummaryData = {docSummaryData}
-                        dataId={dataId}
-                        windowType={windowType}
-                        breadcrumb={breadcrumb}
-                        references={references}
-                        actions={actions}
-                        attachments={attachments}
-                        showSidelist={showSidelist}
-                        siteName = {siteName}
-                        query={query}
-                        showIndicator={showIndicator}
-                        isDocumentNotSaved={isDocumentNotSaved}
-                        handleDeletedStatus={handleDeletedStatus}
                     />
                 }
                 {connectionError && <ErrorScreen />}

@@ -1,3 +1,7 @@
+.image-source-options {
+    margin: 0 .5rem .5rem .5rem;
+}
+
 .image-source-options .input{
     display: none;
 }
@@ -16,7 +20,7 @@
     height: 150px;
     border: solid 1px $brand-light-color;
     border-radius: 4px;
-    margin: 0 auto;
+    margin: 0 .5rem;
     display: table;
 }
 
@@ -28,20 +32,18 @@
 
 .camera-preview{
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 400px;
-    height: 300px;
+    bottom: 7.5%;
+    right: 50%;
+    margin-right: -50%;
+    width: 100%;
+    height: 85%;
     cursor: pointer;
+    z-index:1000;
+    text-align: center;
 }
 
 .camera-preview video{
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
+    width: auto;
     height: 100%;
 }
 
@@ -60,4 +62,14 @@
 
 .camera-preview.loading .preview-loader{
     opacity: 1;
+}
+
+.image-widget {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+}
+
+.image-preview {
+    width: 200px;
 }

@@ -27,7 +27,8 @@ class MasterWindow extends Component {
         this.state = {
             newRow: false,
             modalTitle: null,
-            isDeleted: false
+            isDeleted: false,
+            dropzoneFocused: false
         }
     }
 
@@ -107,6 +108,16 @@ class MasterWindow extends Component {
         fd.append('file', file);
 
         return dispatch(attachFileAction(type, dataId, fd));
+    }
+
+    handleDragStart = () => {
+        this.setState({
+            dropzoneFocused: true
+        }, () => {
+            this.setState({
+                dropzoneFocused: false
+            })
+        })
     }
 
     handleRejectDropped(droppedFiles){
@@ -207,6 +218,7 @@ class MasterWindow extends Component {
                 dataId={dataId}
                 isModal={false}
                 newRow={newRow}
+                handleDragStart={this.handleDragStart}
                 handleDropFile={accepted => this.handleDropFile(accepted)}
                 handleRejectDropped={
                     rejected => this.handleRejectDropped(rejected)
@@ -223,14 +235,16 @@ class MasterWindow extends Component {
         } = this.props;
 
         const {
-            documentNoElement, docActionElement, documentSummaryElement
+            dropzoneFocused
+        } = this.state;
+
+        const {
+            docActionElement, documentSummaryElement
         } = master.layout;
 
         const dataId = master.docId;
 
-        const docNoData = findRowByPropName(
-            master.data, documentNoElement && documentNoElement.fields[0].field
-        );
+        const docNoData = findRowByPropName(master.data, 'DocumentNo');
 
         const docStatusData = {
             'status': findRowByPropName(master.data, 'DocStatus'),
@@ -246,14 +260,11 @@ class MasterWindow extends Component {
         return (
             <Container
                 entity="window"
+                {...{dropzoneFocused, docStatusData, docSummaryData,
+                    dataId, breadcrumb, docNoData}}
                 docActionElem = {docActionElement}
-                docStatusData = {docStatusData}
-                docNoElement = {documentNoElement}
-                docNoData = {docNoData}
-                docSummaryData = {docSummaryData}
-                dataId={dataId}
                 windowType={params.windowType}
-                breadcrumb={breadcrumb}
+                docId={params.docId}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}

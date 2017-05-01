@@ -300,9 +300,11 @@ export function createWindow(
                         response.data, getScope(isModal)
                     ))
                 ).then(response => {
-                    dispatch(initTabs(
-                        response.layout.tabs, windowType, docId, isModal
-                    ))
+                    if(!isModal){
+                        dispatch(initTabs(
+                            response.layout.tabs, windowType, docId, isModal
+                        ))
+                    }
                 })
         });
     }
@@ -370,6 +372,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
                     dispatch(initDataSuccess(
                         {}, 'master', 'notfound', {saved: true}, {}, {}
                     ));
+                    dispatch(getWindowBreadcrumb(windowType));
                 });
             }
         }
@@ -639,15 +642,24 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         break;
                     case 'openReport':
                         dispatch(openFile(
-                            'process', action.contentType, id, 'print',
-                            action.filename
+                            'process', type, id, 'print', action.filename
                         ));
                         break;
                     case 'openDocument':
-                        dispatch(push(
-                            '/window/' + action.windowId +
-                            '/' + action.documentId
-                        ));
+                        if(action.modal) {
+                            dispatch(
+                                openModal(
+                                    '', action.windowId, 'window', null, null,
+                                    action.advanced ? action.advanced : false,
+                                    '', '', action.documentId
+                                )
+                            );
+                        } else {
+                            dispatch(push(
+                                '/window/' + action.windowId +
+                                '/' + action.documentId
+                            ));
+                        }
                         break;
                     case 'openIncludedView':
                         dispatch(setListIncludedView(

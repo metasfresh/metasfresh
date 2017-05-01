@@ -53,6 +53,17 @@ class Header extends Component {
 
     componentWillUnmount() {
         document.removeEventListener('scroll', this.handleScroll);
+        this.toggleScrollScope(false);
+    }
+
+    componentWillUpdate = (nextProps) => {
+        const {dropzoneFocused} = this.props;
+        if(
+            nextProps.dropzoneFocused !== dropzoneFocused &&
+            nextProps.dropzoneFocused
+        ){
+            this.closeOverlays();
+        }
     }
 
     getChildContext = () => {
@@ -226,10 +237,10 @@ class Header extends Component {
 
     render() {
         const {
-            docSummaryData, siteName, docNoData, docNo, docStatus,
+            docSummaryData, siteName, docNoData, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
             inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
-            selectedWindowType
+            selectedWindowType, notfound, docId
         } = this.props;
 
         const {
@@ -298,17 +309,11 @@ class Header extends Component {
                                 </div>
 
                                 <Breadcrumb
-                                    breadcrumb={breadcrumb}
-                                    windowType={windowType}
-                                    docNo={docNo}
-                                    docNoData={docNoData}
-                                    docSummaryData={docSummaryData}
-                                    dataId={dataId}
-                                    siteName={siteName}
-                                    menuOverlay={menuOverlay}
+                                    {...{breadcrumb, windowType, docSummaryData,
+                                        dataId, siteName, menuOverlay, docId,
+                                        isDocumentNotSaved}}
                                     handleMenuOverlay={this.handleMenuOverlay}
                                     openModal={this.openModal}
-                                    isDocumentNotSaved={isDocumentNotSaved}
                                 />
 
                             </div>
@@ -484,6 +489,7 @@ class Header extends Component {
                     entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
                     query={query}
+                    notfound={notfound}
                 />}
 
                 {showSidelist && isSideListShow && <SideList
@@ -494,10 +500,12 @@ class Header extends Component {
                     disableOnClickOutside={!showSidelist}
                     docId={dataId}
                     defaultTab={sideListTab}
+                    open={true}
                 />}
 
                 <GlobalContextShortcuts
                     handleSidelistToggle={(id) =>
+                        showSidelist &&
                         this.handleSidelistToggle(id, sideListTab)}
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :

@@ -73,7 +73,8 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch, includedView, selectedWindowType
+            inBackground, dispatch, includedView, selectedWindowType,
+            disconnectFromState
         } = props;
         const {page, sort, viewId, cachedSelection, layout} = this.state;
 
@@ -89,7 +90,7 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-                dispatch(selectTableItems([], null))
+                !disconnectFromState && dispatch(selectTableItems([], null))
                 this.fetchLayoutAndData();
             });
         }
@@ -133,7 +134,7 @@ class DocumentList extends Component {
         ) {
             if(!inBackground){
                 // In case of preventing cached selection restore
-                cachedSelection &&
+                cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
                     cachedSelection: undefined
@@ -250,7 +251,7 @@ class DocumentList extends Component {
 
     fetchLayoutAndData = (isNewFilter) => {
         const {
-            dispatch, windowType, type, setModalTitle
+            dispatch, windowType, type, setModalTitle, setNotFound
         } = this.props;
 
         const {
@@ -271,10 +272,14 @@ class DocumentList extends Component {
                 setModalTitle && setModalTitle(response.data.caption)
             })
         }).catch(() => {
-            this.mounted && this.setState({
-                layout: 'notfound',
-                data: 'notfound'
-            });
+            // We have to always update that fields to refresh that view!
+            // Check the shouldComponentUpdate method
+            this.setState({
+                data: 'notfound',
+                layout: 'notfound'
+            }, () => {
+                setNotFound && setNotFound(true);
+            })
         })
     }
     /*
@@ -312,7 +317,9 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery, refresh) => {
-        const {dispatch, windowType, updateUri} = this.props;
+        const {dispatch, windowType, updateUri, setNotFound} = this.props;
+
+        setNotFound && setNotFound(false);
 
         if(updateUri){
             id && updateUri('viewId', id);
@@ -418,14 +425,15 @@ class DocumentList extends Component {
         const {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
-            includedView, children, isIncluded, disablePaginationShortcuts
+            includedView, children, isIncluded, disablePaginationShortcuts,
+            notfound, disconnectFromState
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
-        if(layout === 'notfound'){
+        if(notfound || layout === 'notfound' || data === 'notfound'){
             return <BlankPage what="Document type"/>
         }
 
@@ -491,28 +499,29 @@ class DocumentList extends Component {
                             keyProperty="id"
                             onDoubleClick={(id) =>
                                     !isIncluded && this.redirectToDocument(id)}
-                            isModal={isModal}
-                            isIncluded={isIncluded}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
-                            page={page}
                             mainTable={true}
                             updateDocList={this.fetchLayoutAndData}
                             sort={this.sortData}
                             orderBy={data.orderBy}
                             tabIndex={0}
-                            open={open}
-                            closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
                             defaultSelected={cachedSelection ?
                                 cachedSelection : selected}
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
+                            disconnectFromState={disconnectFromState}
+                            isIncluded={isIncluded}
+                            isModal={isModal}
+                            disablePaginationShortcuts={
+                                disablePaginationShortcuts}
                             inBackground={inBackground}
-                            disablePaginationShortcuts=
-                                {disablePaginationShortcuts}
+                            closeOverlays={closeOverlays}
+                            open={open}
+                            page={page}
                         >
                             {layout.supportAttributes && !isIncluded &&
                                 !hasIncluded &&
