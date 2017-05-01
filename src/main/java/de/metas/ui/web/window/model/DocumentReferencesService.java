@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.filters.MQueryDocumentFilterHelper;
 
 /*
  * #%L
@@ -61,7 +62,7 @@ public class DocumentReferencesService
 			return ZoomInfoFactory.get()
 					.retrieveZoomInfos(zoomSource)
 					.stream()
-					.map(zoomInfo -> DocumentReference.of(zoomInfo))
+					.map(zoomInfo -> createDocumentReference(zoomInfo))
 					.collect(ImmutableList.toImmutableList());
 		});
 	}
@@ -77,8 +78,19 @@ public class DocumentReferencesService
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
 			
 			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toInt());
-			return DocumentReference.of(zoomInfo);
+			return createDocumentReference(zoomInfo);
 		});
+	}
+	
+	private static final DocumentReference createDocumentReference(final ZoomInfo zoomInfo)
+	{
+		return DocumentReference.builder()
+				.id(zoomInfo.getId())
+				.caption(zoomInfo.getLabel())
+				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
+				.documentsCount(zoomInfo.getRecordCount())
+				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery()))
+				.build();
 	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource

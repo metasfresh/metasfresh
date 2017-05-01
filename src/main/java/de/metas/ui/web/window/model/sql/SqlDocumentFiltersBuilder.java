@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.db.DBConstants;
-import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 
 import de.metas.printing.esb.base.util.Check;
@@ -13,6 +12,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import de.metas.ui.web.window.model.filters.DocumentFilterParam;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
 import lombok.NonNull;
 
 /*
@@ -148,7 +148,7 @@ public class SqlDocumentFiltersBuilder
 			{
 				return buildSqlWhereClause_Compare(columnSql, ">", sqlValue, sqlParams);
 			}
-			case GREATER_EQUAL:
+			case GREATER_OR_EQUAL:
 			{
 				return buildSqlWhereClause_Compare(columnSql, ">=", sqlValue, sqlParams);
 			}
@@ -156,7 +156,7 @@ public class SqlDocumentFiltersBuilder
 			{
 				return buildSqlWhereClause_Compare(columnSql, "<", sqlValue, sqlParams);
 			}
-			case LESS_EQUAL:
+			case LESS_OR_EQUAL:
 			{
 				return buildSqlWhereClause_Compare(columnSql, "<=", sqlValue, sqlParams);
 			}

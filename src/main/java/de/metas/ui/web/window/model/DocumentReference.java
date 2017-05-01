@@ -2,13 +2,13 @@ package de.metas.ui.web.window.model;
 
 import javax.validation.constraints.NotNull;
 
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 import groovy.transform.Immutable;
+import lombok.Builder;
 
 /*
  * #%L
@@ -35,26 +35,20 @@ import groovy.transform.Immutable;
 @Immutable
 public final class DocumentReference
 {
-	/* package */static DocumentReference of(final ZoomInfo zoomInfo)
-	{
-		return new DocumentReference(zoomInfo);
-	}
-
 	private final String id;
 	private final ITranslatableString caption;
-	private final int AD_Window_ID;
+	private final WindowId windowId;
 	private final int documentsCount;
 	private final DocumentFilter filter;
-
-	private DocumentReference(final ZoomInfo zoomInfo)
+	
+	@Builder
+	private DocumentReference(final String id, final ITranslatableString caption, final WindowId windowId, final int documentsCount, final DocumentFilter filter)
 	{
-		super();
-
-		id = zoomInfo.getId();
-		caption = zoomInfo.getLabel();
-		AD_Window_ID = zoomInfo.getAD_Window_ID();
-		documentsCount = zoomInfo.getRecordCount();
-		filter = DocumentFilter.of(zoomInfo.getQuery());
+		this.id = id;
+		this.caption = caption;
+		this.windowId = windowId;
+		this.documentsCount = documentsCount;
+		this.filter = filter;
 	}
 
 	@Override
@@ -63,7 +57,7 @@ public final class DocumentReference
 		return MoreObjects.toStringHelper(this)
 				.add("id", id)
 				.add("caption", caption)
-				.add("AD_Window_ID", AD_Window_ID)
+				.add("windowId", windowId)
 				.add("documentsCount", documentsCount)
 				.add("filter", filter)
 				.toString();
@@ -79,9 +73,9 @@ public final class DocumentReference
 		return caption.translate(adLanguage);
 	}
 
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
-		return AD_Window_ID;
+		return windowId;
 	}
 
 	public int getDocumentsCount()

@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.descriptor.filters;
 
 import org.adempiere.util.Check;
-import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
@@ -11,6 +10,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
