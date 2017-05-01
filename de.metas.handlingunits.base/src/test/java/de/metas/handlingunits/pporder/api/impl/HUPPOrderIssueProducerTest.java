@@ -10,12 +10,12 @@ package de.metas.handlingunits.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -62,7 +61,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HandlingunitsTestConfiguration;
+import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -74,7 +73,7 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { HandlingunitsTestConfiguration.class, LiberoTestConfiguration.class })
+@SpringBootTest(classes = HandlingUnitsConfiguration.class)
 @ActiveProfiles("test")
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
