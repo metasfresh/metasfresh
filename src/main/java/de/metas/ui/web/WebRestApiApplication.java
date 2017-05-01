@@ -110,7 +110,9 @@ public class WebRestApiApplication
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	@Bean
+	public static final String BEANNAME_Adempiere = "adempiere";
+
+	@Bean(BEANNAME_Adempiere)
 	public Adempiere adempiere(final WebRestApiContextProvider webuiContextProvider)
 	{
 		Env.setContextProvider(webuiContextProvider);
