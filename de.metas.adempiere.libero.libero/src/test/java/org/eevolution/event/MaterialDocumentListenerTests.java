@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -79,11 +78,7 @@ public class MaterialDocumentListenerTests
 
 	private I_C_DocType docType;
 
-	private I_AD_Workflow workflow;
-
 	private PPOrder ppOrderPojo;
-
-	private I_PP_Product_BOM productBom;
 
 	private I_C_OrderLine orderLine;
 
@@ -96,7 +91,7 @@ public class MaterialDocumentListenerTests
 		orderLine.setC_BPartner_ID(120);
 		save(orderLine);
 
-		workflow = newInstance(I_AD_Workflow.class);
+		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
 		workflow.setIsValid(true);
 		save(workflow);
 
@@ -104,7 +99,7 @@ public class MaterialDocumentListenerTests
 		bomMainProduct.setIsVerified(true);
 		save(bomMainProduct);
 
-		productBom = newInstance(I_PP_Product_BOM.class);
+		final I_PP_Product_BOM productBom = newInstance(I_PP_Product_BOM.class);
 		productBom.setM_Product_ID(bomMainProduct.getM_Product_ID());
 		save(productBom);
 
@@ -114,10 +109,10 @@ public class MaterialDocumentListenerTests
 		productPlanning.setIsDocComplete(true);
 		save(productPlanning);
 
-		org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		uom = newInstance(I_C_UOM.class);
 		save(uom);
 
 		warehouse = newInstance(I_M_Warehouse.class);
@@ -129,9 +124,9 @@ public class MaterialDocumentListenerTests
 
 		final I_PP_Product_BOMLine bomCoProductLine;
 		{
-			bomCoProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			bomCoProduct = newInstance(I_M_Product.class);
 			bomCoProduct.setIsVerified(true);
-			InterfaceWrapperHelper.save(bomCoProduct);
+			save(bomCoProduct);
 
 			bomCoProductLine = newInstance(I_PP_Product_BOMLine.class);
 			bomCoProductLine.setComponentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product);
@@ -142,9 +137,9 @@ public class MaterialDocumentListenerTests
 		}
 		final I_PP_Product_BOMLine bomComponentLine;
 		{
-			bomComponentProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			bomComponentProduct = newInstance(I_M_Product.class);
 			bomComponentProduct.setIsVerified(true);
-			InterfaceWrapperHelper.save(bomComponentProduct);
+			save(bomComponentProduct);
 
 			bomComponentLine = newInstance(I_PP_Product_BOMLine.class);
 			bomComponentLine.setComponentType(X_PP_Product_BOMLine.COMPONENTTYPE_Component);
@@ -181,11 +176,18 @@ public class MaterialDocumentListenerTests
 	private void verifyPPOrder(final I_PP_Order ppOrder)
 	{
 		assertThat(ppOrder, notNullValue());
+		assertThat(ppOrder.getAD_Org_ID(), is(org.getAD_Org_ID()));
 		assertThat(ppOrder.getM_Product_ID(), is(productPlanning.getPP_Product_BOM().getM_Product_ID()));
 		assertThat(ppOrder.getPP_Product_BOM_ID(), is(productPlanning.getPP_Product_BOM_ID()));
 		assertThat(ppOrder.getPP_Product_Planning_ID(), is(productPlanning.getPP_Product_Planning_ID()));
 		assertThat(ppOrder.getC_OrderLine_ID(), is(orderLine.getC_OrderLine_ID()));
 		assertThat(ppOrder.getC_BPartner_ID(), is(120));
+
+		assertThat(ppOrder.getC_UOM_ID(), is(uom.getC_UOM_ID()));
+		assertThat(ppOrder.getM_Product_ID(), is(bomMainProduct.getM_Product_ID()));
+		assertThat(ppOrder.getM_Warehouse_ID(), is(warehouse.getM_Warehouse_ID()));
+		assertThat(ppOrder.getC_DocType_ID(), is(docType.getC_DocType_ID()));
+		assertThat(ppOrder.getAD_Workflow_ID(), is(productPlanning.getAD_Workflow_ID()));
 
 		if (productPlanning.isDocComplete())
 		{
