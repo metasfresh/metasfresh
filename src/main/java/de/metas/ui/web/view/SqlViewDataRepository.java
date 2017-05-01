@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -32,11 +31,12 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
-import de.metas.ui.web.view.descriptor.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
+import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 import lombok.NonNull;
 
 /*
@@ -91,14 +91,6 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(final ViewEvaluationCtx viewEvalCtx)
-	{
-		final String sqlCreateFromViewId = sqlBindings.getSqlCreateSelectionFromSelection();
-		final Map<String, String> sqlOrderBysByFieldName = sqlBindings.getSqlOrderBysIndexedByFieldName(viewEvalCtx);
-		return new SqlViewRowIdsOrderedSelectionFactory(sqlCreateFromViewId, sqlOrderBysByFieldName);
-	}
-
-	@Override
 	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
 	{
 		final ViewId viewId = ViewId.random(windowId);
@@ -126,6 +118,32 @@ class SqlViewDataRepository implements IViewDataRepository
 				.setSize(rowsCount)
 				.setOrderBys(sqlBindings.getDefaultOrderBys())
 				.setQueryLimit(queryLimit)
+				.build();
+	}
+
+	@Override
+	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	{
+		final WindowId windowId = fromSelection.getWindowId();
+		final String fromSelectionId = fromSelection.getSelectionId();
+
+		final ViewId newViewId = ViewId.random(windowId);
+		final String newSelectionId = newViewId.getViewId();
+
+		final String sqlOrderBys = SqlDocumentOrderByBuilder.newInstance(fieldName -> sqlBindings.getFieldByFieldName(fieldName).getSqlOrderBy())
+				.buildSqlOrderBy(orderBys)
+				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
+
+		final String sqlCreateFromViewId = sqlBindings.getSqlCreateSelectionFromSelection();
+		final String sqlFinal = sqlCreateFromViewId.replace(SqlViewBinding.PLACEHOLDER_OrderBy, sqlOrderBys);
+
+		final int rowsCount = DB.executeUpdateEx(sqlFinal, new Object[] { newSelectionId, fromSelectionId }, ITrx.TRXNAME_ThreadInherited);
+
+		return ViewRowIdsOrderedSelection.builder()
+				.setViewId(newViewId)
+				.setSize(rowsCount)
+				.setOrderBys(orderBys)
+				.setQueryLimit(fromSelection.getQueryLimit())
 				.build();
 	}
 
@@ -213,7 +231,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		return viewRowBuilder.build();
 	}
-	
+
 	@Override
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{

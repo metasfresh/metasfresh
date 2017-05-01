@@ -74,7 +74,7 @@ class DefaultView implements IView
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final ViewId parentViewId;
 
-	private final transient IViewRowIdsOrderedSelectionFactory orderedSelectionFactory;
+	// private final transient IViewRowIdsOrderedSelectionFactory orderedSelectionFactory;
 	private final transient ViewRowIdsOrderedSelection defaultSelection;
 	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
@@ -109,7 +109,7 @@ class DefaultView implements IView
 		// Selection
 		{
 			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
-			orderedSelectionFactory = viewDataRepository.createOrderedSelectionFactory(evalCtx);
+			// orderedSelectionFactory = viewDataRepository.createOrderedSelectionFactory(evalCtx);
 
 			defaultSelection = viewDataRepository.createOrderedSelection(
 					evalCtx //
@@ -266,7 +266,7 @@ class DefaultView implements IView
 			return defaultSelection;
 		}
 
-		return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> orderedSelectionFactory.createFromView(defaultSelection, orderBysImmutable));
+		return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> viewDataRepository.createOrderedSelectionFromSelection(ViewEvaluationCtx.of(Env.getCtx()), defaultSelection, orderBysImmutable));
 	}
 
 	@Override

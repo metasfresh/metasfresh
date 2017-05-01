@@ -81,6 +81,7 @@ public class ViewEvaluationCtx
 					.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
 					.build()
 					// Fallback to global context
+					// TODO: consider dropping the fallback because AFAIK only AD_Language and PermissionsKey is required
 					.andComposeWith(Evaluatees.ofCtx(ctx));
 			return evaluatee;
 		}

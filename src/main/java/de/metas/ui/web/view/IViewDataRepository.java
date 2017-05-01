@@ -8,6 +8,7 @@ import org.adempiere.exceptions.DBException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
@@ -53,7 +54,7 @@ interface IViewDataRepository
 
 	<T> List<T> retrieveModelsByIds(ViewId viewId, Collection<DocumentId> rowIds, Class<T> modelClass);
 
-	IViewRowIdsOrderedSelectionFactory createOrderedSelectionFactory(ViewEvaluationCtx viewEvalCtx);
-
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters);
+
+	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 }

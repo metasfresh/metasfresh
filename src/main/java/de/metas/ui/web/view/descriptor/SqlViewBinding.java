@@ -287,7 +287,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	{
 		return viewFilterDescriptors;
 	}
-	
+
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return defaultOrderBys;
@@ -307,7 +307,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			final String fieldName = fieldBinding.getFieldName();
 			sqlOrderBysIndexedByFieldName.put(fieldName, fieldOrderBy);
 		}
-		
+
 		return sqlOrderBysIndexedByFieldName.build();
 	}
 
@@ -344,7 +344,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		return sqlBuilder.toString();
 	}
-	
+
 	public String getSqlCreateSelectionFrom( //
 			final List<Object> sqlParams //
 			, final ViewEvaluationCtx viewEvalCtx //
@@ -491,7 +491,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		{
 			return _fieldsByFieldName;
 		}
-		
+
 		public final Builder addField(SqlViewRowFieldBinding field)
 		{
 			Check.assumeNotNull(field, "Parameter field is not null");
