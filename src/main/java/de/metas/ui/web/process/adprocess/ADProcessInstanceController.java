@@ -34,6 +34,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.IProcessInstanceController;
@@ -43,9 +44,9 @@ import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.IDocumentViewSelection;
-import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.ViewCreateRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -102,7 +103,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	private final Document parameters;
 	private final Object processClassInstance;
 
-	private final IDocumentViewsRepository viewsRepo;
+	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
 	private final Set<DocumentId> viewSelectedDocumentIds;
 
@@ -266,7 +267,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return executionResult;
 	}
 
-	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, IDocumentViewsRepository viewsRepo)
+	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, IViewsRepository viewsRepo)
 	{
 		//
 		// Create the process info and execute the process synchronously
@@ -318,21 +319,32 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				}
 				//
 				// View
-				else if (recordsToOpen != null && recordsToOpen.isGridView())
+				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 				{
-					final DocumentViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
-					final IDocumentViewSelection view = viewsRepo.createView(viewRequest);
+					final ViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
+					final IView view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
 							.viewId(view.getViewId())
 							.build());
 				}
 				//
 				// Single document
-				else if (recordsToOpen != null && !recordsToOpen.isGridView())
+				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocument)
 				{
 					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
 					resultBuilder.setAction(OpenSingleDocument.builder()
 							.documentPath(documentPath)
+							.modal(false)
+							.build());
+				}
+				//
+				// Single document
+				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocumentModal)
+				{
+					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
+					resultBuilder.setAction(OpenSingleDocument.builder()
+							.documentPath(documentPath)
+							.modal(true)
 							.build());
 				}
 			}
@@ -377,7 +389,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return reportFile;
 	}
 
-	private static final DocumentViewCreateRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
+	private static final ViewCreateRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
 	{
 		final List<TableRecordReference> recordRefs = recordsToOpen.getRecords();
 		if (recordRefs.isEmpty())
@@ -389,12 +401,12 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		//
 		// Create view create request builders from current records
-		final Map<WindowId, DocumentViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
+		final Map<WindowId, ViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
 			final int recordWindowIdInt = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
 			final WindowId recordWindowId = WindowId.of(recordWindowIdInt);
-			final DocumentViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> DocumentViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
+			final ViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> ViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
 		}
@@ -410,7 +422,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		{
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
-		final DocumentViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
+		final ViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
 				.setReferencingDocumentPaths(extractReferencingDocumentPaths(processInfo))
 				.build();
 		return viewRequest;
@@ -526,7 +538,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		private DocumentId instanceId;
 		private Document parameters;
 
-		private IDocumentViewsRepository viewsRepo;
+		private IViewsRepository viewsRepo;
 		private ViewId viewId;
 		private Set<DocumentId> viewSelectedDocumentIds;
 		private Object processClassInstance;
@@ -559,7 +571,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			return this;
 		}
 
-		public Builder setViewsRepo(final IDocumentViewsRepository viewsRepo)
+		public Builder setViewsRepo(final IViewsRepository viewsRepo)
 		{
 			this.viewsRepo = viewsRepo;
 			return this;

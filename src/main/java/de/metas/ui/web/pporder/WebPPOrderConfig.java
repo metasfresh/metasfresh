@@ -12,7 +12,6 @@ import com.google.common.base.Preconditions;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
@@ -54,7 +53,7 @@ public class WebPPOrderConfig
 		{
 			final Function<Class<?>, RelatedProcessDescriptor.Builder> newDescriptorBuilder = (processClass) -> {
 				final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
-				Preconditions.checkArgument(processId > 0, "No AD_Process_ID foudn for %s", processClass);
+				Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
 
 				return RelatedProcessDescriptor.builder()
 						.processId(processId)
@@ -64,24 +63,9 @@ public class WebPPOrderConfig
 			};
 			//
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class).build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Planning.class).build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Review.class).build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Complete.class).build());
 		}
-
-		//
-		// HU view actions
-		{
-			final Function<Class<?>, RelatedProcessDescriptor.Builder> newDescriptorBuilder = (processClass) -> {
-				final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
-				Preconditions.checkArgument(processId > 0, "No AD_Process_ID foudn for %s", processClass);
-
-				return RelatedProcessDescriptor.builder()
-						.processId(processId)
-						.windowId(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt())
-						.anyTable()
-						.webuiQuickAction(true);
-			};
-			//
-			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_M_HU_IssueSelectedHU.class).build());
-		}
-
 	}
 }

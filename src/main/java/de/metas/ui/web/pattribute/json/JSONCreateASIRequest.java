@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 
 /*
@@ -34,7 +35,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONCreateASIRequest implements Serializable
 {
 	@JsonProperty("templateId")
@@ -71,13 +72,14 @@ public final class JSONCreateASIRequest implements Serializable
 	{
 		return templateId;
 	}
-
-	public JSONDocumentPath getSource()
+	
+	public DocumentPath getDocumentPath()
 	{
 		if(source == null)
 		{
 			new IllegalStateException("source is not set for " + this);
 		}
-		return source;
+		
+		return source.toSingleDocumentPath();
 	}
 }

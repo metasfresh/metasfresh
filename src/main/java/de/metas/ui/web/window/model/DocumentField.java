@@ -12,9 +12,11 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -70,7 +72,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _validStatus = DocumentValidStatus.fieldInitiallyInvalid();
+	private DocumentValidStatus _validStatus;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -165,12 +167,12 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	 * @param initialValue
 	 */
 	@Override
-	public void setInitialValue(final Object initialValue, final FieldInitializationMode mode)
+	public void setInitialValue(final Object initialValue)
 	{
 		final Object initialValueConv = convertToValueClassAndCorrect(initialValue);
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("setInitialValue: {} = {} ({})", getFieldName(), initialValueConv, mode);
+			logger.trace("setInitialValue: {} = {}", getFieldName(), initialValueConv);
 		}
 		_initialValue = initialValueConv;
 
@@ -225,9 +227,29 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	@Override
-	public Object getValueAsJsonObject()
+	public Object getValueAsJsonObject(final String adLanguage)
 	{
-		return Values.valueToJsonObject(_value);
+		Object value = getValue();
+		if(value == null)
+		{
+			return null;
+		}
+		
+		//
+		// If we are dealing with a lookup value, make, sure it's translated (see https://github.com/metasfresh/metasfresh-webui-api/issues/311 )
+		final LookupDataSource lookupDataSource = getLookupDataSource();
+		if(lookupDataSource != null && value instanceof LookupValue)
+		{
+			final LookupValue lookupValue = (LookupValue)value;
+			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
+			if(!displayNameTrl.isTranslatedTo(adLanguage))
+			{
+				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
+				value = lookupValueNew;
+			}
+		}
+		
+		return Values.valueToJsonObject(value);
 	}
 
 	@Override
@@ -462,7 +484,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		// Consider virtual fields as valid because there is nothing we can do about them
 		if (isVirtualField())
 		{
-			return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
+			return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 		}
 
 		// Check mandatory constraint
@@ -471,7 +493,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 			return DocumentValidStatus.invalidFieldMandatoryNotFilled(getFieldName(), isInitialValue());
 		}
 
-		return DocumentValidStatus.invalidField(getFieldName(), isInitialValue());
+		return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 	}
 
 	/**

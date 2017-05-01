@@ -52,7 +52,7 @@ public final class DocumentValidStatus
 		return STATE_Valid;
 	}
 
-	public static final DocumentValidStatus invalidField(final String fieldName, final boolean isInitialValue)
+	public static final DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
 	{
 		return new DocumentValidStatus(VALID_Yes, REASON_Null, fieldName, isInitialValue);
 	}

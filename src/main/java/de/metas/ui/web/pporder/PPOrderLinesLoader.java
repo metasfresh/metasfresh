@@ -1,35 +1,44 @@
 package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
+import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.ui.web.handlingunits.HUDocumentView;
-import de.metas.ui.web.handlingunits.HUDocumentViewLoader;
-import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
+import de.metas.ui.web.handlingunits.HUEditorViewRepository;
+import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
+import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
+import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.Builder;
 
 /*
  * #%L
@@ -55,179 +64,224 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public class PPOrderLinesLoader
 {
-	public static final PPOrderLinesLoader of(final DocumentViewCreateRequest request)
+	public static final PPOrderLinesLoaderBuilder builder(final WindowId windowId)
 	{
-		return new PPOrderLinesLoader(request);
+		return new PPOrderLinesLoaderBuilder().windowId(windowId);
 	}
 
+	//
+	// Services
 	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final transient HUDocumentViewLoader _huViewRecordLoader;
+	//
+	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private int _ppOrderId;
+	//
+	private final WindowId windowId;
+	private final transient HUEditorViewRepository huEditorRepo;
+	private final HUEditorRowAttributesProvider huAttributesProvider;
+	private final ASIViewRowAttributesProvider asiAttributesProvider;
 
-	public PPOrderLinesLoader(final DocumentViewCreateRequest request)
+	@Builder
+	public PPOrderLinesLoader(final WindowId windowId, final ASIViewRowAttributesProvider asiAttributesProvider)
 	{
-		_huViewRecordLoader = HUDocumentViewLoader.of(request, I_PP_Order.Table_Name);
+		this.windowId = windowId;
+		
+		huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
+		huEditorRepo = HUEditorViewRepository.builder()
+				.windowId(windowId)
+				.referencingTableName(I_PP_Order.Table_Name)
+				.attributesProvider(huAttributesProvider)
+				.build();
 
-		final Set<Integer> filterOnlyIds = request.getFilterOnlyIds();
-		final int ppOrderId = ListUtils.singleElement(filterOnlyIds);
-		Preconditions.checkArgument(ppOrderId > 0, "No manufacturing order ID found in %s", request);
-		this._ppOrderId = ppOrderId;
+
+		this.asiAttributesProvider = asiAttributesProvider;
 	}
-
-	int getPP_Order_ID()
-	{
-		return _ppOrderId;
-	}
-
-	private HUDocumentViewLoader getHUViewRecordLoader()
-	{
-		return _huViewRecordLoader;
-	}
-
+	
 	/**
-	 * Loads {@link PPOrderLineRow}s.
-	 * 
+	 * Loads {@link PPOrderLinesViewData}s.
+	 *
 	 * @param viewId viewId to be set to newly created {@link PPOrderLineRow}s.
 	 */
-	public List<PPOrderLineRow> retrieveRecords(final ViewId viewId)
+	public PPOrderLinesViewData retrieveData(final int ppOrderId)
 	{
-		final int ppOrderId = getPP_Order_ID();
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_None);
+		final String ppOrder_planningStatus = ppOrder.getPlanningStatus();
+		final boolean readonly = X_PP_Order.PLANNINGSTATUS_Complete.equals(ppOrder_planningStatus);
 
+		final int mainProductBOMLineId = 0;
 		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
-				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> Util.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), 0)));
+				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> Util.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), mainProductBOMLineId)));
 
 		final ImmutableList.Builder<PPOrderLineRow> records = ImmutableList.builder();
 
 		// Main product
-		records.add(createForMainProduct(viewId, ppOrder, ppOrderQtysByBOMLineId.get(0)));
+		records.add(createForMainProduct(ppOrder, readonly, ppOrderQtysByBOMLineId.get(mainProductBOMLineId)));
 
 		//
 		// BOM lines
 		ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
-				.map(ppOrderBOMLine -> createForBOMLine(viewId, ppOrderBOMLine, ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID())))
+				.map(ppOrderBOMLine -> createForBOMLine(ppOrder, ppOrderBOMLine, readonly, ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID())))
+				.sorted(Comparator.<PPOrderLineRow> comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
+						.thenComparing(row -> row.getPP_Order_BOMLine_ID())) // BOM lines order
 				.forEach(records::add);
 
-		return records.build();
+		return new PPOrderLinesViewData(ppOrder_planningStatus, records.build());
 	}
 
-	private PPOrderLineRow createForMainProduct(final ViewId viewId, final I_PP_Order ppOrder, final List<I_PP_Order_Qty> ppOrderQtys)
+	private static final String extractPackingInfoString(final I_M_HU_LUTU_Configuration lutuConfig)
 	{
-		final DocumentId documentId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
+		if (lutuConfig == null)
+		{
+			return null;
+		}
 
-		final BigDecimal qty = ppOrder.getQtyDelivered();
-		final BigDecimal qtyPlanTotal = ppOrder.getQtyOrdered();
-		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
+		final IHUPackingInfo packingInfo = HUPackingInfos.of(lutuConfig);
+		return HUPackingInfoFormatter.newInstance()
+				.setShowLU(false)
+				.format(packingInfo);
+	}
 
-		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
-				.setDocumentId(documentId)
+	private final Supplier<IViewRowAttributes> createASIAttributesSupplier(final DocumentId documentId, final int asiId)
+	{
+		if (asiId > 0)
+		{
+			return () -> asiAttributesProvider.getAttributes(documentId, DocumentId.of(asiId));
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private PPOrderLineRow createForMainProduct(final I_PP_Order ppOrder, final boolean readonly, final List<I_PP_Order_Qty> ppOrderQtys)
+	{
+		final DocumentId documentId = DocumentId.of(org.eevolution.model.I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
+
+		final BigDecimal qtyPlan = ppOrder.getQtyOrdered();
+		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
+
+		return PPOrderLineRow.builder(windowId)
+				.setRowId(documentId)
 				.ppOrder(ppOrder.getPP_Order_ID())
 				.setType(PPOrderLineType.MainProduct)
+				.setProcessed(readonly)
 				//
 				.setProduct(createProductLookupValue(ppOrder.getM_Product()))
-				.setPackingInfo(null)
+				.setPackingInfo(extractPackingInfoString(lutuConfig))
 				.setUOM(createUOMLookupValue(ppOrder.getC_UOM()))
-				.setQty(qty)
 				.setQtyPlan(qtyPlan)
-		//
-		;
-
-		ppOrderQtys.stream()
-				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
-				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
-
-		return builder.build();
+				.setQtyAsSumOfIncludedQtys()
+				.setAttributesSupplier(createASIAttributesSupplier(documentId, ppOrder.getM_AttributeSetInstance_ID()))
+				//
+				.addIncludedDocumentFrom(ppOrderQtys, ppOrderQty -> createForQty(ppOrderQty, readonly))
+				//
+				.build();
 	}
 
-	private PPOrderLineRow createForBOMLine(final ViewId viewId, final I_PP_Order_BOMLine ppOrderBOMLine, final List<I_PP_Order_Qty> ppOrderQtys)
+	private PPOrderLineRow createForBOMLine(final I_PP_Order ppOrder, final I_PP_Order_BOMLine ppOrderBOMLine, final boolean readonly, final List<I_PP_Order_Qty> ppOrderQtys)
 	{
-		final DocumentId documentId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBOMLine.getPP_Order_BOMLine_ID());
+		final DocumentId documentId = DocumentId.of(org.eevolution.model.I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBOMLine.getPP_Order_BOMLine_ID());
 
 		final PPOrderLineType lineType;
+		final String packingInfo;
+		final BigDecimal qtyPlan;
 		final String componentType = ppOrderBOMLine.getComponentType();
 		if (X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
 				|| X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType))
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
+			final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine).getCreateLUTUConfiguration();
+			packingInfo = extractPackingInfoString(lutuConfig);
+
+			qtyPlan = ppOrderBOMBL.adjustCoProductQty(ppOrderBOMLine.getQtyRequiered());
 		}
 		else
 		{
 			lineType = PPOrderLineType.BOMLine_Component;
+			packingInfo = null; // we don't know the packing info for what will be issued.
+
+			qtyPlan = ppOrderBOMLine.getQtyRequiered();
 		}
 
-		final BigDecimal qty = ppOrderBOMLine.getQtyDeliveredActual();
-		final BigDecimal qtyPlanTotal = ppOrderBOMLine.getQtyRequiered();
-		final BigDecimal qtyPlan = qtyPlanTotal.subtract(qty);
-
-		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
-				.setDocumentId(documentId)
+		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(windowId)
+				.setRowId(documentId)
 				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
+				.setProcessed(readonly)
 				//
-				.setBOMType(ppOrderBOMLine.getComponentType())
 				.setProduct(createProductLookupValue(ppOrderBOMLine.getM_Product()))
+				.setPackingInfo(packingInfo)
 				.setUOM(createUOMLookupValue(ppOrderBOMLine.getC_UOM()))
-				.setQty(qty)
-				.setQtyPlan(qtyPlan);
-		
+				.setQtyPlan(qtyPlan)
+				.setQtyAsSumOfIncludedQtys()
+				.setAttributesSupplier(createASIAttributesSupplier(documentId, ppOrderBOMLine.getM_AttributeSetInstance_ID()));
+
 		ppOrderQtys.stream()
-				.map(ppOrderQty -> createForQty(viewId, ppOrderQty))
+				.map(ppOrderQty -> createForQty(ppOrderQty, readonly))
 				.forEach(huViewRecord -> builder.addIncludedDocument(huViewRecord));
 
 		return builder.build();
 	}
 
-	private PPOrderLineRow createForQty(final ViewId viewId, final I_PP_Order_Qty ppOrderQty)
+	private PPOrderLineRow createForQty(final I_PP_Order_Qty ppOrderQty, final boolean readonly)
 	{
-		final HUDocumentView huViewRecord = getHUViewRecordLoader().retrieveForHUId(ppOrderQty.getM_HU_ID());
-		return createForHUViewRecordRecursivelly(viewId, ppOrderQty, huViewRecord);
+		final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(ppOrderQty.getM_HU_ID());
+		final HUEditorRow parentHUViewRecord = null;
+		return createForHUViewRecordRecursivelly(ppOrderQty, huEditorRow, parentHUViewRecord, readonly);
 	}
 
-	private PPOrderLineRow createForHUViewRecordRecursivelly(final ViewId viewId, final I_PP_Order_Qty ppOrderQty, final HUDocumentView huViewRecord)
+	private PPOrderLineRow createForHUViewRecordRecursivelly(final I_PP_Order_Qty ppOrderQty, final HUEditorRow huEditorRow, final HUEditorRow parentHUEditorRow, final boolean readonly)
 	{
-		final PPOrderLineType type = PPOrderLineType.ofHUDocumentViewType(huViewRecord.getType());
+		final PPOrderLineType type = PPOrderLineType.ofHUEditorRowType(huEditorRow.getType());
 
+		//
+		// Get HU's quantity.
 		final BigDecimal qty;
-		final BigDecimal qtyPlan;
-		if (ppOrderQty.isProcessed())
+		final JSONLookupValue qtyUOM;
+		if (huEditorRow.isHUStatusDestroyed())
 		{
-			qtyPlan = BigDecimal.ZERO;
-			qty = huViewRecord.getQtyCU();
+			// Top level HU which was already destroyed (i.e. it was already issued & processed)
+			// => get the Qty/UOM from PP_Order_Qty because on HU level, for sure it will be ZERO.
+			if (parentHUEditorRow == null)
+			{
+				qty = ppOrderQty.getQty();
+				qtyUOM = createUOMLookupValue(ppOrderQty.getC_UOM());
+			}
+			// Included HU which was already destroyed
+			// => we don't know the Qty
+			else
+			{
+				qty = null;
+				qtyUOM = huEditorRow.getUOM();
+			}
 		}
 		else
 		{
-			qtyPlan = huViewRecord.getQtyCU();
-			qty = BigDecimal.ZERO;
+			qty = huEditorRow.getQtyCU();
+			qtyUOM = huEditorRow.getUOM();
 		}
 
-		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewId)
-				.setDocumentId(huViewRecord.getDocumentId())
-				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
-				.processed(ppOrderQty.isProcessed())
-				.setType(type)
-				.setAttributesSupplier(huViewRecord.getAttributesSupplier())
-				//
-				.setCode(huViewRecord.getValue())
-				.setBOMType(null)
-				.setHUType(huViewRecord.getType())
-				.setProduct(huViewRecord.getProduct())
-				.setPackingInfo(huViewRecord.getPackingInfo())
-				.setUOM(huViewRecord.getUOM())
-				.setQty(qty)
-				.setQtyPlan(qtyPlan)
-				.setHUStatusInfo(huViewRecord.getHUStatusDisplayName())
 		//
-		;
-
-		huViewRecord.getIncludedDocuments()
-				.stream()
-				.map(includedHUViewRecord -> createForHUViewRecordRecursivelly(viewId, ppOrderQty, includedHUViewRecord))
-				.forEach(builder::addIncludedDocument);
-
-		return builder.build();
+		return PPOrderLineRow.builder(windowId)
+				.setRowId(huEditorRow.getId())
+				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
+				.processed(readonly || ppOrderQty.isProcessed())
+				.setType(type)
+				.setAttributesSupplier(huEditorRow.getAttributesSupplier())
+				//
+				.setCode(huEditorRow.getValue())
+				.setProduct(huEditorRow.getProduct())
+				.setPackingInfo(huEditorRow.getPackingInfo())
+				.setUOM(qtyUOM)
+				.setQtyPlan(null) // always null
+				.setQty(qty)
+				//
+				.addIncludedDocumentFrom(huEditorRow.getIncludedRows(), includedHUEditorRow -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUEditorRow, huEditorRow, readonly))
+				//
+				.build();
 	}
 
 	private static JSONLookupValue createProductLookupValue(final I_M_Product product)

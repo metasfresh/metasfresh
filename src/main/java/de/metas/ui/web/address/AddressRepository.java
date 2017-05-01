@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Location;
+import de.metas.adempiere.service.ILocationBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -162,7 +163,7 @@ public class AddressRepository
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.onAfterCommit(() -> removeAddressDocumentById(addressDocId));
 
-		final String locationStr = locationRecord.toString(); // TODO
+		final String locationStr = Services.get(ILocationBL.class).mkAddress(locationRecord);
 		return IntegerLookupValue.of(locationRecord.getC_Location_ID(), locationStr);
 	}
 

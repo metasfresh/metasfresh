@@ -2,6 +2,7 @@ package de.metas.ui.web.process.view;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +20,7 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -56,7 +57,7 @@ import lombok.ToString;
 @ToString
 /* package */final class ViewActionInstance implements IProcessInstanceController
 {
-	public static final ViewActionInstance of(final DocumentId instanceId, final IDocumentViewSelection view, final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
+	public static final ViewActionInstance of(final DocumentId instanceId, final IView view, final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
 	{
 		return new ViewActionInstance(instanceId, view, viewActionDescriptor, request);
 	}
@@ -65,7 +66,7 @@ import lombok.ToString;
 
 	private final ProcessId processId;
 	private final DocumentId instanceId;
-	private final WeakReference<IDocumentViewSelection> viewRef;
+	private final WeakReference<IView> viewRef;
 	private final ViewActionDescriptor viewActionDescriptor;
 	private final Set<DocumentId> selectedDocumentIds;
 
@@ -74,7 +75,7 @@ import lombok.ToString;
 	@Nullable
 	private final Document parametersDocument;
 
-	private ViewActionInstance(@NonNull final DocumentId instanceId, @NonNull final IDocumentViewSelection view, @NonNull final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
+	private ViewActionInstance(@NonNull final DocumentId instanceId, @NonNull final IView view, @NonNull final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
 	{
 		processId = ViewProcessInstancesRepository.buildProcessId(view.getViewId(), viewActionDescriptor.getActionId());
 		this.instanceId = instanceId;
@@ -95,9 +96,9 @@ import lombok.ToString;
 		}
 	}
 
-	private IDocumentViewSelection getView()
+	private IView getView()
 	{
-		final IDocumentViewSelection view = viewRef.get();
+		final IView view = viewRef.get();
 		if (view == null)
 		{
 			throw new AdempiereException("view is no longer available for " + this);
@@ -170,12 +171,13 @@ import lombok.ToString;
 
 		//
 		// Execute view action's method
-		final IDocumentViewSelection view = getView();
+		final IView view = getView();
 		final Method viewActionMethod = viewActionDescriptor.getViewActionMethod();
-		final Object[] viewActionParams = viewActionDescriptor.extractMethodArguments(parametersDocument, selectedDocumentIds);
+		final Object[] viewActionParams = viewActionDescriptor.extractMethodArguments(view, parametersDocument, selectedDocumentIds);
 		try
 		{
-			final Object resultActionObj = viewActionMethod.invoke(view, viewActionParams);
+			final Object targetObject = Modifier.isStatic(viewActionMethod.getModifiers()) ? null : view;
+			final Object resultActionObj = viewActionMethod.invoke(targetObject, viewActionParams);
 			final ResultAction resultAction = viewActionDescriptor.convertReturnType(resultActionObj);
 
 			final ProcessInstanceResult result = ProcessInstanceResult.builder(instanceId)

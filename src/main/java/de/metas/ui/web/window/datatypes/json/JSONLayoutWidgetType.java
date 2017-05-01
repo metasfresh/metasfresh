@@ -32,7 +32,7 @@ import io.swagger.annotations.ApiModel;
 @ApiModel("widget-type")
 public enum JSONLayoutWidgetType
 {
-	Text, LongText
+	Text, LongText, Password
 
 	, Date, Time, DateTime
 
@@ -66,6 +66,7 @@ public enum JSONLayoutWidgetType
 	private static final Map<DocumentFieldWidgetType, JSONLayoutWidgetType> widgetType2json = ImmutableMap.<DocumentFieldWidgetType, JSONLayoutWidgetType> builder()
 			.put(DocumentFieldWidgetType.Text, JSONLayoutWidgetType.Text)
 			.put(DocumentFieldWidgetType.LongText, JSONLayoutWidgetType.LongText)
+			.put(DocumentFieldWidgetType.Password, JSONLayoutWidgetType.Password)
 			.put(DocumentFieldWidgetType.Date, JSONLayoutWidgetType.Date)
 			.put(DocumentFieldWidgetType.Time, JSONLayoutWidgetType.Time)
 			.put(DocumentFieldWidgetType.DateTime, JSONLayoutWidgetType.DateTime)

@@ -74,33 +74,33 @@ public class ASIRestController
 	}
 
 	@GetMapping("/{asiDocId}/layout")
-	public JSONASILayout getLayout(@PathVariable("asiDocId") final int asiDocIdInt)
+	public JSONASILayout getLayout(@PathVariable("asiDocId") final String asiDocIdStr)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		final ASILayout asiLayout = asiRepo.getLayout(asiDocId);
 		return JSONASILayout.of(asiLayout, newJsonOpts());
 	}
 
 	@GetMapping("/{asiDocId}")
-	public JSONDocument getASIDocument(@PathVariable("asiDocId") final int asiDocIdInt)
+	public JSONDocument getASIDocument(@PathVariable("asiDocId") final String asiDocIdStr)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONDocument(newJsonOpts()));
 	}
 
 	@PatchMapping("/{asiDocId}")
 	public List<JSONDocument> processChanges(
-			@PathVariable("asiDocId") final int asiDocIdInt //
+			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 
 		return Execution.callInNewExecution("processChanges", () -> {
 			asiRepo.processASIDocumentChanges(asiDocId, events);
@@ -110,37 +110,37 @@ public class ASIRestController
 
 	@GetMapping("/{asiDocId}/attribute/{attributeName}/typeahead")
 	public JSONLookupValuesList getAttributeTypeahead(
-			@PathVariable("asiDocId") final int asiDocIdInt //
+			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValuesForQuery(attributeName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
 	@GetMapping("/{asiDocId}/attribute/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
-			@PathVariable("asiDocId") final int asiDocIdInt //
+			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @PathVariable("attributeName") final String attributeName //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValues(attributeName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
 	@PostMapping(value = "/{asiDocId}/complete")
-	public JSONLookupValue complete(@PathVariable("asiDocId") final int asiDocIdInt)
+	public JSONLookupValue complete(@PathVariable("asiDocId") final String asiDocIdStr)
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 
 		return Execution.callInNewExecution("complete", () -> asiRepo.complete(asiDocId))
 				.transform(JSONLookupValue::ofLookupValue);

@@ -3,12 +3,15 @@ package de.metas.ui.web.pporder;
 import java.util.Collection;
 
 import org.compiere.util.CCache;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.ui.web.view.DocumentViewCreateRequest;
-import de.metas.ui.web.view.DocumentViewFactory;
-import de.metas.ui.web.view.IDocumentViewSelectionFactory;
+import de.metas.ui.web.pattribute.ASIRepository;
+import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.ViewCreateRequest;
+import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -39,24 +42,29 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  * #L%
  */
 
-@DocumentViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
-public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
+@ViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
+public class PPOrderLinesViewFactory implements IViewFactory
 {
-	private final transient CCache<WindowId, DocumentViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
+	@Autowired
+	private ASIRepository asiRepository;
+
+	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	@Override
-	public PPOrderLinesView createView(final DocumentViewCreateRequest request)
+	public PPOrderLinesView createView(final ViewCreateRequest request)
 	{
 		final ViewId viewId = ViewId.random(request.getWindowId());
+		
 		return PPOrderLinesView.builder()
-				.setParentViewId(request.getParentViewId())
-				.setViewId(viewId)
-				.setRecords(PPOrderLinesLoader.of(request))
+				.parentViewId(request.getParentViewId())
+				.viewId(viewId)
+				.ppOrderId(request.getSingleFilterOnlyId())
+				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
 				.build();
 	}
 
 	@Override
-	public DocumentViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
 	{
 		return layouts.getOrLoad(windowId, () -> createViewLayout(windowId));
 	}
@@ -67,9 +75,9 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 		return null; // not supported
 	}
 
-	private final DocumentViewLayout createViewLayout(final WindowId windowId)
+	private final ViewLayout createViewLayout(final WindowId windowId)
 	{
-		return DocumentViewLayout.builder()
+		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("PP Order Issue/Receipt")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
@@ -90,11 +98,7 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_BOMType)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_HUType)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_Type)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setGridElement()
@@ -102,19 +106,15 @@ public class PPOrderLinesViewFactory implements IDocumentViewSelectionFactory
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Quantity)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_Qty)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_QtyPlan)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Quantity)
 						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_QtyPlan)))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_Qty)))
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setGridElement()
 						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_C_UOM_ID)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IPPOrderBOMLine.COLUMNNAME_StatusInfo)))
 				//
 				.build();
 	}

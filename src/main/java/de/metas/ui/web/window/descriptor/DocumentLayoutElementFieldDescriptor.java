@@ -296,9 +296,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return this;
 		}
 		
-		public boolean isSpecialField()
+		public boolean isSpecialFieldToExcludeFromLayout()
 		{
-			return documentFieldBuilder != null && documentFieldBuilder.isSpecialField();
+			return documentFieldBuilder != null && documentFieldBuilder.isSpecialFieldToExcludeFromLayout();
 		}
 
 		public Builder addDevices(final List<JSONDeviceDescriptor> devices)

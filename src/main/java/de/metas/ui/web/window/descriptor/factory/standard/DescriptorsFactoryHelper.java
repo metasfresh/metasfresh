@@ -159,6 +159,10 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentFieldWidgetType.LongText;
 		}
+		else if (isPassword(columnName, displayType))
+		{
+			return DocumentFieldWidgetType.Password;
+		}
 		else if (DisplayType.isText(displayType))
 		{
 			return DocumentFieldWidgetType.Text;
@@ -209,6 +213,18 @@ public final class DescriptorsFactoryHelper
 		{
 			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of columnName=" + columnName);
 		}
+	}
+	
+	private static final boolean isPassword(final String columnName, final int displayType)
+	{
+		// TODO: introduce DisplayType.Password so we would not have to guess ;)
+		
+		if (!DisplayType.isText(displayType))
+		{
+			return false;
+		}
+		
+		return columnName.toLowerCase().indexOf("password") >= 0;
 	}
 
 	public static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType, final LookupDescriptor lookupDescriptor)

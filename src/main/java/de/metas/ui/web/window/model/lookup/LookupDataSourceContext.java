@@ -76,7 +76,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	private static final String FILTER_Any_SQL = "'%'";
 
 	public static final CtxName PARAM_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
-	public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
+	private static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
 	public static final CtxName PARAM_Filter = CtxName.parse("Filter");
 	public static final CtxName PARAM_FilterSql = CtxName.parse("FilterSql");

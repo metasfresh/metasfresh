@@ -27,7 +27,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
-import de.metas.ui.web.view.descriptor.DocumentViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -68,6 +68,17 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 public class LayoutFactory
 {
+	public static final LayoutFactory ofMainTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO)
+	{
+		final GridTabVO parentTab = null; // no parent
+		return new LayoutFactory(gridWindowVO, mainTabVO, parentTab);
+	}
+	
+	public static final LayoutFactory ofIncludedTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO, final GridTabVO detailTabVO)
+	{
+		return new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
+	}
+	
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
 	@Autowired
@@ -91,18 +102,20 @@ public class LayoutFactory
 	// Parameters
 	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
 	private final int _adWindowId;
+	private final ITranslatableString windowCaption;
 
 	//
 	// Build parameters
 	private IWindowUIElementsProvider _uiProvider;
 	private final List<I_AD_UI_Section> _uiSections;
 
-	public LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
+	private LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
 	{
 		Adempiere.autowire(this);
 
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
 		_adWindowId = gridTabVO.getAD_Window_ID();
+		windowCaption = ImmutableTranslatableString.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -160,6 +173,11 @@ public class LayoutFactory
 	private int getAD_Window_ID()
 	{
 		return _adWindowId;
+	}
+	
+	public ITranslatableString getWindowCaption()
+	{
+		return windowCaption;
 	}
 
 	/**
@@ -403,12 +421,12 @@ public class LayoutFactory
 		return fields;
 	}
 
-	public DocumentViewLayout.Builder layoutGridView()
+	public ViewLayout.Builder layoutGridView()
 	{
 		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
 		logger.trace("Generating grid view layout for {}", entityDescriptor);
 
-		final DocumentViewLayout.Builder layout = DocumentViewLayout.builder()
+		final ViewLayout.Builder layout = ViewLayout.builder()
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
@@ -584,9 +602,9 @@ public class LayoutFactory
 		return layoutElementFieldBuilder;
 	}
 
-	public final DocumentViewLayout layoutSideListView()
+	public final ViewLayout layoutSideListView()
 	{
-		final DocumentViewLayout.Builder layoutBuilder = DocumentViewLayout.builder()
+		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
 				.setWindowId(WindowId.of(getAD_Window_ID()))
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
@@ -631,23 +649,6 @@ public class LayoutFactory
 	public DocumentEntityDescriptor.Builder documentEntity()
 	{
 		return descriptorsFactory.documentEntity();
-	}
-
-	public DocumentLayoutElementDescriptor createSpecialElement_DocumentNo()
-	{
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.getSpecialField_DocumentNo();
-		if (field == null)
-		{
-			return null;
-		}
-
-		return DocumentLayoutElementDescriptor.builder()
-				.setCaptionNone() // not relevant
-				.setDescription(null) // not relevant
-				.setLayoutTypeNone() // not relevant
-				.setWidgetType(field.getWidgetType())
-				.addField(layoutElementField(field))
-				.build();
 	}
 
 	public DocumentLayoutElementDescriptor createSpecialElement_DocumentSummary()

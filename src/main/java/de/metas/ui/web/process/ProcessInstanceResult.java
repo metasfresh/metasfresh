@@ -172,6 +172,7 @@ public final class ProcessInstanceResult implements Serializable
 	{
 		@NonNull
 		private final DocumentPath documentPath;
+		private final boolean modal;
 	}
 	
 	@lombok.Value

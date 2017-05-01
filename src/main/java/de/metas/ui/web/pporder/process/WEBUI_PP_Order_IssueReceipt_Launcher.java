@@ -7,6 +7,7 @@ import org.eevolution.model.X_PP_Order;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.WebPPOrderConfig;
 
@@ -55,8 +56,7 @@ public class WEBUI_PP_Order_IssueReceipt_Launcher extends JavaProcess implements
 	protected String doIt() throws Exception
 	{
 		final TableRecordReference ppOrderRef = TableRecordReference.of(org.eevolution.model.I_PP_Order.Table_Name, getRecord_ID());
-		final boolean gridView = true;
-		getResult().setRecordToOpen(ppOrderRef, WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt.toInt(), gridView);
+		getResult().setRecordToOpen(ppOrderRef, WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt.toInt(), OpenTarget.GridView);
 		return MSG_OK;
 	}
 

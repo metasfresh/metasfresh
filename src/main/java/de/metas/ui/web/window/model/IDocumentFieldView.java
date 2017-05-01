@@ -73,7 +73,7 @@ public interface IDocumentFieldView
 	default Class<?> getValueClass() { return getDescriptor().getValueClass(); }
 	/** @return field's current value */
 	Object getValue();
-	Object getValueAsJsonObject();
+	Object getValueAsJsonObject(String adLanguage);
 	boolean getValueAsBoolean();
 	int getValueAsInt(final int defaultValueWhenNull);
 	<T> T getValueAs(final Class<T> returnType);

@@ -50,9 +50,9 @@ import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.notification.UserNotification.TargetType;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.DocumentViewResult;
-import de.metas.ui.web.view.IDocumentViewsRepository;
-import de.metas.ui.web.view.json.JSONDocumentViewResult;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -98,7 +98,7 @@ public class DebugRestController
 
 	@Autowired
 	@Lazy
-	private IDocumentViewsRepository documentViewsRepo;
+	private IViewsRepository viewsRepo;
 
 	@Autowired
 	@Lazy
@@ -177,12 +177,12 @@ public class DebugRestController
 	}
 
 	@RequestMapping(value = "/views/list", method = RequestMethod.GET)
-	public List<JSONDocumentViewResult> getViewsList()
+	public List<JSONViewResult> getViewsList()
 	{
-		return documentViewsRepo.getViews()
+		return viewsRepo.getViews()
 				.stream()
-				.map(DocumentViewResult::ofView)
-				.map(JSONDocumentViewResult::of)
+				.map(ViewResult::ofView)
+				.map(JSONViewResult::of)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

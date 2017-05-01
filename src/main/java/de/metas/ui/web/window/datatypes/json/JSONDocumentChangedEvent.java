@@ -36,6 +36,11 @@ public class JSONDocumentChangedEvent
 	{
 		return new JSONDocumentChangedEvent(operation, path, value);
 	}
+	
+	public static final JSONDocumentChangedEvent replace(final String fieldName, final Object valueJson)
+	{
+		return new JSONDocumentChangedEvent(JSONOperation.replace, fieldName, valueJson);
+	}
 
 	@ApiModel("operation")
 	public static enum JSONOperation

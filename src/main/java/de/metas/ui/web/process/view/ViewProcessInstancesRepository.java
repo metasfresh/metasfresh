@@ -14,15 +14,15 @@ import org.springframework.stereotype.Component;
 
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
-import de.metas.ui.web.view.DocumentViewsRepository;
-import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
@@ -54,11 +54,11 @@ import lombok.ToString;
 public class ViewProcessInstancesRepository implements IProcessInstancesRepository
 {
 	@Autowired
-	private DocumentViewsRepository viewsRepository;
+	private IViewsRepository viewsRepository;
 
 	private static final String PROCESS_HANDLER_TYPE = "View";
 
-	private final CCache<String, ViewActionsListDescriptor> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
+//	private final CCache<String, ViewActionDescriptorsList> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
 
 	private final CCache<String, ViewActionInstancesList> viewActionInstancesByViewId = CCache.newLRUCache("viewActionInstancesByViewId", 100, 60);
 
@@ -68,10 +68,13 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		return PROCESS_HANDLER_TYPE;
 	}
 
-	private final ViewActionsListDescriptor getViewActionsDescriptor(@NonNull final IDocumentViewSelection view)
+	private final ViewActionDescriptorsList getViewActionsDescriptor(@NonNull final IView view)
 	{
-		final Class<? extends IDocumentViewSelection> viewClass = view.getClass();
-		return viewActionsDescriptorByViewClassname.getOrLoad(viewClass.getName(), () -> ViewActionsListDescriptor.of(viewClass));
+		final ViewActionDescriptorsList viewClassActions = ViewActionDescriptorsFactory.instance.getFromClass(view.getClass());
+		
+		final ViewActionDescriptorsList viewActions = view.getActions();
+		
+		return viewClassActions.mergeWith(viewActions);
 	}
 
 	private final ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)
@@ -79,7 +82,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		final IPair<String, String> viewIdAndActionId = extractViewIdAndActionId(processId);
 		final String viewId = viewIdAndActionId.getLeft();
 		final String actionId = viewIdAndActionId.getRight();
-		final IDocumentViewSelection view = viewsRepository.getView(viewId);
+		final IView view = viewsRepository.getView(viewId);
 
 		return getViewActionsDescriptor(view)
 				.getAction(actionId);
@@ -94,13 +97,13 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	@Override
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
 	{
-		final DocumentViewAsPreconditionsContext viewContext = DocumentViewAsPreconditionsContext.castOrNull(preconditionsContext);
+		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.castOrNull(preconditionsContext);
 		if (viewContext == null)
 		{
 			return Stream.empty();
 		}
 
-		final IDocumentViewSelection view = viewContext.getView();
+		final IView view = viewContext.getView();
 		return getViewActionsDescriptor(view)
 				.streamDocumentRelatedProcesses(viewContext);
 	}
@@ -130,7 +133,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		final IPair<String, String> viewIdAndActionId = extractViewIdAndActionId(processId);
 		final String viewId = viewIdAndActionId.getLeft();
 		final String actionId = viewIdAndActionId.getRight();
-		final IDocumentViewSelection view = viewsRepository.getView(viewId);
+		final IView view = viewsRepository.getView(viewId);
 		final ViewActionDescriptor viewActionDescriptor = getViewActionsDescriptor(view).getAction(actionId);
 
 		final ViewActionInstancesList viewActionInstancesList = viewActionInstancesByViewId.getOrLoad(viewId, () -> new ViewActionInstancesList(viewId));
@@ -174,7 +177,6 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	@Override
 	public void cacheReset()
 	{
-		viewActionsDescriptorByViewClassname.clear();
 		viewActionInstancesByViewId.clear();
 	}
 

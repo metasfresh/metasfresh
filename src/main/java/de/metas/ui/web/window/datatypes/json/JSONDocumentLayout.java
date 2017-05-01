@@ -35,11 +35,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,10 +65,15 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonProperty("tabid")
 	@JsonInclude(Include.NON_NULL)
 	private final String tabid;
+	
+	@JsonProperty("caption")
+	@JsonInclude(Include.NON_EMPTY)
+	private final String caption;
 
-	@JsonProperty("documentNoElement")
-	@JsonInclude(Include.NON_NULL)
-	private final JSONDocumentLayoutElement documentNoElement;
+	// NOTE: we are no longer using documentNoElement (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 ).
+	// @JsonProperty("documentNoElement")
+	// @JsonInclude(Include.NON_NULL)
+	// private final JSONDocumentLayoutElement documentNoElement;
 
 	@JsonProperty("documentSummaryElement")
 	@JsonInclude(Include.NON_NULL)
@@ -109,11 +114,11 @@ public final class JSONDocumentLayout implements Serializable
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
-		super();
-
 		type = String.valueOf(layout.getAD_Window_ID());
 		tabid = null;
-		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonOpts);
+		
+		caption = layout.getCaption(jsonOpts.getAD_Language());
+		
 		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), jsonOpts);
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonOpts);
 
@@ -159,8 +164,6 @@ public final class JSONDocumentLayout implements Serializable
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		super();
-
 		final String adLanguage = jsonOpts.getAD_Language();
 
 		type = String.valueOf(detailLayout.getAD_Window_ID());
@@ -168,7 +171,8 @@ public final class JSONDocumentLayout implements Serializable
 		final DetailId detailId = detailLayout.getDetailId();
 		tabid = DetailId.toJson(detailId);
 
-		documentNoElement = null;
+		caption = detailLayout.getCaption(jsonOpts.getAD_Language());
+
 		documentSummaryElement = null;
 		docActionElement = null;
 
@@ -190,7 +194,7 @@ public final class JSONDocumentLayout implements Serializable
 	private JSONDocumentLayout(
 			@JsonProperty("type") final String type//
 			, @JsonProperty("tabid") final String tabId //
-			, @JsonProperty("documentNoElement") final JSONDocumentLayoutElement documentNoElement//
+			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("documentSummaryElement") final JSONDocumentLayoutElement documentSummaryElement //
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
@@ -199,12 +203,13 @@ public final class JSONDocumentLayout implements Serializable
 			, @JsonProperty("emptyResultText") final String emptyResultText //
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 
-	)
+			)
 	{
-		super();
 		this.type = type;
 		tabid = Strings.emptyToNull(tabId);
-		this.documentNoElement = documentNoElement;
+		
+		this.caption = caption;
+		
 		this.documentSummaryElement = documentSummaryElement;
 		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
@@ -235,11 +240,6 @@ public final class JSONDocumentLayout implements Serializable
 	public String getTabid()
 	{
 		return tabid;
-	}
-
-	public JSONDocumentLayoutElement getDocumentNoElement()
-	{
-		return documentNoElement;
 	}
 
 	public JSONDocumentLayoutElement getDocumentSummaryElement()

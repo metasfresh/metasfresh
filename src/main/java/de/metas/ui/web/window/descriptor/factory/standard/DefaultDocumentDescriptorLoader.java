@@ -88,8 +88,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		//
 		// Layout: Create UI sections from main tab
 		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
-		final LayoutFactory rootLayoutFactory = new LayoutFactory(gridWindowVO, mainTabVO, (GridTabVO)null);
+		final LayoutFactory rootLayoutFactory = LayoutFactory.ofMainTab(gridWindowVO, mainTabVO);
 		{
+			layoutBuilder.setCaption(rootLayoutFactory.getWindowCaption());
 			layoutBuilder.addSections(rootLayoutFactory.layoutSectionsList());
 			layoutBuilder.setGridView(rootLayoutFactory.layoutGridView());
 			layoutBuilder.setAdvancedView(rootLayoutFactory.layoutAdvancedView());
@@ -97,7 +98,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			
 			// Set special field names
 			layoutBuilder
-					.setDocumentNoElement(rootLayoutFactory.createSpecialElement_DocumentNo())
 					.setDocumentSummaryElement(rootLayoutFactory.createSpecialElement_DocumentSummary())
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
@@ -112,7 +112,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				continue;
 			}
 			
-			final LayoutFactory detailLayoutFactory = new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
+			final LayoutFactory detailLayoutFactory = LayoutFactory.ofIncludedTab(gridWindowVO, mainTabVO, detailTabVO);
 			final DocumentLayoutDetailDescriptor.Builder layoutDetail = detailLayoutFactory.layoutDetail();
 			layoutBuilder.addDetailIfValid(layoutDetail);
 
