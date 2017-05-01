@@ -22,7 +22,7 @@ Here come the actual release notes:
     * Adding Document No. control to all manufacturing Document Types.
   * [#1400](https://github.com/metasfresh/metasfresh/issues/1400) DocumentNo not generated for empties in WebUI
     * Adding the Document No. control to the empties return document.
-
+  * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
 
 # metasfresh 5.7 (2017-17)
 
