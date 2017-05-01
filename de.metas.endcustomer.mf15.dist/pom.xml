@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>de.metas.endcustomer.mf15</groupId>
-		<artifactId>de.metas.endcustomer.mf15</artifactId>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -43,7 +43,7 @@ Since we now work with a range, we now declare the dependencies here where range
 -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.serverRoot</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 
@@ -67,14 +67,14 @@ Since we now work with a range, we now declare the dependencies here where range
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.base</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
 			<version>1.0.0</version>
 			<type>jar</type>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.swingui</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
 			<version>1.0.0</version>
 			<classifier>client</classifier>
 			<type>zip</type>
@@ -300,13 +300,13 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.base</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
 			<version>1.0.0</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.base</artifactId>
+			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
 			<version>1.0.0</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -473,7 +473,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<excludeArtifactIds>de.metas.fresh.base, ${project.groupId}.base</excludeArtifactIds>
+							<excludeArtifactIds>de.metas.fresh.base, de.metas.endcustomer.mf15.base</excludeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
@@ -511,7 +511,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<includeArtifactIds>${project.groupId}.base</includeArtifactIds>
+							<includeArtifactIds>de.metas.endcustomer.mf15.base</includeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
@@ -540,14 +540,14 @@ note: when adding new records, please roughly order them by alphabet.
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.serverRoot</artifactId>
+									<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.swingui</artifactId>
+									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>zip</type>
