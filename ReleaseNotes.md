@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#796](https://github.com/metasfresh/metasfresh/issues/796) Fact Account WebUI Window Readonly
+    * Including the Fact Account window to WebUI.
   * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
     * Adding the Translation of Request Type in webUI for language en_US.
@@ -29,6 +31,8 @@ Here come the actual release notes:
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
     * Creating the initial Layout for the Material Candidates Window in WebUI.
   * [#1411](https://github.com/metasfresh/metasfresh/issues/1411) Possible 1:1 switch for Data Lifecycle Management users
+  * [#1417](https://github.com/metasfresh/metasfresh/issues/1417) Window for c_activity in WebUI
+    * Adding the Activity window to WebUI.
   
 # metasfresh 5.7 (2017-17)
 
