@@ -140,18 +140,6 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 UPDATE AD_RelationType SET AD_Reference_Source_ID=540719,Updated=TO_TIMESTAMP('2017-04-27 15:11:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540177
 ;
 
--- 2017-04-27T15:29:29.235
--- URL zum Konzept
-UPDATE AD_Ref_Table SET WhereClause='
-exists (
-	select 1 from C_Orxxxder o
-	join C_OrderLine ol on o.C_Order_ID = ol.C_Order_ID
-	join M_InOutLine iol on ol.C_OrderLine_ID = iol.C_OrderLine_ID
-	join M_InOutLine ret on iol.M_InOutLine_ID = ret.VendorReturn_Origin_InOutLine_ID
-	join M_InOut io on ret.M_InOut_ID = io.M_InOut_ID 
-	where io.M_InOut_ID = @M_InOut_ID/-1@ and o.IsSOTrx = ''N'' and C_Order.C_Order_ID = o.C_Order_ID
-)',Updated=TO_TIMESTAMP('2017-04-27 15:29:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
-;
 
 -- 2017-04-27T15:36:16.062
 -- URL zum Konzept
@@ -166,17 +154,7 @@ exists (
 )',Updated=TO_TIMESTAMP('2017-04-27 15:36:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
 ;
 
--- 2017-04-27T15:42:01.526
--- URL zum Konzept
-UPDATE AD_Ref_Table SET WhereClause='exists (
-	select 1 from M_InOut io
-	join M_InOutLine ret on io.M_InOut_ID = ret.M_InOut_ID
-	join M_InOutLine iol on ret.VendorReturn_Origin_InOutLine_ID = iol.M_InOutLine_ID
-	join C_OrderLine ol on iol.C_OrderLine_ID = ol.C_OrderLine_ID
-	join C_Order  o on  ol.C_Order_ID = o.C_xxxxxxOrder_ID
-	where o.C_Order_ID = @C_Order_ID/-1@ and o.IsSOTrx = ''N'' and M_InOut.M_InOut_ID = io.M_InOut_ID 
-)',Updated=TO_TIMESTAMP('2017-04-27 15:42:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540717
-;
+
 
 -- 2017-04-27T15:42:28.088
 -- URL zum Konzept
@@ -200,18 +178,7 @@ UPDATE AD_Column SET AD_Reference_Value_ID=295,Updated=TO_TIMESTAMP('2017-04-27 
 UPDATE AD_Ref_Table SET WhereClause='IsSOTrx = ''N''',Updated=TO_TIMESTAMP('2017-04-27 16:36:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540719
 ;
 
--- 2017-04-27T16:45:43.254
--- URL zum Konzept
-UPDATE AD_Ref_Table SET WhereClause='
-exists (
-	select 1 from C_Ordepisicar o
-	join C_OrderLine ol on o.C_Order_ID = ol.C_Order_ID
-	join M_InOutLine iol on ol.C_OrderLine_ID = iol.C_OrderLine_ID
-	join M_InOutLine ret on iol.M_InOutLine_ID = ret.VendorReturn_Origin_InOutLine_ID
-	join M_InOut io on ret.M_InOut_ID = io.M_InOut_ID 
-	where io.M_InOut_ID = @M_InOut_ID/-1@ and o.IsSOTrx = ''N'' and C_Order.C_Order_ID = o.C_Order_ID
-)',Updated=TO_TIMESTAMP('2017-04-27 16:45:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
-;
+
 
 -- 2017-04-27T16:47:47.217
 -- URL zum Konzept
@@ -239,18 +206,6 @@ exists (
 )',Updated=TO_TIMESTAMP('2017-04-27 16:48:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
 ;
 
--- 2017-04-27T16:49:51.908
--- URL zum Konzept
-UPDATE AD_Ref_Table SET WhereClause='
-exists (
-	select 1 from C_Orpisicader o
-	join C_OrderLine ol on o.C_Order_ID = ol.C_Order_ID
-	join M_InOutLine iol on ol.C_OrderLine_ID = iol.C_OrderLine_ID
-	join M_InOutLine ret on iol.M_InOutLine_ID = ret.VendorReturn_Origin_InOutLine_ID
-	join M_InOut io on ret.M_InOut_ID = io.M_InOut_ID 
-	where io.M_InOut_ID = @M_InOut_ID/-1@ and o.IsSOTrx = ''N'' and C_Order.C_Order_ID = o.C_Order_ID
-)',Updated=TO_TIMESTAMP('2017-04-27 16:49:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
-;
 
 -- 2017-04-27T16:51:12.563
 -- URL zum Konzept
@@ -300,5 +255,25 @@ UPDATE AD_Ref_Table SET AD_Window_ID=53098,Updated=TO_TIMESTAMP('2017-04-27 17:2
 UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2017-04-27 17:23:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
 ;
 
+
+-- 2017-05-02T13:52:55.244
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET AD_Window_ID=181,Updated=TO_TIMESTAMP('2017-05-02 13:52:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
+;
+
+-- 2017-05-02T13:57:39.790
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2017-05-02 13:57:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
+;
+
+-- 2017-05-02T14:14:54.652
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET AD_Display=2161,Updated=TO_TIMESTAMP('2017-05-02 14:14:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
+;
+
+-- 2017-05-02T14:15:17.493
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET AD_Window_ID=181,Updated=TO_TIMESTAMP('2017-05-02 14:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540718
+;
 
 
