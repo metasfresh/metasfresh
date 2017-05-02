@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -113,7 +112,7 @@ public class SqlDocumentQueryBuilder
 				.toString();
 	}
 
-	public Evaluatee getEvaluationContext()
+	private Evaluatee getEvaluationContext()
 	{
 		if (_evaluationContext == null)
 		{
@@ -161,11 +160,6 @@ public class SqlDocumentQueryBuilder
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 	
-	public IUserRolePermissions getPermissions()
-	{
-		return Env.getUserRolePermissions(getCtx());
-	}
-
 	public String getSql(final List<Object> outSqlParams)
 	{
 		final Evaluatee evalCtx = getEvaluationContext();
@@ -185,7 +179,7 @@ public class SqlDocumentQueryBuilder
 		return _sqlExpr;
 	}
 
-	public List<Object> getSqlParams()
+	private List<Object> getSqlParams()
 	{
 		return _sqlParams;
 	}
@@ -215,7 +209,7 @@ public class SqlDocumentQueryBuilder
 		if (isSorting())
 		{
 			final IStringExpression sqlOrderBy = getSqlOrderByEffective();
-			if (!sqlOrderBy.isNullExpression())
+			if (sqlOrderBy != null && !sqlOrderBy.isNullExpression())
 			{
 				sqlBuilder.append("\n ORDER BY ").append(sqlOrderBy);
 			}
@@ -247,7 +241,7 @@ public class SqlDocumentQueryBuilder
 		return entityBinding.getSqlSelectAllFrom();
 	}
 
-	public IStringExpression getSqlWhere()
+	private IStringExpression getSqlWhere()
 	{
 		if (_sqlWhereExpr == null)
 		{
@@ -256,7 +250,7 @@ public class SqlDocumentQueryBuilder
 		return _sqlWhereExpr;
 	}
 
-	public List<Object> getSqlWhereParams()
+	private List<Object> getSqlWhereParams()
 	{
 		if (_sqlWhereParams == null)
 		{
@@ -339,7 +333,7 @@ public class SqlDocumentQueryBuilder
 		_sqlWhereParams = sqlParams;
 	}
 
-	public List<DocumentQueryOrderBy> getOrderBysEffective()
+	private List<DocumentQueryOrderBy> getOrderBysEffective()
 	{
 		if (noSorting)
 		{
@@ -355,18 +349,13 @@ public class SqlDocumentQueryBuilder
 		return entityBinding.getDefaultOrderBys();
 	}
 
-	public IStringExpression getSqlOrderByEffective()
+	private IStringExpression getSqlOrderByEffective()
 	{
 		final List<DocumentQueryOrderBy> orderBys = getOrderBysEffective();
 		return SqlDocumentOrderByBuilder.newInstance(entityBinding::getFieldOrderBy).buildSqlOrderBy(orderBys);
 	}
 
-	public SqlDocumentEntityDataBindingDescriptor getEntityBinding()
-	{
-		return entityBinding;
-	}
-
-	public List<DocumentFilter> getDocumentFilters()
+	private List<DocumentFilter> getDocumentFilters()
 	{
 		return documentFilters == null ? ImmutableList.of() : ImmutableList.copyOf(documentFilters);
 	}
