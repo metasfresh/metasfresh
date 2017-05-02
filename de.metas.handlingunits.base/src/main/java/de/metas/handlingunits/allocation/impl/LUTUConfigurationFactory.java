@@ -35,7 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
@@ -57,6 +56,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.quantity.Quantity;
 
 public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 {
@@ -536,7 +536,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		final Quantity qty = new Quantity(qtyValue, qtyUOM);
 		final I_C_UOM uomTo = lutuConfiguration.getC_UOM();
-		return qty.convertTo(uomConversionCtx, uomTo);
+		return uomConversionBL.convertQuantityTo(qty, uomConversionCtx, uomTo);
 	}
 
 	@Override

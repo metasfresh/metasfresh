@@ -11,9 +11,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -33,13 +33,10 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 
 	private static final transient Logger logger = LogManager.getLogger(EmptiesInOutProducer.class);
 
-	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
 	private final List<IPackingMaterialDocumentLineSource> sources = new ArrayList<>();
 
 	private final EmptiesInOutLinesProducer inoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
 
-	
 
 	public EmptiesInOutProducer(final Properties ctx)
 	{
@@ -68,6 +65,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		return sources.isEmpty();
 	}
 
+	@Override
 	public IReturnsInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty)
 	{
 		Check.assume(!executed, "inout shall not be generated yet");
@@ -121,14 +119,15 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		return this;
 	}
 
-	private I_C_DocType getEmptiesDocType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx, final String trxName)
+	private static I_C_DocType getEmptiesDocType(final String docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx)
 	{
 		//
 		// Search for specific empties shipment/receipt document sub-type (task 07694)
 		// 07694: using the empties-subtype for receipts.
 		final String docSubType = isSOTrx ? X_C_DocType.DOCSUBTYPE_Leergutanlieferung : X_C_DocType.DOCSUBTYPE_Leergutausgabe;
 
-		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(ctx, docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(Env.getCtx(), docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
 		if (docTypes == null)
 		{
 			logger.warn("No document types found for docBaseType={}, adClientId={}, adOrgId={}", docBaseType, adClientId, adOrgId);
@@ -164,32 +163,17 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 	}
 
 	@Override
-	protected int getReturnsDocTypeId(
-			final IContextAware contextProvider,
-			final boolean isSOTrx,
-			final I_M_InOut inout,
-			final String docBaseType)
+	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
-		final Properties ctx = contextProvider.getCtx();
-		final String trxName = contextProvider.getTrxName();
-
-		final I_C_DocType docType = getEmptiesDocType(ctx,
-				docBaseType,
-				inout.getAD_Client_ID(),
-				inout.getAD_Org_ID(),
-				isSOTrx,
-				trxName);
+		final I_C_DocType docType = getEmptiesDocType(docBaseType, adClientId, adOrgId, isSOTrx);
 
 		int docTypeId = docType == null ? -1 : docType.getC_DocType_ID();
 
 		// If the empties doc type was not found (should not happen) fallback to the default one
 		if (docTypeId <= 0)
 		{
-			docTypeId = docTypeDAO.getDocTypeId(ctx,
-					docBaseType,
-					inout.getAD_Client_ID(),
-					inout.getAD_Org_ID(),
-					trxName);
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			docTypeId = docTypeDAO.getDocTypeId(Env.getCtx(), docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
 		}
 
 		return docTypeId;

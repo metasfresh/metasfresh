@@ -25,7 +25,7 @@ package de.metas.handlingunits;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.Quantity;
+import de.metas.quantity.Quantity;
 
 /**
  * An {@link IHUCapacityDefinition} which also contains qty storage level.

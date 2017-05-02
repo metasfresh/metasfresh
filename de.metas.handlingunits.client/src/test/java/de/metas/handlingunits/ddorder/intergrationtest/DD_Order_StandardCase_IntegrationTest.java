@@ -10,18 +10,17 @@ package de.metas.handlingunits.ddorder.intergrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -37,16 +36,24 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_MRP;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.client.terminal.ddorder.model.DDOrderTableRow;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.expectations.PackingMaterialsExpectation;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
-import de.metas.handlingunits.util.TraceUtils;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = HandlingUnitsConfiguration.class)
+@ActiveProfiles("test")
+@Ignore
 public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProcessIntegrationTest
 {
 	@Override
@@ -66,7 +73,7 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 				dateOrdered, // date
 				mrpMasterData.plant01, // plant
 				mrpMasterData.warehouse_picking01 // picking warehouse
-				);
+		);
 		mrpDemand.setC_BPartner(bpartner_Customer01);
 		InterfaceWrapperHelper.save(mrpDemand);
 	}
@@ -75,7 +82,7 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 	protected void step029_CreateRawMaterialHUs_On_RawMaterialsWarehouse()
 	{
 		/* final List<I_M_HU> luHUs = */ generateLUs(piTU_Item_Product_Tomato, mrpMasterData.warehouse_rawMaterials01_locator, 1);
-		//luHUs.forEach(hu -> helper.commitAndDumpHU(hu));
+		// luHUs.forEach(hu -> helper.commitAndDumpHU(hu));
 	}
 
 	@Override

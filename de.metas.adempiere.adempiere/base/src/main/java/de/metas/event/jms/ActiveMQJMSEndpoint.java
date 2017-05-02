@@ -13,17 +13,18 @@ package de.metas.event.jms;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,8 +123,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		}
 	};
 
-//	private final String _jmsBrokerURL;
-	private final ConnectionFactory _jmsConnectionFactory;
+	// private final ConnectionFactory _jmsConnectionFactory;
 	private static final String JMS_PROPERTY_ClientID = de.metas.event.jms.ActiveMQJMSEndpoint.class.getName() + ".ClientID";
 	private final String _jmsClientID;
 	private Connection _jmsConnection;
@@ -155,16 +155,10 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 	private final IEventListener eventBus2JmsListener = new EventBus2JMSHandler(this);
 
+	private ConnectionFactory _jmsConnectionFactory;
+
 	public ActiveMQJMSEndpoint()
 	{
-		super();
-
-		//
-		// Setup ActiveMQ connection factory
-		{
-			this._jmsConnectionFactory = Services.get(IJMSService.class).createConnectionFactory();
-		}
-
 		// JMS Client ID
 		_jmsClientID = EventBusConstants.getSenderId();
 		logger.info("JMS Client ID: {}", _jmsClientID);
@@ -182,6 +176,10 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 	private final ConnectionFactory getConnectionFactory()
 	{
+		if (_jmsConnectionFactory == null)
+		{
+			_jmsConnectionFactory = Services.get(IJMSService.class).createConnectionFactory();
+		}
 		return _jmsConnectionFactory;
 	}
 
@@ -253,7 +251,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final Session session = conn.createSession(
 				false, // transacted
 				Session.AUTO_ACKNOWLEDGE // acknowledgeMode
-				);
+		);
 		logger.info("Session created: {}", session);
 		return session;
 	}
@@ -477,7 +475,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			{
 				// Avoid message which were sent by our topic producer
 				final String jmsMessageClientId = jmsMessage.getStringProperty(JMS_PROPERTY_ClientID);
-				if (Check.equals(jmsMessageClientId, jmsClientId))
+				if (Objects.equals(jmsMessageClientId, jmsClientId))
 				{
 					return;
 				}

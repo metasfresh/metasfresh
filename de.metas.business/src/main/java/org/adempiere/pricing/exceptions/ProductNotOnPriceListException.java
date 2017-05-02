@@ -101,7 +101,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 			{
 				sb.append(", ");
 			}
-			sb.append("@M_Product_ID@:").append(p == null ? "?" : p.getValue());
+			sb.append("@M_Product_ID@:").append(p == null ? "?" : p.getValue() + "_" + p.getName());
 		}
 		if (m_PriceList_ID > 0)
 		{

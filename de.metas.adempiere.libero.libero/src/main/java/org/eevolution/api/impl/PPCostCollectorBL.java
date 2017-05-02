@@ -38,7 +38,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
 import org.eevolution.exceptions.LiberoException;
@@ -50,6 +49,8 @@ import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
@@ -78,11 +79,12 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
 		}
-		
-		// 08731 : if ByProduct, cost collector shall also be MixVariance
-		else if (Services.get(IPPOrderBOMBL.class).isComponentType(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product))
+		else
 		{
-			costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
+			if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product))
+			{
+				costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
+			}
 		}
 
 		return costCollectorType;
@@ -266,7 +268,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		// Get and validate the BOM Line
 		final I_PP_Order_BOMLine orderBOMLine = candidate.getPP_Order_BOMLine();
 		Check.assumeNotNull(orderBOMLine, LiberoException.class, "orderBOMLine not null");
-		ppOrderBOMBL.assertReceipt(orderBOMLine);
+		PPOrderUtil.assertReceipt(orderBOMLine);
 
 		//
 		// Validate Product
