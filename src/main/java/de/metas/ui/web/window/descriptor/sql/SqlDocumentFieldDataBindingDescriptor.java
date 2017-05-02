@@ -1,28 +1,14 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.compiere.util.DisplayType;
-import org.compiere.util.SecureEngine;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -80,8 +66,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		return null;
 	}
-
-	private static final transient Logger logger = LogManager.getLogger(SqlDocumentFieldDataBindingDescriptor.class);
 
 	private final String fieldName;
 
@@ -291,23 +275,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.of(getColumnSql());
 		return orderByExpr;
 	}
-
-	/**
-	 * Retrieves a particular field from given {@link ResultSet}.
-	 */
-	@FunctionalInterface
-	public static interface DocumentFieldValueLoader
-	{
-		Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage) throws SQLException;
-
-		default Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable) throws SQLException
-		{
-			String adLanguage = null;
-			return retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
-		}
-
-	}
-
+	
 	public static final class Builder
 	{
 		private String fieldName;
@@ -439,165 +407,41 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				, final Boolean numericKey //
 				)
 		{
-			final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger; // yes, we can share the static logger
-
 			if (!Check.isEmpty(displayColumnName))
 			{
-				if (numericKey)
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						final int id = rs.getInt(sqlColumnName);
-						if (rs.wasNull())
-						{
-							return null;
-						}
-						if (isDisplayColumnAvailable)
-						{
-							final String displayName = rs.getString(displayColumnName);
-							return IntegerLookupValue.of(id, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
-						}
-						else
-						{
-							return IntegerLookupValue.unknown(id);
-						}
-					};
-				}
-				else
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						final String key = rs.getString(sqlColumnName);
-						if (rs.wasNull())
-						{
-							return null;
-						}
-						if (isDisplayColumnAvailable)
-						{
-							final String displayName = rs.getString(displayColumnName);
-							return StringLookupValue.of(key, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
-						}
-						else
-						{
-							return StringLookupValue.unknown(key);
-						}
-
-					};
-				}
+				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, displayColumnName, numericKey);
 			}
 			else if (java.lang.String.class == valueClass)
 			{
-				if (encrypted)
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> decrypt(rs.getString(sqlColumnName));
-				}
-				else
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> rs.getString(sqlColumnName);
-				}
+				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
 			}
 			else if (java.lang.Integer.class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final int valueInt = rs.getInt(sqlColumnName);
-					final Integer value = rs.wasNull() ? null : valueInt;
-					return encrypted ? decrypt(value) : value;
-				};
+				return DocumentFieldValueLoaders.toInteger(sqlColumnName, encrypted);
 			}
 			else if (java.math.BigDecimal.class == valueClass)
 			{
 				final Integer precision = widgetType.getStandardNumberPrecision();
-				if (precision != null)
-				{
-					final int precisionInt = precision;
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						BigDecimal value = rs.getBigDecimal(sqlColumnName);
-						value = value == null ? null : NumberUtils.setMinimumScale(value, precisionInt);
-						return encrypted ? decrypt(value) : value;
-					};
-				}
-				else
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						final BigDecimal value = rs.getBigDecimal(sqlColumnName);
-						return encrypted ? decrypt(value) : value;
-					};
-				}
+				return DocumentFieldValueLoaders.toBigDecimal(sqlColumnName, encrypted, precision);
 			}
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final Timestamp valueTS = rs.getTimestamp(sqlColumnName);
-					final java.util.Date value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
-					return encrypted ? decrypt(value) : value;
-				};
+				return DocumentFieldValueLoaders.toDate(sqlColumnName, encrypted);
 			}
 			// YesNo
 			else if (Boolean.class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					String valueStr = rs.getString(sqlColumnName);
-					if (encrypted)
-					{
-						valueStr = valueStr == null ? null : decrypt(valueStr).toString();
-					}
-
-					return DisplayType.toBoolean(valueStr);
-				};
+				return DocumentFieldValueLoaders.toBoolean(sqlColumnName, encrypted);
 			}
 			// LOB
 			else if (byte[].class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final Object valueObj = rs.getObject(sqlColumnName);
-					final byte[] valueBytes;
-					if (rs.wasNull())
-					{
-						valueBytes = null;
-					}
-					else if (valueObj instanceof Clob)
-					{
-						final Clob lob = (Clob)valueObj;
-						final long length = lob.length();
-						valueBytes = lob.getSubString(1, (int)length).getBytes();
-					}
-					else if (valueObj instanceof Blob)
-					{
-						final Blob lob = (Blob)valueObj;
-						final long length = lob.length();
-						valueBytes = lob.getBytes(1, (int)length);
-					}
-					else if (valueObj instanceof String)
-					{
-						valueBytes = ((String)valueObj).getBytes();
-					}
-					else if (valueObj instanceof byte[])
-					{
-						valueBytes = (byte[])valueObj;
-					}
-					else
-					{
-						logger.warn("Unknown LOB value '{}' for {}. Considering it null.", valueObj, sqlColumnName);
-						valueBytes = null;
-					}
-					//
-					return valueBytes;
-				};
+				return DocumentFieldValueLoaders.toByteArray(sqlColumnName, encrypted);
 			}
 			else
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final String value = rs.getString(sqlColumnName);
-					return encrypted ? decrypt(value) : value;
-				};
+				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
 			}
-		}
-
-		private static final Object decrypt(final Object value)
-		{
-			if (value == null)
-			{
-				return null;
-			}
-			return SecureEngine.decrypt(value);
 		}
 
 		public Builder setFieldName(final String fieldName)

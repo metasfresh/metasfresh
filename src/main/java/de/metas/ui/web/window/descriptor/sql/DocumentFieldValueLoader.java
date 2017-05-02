@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import org.adempiere.ad.expression.api.IStringExpression;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /*
  * #%L
@@ -24,19 +25,13 @@ import org.adempiere.ad.expression.api.IStringExpression;
  * #L%
  */
 
-public interface SqlEntityBinding
+/**
+ * Retrieves a particular field from given {@link ResultSet}.
+ * 
+ * To create specific instances of this interface, please use {@link DocumentFieldValueLoaders}.
+ */
+@FunctionalInterface
+public interface DocumentFieldValueLoader
 {
-	String getTableName();
-
-	String getTableAlias();
-
-	/** @return field binding or throws exception in case it was not found */
-	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
-
-	/** @return SQL expression to be used when ordering by given field; if the field was not found and exception will be thrown */
-	default IStringExpression getFieldOrderBy(String fieldName)
-	{
-		return getFieldByFieldName(fieldName).getSqlOrderBy();
-	}
-
+	Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage) throws SQLException;
 }

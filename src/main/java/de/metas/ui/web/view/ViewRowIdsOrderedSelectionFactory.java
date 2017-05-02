@@ -1,6 +1,12 @@
-package de.metas.ui.web.window.descriptor.sql;
+package de.metas.ui.web.view;
 
-import org.adempiere.ad.expression.api.IStringExpression;
+import java.util.Collection;
+import java.util.List;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -12,31 +18,25 @@ import org.adempiere.ad.expression.api.IStringExpression;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface SqlEntityBinding
+public interface ViewRowIdsOrderedSelectionFactory
 {
-	String getTableName();
+	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters);
 
-	String getTableAlias();
+	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 
-	/** @return field binding or throws exception in case it was not found */
-	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
-
-	/** @return SQL expression to be used when ordering by given field; if the field was not found and exception will be thrown */
-	default IStringExpression getFieldOrderBy(String fieldName)
-	{
-		return getFieldByFieldName(fieldName).getSqlOrderBy();
-	}
-
+	String getSqlWhereClause(ViewId viewId, Collection<DocumentId> rowIds);
+	
+	
 }

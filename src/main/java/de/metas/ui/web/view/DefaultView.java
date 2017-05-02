@@ -60,7 +60,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-class DefaultView implements IView
+public class DefaultView implements IView
 {
 	public static final Builder builder(final IViewDataRepository viewDataRepository)
 	{
@@ -353,6 +353,7 @@ class DefaultView implements IView
 		rowIds.forEach(cache_rowsById::remove);
 
 		// Collect event
+		// TODO: check which rowIds are contained in this view and fire events only for those
 		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
 	}
 
@@ -415,9 +416,16 @@ class DefaultView implements IView
 
 		public Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
 		{
-			_stickyFilters = stickyFilter == null ? ImmutableList.of() : ImmutableList.of(stickyFilter);
+			setStickyFilters(stickyFilter == null ? ImmutableList.of() : ImmutableList.of(stickyFilter));
 			return this;
 		}
+		
+		public Builder setStickyFilters(final List<DocumentFilter> stickyFilters)
+		{
+			_stickyFilters = stickyFilters == null || stickyFilters.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(stickyFilters);
+			return this;
+		}
+
 
 		private List<DocumentFilter> getStickyFilters()
 		{

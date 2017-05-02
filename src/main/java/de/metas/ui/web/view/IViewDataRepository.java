@@ -40,7 +40,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-interface IViewDataRepository
+public interface IViewDataRepository
 {
 	String getTableName();
 

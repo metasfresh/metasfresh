@@ -64,6 +64,11 @@ public class ViewEvaluationCtx
 				.add("permissionsKey", permissionsKey)
 				.toString();
 	}
+	
+	public String getAD_Language()
+	{
+		return adLanguage;
+	}
 
 	public UserRolePermissionsKey getPermissionsKey()
 	{

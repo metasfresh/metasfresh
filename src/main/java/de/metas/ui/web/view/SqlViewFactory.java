@@ -1,10 +1,11 @@
 package de.metas.ui.web.view;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
-import org.adempiere.util.Check;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,13 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -169,7 +171,6 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final String fieldName = documentField.getFieldName();
 		final boolean isDisplayColumnAvailable = documentField.isUsingDisplayColumn() && availableDisplayColumnNames.contains(fieldName);
-		final SqlViewRowFieldLoader fieldLoader = createViewRowFieldLoader(documentField.getDocumentFieldValueLoader(), isDisplayColumnAvailable);
 
 		return SqlViewRowFieldBinding.builder()
 				.fieldName(fieldName)
@@ -185,24 +186,24 @@ public class SqlViewFactory implements IViewFactory
 				//
 				.sqlOrderBy(documentField.getSqlOrderBy())
 				//
-				.fieldLoader(fieldLoader)
+				.fieldLoader(new DocumentFieldValueLoaderAsSqlViewRowFieldLoader(documentField.getDocumentFieldValueLoader(), isDisplayColumnAvailable))
 				//
 				.build();
 
 	}
 
-	/**
-	 * NOTE to developer: keep this method static and provide only primitive or lambda parameters
-	 *
-	 * @param fieldValueLoader
-	 * @param isDisplayColumnAvailable
-	 */
-	private static SqlViewRowFieldLoader createViewRowFieldLoader(final DocumentFieldValueLoader fieldValueLoader, final boolean isDisplayColumnAvailable)
+	@Value
+	private static final class DocumentFieldValueLoaderAsSqlViewRowFieldLoader implements SqlViewRowFieldLoader
 	{
-		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
-		return rs -> {
-			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable);
+		private final @NonNull DocumentFieldValueLoader fieldValueLoader;
+		private final boolean isDisplayColumnAvailable;
+
+		@Override
+		public Object retrieveValueAsJson(ResultSet rs, String adLanguage) throws SQLException
+		{
+			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
 			return Values.valueToJsonObject(fieldValue);
-		};
+		}
+		
 	}
 }
