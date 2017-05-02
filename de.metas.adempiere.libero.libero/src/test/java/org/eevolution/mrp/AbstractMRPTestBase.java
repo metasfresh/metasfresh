@@ -25,7 +25,6 @@ package org.eevolution.mrp;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Services;
 import org.eevolution.LiberoConfiguration;
-import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Before;
@@ -44,8 +43,8 @@ import de.metas.material.planning.MaterialPlanningConfiguration;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
 		LiberoConfiguration.class,
-		LiberoTestConfiguration.class,
-		MaterialPlanningConfiguration.class })
+		MaterialPlanningConfiguration.class
+})
 @ActiveProfiles("test")
 public abstract class AbstractMRPTestBase
 {

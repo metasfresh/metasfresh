@@ -8,7 +8,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMRPContextFactory;
@@ -17,12 +16,18 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.exception.MrpException;
+import lombok.NonNull;
 
 @Service
 public class MRPContextFactory implements IMRPContextFactory
 {
-	@Autowired
-	private ProductPlanningBL productPlanningBL;
+
+	private final ProductPlanningBL productPlanningBL;
+
+	public MRPContextFactory(@NonNull final ProductPlanningBL productPlanningBL)
+	{
+		this.productPlanningBL = productPlanningBL;
+	}
 
 	@Override
 	public IMutableMRPContext createInitialMRPContext()

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.StartupListener;
 import de.metas.event.Type;
 
 /*
@@ -32,7 +33,8 @@ import de.metas.event.Type;
 
 @Configuration
 @ComponentScan(basePackageClasses = {
-		MaterialEventConfiguration.class })
+		MaterialEventConfiguration.class,
+		StartupListener.class })
 public class MaterialEventConfiguration
 {
 

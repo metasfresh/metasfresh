@@ -3,6 +3,7 @@ package org.eevolution;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import de.metas.StartupListener;
 import de.metas.material.event.MaterialEventConfiguration;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 
@@ -31,7 +32,8 @@ import de.metas.material.planning.MaterialPlanningConfiguration;
 @ComponentScan(basePackageClasses = {
 		LiberoConfiguration.class, // scan the classes in *this* package and its subpackages
 		MaterialPlanningConfiguration.class, // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
-		MaterialEventConfiguration.class
+		MaterialEventConfiguration.class,
+		StartupListener.class
 })
 public class LiberoConfiguration
 {
