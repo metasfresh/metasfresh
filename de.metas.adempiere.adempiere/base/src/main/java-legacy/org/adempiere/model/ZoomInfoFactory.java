@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: ADempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2009 www.metas.de                                            *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: ADempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2009 www.metas.de *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.model;
 
@@ -269,7 +269,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			return _zoomInfoId;
 		}
-		
+
 		public ITranslatableString getLabel()
 		{
 			final ITranslatableString postfix = ImmutableTranslatableString.constant(" (#" + getRecordCount() + ")");
@@ -333,12 +333,17 @@ public class ZoomInfoFactory implements IZoomProvider
 					//
 					// Skip if we already added a zoom info for the same window
 					final int adWindowId = zoomInfo.getAD_Window_ID();
-					if (!alreadySeenWindowIds.add(adWindowId))
-					{
-						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
-						continue;
-					}
 
+					// #1062
+					// Only consider a window already seen if it actually has record count > 0
+					if (zoomInfo.getRecordCount() > 0)
+					{
+						if (!alreadySeenWindowIds.add(adWindowId))
+						{
+							logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
+							continue;
+						}
+					}
 					//
 					// Filter out those ZoomInfos which have ZERO records (if requested)
 					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)
