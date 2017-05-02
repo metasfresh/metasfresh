@@ -18,7 +18,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -26,7 +25,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -37,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -55,10 +54,14 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
@@ -170,7 +173,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private boolean isMaterialReceipt(final I_PP_Order_Qty candidate)
 	{
 		final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine = candidate.getPP_Order_BOMLine();
-		return ppOrderBOMLine == null || ppOrderBOMBL.isReceipt(ppOrderBOMLine);
+		return ppOrderBOMLine == null || PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType());
 	}
 
 	private final void markProcessedAndSave(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
@@ -293,6 +296,12 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			snapshotId = husSource.getSnapshotId();
 		}
+		
+		//
+		// Unlock the HU
+		{
+			Services.get(IHULockBL.class).unlockOnAfterCommit(hu.getM_HU_ID(), HUPPOrderIssueProducer.lockOwner);
+		}
 
 		//
 		// Create cost collectors and mark the candidate as processed
@@ -360,6 +369,16 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		return this;
 	}
+	
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId)
+	{
+		setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(candidate -> !candidate.isProcessed()) // not already processed
+				.collect(GuavaCollectors.toImmutableList()));
+		return this;
+	}
+
 
 	private List<I_PP_Order_Qty> getCandidatesToProcess()
 	{
@@ -375,7 +394,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private static final class IssueCandidatesBuilder
 	{
 		// Services
-		private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 		private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
 		//
@@ -468,7 +486,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Make sure it's a issue line (shall not happen)
-			if (!ppOrderBOMBL.isIssue(ppOrderBOMLine))
+			if (!PPOrderUtil.isIssue(ppOrderBOMLine.getComponentType()))
 			{
 				throw new HUException("BOM line does not allow issuing materials."
 						+ "\n @PP_Order_BOMLine_ID@: " + ppOrderBOMLine);
@@ -624,7 +642,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
-			final Quantity qtyToIssueToAddConv = qtyToIssueToAdd.convertTo(uomConversionCtx, uom);
+			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
 
 			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getQty());
 			husToAssign.add(huToAssign);

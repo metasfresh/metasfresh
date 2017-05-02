@@ -27,7 +27,6 @@ package org.eevolution.model;
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -49,7 +48,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -78,12 +76,13 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 
 /**
@@ -166,10 +165,10 @@ public class MPPOrder extends X_PP_Order implements DocAction
 				{
 					BigDecimal qtydelivered = qtyToDeliver;
 					qtydelivered.setScale(4, BigDecimal.ROUND_HALF_UP);
-					qtydelivered = Env.ZERO;
+					qtydelivered = BigDecimal.ZERO;
 				}
 
-				BigDecimal onHand = Env.ZERO;
+				BigDecimal onHand = BigDecimal.ZERO;
 				for (MStorage storage : storages)
 				{
 					onHand = onHand.add(storage.getQtyOnHand());
@@ -245,7 +244,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		// New
 		if (PP_Order_ID == 0)
 		{
-			setDefault();
+			Services.get(IPPOrderBL.class).setDefaults(this);
 		}
 	} // PP_Order
 
@@ -342,22 +341,6 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	private List<I_PP_Order_BOMLine> getLines()
 	{
 		return getLines(true);
-	}
-
-	public void setC_DocTypeTarget_ID(String docBaseType)
-	{
-		if (getC_DocTypeTarget_ID() > 0)
-			return;
-
-		MDocType[] doc = MDocType.getOfDocBaseType(getCtx(), docBaseType);
-		if (doc == null)
-		{
-			throw new DocTypeNotFoundException(docBaseType, "");
-		}
-		else
-		{
-			setC_DocTypeTarget_ID(doc[0].get_ID());
-		}
 	}
 
 	@Override
@@ -623,7 +606,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			final String value = product.getValue(); // 2 - Value
 			final int M_Product_ID = product.getM_Product_ID(); // 3 - Product id
 			final BigDecimal qtyToDeliver = line.getQtyRequiered(); // 4 - QtyToDeliver
-			final BigDecimal qtyScrapComponent = Env.ZERO; // 5 - QtyScrapComponent
+			final BigDecimal qtyScrapComponent = BigDecimal.ZERO; // 5 - QtyScrapComponent
 
 			final PPOrderBOMLineModel bomLineModel = new PPOrderBOMLineModel(id, line.isCritical(), value, M_Product_ID, qtyToDeliver, qtyScrapComponent);
 			//
@@ -687,7 +670,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 					key.getKey(),
 					today, qtyToDeliver,
 					qtyScrapComponent,
-					Env.ZERO,
+					BigDecimal.ZERO,
 					storages, forceIssue);
 		}
 
@@ -950,7 +933,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	} // getApprovalAmt
 
 	@Override
@@ -1087,7 +1070,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 				{
 					CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
 				}
-				else if (Services.get(IPPOrderBOMBL.class).isComponentType(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product))
+				else if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product))
 				{
 					CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
 				}
@@ -1105,7 +1088,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 						movementdate,													// MovementDate
 						qtyIssue, qtyScrap, qtyReject,									// qty,scrap,reject
 						0,																// durationSetup
-						Env.ZERO														// duration
+						BigDecimal.ZERO														// duration
 						);
 
 				sb.append(cc.getDocumentNo());
@@ -1132,8 +1115,8 @@ public class MPPOrder extends X_PP_Order implements DocAction
 					MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), 	// C_DocType_ID,
 					X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, 						// Production "-"
 					movementdate,															// MovementDate
-					toIssue, Env.ZERO, Env.ZERO,											// qty,scrap,reject
-					0, Env.ZERO																// durationSetup,duration
+					toIssue, BigDecimal.ZERO, BigDecimal.ZERO,											// qty,scrap,reject
+					0, BigDecimal.ZERO																// durationSetup,duration
 					);
 
 			sb.append(cc.getDocumentNo());
@@ -1178,30 +1161,6 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		return Services.get(IPPOrderBL.class).isDelivered(this);
 	}
 
-	/**
-	 * Set default value and reset values whe copy record
-	 */
-	public void setDefault()
-	{
-		setLine(10);
-		setPriorityRule(PRIORITYRULE_Medium);
-		setDescription("");
-		setQtyDelivered(Env.ZERO);
-		setQtyReject(Env.ZERO);
-		setQtyScrap(Env.ZERO);
-		setIsSelected(false);
-		setIsSOTrx(false);
-		setIsApproved(false);
-		setIsPrinted(false);
-		setProcessed(false);
-		setProcessing(false);
-		setPosted(false);
-		setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_ManufacturingOrder);
-		setC_DocType_ID(getC_DocTypeTarget_ID());
-		setDocStatus(DOCSTATUS_Drafted);
-		setDocAction(DOCACTION_Complete);
-	}
-
 	@Deprecated
 	public void addDescription(String description)
 	{
@@ -1242,10 +1201,10 @@ public class MPPOrder extends X_PP_Order implements DocAction
 							MPPCostCollector.COSTCOLLECTORTYPE_ActivityControl,
 							getUpdated(),
 							activity.getQtyToDeliver(),
-							Env.ZERO,
-							Env.ZERO,
+							BigDecimal.ZERO,
+							BigDecimal.ZERO,
 							0,
-							Env.ZERO);
+							BigDecimal.ZERO);
 				}
 			}
 		}
@@ -1282,7 +1241,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			return;
 		}
 		// 06005
-		if (Services.get(IPPOrderBOMBL.class).isComponentType(line, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
+		if (PPOrderUtil.isComponentTypeOneOf(line, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
 		{
 			return;
 		}
@@ -1319,10 +1278,10 @@ public class MPPOrder extends X_PP_Order implements DocAction
 				MPPCostCollector.COSTCOLLECTORTYPE_UsegeVariance,
 				movementDate,
 				qtyUsageVariance, // Qty
-				Env.ZERO, // scrap,
-				Env.ZERO, // reject,
+				BigDecimal.ZERO, // scrap,
+				BigDecimal.ZERO, // reject,
 				0, // durationSetup,
-				Env.ZERO // duration
+				BigDecimal.ZERO // duration
 				);
 	}
 
@@ -1366,8 +1325,8 @@ public class MPPOrder extends X_PP_Order implements DocAction
 				MPPCostCollector.COSTCOLLECTORTYPE_UsegeVariance,
 				movementDate,
 				qtyOpen, // Qty
-				Env.ZERO, // scrap,
-				Env.ZERO, // reject,
+				BigDecimal.ZERO, // scrap,
+				BigDecimal.ZERO, // reject,
 				setupTimeVariance.intValueExact(), // durationSetup,
 				durationVariance // duration
 				);

@@ -67,6 +67,40 @@ public class Services
 	private static IServiceInterceptor interceptor = new JavaAssistInterceptor();
 
 	/**
+	 * Can be used to provide service implementations from the outside. Concrete goal: allow us to provide spring managed service implementations via {@link Services#get(Class)}.
+	 * 
+	 * @see Services#setExternalServiceImplProvider(IServiceImplProvider)
+	 * @task https://github.com/metasfresh/metasfresh/issues/427
+	 */
+	@FunctionalInterface
+	public interface IServiceImplProvider
+	{
+		/**
+		 * 
+		 * @param serviceClazz
+		 * @return a service implementation class, or {@code null} if none can't be provided.
+		 */
+		<T extends IService> T provideServiceImpl(Class<T> serviceClazz);
+	}
+
+	private static IServiceImplProvider externalServiceImplProvider;
+
+	/**
+	 * This method can optionally be called so that invocations of the {@link #get(Class)} method are able to receive service implementations that are not coming right out of this class.
+	 * 
+	 * If a service implementation was not yet cached within {@link Services} and is required, then the external service implementation provider (if one was set via this method) will be invoked first and if it returns a non null result, that result will be cached.
+	 * 
+	 * @param externalServiceImplProvider
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/427
+	 */
+	public static void setExternalServiceImplProvider(final IServiceImplProvider externalServiceImplProvider)
+	{
+		Services.externalServiceImplProvider = externalServiceImplProvider;
+		logger.info("Registered external service implementation provider: {}", externalServiceImplProvider);
+	}
+
+	/**
 	 * Map from "service interface class" to "service implementation constructor"
 	 * <p>
 	 * NOTE:
@@ -138,7 +172,7 @@ public class Services
 	 *
 	 * @param serviceInterfaceClass
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>if <code>T</code> extends {@link ISingletonService} then this method returns a cached instance of that service implementation
 	 *         <li>If <code>T</code> extends {@link IMultitonService}, then this method returns a NEW instance of that service implementation
 	 *         </ul>
@@ -201,15 +235,26 @@ public class Services
 	{
 		try
 		{
-			//
-			// Get the service implementation constructor
-			@SuppressWarnings("unchecked")
-			final Constructor<T> serviceImplConstructor = (Constructor<T>)serviceInterface2implementionClassCtor.get(serviceInterfaceClass);
+			T serviceImpl = null;
+			
+			// gh #427 first check if an external service implementation provider was given to us, and if so, see what it has to offer.
+			if (externalServiceImplProvider != null)
+			{
+				serviceImpl = externalServiceImplProvider.provideServiceImpl(serviceInterfaceClass);
+			}
 
-			//
-			// Create service implementation instance
-			final T serviceImpl = serviceImplConstructor.newInstance();
-			assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
+			if (serviceImpl == null)
+			{
+				// if we did not get an implementation via externalServiceImplProvider, try our legacy way of looking up and invoking the implementation's default constructor
+				// Get the service implementation constructor
+				@SuppressWarnings("unchecked")
+				final Constructor<T> serviceImplConstructor = (Constructor<T>)serviceInterface2implementionClassCtor.get(serviceInterfaceClass);
+
+				//
+				// Create service implementation instance
+				serviceImpl = serviceImplConstructor.newInstance();
+				assertValidServiceImpl(serviceInterfaceClass, serviceImpl);
+			}
 
 			//
 			// Load service

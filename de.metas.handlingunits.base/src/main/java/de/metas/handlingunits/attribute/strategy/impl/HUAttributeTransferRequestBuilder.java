@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.strategy.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -35,6 +34,7 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.quantity.Quantity;
 
 /**
  * @author al

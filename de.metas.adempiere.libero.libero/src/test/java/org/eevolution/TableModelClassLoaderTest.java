@@ -24,7 +24,6 @@ package org.eevolution;
 
 
 import org.adempiere.ad.persistence.TableModelClassLoaderTester;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.MPPCostCollector;

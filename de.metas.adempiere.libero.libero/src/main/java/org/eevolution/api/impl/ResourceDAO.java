@@ -90,11 +90,4 @@ public class ResourceDAO implements IResourceDAO
 
 		return null;
 	}
-	
-	@Override
-	public I_M_Product retrieveProductForResource(final Properties ctx, final int S_Resource_ID)
-	{
-		return MProduct.forS_Resource_ID(ctx, S_Resource_ID, ITrx.TRXNAME_None);		
-	}
-
 }

@@ -40,10 +40,11 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
-import org.eevolution.mrp.api.IMRPSegment;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.material.planning.IMRPSegment;
 
 public class MRPSegmentsCollectorTest
 {

@@ -39,11 +39,12 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPContextRunnable;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
-import org.eevolution.mrp.api.IMutableMRPContext;
+
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
 
 public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 {
@@ -53,10 +54,10 @@ public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 	private final transient IMRPBL mrpBL = Services.get(IMRPBL.class);
 
 	@ToStringBuilder(skip = true)
-	private final IMRPContext _mrpContext;
+	private final IMaterialPlanningContext _mrpContext;
 	private final BigDecimal _qtyOnHandInitial;
 
-	public QtyOnHandMRPSuppliesPool(final IMRPContext mrpContext)
+	public QtyOnHandMRPSuppliesPool(final IMaterialPlanningContext mrpContext)
 	{
 		super();
 
@@ -68,7 +69,7 @@ public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 		_qtyOnHandInitial = qtyOnHand;
 	}
 
-	private IMRPContext getMRPContext()
+	private IMaterialPlanningContext getMRPContext()
 	{
 		return _mrpContext;
 	}
@@ -133,7 +134,7 @@ public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 
 	private void subtractQtyOnHandAvailable(final BigDecimal qtyOnHand)
 	{
-		final IMRPContext mrpContext = getMRPContext();
+		final IMaterialPlanningContext mrpContext = getMRPContext();
 		BigDecimal qtyOnHandAvailable = mrpContext.getQtyProjectOnHand();
 		qtyOnHandAvailable = qtyOnHandAvailable.subtract(qtyOnHand);
 		mrpContext.setQtyProjectOnHand(qtyOnHandAvailable);
@@ -146,7 +147,7 @@ public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 
 	private I_PP_MRP createMRPSupplyForQtyOnHandReservation(final IMRPRecordAndQty mrpDemand, final BigDecimal qtyProjectedOnHandToReserve)
 	{
-		final IMRPContext mrpContext = getMRPContext();
+		final IMaterialPlanningContext mrpContext = getMRPContext();
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 		Check.assume(qtyProjectedOnHandToReserve.signum() > 0, "qtyProjectedOnHandToReserve > 0 but it was {}", qtyProjectedOnHandToReserve);
 		trxManager.assertTrxNotNull(mrpContext);

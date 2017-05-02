@@ -26,7 +26,6 @@ package de.metas.handlingunits.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -34,6 +33,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IStatefulHUCapacityDefinition;
+import de.metas.quantity.Quantity;
 
 /* package */class StatefulHUCapacityDefinition implements IStatefulHUCapacityDefinition
 {

@@ -29,6 +29,8 @@ import org.compiere.model.I_C_UOM;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
+import de.metas.quantity.Quantity;
+
 public class QuantityExpectation
 {
 	private BigDecimal _qty;

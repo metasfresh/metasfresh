@@ -6,13 +6,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.api.IProductPlanningDAO;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 
 /*
  * #%L

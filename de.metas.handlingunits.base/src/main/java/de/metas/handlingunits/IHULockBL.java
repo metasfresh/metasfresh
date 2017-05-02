@@ -70,6 +70,8 @@ public interface IHULockBL extends ISingletonService
 	 */
 	void unlock(I_M_HU hu, LockOwner lockOwner);
 
+	void unlockOnAfterCommit(final int huId, LockOwner lockOwner);
+
 	void unlockAll(Collection<I_M_HU> hus, LockOwner lockOwner);
 
 	/**

@@ -45,14 +45,14 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.eevolution.api.IProductPlanningDAO;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
-import org.eevolution.exceptions.NoPlantForWarehouseException;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.IProductBL;
 import de.metas.storage.IStorageRecord;
 

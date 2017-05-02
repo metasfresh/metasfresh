@@ -190,7 +190,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final StringBuilder sql = new StringBuilder();
 
 		final List<Object> params = new ArrayList<Object>();
-		sql.append("validFrom < ? ");
+		sql.append(I_C_Tax.COLUMNNAME_ValidFrom + " < ? ");
 		params.add(date);
 
 		if (countryFromId > 0)
@@ -262,12 +262,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		if (taxId <= 0)
 		{
-			final AdempiereException ex = new AdempiereException("@NotFound@ @C_Tax_ID@" + "\nQuery: " + query);
-			if(throwEx)
-			{
-				throw ex;
-			}
-			log.warn("Tax not found. Return -1.", ex);
+			TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(isSOTrx)
+					.billDate(date)
+					.billToC_Location_ID(locationTo.getC_Location_ID())
+					.build()
+					.throwOrLogWarning(throwEx, log);
 			return -1;
 		}
 
@@ -440,12 +441,17 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		if (taxId <= 0)
 		{
-			throw new TaxNotFoundException(productId, chargeId,
-					// metas start: rc: 03083: call the TaxNotFoundException with parameter C_TaxCategory, too.
-					taxCategoryID,
-					// metas end: rc: 03083
-					isSOTrx, shipDate, 0, shipBPLocation.getC_Location_ID(), billDate, 0,
-					new MBPartnerLocation(ctx, billC_BPartner_Location_ID, null).getC_Location_ID());
+			throw TaxNotFoundException.builder()
+					.productId(productId).chargeId(chargeId)
+					.taxCategoryId(taxCategoryID)
+					.isSOTrx(isSOTrx)
+					.shipDate(shipDate)
+					.shipFromC_Location_ID(0)
+					.shipToC_Location_ID(shipBPLocation.getC_Location_ID())
+					.billDate(billDate)
+					.billFromC_Location_ID(0)
+					.billToC_Location_ID(InterfaceWrapperHelper.loadOutOfTrx(billC_BPartner_Location_ID, I_C_BPartner_Location.class).getC_Location_ID())
+					.build();
 		}
 		return taxId;
 	}

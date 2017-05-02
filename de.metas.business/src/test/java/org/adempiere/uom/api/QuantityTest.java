@@ -13,32 +13,31 @@ package org.adempiere.uom.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
-import org.adempiere.uom.exceptions.QuantitiesUOMNotMatchingExpection;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.hamcrest.number.BigDecimalCloseTo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
+import de.metas.quantity.Quantity;
 
 public class QuantityTest
 {
@@ -50,7 +49,7 @@ public class QuantityTest
 	{
 		AdempiereTestHelper.get().init();
 
-		this.contextProvider = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		this.contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 		this.uomHelper = new UOMTestHelper(contextProvider.getCtx());
 	}
 
@@ -154,74 +153,6 @@ public class QuantityTest
 				.sourceQty(sourceQty.negate())
 				.sourceUOM(sourceUOM)
 				.assertExpected("Negated quantity", quantityNegated);
-	}
-
-	@Test
-	public void test_convertTo_CurrentUOM()
-	{
-		final BigDecimal qty = new BigDecimal("1234");
-		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
-		final BigDecimal sourceQty = new BigDecimal("1235");
-		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
-		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-
-		final IUOMConversionContext conversionCtx = null; // don't care, shall not be used
-		final Quantity quantityConv = quantity.convertTo(conversionCtx, uom);
-		Assert.assertSame("Invalid converted quantity", quantity, quantityConv);
-	}
-
-	@Test
-	public void test_convertTo_SourceUOM()
-	{
-		final BigDecimal qty = new BigDecimal("1234");
-		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
-		final BigDecimal sourceQty = new BigDecimal("1235");
-		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
-		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-
-		final IUOMConversionContext conversionCtx = null; // don't care, shall not be used
-		final Quantity quantityConv = quantity.convertTo(conversionCtx, sourceUOM);
-		new QuantityExpectation()
-				.sameQty(sourceQty)
-				.uom(sourceUOM)
-				.sameSourceQty(qty)
-				.sourceUOM(uom)
-				.assertExpected("converted quantity", quantityConv);
-	}
-
-	@Test
-	public void test_convertTo_OtherUOM()
-	{
-		//
-		// Create Quantity
-		final BigDecimal qty = new BigDecimal("1234");
-		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-		final BigDecimal sourceQty = new BigDecimal("1235");
-		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM_Source", 2);
-		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-
-		//
-		// Create the other UOM
-		final I_C_UOM otherUOM = uomHelper.createUOM("UOM_Other", 2);
-
-		//
-		// Create conversion rate: uom -> otherUOM (for product)
-		final I_M_Product product = uomHelper.createProduct("product", uom);
-		uomHelper.createUOMConversion(product, uom, otherUOM, new BigDecimal("2"), new BigDecimal("0.5"));
-
-		//
-		// Create UOM Conversion context
-		final IUOMConversionContext uomConversionCtx = uomHelper.createUOMConversionContext(product);
-
-		//
-		// Convert the quantity to "otherUOM" and validate
-		final Quantity quantityConv = quantity.convertTo(uomConversionCtx, otherUOM);
-		new QuantityExpectation()
-				.qty("2468")
-				.uom(otherUOM)
-				.sourceQty(qty)
-				.sourceUOM(uom)
-				.assertExpected("converted quantity", quantityConv);
 	}
 
 	/**

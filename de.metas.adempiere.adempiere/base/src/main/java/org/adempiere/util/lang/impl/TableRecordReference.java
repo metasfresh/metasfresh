@@ -91,13 +91,13 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 		return of(model);
 	}
-	
+
 	/**
 	 * @return immutable list of {@link TableRecordReference}s
 	 */
 	public static final List<TableRecordReference> ofList(final List<?> models)
 	{
-		if(models == null || models.isEmpty())
+		if (models == null || models.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -108,10 +108,10 @@ public final class TableRecordReference implements ITableRecordReference
 				.map(model -> of(model))
 				.collect(GuavaCollectors.toImmutableList());
 	}
-	
+
 	public static final Set<TableRecordReference> ofSet(final Collection<?> models)
 	{
-		if(models == null || models.isEmpty())
+		if (models == null || models.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
@@ -123,14 +123,18 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-
-
+	/**
+	 * Creates an {@link TableRecordReference} from the given {@code model}'s {@code AD_Table_ID} and {@code Record_ID}.
+	 * 
+	 * @param model
+	 * @return
+	 */
 	public static TableRecordReference ofReferenced(final Object model)
 	{
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
 
-		return new TableRecordReference(adTableId.or(-1), recordId.or(-1));
+		return new TableRecordReference(adTableId.or(-1), recordId.or(-1)); // the -1 shall cause an exception to be thrown
 	}
 
 	/**
@@ -163,7 +167,7 @@ public final class TableRecordReference implements ITableRecordReference
 	 */
 	public static final List<ITableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
 	{
-		if(recordIds == null || recordIds.isEmpty())
+		if (recordIds == null || recordIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}

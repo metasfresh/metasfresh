@@ -26,15 +26,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -57,6 +54,9 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.quantity.Quantity;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -64,12 +64,10 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-/* package */class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
+public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueProducer.class);
-	//
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	//
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	//
@@ -78,12 +76,12 @@ import de.metas.logging.LogManager;
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
-	private static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
+	public static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
 
 	private Date movementDate;
 	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
 
-	public HUPPOrderIssueProducer()
+	HUPPOrderIssueProducer()
 	{
 		super();
 	}
@@ -111,7 +109,10 @@ import de.metas.logging.LogManager;
 		// the candidates are created and processed in one uber-transaction
 		// trxManager.assertThreadInheritedTrxNotExists();
 
+		// Lock the HUs first, to make sure nobody else is changing them
+		// The lock shall stay until the issue candidate is processed.
 		huLockBL.lockAll(hus, lockOwner);
+		
 		boolean success = false;
 		try
 		{
@@ -128,6 +129,7 @@ import de.metas.logging.LogManager;
 		}
 		finally
 		{
+			// In case of failure, unlock the HUs.
 			if (!success)
 			{
 				huLockBL.unlockAll(hus, lockOwner);
@@ -246,7 +248,7 @@ import de.metas.logging.LogManager;
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		targetOrderBOMLines.forEach(bomLine -> {
-			if (!ppOrderBOMBL.isIssue(bomLine))
+			if (!PPOrderUtil.isIssue(bomLine.getComponentType()))
 			{
 				throw new IllegalArgumentException("Not an issue BOM line: " + bomLine);
 			}
@@ -283,7 +285,7 @@ import de.metas.logging.LogManager;
 
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrder, I_PP_Order_BOMLine.class)
 				.stream()
-				.filter(ppOrderBOMBL::isIssue)
+				.filter(line -> PPOrderUtil.isIssue(line.getComponentType()))
 				.collect(GuavaCollectors.toImmutableList());
 
 		return setTargetOrderBOMLines(ppOrderBOMLines);
