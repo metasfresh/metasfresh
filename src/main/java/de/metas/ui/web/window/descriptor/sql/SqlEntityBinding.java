@@ -29,6 +29,10 @@ public interface SqlEntityBinding
 	String getTableName();
 
 	String getTableAlias();
+	
+	String getKeyColumnName();
+	
+	IStringExpression getSqlWhereClause();
 
 	/** @return field binding or throws exception in case it was not found */
 	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
@@ -38,5 +42,7 @@ public interface SqlEntityBinding
 	{
 		return getFieldByFieldName(fieldName).getSqlOrderBy();
 	}
+
+
 
 }

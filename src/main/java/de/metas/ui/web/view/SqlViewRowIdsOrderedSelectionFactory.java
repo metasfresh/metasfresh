@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
@@ -18,12 +16,12 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
-import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 import lombok.NonNull;
 
 /*
@@ -36,12 +34,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,39 +48,33 @@ import lombok.NonNull;
 
 public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSelectionFactory
 {
+	public static final SqlViewRowIdsOrderedSelectionFactory of(final SqlEntityBinding sqlEntityBinding)
+	{
+		return new SqlViewRowIdsOrderedSelectionFactory(sqlEntityBinding);
+	}
 
 	private static final Logger logger = LogManager.getLogger(SqlViewRowIdsOrderedSelectionFactory.class);
 
-	private final String sqlCreateFromViewId;
-	private final List<DocumentQueryOrderBy> defaultOrderBys;
-	private final SqlViewBinding _sqlBindings;
+	private final SqlEntityBinding sqlEntityBinding;
 
-	SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlViewBinding sqlBindings)
+	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlEntityBinding sqlEntityBinding)
 	{
-		this._sqlBindings = sqlBindings;
-		sqlCreateFromViewId = sqlBindings.getSqlCreateSelectionFromSelection();
-
-		defaultOrderBys = sqlBindings.getDefaultOrderBys();
+		this.sqlEntityBinding = sqlEntityBinding;
 	}
 
-	private String getSqlCreateSelectionFrom( //
-			final List<Object> sqlParams //
-			, final ViewEvaluationCtx viewEvalCtx //
-			, final ViewId newViewId //
-			, final List<DocumentFilter> filters //
-			, final int queryLimit //
-	)
+	private SqlViewSelectionQueryBuilder newSqlViewSelectionQueryBuilder()
 	{
-		return _sqlBindings.getSqlCreateSelectionFrom(sqlParams, viewEvalCtx, newViewId, filters, queryLimit);
-	}
-
-	private final IStringExpression getFieldOrderBy(final String fieldName)
-	{
-		return _sqlBindings.getFieldOrderBy(fieldName);
+		return SqlViewSelectionQueryBuilder.newInstance(sqlEntityBinding);
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
+	public String getSqlWhereClause(final ViewId viewId, final Collection<DocumentId> rowIds)
+	{
+		return newSqlViewSelectionQueryBuilder().buildSqlWhereClause(viewId.getViewId(), rowIds);
+	}
+
+	@Override
+	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final ViewId viewId = ViewId.random(windowId);
 
@@ -95,7 +87,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		//
 		//
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = getSqlCreateSelectionFrom(sqlParams, viewEvalCtx, viewId, filters, queryLimit);
+		final String sql = newSqlViewSelectionQueryBuilder().buildSqlCreateSelectionFrom(sqlParams, viewEvalCtx, viewId, filters, orderBys, queryLimit);
 
 		//
 		// Execute it, so we insert in our T_WEBUI_ViewSelection
@@ -107,7 +99,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return ViewRowIdsOrderedSelection.builder()
 				.setViewId(viewId)
 				.setSize(rowsCount)
-				.setOrderBys(defaultOrderBys)
+				.setOrderBys(orderBys)
 				.setQueryLimit(queryLimit)
 				.build();
 	}
@@ -121,11 +113,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		final ViewId newViewId = ViewId.random(windowId);
 		final String newSelectionId = newViewId.getViewId();
 
-		final String sqlOrderBys = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
-				.buildSqlOrderBy(orderBys)
-				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-
-		final String sqlFinal = sqlCreateFromViewId.replace(SqlViewBinding.PLACEHOLDER_OrderBy, sqlOrderBys);
+		final String sqlFinal = newSqlViewSelectionQueryBuilder().buildSqlCreateSelectionFromSelection(viewEvalCtx, orderBys);
 
 		final int rowsCount = DB.executeUpdateEx(sqlFinal, new Object[] { newSelectionId, fromSelectionId }, ITrx.TRXNAME_ThreadInherited);
 
@@ -136,11 +124,4 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				.setQueryLimit(fromSelection.getQueryLimit())
 				.build();
 	}
-	
-	@Override
-	public String getSqlWhereClause(final ViewId viewId, final Collection<DocumentId> rowIds)
-	{
-		return _sqlBindings.getSqlWhereClause(viewId.getViewId(), rowIds);
-	}
-
 }

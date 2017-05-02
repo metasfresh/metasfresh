@@ -155,6 +155,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlTableAlias;
 	}
 
+	@Override
 	public String getKeyColumnName()
 	{
 		return sqlKeyColumnName;
@@ -175,6 +176,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlSelectAllFrom;
 	}
 
+	@Override
 	public IStringExpression getSqlWhereClause()
 	{
 		return sqlWhereClause;

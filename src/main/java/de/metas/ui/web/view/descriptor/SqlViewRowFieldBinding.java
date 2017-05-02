@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
@@ -61,32 +62,32 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	@Builder
 	private SqlViewRowFieldBinding(
 			@NonNull final String fieldName //
-			, @NonNull final String columnName //
-			, @NonNull final String columnSql //
+			, final String columnName //
+			, final String columnSql //
 			, final boolean keyColumn //
 			, @NonNull final DocumentFieldWidgetType widgetType //
 			//
 			, @NonNull final Class<?> sqlValueClass //
-			, @NonNull final String sqlSelectValue //
-			, @NonNull final IStringExpression sqlSelectDisplayValue //
+			, final String sqlSelectValue //
+			, final IStringExpression sqlSelectDisplayValue //
 			, final boolean usingDisplayColumn //
 			//
-			, @NonNull final IStringExpression sqlOrderBy //
+			, final IStringExpression sqlOrderBy //
 			, @NonNull final SqlViewRowFieldLoader fieldLoader //
 	)
 	{
 		this.fieldName = fieldName;
-		this.columnName = columnName;
-		this.columnSql = columnSql;
+		this.columnName = columnName != null ? columnName : this.fieldName;
+		this.columnSql = columnSql != null ? columnSql : this.columnName;
 		this.keyColumn = keyColumn;
 		this.widgetType = widgetType;
 
 		this.sqlValueClass = sqlValueClass;
-		this.sqlSelectValue = sqlSelectValue;
-		this.sqlSelectDisplayValue = sqlSelectDisplayValue;
+		this.sqlSelectValue = sqlSelectValue != null ? sqlSelectValue : this.columnSql;
+		this.sqlSelectDisplayValue = sqlSelectDisplayValue != null ? sqlSelectDisplayValue : IStringExpression.NULL;
 		this.usingDisplayColumn = usingDisplayColumn;
 
-		this.sqlOrderBy = sqlOrderBy;
+		this.sqlOrderBy = sqlOrderBy != null ? sqlOrderBy : ConstantStringExpression.of(this.columnSql);
 		this.fieldLoader = fieldLoader;
 	}
 

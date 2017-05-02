@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -174,8 +173,6 @@ public class HUEditorViewFactory implements IViewFactory
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
 
-		final ViewId viewId = ViewId.random(windowId);
-
 		//
 		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
 		final Set<DocumentPath> referencingDocumentPaths = request.getReferencingDocumentPaths();
@@ -193,7 +190,7 @@ public class HUEditorViewFactory implements IViewFactory
 		
 		return HUEditorView.builder()
 				.setParentViewId(request.getParentViewId())
-				.setViewId(viewId)
+				.setWindowId(windowId)
 				.setHUIds(request.getFilterOnlyIds())
 				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())

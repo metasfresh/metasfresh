@@ -35,6 +35,7 @@ import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -86,19 +87,27 @@ public class HUEditorView implements IView
 
 	private HUEditorView(final Builder builder)
 	{
-		super();
-
 		parentViewId = builder.getParentViewId();
-		viewId = builder.getViewId();
-		
+	
 		this.huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
-				.windowId(viewId.getWindowId())
+				.windowId(builder.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
 				.attributesProvider(huAttributesProvider)
 				.build();
 
-		rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, builder.getHUIds());
+//		final boolean isHighVolume = false; // TODO: high volume is work in progress
+//		if (isHighVolume)
+//		{
+//			final HUEditorViewBuffer_HighVolume rowsBuffer = new HUEditorViewBuffer_HighVolume(builder.getWindowId(), huEditorRepo);
+//			this.rowsBuffer = rowsBuffer;
+//			this.viewId = rowsBuffer.getViewId();
+//		}
+//		else
+		{
+			this.rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, builder.getHUIds());
+			this.viewId = ViewId.random(builder.getWindowId());
+		}
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
@@ -367,7 +376,7 @@ public class HUEditorView implements IView
 	public static final class Builder
 	{
 		private ViewId parentViewId;
-		private ViewId viewId;
+		private WindowId windowId;
 
 		private String referencingTableName;
 		private Set<DocumentPath> referencingDocumentPaths;
@@ -396,15 +405,15 @@ public class HUEditorView implements IView
 			return parentViewId;
 		}
 
-		public Builder setViewId(final ViewId viewId)
+		public Builder setWindowId(WindowId windowId)
 		{
-			this.viewId = viewId;
+			this.windowId = windowId;
 			return this;
 		}
 
-		public ViewId getViewId()
+		private WindowId getWindowId()
 		{
-			return viewId;
+			return windowId;
 		}
 
 		public Builder setHUIds(final Collection<Integer> huIds)

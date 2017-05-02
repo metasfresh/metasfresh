@@ -32,7 +32,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 public interface ViewRowIdsOrderedSelectionFactory
 {
-	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters);
+	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys);
 
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 

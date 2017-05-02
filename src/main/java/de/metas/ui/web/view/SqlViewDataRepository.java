@@ -67,6 +67,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final IStringExpression sqlSelectByPage;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final List<DocumentQueryOrderBy> defaultOrderBys;
 
 	private final String keyFieldName;
 	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
@@ -77,7 +78,8 @@ class SqlViewDataRepository implements IViewDataRepository
 		sqlSelectById = sqlBindings.getSqlSelectById();
 		sqlSelectByPage = sqlBindings.getSqlSelectByPage();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
-		viewRowIdsOrderedSelectionFactory = new SqlViewRowIdsOrderedSelectionFactory(sqlBindings);
+		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
+		defaultOrderBys = sqlBindings.getDefaultOrderBys();
 
 		String keyFieldName = null;
 		final ImmutableMap.Builder<String, SqlViewRowFieldLoader> rowFieldLoaders = ImmutableMap.builder();
@@ -120,7 +122,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Override
 	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
 	{
-		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters);
+		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters, defaultOrderBys);
 	}
 
 	@Override

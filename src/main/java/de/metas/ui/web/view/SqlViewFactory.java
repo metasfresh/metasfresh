@@ -157,6 +157,7 @@ public class SqlViewFactory implements IViewFactory
 				.setTableAlias(entityBinding.getTableAlias())
 				.setDisplayFieldNames(displayFieldNames)
 				.setViewFilterDescriptors(filterDescriptors)
+				.setSqlWhereClause(entityBinding.getSqlWhereClause())
 				.setOrderBys(entityBinding.getDefaultOrderBys());
 
 		entityBinding.getFields()
