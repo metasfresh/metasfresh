@@ -1,7 +1,9 @@
 package de.metas.dlm.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.util.Services;
 
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.swingui.PreferenceCustomizer;
 
 /*
@@ -28,11 +30,11 @@ import de.metas.dlm.swingui.PreferenceCustomizer;
 
 /**
  * DLM SwingUI module activator.
- * 
+ *
  * This class will be loaded only if running with {@link org.compiere.Adempiere.RunMode#SWING_CLIENT} run mode.
- * 
+ *
  * NOTE: for this it's important to keep the name (incl. package name!) in sync with {@link de.metas.dlm.model.interceptor.Main} and also to keep the suffix {@code _SwingUI}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 public class Main_SwingUI extends AbstractModuleInterceptor
@@ -40,6 +42,11 @@ public class Main_SwingUI extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
-		PreferenceCustomizer.customizePrefernces(); // gh #975
+		// gh #1411: only add the connection customizer settings to the preferences window if it was enabled.
+		final IDLMService dlmService = Services.get(IDLMService.class);
+		if (dlmService.isConnectionCustomizerEnabled())
+		{
+			PreferenceCustomizer.customizePrefernces(); // gh #975
+		}
 	}
 }
