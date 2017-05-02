@@ -84,7 +84,7 @@ public interface IQueryBL extends ISingletonService
 
 	/**
 	 *
-	 * @param tableName name of the table in question.
+	 * @param tableName name of the table in question. <b>Can</b> be null
 	 * @return
 	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(String tableName);

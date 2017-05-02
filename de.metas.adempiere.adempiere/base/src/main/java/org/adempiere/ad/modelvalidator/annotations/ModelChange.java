@@ -86,7 +86,7 @@ public @interface ModelChange
 	boolean ifUIAction() default false;
 	
 	/**
-	 * <code>true</code> if this method shall be executed after transaction commit.
+	 * <code>true</code> if this method will be scheduled to be executed after transaction commit.
 	 * 
 	 * WARNING: any failure will be just logged and will not prevent execution.
 	 */

@@ -37,9 +37,7 @@ import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
-import org.adempiere.util.IService;
 import org.adempiere.util.Services;
-import org.adempiere.util.Services.IServiceImplProvider;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
@@ -56,15 +54,12 @@ import org.compiere.util.SecureInterface;
 import org.compiere.util.Splash;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -129,7 +124,7 @@ public class Adempiere
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
 	/** Logging */
-	private static Logger logger = null;
+	private static final transient Logger logger = LogManager.getLogger(Adempiere.class);
 
 	private ApplicationContext applicationContext;
 
@@ -149,30 +144,11 @@ public class Adempiere
 	public void setApplicationContext(final ApplicationContext applicationContext)
 	{
 		this.applicationContext = applicationContext;
+		logger.info("Set application context: {}", applicationContext);
+		
+		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
+		// we will call it when the spring context was loaded.
 
-		// gh #427: allow service implementations to be managed by spring.
-		// note that I'm doing it via anonymous class because it seems as if we can't do lambda, see http://stackoverflow.com/a/22588738/1012103
-		Services.setExternalServiceImplProvider(new IServiceImplProvider()
-		{
-			@Override
-			public <T extends IService> T provideServiceImpl(@NonNull final Class<T> serviceClazz)
-			{
-				try
-				{
-					return getBean(serviceClazz);
-				}
-				catch (final NoUniqueBeanDefinitionException e)
-				{
-					// not ok; we have > 1 matching beans defined in the spring context. So far that always indicated some sort of mistake, so let's escalate.
-					throw e;  
-				}
-				catch (final NoSuchBeanDefinitionException e)
-				{
-					// ok; the bean is not in the spring context, so let's just return null
-					return null; 
-				}
-			}
-		});
 	}
 
 	/**
@@ -198,6 +174,7 @@ public class Adempiere
 			throw new IllegalStateException("springApplicationContext not configured yet");
 		}
 
+		System.out.println("Trying to fetch " + requiredType);
 		return springApplicationContext.getBean(requiredType);
 	}
 
@@ -656,8 +633,6 @@ public class Adempiere
 		LogManager.initialize(runmodeClient);
 		Ini.setRunMode(runMode);
 
-		// Init Log
-		logger = LogManager.getLogger(Adempiere.class);
 		// Greeting
 		logger.info(getSummaryAscii());
 

@@ -59,6 +59,9 @@ import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
+
 /**
  *	PP Order WorkFlow Model
  *

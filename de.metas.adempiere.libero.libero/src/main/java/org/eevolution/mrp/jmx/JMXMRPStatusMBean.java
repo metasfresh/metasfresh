@@ -24,7 +24,8 @@ package org.eevolution.mrp.jmx;
 
 
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPSegment;
+
+import de.metas.material.planning.IMRPSegment;
 
 public interface JMXMRPStatusMBean
 {

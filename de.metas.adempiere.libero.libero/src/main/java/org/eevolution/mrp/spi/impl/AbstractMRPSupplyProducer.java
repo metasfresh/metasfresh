@@ -48,14 +48,12 @@ import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPDocumentDeleteService;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
-import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.api.MRPFirmType;
@@ -65,6 +63,8 @@ import org.slf4j.Logger;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 {
@@ -111,7 +111,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		return sourceTableNamesRO;
 	}
 
-	protected int getC_DocType_ID(final IMRPContext mrpContext, final String docBaseType)
+	protected int getC_DocType_ID(final IMaterialPlanningContext mrpContext, final String docBaseType)
 	{
 		final Properties ctx = mrpContext.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
@@ -245,7 +245,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		return null;
 	}
 
-	protected final <ModelType> void deletePO(final IMRPContext mrpContext,
+	protected final <ModelType> void deletePO(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final Class<ModelType> modelClass,
 			final IQueryFilter<ModelType> filter)
@@ -298,7 +298,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		mrpExecutorService.notifyMRPSegmentChanged(mrpSegment);
 	}
 
-	protected IMRPQueryBuilder createMRPQueryBuilderForCleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	protected IMRPQueryBuilder createMRPQueryBuilderForCleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		return executor.createMRPQueryBuilder(mrpContext)
 				.setSkipIfMRPExcluded(false) // when cleaning up, don't exclude anything
@@ -306,7 +306,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 	}
 
 	@Override
-	public void onQtyOnHandReservation(final IMRPContext mrpContext,
+	public void onQtyOnHandReservation(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final IMRPDemandToSupplyAllocation mrpDemandToSupplyAllocation)
 	{

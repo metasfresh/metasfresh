@@ -10,43 +10,52 @@ package org.eevolution.mrp;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Services;
+import org.eevolution.LiberoConfiguration;
 import org.eevolution.api.IDDOrderBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.eevolution.mrp.api.impl.MockedMRPExecutor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.MaterialPlanningConfiguration;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		LiberoConfiguration.class,
+		MaterialPlanningConfiguration.class
+})
+@ActiveProfiles("test")
 public abstract class AbstractMRPTestBase
 {
 	protected MRPTestHelper helper;
-	/** @see MRPTestHelper#mrpExecutor */
-	protected MockedMRPExecutor mrpExecutor;
-	
+
 	// services
 	protected IDocActionBL docActionBL = null;
 	protected IDDOrderBL ddOrderBL = null;
 
 	protected boolean dumpDatabaseOnFail = true;
+
 	@Rule
 	public TestWatcher testWatchman = new TestWatcher()
 	{
@@ -82,12 +91,11 @@ public abstract class AbstractMRPTestBase
 	public final void init()
 	{
 		this.helper = new MRPTestHelper();
-		this.mrpExecutor = helper.mrpExecutor;
+		// this.mrpExecutor = helper.mrpExecutor;
 
 		// services
 		docActionBL = Services.get(IDocActionBL.class);
 		ddOrderBL = Services.get(IDDOrderBL.class);
-
 
 		afterInit();
 	}
@@ -105,7 +113,7 @@ public abstract class AbstractMRPTestBase
 		helper.runMRP();
 	}
 
-	protected void runMRP(final IMRPContext mrpContext)
+	protected void runMRP(final IMaterialPlanningContext mrpContext)
 	{
 		helper.runMRP(mrpContext);
 	}

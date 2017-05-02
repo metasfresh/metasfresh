@@ -10,18 +10,17 @@ package de.metas.event.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashSet;
 import java.util.Set;
@@ -85,11 +84,9 @@ public class EventBusFactory implements IEventBusFactory
 	private final IJMSEndpoint jmsEndpoint = new ActiveMQJMSEndpoint();
 
 	private final ExecutorService eventBusExecutor;
-	
+
 	public EventBusFactory()
 	{
-		super();
-
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(jmsEndpoint), OnJMXAlreadyExistsPolicy.Replace);
 
 		// Setup EventBus executor
@@ -104,9 +101,9 @@ public class EventBusFactory implements IEventBusFactory
 		{
 			eventBusExecutor = null;
 		}
-		
+
 		//
-		// Setup default user notification topics 
+		// Setup default user notification topics
 		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotifications);
 		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotificationsLocal);
 	}
@@ -144,7 +141,7 @@ public class EventBusFactory implements IEventBusFactory
 	/**
 	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also bould to a JMS
 	 * endpoint. Otherwise the event bus will only be local.
-	 * 
+	 *
 	 * @param topic
 	 * @return
 	 */
@@ -157,7 +154,7 @@ public class EventBusFactory implements IEventBusFactory
 		// Bind the EventBus to JMS (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
-		if (EventBusConstants.isEnabled() && Type.REMOTE.equals(topic.getType()))
+		if (Type.REMOTE.equals(topic.getType()) && EventBusConstants.isEnabled())
 		{
 			if (jmsEndpoint.bindIfNeeded(eventBus))
 			{
@@ -220,7 +217,7 @@ public class EventBusFactory implements IEventBusFactory
 			return ImmutableSet.copyOf(availableUserNotificationsTopic);
 		}
 	}
-	
+
 	@Override
 	public boolean checkRemoteEndpointStatus()
 	{

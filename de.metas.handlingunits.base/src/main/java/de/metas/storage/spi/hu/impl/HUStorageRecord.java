@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageRecord;
 
 public final class HUStorageRecord implements IStorageRecord
@@ -79,7 +79,7 @@ public final class HUStorageRecord implements IStorageRecord
 		// ... and convert it to product's storage UOM
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
-		qtyOnHand = qtyOnHandSrc.convertTo(uomConversionCtx, productUOM);
+		qtyOnHand = uomConversionBL.convertQuantityTo(qtyOnHandSrc, uomConversionCtx, productUOM);
 	}
 
 	@Override

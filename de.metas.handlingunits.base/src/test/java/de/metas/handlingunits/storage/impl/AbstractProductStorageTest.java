@@ -26,7 +26,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.quantity.Quantity;
 
 public abstract class AbstractProductStorageTest extends AbstractHUTest
 {

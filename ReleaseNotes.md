@@ -15,13 +15,17 @@ Here come the actual release notes:
 **upcoming release for week 2017-18**
 
 * metasfresh-backend
+  * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
     * Adding the Translation of Request Type in webUI for language en_US.
   * [#1399](https://github.com/metasfresh/metasfresh/issues/1399) DocumentNo not generated for PP_Orders in WebUI
     * Adding Document No. control to all manufacturing Document Types.
   * [#1400](https://github.com/metasfresh/metasfresh/issues/1400) DocumentNo not generated for empties in WebUI
     * Adding the Document No. control to the empties return document.
-
+  * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
+    * Translating the jump Navigation of "New Request" to de_DE.
+  * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
+    * Creating the initial Layout for the Material Candidates Window in WebUI.
 
 # metasfresh 5.7 (2017-17)
 

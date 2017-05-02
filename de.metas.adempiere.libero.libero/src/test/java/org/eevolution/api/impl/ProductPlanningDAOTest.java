@@ -35,12 +35,14 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
-import org.eevolution.api.IProductPlanningDAO;
-import org.eevolution.exceptions.NoPlantForWarehouseException;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.material.planning.impl.ProductPlanningDAO;
 
 public class ProductPlanningDAOTest
 {
