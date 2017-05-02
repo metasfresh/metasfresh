@@ -41,6 +41,30 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 public interface IDLMService extends ISingletonService
 {
 	/**
+	 * Can be used to enable or disable the DLM connection customizer. Evaluated by {@link #isConnectionCustomizerEnabled()}.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1411
+	 *
+	 */
+	String SYSCONFIG_DLM_CONNECTION_CUSTOMIZER_ENABLED_GENERAL = "de.metas.dlm.ConnectionCustomizer.enabled.general";
+
+	/**
+	 * Can be used to enable or disable the DLM connection customizer on a per-user basis. Evaluated by {@link #isConnectionCustomizerEnabled()}.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1411
+	 *
+	 */
+	String SYSCONFIG_DLM_CONNECTION_CUSTOMIZER_ENABLED_FOR_USER_ = "de.metas.dlm.ConnectionCustomizer.enabled.AD_User_ID_";
+
+	/**
+	 *
+	 * @return
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1411
+	 */
+	boolean isConnectionCustomizerEnabled();
+
+	/**
 	 * Call the DB function <code>dlm.add_table_to_dlm()</code> with the given <code>table</code>'s name
 	 * and create new {@link I_AD_Column}s for the columns declared by {@link IDLMAware} if necessary.
 	 *
