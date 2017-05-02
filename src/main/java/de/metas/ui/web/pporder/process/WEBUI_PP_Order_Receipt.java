@@ -21,7 +21,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -162,7 +161,7 @@ public class WEBUI_PP_Order_Receipt
 		}
 
 		//
-		// OK, Override caption with current packing info, if any 
+		// OK, Override caption with current packing info, if any
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
 		if (!Check.isEmpty(packingInfo, true))
 		{
