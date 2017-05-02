@@ -152,6 +152,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		final WindowId windowId = viewId.getWindowId();
 		final String viewSelectionId = viewId.getViewId();
+		final String adLanguage = viewEvalCtx.getAD_Language();
 
 		final String sql = sqlBindings.getSqlSelectById().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 
@@ -169,7 +170,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			IViewRow firstDocument = null;
 			while (rs.next())
 			{
-				final IViewRow document = loadViewRow(rs, windowId);
+				final IViewRow document = loadViewRow(rs, windowId, adLanguage);
 				if (document == null)
 				{
 					continue;
@@ -204,7 +205,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	private IViewRow loadViewRow(final ResultSet rs, final WindowId windowId) throws SQLException
+	private IViewRow loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
 	{
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
 
@@ -213,7 +214,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			final String fieldName = field.getFieldName();
 			final boolean keyColumn = field.isKeyColumn();
 			final SqlViewRowFieldLoader fieldLoader = field.getFieldLoader();
-			final Object value = fieldLoader.retrieveValueAsJson(rs);
+			final Object value = fieldLoader.retrieveValueAsJson(rs, adLanguage);
 
 			if (keyColumn)
 			{
@@ -249,6 +250,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		logger.debug("Using: {}", orderedSelection);
 		final WindowId windowId = orderedSelection.getWindowId();
 		final String viewSelectionId = orderedSelection.getSelectionId();
+		final String adLanguage = viewEvalCtx.getAD_Language();
 
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + pageLength;
@@ -268,7 +270,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			final ImmutableList.Builder<IViewRow> pageBuilder = ImmutableList.builder();
 			while (rs.next())
 			{
-				final IViewRow row = loadViewRow(rs, windowId);
+				final IViewRow row = loadViewRow(rs, windowId, adLanguage);
 				if (row == null)
 				{
 					continue;

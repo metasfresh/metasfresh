@@ -353,6 +353,7 @@ class DefaultView implements IView
 		rowIds.forEach(cache_rowsById::remove);
 
 		// Collect event
+		// TODO: check which rowIds are contained in this view and fire events only for those
 		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
 	}
 

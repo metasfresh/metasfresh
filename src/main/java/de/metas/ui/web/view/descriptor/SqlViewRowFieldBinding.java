@@ -40,7 +40,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	@FunctionalInterface
 	public static interface SqlViewRowFieldLoader
 	{
-		Object retrieveValueAsJson(ResultSet rs) throws SQLException;
+		Object retrieveValueAsJson(ResultSet rs, String adLanguage) throws SQLException;
 	}
 
 	private final String fieldName;
