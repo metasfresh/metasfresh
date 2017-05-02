@@ -14,6 +14,8 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-18**
 
+## Features
+
 * metasfresh-backend
   * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
@@ -26,7 +28,8 @@ Here come the actual release notes:
     * Translating the jump Navigation of "New Request" to de_DE.
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
     * Creating the initial Layout for the Material Candidates Window in WebUI.
-
+  * [#1411](https://github.com/metasfresh/metasfresh/issues/1411) Possible 1:1 switch for Data Lifecycle Management users
+  
 # metasfresh 5.7 (2017-17)
 
 ## Features
