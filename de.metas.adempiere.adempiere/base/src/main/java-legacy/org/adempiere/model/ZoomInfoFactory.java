@@ -336,7 +336,7 @@ public class ZoomInfoFactory implements IZoomProvider
 
 					// #1062
 					// Only consider a window already seen if it actually has record count > 0
-					if (zoomInfo.getRecordCount() > 0)
+					if (checkRecordsCount && zoomInfo.getRecordCount() > 0)
 					{
 						if (!alreadySeenWindowIds.add(adWindowId))
 						{
