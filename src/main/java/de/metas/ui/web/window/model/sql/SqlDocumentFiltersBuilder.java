@@ -39,7 +39,7 @@ import lombok.NonNull;
 
 /**
  * Helper class to build SQL where clauses from {@link DocumentFilter}s.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -295,6 +295,11 @@ public class SqlDocumentFiltersBuilder
 
 	public SqlDocumentFiltersBuilder addFilters(final List<DocumentFilter> filters)
 	{
+		if(filters == null || filters.isEmpty())
+		{
+			return this;
+		}
+		
 		this.filters.addAll(filters);
 		return this;
 	}
