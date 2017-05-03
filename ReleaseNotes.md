@@ -33,6 +33,8 @@ Here come the actual release notes:
   * [#1411](https://github.com/metasfresh/metasfresh/issues/1411) Possible 1:1 switch for Data Lifecycle Management users
   * [#1417](https://github.com/metasfresh/metasfresh/issues/1417) Window for c_activity in WebUI
     * Adding the Activity window to WebUI.
+  * [#1418](https://github.com/metasfresh/metasfresh/issues/1418) Window for c_bank in WebUI
+    * Adding the Bank Master data window definition to WebUI.
   
 # metasfresh 5.7 (2017-17)
 
