@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 /*
  * #%L
@@ -38,12 +39,12 @@ import org.springframework.context.annotation.Bean;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@SpringBootApplication( //
-		scanBasePackages = { "de.metas", "org.adempiere" } //
-		, excludeName = "de.metas.ServerBoot" // exclude the ServerBoot, just in case it's on classpath when running (usually when started from eclipse)
-)
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@Profile(SwingUIApplication.PROFILE)
 public class SwingUIApplication
 {
+	public static final String PROFILE = "metasfresh-swingui";
+	
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -56,6 +57,7 @@ public class SwingUIApplication
 				// there might be resource/performance problems
 				// at any rate, we have not yet a solution as to how to configure them
 				.web(false)
+				.profiles(PROFILE)
 				.run(args);
 	}
 
