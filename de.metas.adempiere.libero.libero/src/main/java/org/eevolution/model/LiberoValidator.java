@@ -10,12 +10,12 @@ package org.eevolution.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,11 +29,17 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.eevolution.event.MaterialDocumentListener;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
+
+import de.metas.material.event.MaterialEventService;
 
 /**
  * Libero Validator
@@ -86,7 +92,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		// NOTE2: from task 09944 we decided to register the MRP main interceptor from AD_ModelValidator, to be able to disable it.
 		//engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
 	}
-	
+
 	@Override
 	protected void registerCallouts(IProgramaticCalloutProvider calloutsRegistry)
 	{
@@ -113,5 +119,20 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		Env.setContext(Env.getCtx(), CTX_IsLiberoEnabled, true);
+	}
+
+	@Override
+	protected void onAfterInit()
+	{
+		if (Ini.getRunMode() != RunMode.BACKEND)
+		{
+			return; // event based material planning can only run in the backend as of now
+		}
+
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final MaterialDocumentListener materialDocumentListener = Adempiere.getBean(MaterialDocumentListener.class);
+
+		materialEventService.registerListener(materialDocumentListener);
+		materialEventService.subscribeToEventBus();
 	}
 }	// LiberoValidator

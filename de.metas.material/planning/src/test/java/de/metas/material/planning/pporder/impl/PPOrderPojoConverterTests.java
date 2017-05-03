@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -152,7 +152,7 @@ public class PPOrderPojoConverterTests
 
 		assertThat(productionPlanEvent, notNullValue());
 
-		final ProductionOrderRequested productionOrderEvent = ProductionOrderRequested.builder()
+		final PPOrderRequestedEvent productionOrderEvent = PPOrderRequestedEvent.builder()
 				.eventDescr(new EventDescr())
 				.ppOrder(productionPlanEvent.getPpOrder())
 				.reference(productionPlanEvent.getReference())

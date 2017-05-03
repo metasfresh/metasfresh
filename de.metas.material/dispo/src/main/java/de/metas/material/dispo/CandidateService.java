@@ -2,13 +2,15 @@ package de.metas.material.dispo;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -35,7 +37,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Service
 public class CandidateService
 {
 	private final CandidateRepository candidateRepository;
@@ -73,7 +75,7 @@ public class CandidateService
 	 * @return
 	 */
 	@VisibleForTesting
-	ProductionOrderRequested requestProductionOrder(@NonNull final List<Candidate> group)
+	PPOrderRequestedEvent requestProductionOrder(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -118,7 +120,8 @@ public class CandidateService
 								.build());
 			}
 		}
-		return ProductionOrderRequested.builder()
+		return PPOrderRequestedEvent.builder()
+				.eventDescr(new EventDescr())
 				.eventDescr(new EventDescr())
 				.ppOrder(ppOrderBuilder.build())
 				.reference(group.get(0).getReference())

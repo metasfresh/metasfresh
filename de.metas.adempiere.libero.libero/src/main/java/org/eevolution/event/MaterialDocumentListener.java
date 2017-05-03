@@ -20,7 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import lombok.NonNull;
 
@@ -66,13 +66,13 @@ public class MaterialDocumentListener implements MaterialEventListener
 	@Override
 	public void onEvent(final MaterialEvent event)
 	{
-		if (!(event instanceof ProductionOrderRequested))
+		if (!(event instanceof PPOrderRequestedEvent))
 		{
 			return;
 		}
 		logger.info("Received event {}", event);
 
-		final ProductionOrderRequested productionOrderEvent = (ProductionOrderRequested)event;
+		final PPOrderRequestedEvent productionOrderEvent = (PPOrderRequestedEvent)event;
 		createProductionOrderInTrx(
 				productionOrderEvent.getPpOrder(),
 				Date.from(productionOrderEvent.getEventDescr().getWhen()));

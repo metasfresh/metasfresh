@@ -89,10 +89,13 @@ public class PPOrder
 	private final BigDecimal quantity;
 
 	/**
+	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
+	 */
+	private final boolean createPPOrder;
+
+	/**
 	 * Attention, might be {@code null}.
 	 */
 	@Singular
 	private final List<PPOrderLine> lines;
-
-	private final boolean createPPOrder;
 }

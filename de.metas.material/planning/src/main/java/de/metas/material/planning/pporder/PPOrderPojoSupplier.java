@@ -123,7 +123,11 @@ public class PPOrderPojoSupplier
 				.dateStartSchedule(dateStartSchedule)
 				//
 				// Qtys
-				.quantity(qtyToSupply);
+				.quantity(qtyToSupply)
+				//
+				// offer further advise :-)
+				.createPPOrder(productPlanningData.isCreatePlan())
+				;
 
 		return ppOrderPojoBuilder.build();
 	}
@@ -205,7 +209,7 @@ public class PPOrderPojoSupplier
 	{
 		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
 		final Integer ppOrderProductId = ppOrder.getProductId();
-		
+
 		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
 				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)
 				.getPP_Product_BOM();

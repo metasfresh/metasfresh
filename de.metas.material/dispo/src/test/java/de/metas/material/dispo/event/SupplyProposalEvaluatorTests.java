@@ -62,7 +62,9 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	private MDEventListener mdEventListener;
+	//private MDEventListener mdEventListener;
+
+	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	/**
 	 * This is the code under test
@@ -83,10 +85,9 @@ public class SupplyProposalEvaluatorTests
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		mdEventListener = new MDEventListener(
-				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService),
-				candidateRepository,
-				supplyProposalEvaluator);
+		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
+
+		distributionPlanEventHandler = new DistributionPlanEventHandler(candidateRepository, candidateChangeHandler, supplyProposalEvaluator);
 	}
 
 	/**
@@ -196,7 +197,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		MDEEventListenerTests.performTestTwoDistibutionPlanEvents(mdEventListener);
+		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
@@ -232,7 +233,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		MDEEventListenerTests.performTestTwoDistibutionPlanEvents(mdEventListener);
+		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 

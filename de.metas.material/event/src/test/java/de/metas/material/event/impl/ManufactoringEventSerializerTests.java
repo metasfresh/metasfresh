@@ -17,7 +17,7 @@ import org.junit.Test;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
@@ -122,7 +122,7 @@ public class ManufactoringEventSerializerTests
 	@Test
 	public void testProductionOrderEvent()
 	{
-		final ProductionOrderRequested event = ProductionOrderRequested.builder()
+		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
 				.eventDescr(new EventDescr())
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()

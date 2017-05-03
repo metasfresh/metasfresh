@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -119,6 +120,7 @@ public class CandidateChangeHandler
 			// notify whoever is in charge that we have a demand to balance
 			final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
 					.builder()
+					.eventDescr(new EventDescr())
 					.descr(MaterialDescriptor.builder()
 							.orgId(demandCandidate.getOrgId())
 							.productId(demandCandidate.getProductId())

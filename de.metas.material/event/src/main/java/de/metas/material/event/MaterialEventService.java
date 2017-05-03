@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
@@ -75,14 +76,29 @@ public class MaterialEventService
 				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
 				.setType(eventType)
 				.build();
+	}
 
+	/**
+	 * With a "non-local" eventService, we can't directly get the event-bus on startup, because at that time, metasfresh is not yet ready.
+	 * More concretely, the problem is that the registerListener method will invoke {@link ISysConfigBL} which will try an look into the DB.
+	 * <p>
+	 * threfore, we have this particular method to be called whenever we know that it's now safe to call it. In old-school scenarios, that is probably a model validator.
+	 */
+	public void subscribeToEventBus()
+	{
 		getEventBus().subscribe(internalListener);
 	}
 
-	public void registerListener(final MaterialEventListener materialDemandListener)
+	/**
+	 * Register the given {@code listener} to this service.
+	 * This can be done before {@link #subscribeToEventBus()} was called, but the registered listener then won't yet be invoked by the framework.
+	 *
+	 * @param materialDemandListener
+	 */
+	public void registerListener(final MaterialEventListener listener)
 	{
-		Preconditions.checkNotNull(materialDemandListener, "Param materialDemandListener is null");
-		listeners.add(materialDemandListener);
+		Preconditions.checkNotNull(listener, "Param listener is null");
+		listeners.add(listener);
 	}
 
 	public void fireEventAfterCommit(final MaterialEvent event, final String trxName)
@@ -112,5 +128,4 @@ public class MaterialEventService
 		final IEventBus eventBus = eventBusFactory.getEventBus(eventBusTopic);
 		return eventBus;
 	}
-
 }

@@ -58,6 +58,7 @@ public class M_Transaction
 		final TransactionEvent event = TransactionEvent.builder()
 				.eventDescr(new EventDescr())
 				.transactionDeleted(timing == ModelValidator.TYPE_BEFORE_DELETE)
+				.eventDescr(new EventDescr())
 				.materialDescr(MaterialDescriptor.builder()
 						.orgId(transaction.getAD_Org_ID())
 						.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
