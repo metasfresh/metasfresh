@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
@@ -138,7 +139,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// Add
 		boolean hasChanges = false;
 		final String selectionId = selection.getSelectionId();
-		for(final DocumentId rowId : rowIds)
+		for (final DocumentId rowId : rowIds)
 		{
 			final List<Object> sqlParams = new ArrayList<>();
 			final String sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(sqlParams, selectionId, rowId);
@@ -147,10 +148,10 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			{
 				continue;
 			}
-			
+
 			hasChanges = true;
 		}
-		if(!hasChanges)
+		if (!hasChanges)
 		{
 			// nothing changed
 			return selection;
@@ -196,7 +197,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				.setSize(size)
 				.build();
 	}
-	
+
 	private final int retrieveSize(final String selectionId)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
@@ -205,11 +206,16 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return size <= 0 ? 0 : size;
 	}
 
-	public boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection defaultSelection, final Collection<DocumentId> rowIds)
+	public boolean containsAnyOfRowIds(final String selectionId, final Collection<DocumentId> rowIds)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, defaultSelection.getSelectionId(), rowIds);
-		int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selectionId, rowIds);
+		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		return count > 0;
+	}
+
+	public <T> IQueryFilter<T> createQueryFilter(final String selectionId)
+	{
+		return newSqlViewSelectionQueryBuilder().buildInSelectionQueryFilter(selectionId);
 	}
 }

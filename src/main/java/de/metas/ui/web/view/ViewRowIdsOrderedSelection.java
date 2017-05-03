@@ -102,7 +102,7 @@ public final class ViewRowIdsOrderedSelection
 		return size;
 	}
 
-	ImmutableList<DocumentQueryOrderBy> getOrderBys()
+	public ImmutableList<DocumentQueryOrderBy> getOrderBys()
 	{
 		return orderBys;
 	}
