@@ -44,9 +44,9 @@ import lombok.NonNull;
 
 /**
  * {@link HUEditorViewBuffer} implementation which fully caches the {@link HUEditorRow}s.
- * 
+ *
  * This implementation shall be used when dealing with small amount of HUs.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -150,7 +150,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		{
 			throw new IllegalArgumentException("Invalid barcode");
 		}
-
+		
 		return streamAllRecursive()
 				.filter(row -> row.matchesBarcode(barcode))
 				.map(HUEditorRow::getId)
@@ -280,18 +280,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		public Stream<HUEditorRow> streamRecursive()
 		{
-			return rows.stream()
-					.map(row -> streamRecursive(row))
-					.reduce(Stream::concat)
-					.orElse(Stream.of());
-		}
-
-		private Stream<HUEditorRow> streamRecursive(final HUEditorRow row)
-		{
-			return row.getIncludedRows()
-					.stream()
-					.map(includedRow -> streamRecursive(includedRow))
-					.reduce(Stream.of(row), Stream::concat);
+			return rows.stream().flatMap(row -> row.streamRecursive());
 		}
 
 		public long size()
