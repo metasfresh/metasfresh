@@ -112,6 +112,7 @@ public class AZoomAcross
 
 		final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<>();
 		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
+		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
 		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 		{
 			zoomInfos.add(zoomInfo);
