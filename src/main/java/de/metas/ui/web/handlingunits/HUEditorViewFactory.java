@@ -221,10 +221,12 @@ public class HUEditorViewFactory implements IViewFactory
 			referencingTableName = null;
 		}
 		
+		final Set<Integer> huIds = request.getFilterOnlyIds();
 		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setWindowId(windowId)
-				.setHUIds(request.getFilterOnlyIds())
+				.setHUIds(huIds)
+				.setHighVolume(huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD)
 				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())
 				.build();

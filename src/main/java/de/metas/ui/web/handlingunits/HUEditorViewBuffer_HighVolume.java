@@ -67,6 +67,8 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 {
+	public static final int HIGHVOLUME_THRESHOLD = 100;
+	
 	private static final int STREAM_ALL_MAX_SIZE = 100;
 
 	private final HUEditorViewRepository huEditorRepo;
