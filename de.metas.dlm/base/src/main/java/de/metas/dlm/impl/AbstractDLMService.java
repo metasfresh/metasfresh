@@ -87,11 +87,11 @@ public abstract class AbstractDLMService implements IDLMService
 
 	// gh #1411
 	@Override
-	public boolean isConnectionCustomizerEnabled()
+	public boolean isConnectionCustomizerEnabled(final int AD_User_ID)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final String forUserSysConfigName = SYSCONFIG_DLM_CONNECTION_CUSTOMIZER_ENABLED_FOR_USER_ + Env.getAD_User_ID(Env.getCtx());
+		final String forUserSysConfigName = SYSCONFIG_DLM_CONNECTION_CUSTOMIZER_ENABLED_FOR_USER_ + AD_User_ID;
 
 		final boolean connectionCustomizerEnabled = sysConfigBL.getBooleanValue(
 				forUserSysConfigName,
