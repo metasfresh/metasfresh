@@ -18,11 +18,11 @@ import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomize
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import de.metas.logging.LogManager;
-import de.metas.material.event.MaterialEventConfiguration;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
@@ -48,12 +48,9 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
  * #L%
  */
 
-@SpringBootApplication(scanBasePackageClasses = {
-		WebRestApiApplication.class // this one
-		, MaterialEventConfiguration.class
-		, org.adempiere.ad.dao.IQueryStatisticsLogger.class // FIXME: hardcoded because else SQL tracing is not working and atm i am not confident to scan the whole de.metas/org.compiere/org.adempiere trees.
-})
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @EnableAsync
+@Profile(WebRestApiApplication.PROFILE_Webui)
 public class WebRestApiApplication
 {
 	/**
@@ -64,7 +61,7 @@ public class WebRestApiApplication
 
 	public static final String PROFILE_Test = "test";
 	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
-	public static final String PROFILE_Webui = "webui";
+	public static final String PROFILE_Webui = "metasfresh-webui";
 	/** Profile activate when running from IDE */
 	public static final String PROFILE_Development = "development";
 
