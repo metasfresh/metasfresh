@@ -147,6 +147,18 @@ public abstract class DocumentId implements Serializable
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
+	public static Set<DocumentId> ofIntSet(final Collection<Integer> documentIds)
+	{
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return documentIds
+				.stream()
+				.map(idInt -> of(idInt))
+				.collect(GuavaCollectors.toImmutableSet());
+	}
+
 	public static final DocumentId fromNullable(final String idStr)
 	{
 		if (Check.isEmpty(idStr, true))
