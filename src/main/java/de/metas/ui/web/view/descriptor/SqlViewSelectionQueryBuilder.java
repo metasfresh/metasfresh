@@ -53,6 +53,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
  *
  * @see I_T_WEBUI_ViewSelection
  */
+// TODO: used only in one place.. consider removing it from here
 public final class SqlViewSelectionQueryBuilder
 {
 	public static final SqlViewSelectionQueryBuilder newInstance(final SqlEntityBinding entityBinding)
@@ -81,7 +82,7 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		return entityBinding.getKeyColumnName();
 	}
-	
+
 	public IStringExpression getSqlWhereClause()
 	{
 		return entityBinding.getSqlWhereClause();
@@ -142,7 +143,7 @@ public final class SqlViewSelectionQueryBuilder
 			final List<Object> sqlWhereClauseParams = new ArrayList<>();
 			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters);
 
-			if(sqlWhereClause != null && !sqlWhereClause.isNullExpression())
+			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
 				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
 				sqlParams.addAll(sqlWhereClauseParams);
@@ -162,7 +163,7 @@ public final class SqlViewSelectionQueryBuilder
 		final String sql = sqlBuilder.build().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 		return sql;
 	}
-	
+
 	private final IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final List<DocumentFilter> filters)
 	{
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
@@ -177,14 +178,14 @@ public final class SqlViewSelectionQueryBuilder
 				sqlWhereClauseBuilder.append(" /* entity where clause */ (").append(entityWhereClauseExpression).append(")");
 			}
 		}
-		
+
 		//
 		// Document filters
 		{
 			final String sqlFilters = SqlDocumentFiltersBuilder.newInstance(entityBinding)
 					.addFilters(filters)
 					.buildSqlWhereClause(sqlParams);
-			if(!Check.isEmpty(sqlFilters, true))
+			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(sqlFilters).append(")\n");
@@ -252,6 +253,62 @@ public final class SqlViewSelectionQueryBuilder
 
 		return sqlWhereClause.toString();
 
+	}
+
+	public String buildSqlDeleteRowIdsFromSelection(final String selectionId, final Collection<DocumentId> rowIds)
+	{
+		final Set<Integer> rowIdsAsInts = DocumentId.toIntSet(rowIds);
+		if (rowIdsAsInts.isEmpty())
+		{
+			return null;
+		}
+
+		return "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId)
+				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " IN " + DB.buildSqlList(rowIdsAsInts);
+	}
+
+	public String buildSqlAddRowIdsFromSelection(final List<Object> sqlParams, final String selectionId, final DocumentId rowId)
+	{
+		final int rowIdInt = rowId.toInt();
+		final String sql = "INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
+				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
+				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
+				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
+				+ ")"
+				+ " SELECT "
+				+ " ? as UUID " // UUID
+				+ ", (select max(Line) from T_WEBUI_ViewSelection z where z.UUID=?) as Line" // Line
+				+ ", ? as Record_ID"  // Record_ID
+				+ " WHERE "
+				+ " NOT EXISTS(select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " z where z.UUID=? and z.Record_ID=?)";
+		// TODO: we should also validate if the rowId is allowed to be part of this selection (e.g. enforce entity binding's SQL where clause)
+
+		sqlParams.add(selectionId); // UUID
+		sqlParams.add(selectionId); // for Line
+		sqlParams.add(rowIdInt); // Record_ID
+		sqlParams.add(selectionId); // for NOT EXISTS
+		sqlParams.add(rowIdInt); // for NOT EXISTS
+
+		return sql;
+	}
+
+	public String buildSqlRetrieveSize(final List<Object> sqlParams, final String selectionId)
+	{
+		Check.assumeNotEmpty(selectionId, "selectionId is not empty");
+		sqlParams.add(selectionId);
+		return "SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?";
+	}
+
+	public String buildSqlCount(final List<Object> sqlParams, final String selectionId, final Collection<DocumentId> rowIds)
+	{
+		Check.assumeNotEmpty(selectionId, "selectionId is not empty");
+		final Set<Integer> recordIds = DocumentId.toIntSet(rowIds);
+		Check.assumeNotEmpty(recordIds, "recordIds is not empty");
+
+		sqlParams.add(selectionId);
+		return "SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
+				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID, rowIds, sqlParams);
 	}
 
 }

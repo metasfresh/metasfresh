@@ -9,6 +9,7 @@ import java.util.Map;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.util.Check;
 
 import com.google.common.base.Joiner;
@@ -286,7 +287,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	{
 		private String _sqlTableName;
 		private String _tableAlias;
-		private IStringExpression sqlWhereClause;
+		private IStringExpression sqlWhereClause = IStringExpression.NULL;
 
 		private Collection<String> displayFieldNames;
 		private final Map<String, SqlViewRowFieldBinding> _fieldsByFieldName = new LinkedHashMap<>();
@@ -333,9 +334,16 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		public Builder setSqlWhereClause(final IStringExpression sqlWhereClause)
 		{
-			this.sqlWhereClause = sqlWhereClause;
+			this.sqlWhereClause = sqlWhereClause == null ? IStringExpression.NULL : sqlWhereClause;
 			return this;
 		}
+		
+		public Builder setSqlWhereClause(final String sqlWhereClause)
+		{
+			this.sqlWhereClause = ConstantStringExpression.ofNullable(sqlWhereClause);
+			return this;
+		}
+
 
 		private IStringExpression getSqlWhereClause()
 		{

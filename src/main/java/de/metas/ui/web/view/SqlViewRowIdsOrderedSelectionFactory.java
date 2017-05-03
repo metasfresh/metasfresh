@@ -124,4 +124,92 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				.setQueryLimit(fromSelection.getQueryLimit())
 				.build();
 	}
+
+	@Override
+	public ViewRowIdsOrderedSelection addRowIdsToSelection(final ViewRowIdsOrderedSelection selection, final Collection<DocumentId> rowIds)
+	{
+		if (rowIds == null || rowIds.isEmpty())
+		{
+			// nothing changed
+			return selection;
+		}
+
+		//
+		// Add
+		boolean hasChanges = false;
+		final String selectionId = selection.getSelectionId();
+		for(final DocumentId rowId : rowIds)
+		{
+			final List<Object> sqlParams = new ArrayList<>();
+			final String sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(sqlParams, selectionId, rowId);
+			final int added = DB.executeUpdateEx(sqlAdd, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			if (added <= 0)
+			{
+				continue;
+			}
+			
+			hasChanges = true;
+		}
+		if(!hasChanges)
+		{
+			// nothing changed
+			return selection;
+		}
+
+		//
+		// Retrieve current size
+		// NOTE: we are querying it instead of adding how many we added to current "size" because it might be that the size is staled
+		final int size = retrieveSize(selectionId);
+
+		return selection.toBuilder()
+				.setSize(size)
+				.build();
+	}
+
+	@Override
+	public ViewRowIdsOrderedSelection removeRowIdsFromSelection(final ViewRowIdsOrderedSelection selection, final Collection<DocumentId> rowIds)
+	{
+		if (rowIds == null || rowIds.isEmpty())
+		{
+			// nothing changed
+			return selection;
+		}
+
+		//
+		// Delete
+		{
+			final String sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
+			final int deleted = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+			if (deleted <= 0)
+			{
+				// nothing changed
+				return selection;
+			}
+		}
+
+		//
+		// Retrieve current size
+		// NOTE: we are querying it instead of subtracting "deleted" from current "size" because it might be that the size is staled
+		final int size = retrieveSize(selection.getSelectionId());
+
+		return selection.toBuilder()
+				.setSize(size)
+				.build();
+	}
+	
+	private final int retrieveSize(final String selectionId)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlRetrieveSize(sqlParams, selectionId);
+		final int size = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount, sqlParams);
+		return size <= 0 ? 0 : size;
+	}
+
+	public boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection defaultSelection, final Collection<DocumentId> rowIds)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, defaultSelection.getSelectionId(), rowIds);
+		int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		return count > 0;
+	}
 }

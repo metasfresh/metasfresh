@@ -37,6 +37,10 @@ public interface ViewRowIdsOrderedSelectionFactory
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 
 	String getSqlWhereClause(ViewId viewId, Collection<DocumentId> rowIds);
+
+	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, Collection<DocumentId> rowIds);
+
+	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, Collection<DocumentId> rowIds);
 	
 	
 }

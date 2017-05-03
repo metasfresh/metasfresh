@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.EqualsAndHashCode;
 
 /*
  * #%L
@@ -35,6 +36,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
  */
 
 @Immutable
+@EqualsAndHashCode
 public final class ViewRowIdsOrderedSelection
 {
 	public static final Builder builder()
@@ -69,6 +71,15 @@ public final class ViewRowIdsOrderedSelection
 				.add("size", size)
 				.add("orderBys", orderBys.isEmpty() ? null : orderBys)
 				.toString();
+	}
+	
+	public Builder toBuilder()
+	{
+		return builder()
+				.setViewId(viewId)
+				.setSize(size)
+				.setOrderBys(orderBys)
+				.setQueryLimit(queryLimit);
 	}
 
 	public ViewId getViewId()

@@ -2,9 +2,11 @@ package de.metas.ui.web.handlingunits;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -20,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -71,6 +74,33 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		return (HUEditorRow)viewRow;
 	}
+	
+	public static DocumentId rowIdFromM_HU_ID(final int huId)
+	{
+		return DocumentId.of(huId);
+	}
+	
+	public static Set<DocumentId> rowIdsFromM_HU_IDs(final Collection<Integer> huIds)
+	{
+		return DocumentId.ofIntSet(huIds);
+	}
+
+	
+	public static DocumentId rowIdFromM_HU_Storage(final int huId, final int productId)
+	{
+		return DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + productId);
+	}
+
+	public static int rowIdToM_HU_ID(final DocumentId rowId)
+	{
+		return rowId == null ? -1 : rowId.toInt();
+	}
+	
+	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
+	{
+		return DocumentId.toIntSet(rowIds);
+	}
+
 
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
