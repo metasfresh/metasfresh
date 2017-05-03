@@ -58,11 +58,12 @@ public interface IDLMService extends ISingletonService
 
 	/**
 	 *
+	 * @param AD_User_ID the user in question
 	 * @return
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1411
 	 */
-	boolean isConnectionCustomizerEnabled();
+	boolean isConnectionCustomizerEnabled(int AD_User_ID);
 
 	/**
 	 * Call the DB function <code>dlm.add_table_to_dlm()</code> with the given <code>table</code>'s name
