@@ -88,8 +88,11 @@ public class HUEditorView implements IView
 	private HUEditorView(final Builder builder)
 	{
 		parentViewId = builder.getParentViewId();
-	
-		this.huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
+
+		this.huAttributesProvider = HUEditorRowAttributesProvider.builder()
+				//.readonly(isHighVolume)
+				.build();
+
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(builder.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())

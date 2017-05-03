@@ -88,7 +88,10 @@ public class PPOrderLinesLoader
 	{
 		this.windowId = windowId;
 		
-		huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
+		huAttributesProvider = HUEditorRowAttributesProvider.builder()
+				.readonly(false)
+				.build();
+		
 		huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(windowId)
 				.referencingTableName(I_PP_Order.Table_Name)
