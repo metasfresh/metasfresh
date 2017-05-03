@@ -1,8 +1,7 @@
 package de.metas.adempiere.report.jasper.servlet;
 
 import org.compiere.util.CacheMgt;
-import org.compiere.util.Ini.IsNotSwingClient;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +18,7 @@ import de.metas.adempiere.report.jasper.JasperServerConstants;
  */
 @RestController
 @RequestMapping(value = MgtRestController.ENDPOINT)
-@Conditional(IsNotSwingClient.class)
+@Profile(JasperConstants.PROFILE_JasperServer)
 public class MgtRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/MgtServlet";
