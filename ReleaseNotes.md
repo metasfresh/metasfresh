@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Adding the Document No. control to the empties return document.
   * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
     * Translating the jump Navigation of "New Request" to de_DE.
+  * [#1405](https://github.com/metasfresh/metasfresh/issues/1405) Adjust Empties Return Window to mandatory field grouping layout
+    * Adjusting Empties Return Window to mandatory Field primary layout.
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
     * Creating the initial Layout for the Material Candidates Window in WebUI.
   * [#1411](https://github.com/metasfresh/metasfresh/issues/1411) Possible 1:1 switch for Data Lifecycle Management users
