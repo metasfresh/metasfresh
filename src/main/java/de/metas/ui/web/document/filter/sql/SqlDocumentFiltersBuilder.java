@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.sql;
+package de.metas.ui.web.document.filter.sql;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,12 +10,13 @@ import org.adempiere.db.DBConstants;
 import org.compiere.util.DB;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
+import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import lombok.NonNull;
 
 /*

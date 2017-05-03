@@ -671,7 +671,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
+	public static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
 	{
 		final Class<?> valueClass = value == null ? null : value.getClass();
 

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json.filters;
+package de.metas.ui.web.document.filter.json;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -6,8 +6,8 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
  * #%L

@@ -2,10 +2,10 @@ package de.metas.ui.web.view;
 
 import java.util.Collection;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
  * #%L

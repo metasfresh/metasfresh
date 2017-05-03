@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +9,7 @@ import org.compiere.model.MQuery;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.window.model.filters.DocumentFilter;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 
 /*
  * #%L

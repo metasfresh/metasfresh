@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json.filters;
+package de.metas.ui.web.document.filter.json;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 
 /*
  * #%L

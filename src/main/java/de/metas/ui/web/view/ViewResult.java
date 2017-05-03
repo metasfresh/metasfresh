@@ -9,8 +9,8 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L

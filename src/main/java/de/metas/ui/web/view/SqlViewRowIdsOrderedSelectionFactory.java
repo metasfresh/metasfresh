@@ -17,12 +17,12 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
 import lombok.NonNull;
 
 /*

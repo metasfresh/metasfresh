@@ -3,10 +3,10 @@ package de.metas.ui.web.view;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L

@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.filters.MQueryDocumentFilterHelper;
 
 /*
  * #%L

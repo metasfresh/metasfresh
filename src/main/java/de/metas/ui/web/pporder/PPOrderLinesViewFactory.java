@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.IViewFactory;
@@ -18,7 +19,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json.filters;
+package de.metas.ui.web.document.filter.json;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,11 +15,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 
 /*
  * #%L

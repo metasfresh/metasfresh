@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.Collection;

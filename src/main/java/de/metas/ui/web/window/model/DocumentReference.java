@@ -5,8 +5,8 @@ import javax.validation.constraints.NotNull;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
 import groovy.transform.Immutable;
 import lombok.Builder;
 

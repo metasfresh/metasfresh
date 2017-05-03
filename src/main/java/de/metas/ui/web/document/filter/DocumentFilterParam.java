@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.filters;
+package de.metas.ui.web.document.filter;
 
 import org.adempiere.util.Check;
 

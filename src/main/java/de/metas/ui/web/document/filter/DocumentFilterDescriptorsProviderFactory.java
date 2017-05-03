@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.Collection;
 import java.util.stream.Stream;
@@ -9,12 +9,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
 
 /*
  * #%L

@@ -19,13 +19,13 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFiltersBuilder;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
-import de.metas.ui.web.window.model.sql.SqlDocumentFiltersBuilder;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 
 /*
