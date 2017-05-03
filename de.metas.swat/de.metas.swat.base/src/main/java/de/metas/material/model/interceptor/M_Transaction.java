@@ -1,7 +1,5 @@
 package de.metas.material.model.interceptor;
 
-import java.time.Instant;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -10,6 +8,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
@@ -57,6 +56,7 @@ public class M_Transaction
 	public void enqueuePurchaseCandidates(final I_M_Transaction transaction, final int timing)
 	{
 		final TransactionEvent event = TransactionEvent.builder()
+				.eventDescr(new EventDescr())
 				.transactionDeleted(timing == ModelValidator.TYPE_BEFORE_DELETE)
 				.materialDescr(MaterialDescriptor.builder()
 						.orgId(transaction.getAD_Org_ID())
@@ -66,7 +66,6 @@ public class M_Transaction
 						.qty(transaction.getMovementQty())
 						.build())
 				.reference(TableRecordReference.of(transaction))
-				.when(Instant.now())
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);

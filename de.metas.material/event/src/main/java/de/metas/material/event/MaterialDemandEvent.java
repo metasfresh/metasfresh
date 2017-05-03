@@ -37,6 +37,9 @@ public class MaterialDemandEvent implements MaterialEvent
 	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
+	private final EventDescr eventDescr;
+
+	@NonNull
 	private final MaterialDescriptor descr;
 
 	@NonNull

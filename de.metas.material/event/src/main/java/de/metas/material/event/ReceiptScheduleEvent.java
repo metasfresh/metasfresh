@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import java.time.Instant;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +36,7 @@ public class ReceiptScheduleEvent implements MaterialEvent
 	public static final String TYPE = "ReceiptScheduleEvent";
 
 	@NonNull
-	private final Instant when;
+	private final EventDescr eventDescr;
 
 	@NonNull
 	private final TableRecordReference reference;

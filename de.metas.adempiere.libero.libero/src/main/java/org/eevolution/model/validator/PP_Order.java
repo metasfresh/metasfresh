@@ -24,7 +24,6 @@ package org.eevolution.model.validator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -60,6 +59,7 @@ import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -75,7 +75,7 @@ public class PP_Order
 	public void registerCallouts()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order());
-		
+
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);
 	}
 
@@ -342,12 +342,12 @@ public class PP_Order
 		}
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.when(Instant.now())
+				.eventDescr(new EventDescr())
 				.ppOrder(ppOrderPojoBuilder.build())
 		// .reference(reference)
 				.build();
 
-
+// TODO
 		;
 	}
 

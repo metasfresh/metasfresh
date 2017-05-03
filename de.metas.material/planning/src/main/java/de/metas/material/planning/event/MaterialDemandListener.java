@@ -2,7 +2,6 @@ package de.metas.material.planning.event;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
 import de.metas.material.event.DistributionPlanEvent;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
@@ -134,7 +134,7 @@ public class MaterialDemandListener implements MaterialEventListener
 					final I_M_Locator toLocator = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getToLocatorId(), I_M_Locator.class, mrpContext.getTrxName());
 
 					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
-							.when(Instant.now())
+							.eventDescr(new EventDescr())
 							.fromWarehouseId(fromLocator.getM_Warehouse_ID())
 							.distributionStart(orderLineStartDate)
 							.materialDescr(MaterialDescriptor.builder()

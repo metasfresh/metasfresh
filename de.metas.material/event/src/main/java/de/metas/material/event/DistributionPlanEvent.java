@@ -1,6 +1,5 @@
 package de.metas.material.event;
 
-import java.time.Instant;
 import java.util.Date;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -34,7 +33,7 @@ import lombok.NonNull;
  */
 /**
  * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @Data
@@ -45,7 +44,7 @@ public class DistributionPlanEvent implements MaterialEvent
 	public static final String TYPE = "DistributionPlanEvent";
 
 	@NonNull
-	private final Instant when;
+	private final EventDescr eventDescr;
 
 	@NonNull
 	private final TableRecordReference reference;

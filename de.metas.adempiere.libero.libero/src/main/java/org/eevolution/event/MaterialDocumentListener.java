@@ -73,7 +73,9 @@ public class MaterialDocumentListener implements MaterialEventListener
 		logger.info("Received event {}", event);
 
 		final ProductionOrderRequested productionOrderEvent = (ProductionOrderRequested)event;
-		createProductionOrderInTrx(productionOrderEvent.getPpOrder(), Date.from(productionOrderEvent.getWhen()));
+		createProductionOrderInTrx(
+				productionOrderEvent.getPpOrder(),
+				Date.from(productionOrderEvent.getEventDescr().getWhen()));
 	}
 
 	private I_PP_Order createProductionOrderInTrx(

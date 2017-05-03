@@ -1,15 +1,16 @@
-package de.metas.material.event;
+package de.metas.material.dispo.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import java.sql.Timestamp;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import de.metas.material.dispo.model.I_MD_EventStore;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.MaterialEventListener;
 
 /*
  * #%L
- * metasfresh-manufacturing-event-api
+ * metasfresh-material-dispo
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -28,22 +29,19 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter-value goes into which property
-public class TransactionEvent implements MaterialEvent
+
+public class EventStoreListener implements MaterialEventListener
 {
-	public static final String TYPE = "TransactionEvent";
 
-	@NonNull
-	private final EventDescr eventDescr;
+	@Override
+	public void onEvent(MaterialEvent event)
+	{
+		final I_MD_EventStore eventStoreRecord = InterfaceWrapperHelper.newInstance(I_MD_EventStore.class);
 
-	@NonNull
-	private final TableRecordReference reference;
+		eventStoreRecord.setEventTime(Timestamp.from(event.getEventDescr().getWhen()));
 
-	@NonNull
-	private final MaterialDescriptor materialDescr;
+		// TODO Auto-generated method stub
 
-	private final boolean transactionDeleted;
+	}
 
 }

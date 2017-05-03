@@ -1,7 +1,6 @@
 package de.metas.material.model.interceptor;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -13,6 +12,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ShipmentScheduleEvent;
@@ -54,6 +54,7 @@ public class M_ShipmentSchedule
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
+				.eventDescr(new EventDescr())
 				.materialDescr(MaterialDescriptor.builder()
 						.orgId(schedule.getAD_Org_ID())
 						.date(preparationDate)
@@ -63,7 +64,6 @@ public class M_ShipmentSchedule
 						.build())
 				.reference(TableRecordReference.of(schedule))
 				.shipmentScheduleDeleted(deleted)
-				.when(Instant.now())
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);

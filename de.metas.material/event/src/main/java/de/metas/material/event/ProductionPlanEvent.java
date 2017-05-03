@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import java.time.Instant;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
 
@@ -46,7 +44,7 @@ final public class ProductionPlanEvent implements MaterialEvent
 	public static final String TYPE = "ProductionPlanEvent";
 
 	@NonNull
-	private final Instant when;
+	private final EventDescr eventDescr;
 
 
 	private final TableRecordReference reference;

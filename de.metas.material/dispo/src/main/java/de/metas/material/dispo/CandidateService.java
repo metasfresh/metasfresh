@@ -1,6 +1,5 @@
 package de.metas.material.dispo;
 
-import java.time.Instant;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -8,6 +7,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.ProductionOrderRequested;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -66,7 +66,7 @@ public class CandidateService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param group a non-empty list of candidates that all have {@link SubType#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
@@ -119,8 +119,8 @@ public class CandidateService
 			}
 		}
 		return ProductionOrderRequested.builder()
+				.eventDescr(new EventDescr())
 				.ppOrder(ppOrderBuilder.build())
-				.when(Instant.now())
 				.reference(group.get(0).getReference())
 				.build();
 	}

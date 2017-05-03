@@ -93,4 +93,6 @@ public class PPOrder
 	 */
 	@Singular
 	private final List<PPOrderLine> lines;
+
+	private final boolean createPPOrder;
 }

@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -15,6 +14,7 @@ import org.compiere.model.I_AD_Table;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.ProductionOrderRequested;
@@ -62,6 +62,7 @@ public class ManufactoringEventSerializerTests
 		InterfaceWrapperHelper.save(someOtherTable);
 
 		final ReceiptScheduleEvent evt = ReceiptScheduleEvent.builder()
+				.eventDescr(new EventDescr())
 				.materialDescr(MaterialDescriptor.builder()
 						.date(SystemTime.asDate())
 						.orgId(10)
@@ -72,7 +73,6 @@ public class ManufactoringEventSerializerTests
 						.build())
 				.receiptScheduleDeleted(false)
 				.reference(TableRecordReference.of("someOtherTable", 100))
-				.when(Instant.now())
 				.build();
 		assertThat(evt.getMaterialDescr().getQty(), comparesEqualTo(BigDecimal.TEN)); // guard
 
@@ -106,6 +106,7 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = TransactionEvent
 				.builder()
+				.eventDescr(new EventDescr())
 				.materialDescr(MaterialDescriptor.builder()
 						.productId(14)
 						.qty(BigDecimal.TEN)
@@ -114,7 +115,6 @@ public class ManufactoringEventSerializerTests
 						.orgId(66)
 						.build())
 				.reference(TableRecordReference.of(1, 2))
-				.when(Instant.now())
 				.build();
 		return evt;
 	}
@@ -123,7 +123,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionOrderEvent()
 	{
 		final ProductionOrderRequested event = ProductionOrderRequested.builder()
-				.when(Instant.now())
+				.eventDescr(new EventDescr())
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -158,15 +158,15 @@ public class ManufactoringEventSerializerTests
 		final String serializedEvt = MaterialEventSerializer.get().serialize(event);
 
 		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
-		
+
 		assertThat(deserializedEvt, is(event));
 	}
-	
+
 	@Test
 	public void testProductionPlanEvent()
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.when(Instant.now())
+				.eventDescr(new EventDescr())
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -201,7 +201,7 @@ public class ManufactoringEventSerializerTests
 		final String serializedEvt = MaterialEventSerializer.get().serialize(event);
 
 		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
-		
+
 		assertThat(deserializedEvt, is(event));
 	}
 }
