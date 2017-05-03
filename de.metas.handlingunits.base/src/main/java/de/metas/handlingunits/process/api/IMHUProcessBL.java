@@ -24,7 +24,6 @@ package de.metas.handlingunits.process.api;
 
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Process;
 
 public interface IMHUProcessBL extends ISingletonService
 {
@@ -32,10 +31,9 @@ public interface IMHUProcessBL extends ISingletonService
 	/**
 	 * This method checks in the table M_HU_Process to see if the given process fits the given HU unit type
 	 *
-	 * @param process
+	 * @param adProcessId
 	 * @param selectedHUUnitType
 	 * @return true if the process (or report) was defined for the selected HU unit type, false otherwise
 	 */
-	boolean processFitsType(I_AD_Process process, String selectedHUUnitType);
-
+	boolean processFitsType(int adProcessId, String selectedHUUnitType);
 }
