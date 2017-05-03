@@ -18,7 +18,7 @@ public final class StringExpressionCompiler extends AbstractChunkBasedExpression
 	 * @param str
 	 * @return
 	 */
-	public String escape(final String str)
+	public static String escape(final String str)
 	{
 		if (Check.isEmpty(str, true))
 		{
