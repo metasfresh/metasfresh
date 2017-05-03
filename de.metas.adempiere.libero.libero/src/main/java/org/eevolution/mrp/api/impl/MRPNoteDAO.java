@@ -38,13 +38,14 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_AD_Note;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPNoteDAO;
+
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public class MRPNoteDAO implements IMRPNoteDAO
 {
 	@Override
-	public int deleteMRPNotes(final IMRPContext mrpContext)
+	public int deleteMRPNotes(final IMaterialPlanningContext mrpContext)
 	{
 		final IQueryBuilder<I_AD_Note> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Note.class, mrpContext);

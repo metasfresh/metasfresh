@@ -26,7 +26,6 @@ package de.metas.handlingunits.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -34,6 +33,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IStatefulHUCapacityDefinition;
+import de.metas.quantity.Quantity;
 
 public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 {

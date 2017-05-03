@@ -33,6 +33,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
@@ -62,7 +63,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		this.ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
 		this.mainComponentProduct = mainComponentProduct;
 
-		isCoOrByProduct = ppOrderBOMBL.isCoOrByProduct(ppOrderBOMLine);
+		isCoOrByProduct = PPOrderUtil.isCoOrByProduct(ppOrderBOMLine);
 
 		if (isCoOrByProduct)
 		{

@@ -24,10 +24,10 @@ package de.metas.handlingunits.impl;
 
 import java.util.Date;
 import java.util.UUID;
+import de.metas.quantity.Quantity;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;

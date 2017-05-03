@@ -24,8 +24,9 @@ package org.eevolution.mrp.api.impl;
 
 
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
+
+import de.metas.material.planning.IMaterialPlanningContext;
 
 /**
  * An implementation of {@link IMRPSuppliesPool} which groups together a given list of MRP supply records (i.e. {@link I_PP_MRP} records).
@@ -35,7 +36,7 @@ import org.eevolution.mrp.api.IMRPSuppliesPool;
  */
 public class ListMRPSuppliesPool extends AbstractMRPSuppliesPool
 {
-	public ListMRPSuppliesPool(final IMRPContext mrpContext, final MRPExecutor mrpExecutor)
+	public ListMRPSuppliesPool(final IMaterialPlanningContext mrpContext, final MRPExecutor mrpExecutor)
 	{
 		super(mrpContext, mrpExecutor);
 	}

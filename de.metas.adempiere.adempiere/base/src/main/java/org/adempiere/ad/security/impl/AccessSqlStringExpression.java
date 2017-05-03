@@ -45,11 +45,11 @@ import com.google.common.collect.ImmutableSet;
  */
 
 /**
- * Wraps a given {@link IStringExpression} and applies the {@link UserRolePermissions}'s security filters when this expression is evaluated.
+ * Wraps a given {@link IStringExpression} and applies the {@link IUserRolePermissions}'s security filters when this expression is evaluated.
  *
  * It expects {@link #PARAM_UserRolePermissionsKey} present in evaluation context.
  *
- * WARNING: this is a pure expression whom evaluation depends only on {@link Evaluatee} with one exception: it fetches the {@link UserRolePermissions} based on {@link #PARAM_UserRolePermissionsKey}.
+ * WARNING: this is a pure expression whom evaluation depends only on {@link Evaluatee} with one exception: it fetches the {@link IUserRolePermissions} based on {@link #PARAM_UserRolePermissionsKey}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

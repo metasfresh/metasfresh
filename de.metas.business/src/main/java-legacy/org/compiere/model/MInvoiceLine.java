@@ -32,14 +32,12 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
@@ -610,14 +608,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		if (taxId <= 0)
 		{
-			final TaxNotFoundException ex = new TaxNotFoundException(taxCategoryId, isSOTrx,
-					(Timestamp)null, // shipDate,
-					-1, // shipFromC_Location_ID,
-					-1, // shipToC_Location_ID,
-					billDate,
-					fromLocation.getC_Location_ID(),
-					toBPLocation.getC_Location_ID());
-			log.error("No Tax found: " + ex.getLocalizedMessage(), ex);
+			final TaxNotFoundException ex = TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(isSOTrx)
+					.billDate(billDate)
+					.billFromC_Location_ID(fromLocation.getC_Location_ID())
+					.billToC_Location_ID(toBPLocation.getC_Location_ID())
+					.build();
+			log.error("No Tax found", ex);
 			return false;
 		}
 		setC_Tax_ID(taxId);

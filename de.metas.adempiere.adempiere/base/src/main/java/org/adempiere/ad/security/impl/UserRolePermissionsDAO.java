@@ -77,6 +77,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
+	private boolean accountingModuleActive = false;
+
 	@Override
 	public void resetCache()
 	{
@@ -173,7 +175,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public IUserRolePermissions retrieveUserRolePermissionsCached(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
 	{
 		final Date date = new Date(dateMillis);
-		
+
 		try
 		{
 			final IRolesTreeNode rootRole = Services.get(IRoleDAO.class).retrieveRolesTree(adRoleId, adUserId, date);
@@ -182,7 +184,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public IUserRolePermissionsBuilder initialValue(final IRolesTreeNode node)
 				{
-					return retrieveIndividialUseRolePermissions(node.getAD_Role_ID(), adUserId, adClientId)
+					return retrieveIndividialUserRolePermissions(node.getAD_Role_ID(), adUserId, adClientId)
 							.asNewBuilder();
 				}
 
@@ -201,7 +203,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public IUserRolePermissions leafValue(final IRolesTreeNode node)
 				{
-					return retrieveIndividialUseRolePermissions(node.getAD_Role_ID(), adUserId, adClientId);
+					return retrieveIndividialUserRolePermissions(node.getAD_Role_ID(), adUserId, adClientId);
 				}
 			});
 		}
@@ -215,9 +217,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Cached(cacheName = I_AD_Role.Table_Name + "#UserRolePermissions")
-	IUserRolePermissions retrieveIndividialUseRolePermissions(final int adRoleId, final int adUserId, final int adClientId)
+	IUserRolePermissions retrieveIndividialUserRolePermissions(final int adRoleId, final int adUserId, final int adClientId)
 	{
-		return new UserRolePermissionsBuilder()
+		return new UserRolePermissionsBuilder(accountingModuleActive)
 				.setAD_Role_ID(adRoleId)
 				.setAD_User_ID(adUserId)
 				.setAD_Client_ID(adClientId)
@@ -234,7 +236,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 		else
 		{
-	
+
 			if (role.isAccessAllOrgs())
 			{
 				final int AD_Client_ID = role.getAD_Client_ID();
@@ -244,25 +246,25 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				// if role has acces all org, then behave as would be * access
 				final OrgPermissions.Builder builder = OrgPermissions.builder()
 						.setOrg_Tree_ID(adTreeOrgId);
-				
+
 				// org *
 				{
 					final OrgResource resource = OrgResource.anyOrg(AD_Client_ID);
 					final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
 					builder.addPermission(permission);
 				}
-				
+
 				//
 				// now add all orgs
 				final List<I_AD_Org> clientOrgs = Services.get(IOrgDAO.class).retrieveClientOrgs(ctx, AD_Client_ID);
-				for (final I_AD_Org org :  clientOrgs)
+				for (final I_AD_Org org : clientOrgs)
 				{
 					// skip inative orgs
-					if(!org.isActive())
+					if (!org.isActive())
 					{
 						continue;
 					}
-					
+
 					final OrgResource orgResource = OrgResource.of(AD_Client_ID, org.getAD_Org_ID());
 					final OrgPermission orgPermission = OrgPermission.ofResourceAndReadOnly(orgResource, false);
 					builder.addPermission(orgPermission);
@@ -282,7 +284,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public OrgPermissions retrieveUserOrgPermissions(final int adUserId, final int adTreeOrgId)
 	{
 		final Properties ctx = Env.getCtx();
-		
+
 		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
@@ -314,12 +316,12 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public OrgPermissions retrieveRoleOrgPermissions(final int adRoleId, final int adTreeOrgId)
 	{
 		final Properties ctx = Env.getCtx();
-		
+
 		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create();
-		
+
 		final List<I_AD_Role_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Role_OrgAccess.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Role_ID, adRoleId)
@@ -765,6 +767,18 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				+ ", AD_Form_Access=" + formDel
 				+ ", AD_Workflow_Access=" + wfDel
 				+ ", AD_Document_Action_Access=" + docactDel);
+	}
+
+	@Override
+	public void setAccountingModuleActive()
+	{
+		accountingModuleActive = true;
+	}
+	
+	@Override
+	public boolean isAccountingModuleActive()
+	{
+		return accountingModuleActive;
 	}
 
 }

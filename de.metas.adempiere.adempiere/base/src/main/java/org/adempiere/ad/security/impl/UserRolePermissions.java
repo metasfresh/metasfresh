@@ -38,6 +38,7 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.security.ISecurityRuleEngine;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsBuilder;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.permissions.Access;
 import org.adempiere.ad.security.permissions.Constraint;
@@ -164,7 +165,9 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public IUserRolePermissionsBuilder asNewBuilder()
 	{
-		return new UserRolePermissionsBuilder()
+		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		
+		return new UserRolePermissionsBuilder(userRolePermissionsDAO.isAccountingModuleActive())
 				.setAD_Role_ID(getAD_Role_ID())
 				.setAlreadyIncludedRolePermissions(includes)
 				.setAD_Client_ID(getAD_Client_ID())
@@ -753,7 +756,10 @@ class UserRolePermissions implements IUserRolePermissions
 	public String addAccessSQL(final String sql, final String TableNameIn, final boolean fullyQualified, final boolean rw)
 	{
 		// Cut off last ORDER BY clause
+		
+		// contains "SELECT .. FROM .. WHERE .." without ORDER BY
 		final String sqlSelectFromWhere;
+		
 		final String sqlOrderByAndOthers;
 		final int idxOrderBy = sql.lastIndexOf(" ORDER BY ");
 		if (idxOrderBy >= 0)
@@ -794,7 +800,7 @@ class UserRolePermissions implements IUserRolePermissions
 
 		// Parse SQL
 		final AccessSqlParser asp = new AccessSqlParser(sqlSelectFromWhere);
-		final AccessSqlParser.TableInfo[] ti = asp.getTableInfo(asp.getMainSqlIndex());
+		final AccessSqlParser.TableInfo[] aspTableInfos = asp.getTableInfo(asp.getMainSqlIndex());
 
 		// Do we have to add WHERE or AND
 		if (asp.getMainSql().indexOf(" WHERE ") == -1)
@@ -808,20 +814,20 @@ class UserRolePermissions implements IUserRolePermissions
 
 		// Use First Table
 		String tableName = "";
-		if (ti.length > 0)
+		if (aspTableInfos.length > 0)
 		{
-			tableName = ti[0].getSynonym();
+			tableName = aspTableInfos[0].getSynonym();
 			if (tableName.length() == 0)
 			{
-				tableName = ti[0].getTableName();
+				tableName = aspTableInfos[0].getTableName();
 			}
 		}
 		if (TableNameIn != null && !tableName.equals(TableNameIn))
 		{
 			String msg = "TableName not correctly parsed - TableNameIn=" + TableNameIn + " - " + asp;
-			if (ti.length > 0)
+			if (aspTableInfos.length > 0)
 			{
-				msg += " - #1 " + ti[0];
+				msg += " - #1 " + aspTableInfos[0];
 			}
 			msg += "\n SQL=" + sqlSelectFromWhere;
 			final AdempiereException ex = new AdempiereException(msg);
@@ -830,8 +836,9 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		if (!tableName.equals(I_AD_PInstance_Log.Table_Name))
-		{ // globalqss, bug 1662433
- // Client Access
+		{ 
+			// globalqss, bug 1662433
+			// Client Access
 			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
 			if (fullyQualified)
 			{
@@ -857,9 +864,9 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// ** Data Access **
-		for (int i = 0; i < ti.length; i++)
+		for (int i = 0; i < aspTableInfos.length; i++)
 		{
-			final String TableName = ti[i].getTableName();
+			final String TableName = aspTableInfos[i].getTableName();
 
 			// [ 1644310 ] Rev. 1292 hangs on start
 			if (TableName.toUpperCase().endsWith("_TRL"))
@@ -886,7 +893,7 @@ class UserRolePermissions implements IUserRolePermissions
 			String keyColumnNameFQ = "";
 			if (fullyQualified)
 			{
-				keyColumnNameFQ = ti[i].getSynonym();	// table synonym
+				keyColumnNameFQ = aspTableInfos[i].getSynonym();	// table synonym
 				if (keyColumnNameFQ.length() == 0)
 				{
 					keyColumnNameFQ = TableName;

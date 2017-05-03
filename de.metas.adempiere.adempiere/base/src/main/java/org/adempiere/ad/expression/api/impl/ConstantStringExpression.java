@@ -27,11 +27,11 @@ import com.google.common.collect.ImmutableSet;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class ConstantStringExpression implements IStringExpression, ICachedStringExpression
 {
+	/** @return constant string expression; fails if the expressionStr is null */
 	public static final ConstantStringExpression of(final String expressionStr)
 	{
 		final ConstantStringExpression cached = CACHE.get(expressionStr);
@@ -48,6 +49,12 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 		}
 
 		return new ConstantStringExpression(expressionStr);
+	}
+
+	/** @return constant string expression or {@link IStringExpression#NULL} if the expressionStr is null */
+	public static final IStringExpression ofNullable(final String expressionStr)
+	{
+		return expressionStr == null ? IStringExpression.NULL : of(expressionStr);
 	}
 
 	private static final ImmutableMap<String, ConstantStringExpression> CACHE = ImmutableMap.<String, ConstantStringExpression> builder()

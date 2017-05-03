@@ -97,6 +97,7 @@ public class Services
 	public static void setExternalServiceImplProvider(final IServiceImplProvider externalServiceImplProvider)
 	{
 		Services.externalServiceImplProvider = externalServiceImplProvider;
+		logger.info("Registered external service implementation provider: {}", externalServiceImplProvider);
 	}
 
 	/**
@@ -171,7 +172,7 @@ public class Services
 	 *
 	 * @param serviceInterfaceClass
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>if <code>T</code> extends {@link ISingletonService} then this method returns a cached instance of that service implementation
 	 *         <li>If <code>T</code> extends {@link IMultitonService}, then this method returns a NEW instance of that service implementation
 	 *         </ul>

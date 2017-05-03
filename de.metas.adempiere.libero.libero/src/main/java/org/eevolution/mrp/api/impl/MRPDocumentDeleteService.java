@@ -38,17 +38,16 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPDocumentDeleteService;
-import org.eevolution.mrp.api.IMRPExecutor;
-import org.eevolution.mrp.api.IMRPNotesCollector;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMRPNotesCollector;
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 {
@@ -73,7 +72,7 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 
 	// Context parameters
 	private final boolean enableEnqueueToDelete;
-	private IMRPContext _mrpContext;
+	private IMaterialPlanningContext _mrpContext;
 	private IMRPNotesCollector _mrpNotesCollector = DirectMRPNotesCollector.instance;
 
 	/** <code>true</code> if {@link #deletePending()} can be interrupted when Thread is interrupted */
@@ -87,7 +86,7 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 	}
 
 	@Override
-	public IMRPDocumentDeleteService setMRPContext(final IMRPContext mrpContext)
+	public IMRPDocumentDeleteService setMRPContext(final IMaterialPlanningContext mrpContext)
 	{
 		_mrpContext = mrpContext;
 		if (mrpContext != null && mrpContext.getLogger() != null)
@@ -102,7 +101,7 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 		return this;
 	}
 
-	private final IMRPContext getMRPContext()
+	private final IMaterialPlanningContext getMRPContext()
 	{
 		return _mrpContext;
 	}
@@ -292,9 +291,9 @@ public class MRPDocumentDeleteService implements IMRPDocumentDeleteService
 
 	private void notifyDeleteError(final Object document, final Exception e)
 	{
-		final IMRPContext mrpContext = getMRPContext();
+		final IMaterialPlanningContext mrpContext = getMRPContext();
 		final IMRPNotesCollector mrpNotesCollector = getMRPNotesCollector();
-		mrpNotesCollector.newMRPNoteBuilder(mrpContext, IMRPExecutor.MRP_ERROR_999_Unknown)
+		mrpNotesCollector.newMRPNoteBuilder(mrpContext, ErrorCodes.MRP_ERROR_999_Unknown)
 				.addParameter("Document", document)
 				.setComment("Cannot delete document")
 				.setException(e)

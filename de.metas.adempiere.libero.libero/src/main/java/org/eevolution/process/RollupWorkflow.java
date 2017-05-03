@@ -60,10 +60,10 @@ import org.compiere.wf.MWFNode;
 import org.compiere.wf.MWorkflow;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.model.MPPProductPlanning;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.process.JavaProcess;
 
 /**

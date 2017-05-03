@@ -60,10 +60,12 @@ import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
+
+import de.metas.material.planning.IMaterialPlanningContext;
+import lombok.NonNull;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder
 {
@@ -72,7 +74,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
 	private Object _contextProvider = null;
-	private IMRPContext _mrpContext = null;
+	private IMaterialPlanningContext _mrpContext = null;
 
 	//
 	// Planning segment
@@ -393,7 +395,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	}
 
 	@Override
-	public int updateMRPRecords(IQueryUpdater<I_PP_MRP> queryUpdater)
+	public int updateMRPRecords(@NonNull final IQueryUpdater<I_PP_MRP> queryUpdater)
 	{
 		return createQueryBuilder()
 				.create() // create query
@@ -464,7 +466,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 	}
 
 	@Override
-	public MRPQueryBuilder setMRPContext(final IMRPContext mrpContext)
+	public MRPQueryBuilder setMRPContext(final IMaterialPlanningContext mrpContext)
 	{
 		this._mrpContext = mrpContext;
 		return this;

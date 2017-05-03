@@ -624,20 +624,34 @@ public class TimeUtil
 	 * 
 	 * @param dateTime Date and Time
 	 * @param offset minute offset
-	 * @return dateTime + offset in minutes
+	 * @return dateTime + offset in minutes; never returns {@code null}
 	 */
-	static public Timestamp addMinutess(Timestamp dateTime, int offset)
+	public static Date addMinutes(final Date dateTime, final int offset)
 	{
-		if (dateTime == null)
-			dateTime = new Timestamp(System.currentTimeMillis());
+		final Date dateTimeToUse = dateTime == null ? SystemTime.asDate() : dateTime;
+
 		if (offset == 0)
-			return dateTime;
-		//
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTime(dateTime);
+		{
+			return dateTimeToUse;
+		}
+
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(dateTimeToUse);
 		cal.add(Calendar.MINUTE, offset);			// may have a problem with negative
-		return new Timestamp(cal.getTimeInMillis());
-	}	// addMinutes
+		return new Date(cal.getTimeInMillis());
+	}
+
+	/**
+	 * Like {@link #addMinutes(Date, int)}, but takes and returns a {@link Timestamp} and not a {@link Date}.
+	 * 
+	 * @param dateTime
+	 * @param offset
+	 * @return
+	 */
+	public static Timestamp addMinutes(final Timestamp dateTime, final int offset)
+	{
+		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
+	}
 
 	/**
 	 * Return DateTime + offset in hours

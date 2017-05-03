@@ -39,14 +39,15 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 
+import de.metas.material.planning.IMaterialPlanningContext;
+
 /**
- * An {@link IMRPSupplyProducer} implementation which just creates a Supply MRP record to balance the demand (see {@link #createSupply(IMRPContext, IMRPExecutor)}).
+ * An {@link IMRPSupplyProducer} implementation which just creates a Supply MRP record to balance the demand (see {@link #createSupply(IMaterialPlanningContext, IMRPExecutor)}).
  * 
  * @author tsa
  * 
@@ -67,7 +68,7 @@ public class MockedMRPSupplyProducer implements IMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(IMRPContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		return true;
 	}
@@ -99,7 +100,7 @@ public class MockedMRPSupplyProducer implements IMRPSupplyProducer
 	@Override
 	public void createSupply(final IMRPCreateSupplyRequest request)
 	{
-		final IMRPContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMRPContext();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
 		final BigDecimal qtyToSupply = request.getQtyToSupply();
@@ -138,13 +139,13 @@ public class MockedMRPSupplyProducer implements IMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(IMRPContext mrpContext, IMRPExecutor executor)
+	public void cleanup(IMaterialPlanningContext mrpContext, IMRPExecutor executor)
 	{
 		// nothing
 	}
 
 	@Override
-	public void onQtyOnHandReservation(final IMRPContext mrpContext,
+	public void onQtyOnHandReservation(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final IMRPDemandToSupplyAllocation mrpDemandToSupplyAllocation)
 	{

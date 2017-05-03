@@ -42,12 +42,13 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPContextRunnable;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
-import org.eevolution.mrp.api.IMutableMRPContext;
+
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
 
 /**
  * An {@link IMRPSuppliesPool} implementation which is actually checking the current MRP Demand-Supply allocations status.
@@ -71,14 +72,14 @@ public class AlreadyAllocatedMRPSuppliesPool implements IMRPSuppliesPool
 
 	// Parameters
 	@ToStringBuilder(skip = true)
-	private final IMRPContext _mrpContext;
+	private final IMaterialPlanningContext _mrpContext;
 	@ToStringBuilder(skip = true)
 	private final MRPExecutor _mrpExecutor;
 
 	private QtyOnHandMRPSuppliesPool _qtyOnHandMRPSuppliesPool = null;
 	private LinkedHashMap<Integer, IMutableMRPRecordAndQty> _mrpSuppliesAvailable = null;
 
-	public AlreadyAllocatedMRPSuppliesPool(final IMRPContext mrpContext, final MRPExecutor mrpExecutor)
+	public AlreadyAllocatedMRPSuppliesPool(final IMaterialPlanningContext mrpContext, final MRPExecutor mrpExecutor)
 	{
 		super();
 
@@ -89,7 +90,7 @@ public class AlreadyAllocatedMRPSuppliesPool implements IMRPSuppliesPool
 		_mrpExecutor = mrpExecutor;
 	}
 
-	private final IMRPContext getMRPContext()
+	private final IMaterialPlanningContext getMRPContext()
 	{
 		return _mrpContext;
 	}
@@ -282,7 +283,7 @@ public class AlreadyAllocatedMRPSuppliesPool implements IMRPSuppliesPool
 	{
 		Check.assume(qtyInTransit.signum() > 0, "qtyInTransit > 0 but it was {}", qtyInTransit);
 
-		final IMRPContext mrpContext = getMRPContext();
+		final IMaterialPlanningContext mrpContext = getMRPContext();
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 		trxManager.assertTrxNotNull(mrpContext);
 

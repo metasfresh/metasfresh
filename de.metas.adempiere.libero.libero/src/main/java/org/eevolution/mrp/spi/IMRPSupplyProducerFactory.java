@@ -26,15 +26,16 @@ package org.eevolution.mrp.spi;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
+
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public interface IMRPSupplyProducerFactory extends ISingletonService
 {
 	void registerSupplyProducer(final IMRPSupplyProducer supplyProducer);
 
-	IMRPSupplyProducer getSupplyProducer(final IMRPContext mrpContext);
+	IMRPSupplyProducer getSupplyProducer(final IMaterialPlanningContext mrpContext);
 
 	List<IMRPSupplyProducer> getSupplyProducers(final String tableName);
 
@@ -42,7 +43,7 @@ public interface IMRPSupplyProducerFactory extends ISingletonService
 
 	List<IMRPSupplyProducer> getAllSupplyProducersList();
 
-	void notifyQtyOnHandAllocated(IMRPContext mrpContext,
+	void notifyQtyOnHandAllocated(IMaterialPlanningContext mrpContext,
 			IMRPExecutor mrpExecutor,
 			List<IMRPDemandToSupplyAllocation> mrpDemandsToSupplyAllocations);
 

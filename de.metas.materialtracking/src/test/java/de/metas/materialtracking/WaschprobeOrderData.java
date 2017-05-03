@@ -28,12 +28,12 @@ import java.sql.Timestamp;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.impl.MaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IPPOrderQualityFields;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -55,9 +55,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.impl.QualityInspectionOrd
  */
 public class WaschprobeOrderData
 {
-	// Services
-	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-
 	// Data
 
 	public final Timestamp productionDate;
@@ -191,7 +188,7 @@ public class WaschprobeOrderData
 		// Validate for common mistakes when defining tests: if we are dealing with a co/by-product line the qty shall be negative
 		if (qtyDelivered != null
 				&& qtyDelivered.signum() > 0
-				&& ppOrderBOMBL.isCoOrByProduct(ppOrderBOMLine))
+				&& PPOrderUtil.isCoOrByProduct(ppOrderBOMLine))
 		{
 			throw new IllegalArgumentException("Possible testing issue found: when setting Qty Delivered on a co/by product line, the qty shall be negative"
 					+ "\n QtyDelivered to set: " + qtyDelivered

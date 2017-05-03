@@ -34,10 +34,12 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMutableMRPContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.impl.MRPContext;
 
 public class MRPQueryBuilderTest
 {

@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -42,6 +41,7 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.quantity.Quantity;
 
 /**
  * Wraps a {@link I_DD_OrderLine_Or_Alternative} and keeps track of changes done to it's qty via movements (which are not completed).
@@ -122,7 +122,7 @@ import de.metas.handlingunits.model.I_M_HU;
 			qtyToAllocateMax = getQtyToShipRemaining();
 		}
 
-		final Quantity qtyToAllocateConv = qtyToAllocate.convertTo(uomConversionCtx, qtyToAllocateMax.getUOM());
+		final Quantity qtyToAllocateConv = uomConversionBL.convertQuantityTo(qtyToAllocate, uomConversionCtx, qtyToAllocateMax.getUOM());
 		final Quantity qtyToAllocateRemaining = qtyToAllocateMax.subtract(qtyToAllocateConv);
 
 		final Quantity qtyShipped;
@@ -142,7 +142,7 @@ import de.metas.handlingunits.model.I_M_HU;
 
 		huId2HUs.put(hu.getM_HU_ID(), hu);
 
-		final Quantity qtyShippedConv = qtyShipped.convertTo(uomConversionCtx, qtyToShipRemaining.getUOM());
+		final Quantity qtyShippedConv = uomConversionBL.convertQuantityTo(qtyShipped, uomConversionCtx, qtyToShipRemaining.getUOM());
 		qtyToShipRemaining = qtyToShipRemaining.subtract(qtyShippedConv);
 		qtyToShipScheduled = qtyToShipScheduled.add(qtyShippedConv);
 

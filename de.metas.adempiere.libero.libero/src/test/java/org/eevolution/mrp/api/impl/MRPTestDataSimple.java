@@ -39,6 +39,8 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.X_PP_Order_BOM;
+import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_Planning;
 
 /**

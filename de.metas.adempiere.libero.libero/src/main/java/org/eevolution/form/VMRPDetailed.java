@@ -137,7 +137,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.compiere.util.ValueNamePair;
-import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
@@ -152,6 +151,7 @@ import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.process.IProcessExecutionListener;
 
 /**

@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -35,8 +36,9 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.MDocType;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.exceptions.LiberoException;
@@ -44,14 +46,41 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_Workflow;
+import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 
 public class PPOrderBL implements IPPOrderBL
 {
 	// private final transient Logger log = CLogMgt.getLogger(getClass());
+
+	@Override
+	public void setDefaults(final I_PP_Order ppOrder)
+	{
+		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(Env.getCtx(), MDocType.DOCBASETYPE_ManufacturingOrder, ppOrder.getAD_Client_ID(), ppOrder.getAD_Org_ID(), ITrx.TRXNAME_None);
+
+		ppOrder.setLine(10);
+		ppOrder.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
+		ppOrder.setDescription("");
+		ppOrder.setQtyDelivered(BigDecimal.ZERO);
+		ppOrder.setQtyReject(BigDecimal.ZERO);
+		ppOrder.setQtyScrap(BigDecimal.ZERO);
+		ppOrder.setIsSelected(false);
+		ppOrder.setIsSOTrx(false);
+		ppOrder.setIsApproved(false);
+		ppOrder.setIsPrinted(false);
+		ppOrder.setProcessed(false);
+		ppOrder.setProcessing(false);
+		ppOrder.setPosted(false);
+		ppOrder.setC_DocTypeTarget_ID(docTypeId);
+		ppOrder.setC_DocType_ID(docTypeId);
+		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
+		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
+	}
+
 	
 	/**
 	 * Set Qty Entered/Ordered. Use this Method if the Line UOM is the Product UOM

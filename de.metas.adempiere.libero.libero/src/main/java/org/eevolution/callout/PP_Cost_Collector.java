@@ -11,8 +11,9 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.MPPCostCollector;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
+
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
 
 /*
  * #%L
