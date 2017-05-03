@@ -31,6 +31,7 @@ import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -39,6 +40,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
 import lombok.NonNull;
 
 /*
@@ -65,9 +67,9 @@ import lombok.NonNull;
 
 public class HUEditorView implements IView
 {
-	public static final Builder builder()
+	public static final Builder builder(final SqlViewBinding sqlViewBinding)
 	{
-		return new Builder();
+		return new Builder(sqlViewBinding);
 	}
 
 	public static HUEditorView cast(final IView view)
@@ -89,8 +91,10 @@ public class HUEditorView implements IView
 	{
 		parentViewId = builder.getParentViewId();
 
+		final boolean isHighVolume = builder.isHighVolume();
+
 		this.huAttributesProvider = HUEditorRowAttributesProvider.builder()
-				//.readonly(isHighVolume)
+				.readonly(isHighVolume)
 				.build();
 
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
@@ -99,16 +103,23 @@ public class HUEditorView implements IView
 				.attributesProvider(huAttributesProvider)
 				.build();
 
-//		final boolean isHighVolume = false; // TODO: high volume is work in progress
-//		if (isHighVolume)
-//		{
-//			final HUEditorViewBuffer_HighVolume rowsBuffer = new HUEditorViewBuffer_HighVolume(builder.getWindowId(), huEditorRepo);
-//			this.rowsBuffer = rowsBuffer;
-//			this.viewId = rowsBuffer.getViewId();
-//		}
-//		else
+		final Collection<Integer> huIds = builder.getHUIds();
+		
+		if (isHighVolume)
 		{
-			this.rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, builder.getHUIds());
+			final ImmutableList.Builder<DocumentFilter> filters = ImmutableList.builder();
+			if(!huIds.isEmpty())
+			{
+				filters.add(DocumentFilter.singleParameterFilter("huIds", I_M_HU.COLUMNNAME_M_HU_ID, Operator.IN_ARRAY, huIds));
+			}
+			
+			final HUEditorViewBuffer_HighVolume rowsBuffer = new HUEditorViewBuffer_HighVolume(builder.getWindowId(), huEditorRepo, builder.getSqlViewBinding(), filters.build());
+			this.rowsBuffer = rowsBuffer;
+			this.viewId = rowsBuffer.getViewId();
+		}
+		else
+		{
+			this.rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, huIds);
 			this.viewId = ViewId.random(builder.getWindowId());
 		}
 
@@ -378,6 +389,7 @@ public class HUEditorView implements IView
 
 	public static final class Builder
 	{
+		private final SqlViewBinding sqlViewBinding;
 		private ViewId parentViewId;
 		private WindowId windowId;
 
@@ -386,15 +398,21 @@ public class HUEditorView implements IView
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 		private Collection<Integer> huIds;
+		private boolean highVolume;
 
-		private Builder()
+		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
 		{
-			super();
+			this.sqlViewBinding = sqlViewBinding;
 		}
 
 		public HUEditorView build()
 		{
 			return new HUEditorView(this);
+		}
+
+		private SqlViewBinding getSqlViewBinding()
+		{
+			return sqlViewBinding;
 		}
 
 		public Builder setParentViewId(final ViewId parentViewId)
@@ -432,6 +450,17 @@ public class HUEditorView implements IView
 				return ImmutableSet.of();
 			}
 			return huIds;
+		}
+		
+		public Builder setHighVolume(boolean highVolume)
+		{
+			this.highVolume = highVolume;
+			return this;
+		}
+		
+		private boolean isHighVolume()
+		{
+			return highVolume;
 		}
 
 		public Builder setReferencingDocumentPaths(final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)

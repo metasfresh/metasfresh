@@ -2,14 +2,21 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -20,6 +27,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -49,7 +57,32 @@ public class HUEditorViewFactory implements IViewFactory
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
+	private static final Supplier<SqlViewBinding> sqlViewBindingSupplier = ExtendedMemorizingSupplier.of(() -> createSqlViewBinding());
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
+
+	private SqlViewBinding getSqlViewBinding()
+	{
+		return sqlViewBindingSupplier.get();
+	}
+	
+	private static SqlViewBinding createSqlViewBinding()
+	{
+		return SqlViewBinding.builder()
+				.setTableName(I_M_HU.Table_Name)
+				.setDisplayFieldNames(I_M_HU.COLUMNNAME_M_HU_ID)
+				.setSqlWhereClause("M_HU_Item_Parent_ID is null AND IsActive='Y'") // top levels, active
+				//
+				.addField(SqlViewRowFieldBinding.builder()
+						.fieldName(I_M_HU.COLUMNNAME_M_HU_ID)
+						.keyColumn(true)
+						.widgetType(DocumentFieldWidgetType.Integer)
+						.sqlValueClass(Integer.class)
+						.fieldLoader((rs, adLanguage) -> null) // shall not be used
+						.build())
+				//
+				.setOrderBys(ImmutableList.of(DocumentQueryOrderBy.byFieldName(I_M_HU.COLUMNNAME_M_HU_ID, true)))
+				.build();
+	}
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
@@ -61,9 +94,9 @@ public class HUEditorViewFactory implements IViewFactory
 	@Override
 	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		return null; // not supported
+		return getSqlViewBinding().getViewFilterDescriptors().getAll();
 	}
-
+	
 	private final ViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
 	{
 		if (viewDataType == JSONViewDataType.includedView)
@@ -188,7 +221,7 @@ public class HUEditorViewFactory implements IViewFactory
 			referencingTableName = null;
 		}
 		
-		return HUEditorView.builder()
+		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setWindowId(windowId)
 				.setHUIds(request.getFilterOnlyIds())

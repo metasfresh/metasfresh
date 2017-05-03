@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
@@ -13,6 +15,8 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -309,6 +313,21 @@ public final class SqlViewSelectionQueryBuilder
 		sqlParams.add(selectionId);
 		return "SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
 				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID, rowIds, sqlParams);
+	}
+
+	public <T> IQueryFilter<T> buildInSelectionQueryFilter(final String selectionId)
+	{
+		final String tableName = entityBinding.getTableName();
+		final String keyColumnName = entityBinding.getKeyColumnName();
+
+		final String sql = "exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " where "
+				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
+				+ " and " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + tableName + "." + keyColumnName
+				+ ")";
+		final List<Object> sqlParams = ImmutableList.of(selectionId);
+
+		return new TypedSqlQueryFilter<>(sql, sqlParams);
 	}
 
 }
