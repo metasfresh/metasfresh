@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -43,7 +44,6 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@lombok.Builder
 public final class WebuiRelatedProcessDescriptor
 {
 	public static final WebuiRelatedProcessDescriptor of( //
@@ -55,7 +55,7 @@ public final class WebuiRelatedProcessDescriptor
 		Check.assumeNotNull(relatedProcessDescriptor, "Parameter relatedProcessDescriptor is not null");
 		Check.assumeNotNull(processDescriptor, "Parameter processDescriptor is not null");
 		Check.assume(relatedProcessDescriptor.getProcessId() == processDescriptor.getProcessId().getProcessIdAsInt(), "AD_Process_ID matching for {} and {}", relatedProcessDescriptor, processDescriptor);
-		
+
 		return builder()
 				.processId(processDescriptor.getProcessId())
 				.processCaption(processDescriptor.getCaption())
@@ -77,8 +77,33 @@ public final class WebuiRelatedProcessDescriptor
 	private final boolean defaultQuickAction;
 	@NonNull
 	private final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier;
-	
+
 	private final String debugProcessClassname;
+
+	@lombok.Builder
+	private WebuiRelatedProcessDescriptor( //
+			final ProcessId processId //
+			, final ITranslatableString processCaption //
+			, final ITranslatableString processDescription //
+			, final boolean quickAction //
+			, final boolean defaultQuickAction //
+			, @NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier //
+			, final String debugProcessClassname //
+	)
+	{
+		super();
+		this.processId = processId;
+		this.processCaption = processCaption;
+		this.processDescription = processDescription;
+		this.quickAction = quickAction;
+		this.defaultQuickAction = defaultQuickAction;
+		
+		// Memorize the resolution supplier to make sure it's not invoked more than once because it might be an expensive operation.
+		// Also we assume this is a short living instance which was created right before checking
+		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(preconditionsResolutionSupplier);
+		
+		this.debugProcessClassname = debugProcessClassname;
+	}
 
 	public ProcessId getProcessId()
 	{
