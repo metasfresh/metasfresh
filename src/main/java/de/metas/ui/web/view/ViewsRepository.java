@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -197,7 +196,10 @@ public class ViewsRepository implements IViewsRepository
 	@Async
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		Check.assumeNotEmpty(recordRefs, "Parameter recordRefs is not empty");
+		if(recordRefs.isEmpty())
+		{
+			return;
+		}
 
 		final Collection<IView> views = this.views.asMap().values();
 		
