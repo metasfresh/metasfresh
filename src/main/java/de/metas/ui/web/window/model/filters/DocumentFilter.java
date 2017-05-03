@@ -10,6 +10,8 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.model.filters.DocumentFilterParam.Operator;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -23,11 +25,11 @@ import com.google.common.collect.ImmutableList;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,6 +40,19 @@ public final class DocumentFilter
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static DocumentFilter singleParameterFilter(final String filterId, final String fieldName, final Operator operator, final Object value)
+	{
+		return builder()
+				.setFilterId(filterId)
+				.addParameter(DocumentFilterParam.builder()
+						.setJoinAnd(true)
+						.setFieldName(fieldName)
+						.setOperator(operator)
+						.setValue(value)
+						.build())
+				.build();
 	}
 
 	private final String filterId;
