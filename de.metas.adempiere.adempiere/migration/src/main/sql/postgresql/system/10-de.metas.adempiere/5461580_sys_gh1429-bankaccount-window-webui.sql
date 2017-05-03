@@ -589,3 +589,299 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=558360 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
+-- 2017-05-03T22:11:28.865
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540812,540156,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:28.906
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540215,540156,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:28.940
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540216,540156,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:28.990
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540215,540333,TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-05-03 22:11:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.037
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558309,0,540812,540333,543535,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','Y','N','N','Mandant',10,0,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.070
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558310,0,540812,540333,543536,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','Y','N','Sektion',20,10,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.111
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558311,0,540812,540333,543537,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnet einen Geschäftspartner','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','Y','Y','N','Geschäftspartner',30,20,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.144
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,558312,0,540116,543537,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.174
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558313,0,540812,540333,543538,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','Y','N','Aktiv',40,30,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.204
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558314,0,540812,540333,543539,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Automated Clearing House / Clearing-Zentrale','Das Auswahlfeld "ACH" zeigt an, ob dieses Konto ACH-Transaktionen akzeptiert.','Y','N','Y','Y','N','ACH',50,40,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.231
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558315,0,540812,540333,543540,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Business Partner Bank Account usage','Determines how the bank account is used.','Y','N','Y','Y','N','Kontonutzung',60,50,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.259
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558316,0,540812,540333,543541,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Bank','"Bank" ist die eindeutige Identifizierung einer Bank für diese Organisation oder für eien Geschäftspartner mit dem die Organisation interagiert.','Y','N','Y','Y','N','Bank',70,60,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.287
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558317,0,540812,540333,543542,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Kontenart','The Bank Account Type field indicates the type of account (savings, checking etc) this account  is defined as.','Y','N','Y','Y','N','Kontenart',80,70,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.314
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558318,0,540812,540333,543543,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Bankleitzahl','The Bank Routing Number (ABA Number) identifies a legal Bank.  It is used in routing checks and electronic transactions.','Y','N','Y','Y','N','BLZ',90,80,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.343
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558319,0,540812,540333,543544,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Kontonummer','The Account Number indicates the Number assigned to this bank account. ','Y','N','Y','Y','N','Konto-Nr.',100,90,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.371
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558320,0,540812,540333,543545,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'International Bank Account Number','If your bank provides an International Bank Account Number, enter it here
+Details ISO 13616 and http://www.ecbs.org. The account number has the maximum length of 22 characters (without spaces). The IBAN is often printed with a apace after 4 characters. Do not enter the spaces in Adempiere.','Y','N','Y','Y','N','IBAN',110,100,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.397
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558321,0,540812,540333,543546,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Kreditkarte (Visa, MC, AmEx)','Die Auswahlliste "Kreditkarte" ermöglicht, den Kreditkartentyp für die Zahlung zu wählen.','Y','N','Y','N','N','Kreditkarte',120,0,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.425
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558322,0,540812,540333,543547,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Kreditkarten-Nummer','Die Nummer wie auf der Kreditkarte angegeben, ohne Leerstellen oder Zwischenräume.','Y','N','Y','N','N','Kreditkarten-Nummer',130,0,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558323,0,540812,540333,543548,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Verifizierungs-Code der Kreditkarte','Der "Verifizierungs-Code" gibt den Verifizierungs-Code uf der Kreditkarte an (AMEX 4 Stellen auf der Vorderseite; MC / Visa 3 Stellen auf der Rückseite)','Y','N','Y','Y','N','Verifizierungs-Code',140,110,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.481
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558324,0,540812,540333,543549,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Gültig bis Monat','Gibt den letzten Monat der Gültigkeit dieser Kreditkarte an.','Y','N','Y','Y','N','Exp. Monat',150,120,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.512
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558325,0,540812,540333,543550,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Gültig bis Jahr','Gibt das letzte Jahr der Gültigkeit dieser Kreditkarte an.','Y','N','Y','Y','N','Exp. Jahr',160,130,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.540
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558326,0,540812,540333,543551,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','Y','Y','N','Währung',170,140,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.569
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558327,0,540812,540333,543552,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Name auf Kreditkarte oder des Kontoeigners','"Name" bezeichnet den Namen des Eigentümers von Kreditkarte oder Konto.','Y','N','Y','Y','N','Name',180,150,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.601
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558328,0,540812,540333,543553,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Straße des Eigentümers von Kreditkarte oder Konto','"Straße" bezeichnet die Straße des Eigentümers von Kreditkarte oder Konto.','Y','N','Y','Y','N','Straße',190,160,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.631
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558329,0,540812,540333,543554,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Ort des Eigentümers der Kreditkarte oder des Bankkontos','"Ort" bezeichnet den Ort des Eigentümers der Kreditkarte oder des Bankkontos','Y','N','Y','Y','N','Ort',200,170,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.659
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558330,0,540812,540333,543555,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl des Eigentümers von Kreditkarte oder Konto','"Postleitzahl" bezeichnet die Postleitzahl des Eigentümers von Kreditkarte oder Konto','Y','N','Y','Y','N','Postleitzahl',210,180,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.685
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558331,0,540812,540333,543556,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Bundesstaat / -land des Eigentümers von Kreditkarte oder Konto','Bundesstaat / -land bezeichnet den Bundesstaat oder das Bundesland des Eigentümers von Kreditkarte oder Konto.','Y','N','Y','Y','N','Bundesstaat / -land',220,190,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.713
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558332,0,540812,540333,543557,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Land','Name des Landes','Y','N','Y','Y','N','Land',230,200,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.747
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558333,0,540812,540333,543558,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Identifikation - Führerschein-Nr.','Die "Führerschein-Nr." zur Identifikation bei der Zahlung.','Y','N','Y','Y','N','Führerschein-Nr.',240,210,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.778
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558334,0,540812,540333,543559,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Identifikation - Ausweis-Nr.','Ausweis-Nr. als Identifikation.','Y','N','Y','Y','N','Ausweis-Nr.',250,220,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.807
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558335,0,540812,540333,543560,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Email-Adresse','"EMail" bezeichnet die EMail-Adresse des Eigentümers von Kreditkarte oder Konto.','Y','N','Y','Y','N','EMail',260,230,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.837
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558336,0,540812,540333,543561,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Diese Adresse wurde verifiziert','"Addresse verifiziert" zeigt an, dass diese Adresse durch die Kreditkartenfirma bestätigt wurde.','Y','N','Y','Y','N','Addresse verifiziert',270,240,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.867
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558337,0,540812,540333,543562,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Die Postleitzahl wurde verifiziert','"Postleitzahl verifiziert" zeigt an, dass diese Postleitzahl durch die Kreditkartenfirma bestätigt wurde.','Y','N','Y','Y','N','Postleitzahl verifiziert',280,250,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.899
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558338,0,540812,540333,543563,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Bankverbindung des Geschäftspartners','Y','N','Y','Y','N','Bankverbindung',290,260,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.926
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558339,0,540812,540333,543564,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','ESR Teilnehmernummer',300,270,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558340,0,540812,540333,543565,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','ESR_RenderedReceiver',310,280,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:29.982
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558341,0,540812,540333,543566,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','ESR Konto',320,290,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.010
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558342,0,540812,540333,543567,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Standard ESR Konto',330,300,0,TO_TIMESTAMP('2017-05-03 22:11:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.048
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558343,0,540812,540333,543568,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Default value','The Default Checkbox indicates if this record will be used as a default value.','Y','N','Y','Y','N','Standard',340,310,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.082
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540813,540157,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.113
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540217,540157,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.139
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540217,540334,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.167
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558344,0,540813,540334,543569,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','Y','N','Mandant',0,10,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.199
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558345,0,540813,540334,543570,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','Y','N','Sektion',0,20,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.230
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558346,0,540813,540334,543571,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Bankverbindung des Geschäftspartners','Y','N','N','Y','N','Bankverbindung',0,30,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.262
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558347,0,540813,540334,543572,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Stammdaten für Buchhaltung','Ein Kontenschema definiert eine Ausprägung von Stammdaten für die Buchhaltung wie verwendete Art der Kostenrechnung, Währung und Buchungsperiode.','Y','N','N','Y','N','Buchführungs-Schema',0,40,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.294
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558348,0,540813,540334,543573,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','Y','N','Aktiv',0,50,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.321
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558349,0,540813,540334,543574,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Bank Konto','The Bank Asset Account identifies the account to be used for booking changes to the balance in this bank account','Y','N','N','Y','N','Bank',0,60,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.350
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558350,0,540813,540334,543575,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Bank In Transit','The Bank in Transit Account identifies the account to be used for funds which are in transit.','Y','N','N','Y','N','Bank In Transit',0,70,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.379
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558351,0,540813,540334,543576,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für nicht zugeordnete Zahlungen','Receipts not allocated to Invoices','Y','N','N','Y','N','Nicht zugeordnete Zahlungen',0,80,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.406
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558352,0,540813,540334,543577,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Bank Unidentified Receipts Account','The Bank Unidentified Receipts Account identifies the account to be used when recording receipts that can not be reconciled at the present time.','Y','N','N','Y','N','Bank Unidentified Receipts',0,90,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.436
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558353,0,540813,540334,543578,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für selektierte Zahlungen','Y','N','N','Y','N','Bezahlung selektiert',0,100,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.463
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558354,0,540813,540334,543579,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Nebenkosten des Geldverkehrs','The Bank Expense Account identifies the account to be used for recording charges or fees incurred from this Bank.','Y','N','N','Y','N','Nebenkosten des Geldverkehrs',0,110,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.489
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558355,0,540813,540334,543580,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Zins Aufwendungen','The Bank Interest Expense Account identifies the account to be used for recording interest expenses.','Y','N','N','Y','N','Zins Aufwendungen',0,120,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.517
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558356,0,540813,540334,543581,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Zinserträge','The Bank Interest Revenue Account identifies the account to be used for recording interest revenue from this Bank.','Y','N','N','Y','N','Zinserträge',0,130,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.547
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558357,0,540813,540334,543582,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Erträge aus Kursdifferenzen','The Bank Revaluation Gain Account identifies the account to be used for recording gains that are recognized when converting currencies.','Y','N','N','Y','N','Erträge aus Kursdifferenzen',0,140,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.572
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558358,0,540813,540334,543583,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Währungsverluste','The Bank Revaluation Loss Account identifies the account to be used for recording losses that are recognized when converting currencies.','Y','N','N','Y','N','Währungsverluste',0,150,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.601
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558359,0,540813,540334,543584,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Bank Settlement Gain Account','The Bank Settlement Gain account identifies the account to be used when recording a currency gain when the settlement and receipt currency are not the same.','Y','N','N','Y','N','Bank Settlement Gain',0,160,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-03T22:11:30.631
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558360,0,540813,540334,543585,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100,'Bank Settlement Loss Account','The Bank Settlement loss account identifies the account to be used when recording a currency loss when the settlement and receipt currency are not the same.','Y','N','N','Y','N','Bank Settlement Loss',0,170,0,TO_TIMESTAMP('2017-05-03 22:11:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
