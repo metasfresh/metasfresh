@@ -41,6 +41,7 @@ public class DocumentFilterParam
 	public static enum Operator
 	{
 		EQUAL, NOT_EQUAL, //
+		IN_ARRAY, //
 		LIKE, //
 		/** Like (case-insensitive) */
 		LIKE_I, //

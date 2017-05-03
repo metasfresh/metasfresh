@@ -1,7 +1,10 @@
 package de.metas.ui.web.window.model.sql;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adempiere.db.DBConstants;
 import org.compiere.util.DB;
@@ -126,67 +129,79 @@ public class SqlDocumentFiltersBuilder
 		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 
 		final String columnSql = fieldBinding.getColumnSql();
-		final String columnName = fieldBinding.getColumnName();
-		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
-		final Class<?> targetClass = fieldBinding.getSqlValueClass();
-		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(filterParam.getValue(), columnName, widgetType, targetClass);
 
 		final Operator operator = filterParam.getOperator();
 		switch (operator)
 		{
 			case EQUAL:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				final boolean negate = false;
 				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
 			}
 			case NOT_EQUAL:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				final boolean negate = true;
 				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
 			}
+			case IN_ARRAY:
+			{
+				final List<Object> sqlValuesList = convertToSqlValuesList(filterParam.getValue(), fieldBinding);
+				return buildSqlWhereClause_InArray(columnSql, sqlValuesList, sqlParams);
+			}
 			case GREATER:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				return buildSqlWhereClause_Compare(columnSql, ">", sqlValue, sqlParams);
 			}
 			case GREATER_OR_EQUAL:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				return buildSqlWhereClause_Compare(columnSql, ">=", sqlValue, sqlParams);
 			}
 			case LESS:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				return buildSqlWhereClause_Compare(columnSql, "<", sqlValue, sqlParams);
 			}
 			case LESS_OR_EQUAL:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				return buildSqlWhereClause_Compare(columnSql, "<=", sqlValue, sqlParams);
 			}
 			case LIKE:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				final boolean negate = false;
 				final boolean ignoreCase = false;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case NOT_LIKE:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				final boolean negate = true;
 				final boolean ignoreCase = false;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case LIKE_I:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				final boolean negate = false;
 				final boolean ignoreCase = true;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case NOT_LIKE_I:
 			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
 				final boolean negate = true;
 				final boolean ignoreCase = true;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case BETWEEN:
 			{
-				final Object sqlValueTo = SqlDocumentsRepository.convertValueToPO(filterParam.getValueTo(), columnName, widgetType, targetClass);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), fieldBinding);
 				return buildSqlWhereClause_Between(columnSql, sqlValue, sqlValueTo, sqlParams);
 			}
 			default:
@@ -194,6 +209,33 @@ public class SqlDocumentFiltersBuilder
 				throw new IllegalArgumentException("Operator not supported: " + operator);
 			}
 		}
+	}
+
+	private Object convertToSqlValue(final Object value, final SqlEntityFieldBinding fieldBinding)
+	{
+		final String columnName = fieldBinding.getColumnName();
+		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
+		final Class<?> targetClass = fieldBinding.getSqlValueClass();
+		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(value, columnName, widgetType, targetClass);
+		return sqlValue;
+	}
+
+	private List<Object> convertToSqlValuesList(final Object valuesAsObj, final SqlEntityFieldBinding fieldBinding)
+	{
+		final Stream<?> valuesStream;
+		if (valuesAsObj instanceof Collection)
+		{
+			Collection<?> valuesCollection = (Collection<?>)valuesAsObj;
+			valuesStream = valuesCollection.stream();
+		}
+		else
+		{
+			throw new IllegalArgumentException("Value type not supported: " + valuesAsObj);
+		}
+
+		return valuesStream
+				.map(value -> convertToSqlValue(value, fieldBinding))
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final List<Object> sqlParams)
@@ -222,6 +264,11 @@ public class SqlDocumentFiltersBuilder
 		return new StringBuilder()
 				.append(sqlColumnExpr).append(sqlOperator).append("?")
 				.toString();
+	}
+
+	private static final String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final List<Object> sqlParams)
+	{
+		return DB.buildSqlList(sqlColumnExpr, sqlValues, sqlParams);
 	}
 
 	private static final String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final List<Object> sqlParams)
@@ -295,11 +342,11 @@ public class SqlDocumentFiltersBuilder
 
 	public SqlDocumentFiltersBuilder addFilters(final List<DocumentFilter> filters)
 	{
-		if(filters == null || filters.isEmpty())
+		if (filters == null || filters.isEmpty())
 		{
 			return this;
 		}
-		
+
 		this.filters.addAll(filters);
 		return this;
 	}
