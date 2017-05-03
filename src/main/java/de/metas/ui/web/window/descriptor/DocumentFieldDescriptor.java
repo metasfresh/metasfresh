@@ -459,8 +459,22 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 			else if (Boolean.class == targetType)
 			{
+				final Object valueToConv;
+				if(value instanceof StringLookupValue)
+				{
+					// If String lookup value then consider only the Key.
+					// usage example 1: the Posted column which can be Y, N and some other error codes.
+					// In this case we want to convert the "Y" to "true".
+					// usage example 2: some column which is List and the reference is "_YesNo".
+					valueToConv = ((StringLookupValue)value).getIdAsString();
+				}
+				else
+				{
+					valueToConv = value;
+				}
+				
 				@SuppressWarnings("unchecked")
-				final T valueConv = (T)DisplayType.toBoolean(value, Boolean.FALSE);
+				final T valueConv = (T)DisplayType.toBoolean(valueToConv, Boolean.FALSE);
 				return valueConv;
 			}
 			else if (IntegerLookupValue.class == targetType)
