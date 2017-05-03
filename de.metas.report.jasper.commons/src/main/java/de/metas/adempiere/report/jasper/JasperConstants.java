@@ -32,6 +32,7 @@ package de.metas.adempiere.report.jasper;
  */
 public final class JasperConstants
 {
+	public static final String PROFILE_JasperServer = "metasfresh-jasper-server";
 
 	public static final String SYSCONFIG_JRServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
 	public static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
