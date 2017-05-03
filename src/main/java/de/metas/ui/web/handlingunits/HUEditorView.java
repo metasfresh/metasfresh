@@ -314,6 +314,10 @@ public class HUEditorView implements IView
 				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
 				.map(recordRef -> recordRef.getRecord_ID())
 				.collect(ImmutableSet.toImmutableSet());
+		if(huIdsToCheck.isEmpty())
+		{
+			return;
+		}
 
 		final boolean containsSomeRecords = rowsBuffer.containsAnyOfHUIds(huIdsToCheck);
 		if (!containsSomeRecords)
