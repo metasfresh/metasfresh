@@ -156,6 +156,15 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	}
 
 	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("rowId", rowId)
+				.add("summary", getSummary())
+				.toString();
+	}
+
+	@Override
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
