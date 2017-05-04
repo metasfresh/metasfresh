@@ -28,6 +28,7 @@ Here come the actual release notes:
     * Adding the Document No. control to the empties return document.
   * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
     * Translating the jump Navigation of "New Request" to de_DE.
+  * [#1403](https://github.com/metasfresh/metasfresh/issues/1403) technical: refactor TaxNotFoundException
   * [#1405](https://github.com/metasfresh/metasfresh/issues/1405) Adjust Empties Return Window to mandatory field grouping layout
     * Adjusting Empties Return Window to mandatory Field primary layout.
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
@@ -49,6 +50,9 @@ Here come the actual release notes:
   * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
   
 ## Fixes
+
+* metasfresh-backend
+  * [#1440](https://github.com/metasfresh/metasfresh/issues/1440) ClassCastException: CompositeQueryFilter cannot be cast to SqlQueryFilter 
   
 * metasfresh-webui-api
   * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
