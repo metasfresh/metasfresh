@@ -1,5 +1,7 @@
 package de.metas.translation.api;
 
+import java.sql.SQLException;
+
 import org.adempiere.util.ISingletonService;
 
 /*
@@ -29,6 +31,7 @@ public interface IElementTranslationBL extends ISingletonService
 
 	/**
 	 * Method used for updating the data in the following tables:
+	 * 
 	 * <li>AD_Column_TRL,
 	 * <li>AD_Process_Para_TRL,
 	 * <li>AD_Field_TRL,
@@ -39,7 +42,8 @@ public interface IElementTranslationBL extends ISingletonService
 	 * 
 	 * @param elementId
 	 * @param adLanguage
+	 * @throws SQLException 
 	 */
-	void updateTranslations(int elementId, String adLanguage);
+	void updateTranslations(int elementId, String adLanguage) throws SQLException;
 
 }
