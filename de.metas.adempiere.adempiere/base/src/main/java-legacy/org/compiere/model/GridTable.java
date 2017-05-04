@@ -73,6 +73,7 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.translation.api.IElementTranslationBL;
 
 /**
  *	Grid Table Model for JDBC access including buffering.
@@ -1947,6 +1948,19 @@ public class GridTable extends AbstractTableModel
 					int no = DB.executeUpdateEx (sql, ITrx.TRXNAME_None);	//	no Trx
 					if (no != 1)
 						log.error("Update #=" + no + " - " + sql);
+					
+					// #1044
+					// Check if the table is AD_Element_Trl and if yes, update the other related _TRL tables with the new values
+					if ("AD_Element_Trl".equals(getTableName()))
+					{
+						final int elementIndex = findColumn(I_AD_Element.COLUMNNAME_AD_Element_ID);
+						final int languageIndex = findColumn(I_C_BPartner.COLUMNNAME_AD_Language);
+
+						final int adElementId = (Integer)rowData[elementIndex];
+						final String adLanguage = (String)rowData[languageIndex];
+
+						Services.get(IElementTranslationBL.class).updateTranslations(adElementId, adLanguage);
+					}
 				}
 				else
 				{
@@ -1958,17 +1972,7 @@ public class GridTable extends AbstractTableModel
 			DB.commit(true, null);	//	no Trx
 			//
 			lobSave(whereClause);
-			
-			
-			
-//			// TODO: check if trl table and if yes, fire trl changed event ;)
-//			if ("AD_Element_Trl".equals(getTableName()))
-//			{
-//				final int adElementId = -1; // TODO
-//				final String adLanguage = null; // TODO
-//				M_Element.
-//			}
-//			ModelValidationEngine.
+
 			
 			
 			//	Need to re-read row to get ROWID, Key, DocumentNo, Trigger, virtual columns
