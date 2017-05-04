@@ -116,7 +116,9 @@ public class CandidateRepository
 				.withQuantity(qtyDelta);
 	}
 
-	private void addOrRecplaceProductionDetail(final Candidate candidate, final I_MD_Candidate synchedRecord)
+	private void addOrRecplaceProductionDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
 		final I_MD_Candidate_Prod_Detail existingDetail = retrieveProductiondetail(synchedRecord);

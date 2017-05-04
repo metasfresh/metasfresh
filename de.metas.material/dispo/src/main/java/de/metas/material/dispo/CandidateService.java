@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -41,9 +42,14 @@ import lombok.NonNull;
 public class CandidateService
 {
 	private final CandidateRepository candidateRepository;
+	private final MaterialEventService materialEventService;
 
-	public CandidateService(@NonNull final CandidateRepository candidateRepository)
+	public CandidateService(
+			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final MaterialEventService materialEventService
+			)
 	{
+		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
 	}
 
@@ -74,8 +80,15 @@ public class CandidateService
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
 	 * @return
 	 */
+
+	private void requestProductionOrder(@NonNull final List<Candidate> group)
+	{
+		final PPOrderRequestedEvent ppOrderRequestEvent = createRequestEvent(group);
+		materialEventService.fireEvent(ppOrderRequestEvent);
+	}
+
 	@VisibleForTesting
-	PPOrderRequestedEvent requestProductionOrder(@NonNull final List<Candidate> group)
+	PPOrderRequestedEvent createRequestEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 

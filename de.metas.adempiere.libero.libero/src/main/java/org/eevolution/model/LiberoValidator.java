@@ -13,15 +13,14 @@ package org.eevolution.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
@@ -45,7 +44,8 @@ import de.metas.material.event.MaterialEventService;
  * Libero Validator
  *
  * @author Victor Perez
- * @author Trifon Trifonov <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
+ * @author Trifon Trifonov
+ *         <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
  * @author Teo Sarca, www.arhipac.ro
  */
 public final class LiberoValidator extends AbstractModuleInterceptor
@@ -90,7 +90,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		// Register MRP model validators
 		// NOTE: keep this as the last model validators to register
 		// NOTE2: from task 09944 we decided to register the MRP main interceptor from AD_ModelValidator, to be able to disable it.
-		//engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
+		// engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
 	}
 
 	@Override
@@ -124,15 +124,17 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
+		// add ourselves to the eventbus so that we can fire events on PP_Order docActions
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.subscribeToEventBus();
+
 		if (Ini.getRunMode() != RunMode.BACKEND)
 		{
 			return; // event based material planning can only run in the backend as of now
 		}
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		// register ourselves as listeners so we can respond to requests from the disposition framework
 		final MaterialDocumentListener materialDocumentListener = Adempiere.getBean(MaterialDocumentListener.class);
-
 		materialEventService.registerListener(materialDocumentListener);
-		materialEventService.subscribeToEventBus();
 	}
 }	// LiberoValidator

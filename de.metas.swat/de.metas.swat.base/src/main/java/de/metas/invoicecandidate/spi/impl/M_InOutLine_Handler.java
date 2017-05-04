@@ -239,19 +239,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx
-				, ic
-				, taxCategoryId
-				, productId
-				, chargeId
-				, billDate
-				, shipDate
-				, adOrgId
-				, inOut.getM_Warehouse()
-				, locationId // billC_BPartner_Location_ID
+				ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
 				, locationId // shipC_BPartner_Location_ID
-				, isSOTrx 
-				, trxName);
+				, isSOTrx, trxName);
 		ic.setC_Tax_ID(taxId);
 
 		//
@@ -319,7 +309,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 *
 	 * @param ic
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>+1 on regular shipment/receipt
 	 *         <li>-1 on material returns
 	 *         </ul>
@@ -361,8 +351,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			ic.setDateOrdered(order.getDateOrdered());
 		}
-		else
+		else if (ic.getC_Order_ID() <= 0)
 		{
+			// don't attempt to "clear" the order data if it is already set/known.
 			ic.setC_Order(null);
 			ic.setDateOrdered(inOut.getMovementDate());
 		}

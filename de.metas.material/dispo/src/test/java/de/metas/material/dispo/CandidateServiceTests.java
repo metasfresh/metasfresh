@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 
@@ -79,8 +80,9 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final CandidateService candidateService = new CandidateService(candidateRepository);
-		final PPOrderRequestedEvent productionOrderEvent = candidateService.requestProductionOrder(ImmutableList.of(candidate, candidate2, candidate3));
+		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
+
+		final PPOrderRequestedEvent productionOrderEvent = candidateService.createRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
 
 		final PPOrder ppOrder = productionOrderEvent.getPpOrder();

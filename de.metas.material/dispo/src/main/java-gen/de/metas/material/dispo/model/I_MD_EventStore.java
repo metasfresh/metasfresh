@@ -40,6 +40,35 @@ public interface I_MD_EventStore
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Issue_ID();
+
+	public org.compiere.model.I_AD_Issue getAD_Issue();
+
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
+
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_EventStore, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_MD_EventStore, org.compiere.model.I_AD_Issue>(I_MD_EventStore.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name AD_Issue_ID */
+    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -97,6 +126,29 @@ public interface I_MD_EventStore
     public static final org.adempiere.model.ModelColumn<I_MD_EventStore, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_MD_EventStore, org.compiere.model.I_AD_User>(I_MD_EventStore.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEvent_UUID (java.lang.String Event_UUID);
+
+	/**
+	 * Get Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEvent_UUID();
+
+    /** Column definition for Event_UUID */
+    public static final org.adempiere.model.ModelColumn<I_MD_EventStore, Object> COLUMN_Event_UUID = new org.adempiere.model.ModelColumn<I_MD_EventStore, Object>(I_MD_EventStore.class, "Event_UUID", null);
+    /** Column name Event_UUID */
+    public static final String COLUMNNAME_Event_UUID = "Event_UUID";
 
 	/**
 	 * Set Daten.

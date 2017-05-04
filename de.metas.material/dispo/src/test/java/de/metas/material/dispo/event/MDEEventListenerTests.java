@@ -103,7 +103,7 @@ public class MDEEventListenerTests
 
 		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
 
-		final CandidateService candidateService = new CandidateService(candidateRepository);
+		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
 
 		mdEventListener = new MDEventListener(
 				candidateChangeHandler,

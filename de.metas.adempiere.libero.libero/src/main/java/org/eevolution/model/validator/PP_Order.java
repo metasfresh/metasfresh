@@ -37,6 +37,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -53,13 +54,13 @@ import org.eevolution.api.IPPOrderWorkflowBL;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -262,26 +263,31 @@ public class PP_Order
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void preventForwardDDOrderToBeCleanedUp(final I_PP_Order ppOrder)
-	{
-		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-
-		final List<I_DD_Order> forwardDDOrdersToDisallowCleanup = ddOrderDAO.retrieveForwardDDOrderLinesQuery(ppOrder)
-				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_MRP_AllowCleanup, true)
-				.create()
-				.list();
-
-		for (final I_DD_Order ddOrder : forwardDDOrdersToDisallowCleanup)
-		{
-			if (ddOrder.isMRP_AllowCleanup())
-			{
-				ddOrder.setMRP_AllowCleanup(false);
-				InterfaceWrapperHelper.save(ddOrder);
-			}
-		}
-	}
+//  commenting this out, to prevent
+//	org.eevolution.exceptions.LiberoException: No MRP supply record found for MPPOrder[ID=1047383-DocumentNo=1045999,IsSOTrx=false,C_DocType_ID=1000037]
+//			at org.eevolution.api.impl.DDOrderDAO.retrieveForwardDDOrderLinesQuery(DDOrderDAO.java:232)
+//			at org.eevolution.model.validator.PP_Order.preventForwardDDOrderToBeCleanedUp(PP_Order.java:272)
+//
+//	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+//	public void preventForwardDDOrderToBeCleanedUp(final I_PP_Order ppOrder)
+//	{
+//		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+//
+//		final List<I_DD_Order> forwardDDOrdersToDisallowCleanup = ddOrderDAO.retrieveForwardDDOrderLinesQuery(ppOrder)
+//				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
+//				.addEqualsFilter(I_DD_Order.COLUMNNAME_MRP_AllowCleanup, true)
+//				.create()
+//				.list();
+//
+//		for (final I_DD_Order ddOrder : forwardDDOrdersToDisallowCleanup)
+//		{
+//			if (ddOrder.isMRP_AllowCleanup())
+//			{
+//				ddOrder.setMRP_AllowCleanup(false);
+//				InterfaceWrapperHelper.save(ddOrder);
+//			}
+//		}
+//	}
 
 	/**
 	 * When manufacturing order is completed by the user, complete supply DD Orders.
@@ -312,7 +318,6 @@ public class PP_Order
 			ModelValidator.TIMING_AFTER_UNCLOSE })
 	public void fireMaterialEvent(final I_PP_Order ppOrder)
 	{
-
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())
 				.dateStartSchedule(ppOrder.getDateStartSchedule())
@@ -328,7 +333,7 @@ public class PP_Order
 				.warehouseId(ppOrder.getM_Warehouse_ID());
 
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		for (I_PP_Order_BOMLine line : orderBOMLines)
+		for (final I_PP_Order_BOMLine line : orderBOMLines)
 		{
 			ppOrderPojoBuilder.line(PPOrderLine.builder()
 					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
@@ -344,11 +349,11 @@ public class PP_Order
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
 				.eventDescr(new EventDescr())
 				.ppOrder(ppOrderPojoBuilder.build())
-		// .reference(reference)
+		// .reference(reference) // TODO ?
 				.build();
 
-// TODO
-		;
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.fireEventAfterCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
 	}
 
 }

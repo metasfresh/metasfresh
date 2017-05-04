@@ -14,7 +14,7 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -465363475L;
+	private static final long serialVersionUID = 2128673728L;
 
     /** Standard Constructor */
     public X_MD_EventStore (Properties ctx, int MD_EventStore_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
       super (ctx, MD_EventStore_ID, trxName);
       /** if (MD_EventStore_ID == 0)
         {
+			setEvent_UUID (null);
 			setEventData (null);
 			setEventTime (new Timestamp( System.currentTimeMillis() ));
 			setMD_EventStore_ID (0);
@@ -44,6 +45,59 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_Issue getAD_Issue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Event UUID.
+		@param Event_UUID Event UUID	  */
+	@Override
+	public void setEvent_UUID (java.lang.String Event_UUID)
+	{
+		set_ValueNoCheck (COLUMNNAME_Event_UUID, Event_UUID);
+	}
+
+	/** Get Event UUID.
+		@return Event UUID	  */
+	@Override
+	public java.lang.String getEvent_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Event_UUID);
+	}
 
 	/** Set Daten.
 		@param EventData Daten	  */

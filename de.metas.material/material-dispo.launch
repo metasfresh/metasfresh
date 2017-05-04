@@ -10,5 +10,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.metas.material.dispo.Application"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-material-dispo"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dserver.port=8283"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dserver.port=8283&#13;&#10;-Dspring.boot.admin.url=http://localhost:9090"/>
 </launchConfiguration>

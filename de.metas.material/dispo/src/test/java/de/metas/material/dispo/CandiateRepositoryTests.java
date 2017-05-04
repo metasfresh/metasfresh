@@ -324,6 +324,8 @@ public class CandiateRepositoryTests
 	// return candidate.withId(null).withParentId(null);
 	// }
 
+	// TODO: make sure that AD_Client_ID is set correctly from AD_Org
+
 	@Test
 	public void retrieveStockFrom()
 	{
