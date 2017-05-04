@@ -102,6 +102,11 @@ class DocList extends Component {
                         viewId={query.viewId}
                         rawModalVisible={rawModal.visible}
                         indicator={indicator}
+                        modalSaveStatus={
+                            modal.saveStatus &&
+                            modal.saveStatus.saved !== undefined ?
+                                modal.saveStatus.saved : true
+                        }
                         isDocumentNotSaved={
                             (modal.saveStatus && !modal.saveStatus.saved) &&
                             (modal.validStatus &&
