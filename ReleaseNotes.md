@@ -44,7 +44,15 @@ Here come the actual release notes:
   * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
     * Adding the Currency Conversion rate window to WebUI.
   * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
+
+* metasfresh-webui-api
+  * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
   
+## Fixes
+  
+* metasfresh-webui-api
+  * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
+ 
 # metasfresh 5.7 (2017-17)
 
 ## Features
