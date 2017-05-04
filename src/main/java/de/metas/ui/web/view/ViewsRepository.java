@@ -25,9 +25,11 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -120,6 +122,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public JSONViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
 	{
+		DocumentPermissionsHelper.assertWindowAccess(windowId, null, UserSession.getCurrentPermissions());
+
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		final ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
 		final Collection<DocumentFilterDescriptor> viewFilterDescriptors = factory.getViewFilterDescriptors(windowId, viewDataType);
@@ -176,6 +180,9 @@ public class ViewsRepository implements IViewsRepository
 		{
 			throw new EntityNotFoundException("No view found for viewId=" + viewId);
 		}
+		
+		DocumentPermissionsHelper.assertWindowAccess(view.getViewId().getWindowId(), viewId, UserSession.getCurrentPermissions());
+		
 		return view;
 	}
 

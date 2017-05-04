@@ -65,9 +65,9 @@ public final class JSONDocumentField implements Serializable
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, reason)
-				.setReadonly(field.isReadonly(), reason)
-				.setMandatory(field.isMandatory(), reason)
-				.setDisplayed(field.isDisplayed(), reason)
+				.setReadonly(field.getReadonly())
+				.setMandatory(field.getMandatory())
+				.setDisplayed(field.getDisplayed())
 				.setValidStatus(field.getValidStatus());
 		if (field.isLookupValuesStale())
 		{
@@ -239,11 +239,22 @@ public final class JSONDocumentField implements Serializable
 		this.widgetType = widgetType;
 		return this;
 	}
+	
+	public boolean isReadonly()
+	{
+		return readonly != null && readonly;
+	}
 
 	public JSONDocumentField setReadonly(final boolean readonly, final String reason)
 	{
 		this.readonly = readonly;
 		readonlyReason = reason;
+		return this;
+	}
+	
+	public JSONDocumentField setReadonly(LogicExpressionResult readonly)
+	{
+		setReadonly(readonly.booleanValue(), readonly.getName());
 		return this;
 	}
 
@@ -254,10 +265,16 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	public JSONDocumentField setMandatory(final boolean mandatory, final String reason)
+	private JSONDocumentField setMandatory(final boolean mandatory, final String reason)
 	{
 		this.mandatory = mandatory;
 		mandatoryReason = reason;
+		return this;
+	}
+
+	public JSONDocumentField setMandatory(LogicExpressionResult mandatory)
+	{
+		setMandatory(mandatory.booleanValue(), mandatory.getName());
 		return this;
 	}
 
@@ -272,6 +289,12 @@ public final class JSONDocumentField implements Serializable
 	{
 		this.displayed = displayed;
 		displayedReason = reason;
+		return this;
+	}
+
+	public JSONDocumentField setDisplayed(LogicExpressionResult displayed)
+	{
+		setDisplayed(displayed.booleanValue(), displayed.getName());
 		return this;
 	}
 

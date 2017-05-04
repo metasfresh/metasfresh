@@ -1769,7 +1769,19 @@ public final class Document
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-
+	
+	public int getAD_Client_ID()
+	{
+		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Client_ID);
+		return field != null ? field.getValueAsInt(-1) : -1;
+	}
+	
+	public int getAD_Org_ID()
+	{
+		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Org_ID);
+		return field != null ? field.getValueAsInt(-1) : -1;
+	}
+	
 	private final class DocumentStaleState
 	{
 		private boolean staled;

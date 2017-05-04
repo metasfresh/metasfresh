@@ -76,6 +76,7 @@ public final class JSONDocument extends JSONDocumentBase
 					.stream()
 					.filter(jsonOpts.documentFieldFilter())
 					.map(field -> JSONDocumentField.ofDocumentField(field, jsonOpts.getAD_Language()))
+					.peek(jsonField -> jsonOpts.getDocumentPermissions().apply(document, jsonField)) // apply permissions
 					.forEach(jsonFields::add);
 
 			jsonDocument.setFields(jsonFields);
@@ -155,6 +156,10 @@ public final class JSONDocument extends JSONDocumentBase
 		//
 		// Fields
 		{
+			// TODO: apply JSONDocumentPermissions to fields
+			// atm it's not so important because user cannot reach in that situation,
+			// because he/she cannot update the document in that case.
+			
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 			documentChangedEvents.getFieldChangesList()
 					.stream()
