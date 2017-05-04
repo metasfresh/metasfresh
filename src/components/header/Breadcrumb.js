@@ -85,13 +85,13 @@ class Breadcrumb extends Component {
                         (menuOverlay === menu.nodeId ?
                             'header-item-open ' : '') +
                         (!index ? 'header-item-container-static ': '') +
-                        (index===breadcrumb &&
+                        (breadcrumb && index===
                         breadcrumb.length?'header-item-last-level':'')
                     }
                     onClick={(e) => this.handleClick(e, menu)}
                     onMouseEnter={index ?
                         ()=> this.toggleTooltipOnFirstLevel(
-                            index===breadcrumb && breadcrumb.length
+                            breadcrumb && index=== breadcrumb.length
                             ) :
                         () => this.toggleTooltip(true)}
                     onMouseLeave={this.closeTooltips}
