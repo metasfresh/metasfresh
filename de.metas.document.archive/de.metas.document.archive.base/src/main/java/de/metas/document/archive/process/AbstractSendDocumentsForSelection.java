@@ -92,7 +92,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		final ProcessInfo pi = getProcessInfo();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
 				.addOnlyActiveRecordsFilter()
 				.filter(pi.getQueryFilter())
 				.create()

@@ -70,7 +70,7 @@ public class EDIExportDocOutboundLog extends JavaProcess
 		//
 		// Create selection for PInstance and make sure we're enqueuing something
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
 				.addOnlyActiveRecordsFilter()
 				.filter(pi.getQueryFilter())
 				.create()
