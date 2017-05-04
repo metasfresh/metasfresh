@@ -207,6 +207,9 @@ public class DocumentEntityDescriptor
 		return documentTypeId;
 	}
 
+	/**
+	 * @return AD_Window_ID
+	 */
 	public WindowId getWindowId()
 	{
 		Check.assume(documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, documentType);
