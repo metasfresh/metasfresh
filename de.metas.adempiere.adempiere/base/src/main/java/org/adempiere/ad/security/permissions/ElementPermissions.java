@@ -1,5 +1,7 @@
 package org.adempiere.ad.security.permissions;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -50,6 +52,14 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 		builder.setElementTableName(elementTableName);
 		builder.addPermissions(this, CollisionPolicy.Override);
 		return builder;
+	}
+	
+	/** @return element permissions; never return null */
+	public ElementPermission getPermission(final int elementId)
+	{
+		final ElementResource resource = ElementResource.of(elementTableName, elementId);
+		final ElementPermission permission = getPermissionOrDefault(resource);
+		return permission != null ? permission : ElementPermission.none(resource);
 	}
 
 	/**
@@ -111,7 +121,7 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 		protected void assertValidPermissionToAdd(final ElementPermission permission)
 		{
 			final String elementTableName = getElementTableName();
-			if (!Check.equals(elementTableName, permission.getResource().getElementTableName()))
+			if (!Objects.equals(elementTableName, permission.getResource().getElementTableName()))
 			{
 				throw new IllegalArgumentException("Permission to add " + permission + " is not matching element table name '" + elementTableName + "'");
 			}
