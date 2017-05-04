@@ -47,8 +47,11 @@ Here come the actual release notes:
     * Adding the Currency Conversion rate window to WebUI.
   * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
   * [#1438](https://github.com/metasfresh/metasfresh/issues/1438) Fix spring scanBasePackageClasses and introduce profiles
+    * Adjusting the spring boot configurations for the different metasfresh applications to allow a better maintenance.
   * [#1446](https://github.com/metasfresh/metasfresh/issues/1446) Add filter to currency conversion window in WebUI
     * Adding Filter criteria to currency conversion window.
+  * [#1451](https://github.com/metasfresh/metasfresh/issues/1451) Add scale Price Tab in Window Product Price
+    * Adding the Scale Price Tab in Product Price Window on WebUI.
 
 * metasfresh-webui-api
   * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
@@ -57,7 +60,9 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1353](https://github.com/metasfresh/metasfresh/issues/1353) Problem with C_Order filtering in M_ShipmentSchedule
+    * Fixes a Bug when filtering Document No. and more than 1 exact result is returned. Added validation rule to exclude Purchase Orders from Search.
   * [#1440](https://github.com/metasfresh/metasfresh/issues/1440) ClassCastException: CompositeQueryFilter cannot be cast to SqlQueryFilter 
+    * Fixes a Bug that was introduced in Data Lifecycle Task and cause a Null Pointer Exception in Doc Outbound eMail functionality .
   
 * metasfresh-webui-api
   * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
