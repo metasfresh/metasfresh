@@ -124,6 +124,13 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
+		if(Adempiere.isUnitTestMode())
+		{
+			// for the time being, this stuff does not belong with unit tests!
+			// feel free to revise
+			return;
+		}
+
 		// add ourselves to the eventbus so that we can fire events on PP_Order docActions
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 		materialEventService.subscribeToEventBus();
