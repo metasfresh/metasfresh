@@ -62,6 +62,10 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
   * [#339](https://github.com/metasfresh/metasfresh-webui-api/issues/339) Sales Order also show Purchase Orders
+  
+* metasfresh-webui-frontend
+  * [#703](https://github.com/metasfresh/metasfresh-webui-frontend/issues/703) leave the page message on request modal
+  * [#704](https://github.com/metasfresh/metasfresh-webui-frontend/issues/704) request modal saving is loading 4 tabs
  
 # metasfresh 5.7 (2017-17)
 
