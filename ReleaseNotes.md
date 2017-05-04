@@ -43,6 +43,7 @@ Here come the actual release notes:
     * Created a new Bank Account window and added to WebUI
   * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
     * Adding the Currency Conversion rate window to WebUI.
+  * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
   
 # metasfresh 5.7 (2017-17)
 
