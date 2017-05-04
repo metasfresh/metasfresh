@@ -29,7 +29,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.Cache;
@@ -38,8 +37,6 @@ import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.CacheStats;
 import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-
-import de.metas.logging.LogManager;
 
 /**
  * Adempiere Cache.
@@ -203,7 +200,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		return tableName;
 	}
 
-	private static final Logger logger = LogManager.getLogger(CCache.class);
+	// private static final transient Logger logger = CLogMgt.getLogger(CCache.class);
 
 	private final CacheMapType cacheMapType;
 	/** Internal map that is used as cache */
@@ -320,10 +317,6 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	{
 		final int no = (int)cache.size();
 		clear();
-		if(no > 0)
-		{
-			logger.trace("Reset {} entries from {}", no, this);
-		}
 		return no;
 	}	// reset
 

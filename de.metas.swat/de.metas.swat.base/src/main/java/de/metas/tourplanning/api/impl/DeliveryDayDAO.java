@@ -16,14 +16,15 @@ package de.metas.tourplanning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -81,11 +82,11 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_IsToBeFetched, params.isToBeFetched());
 
 		// task 09004 : In case calculation time is set, fetch the next date that fits.
-		final Timestamp preparationDay = params.getPreparationDay();
+		final Timestamp calculationTime = params.getCalculationTime();
 
-		if (preparationDay != null)
+		if (calculationTime != null)
 		{
-			filter.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.GREATER_OR_EQUAL, preparationDay);
+			filter.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.GREATER_OR_EQUAL, calculationTime);
 		}
 
 		final Boolean processed = params.getProcessed();
@@ -106,19 +107,9 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 
 		final Timestamp calculationTime = params.getCalculationTime();
 
-		// Make sure the deliveryDay is after the time of calculation
+		// retrieve the first delivery date that fits the params and the time of calculation
 		if (calculationTime != null)
 		{
-			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, calculationTime);
-		}
-
-		final Timestamp preparationDay = params.getPreparationDay();
-
-		// the delivery days that are in the same day as the datePromised have priority over the earlier ones.
-		if (preparationDay != null)
-		{
-			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
-
 			queryBuilder.orderBy()
 					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Ascending, Nulls.Last);
 		}

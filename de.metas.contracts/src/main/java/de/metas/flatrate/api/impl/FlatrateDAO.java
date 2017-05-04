@@ -156,15 +156,13 @@ public class FlatrateDAO implements IFlatrateDAO
 			final int flatrateConditionsId,
 			final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId)
-				.orderBy()
-				.addColumn(I_C_Flatrate_Matching.COLUMN_SeqNo)
-				.addColumn(I_C_Flatrate_Matching.COLUMN_C_Flatrate_Matching_ID)
-				.endOrderBy()
-				.create()
+		final String wc = I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID + "=?";
+
+		return new Query(ctx, I_C_Flatrate_Matching.Table_Name, wc, trxName)
+				.setParameters(flatrateConditionsId)
+				.setClient_ID()
+				.setOnlyActiveRecords(true)
+				.setOrderBy(I_C_Flatrate_Matching.COLUMNNAME_SeqNo + ", " + I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Matching_ID)
 				.list(I_C_Flatrate_Matching.class);
 	}
 
@@ -367,10 +365,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final boolean onlyNonSim)
 	{
-		final I_C_Flatrate_Conditions fc = null;
-		final I_C_UOM uom = null;
-
-		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uom, onlyNonSim);
+		return retrieveEntries(null, flatrateTerm, date, dataEntryType, null, onlyNonSim);
 	}
 
 	@Override
@@ -541,15 +536,16 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Data data)
 	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(data);
+		final String trxName = InterfaceWrapperHelper.getTrxName(data);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, data)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID, data.getC_Flatrate_Data_ID())
-				.orderBy()
-				.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
-				.endOrderBy()
-				.create()
+		final String wc = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Data_ID + "=?";
+
+		return new Query(ctx, I_C_Flatrate_Term.Table_Name, wc, trxName)
+				.setParameters(data.getC_Flatrate_Data_ID())
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.list(I_C_Flatrate_Term.class);
 	}
 

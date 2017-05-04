@@ -13,14 +13,15 @@ package org.eevolution.mrp.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,15 +36,13 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_MRP;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 
-import de.metas.material.planning.IMaterialPlanningContext;
-
-
-public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
+/* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
 {
-	private final IMaterialPlanningContext mrpContext;
+	private final IMRPContext mrpContext;
 	private final IMRPExecutor mrpExecutor;
 	private final BigDecimal qtyToSupply;
 	private final Date demandDate;
@@ -57,7 +56,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	private final int mrpDemandBPartnerId;
 	private final int mrpDemandOrderLineSOId;
 
-	public MRPCreateSupplyRequest(final IMaterialPlanningContext mrpContext,
+	public MRPCreateSupplyRequest(final IMRPContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final BigDecimal qtyToSupply,
 			final Date demandDate,
@@ -91,7 +90,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 			{
 				bpartnerIds.add(bpartnerId);
 			}
-
+			
 			final int orderLineSOId = mrpRecord.getC_OrderLineSO_ID();
 			if (orderLineSOId > 0)
 			{
@@ -141,7 +140,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	}
 
 	@Override
-	public IMaterialPlanningContext getMRPContext()
+	public IMRPContext getMRPContext()
 	{
 		return mrpContext;
 	}

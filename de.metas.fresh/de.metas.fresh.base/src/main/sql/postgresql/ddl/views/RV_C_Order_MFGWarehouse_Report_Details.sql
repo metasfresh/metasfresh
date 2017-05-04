@@ -26,14 +26,12 @@ SELECT
 	report.M_Warehouse_ID,
 	report.PP_Plant_ID,
 	o.C_BPartner_ID,
-	o.DatePromised,
-	de_metas_endcustomer_fresh_reports.generate_barcode_order_checkup (t.AD_Table_ID, ol.C_OrderLine_ID) AS barcode 
+	o.DatePromised
 FROM
 	C_Order_MFGWarehouse_Report report
 	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'
 	INNER JOIN C_Order_MFGWarehouse_ReportLine reportLine on (reportLine.C_Order_MFGWarehouse_Report_ID=report.C_Order_MFGWarehouse_Report_ID)
 	INNER JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = reportLine.C_OrderLine_ID) AND ol.isActive = 'Y'
-	INNER JOIN AD_Table t ON t.AD_Table_ID = get_Table_ID('C_OrderLine') AND t.isActive = 'Y'
 	--
 	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'

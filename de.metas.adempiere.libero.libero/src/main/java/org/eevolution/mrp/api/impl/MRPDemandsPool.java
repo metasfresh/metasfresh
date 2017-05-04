@@ -39,14 +39,13 @@ import org.compiere.util.Util.ArrayKey;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDemand;
 import org.eevolution.mrp.api.IMRPDemandAllocationResult;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
+import org.eevolution.mrp.api.IMRPNoteBuilder;
+import org.eevolution.mrp.api.IMRPNotesCollector;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
-
-import de.metas.material.planning.IMRPNoteBuilder;
-import de.metas.material.planning.IMRPNotesCollector;
-import de.metas.material.planning.IMaterialPlanningContext;
 
 public class MRPDemandsPool implements IMRPDemandsPool
 {
@@ -56,7 +55,7 @@ public class MRPDemandsPool implements IMRPDemandsPool
 	private final IMRPBL mrpBL = Services.get(IMRPBL.class);
 
 	// Params
-	private final IMaterialPlanningContext _mrpContext;
+	private final IMRPContext _mrpContext;
 	private final IMRPNotesCollector _mrpNotesCollector;
 
 	//
@@ -70,7 +69,7 @@ public class MRPDemandsPool implements IMRPDemandsPool
 	private List<IMRPDemandToSupplyAllocation> mrpDemand2supplyAllocations = new ArrayList<>();
 	private Set<ArrayKey> _collectedMRPNoteKeys = new HashSet<>();
 
-	public MRPDemandsPool(final IMaterialPlanningContext mrpContext, final IMRPNotesCollector mrpNotesCollector, final IMRPDemand mrpDemand)
+	public MRPDemandsPool(final IMRPContext mrpContext, final IMRPNotesCollector mrpNotesCollector, final IMRPDemand mrpDemand)
 	{
 		super();
 
@@ -109,7 +108,7 @@ public class MRPDemandsPool implements IMRPDemandsPool
 		return ObjectUtils.toString(this);
 	}
 
-	private IMaterialPlanningContext getMRPContext()
+	private IMRPContext getMRPContext()
 	{
 		return _mrpContext;
 	}
@@ -212,7 +211,7 @@ public class MRPDemandsPool implements IMRPDemandsPool
 	{
 		//
 		// Extract from parameters only what we need
-		final IMaterialPlanningContext mrpContext = getMRPContext();
+		final IMRPContext mrpContext = getMRPContext();
 		final Date mrpRunDate = mrpContext.getDate(); // date when MRP is executed; this is our reference date
 		final I_PP_MRP mrpDemandRecord = mrpDemandToSupplyAlloc.getMRPDemand(); // NOTE: MRP Demand is needed only as a reference, no other informations are/shall be used from there
 		final I_PP_MRP mrpSupplyRecord = mrpDemandToSupplyAlloc.getMRPSupply();
@@ -312,7 +311,7 @@ public class MRPDemandsPool implements IMRPDemandsPool
 
 	private IMRPNoteBuilder newSupplyMRPNote(final I_PP_MRP mrpSupply, final String mrpErrorCode)
 	{
-		final IMaterialPlanningContext mrpContext = getMRPContext();
+		final IMRPContext mrpContext = getMRPContext();
 		final IMRPNotesCollector mrpNotesCollector = getMRPNotesCollector();
 
 		final IMRPNoteBuilder noteBuilder = mrpNotesCollector.newMRPNoteBuilder(mrpContext, mrpErrorCode)

@@ -29,24 +29,23 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.util.Services;
+import org.eevolution.mrp.api.IMRPContext;
+import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 
-import de.metas.material.planning.IMRPSegment;
-import de.metas.material.planning.IMaterialPlanningContext;
-
 /**
- * Helper used to collect those {@link IMaterialPlanningContext}s for whom no other {@link IMaterialPlanningContext} was added with same Planning Seqment (see {@link IMaterialPlanningContext#isSamePlanningSegment(IMaterialPlanningContext)}).
+ * Helper used to collect those {@link IMRPContext}s for whom no other {@link IMRPContext} was added with same Planning Seqment (see {@link IMRPContext#isSamePlanningSegment(IMRPContext)}).
  * 
  * @author tsa
  *
  */
-public class MRPContextUniquePlanningSegmentsCollector implements Iterable<IMaterialPlanningContext>
+public class MRPContextUniquePlanningSegmentsCollector implements Iterable<IMRPContext>
 {
 	// services
 	private final IMRPSegmentBL mrpSegmentBL = Services.get(IMRPSegmentBL.class);
 
-	private final List<IMaterialPlanningContext> mrpContexts = new ArrayList<IMaterialPlanningContext>();
-	private final List<IMaterialPlanningContext> mrpContextsRO = Collections.unmodifiableList(mrpContexts);
+	private final List<IMRPContext> mrpContexts = new ArrayList<IMRPContext>();
+	private final List<IMRPContext> mrpContextsRO = Collections.unmodifiableList(mrpContexts);
 	private boolean keepLastAdded = true;
 
 	public MRPContextUniquePlanningSegmentsCollector()
@@ -60,9 +59,9 @@ public class MRPContextUniquePlanningSegmentsCollector implements Iterable<IMate
 	}
 
 	/**
-	 * Sets if we shall keep the last added {@link IMaterialPlanningContext}.
+	 * Sets if we shall keep the last added {@link IMRPContext}.
 	 * 
-	 * i.e. in case there was already added an {@link IMaterialPlanningContext} with same planning segment, replace it with the new one.
+	 * i.e. in case there was already added an {@link IMRPContext} with same planning segment, replace it with the new one.
 	 * 
 	 * @param keepLastAdded
 	 */
@@ -76,7 +75,7 @@ public class MRPContextUniquePlanningSegmentsCollector implements Iterable<IMate
 	 * @param mrpContextToAdd
 	 * @return true if it was added. NOTE: if {@link #isKeepLastAdded()} and we already have an MRP context for planning segment, it will be replaced and this method will return true
 	 */
-	public boolean addMRPContext(final IMaterialPlanningContext mrpContextToAdd)
+	public boolean addMRPContext(final IMRPContext mrpContextToAdd)
 	{
 		if (mrpContextToAdd == null)
 		{
@@ -87,7 +86,7 @@ public class MRPContextUniquePlanningSegmentsCollector implements Iterable<IMate
 
 		for (int i = 0; i < mrpContexts.size(); i++)
 		{
-			final IMaterialPlanningContext mrpContextExisting = mrpContexts.get(i);
+			final IMRPContext mrpContextExisting = mrpContexts.get(i);
 			final IMRPSegment mrpSegmentExisting = mrpSegmentBL.createMRPSegment(mrpContextExisting);
 
 			if (!mrpSegmentExisting.equals(mrpSegmentToAdd))
@@ -111,20 +110,20 @@ public class MRPContextUniquePlanningSegmentsCollector implements Iterable<IMate
 		return true;
 	}
 
-	public List<IMaterialPlanningContext> getMRPContexts()
+	public List<IMRPContext> getMRPContexts()
 	{
 		return mrpContextsRO;
 	}
 
-	public List<IMaterialPlanningContext> getMRPContextsAndClear()
+	public List<IMRPContext> getMRPContextsAndClear()
 	{
-		final List<IMaterialPlanningContext> mrpContextsToReturn = new ArrayList<>(mrpContexts);
+		final List<IMRPContext> mrpContextsToReturn = new ArrayList<>(mrpContexts);
 		mrpContexts.clear();
 		return mrpContextsToReturn;
 	}
 
 	@Override
-	public Iterator<IMaterialPlanningContext> iterator()
+	public Iterator<IMRPContext> iterator()
 	{
 		return mrpContextsRO.iterator();
 	}

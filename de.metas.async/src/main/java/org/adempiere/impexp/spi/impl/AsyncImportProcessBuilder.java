@@ -24,7 +24,6 @@ package org.adempiere.impexp.spi.impl;
 
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -126,7 +125,7 @@ public class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 	{
 		Check.assumeNotNull(importRecordRef, "importRecordRef not null");
 		final String importTableName = getImportTableName();
-		if (!Objects.equals(importTableName, importRecordRef.getTableName()))
+		if (!Check.equals(importTableName, importRecordRef.getTableName()))
 		{
 			throw new AdempiereException("Record " + importRecordRef + " not matching " + importTableName + " table name");
 		}

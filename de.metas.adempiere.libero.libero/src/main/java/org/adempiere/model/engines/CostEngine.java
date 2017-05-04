@@ -57,7 +57,6 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
 import org.compiere.model.MCost;
@@ -76,14 +75,13 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Cost;
 import org.eevolution.model.MPPCostCollector;
+import org.eevolution.model.RoutingService;
+import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.RoutingService;
-import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.product.IProductBL;
 
 /**
@@ -104,12 +102,8 @@ public class CostEngine
 
 	public BigDecimal getResourceStandardCostRate(I_PP_Cost_Collector cc, int S_Resource_ID, CostDimension d, String trxName)
 	{
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
-		
-		final I_S_Resource resource = InterfaceWrapperHelper.create(ctx, S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
-		
-		final I_M_Product resourceProduct =resourceProductService.retrieveProductForResource(resource);
+		final I_M_Product resourceProduct = MProduct.forS_Resource_ID(ctx, S_Resource_ID, ITrx.TRXNAME_None);
 		return getProductStandardCostPrice(
 				cc,
 				resourceProduct,
@@ -120,14 +114,8 @@ public class CostEngine
 	public BigDecimal getResourceActualCostRate(I_PP_Cost_Collector cc, int S_Resource_ID, CostDimension d, String trxName)
 	{
 		if (S_Resource_ID <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		final I_S_Resource resource = InterfaceWrapperHelper.create(Env.getCtx(), S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
-		
-		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(resource);
+			return Env.ZERO;
+		final MProduct resourceProduct = MProduct.forS_Resource_ID(Env.getCtx(), S_Resource_ID, null);
 		return getProductActualCostPrice(
 				cc,
 				resourceProduct,
@@ -509,15 +497,9 @@ public class CostEngine
 	public void createActivityControl(MPPCostCollector cc)
 	{
 		if (!cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl))
-		{
 			return;
-		}
-		
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		
-		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(cc.getS_Resource());
-		
 		//
+		final I_M_Product product = MProduct.forS_Resource_ID(cc.getCtx(), cc.getS_Resource_ID(), null);
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(cc.getAD_Client_ID());
 		final BigDecimal qty = routingService.getResourceBaseValue(cc.getS_Resource_ID(), cc);
 		for (MAcctSchema as : getAcctSchema(cc))
@@ -528,7 +510,7 @@ public class CostEngine
 				{
 					continue;
 				}
-				final CostDimension d = new CostDimension(resourceProduct,
+				final CostDimension d = new CostDimension(product,
 						as,
 						as.getM_CostType_ID(),
 						0, // AD_Org_ID,
@@ -572,9 +554,7 @@ public class CostEngine
 		}
 		else
 		{
-			final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-			product = resourceProductService.retrieveProductForResource(ccuv.getS_Resource());
-			
+			product = MProduct.forS_Resource_ID(ccuv.getCtx(), ccuv.getS_Resource_ID(), null);
 			final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ccuv.getAD_Client_ID());
 			qty = routingService.getResourceBaseValue(ccuv.getS_Resource_ID(), ccuv);
 		}
@@ -603,9 +583,7 @@ public class CostEngine
 		if (cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl))
 		{
 			final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
-			
-			final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-			product = resourceProductService.retrieveProductForResource(node.getS_Resource());
+			product = MProduct.forS_Resource_ID(cc.getCtx(), node.getS_Resource_ID(), null);
 		}
 		else if (cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue))
 		{
@@ -678,11 +656,8 @@ public class CostEngine
 		{
 			for (I_M_CostElement element : getCostElements(cc.getCtx()))
 			{
-				final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-				
-				final I_M_Product resourcePStd = resourceProductService.retrieveProductForResource(cc.getPP_Order_Node().getAD_WF_Node().getS_Resource()); // std_resource;
-				final I_M_Product resourcePActual = resourceProductService.retrieveProductForResource(cc.getS_Resource()); // actual_resource;
-				
+				final I_M_Product resourcePStd = MProduct.forS_Resource_ID(cc.getCtx(), std_resource_id, null);
+				final I_M_Product resourcePActual = MProduct.forS_Resource_ID(cc.getCtx(), actual_resource_id, null);
 				final BigDecimal priceStd = getProductActualCostPrice(cc, resourcePStd, as, element, cc.get_TrxName());
 				final BigDecimal priceActual = getProductActualCostPrice(cc, resourcePActual, as, element, cc.get_TrxName());
 				if (priceStd.compareTo(priceActual) == 0)

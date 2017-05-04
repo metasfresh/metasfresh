@@ -46,7 +46,5 @@ public interface IAllocationDestination
 	 *
 	 * @param huContext
 	 */
-	default void loadComplete(IHUContext huContext)
-	{
-	}
+	void loadComplete(IHUContext huContext);
 }

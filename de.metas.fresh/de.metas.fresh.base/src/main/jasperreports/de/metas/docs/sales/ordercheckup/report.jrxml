@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-27T11:53:31 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-07-07T15:15:35 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -23,9 +23,6 @@
 	</parameter>
 	<parameter name="DatePromised" class="java.util.Date"/>
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal"/>
-	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
-	</parameter>
 	<queryString>
 		<![CDATA[SELECT
 	r.AD_Org_ID,
@@ -155,9 +152,6 @@ LIMIT 1
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="barcodeURL">
-					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>
-				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_details.jasper"]]></subreportExpression>
 			</subreport>
@@ -181,7 +175,6 @@ LIMIT 1
 	</detail>
 	<pageFooter>
 		<band height="75" splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-62" x="507" y="20" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53"/>
 				<box>

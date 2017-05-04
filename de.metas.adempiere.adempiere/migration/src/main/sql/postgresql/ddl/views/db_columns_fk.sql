@@ -1,4 +1,3 @@
-
 DROP VIEW IF EXISTS db_columns_fk;
 CREATE OR REPLACE VIEW db_columns_fk AS
 SELECT
@@ -30,7 +29,8 @@ SELECT
 		|| ' FOREIGN KEY ('
 		|| v.columnname
 		|| ') REFERENCES '
-		|| 'public.' || v.table_ref /* gh #1379: prepend the name of the 'public' schema */
+		|| v.table_ref
+		-- || ');'||CHR(10) AS cmd  /* for oracle */
 		|| ' DEFERRABLE INITIALLY DEFERRED;' AS sqltext  /* for postgresql */
 	--
 	, 'ALTER TABLE ' || v.tablename || ' DROP CONSTRAINT IF EXISTS '
@@ -41,7 +41,8 @@ SELECT
 		|| ' FOREIGN KEY ('
 		|| v.columnname
 		|| ') REFERENCES '
-		|| 'public.' || v.table_ref /* gh #1379: prepend the name of the 'public' schema */
+		|| v.table_ref
+		-- || ');'||CHR(10) AS cmd  /* for oracle */
 		|| ' ON DELETE CASCADE;' AS sqltext_delete_cascade  /* for postgresql */
 	--
 FROM
@@ -147,4 +148,3 @@ WHERE 1=1
 ;
 COMMENT ON VIEW db_columns_fk IS 'Can be used to identify and fix missing FK constraints. Also used by org.compiere.model.MColumn.getConstraint()
 See https://github.com/metasfresh/metasfresh/issues/539';
-

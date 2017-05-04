@@ -60,7 +60,5 @@ public interface IAllocationSource
 	 *
 	 * @param huContext
 	 */
-	default void unloadComplete(IHUContext huContext)
-	{
-	}
+	void unloadComplete(IHUContext huContext);
 }

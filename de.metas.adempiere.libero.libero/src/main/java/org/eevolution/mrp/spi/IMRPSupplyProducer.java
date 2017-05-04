@@ -30,12 +30,10 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.util.lang.IMutable;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
-
-import de.metas.material.planning.IMaterialPlanningContext;
-
 
 public interface IMRPSupplyProducer
 {
@@ -50,7 +48,7 @@ public interface IMRPSupplyProducer
 	 * @param notAppliesReason if it does not apply, in this variable you can get the reason (human readable)
 	 * @return true if yes
 	 */
-	boolean applies(final IMaterialPlanningContext mrpContext, final IMutable<String> notAppliesReason);
+	boolean applies(final IMRPContext mrpContext, final IMutable<String> notAppliesReason);
 
 	void onRecordChange(final Object model, final ModelChangeType changeType);
 
@@ -79,9 +77,9 @@ public interface IMRPSupplyProducer
 	 * @param mrpContext
 	 * @param executor
 	 */
-	void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor);
+	void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor);
 
-	void onQtyOnHandReservation(IMaterialPlanningContext mrpContext,
+	void onQtyOnHandReservation(IMRPContext mrpContext,
 			IMRPExecutor mrpExecutor,
 			IMRPDemandToSupplyAllocation mrpDemandToSupplyAllocation);
 }

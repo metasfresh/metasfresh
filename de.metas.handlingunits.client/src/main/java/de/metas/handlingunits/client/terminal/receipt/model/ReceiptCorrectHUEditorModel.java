@@ -3,13 +3,10 @@ package de.metas.handlingunits.client.terminal.receipt.model;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -35,19 +32,9 @@ public class ReceiptCorrectHUEditorModel extends HUEditorModel
 
 	private ReceiptCorrectHUsProcessor receiptCorrectProcessor;
 
-	private I_M_Warehouse _warehouse;
-
-	public I_M_Warehouse getM_Warehouse()
-	{
-		return _warehouse;
-	}
-
-	public ReceiptCorrectHUEditorModel(final ITerminalContext terminalContext, final int warehouseID)
+	public ReceiptCorrectHUEditorModel(final ITerminalContext terminalContext)
 	{
 		super(terminalContext);
-		
-		_warehouse = InterfaceWrapperHelper.create(terminalContext.getCtx(), warehouseID, I_M_Warehouse.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(_warehouse, "warehouse not null");
 
 		setAllowSelectingReadonlyKeys(true);
 		setDisplayBarcode(true); // yes, because user will scan/search for the HU which he/she fucked up

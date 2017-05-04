@@ -51,6 +51,8 @@ public interface IMutableHUContext extends IHUContext
 
 	void setTrxName(String trxName);
 
+	void setDocumentCollector(IDocumentCollector documentCollector);
+
 	@Override
 	public CompositeHUTrxListener getTrxListeners();
 

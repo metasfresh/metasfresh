@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-28T12:19:59 -->
+<!-- 2017-04-02T14:37:08 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -25,9 +25,6 @@
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
-	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
-	</parameter>
 	<queryString>
 		<![CDATA[SELECT
 	ol.line,
@@ -43,12 +40,10 @@
 	ol.qtyenteredtu,
 	ol.qtyentered,
 	pm.name as container,
-	uom.UOMSymbol AS UOMSymbol,
-	de_metas_endcustomer_fresh_reports.generate_barcode_order_checkup(t.AD_Table_ID, ol.C_OrderLine_ID) AS barcode 
+	uom.UOMSymbol AS UOMSymbol
 FROM
 	C_Order o
 	LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
-	LEFT OUTER JOIN AD_Table t ON t.AD_Table_ID = get_Table_ID('C_OrderLine') AND t.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
@@ -125,7 +120,6 @@ ORDER BY
 	<field name="qtyentered" class="java.math.BigDecimal"/>
 	<field name="container" class="java.lang.String"/>
 	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="barcode" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -144,8 +138,7 @@ ORDER BY
 $F{pricelist}+$F{priceactual}+
 $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 		<groupFooter>
-			<band height="106">
-				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<band height="34">
 				<printWhenExpression><![CDATA[new Boolean ( $P{C_BPartner_ID} != null && $P{Date} != null )]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
 					<reportElement key="textField-20" x="470" y="12" width="70" height="13" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
@@ -305,15 +298,6 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{AggLine}]]></textFieldExpression>
 				</textField>
-				<image scaleImage="RetainShape" hAlign="Right">
-					<reportElement x="350" y="35" width="190" height="60" uuid="9c5fe40e-8509-408a-b52f-aa9f6ce6f2b0">
-						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					</reportElement>
-					<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
-$F{barcode} +
-"&Format=CODE_128&Width=470&Height=140" )]]></imageExpression>
-				</image>
 			</band>
 		</groupFooter>
 	</group>
@@ -399,8 +383,7 @@ $F{barcode} +
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="106" splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		<band height="34" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ( $P{c_order_id} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="217" y="0" width="150" height="13" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
@@ -560,15 +543,6 @@ $F{barcode} +
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
-			<image scaleImage="RetainShape" hAlign="Right">
-				<reportElement x="350" y="35" width="190" height="60" uuid="36e8e364-d050-4424-9594-14ca4002487c">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
-$F{barcode} +
-"&Format=CODE_128&Width=470&Height=140" )]]></imageExpression>
-			</image>
 		</band>
 	</detail>
 </jasperReport>

@@ -33,10 +33,9 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.adempiere.util.trxConstraints.api.impl.TrxConstraintsBL;
 import org.adempiere.util.trxConstraints.api.impl.TrxConstraintsDisabled;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.expectations.MRPExpectation;
 import org.junit.Assert;
-
-import de.metas.material.planning.IMaterialPlanningContext;
 
 /**
  * Helper class used to run MRP and do checkings.
@@ -51,7 +50,7 @@ public class MRPTestRun
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final MRPTestHelper helper;
-	private IMaterialPlanningContext _mrpContext;
+	private IMRPContext _mrpContext;
 
 	private boolean assertMRPDemandsNotAvailable = true;
 	/** expectations to be checked after MRP run */
@@ -67,7 +66,7 @@ public class MRPTestRun
 
 	public void run()
 	{
-		final IMaterialPlanningContext mrpContext = getMRPContext();
+		final IMRPContext mrpContext = getMRPContext();
 
 		//
 		// Actually execute MRP
@@ -101,7 +100,7 @@ public class MRPTestRun
 		assertMRPExpectations();
 	}
 
-	private IMaterialPlanningContext getMRPContext()
+	private IMRPContext getMRPContext()
 	{
 		if (_mrpContext != null)
 		{
@@ -111,7 +110,7 @@ public class MRPTestRun
 		return helper.createMutableMRPContext();
 	}
 
-	public MRPTestRun setMRPContext(final IMaterialPlanningContext mrpContext)
+	public MRPTestRun setMRPContext(final IMRPContext mrpContext)
 	{
 		this._mrpContext = mrpContext;
 		return this;
@@ -140,6 +139,7 @@ public class MRPTestRun
 				.setMaxSavepoints(1)
 				.setAllowTrxAfterThreadEnd(false);
 
+		//
 		;
 	}
 

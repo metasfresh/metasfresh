@@ -18,13 +18,7 @@ package org.compiere.util;
 
 import java.util.ArrayList;
 
-import org.adempiere.ad.dao.impl.QueryStatisticsLogger;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.db.util.AbstractResultSetBlindIterator;
-import org.adempiere.sql.impl.StatementsFactory;
-import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 
 /**
@@ -45,7 +39,7 @@ public class Trace
 	 * @param maxNestLevel maximum call nesting level - 0 is all
 	 * @return Array of class.method(file:line)
 	 */
-	private static String[] getCallerClasses (Throwable caller, int maxNestLevel)
+	public static String[] getCallerClasses (Throwable caller, int maxNestLevel)
 	{
 		int nestLevel = maxNestLevel;
 		if (nestLevel < 1)
@@ -85,6 +79,18 @@ public class Trace
 	}   //  getCallerClass
 
 	/**
+	 * 	Is the caller Called From the class mentioned
+	 *	@param className calling class
+	 *	@return the caller was called from className
+	 */
+	public static boolean isCalledFrom (String className)
+	{
+		if (className == null || className.length() == 0)
+			return false;
+		return getCallerClass(1).indexOf(className) != -1;
+	}	//	isCalledFrom
+
+	/**
 	 *  Print Stack Trace Info (raw) adempiereOnly - first9only
 	 */
 	public static void printStack()
@@ -115,75 +121,5 @@ public class Trace
 			}
 		}	
 	}   //  printStack
-
-	public static final String toOneLineStackTraceString()
-	{
-		return toOneLineStackTraceString(new Exception().getStackTrace());
-	}
-
-	public static final String toOneLineStackTraceString(final StackTraceElement[] stacktrace)
-	{
-		final StringBuilder stackTraceStr = new StringBuilder();
-		int ste_Considered = 0;
-		boolean ste_lastSkipped = false;
-		for (final StackTraceElement ste : stacktrace)
-		{
-			if (ste_Considered >= 100)
-			{
-				stackTraceStr.append("...");
-				break;
-			}
-
-			String classname = ste.getClassName();
-			final String methodName = ste.getMethodName();
-
-			// Skip some irrelevant stack trace elements
-			if (classname.startsWith("java.") || classname.startsWith("javax.") || classname.startsWith("sun.")
-					|| classname.startsWith("com.google.")
-					|| classname.startsWith("org.springframework.")
-					|| classname.startsWith("org.apache.")
-					|| classname.startsWith(QueryStatisticsLogger.class.getPackage().getName())
-					|| classname.startsWith(Trace.class.getName())
-					//
-					|| classname.startsWith(StatementsFactory.class.getPackage().getName())
-					|| classname.startsWith(AbstractResultSetBlindIterator.class.getPackage().getName())
-					|| classname.startsWith(ITrxManager.class.getPackage().getName())
-					|| classname.startsWith(org.adempiere.ad.persistence.TableModelLoader.class.getPackage().getName())
-					//
-					|| classname.startsWith(JavaAssistInterceptor.class.getPackage().getName())
-					|| classname.indexOf("_$$_jvstdca_") >= 0 // javassist proxy
-					|| methodName.startsWith("access$")
-			//
-			)
-			{
-				ste_lastSkipped = true;
-				continue;
-			}
-
-			final int lastDot = classname.lastIndexOf(".");
-			if (lastDot >= 0)
-			{
-				classname = classname.substring(lastDot + 1);
-			}
-
-			if (ste_lastSkipped || stackTraceStr.length() > 0)
-			{
-				stackTraceStr.append(ste_lastSkipped ? " <~~~ " : " <- ");
-			}
-
-			stackTraceStr.append(classname).append(".").append(methodName);
-
-			final int lineNumber = ste.getLineNumber();
-			if (lineNumber > 0)
-			{
-				stackTraceStr.append(":").append(lineNumber);
-			}
-
-			ste_lastSkipped = false;
-			ste_Considered++;
-		}
-
-		return stackTraceStr.toString();
-	}
-
+	
 }   //  Trace

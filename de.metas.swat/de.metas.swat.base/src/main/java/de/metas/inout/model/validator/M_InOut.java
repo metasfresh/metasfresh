@@ -20,7 +20,6 @@ import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.event.InOutProcessedEventBus;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.request.service.IRequestCreator;
 
@@ -32,7 +31,6 @@ public class M_InOut
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutProcessedEventBus.EVENTBUS_TOPIC);
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutProcessedEventBus.EVENTBUS_TOPIC);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
@@ -158,4 +156,5 @@ public class M_InOut
 		// Note: The request creation will be done async
 		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
 	}
+
 }

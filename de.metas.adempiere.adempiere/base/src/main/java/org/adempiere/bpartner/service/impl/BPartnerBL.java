@@ -61,9 +61,7 @@ public class BPartnerBL implements IBPartnerBL
 			final I_AD_User user,
 			final String trxName)
 	{
-		return new AddressBuilder(bPartner.getAD_Org())
-				.setLanguage(bPartner.getAD_Language())
-				.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		return new AddressBuilder().buildBPartnerFullAddressString(bPartner, location, user, trxName);
 	}
 
 	@Override
@@ -168,7 +166,6 @@ public class BPartnerBL implements IBPartnerBL
 	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(bpLocation.getC_Location(),
-				InterfaceWrapperHelper.create(bpLocation.getC_BPartner(), I_C_BPartner.class),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);

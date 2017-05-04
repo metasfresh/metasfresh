@@ -33,7 +33,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -88,9 +87,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(order);
 
-		// the date+time when the order was created
-		final Timestamp dateOrdered = Util.coalesce(order.getCreated(), SystemTime.asTimestamp());
-		final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(context, isSOTrx, dateOrdered, datePromised, bpartnerLocationId);
+		final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(context, isSOTrx, datePromised, bpartnerLocationId);
 
 		//
 		// Update order

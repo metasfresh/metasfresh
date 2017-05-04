@@ -463,7 +463,7 @@ public final class DB
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
 			return s_cc.getDatabase();
-		log.error("No Database Connection (getDatabase). Returning null.");
+		log.error("No Database Connection");
 		return null;
 	}   // getDatabase
 
@@ -480,7 +480,7 @@ public final class DB
 		{
 			return true;
 		}
-		log.error("No Database (isPostgreSQL). Returning false.");
+		log.error("No Database");
 		return false;
 	}
 

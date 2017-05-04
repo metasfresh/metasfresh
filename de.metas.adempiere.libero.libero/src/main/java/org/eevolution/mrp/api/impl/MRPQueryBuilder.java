@@ -57,15 +57,15 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_M_Product;
 import org.compiere.model.X_M_Warehouse;
 import org.compiere.model.X_S_Resource;
+import org.compiere.util.Env;
+import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
-
-import de.metas.material.planning.IMaterialPlanningContext;
-import lombok.NonNull;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder
 {
@@ -74,7 +74,7 @@ import lombok.NonNull;
 	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
 	private Object _contextProvider = null;
-	private IMaterialPlanningContext _mrpContext = null;
+	private IMRPContext _mrpContext = null;
 
 	//
 	// Planning segment
@@ -382,7 +382,7 @@ import lombok.NonNull;
 
 		if (qty == null)
 		{
-			return BigDecimal.ZERO;
+			return Env.ZERO;
 		}
 		return qty;
 	}
@@ -395,7 +395,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public int updateMRPRecords(@NonNull final IQueryUpdater<I_PP_MRP> queryUpdater)
+	public int updateMRPRecords(IQueryUpdater<I_PP_MRP> queryUpdater)
 	{
 		return createQueryBuilder()
 				.create() // create query
@@ -466,7 +466,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public MRPQueryBuilder setMRPContext(final IMaterialPlanningContext mrpContext)
+	public MRPQueryBuilder setMRPContext(final IMRPContext mrpContext)
 	{
 		this._mrpContext = mrpContext;
 		return this;
@@ -492,12 +492,9 @@ import lombok.NonNull;
 			return InterfaceWrapperHelper.getContextAware(_contextProvider);
 		}
 
-		if(_mrpContext != null)
-		{
-			return _mrpContext;
-		}
-		
-		return PlainContextAware.newWithThreadInheritedTrx();
+		Check.assumeNotNull(_mrpContext, LiberoException.class, "contextProvider shall be set");
+		return _mrpContext;
+
 	}
 
 	@Override

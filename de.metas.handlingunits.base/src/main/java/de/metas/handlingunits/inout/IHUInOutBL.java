@@ -1,9 +1,5 @@
 package de.metas.handlingunits.inout;
 
-
-import java.sql.Timestamp;
-import java.util.List;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -17,23 +13,22 @@ import java.util.List;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -72,15 +67,7 @@ public interface IHUInOutBL extends ISingletonService
 
 	HUShipmentPackingMaterialLinesBuilder createHUShipmentPackingMaterialLinesBuilder(I_M_InOut shipment);
 
-
-	/**
-	 * Create an instance <code>of de.metas.handlingunits.inout.impl.EmptiesInOutProducer</code>
-	 * 
-	 * @param ctx
-	 * @return
-	 */
-	IReturnsInOutProducer createEmptiesInOutProducer(Properties ctx);
-
+	IEmptiesInOutProducer createEmptiesInOutProducer(Properties ctx);
 
 	/**
 	 * Gets TU PI from inout line.
@@ -103,26 +90,5 @@ public interface IHUInOutBL extends ISingletonService
 	 * @param shipmentLine
 	 */
 	void updateEffectiveValues(I_M_InOutLine shipmentLine);
-
-	/**
-	 * Create a new instance of <code>de.metas.handlingunits.inout.impl.QualityReturnsInOutProducer)</code>
-	 * 
-	 * @param ctx
-	 * @param hus
-	 * @return
-	 */
-	IReturnsInOutProducer createQualityReturnsInOutProducer(Properties ctx, List<I_M_HU> hus);
-
-	/**
-	 * Create return inouts for products of precarious quality based on the details of the given HUs
-	 * 
-	 * 
-	 * @param ctx
-	 * @param hus
-	 * @param warehouse
-	 * @param movementDate
-	 * @return
-	 */
-	de.metas.handlingunits.model.I_M_InOut createReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
 
 }

@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -48,6 +49,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.TrxRunnable2;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -60,12 +62,13 @@ import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMoveme
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKeyLayout;
-import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.IEmptiesInOutProducer;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 
 /**
  *
@@ -77,7 +80,9 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 {
 	// services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 	public static enum BPartnerReturnType
 	{
@@ -223,28 +228,45 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	@Override
 	public void execute() throws MaterialMovementException
 	{
-		try
+		final I_M_InOut[] result = new I_M_InOut[] { null };
+
+		trxManager.run(new TrxRunnable2()
 		{
-			final I_M_InOut emptiesInOut = createEmptiesInOut();
-			
-			//
-			// Open window with shipment document for the user if it was created successfully
-			if (emptiesInOut != null)
+
+			@Override
+			public void run(final String localTrxName) throws Exception
 			{
-				AEnv.zoom(I_M_InOut.Table_Name, emptiesInOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
+				result[0] = createInOut(localTrxName);
+
+				final I_M_InOut emptiesInOut = result[0];
+				huMovementBL.generateMovementFromEmptiesInout(emptiesInOut);
 			}
-		}
-		catch (Exception ex)
+
+			@Override
+			public boolean doCatch(final Throwable e) throws Throwable
+			{
+				throw new MaterialMovementException(e.getLocalizedMessage(), e);
+			}
+
+			@Override
+			public void doFinally()
+			{
+				// nothing
+			}
+		});
+
+		//
+		// Open window with shipment document for the user if it was created successfully
+		final I_M_InOut inOut = result[0];
+		if (inOut != null)
 		{
-			throw new MaterialMovementException(ex.getLocalizedMessage(), ex);
+			AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
 		}
 	}
 
-	private final I_M_InOut createEmptiesInOut()
+	private final I_M_InOut createInOut(final String trxName)
 	{
-
-		final IReturnsInOutProducer producer = huEmptiesService.newReturnsInOutProducer(getCtx());
-
+		final IEmptiesInOutProducer producer = huInOutBL.createEmptiesInOutProducer(getCtx());
 		producer.setC_BPartner(getC_BPartner());
 		producer.setC_BPartner_Location(getC_BPartner_Location());
 
@@ -263,7 +285,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 		if (producer.isEmpty())
 		{
-			throw new MaterialMovementException("@NoSelection@");
+			throw new AdempiereException("@NoSelection@");
 		}
 
 		//
@@ -272,7 +294,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		return inOut;
 	}
 
-	private void addPackingMaterialsFromKeyLayout(final IReturnsInOutProducer producer, final IKeyLayout keyLayout)
+	private void addPackingMaterialsFromKeyLayout(final IEmptiesInOutProducer producer, final IKeyLayout keyLayout)
 	{
 		Check.assumeNotNull(keyLayout, "keyLayout not null");
 
@@ -290,7 +312,6 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 				throw new AdempiereException("@NotFound@ @M_HU_PackingMaterial_ID@"
 						+ "\n @M_HU_PI_ID@: " + key.getPIName());
 			}
-
 			for (final I_M_HU_PackingMaterial packingMaterial : packingMaterials)
 			{
 				producer.addPackingMaterial(packingMaterial, qty);

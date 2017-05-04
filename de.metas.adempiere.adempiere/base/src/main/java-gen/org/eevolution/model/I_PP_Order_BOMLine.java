@@ -1,3 +1,19 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -16,7 +32,7 @@ public interface I_PP_Order_BOMLine
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org
+    /** AccessLevel = 3 - Client - Org 
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -280,52 +296,6 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set DLM_Level.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDLM_Level (int DLM_Level);
-
-	/**
-	 * Get DLM_Level.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getDLM_Level();
-
-    /** Column definition for DLM_Level */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_DLM_Level = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "DLM_Level", null);
-    /** Column name DLM_Level */
-    public static final String COLUMNNAME_DLM_Level = "DLM_Level";
-
-	/**
-	 * Set Partition.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDLM_Partition_ID (int DLM_Partition_ID);
-
-	/**
-	 * Get Partition.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getDLM_Partition_ID();
-
-    /** Column definition for DLM_Partition_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_DLM_Partition_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "DLM_Partition_ID", null);
-    /** Column name DLM_Partition_ID */
-    public static final String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
-
-	/**
 	 * Set Feature.
 	 * Indicated the Feature for Product Configure
 	 *
@@ -551,8 +521,8 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Ausprägung Merkmals-Satz.
+	 * Product Attribute Set Instance
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -561,8 +531,8 @@ public interface I_PP_Order_BOMLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Ausprägung Merkmals-Satz.
+	 * Product Attribute Set Instance
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -771,35 +741,6 @@ public interface I_PP_Order_BOMLine
     public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order>(I_PP_Order_BOMLine.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
     /** Column name PP_Order_ID */
     public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
-
-	/**
-	 * Set BOM Line.
-	 * BOM Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPP_Product_BOMLine_ID (int PP_Product_BOMLine_ID);
-
-	/**
-	 * Get BOM Line.
-	 * BOM Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPP_Product_BOMLine_ID();
-
-	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine();
-
-	public void setPP_Product_BOMLine(org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine);
-
-    /** Column definition for PP_Product_BOMLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_PP_Product_BOMLine_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Product_BOMLine>(I_PP_Order_BOMLine.class, "PP_Product_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
-    /** Column name PP_Product_BOMLine_ID */
-    public static final String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
 	 * Set Verarbeitet.

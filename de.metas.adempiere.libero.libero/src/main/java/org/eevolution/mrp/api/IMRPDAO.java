@@ -37,8 +37,6 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_MRP_Alternative;
 
-import de.metas.material.planning.IMRPSegment;
-
 public interface IMRPDAO extends ISingletonService
 {
 	IMRPQueryBuilder createMRPQueryBuilder();

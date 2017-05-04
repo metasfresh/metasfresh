@@ -854,7 +854,7 @@ public class LookupDAO implements ILookupDAO
 				final LookupDisplayColumn ldc = new LookupDisplayColumn(
 						rs.getString(1) // columnName
 						, rs.getString(7) // ColumnSQL
-						, DisplayType.toBoolean(rs.getString(2)) // isTranslated
+						, "Y".equals(rs.getString(2)) // isTranslated
 						, rs.getInt(3) // AD_Reference_ID
 						, rs.getInt(4) // AD_Reference_Value_ID
 						, rs.getString(8) // FormatPattern

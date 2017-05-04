@@ -25,19 +25,18 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
@@ -49,6 +48,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 
 	// Services
 	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 	private final IProductionMaterialQuery query;
 	private final I_PP_Order ppOrder;
@@ -160,7 +160,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 		// In case our BOM Line is a Variant of a main component line,
 		// find out which is the main component line and get the main product from it
 		final I_M_Product mainComponentProduct;
-		if (PPOrderUtil.isVariant(ppOrderBOMLine))
+		if (ppOrderBOMBL.isVariant(ppOrderBOMLine))
 		{
 			final I_PP_Order_BOMLine mainComponentBOMLine = getMainComponentOrderBOMLine(ppOrderBOMLine);
 			mainComponentProduct = mainComponentBOMLine.getM_Product();
@@ -220,13 +220,13 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 		for (final I_PP_Order_BOMLine ppOrderBOMLine : ppOrderBOMLines)
 		{
 			// lines which are not components are not interesting for us
-			if (!PPOrderUtil.isComponent(ppOrderBOMLine))
+			if (!ppOrderBOMBL.isComponent(ppOrderBOMLine))
 			{
 				continue;
 			}
 
 			// lines which does not have our variant group are not interesting for us
-			if (!Objects.equals(variantGroup, ppOrderBOMLine.getVariantGroup()))
+			if (!Check.equals(variantGroup, ppOrderBOMLine.getVariantGroup()))
 			{
 				continue;
 			}

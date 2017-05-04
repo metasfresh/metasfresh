@@ -29,8 +29,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-
-import de.metas.material.planning.IMRPSegment;
+import org.eevolution.mrp.api.IMRPSegment;
 
 /**
  * Immutable MRP Segment

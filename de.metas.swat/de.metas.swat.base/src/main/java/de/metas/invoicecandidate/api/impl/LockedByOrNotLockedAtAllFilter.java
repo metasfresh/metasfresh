@@ -104,7 +104,7 @@ import de.metas.lock.api.ILockManager;
 		// => we consider only those records which were locked by given lock
 		else
 		{
-			lockedWhereClause = lockManager.getLockedWhereClause(I_C_Invoice_Candidate.class, columnNameInvoiceCandidateId, lock.getOwner());
+			lockedWhereClause = lockManager.getLockedWhereClause(I_C_Invoice_Candidate.class, columnNameInvoiceCandidateId, lock);
 		}
 
 		sql = "(" + lockedWhereClause + ")";
@@ -137,7 +137,7 @@ import de.metas.lock.api.ILockManager;
 		// => we consider only those records which were locked by given lock
 		else
 		{
-			return lockManager.isLocked(I_C_Invoice_Candidate.class, invoiceCandidateId, lock.getOwner());
+			return lockManager.isLocked(I_C_Invoice_Candidate.class, invoiceCandidateId, lock);
 		}
 	}
 

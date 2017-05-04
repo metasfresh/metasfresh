@@ -13,18 +13,20 @@ package org.adempiere.ad.security.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsBuilder;
@@ -86,11 +88,9 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	private final List<UserRolePermissionsInclude> userRolePermissionsToInclude = new ArrayList<>();
 	private UserRolePermissionsIncludesList userRolePermissionsIncluded;
 
-	private final boolean accountingModuleActive;
-
-	UserRolePermissionsBuilder(final boolean accountingModuleActive)
+	UserRolePermissionsBuilder()
 	{
-		this.accountingModuleActive = accountingModuleActive;
+		super();
 	}
 
 	@Override
@@ -215,7 +215,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return new UserRolePermissions(this);
 	}
 
-	private GenericPermissions extractPermissions(final I_AD_Role role, final I_AD_Client adClient)
+	private static GenericPermissions extractPermissions(final I_AD_Role role, final I_AD_Client adClient)
 	{
 		final GenericPermissions.Builder rolePermissions = GenericPermissions.builder();
 
@@ -244,10 +244,11 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_CashJournal(), IUserRolePermissions.PERMISSION_InfoWindow_CashJournal);
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Resource(), IUserRolePermissions.PERMISSION_InfoWindow_Resource);
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Asset(), IUserRolePermissions.PERMISSION_InfoWindow_Asset);
-
+		
 		//
 		// Accounting module
-		if (accountingModuleActive)
+		// TODO: we need to extract this logic and plug it from accounting module.
+		if (Services.get(IPostingService.class).isEnabled())
 		{
 			rolePermissions.addPermissionIfCondition(role.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
 		}
@@ -343,26 +344,27 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		// Fallback: use role's AD_Client_ID
 		return getAD_Role().getAD_Client_ID();
 	}
-
+	
 	private I_AD_Client getAD_Client()
 	{
-		if (_adClient == null)
+		if(_adClient == null)
 		{
 			final int adClientId = getAD_Client_ID();
 			_adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), adClientId);
 		}
 		return _adClient;
 	}
-
+	
 	private I_AD_ClientInfo getAD_ClientInfo()
 	{
-		if (_adClientInfo == null)
+		if(_adClientInfo == null)
 		{
 			final int adClientId = getAD_Client_ID();
 			_adClientInfo = Services.get(IClientDAO.class).retrieveClientInfo(Env.getCtx(), adClientId);
 		}
 		return _adClientInfo;
 	}
+
 
 	@Override
 	public UserRolePermissionsBuilder setUserLevel(final TableAccessLevel userLevel)
@@ -537,7 +539,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		Check.assumeNotNull(userRolePermissionsIncluded, "userRolePermissionsIncluded not null");
 		return userRolePermissionsIncluded;
 	}
-
+	
 	public UserRolePermissionsBuilder setMenu_AD_Tree_ID(Integer _menu_AD_Tree_ID)
 	{
 		this._menu_AD_Tree_ID = _menu_AD_Tree_ID;
@@ -546,24 +548,24 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 	public int getMenu_Tree_ID()
 	{
-		if (_menu_AD_Tree_ID == null)
+		if(_menu_AD_Tree_ID == null)
 		{
 			_menu_AD_Tree_ID = findMenu_Tree_ID();
 		}
 		return _menu_AD_Tree_ID;
 	}
-
+	
 	private int findMenu_Tree_ID()
 	{
 		int roleMenuTreeId = getAD_Role().getAD_Tree_Menu_ID();
-		if (roleMenuTreeId > 0)
+		if(roleMenuTreeId > 0)
 		{
 			return roleMenuTreeId;
 		}
-
+		
 		final I_AD_ClientInfo adClientInfo = getAD_ClientInfo();
 		final int adClientMenuTreeId = adClientInfo.getAD_Tree_Menu_ID();
-		if (adClientMenuTreeId > 0)
+		if(adClientMenuTreeId > 0)
 		{
 			return adClientMenuTreeId;
 		}

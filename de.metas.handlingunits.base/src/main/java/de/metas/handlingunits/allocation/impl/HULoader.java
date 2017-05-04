@@ -31,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
@@ -60,7 +61,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.quantity.Quantity;
 
 public class HULoader
 {
@@ -68,7 +68,7 @@ public class HULoader
 	{
 		return new HULoader(source, destination);
 	}
-
+	
 	private final IAllocationSource source;
 	private final IAllocationDestination destination;
 
@@ -324,7 +324,9 @@ public class HULoader
 	 *            created to load on destination
 	 * @return load result (will contain also unload transactions); the result will be already processed
 	 */
-	private IMutableAllocationResult loadToDestination(final IHUContext huContext, final IAllocationResult unloadResult, final IAllocationRequest unloadRequestActual)
+	private IMutableAllocationResult loadToDestination(final IHUContext huContext,
+			final IAllocationResult unloadResult,
+			final IAllocationRequest unloadRequestActual)
 	{
 		assertValidProcessingContext(huContext);
 
@@ -458,12 +460,10 @@ public class HULoader
 
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product);
 
-		final Quantity qtyUnloadPartial = uomConversionBL.convertQuantityTo(
-				loadTrx
-						.getQuantity()
-						.negate(),
-				uomConversionCtx,
-				qtyUnloadFull.getUOM());
+		final Quantity qtyUnloadPartial = loadTrx
+				.getQuantity()
+				.negate()
+				.convertTo(uomConversionCtx, qtyUnloadFull.getUOM());
 
 		return new HUTransaction(
 				unloadTrx.getReferencedModel(),
@@ -573,33 +573,38 @@ public class HULoader
 		trxAttributesBuilder.transferAttributes(request);
 	}
 
-	public void unloadAllFromSource(final IHUContext huContextInitial)
+	public void unloadAllFromSource(final IHUContext huContext)
 	{
-		processInHUContext(huContextInitial, huContext -> {
-			final List<IAllocationResult> loadResults = new ArrayList<>();
-
-			for (final IPair<IAllocationRequest, IAllocationResult> unloadPair : source.unloadAll(huContext))
+		processInHUContext(huContext, new IHUContextProcessor()
+		{
+			@Override
+			public IMutableAllocationResult process(final IHUContext huContext)
 			{
-				final IAllocationRequest unloadRequest = AllocationUtils.derive(unloadPair.getLeft())
-						.setForceQtyAllocation(true) // we need to force pushing everything
-						.create();
+				final List<IAllocationResult> loadResults = new ArrayList<>();
 
-				final IAllocationResult unloadResult = unloadPair.getRight();
-				final IMutableAllocationResult loadResult = loadToDestination(huContext, unloadResult, unloadRequest);
+				for (final IPair<IAllocationRequest, IAllocationResult> unloadPair : source.unloadAll(huContext))
+				{
+					final IAllocationRequest unloadRequest = AllocationUtils.derive(unloadPair.getLeft())
+							.setForceQtyAllocation(true) // we need to force pushing everything
+							.create();
 
-				loadResults.add(loadResult);
+					final IAllocationResult unloadResult = unloadPair.getRight();
+					final IMutableAllocationResult loadResult = loadToDestination(huContext, unloadResult, unloadRequest);
+
+					loadResults.add(loadResult);
+				}
+
+				//
+				// Notify listeners that load was completed
+				huContext.getTrxListeners().afterLoad(huContext, loadResults);
+
+				//
+				// Notify the source that our unload was completed
+				source.unloadComplete(huContext);
+
+				// NOTE: we are returning null because we actually can transfer more then one type of product and our IAllocationResult is product oriented
+				return null;
 			}
-
-			//
-			// Notify listeners that load was completed
-			huContext.getTrxListeners().afterLoad(huContext, loadResults);
-
-			//
-			// Notify the source that our unload was completed
-			source.unloadComplete(huContext);
-
-			// NOTE: we are returning null because we actually can transfer more then one type of product and our IAllocationResult is one product oriented
-			return null;
 		});
 	}
 

@@ -4432,12 +4432,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return MoreObjects.toStringHelper(this).addValue(gridTab).toString();
 		}
-		
-		@Override
-		public int getAD_Window_ID()
-		{
-			return gridTab.getAD_Window_ID();
-		}
 
 		@Override
 		public String getTableName()

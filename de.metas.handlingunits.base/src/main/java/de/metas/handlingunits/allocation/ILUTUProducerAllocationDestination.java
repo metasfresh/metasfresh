@@ -24,6 +24,7 @@ package de.metas.handlingunits.allocation;
 
 import java.math.BigDecimal;
 
+import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -33,7 +34,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.quantity.Quantity;
 
 /**
  * It's an {@link IHUProducerAllocationDestination} which can be configured to produce TUs on LUs.

@@ -19,8 +19,7 @@ SELECT
 		COALESCE( pp.M_HU_PI_Item_Product_ID || ' ', '' ) ||
 		COALESCE( pp.isDefault || ' ', '' ) || 
 		COALESCE( string_agg( ai.M_Attribute_ID::text ||' '|| ai.M_Attributevalue_ID::text, ',' ORDER BY ai.M_Attribute_ID) , '')
-	) AS signature,
-	pp.m_pricelist_version_id	
+	) AS signature 
 FROM 	
 	M_ProductPrice pp
 	--LEFT OUTER JOIN M_ProductPrice_Attribute_Line ppal ON ppa.M_ProductPrice_Attribute_ID = ppal.M_ProductPrice_Attribute_ID AND ppal.isActive = 'Y'

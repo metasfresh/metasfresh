@@ -212,15 +212,8 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 
 		if (expectTrxSavepoints != null)
 		{
-			final PlainTrx trx = getTrx(PlainTrx.class);
+			final PlainTrx trx = (PlainTrx)processorCtx.getTrx();
 			Assert.assertEquals("Active savepoints for " + trx, expectTrxSavepoints, trx.hasActiveSavepoints());
 		}
-	}
-	
-	public final <T extends PlainTrx> T getTrx(final Class<T> trxClass)
-	{
-		@SuppressWarnings("unchecked")
-		final T trx = (T)processorCtx.getTrx();
-		return trx;
 	}
 }

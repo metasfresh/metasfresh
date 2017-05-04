@@ -4,21 +4,16 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -56,16 +51,13 @@ public class HUShipmentScheduleBLTest
 	private PlainContextAware contextProvider;
 	private IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
-	private static final String typeLU = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
-	private static final String typeTU = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
-	
-	private LUTUProducerDestinationTestSupport testSupport;
+	private String typeLU = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
+	private String typeTU = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
 	@Before
 	public void init()
 	{
-		//AdempiereTestHelper.get().init();
-		this.testSupport = new LUTUProducerDestinationTestSupport();
+		AdempiereTestHelper.get().init();
 		contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 	}
 
@@ -254,32 +246,8 @@ public class HUShipmentScheduleBLTest
 
 		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(new BigDecimal(2)));
 		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(new BigDecimal(2)));
+
 	}
-
-	@Test
-	public void testupdateHUDeliveryQuantities_LU_With_AggregatedTU()
-	{
-		final I_M_ShipmentSchedule schedule = createSchedule(new BigDecimal(1), new BigDecimal(48));
-
-		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Completed);
-		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2)); // this doesn't matter. the HUs are counted 
-
-		final IPair<I_M_HU, I_M_HU> luAndTU = createLUAndTU(48);
-		final I_M_HU lu = luAndTU.getLeft();
-		final I_M_HU tu = luAndTU.getRight();
-		createAlloc(schedule, iol, lu, tu);
-
-
-		shipmentScheduleBL.updateHUDeliveryQuantities(schedule);
-		InterfaceWrapperHelper.save(schedule);
-
-		assertThat(" Wrong QtyToDeliverLU: " + schedule.getQtyToDeliver_LU(), schedule.getQtyToDeliver_LU(), comparesEqualTo(BigDecimal.ZERO));
-		assertThat(" Wrong QtyToDeliverTU: " + schedule.getQtyToDeliver_TU(), schedule.getQtyToDeliver_TU(), comparesEqualTo(BigDecimal.ZERO));
-
-		assertThat(" Wrong QtyDeliveredLU: " + schedule.getQtyDelivered_LU(), schedule.getQtyDelivered_LU(), comparesEqualTo(new BigDecimal(1)));
-		assertThat(" Wrong QtyDeliveredTU: " + schedule.getQtyDelivered_TU(), schedule.getQtyDelivered_TU(), comparesEqualTo(new BigDecimal(48)));
-	}
-
 	private I_M_HU createHU(final String unitType)
 	{
 		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, contextProvider);
@@ -293,15 +261,6 @@ public class HUShipmentScheduleBLTest
 		InterfaceWrapperHelper.save(hu);
 
 		return hu;
-	}
-	
-	private IPair<I_M_HU, I_M_HU> createLUAndTU(final int qtyTU)
-	{
-		final I_M_HU lu = testSupport.createLU(qtyTU, 5);
-		final List<I_M_HU> tus = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu);
-		final I_M_HU aggregatedTU = ListUtils.singleElement(tus);
-		
-		return ImmutablePair.of(lu, aggregatedTU);
 	}
 
 	private I_M_ShipmentSchedule_QtyPicked createAlloc(I_M_ShipmentSchedule schedule, I_M_InOutLine iol, final I_M_HU lu, final I_M_HU tu)

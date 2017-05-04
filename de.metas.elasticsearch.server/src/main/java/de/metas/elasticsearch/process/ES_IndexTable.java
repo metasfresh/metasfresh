@@ -39,11 +39,11 @@ import de.metas.process.Process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -71,9 +71,6 @@ public class ES_IndexTable extends JavaProcess
 
 	@Param(parameterName = "Limit")
 	private int p_Limit = -1;
-
-	@Param(parameterName = "ES_DeleteIndex")
-	private boolean p_DeleteIndex = false;
 
 	//
 	// Statistics
@@ -114,18 +111,8 @@ public class ES_IndexTable extends JavaProcess
 
 	private void indexModelsFor(final IESModelIndexer modelIndexer)
 	{
-		if(p_DeleteIndex)
-		{
-			modelIndexer.deleteIndex();
-			addLog("{} - Index deleted", modelIndexer.getId());
-		}
-		
 		// Make sure the index exists and has the right config & mappings
-		if (modelIndexer.createUpdateIndex())
-		{
-			addLog("{} - Index created now", modelIndexer.getId());
-		}
-		
+		modelIndexer.createUpdateIndex();
 
 		final Iterator<Object> modelsToIndex = retrieveModelsToIndex(modelIndexer);
 
@@ -134,7 +121,7 @@ public class ES_IndexTable extends JavaProcess
 		countAll += result.getTotalCount();
 		countErrors += result.getFailuresCount();
 
-		addLog("{} - Indexed: {}", modelIndexer.getId(), result.getSummary());
+		addLog("{} - {}", modelIndexer, result.getSummary());
 	}
 
 	private Iterator<Object> retrieveModelsToIndex(final IESModelIndexer modelIndexer)

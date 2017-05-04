@@ -26,9 +26,6 @@ package org.eevolution.mrp.api;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.IMultitonService;
 
-import de.metas.material.planning.IMRPNotesCollector;
-import de.metas.material.planning.IMaterialPlanningContext;
-
 /**
  * Multiton service used to delete MRP documents.
  * 
@@ -70,7 +67,7 @@ public interface IMRPDocumentDeleteService extends IMultitonService
 	 * @param mrpContext
 	 * @return this
 	 */
-	IMRPDocumentDeleteService setMRPContext(final IMaterialPlanningContext mrpContext);
+	IMRPDocumentDeleteService setMRPContext(final IMRPContext mrpContext);
 
 	/**
 	 * Sets MRP notes collector to be used

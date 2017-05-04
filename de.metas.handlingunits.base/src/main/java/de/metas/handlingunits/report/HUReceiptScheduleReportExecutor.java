@@ -144,7 +144,6 @@ public class HUReceiptScheduleReportExecutor
 				//
 				// Execute report in a new AD_PInstance
 				.buildAndPrepareExecution()
-				.onErrorThrowException()
 				.executeSync();
 	}
 }

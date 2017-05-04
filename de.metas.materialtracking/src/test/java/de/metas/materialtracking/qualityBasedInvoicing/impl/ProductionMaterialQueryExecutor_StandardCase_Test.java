@@ -79,7 +79,7 @@ public class ProductionMaterialQueryExecutor_StandardCase_Test
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		this.context = PlainContextAware.newOutOfTrx();
+		this.context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
 
 		// NOTE: we are running this test without any model interceptors, listeners etc.
 		// For that reason we can safely enabled strict values because we want to make sure only the values we set in Order/Order BOM Line are used.

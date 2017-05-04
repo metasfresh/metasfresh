@@ -192,18 +192,18 @@ public final class ProcessPreconditionsResolution
 			return new ProcessPreconditionsResolution(this);
 		}
 
-		public ProcessPreconditionsResolution accept()
+		public ProcessPreconditionsResolution.Builder accept()
 		{
 			accepted = Boolean.TRUE;
 			reason = null;
-			return build();
+			return this;
 		}
 
-		public ProcessPreconditionsResolution reject(final String reason)
+		public ProcessPreconditionsResolution.Builder reject(final String reason)
 		{
 			accepted = Boolean.FALSE;
 			this.reason = reason;
-			return build();
+			return this;
 		}
 
 		private boolean isAccepted()

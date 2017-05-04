@@ -501,7 +501,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						msgBL.getMsg(ctx,
 								InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
 								new Object[] {
-										adReferenceDAO.retrieveListNameTrl(X_C_Order.DOCSTATUS_AD_Reference_ID,
+										adReferenceDAO.retriveListName(ctx, X_C_Order.DOCSTATUS_AD_Reference_ID,
 												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
 								}));
 
@@ -1592,7 +1592,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setError(final I_C_Invoice_Candidate ic, final Throwable e)
+	public void setError(final I_C_Invoice_Candidate ic, final Exception e)
 	{
 		Check.assumeNotNull(e, "e not null");
 

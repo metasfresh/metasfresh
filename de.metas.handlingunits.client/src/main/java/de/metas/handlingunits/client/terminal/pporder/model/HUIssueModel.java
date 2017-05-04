@@ -33,7 +33,6 @@ import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -66,9 +65,8 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 
 /**
  * Manufacturing Order Issue ViewModel
@@ -82,8 +80,6 @@ public class HUIssueModel implements IDisposable
 	private final transient IPOSAccessBL posAccessBL = Services.get(IPOSAccessBL.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	//
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
 	private final ITerminalContext _terminalContext;
@@ -327,6 +323,20 @@ public class HUIssueModel implements IDisposable
 	}
 
 	/**
+	 * Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
+	 *
+	 * @param hus HUs to issue
+	 */
+	private void createIssues(final Set<I_M_HU> hus)
+	{
+		final IHUPPOrderIssueProducer issueProducer = huPPOrderBL.createIssueProducer(getCtx());
+		issueProducer.setMovementDate(getMovementDate());
+		issueProducer.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLines());
+
+		issueProducer.createIssues(hus);
+	}
+
+	/**
 	 * Gets document date to be used when creating Issue Cost Collectors.
 	 *
 	 * @return
@@ -354,22 +364,7 @@ public class HUIssueModel implements IDisposable
 			if (edited)
 			{
 				final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
-				trxManager.run(() -> {
-					//
-					// Create manufacturing issue candidates
-					final List<I_PP_Order_Qty> candidates = huPPOrderBL.createIssueProducer()
-							.setMovementDate(getMovementDate())
-							.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLinesForIssuing())
-							.createIssues(selectedHUs);
-
-					//
-					// Process created manufacturing issue candidates
-					// => Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
-					HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-							.setCandidatesToProcess(candidates)
-							.process();
-
-				});
+				createIssues(selectedHUs);
 			}
 		}
 
@@ -388,7 +383,7 @@ public class HUIssueModel implements IDisposable
 		final ITerminalContext terminalContext = getTerminalContext();
 
 		final I_PP_Order ppOrder = getSelectedOrder();
-		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getOrderBOMLinesForIssuing();
+		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getPP_Order_BOMLines();
 		final int selectedWarehouseId = getSelectedWarehouseId();
 
 		//
@@ -413,7 +408,7 @@ public class HUIssueModel implements IDisposable
 		final ITerminalContext terminalContext = getTerminalContext();
 
 		final I_PP_Order ppOrder = getSelectedOrder();
-		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getOrderBOMLinesForReceiving();
+		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getPP_Order_BOMLines();
 
 		final HUPPOrderReceiptModel model = new HUPPOrderReceiptModel(terminalContext);
 
@@ -421,25 +416,24 @@ public class HUIssueModel implements IDisposable
 		return model;
 	}
 
-	private List<I_PP_Order_BOMLine> getOrderBOMLinesForIssuing()
+	private List<I_PP_Order_BOMLine> getPP_Order_BOMLines()
 	{
-		return getOrderBOMLineKeyLayout().getOrderBOMLinesForIssuing();
-	}
-
-	private List<I_PP_Order_BOMLine> getOrderBOMLinesForReceiving()
-	{
-		return getOrderBOMLineKeyLayout().getOrderBOMLinesForReceiving();
+		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getOrderBOMLineKeyLayout().getOrderBOMLines();
+		return ppOrderBOMLines;
 	}
 
 	/**
 	 * @param loadHUs true if we need the already existing HUs to be loaded, flase otherwise
 	 * @return
 	 */
-	public HUPPOrderReceiptHUEditorModel createReceiptHUEditorModel(final CUKey cuKey)
+	public HUPPOrderReceiptHUEditorModel createReceiptHUEditorModel(final CUKey cuKey, final boolean loadHUs)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
+
 		final I_PP_Order ppOrder = getSelectedOrder();
-		final HUPPOrderReceiptHUEditorModel editorModel = new HUPPOrderReceiptHUEditorModel(terminalContext, ppOrder, cuKey);
+		final List<I_PP_Order_BOMLine> ppOrderBOMLines = getPP_Order_BOMLines();
+
+		final HUPPOrderReceiptHUEditorModel editorModel = new HUPPOrderReceiptHUEditorModel(terminalContext, ppOrder, ppOrderBOMLines, cuKey, loadHUs);
 
 		return editorModel;
 	}

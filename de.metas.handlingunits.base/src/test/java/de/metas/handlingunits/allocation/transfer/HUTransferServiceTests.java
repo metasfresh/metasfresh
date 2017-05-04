@@ -66,6 +66,9 @@ public class HUTransferServiceTests
 	@DataPoints("isOwnPackingMaterials")
 	public static boolean[] isOwnPackingMaterials = { true, false };
 
+	@DataPoints("isAggregateCU")
+	public static boolean[] isAggregateCU = { true, false };
+
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;

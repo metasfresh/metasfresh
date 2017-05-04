@@ -34,6 +34,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
@@ -43,7 +44,6 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.spi.ILockDatabase;
-import de.metas.logging.LogManager;
 
 /**
  * Abstract lock database which does not implement any database specific logic.
@@ -56,7 +56,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Asserts given lock owner is a valid owner to be used on for Locks */
-	protected static final void assertValidLockOwner(final LockOwner lockOwner)
+	protected final void assertValidLockOwner(final LockOwner lockOwner)
 	{
 		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
 
@@ -64,22 +64,35 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		Check.assumeNotNull(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {}", lockOwner);
 	}
 
-	@Override
-	public final boolean isLocked(final Class<?> modelClass, final int recordId, LockOwner lockOwner)
+	/** @return true if <code>lockOwnerActual</code> is matching the required one */
+	protected final boolean isLockOwnerMatch(final LockOwner lockOwnerRequired, final LockOwner lockOwnerActual)
 	{
-		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
-		return isLocked(adTableId, recordId, lockOwner);
+		// If any lock owner required, then accept any owner
+		if (lockOwnerRequired.isAnyOwner())
+		{
+			return true;
+		}
+
+		// Accept it only if they are equal
+		return Check.equals(lockOwnerRequired, lockOwnerActual);
 	}
 
 	@Override
-	public final boolean isLocked(final Object model, LockOwner lockOwner)
+	public final boolean isLocked(final Class<?> modelClass, final int recordId, ILock lockedBy)
+	{
+		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
+		return isLocked(adTableId, recordId, lockedBy);
+	}
+
+	@Override
+	public final boolean isLocked(final Object model, ILock lockedBy)
 	{
 		Check.assume(model != null, "model not null");
 
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		return isLocked(adTableId, recordId, lockOwner);
+		return isLocked(adTableId, recordId, lockedBy);
 	}
 
 	@Override
@@ -313,11 +326,11 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	}
 
 	@Override
-	public final String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
+	public final String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final ILock lock)
 	{
-		Check.assumeNotNull(lockOwner, "Parameter lockOwner is not null");
+		Check.assumeNotNull(lock, "Parameter 'lock' is not null");
 
-		return getLockedWhereClauseAllowNullLock(modelClass, joinColumnNameFQ, lockOwner);
+		return getLockedWhereClauseAllowNullLock(modelClass, joinColumnNameFQ, lock);
 	}
 
 	@Override
@@ -340,12 +353,12 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 * @param allowAdditionalLocks
 	 * @return <code>true</code> if the given <code>allowAdditionalLocks</code> is <code>FOR_DIFFERENT_OWNERS</code>.
 	 */
-	protected static final boolean isAllowMultipleOwners(final AllowAdditionalLocks allowAdditionalLocks)
+	protected final boolean isAllowMultipleOwners(final AllowAdditionalLocks allowAdditionalLocks)
 	{
 		return allowAdditionalLocks == AllowAdditionalLocks.FOR_DIFFERENT_OWNERS;
 	}
 
 	protected abstract <T> IQuery<T> retrieveNotLockedQuery(IQuery<T> query);
 
-	protected abstract String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner);
+	protected abstract String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final ILock lock);
 }

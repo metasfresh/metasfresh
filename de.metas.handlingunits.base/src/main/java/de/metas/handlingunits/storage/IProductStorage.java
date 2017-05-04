@@ -69,12 +69,6 @@ public interface IProductStorage
 	 * @return product; never <code>null</code>
 	 */
 	I_M_Product getM_Product();
-	
-	default int getM_Product_ID()
-	{
-		final I_M_Product product = getM_Product();
-		return product == null ? -1 : product.getM_Product_ID();
-	}
 
 	I_C_UOM getC_UOM();
 

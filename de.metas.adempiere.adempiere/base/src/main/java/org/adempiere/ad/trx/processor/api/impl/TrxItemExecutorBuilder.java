@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 /* package */class TrxItemExecutorBuilder<IT, RT> implements ITrxItemExecutorBuilder<IT, RT>
 {
@@ -46,7 +45,7 @@ import org.compiere.util.Env;
 	// Context
 	private ITrxItemProcessorContext _processorCtx;
 	private Properties _ctx = null;
-	private String _trxName = ITrx.TRXNAME_ThreadInherited;
+	private String _trxName = null;
 
 	private ITrxItemProcessor<IT, RT> _processor;
 	private ITrxItemExceptionHandler _exceptionHandler = ITrxItemProcessorExecutor.DEFAULT_ExceptionHandler;
@@ -114,9 +113,9 @@ import org.compiere.util.Env;
 			return _processorCtx;
 		}
 
-		final Properties ctx = _ctx != null ? _ctx : Env.getCtx();
+		Check.assumeNotNull(_ctx, "ctx is set");
 		final ITrx trx = trxManager.getTrx(_trxName);
-		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, trx);
+		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(_ctx, trx);
 		return processorCtx;
 	}
 

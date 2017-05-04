@@ -1,3 +1,19 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -5,18 +21,18 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for M_InventoryLine
  *  @author Adempiere (generated) 
- */
-@SuppressWarnings("javadoc")
-public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_InventoryLine, org.compiere.model.I_Persistent 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_M_InventoryLine extends PO implements I_M_InventoryLine, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1209179945L;
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
@@ -45,32 +61,37 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 1 - Org 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
     /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
+    protected POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
-	}
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_M_InventoryLine[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
 
-	@Override
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
-	}
+	public I_C_Charge getC_Charge() throws RuntimeException
+    {
+		return (I_C_Charge)MTable.get(getCtx(), I_C_Charge.Table_Name)
+			.getPO(getC_Charge_ID(), get_TrxName());	}
 
-	/** Set Kosten.
+	/** Set Charge.
 		@param C_Charge_ID 
 		Additional document charges
 	  */
-	@Override
 	public void setC_Charge_ID (int C_Charge_ID)
 	{
 		if (C_Charge_ID < 1) 
@@ -79,10 +100,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
 	}
 
-	/** Get Kosten.
+	/** Get Charge.
 		@return Additional document charges
 	  */
-	@Override
 	public int getC_Charge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
@@ -91,37 +111,34 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
-	@Override
-	public void setDescription (java.lang.String Description)
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
-	@Override
-	public java.lang.String getDescription () 
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** 
-	 * InventoryType AD_Reference_ID=292
-	 * Reference name: M_Inventory Type
-	 */
+	/** InventoryType AD_Reference_ID=292 */
 	public static final int INVENTORYTYPE_AD_Reference_ID=292;
-	/** InventoryDifference = D */
+	/** Inventory Difference = D */
 	public static final String INVENTORYTYPE_InventoryDifference = "D";
-	/** ChargeAccount = C */
+	/** Charge Account = C */
 	public static final String INVENTORYTYPE_ChargeAccount = "C";
 	/** Set Inventory Type.
 		@param InventoryType 
 		Type of inventory difference
 	  */
-	@Override
-	public void setInventoryType (java.lang.String InventoryType)
+	public void setInventoryType (String InventoryType)
 	{
 
 		set_Value (COLUMNNAME_InventoryType, InventoryType);
@@ -130,26 +147,23 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/** Get Inventory Type.
 		@return Type of inventory difference
 	  */
-	@Override
-	public java.lang.String getInventoryType () 
+	public String getInventoryType () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InventoryType);
+		return (String)get_Value(COLUMNNAME_InventoryType);
 	}
 
-	/** Set Zeile Nr..
+	/** Set Line No.
 		@param Line 
 		Unique line for this document
 	  */
-	@Override
 	public void setLine (int Line)
 	{
 		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
 	}
 
-	/** Get Zeile Nr..
+	/** Get Line No.
 		@return Unique line for this document
 	  */
-	@Override
 	public int getLine () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
@@ -158,23 +172,23 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
-	}
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), String.valueOf(getLine()));
+    }
 
-	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
-	}
+	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+    {
+		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
+			.getPO(getM_AttributeSetInstance_ID(), get_TrxName());	}
 
-	/** Set Merkmale.
+	/** Set Attribute Set Instance.
 		@param M_AttributeSetInstance_ID 
-		Merkmals Ausprägungen zum Produkt
+		Product Attribute Set Instance
 	  */
-	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
@@ -183,10 +197,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Merkmale.
-		@return Merkmals Ausprägungen zum Produkt
+	/** Get Attribute Set Instance.
+		@return Product Attribute Set Instance
 	  */
-	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
@@ -195,60 +208,15 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
-	}
+	public I_M_Inventory getM_Inventory() throws RuntimeException
+    {
+		return (I_M_Inventory)MTable.get(getCtx(), I_M_Inventory.Table_Name)
+			.getPO(getM_Inventory_ID(), get_TrxName());	}
 
-	@Override
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
-	{
-		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
-	}
-
-	/** Set Versand-/Wareneingangsposition.
-		@param M_InOutLine_ID 
-		Position auf Versand- oder Wareneingangsbeleg
-	  */
-	@Override
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
-	{
-		if (M_InOutLine_ID < 1) 
-			set_Value (COLUMNNAME_M_InOutLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
-	}
-
-	/** Get Versand-/Wareneingangsposition.
-		@return Position auf Versand- oder Wareneingangsbeleg
-	  */
-	@Override
-	public int getM_InOutLine_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Inventory getM_Inventory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
-	}
-
-	@Override
-	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
-	}
-
-	/** Set Inventur.
+	/** Set Phys.Inventory.
 		@param M_Inventory_ID 
 		Parameters for a Physical Inventory
 	  */
-	@Override
 	public void setM_Inventory_ID (int M_Inventory_ID)
 	{
 		if (M_Inventory_ID < 1) 
@@ -257,10 +225,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, Integer.valueOf(M_Inventory_ID));
 	}
 
-	/** Get Inventur.
+	/** Get Phys.Inventory.
 		@return Parameters for a Physical Inventory
 	  */
-	@Override
 	public int getM_Inventory_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Inventory_ID);
@@ -269,11 +236,10 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	/** Set Inventur-Position.
+	/** Set Phys.Inventory Line.
 		@param M_InventoryLine_ID 
 		Unique line in an Inventory document
 	  */
-	@Override
 	public void setM_InventoryLine_ID (int M_InventoryLine_ID)
 	{
 		if (M_InventoryLine_ID < 1) 
@@ -282,10 +248,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, Integer.valueOf(M_InventoryLine_ID));
 	}
 
-	/** Get Inventur-Position.
+	/** Get Phys.Inventory Line.
 		@return Unique line in an Inventory document
 	  */
-	@Override
 	public int getM_InventoryLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InventoryLine_ID);
@@ -294,23 +259,15 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
+	public I_M_Locator getM_Locator() throws RuntimeException
+    {
+		return (I_M_Locator)MTable.get(getCtx(), I_M_Locator.Table_Name)
+			.getPO(getM_Locator_ID(), get_TrxName());	}
 
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
-	/** Set Lagerort.
+	/** Set Locator.
 		@param M_Locator_ID 
 		Warehouse Locator
 	  */
-	@Override
 	public void setM_Locator_ID (int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
@@ -319,10 +276,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
 	}
 
-	/** Get Lagerort.
+	/** Get Locator.
 		@return Warehouse Locator
 	  */
-	@Override
 	public int getM_Locator_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
@@ -331,23 +287,15 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
+	public I_M_Product getM_Product() throws RuntimeException
+    {
+		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
+			.getPO(getM_Product_ID(), get_TrxName());	}
 
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
-	/** Set Produkt.
+	/** Set Product.
 		@param M_Product_ID 
-		Produkt, Leistung, Artikel
+		Product, Service, Item
 	  */
-	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -356,10 +304,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
+	/** Get Product.
+		@return Product, Service, Item
 	  */
-	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -368,20 +315,18 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	/** Set Verarbeitet.
+	/** Set Processed.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		The document has been processed
 	  */
-	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	/** Get Processed.
+		@return The document has been processed
 	  */
-	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -394,21 +339,19 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return false;
 	}
 
-	/** Set Buchmenge.
+	/** Set Quantity book.
 		@param QtyBook 
 		Book Quantity
 	  */
-	@Override
-	public void setQtyBook (java.math.BigDecimal QtyBook)
+	public void setQtyBook (BigDecimal QtyBook)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyBook, QtyBook);
 	}
 
-	/** Get Buchmenge.
+	/** Get Quantity book.
 		@return Book Quantity
 	  */
-	@Override
-	public java.math.BigDecimal getQtyBook () 
+	public BigDecimal getQtyBook () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBook);
 		if (bd == null)
@@ -416,21 +359,19 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return bd;
 	}
 
-	/** Set Zählmenge.
+	/** Set Quantity count.
 		@param QtyCount 
 		Counted Quantity
 	  */
-	@Override
-	public void setQtyCount (java.math.BigDecimal QtyCount)
+	public void setQtyCount (BigDecimal QtyCount)
 	{
 		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
 
-	/** Get Zählmenge.
+	/** Get Quantity count.
 		@return Counted Quantity
 	  */
-	@Override
-	public java.math.BigDecimal getQtyCount () 
+	public BigDecimal getQtyCount () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
 		if (bd == null)
@@ -440,16 +381,14 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 
 	/** Set QtyCsv.
 		@param QtyCsv QtyCsv	  */
-	@Override
-	public void setQtyCsv (java.math.BigDecimal QtyCsv)
+	public void setQtyCsv (BigDecimal QtyCsv)
 	{
 		set_Value (COLUMNNAME_QtyCsv, QtyCsv);
 	}
 
 	/** Get QtyCsv.
 		@return QtyCsv	  */
-	@Override
-	public java.math.BigDecimal getQtyCsv () 
+	public BigDecimal getQtyCsv () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCsv);
 		if (bd == null)
@@ -461,8 +400,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		@param QtyInternalUse 
 		Internal Use Quantity removed from Inventory
 	  */
-	@Override
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse)
+	public void setQtyInternalUse (BigDecimal QtyInternalUse)
 	{
 		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
 	}
@@ -470,8 +408,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/** Get Internal Use Qty.
 		@return Internal Use Quantity removed from Inventory
 	  */
-	@Override
-	public java.math.BigDecimal getQtyInternalUse () 
+	public BigDecimal getQtyInternalUse () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInternalUse);
 		if (bd == null)
@@ -479,21 +416,15 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_M_InventoryLine getReversalLine() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_ReversalLine_ID, org.compiere.model.I_M_InventoryLine.class);
-	}
+	public I_M_InventoryLine getReversalLine() throws RuntimeException
+    {
+		return (I_M_InventoryLine)MTable.get(getCtx(), I_M_InventoryLine.Table_Name)
+			.getPO(getReversalLine_ID(), get_TrxName());	}
 
-	@Override
-	public void setReversalLine(org.compiere.model.I_M_InventoryLine ReversalLine)
-	{
-		set_ValueFromPO(COLUMNNAME_ReversalLine_ID, org.compiere.model.I_M_InventoryLine.class, ReversalLine);
-	}
-
-	/** Set Storno-Zeile.
-		@param ReversalLine_ID Storno-Zeile	  */
-	@Override
+	/** Set Reversal Line.
+		@param ReversalLine_ID 
+		Use to keep the reversal line ID for reversing costing purpose
+	  */
 	public void setReversalLine_ID (int ReversalLine_ID)
 	{
 		if (ReversalLine_ID < 1) 
@@ -502,9 +433,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 			set_Value (COLUMNNAME_ReversalLine_ID, Integer.valueOf(ReversalLine_ID));
 	}
 
-	/** Get Storno-Zeile.
-		@return Storno-Zeile	  */
-	@Override
+	/** Get Reversal Line.
+		@return Use to keep the reversal line ID for reversing costing purpose
+	  */
 	public int getReversalLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_ReversalLine_ID);
@@ -517,35 +448,31 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		@param UPC 
 		Bar Code (Universal Product Code or its superset European Article Number)
 	  */
-	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC (String UPC)
 	{
 		throw new IllegalArgumentException ("UPC is virtual column");	}
 
 	/** Get UPC/EAN.
 		@return Bar Code (Universal Product Code or its superset European Article Number)
 	  */
-	@Override
-	public java.lang.String getUPC () 
+	public String getUPC () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return (String)get_Value(COLUMNNAME_UPC);
 	}
 
-	/** Set Suchschlüssel.
+	/** Set Search Key.
 		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
-	@Override
-	public void setValue (java.lang.String Value)
+	public void setValue (String Value)
 	{
 		throw new IllegalArgumentException ("Value is virtual column");	}
 
-	/** Get Suchschlüssel.
+	/** Get Search Key.
 		@return Search key for the record in the format required - must be unique
 	  */
-	@Override
-	public java.lang.String getValue () 
+	public String getValue () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return (String)get_Value(COLUMNNAME_Value);
 	}
 }

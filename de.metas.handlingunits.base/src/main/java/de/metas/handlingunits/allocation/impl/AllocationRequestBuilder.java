@@ -26,6 +26,7 @@ package de.metas.handlingunits.allocation.impl;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
@@ -34,7 +35,6 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
-import de.metas.quantity.Quantity;
 
 /* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
 {

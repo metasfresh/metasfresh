@@ -64,11 +64,6 @@ public class AProcessModelTest
 
 		preconditionsContext = new IProcessPreconditionsContext()
 		{
-			@Override
-			public int getAD_Window_ID()
-			{
-				throw new UnsupportedOperationException();
-			}
 
 			@Override
 			public String getTableName()
@@ -201,9 +196,7 @@ public class AProcessModelTest
 
 		InterfaceWrapperHelper.save(process);
 
-		return RelatedProcessDescriptor.builder()
-				.processId(process.getAD_Process_ID())
-				.build();
+		return RelatedProcessDescriptor.ofAD_Process_ID(process.getAD_Process_ID());
 	}
 
 	private RelatedProcessDescriptor createProcessAndForm(final String processClassname, final String formClassname)
@@ -221,9 +214,7 @@ public class AProcessModelTest
 
 		InterfaceWrapperHelper.save(process);
 
-		return RelatedProcessDescriptor.builder()
-				.processId(process.getAD_Process_ID())
-				.build();
+		return RelatedProcessDescriptor.ofAD_Process_ID(process.getAD_Process_ID());
 	}
 
 	private void assertPreconditionsApplicable(final String message, final boolean expectAccepted, final RelatedProcessDescriptor relatedProcess)

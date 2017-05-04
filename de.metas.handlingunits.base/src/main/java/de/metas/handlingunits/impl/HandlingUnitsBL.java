@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -21,6 +20,9 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_Warehouse;
+import org.eevolution.drp.api.IDistributionNetworkDAO;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -35,6 +37,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -45,6 +48,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
+import de.metas.handlingunits.movement.api.impl.EmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
@@ -792,23 +797,35 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getEffectivePI(final I_M_HU hu)
+	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
 	{
-		if (!isAggregateHU(hu))
+		Check.assumeNotNull(warehouse, "warehouse not null");
+
+		// services
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+
+		// In case the requirements will change and the empties ditribution network
+		// will be product based, here we will need to get the product gebinde
+		// and send it as parameter in the method above
+		final I_DD_NetworkDistribution emptiesNetworkDistribution = handlingUnitsDAO.retrieveEmptiesDistributionNetwork(ctx,
+				null, // Product
+				trxName);
+		if (emptiesNetworkDistribution == null)
 		{
-			return hu.getM_HU_PI_Version().getM_HU_PI();
+			throw new AdempiereException("@NotFound@ @DD_NetworkDistribution_ID@ (@IsHUDestroyed@=@Y@)");
 		}
 
-		// note: if hu is an aggregate HU, then there won't be an NPE here.
-		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+		final List<I_DD_NetworkDistributionLine> lines = distributionNetworkDAO.retrieveNetworkLinesBySourceWarehouse(emptiesNetworkDistribution, warehouse.getM_Warehouse_ID());
 
-		if (parentPIItem == null)
+		if (lines.isEmpty())
 		{
-			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
+					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution);
 		}
 
-		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
-		return included_HU_PI;
+		return lines.get(0).getM_Warehouse();
+
 	}
 
 	@Override
@@ -819,7 +836,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus, final boolean forceFetchPackingMaterial)
+	public void setHUStatus(final IHUContext huContext,
+			final I_M_HU hu,
+			final String huStatus,
+			final boolean forceFetchPackingMaterial)
 	{
 		// keep this so we can compare it with the new one and make sure the moving to/from
 		// gebindelager is done only when needed
@@ -904,36 +924,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setHUStatusActive(final Collection<I_M_HU> hus)
+	public IEmptiesMovementBuilder createEmptiesMovementBuilder()
 	{
-		if (hus == null || hus.isEmpty())
-		{
-			return;
-		}
-
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-
-		huTrxBL.process(huContext -> {
-			for (final I_M_HU hu : hus)
-			{
-				final boolean isPhysicalHU = isPhysicalHU(hu.getHUStatus());
-				if (isPhysicalHU)
-				{
-					// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
-					// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
-					// ... but when you get to verteilung the boxes are already there
-					return;
-				}
-
-				setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-				InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
-
-				//
-				// Ask the API to get the packing materials needed to the HU which we just activate it
-				// TODO: i think we can remove this part because it's done automatically ?! (NOTE: this one was copied from swing UI, de.metas.handlingunits.client.terminal.pporder.receipt.view.HUPPOrderReceiptHUEditorPanel.onDialogOkBeforeSave(ITerminalDialog))
-				huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
-			}
-		});
-
+		return new EmptiesMovementBuilder();
 	}
 }

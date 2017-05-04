@@ -41,11 +41,11 @@ import de.metas.lock.api.LockOwner;
  */
 public interface ILockDatabase
 {
-	boolean isLocked(Class<?> modelClass, int recordId, LockOwner lockOwner);
+	boolean isLocked(Class<?> modelClass, int recordId, ILock lockedBy);
 
-	boolean isLocked(int adTableId, int recordId, LockOwner lockOwner);
+	boolean isLocked(int adTableId, int recordId, ILock lockedBy);
 
-	boolean isLocked(Object model, LockOwner lockOwner);
+	boolean isLocked(Object model, ILock lockedBy);
 
 	ILock lock(ILockCommand lockCommand);
 
@@ -53,21 +53,21 @@ public interface ILockDatabase
 
 	<T> T retrieveAndLock(IQuery<T> query, Class<T> clazz);
 
-	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, LockOwner lockOwner);
+	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, ILock lock);
 	
 	<T> IQueryFilter<T> getNotLockedFilter(Class<T> modelClass);
 
 	String getNotLockedWhereClause(String tableName, String joinColumnNameFQ);
 
 	/**
-	 * See {@link ILockManager#getLockedWhereClause(Class, String, LockOwner)}.
+	 * See {@link ILockManager#getLockedWhereClause(Class, String, ILock)}.
 	 *
 	 * @param modelClass
 	 * @param joinColumnNameFQ
 	 * @param lock
 	 * @return
 	 */
-	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, LockOwner lockOwner);
+	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, ILock lock);
 
 	ILock retrieveLockForOwner(LockOwner lockOwner);
 
@@ -79,6 +79,4 @@ public interface ILockDatabase
 	 * @return
 	 */
 	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
-
-	int removeAutoCleanupLocks();
 }

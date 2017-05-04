@@ -41,15 +41,14 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
+import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.api.IResourceDAO;
+import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
+import org.eevolution.mrp.api.IMRPContext;
+import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
-
-import de.metas.material.planning.IMRPSegment;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 
 public class MRPSegmentBL implements IMRPSegmentBL
 {
@@ -64,7 +63,7 @@ public class MRPSegmentBL implements IMRPSegmentBL
 	}
 
 	@Override
-	public IMRPSegment createMRPSegment(final IMaterialPlanningContext mrpContext)
+	public IMRPSegment createMRPSegment(final IMRPContext mrpContext)
 	{
 		Check.assumeNotNull(mrpContext, "mrpContext not null");
 

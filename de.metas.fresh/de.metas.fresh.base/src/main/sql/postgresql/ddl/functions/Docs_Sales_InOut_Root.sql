@@ -13,8 +13,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root
 	PrintName Character Varying(60),
 	AD_Language Text,
 	IsHidePackingMaterialInShipmentPrint Character (1),
-	email Character Varying(50),
-	displayhu text
+	email Character Varying(50)
 );
 
 

@@ -607,10 +607,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(node);
 				return new ArrayList<Object>(includedHUs);
 			}
-
 			else if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType) 
 					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType)) // gh #1099: this is the actual fix. Also load VHUs that are below HA items.
-
 			{
 				if (handlingUnitsBL.isVirtual(node))
 				{

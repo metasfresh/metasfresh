@@ -39,6 +39,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
 
@@ -50,6 +51,19 @@ public class ProductDAO implements IProductDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, upc)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient(ctx)
+				.create()
+				.firstOnly(I_M_Product.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)
+	public I_M_Product retrieveForResourceId(@CacheCtx final Properties ctx, final int resourceId, @CacheTrx final String trxName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class, ctx, trxName)
+				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create()

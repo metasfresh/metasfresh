@@ -56,6 +56,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMBL;
 import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
@@ -86,10 +87,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
-
+import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.uom.UOMUtil;
+import de.metas.logging.LogManager;
 
 
 
@@ -219,7 +219,7 @@ implements FormPanel, ActionListener
 				// Modification to fit the new UOM logic
 				final I_C_UOM uom = InterfaceWrapperHelper.create(Env.getCtx(), uom_id, I_C_UOM.class, ITrx.TRXNAME_None);
 				CategoryDataset dataset = null;
-				if (UOMUtil.isHour(uom))
+				if (Services.get(IUOMBL.class).isHour(uom))
 				{
 					System.out.println("\n ->is Hour<- \n");
 					dataset = createDataset(date, r);
@@ -273,8 +273,8 @@ implements FormPanel, ActionListener
 		// Modification to fit the new UOM logic
 
 		
-		//Hinzugefuegt Begin 05.08.2005
-		if(uom == null || UOMUtil.isHour(uom))
+		//Hinzugef�gt Begin 05.08.2005
+		if(uom == null || Services.get(IUOMBL.class).isHour(uom))
 		{
 			chart = ChartFactory.createBarChart3D
         ( title ,
@@ -550,9 +550,7 @@ implements FormPanel, ActionListener
 		 MResourceType t = MResourceType.get(Env.getCtx(),r.getS_ResourceType_ID());
 		 System.out.println("\n Resourcetype "+t);
 		 int days = 1;
-		 
-		 final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-	     long hours = resourceProductService.getTimeSlotHoursForResourceType(t);
+	     long hours = t.getTimeSlotHours();
 		 
 		 DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		 
@@ -564,9 +562,8 @@ implements FormPanel, ActionListener
 		 
 		// 07525
 		// Modification to fit the new UOM logic
-		 
 		final I_C_UOM uom = InterfaceWrapperHelper.create(Env.getCtx(), C_UOM_ID, I_C_UOM.class, ITrx.TRXNAME_None);
-		if (!UOMUtil.isHour(uom))
+		if (!Services.get(IUOMBL.class).isHour(uom))
 		{
 			System.out.println("\n uom2 " + uom + "\n");
 			return dataset;

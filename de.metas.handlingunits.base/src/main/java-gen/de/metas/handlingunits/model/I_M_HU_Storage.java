@@ -153,8 +153,8 @@ public interface I_M_HU_Storage
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Ausprägung Merkmals-Satz.
+	 * Instanz des Merkmals-Satzes zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -163,8 +163,8 @@ public interface I_M_HU_Storage
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Ausprägung Merkmals-Satz.
+	 * Instanz des Merkmals-Satzes zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false

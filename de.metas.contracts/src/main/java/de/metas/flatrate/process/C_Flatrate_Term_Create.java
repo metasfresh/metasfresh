@@ -42,7 +42,6 @@ import de.metas.process.JavaProcess;
 
 public abstract class C_Flatrate_Term_Create extends JavaProcess
 {
-
 	// services
 	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -122,33 +121,27 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	private I_C_Flatrate_Term createTerm(final I_C_BPartner partner)
 	{
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
-
-		final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, false);
-
-		if (newTerm == null)
+		final boolean completeIt = true;
+		final I_C_Flatrate_Term term = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, completeIt);
+		if (term == null)
 		{
 			return null;
 		}
 
 		if (product != null)
 		{
-			newTerm.setM_Product_ID(product.getM_Product_ID());
+			term.setM_Product_ID(product.getM_Product_ID());
 		}
 
 		if (endDate != null)
 		{
-			newTerm.setEndDate(endDate);
+			term.setEndDate(endDate);
 		}
 
-		InterfaceWrapperHelper.save(newTerm);
-
-		//
-		// Complete it if valid
-		flatrateBL.completeIfValid(newTerm);
-
-		return newTerm;
+		InterfaceWrapperHelper.save(term);
+		return term;
 	}
-	
+
 	/**
 	 * Implement this method in the subclass to provide all the partners that are about to have terms created.
 	 *

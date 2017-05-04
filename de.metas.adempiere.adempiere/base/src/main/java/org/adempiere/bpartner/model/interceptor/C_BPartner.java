@@ -1,6 +1,5 @@
 package org.adempiere.bpartner.model.interceptor;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -21,11 +20,11 @@ import de.metas.interfaces.I_C_BPartner;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,8 +37,5 @@ public class C_BPartner
 	{
 		Services.get(ITabCalloutFactory.class)
 				.registerTabCalloutForTable(I_C_BPartner.Table_Name, org.adempiere.bpartner.callout.C_BPartner_TabCallout.class);
-
-		Services.get(IProgramaticCalloutProvider.class)
-				.registerAnnotatedCallout(new org.adempiere.bpartner.callout.C_BPartner());
 	}
 }

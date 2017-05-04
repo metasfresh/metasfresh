@@ -68,6 +68,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 	public TableSequenceChecker(final Properties ctx)
 	{
+		super();
 		this.ctx = ctx;
 	}
 

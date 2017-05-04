@@ -40,10 +40,4 @@ public interface IPPOrderWorkflowBL extends ISingletonService
 	 */
 	void setQtyOrdered(I_PP_Order_Node orderNode, BigDecimal qtyOrdered);
 
-	/**
-	 * Get Qty To Deliver (Open Qty)
-	 * @return open qty
-	 */
-	BigDecimal getQtyToDeliver(I_PP_Order_Node node);
-
 }

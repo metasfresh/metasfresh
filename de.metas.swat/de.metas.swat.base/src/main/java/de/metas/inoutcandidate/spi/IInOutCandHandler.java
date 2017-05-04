@@ -110,6 +110,6 @@ public interface IInOutCandHandler
 	 * @param sched
 	 * @return
 	 */
-	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched);
+	IDeliverRequest createDeliverReques(I_M_ShipmentSchedule sched);
 
 }

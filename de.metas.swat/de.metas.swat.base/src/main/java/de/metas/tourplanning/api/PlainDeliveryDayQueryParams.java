@@ -13,14 +13,15 @@ package de.metas.tourplanning.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -40,14 +41,9 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	private Boolean toBeFetched = null;
 	private Boolean processed = null;
 	/**
-	 * The time when the calculation is performed. For instance, the date+time when the order was created or the system time.
+	 * The time when the calculation is performed. Generaly it will be the system time
 	 */
 	private Timestamp calculationTime = null;
-
-	/**
-	 * The day when the products should be delivered
-	 */
-	private Timestamp preparationDay = null;
 
 	@Override
 	public String toString()
@@ -126,13 +122,4 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 		this.calculationTime = calculationTime;
 	}
 
-	public Timestamp getPreparationDay()
-	{
-		return preparationDay;
-	}
-
-	public void setPreparationDay(Timestamp preparationDay)
-	{
-		this.preparationDay = preparationDay;
-	}
 }

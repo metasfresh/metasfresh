@@ -33,7 +33,6 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -51,14 +50,13 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Product_Planning;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 
 import de.metas.adempiere.service.IRequisitionBL;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.ProductPlanningBL;
 
 public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -85,7 +83,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
@@ -111,7 +109,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 	@Override
 	public void createSupply(final IMRPCreateSupplyRequest request)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
+		final IMRPContext mrpContext = request.getMRPContext();
 		final IMRPExecutor executor = request.getMRPExecutor();
 
 		final String trxName = mrpContext.getTrxName();
@@ -167,7 +165,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 		reqline.setC_BPartner_ID(bpartnerId);
 		reqline.setM_Product_ID(m_product_planning.getM_Product_ID());
 		// reqline.setPrice(); // called automatically on beforeSave
-		reqline.setPriceActual(BigDecimal.ZERO);
+		reqline.setPriceActual(Env.ZERO);
 		reqline.setQty(QtyPlanned);
 		InterfaceWrapperHelper.save(reqline);
 
@@ -187,19 +185,16 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 		executor.addGeneratedSupplyDocument(req);
 	}
 
-	private int calculateDurationDays(final IMaterialPlanningContext mrpContext)
+	private int calculateDurationDays(final IMRPContext mrpContext)
 	{
-		final ProductPlanningBL productPlanningBL = Adempiere.getSpringApplicationContext().getBean(ProductPlanningBL.class);
-		
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+		I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
-		final int durationTotalDays = productPlanningBL.calculateDurationDays(leadtimeDays, productPlanningData);
-
+		final int durationTotalDays = mrpBL.calculateDurationDays(leadtimeDays, productPlanningData);
 		return durationTotalDays;
 	}
 
 	@Override
-	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
 	{
 		//
 		// Delete generated requisitions

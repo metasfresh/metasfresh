@@ -34,13 +34,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**
  * {@link I_PP_Order_BOMLine}'s Key
@@ -86,7 +85,7 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 		final int orderBOMLineId = orderBOMLine.getPP_Order_BOMLine_ID();
 		value = new KeyNamePair(orderBOMLineId, productName);
 
-		coProduct = PPOrderUtil.isCoOrByProduct(orderBOMLine);
+		coProduct = ppOrderBOMLineBL.isCoOrByProduct(orderBOMLine);
 		qtyRequired = orderBOMLine.getQtyRequiered();
 		qtyDelivered = orderBOMLine.getQtyDelivered();
 
@@ -214,15 +213,5 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 	public Color getColor()
 	{
 		return color;
-	}
-	
-	public boolean isForIssuing()
-	{
-		return !coProduct;
-	}
-	
-	public boolean isForReceiving()
-	{
-		return coProduct;
 	}
 }

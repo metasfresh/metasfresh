@@ -24,10 +24,9 @@ package org.eevolution.mrp.api.impl;
 
 
 import org.adempiere.util.Check;
-
-import de.metas.material.planning.IMRPNoteBuilder;
-import de.metas.material.planning.IMRPNotesCollector;
-import de.metas.material.planning.IMaterialPlanningContext;
+import org.eevolution.mrp.api.IMRPContext;
+import org.eevolution.mrp.api.IMRPNoteBuilder;
+import org.eevolution.mrp.api.IMRPNotesCollector;
 
 public class MRPExecutorNotesCollector implements IMRPNotesCollector
 {
@@ -47,7 +46,7 @@ public class MRPExecutorNotesCollector implements IMRPNotesCollector
 	}
 
 	@Override
-	public IMRPNoteBuilder newMRPNoteBuilder(final IMaterialPlanningContext mrpContext, final String mrpErrorCode)
+	public IMRPNoteBuilder newMRPNoteBuilder(final IMRPContext mrpContext, final String mrpErrorCode)
 	{
 		return new MRPNoteBuilder(this)
 				.setMRPContext(mrpContext)

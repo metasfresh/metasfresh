@@ -145,8 +145,7 @@ public class MPPProductBOMLine extends X_PP_Product_BOMLine
 		//
 		if (includeScrapQty)
 		{
-			final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-			qty = productBOMBL.calculateQtyWithScrap(qty, getScrap());
+			qty = Services.get(IProductBOMBL.class).calculateQtyWithScrap(qty, getScrap());
 		}
 		//
 		if (qty.scale() > precision)
@@ -179,10 +178,10 @@ public class MPPProductBOMLine extends X_PP_Product_BOMLine
 	public BigDecimal getCostAllocationPerc()
 	{
 		BigDecimal qty = getQty(false).negate();
-		BigDecimal allocationPercent = BigDecimal.ZERO;
+		BigDecimal allocationPercent = Env.ZERO;
 		if (qty.signum() != 0)
 		{
-			allocationPercent = BigDecimal.ONE.divide(qty, 4, RoundingMode.HALF_UP);
+			allocationPercent = Env.ONE.divide(qty, 4, RoundingMode.HALF_UP);
 		}
 		return allocationPercent;
 	}

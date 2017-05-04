@@ -51,11 +51,6 @@ import de.metas.interfaces.I_M_Movement;
  */
 /* package */class HUPackingMaterialMovementLineAggregateBuilder
 {
-	public static final HUPackingMaterialMovementLineAggregateBuilder newInstance()
-	{
-		return new HUPackingMaterialMovementLineAggregateBuilder();
-	}
-	
 	// services
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
@@ -74,15 +69,14 @@ import de.metas.interfaces.I_M_Movement;
 	 */
 	private final Set<Integer> seenM_HU_IDs_ToAdd = new HashSet<>();
 
-	private HUPackingMaterialMovementLineAggregateBuilder()
+	public HUPackingMaterialMovementLineAggregateBuilder()
 	{
 		super();
 	}
 
-	public HUPackingMaterialMovementLineAggregateBuilder setM_Movement(final I_M_Movement movement)
+	public void setM_Movement(final I_M_Movement movement)
 	{
 		_movement = movement;
-		return this;
 	}
 
 	private final I_M_Movement getM_Movement()

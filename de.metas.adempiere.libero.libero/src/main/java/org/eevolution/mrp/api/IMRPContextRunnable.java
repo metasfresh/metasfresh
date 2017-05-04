@@ -1,7 +1,5 @@
 package org.eevolution.mrp.api;
 
-import de.metas.material.planning.IMutableMRPContext;
-
 /*
  * #%L
  * de.metas.adempiere.libero.libero

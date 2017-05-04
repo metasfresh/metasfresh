@@ -14,8 +14,7 @@ RETURNS TABLE
 	isInDispute character(1),
 	Description Character Varying,
 	bp_product_no character varying(30),
-	bp_product_name character varying(100),
-	line numeric
+	bp_product_name character varying(100)
 )
 AS
 $$
@@ -33,8 +32,7 @@ SELECT
 	isInDispute,
 	iol.Description,
 	bp_product_no,
-	bp_product_name,
-	max(iol.line) as line
+	bp_product_name
 
 FROM
 	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
@@ -64,8 +62,7 @@ FROM
 		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description,
 		-- in case there is no C_BPartner_Product, fallback to the default ones
 		COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
-		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
-		iol.line
+		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
 	FROM
 		-- All In Outs linked to the order
 		(

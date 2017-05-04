@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
@@ -48,7 +49,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
-import de.metas.quantity.Quantity;
 
 public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {

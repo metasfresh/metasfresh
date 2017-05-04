@@ -35,10 +35,9 @@ import org.adempiere.util.collections.CompositePredicate;
 import org.eevolution.model.I_AD_Note;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
+import org.eevolution.mrp.api.IMRPContext;
+import org.eevolution.mrp.api.IMRPNoteBuilder;
 import org.junit.Assert;
-
-import de.metas.material.planning.IMRPNoteBuilder;
-import de.metas.material.planning.IMaterialPlanningContext;
 
 public class MockedMRPExecutor extends MRPExecutor
 {
@@ -49,6 +48,8 @@ public class MockedMRPExecutor extends MRPExecutor
 
 	public MockedMRPExecutor()
 	{
+		super();
+
 		allowMRPNoteMatchers.setAnd(false); // any of predicates shall be matched
 	}
 
@@ -147,14 +148,14 @@ public class MockedMRPExecutor extends MRPExecutor
 	}
 
 	@Override
-	protected void markMRPRecordsAvailable(final IMaterialPlanningContext mrpContext)
+	protected void markMRPRecordsAvailable(final IMRPContext mrpContext)
 	{
 		super.markMRPRecordsAvailable(mrpContext);
 
 		applyMRPDeleteCascadeConstraints(mrpContext);
 	}
 
-	private void applyMRPDeleteCascadeConstraints(final IMaterialPlanningContext mrpContext)
+	private void applyMRPDeleteCascadeConstraints(final IMRPContext mrpContext)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<Integer> existingMRPIds = queryBL

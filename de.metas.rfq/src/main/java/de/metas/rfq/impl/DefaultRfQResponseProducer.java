@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -17,6 +16,7 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;

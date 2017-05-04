@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 
-import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
 
 /**
@@ -99,9 +98,7 @@ public class ProductCost
 	public boolean isService()
 	{
 		if (m_product != null)
-		{
-			return Services.get(IProductBL.class).isItem(m_product);
-		}
+			return m_product.isService();
 		return false;
 	}	// isService
 

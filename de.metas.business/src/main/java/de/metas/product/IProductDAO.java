@@ -34,6 +34,8 @@ public interface IProductDAO extends ISingletonService
 {
 	I_M_Product retrieveProductByUPC(Properties ctx, String upc);
 
+	I_M_Product retrieveForResourceId(final Properties ctx, final int resourceId, final String trxName);
+
 	/**
 	 *
 	 * @param ctx

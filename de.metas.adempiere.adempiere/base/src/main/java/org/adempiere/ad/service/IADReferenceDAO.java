@@ -23,65 +23,85 @@ package org.adempiere.ad.service;
  */
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.util.Env;
-
-import de.metas.i18n.ITranslatableString;
-import lombok.Builder;
-import lombok.Value;
+import org.compiere.model.I_AD_Ref_List;
 
 public interface IADReferenceDAO extends ISingletonService
 {
-	@Value
-	@Builder
-	public static final class ADRefListItem
-	{
-		private final String value;
-		private final String valueName;
-		private final ITranslatableString name;
-		private final ITranslatableString description;
-	}
+	/**
+	 * @param ctx
+	 * @param adReferenceId
+	 * @return a collection of all active {@link I_AD_Ref_List} items of given <code>adReferenceId</code>
+	 */
+	Collection<I_AD_Ref_List> retrieveListItems(Properties ctx, int adReferenceId);
 
 	/**
+	 * Invokes {@link #retrieveListItems(Properties, int)} and orders the result by <code>AD_Ref_List.Name</code>.
+	 * 
+	 * @param ctx
 	 * @param adReferenceId
-	 * @return a collection of all active {@link ADRefListItem} items of given <code>adReferenceId</code>
+	 * @return
 	 */
-	Collection<ADRefListItem> retrieveListItems(int adReferenceId);
+	List<I_AD_Ref_List> retrieveListItemsOrderedByName(Properties ctx, int adReferenceId);
 	
 	/**
+	 * @param ctx
 	 * @param adReferenceId
-	 * @return Set of active {@link ADRefListItem#getValue()}s.
+	 * @return Set of active {@link I_AD_Ref_List#getValue()}s.
 	 */
-	Set<String> retrieveListValues(int adReferenceId);
+	Set<String> retrieveListValues(Properties ctx, int adReferenceId);
 
 	/**
-	 * Gets List Item's Name for given <code>value</code> translated to context language.
+	 * Gets List Item's Name for given <code>value</code>.
 	 * 
+	 * If list item ({@link I_AD_Ref_List}) was not found then <code>value</code> is returned.
+	 * 
+	 * @param ctx
+	 * @param adReferenceId
+	 * @param value
+	 * @return list name or value if no list item found.
+	 */
+	String retriveListName(Properties ctx, int adReferenceId, String value);
+
+	/**
+	 * Same as {@link #retriveListName(Properties, int, String)} but the name is translated to context language.
+	 * 
+	 * @param ctx
 	 * @param adReferenceId
 	 * @param value
 	 * @return list name translated or value if not list item found.
 	 */
-	String retrieveListNameTrl(final Properties ctx, int adReferenceId, String value);
-	
-	default String retrieveListNameTrl(int adReferenceId, String value)
-	{
-		return retrieveListNameTrl(Env.getCtx(), adReferenceId, value);
-	}
+	String retrieveListNameTrl(Properties ctx, int adReferenceId, String value);
 
 	/**
+	 * Gets List Item's Description for given <code>value</code>.
+	 * 
+	 * The description is translated to context language.
+	 * 
+	 * @param ctx
 	 * @param adReferenceId
 	 * @param value
-	 * @return true if an active {@link ADRefListItem} for given <code>adReferenceId</code> and <code>value</code> exists
+	 * @return list description or "" if no list item found.
 	 */
-	boolean existListValue(int adReferenceId, String value);
+	String retrieveListDescriptionTrl(Properties ctx, int adReferenceId, String value);
 
 	/**
+	 * @param ctx
 	 * @param adReferenceId
 	 * @param value
-	 * @return existing active {@link I_ADRefListItem} or null
+	 * @return true if an active {@link I_AD_Ref_List} for given <code>adReferenceId</code> and <code>value</code> exists
 	 */
-	ADRefListItem retrieveListItemOrNull(int adReferenceId, String value);
+	boolean existListValue(Properties ctx, int adReferenceId, String value);
+
+	/**
+	 * @param ctx
+	 * @param adReferenceId
+	 * @param value
+	 * @return existing active {@link I_AD_Ref_List} or null
+	 */
+	I_AD_Ref_List retrieveListItemOrNull(Properties ctx, int adReferenceId, String value);	
 }

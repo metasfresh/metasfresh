@@ -5,7 +5,6 @@ import org.adempiere.util.text.MapFormat;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
-import de.metas.event.Event;
 import de.metas.event.EventMessageFormatTemplate;
 
 /**
@@ -36,9 +35,7 @@ final class EventHtmlMessageFormat extends EventMessageFormatTemplate
 	@Override
 	protected String formatTableRecordReference(final ITableRecordReference recordRef)
 	{
-		final Object suggestedWindowIdObj = getArgumentValue(Event.PROPERTY_SuggestedWindowId);
-		final int suggestedWindowId = (suggestedWindowIdObj instanceof Number) ? ((Number)suggestedWindowIdObj).intValue() : -1;
-		return new ADHyperlinkBuilder().createShowWindowHTML(recordRef, suggestedWindowId);
+		return new ADHyperlinkBuilder().createShowWindowHTML(recordRef);
 	}
 
 	@Override

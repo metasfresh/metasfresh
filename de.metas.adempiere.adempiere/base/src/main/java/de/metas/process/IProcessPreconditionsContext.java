@@ -33,11 +33,6 @@ import java.util.List;
 public interface IProcessPreconditionsContext
 {
 	/**
-	 * @return underlying AD_Window_ID or <code>-1</code> if not available
-	 */
-	int getAD_Window_ID();
-	
-	/**
 	 * @return underlying table name or <code>null</code>
 	 */
 	String getTableName();
@@ -74,4 +69,5 @@ public interface IProcessPreconditionsContext
 	{
 		return getSelectionSize() == 1;
 	}
+
 }

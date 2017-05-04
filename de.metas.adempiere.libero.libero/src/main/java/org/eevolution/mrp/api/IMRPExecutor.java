@@ -28,19 +28,16 @@ import java.util.List;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 
-import de.metas.material.planning.IMRPNoteBuilder;
-import de.metas.material.planning.IMRPNotesCollector;
-import de.metas.material.planning.IMRPSegment;
-import de.metas.material.planning.IMaterialPlanningContext;
-
 public interface IMRPExecutor
 {
+	String MRP_ERROR_999_Unknown = "MRP-999";
+
 	/**
 	 * Run the {@link IMRPExecutor} for given context.
 	 * 
 	 * @param mrpContext MRP running context
 	 */
-	void runMRP(IMaterialPlanningContext mrpContext);
+	void runMRP(IMRPContext mrpContext);
 
 	/**
 	 * @return MRP Run execution result
@@ -52,7 +49,7 @@ public interface IMRPExecutor
 	 * 
 	 * @param mrpContext0
 	 */
-	void cleanup(IMaterialPlanningContext mrpContext0);
+	void cleanup(IMRPContext mrpContext0);
 
 	/**
 	 * Adds given document to generated supply documents of the {@link IMRPResult}.
@@ -100,14 +97,14 @@ public interface IMRPExecutor
 	void onMRPRecordBeforeCreate(I_PP_MRP mrp);
 
 	/**
-	 * Helper method to create an {@link IMRPQueryBuilder} starting from given {@link IMaterialPlanningContext}.
+	 * Helper method to create an {@link IMRPQueryBuilder} starting from given {@link IMRPContext}.
 	 * 
 	 * To be used by {@link IMRPSupplyProducer} implementations.
 	 * 
 	 * @param mrpContext
 	 * @return mrp query builder
 	 */
-	IMRPQueryBuilder createMRPQueryBuilder(IMaterialPlanningContext mrpContext);
+	IMRPQueryBuilder createMRPQueryBuilder(IMRPContext mrpContext);
 
 	/**
 	 * Returns <code>true</code> if this is will a subsequent MRP executor call (i.e. MRP executor called again from inside MRP module).
@@ -121,7 +118,7 @@ public interface IMRPExecutor
 	 */
 	boolean isSubsequentMRPExecutor();
 
-	IMRPNoteBuilder newMRPNote(IMaterialPlanningContext mrpContext, String mrpErrorCode);
+	IMRPNoteBuilder newMRPNote(IMRPContext mrpContext, String mrpErrorCode);
 
 	IMRPNotesCollector getMRPNotesCollector();
 

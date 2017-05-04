@@ -64,29 +64,11 @@ public final class ImmutableTranslatableString implements ITranslatableString
 
 		return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
 	}
-	
-	public static final ITranslatableString singleLanguage(final String adLanguage, final String value)
-	{
-		if(Check.isEmpty(adLanguage, true))
-		{
-			return constant(value);
-		}
-		
-		final String valueNorm = value == null ? "" : value;
-		return new ImmutableTranslatableString(ImmutableMap.of(adLanguage, valueNorm), valueNorm);
-	}
 
 	public static final ITranslatableString constant(final String value)
 	{
 		return ConstantTranslatableString.of(value);
 	}
-	
-	public static final ITranslatableString anyLanguage(final String value)
-	{
-		final boolean anyLanguage = true;
-		return ConstantTranslatableString.of(value, anyLanguage);
-	}
-
 	
 	public static final ITranslatableString empty()
 	{
@@ -168,7 +150,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper("trl")
+		return MoreObjects.toStringHelper("trlString")
 				.omitNullValues()
 				.add("trls", trlMap.isEmpty() ? null : trlMap)
 				.add("default", defaultValue)

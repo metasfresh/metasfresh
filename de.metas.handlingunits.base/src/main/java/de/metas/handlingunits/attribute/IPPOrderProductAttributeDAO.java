@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
@@ -44,16 +45,16 @@ public interface IPPOrderProductAttributeDAO extends ISingletonService
 	void addPPOrderProductAttributes(I_PP_Cost_Collector costCollector, List<I_M_HU_Attribute> huAttributes);
 
 	/**
-	 * @param ppOrderId
+	 * @param ppOrder
 	 * @return the PP_Order_ProductAttribute entries for the given ppOrder if exist, EmptyList otherwise
 	 */
-	List<I_PP_Order_ProductAttribute> retrieveProductAttributesForPPOrder(int ppOrderId);
+	List<I_PP_Order_ProductAttribute> retrieveProductAttributesForPPOrder(I_PP_Order ppOrder);
 
 	/**
 	 * Deactivate all PP_Order_ProductAttributes for the given cost collector
 	 * 
-	 * @param costCollectorId
+	 * @param costCollector
 	 */
-	void deactivateForCostCollector(int costCollectorId);
+	void deactivateForCostCollector(I_PP_Cost_Collector costCollector);
 
 }

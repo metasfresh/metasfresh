@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 
 /*
@@ -123,7 +122,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 
-		final ITranslatableString display = target.getRoleDisplayName(adWindowId);
+		final String display = target.getRoleDisplayName(adWindowId);
 
 		final String zoomInfoId = getZoomInfoId();
 		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
@@ -301,9 +300,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		private final int AD_Reference_ID;
 		private final ITableRefInfo tableRefInfo;
-		private final ITranslatableString roleDisplayName;
+		private final String roleDisplayName;
 
-		private ZoomProviderDestination(final int AD_Reference_ID, final ITableRefInfo tableRefInfo, final ITranslatableString roleDisplayName)
+		private ZoomProviderDestination(final int AD_Reference_ID, final ITableRefInfo tableRefInfo, final String roleDisplayName)
 		{
 			super();
 			this.AD_Reference_ID = AD_Reference_ID;
@@ -336,16 +335,16 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return tableRefInfo;
 		}
 
-		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
+		public String getRoleDisplayName(final int fallbackAD_Window_ID)
 		{
-			if (roleDisplayName != null)
+			if (!Check.isEmpty(roleDisplayName))
 			{
 				return roleDisplayName;
 			}
 
 			// Fallback to window name
-			final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(fallbackAD_Window_ID);
-			Check.errorIf(windowName == null, "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
+			final String windowName = Services.get(IADWindowDAO.class).retrieveWindowName(fallbackAD_Window_ID);
+			Check.errorIf(Check.isEmpty(windowName), "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
 			return windowName;
 		}
 
@@ -414,9 +413,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private int adRelationTypeId;
 
 		private int sourceReferenceId = -1;
-		private ITranslatableString sourceRoleDisplayName;
+		private String sourceRoleDisplayName;
 		private int targetReferenceId = -1;
-		private ITranslatableString targetRoleDisplayName;
+		private String targetRoleDisplayName;
 
 		private Builder()
 		{
@@ -489,13 +488,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return Services.get(ILookupDAO.class).retrieveTableRefInfo(getSource_Reference_ID());
 		}
 
-		public Builder setSourceRoleDisplayName(final ITranslatableString sourceRoleDisplayName)
+		public Builder setSourceRoleDisplayName(final String sourceRoleDisplayName)
 		{
 			this.sourceRoleDisplayName = sourceRoleDisplayName;
 			return this;
 		}
 
-		private ITranslatableString getSourceRoleDisplayName()
+		private String getSourceRoleDisplayName()
 		{
 			return sourceRoleDisplayName;
 		}
@@ -517,13 +516,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return Services.get(ILookupDAO.class).retrieveTableRefInfo(getTarget_Reference_ID());
 		}
 
-		public Builder setTargetRoleDisplayName(final ITranslatableString targetRoleDisplayName)
+		public Builder setTargetRoleDisplayName(final String targetRoleDisplayName)
 		{
 			this.targetRoleDisplayName = targetRoleDisplayName;
 			return this;
 		}
 
-		public ITranslatableString getTargetRoleDisplayName()
+		public String getTargetRoleDisplayName()
 		{
 			return targetRoleDisplayName;
 		}

@@ -203,11 +203,8 @@ public abstract class AbstractTrx implements ITrx
 			final boolean throwException = false;
 			return rollback(throwException);
 		}
-		catch (Throwable ex)
+		catch (SQLException e)
 		{
-			// NOTE: we are catching ALL exceptions (Throwable) and not only "Exception",
-			// because by contract this method is not supposed to fail
-			log.trace("Rollback failed, exception was swallowed. Returning false.", ex);
 			return false;
 		}
 	}

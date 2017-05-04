@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -47,7 +48,6 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.quantity.Quantity;
 
 public class TUMergeBuilder implements ITUMergeBuilder
 {

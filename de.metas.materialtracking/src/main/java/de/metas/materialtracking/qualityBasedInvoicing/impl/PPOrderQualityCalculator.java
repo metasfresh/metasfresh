@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -51,7 +52,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
-import de.metas.quantity.Quantity;
 
 /**
  * Calculates and updates Quality related fields of a {@link I_PP_Order} (and it's BOM Lines).

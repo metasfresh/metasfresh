@@ -29,11 +29,9 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_AD_Note;
 
-import de.metas.material.planning.IMaterialPlanningContext;
-
 public interface IMRPNoteDAO extends ISingletonService
 {
-	public int deleteMRPNotes(final IMaterialPlanningContext mrpContext);
+	public int deleteMRPNotes(final IMRPContext mrpContext);
 
 	List<I_AD_Note> retrieveMRPNotesForMRPRecord(Properties ctx, int PP_MRP_ID);
 

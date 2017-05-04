@@ -93,6 +93,4 @@ public interface IModelCacheService extends ISingletonService
 	 * @param po persistent object. In case it's null, it will be silently ignored.
 	 */
 	void addToCache(PO po);
-
-	void invalidate(String tableName, int recordId, String trxName);
 }

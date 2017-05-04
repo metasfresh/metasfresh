@@ -25,7 +25,6 @@ package org.eevolution.mrp.spi.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
@@ -52,35 +51,35 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.IProductPlanningBL;
+import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.exceptions.LiberoException;
+import org.eevolution.exceptions.NoPlantForWarehouseException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.RoutingService;
+import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
 import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanningBL;
-import de.metas.material.planning.RoutingService;
-import de.metas.material.planning.RoutingServiceFactory;
-import de.metas.material.planning.exception.NoPlantForWarehouseException;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -88,9 +87,6 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	@Autowired
-	private transient ProductPlanningBL productPlanningBL;
-	
 	public OrderMRPSupplyProducer()
 	{
 		super();
@@ -122,7 +118,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		// always false; it's never used to balance demand
 		notAppliesReason.setValue(MSG_OrderMRPNoBalanceDemand);
@@ -191,7 +187,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
 	{
 		// nothing
 	}
@@ -262,9 +258,9 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 			}
 
 			//
-			// Trigger only if following order fields were changed: DocStatus, C_BPartner_ID
+			// Trigger only if follwing order fields were changed: DocStatus, C_BPartner_ID
 			final I_C_Order orderOld = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
-			if (!Objects.equals(orderOld.getDocStatus(), docStatus)
+			if (!Check.equals(orderOld.getDocStatus(), docStatus)
 					|| orderOld.getC_BPartner_ID() != order.getC_BPartner_ID())
 			{
 				final List<I_PP_MRP> list = mrpDAO.retrieveMRPRecords(order);
@@ -435,13 +431,13 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 				if (plant != null && workflow != null)
 				{
-					String description = Services.get(IMsgBL.class).translate(ctx, Services.get(IADReferenceDAO.class).retrieveListNameTrl(ctx, X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType()))
+					String description = Services.get(IMsgBL.class).translate(ctx, Services.get(IADReferenceDAO.class).retriveListName(ctx, X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType()))
 							+ " "
 							+ Services.get(IMsgBL.class).translate(ctx, I_C_Order.COLUMNNAME_C_Order_ID)
 							+ " : "
 							+ ol.getC_Order().getDocumentNo();
 					// Create temporary data planning to create Manufacturing Order
-					productPlanning = productPlanningBL.createPlainProductPlanning(ctx);
+					productPlanning = Services.get(IProductPlanningBL.class).createPlainProductPlanning(ctx);
 					productPlanning.setAD_Org_ID(ol.getAD_Org_ID());
 					productPlanning.setM_Product(product);
 					productPlanning.setPlanner_ID(ol.getC_Order().getSalesRep_ID());
@@ -471,7 +467,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 					}
 
 					description = description
-							+ " " + Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType())
+							+ " " + Services.get(IADReferenceDAO.class).retriveListName(ctx, X_PP_Order_BOM.BOMTYPE_AD_Reference_ID, bom.getBOMType())
 							+ " "
 							+ Services.get(IMsgBL.class).translate(ctx, I_PP_Order.COLUMNNAME_PP_Order_ID)
 							+ " : "
@@ -490,7 +486,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				if (order.getM_Product_ID() != ol.getM_Product_ID())
 				{
 					order.setDescription("");
-					Services.get(IPPOrderBL.class).setQtyEntered(order, BigDecimal.ZERO);
+					Services.get(IPPOrderBL.class).setQtyEntered(order, Env.ZERO);
 					order.setC_OrderLine(null);
 					order.setC_OrderLine_MTO(null);
 

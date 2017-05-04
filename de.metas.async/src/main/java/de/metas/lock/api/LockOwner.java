@@ -24,9 +24,10 @@ package de.metas.lock.api;
 
 import java.util.UUID;
 
-import javax.annotation.concurrent.Immutable;
-
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.lang.ObjectUtils;
 
 /**
  * Lock Owner.
@@ -34,8 +35,6 @@ import org.adempiere.util.Check;
  * @author tsa
  *
  */
-@Immutable
-@lombok.Value
 public final class LockOwner
 {
 	public static enum OwnerType
@@ -122,6 +121,51 @@ public final class LockOwner
 
 		this.ownerName = ownerName;
 		this.ownerType = ownerType;
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return new HashcodeBuilder()
+				.append(ownerName)
+				.append(ownerType)
+				.toHashcode();
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		final LockOwner other = EqualsBuilder.getOther(this, obj);
+		if (other == null)
+		{
+			return false;
+		}
+
+		return new EqualsBuilder()
+				.append(ownerName, other.ownerName)
+				.append(ownerType, other.ownerType)
+				.isEqual();
+	}
+
+	public String getOwnerName()
+	{
+		return ownerName;
+	}
+
+	public OwnerType getOwnerType()
+	{
+		return ownerType;
 	}
 
 	public boolean isRealOwner()

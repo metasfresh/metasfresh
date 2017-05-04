@@ -48,7 +48,7 @@ public class PlainTrxSavepoint implements ITrxSavepoint
 	{
 		return getClass().getSimpleName() + "["
 				+ "name=" + name
-				+ ", trx=" + trx.getTrxName() // prevent stackoverflow
+				+ ", trx=" + trx
 				+ "]";
 	}
 

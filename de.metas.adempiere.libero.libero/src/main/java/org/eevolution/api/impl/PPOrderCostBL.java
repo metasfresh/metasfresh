@@ -40,14 +40,13 @@ import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IResourceDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Cost;
 import org.eevolution.model.I_PP_Order_Node;
 import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
-import de.metas.material.planning.IResourceProductService;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {
@@ -113,10 +112,10 @@ public class PPOrderCostBL implements IPPOrderCostBL
 			}
 
 			//
-			final I_M_Product resourceProduct = Services.get(IResourceProductService.class).retrieveProductForResource(node.getS_Resource());
+			final I_M_Product resourceProduct = Services.get(IResourceDAO.class).retrieveProductForResource(ctx, S_Resource_ID);
 			if (resourceProduct == null)
 			{
-				// shall not happen, but we can skip it for now
+				// shall not happen, but we can skipt it for now
 				continue;
 			}
 

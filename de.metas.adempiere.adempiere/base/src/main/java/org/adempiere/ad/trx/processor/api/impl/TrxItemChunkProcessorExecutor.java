@@ -22,6 +22,7 @@ package org.adempiere.ad.trx.processor.api.impl;
  * #L%
  */
 
+import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -191,7 +192,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 				{
 					rollbackChunkTrx();
 				}
-				catch (Throwable e)
+				catch (Exception e)
 				{
 					// it's futile to log severe/throw any exception here but if we reach this point, another exception was already thrown
 					logger.debug("Error while rolling back because the transaction was not already rolled back. Check console, you shall have other errors.", e);
@@ -259,7 +260,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			InterfaceWrapperHelper.setTrxName(item, chunkCtx.getTrxName(), ignoreIfNotHandled);
 			processor.process(item);
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
 			chunkHasErrors = true;
 			exceptionHandler.onItemError(e, item);
@@ -291,7 +292,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			chunkOpen = true;
 			chunkHasErrors = false;
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
 			chunkOpen = false;
 			rollbackChunkTrx();
@@ -311,7 +312,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			processor.completeChunk();
 			completed = true;
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
 			exceptionHandler.onCompleteChunkError(e);
 		}
@@ -339,7 +340,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		{
 			commitChunkTrx();
 		}
-		catch (final Throwable commitEx)
+		catch (final Exception commitEx)
 		{
 			boolean rollbackOK = false;
 			try
@@ -373,7 +374,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		{
 			processor.cancelChunk();
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
 			exceptionHandler.onCancelChunkError(e);
 
@@ -470,7 +471,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			{
 				chunkTrx.commit(true);
 			}
-			catch (final Throwable e)
+			catch (final SQLException e)
 			{
 				throw DBException.wrapIfNeeded(e);
 			}

@@ -52,10 +52,9 @@ import org.eevolution.model.I_PP_Order_Workflow;
 import org.eevolution.model.I_PP_WF_Node_Asset;
 import org.eevolution.model.I_PP_WF_Node_Product;
 import org.eevolution.model.MPPOrderNode;
+import org.eevolution.model.RoutingService;
+import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_Order_Workflow;
-
-import de.metas.material.planning.RoutingService;
-import de.metas.material.planning.RoutingServiceFactory;
 
 public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 {
@@ -263,12 +262,6 @@ public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 		RoutingService routingService = RoutingServiceFactory.get().getRoutingService(orderNode.getAD_Client_ID());
 		BigDecimal workingTime = routingService.estimateWorkingTime(orderNode, qtyOrdered);
 		orderNode.setDurationRequiered(workingTime.intValueExact());
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver(final I_PP_Order_Node node)
-	{
-		return node.getQtyRequiered().subtract(node.getQtyDelivered());
 	}
 
 	/**

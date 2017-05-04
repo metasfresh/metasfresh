@@ -1,14 +1,10 @@
 package org.eevolution.mrp.api;
 
-import java.util.List;
-
-import org.eevolution.model.I_PP_MRP;
-
 /*
  * #%L
  * de.metas.adempiere.libero.libero
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,17 +22,34 @@ import org.eevolution.model.I_PP_MRP;
  * #L%
  */
 
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
+import org.eevolution.model.I_PP_MRP;
+import org.eevolution.mrp.spi.IMRPSupplyProducer;
+
 /**
- * Request object used to group all parameters needed by {@link org.eevolution.mrp.spi.IMRPSupplyProducer#createSupply(IMRPCreateSupplyRequest)} in order to create the supply document.
+ * Request object used to group all parameters needed by {@link IMRPSupplyProducer#createSupply(IMRPCreateSupplyRequest)} in order to create the supply document.
  * 
- * @author metas-dev <dev@metasfresh.com>
+ * @author tsa
  *
  */
-public interface IMRPCreateSupplyRequest extends de.metas.material.planning.IMaterialRequest
+public interface IMRPCreateSupplyRequest
 {
+	/** @return context */
+	IMRPContext getMRPContext();
+
 	/** @return MRP executor which is running */
 	IMRPExecutor getMRPExecutor();
-	
+
+	/** @return how much quantity is needed to supply */
+	BigDecimal getQtyToSupply();
+
+	/** @return demand date; i.e. the date when quantity to supply is really needed */
+	Date getDemandDate();
+
 	/**
 	 * Gets single MRP Demand Record that needs to be allocated.
 	 * 
@@ -50,4 +63,14 @@ public interface IMRPCreateSupplyRequest extends de.metas.material.planning.IMat
 	 * @return all MRP Demand records
 	 */
 	List<I_PP_MRP> getMRPDemandRecords();
+
+	/**
+	 * @return C_BPartner_ID or -1
+	 */
+	int getMRPDemandBPartnerId();
+
+	/**
+	 * @return sales C_OrderLine_ID or -1
+	 */
+	int getMRPDemandOrderLineSOId();
 }

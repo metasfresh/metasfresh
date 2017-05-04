@@ -28,9 +28,6 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_MRP;
 
-import de.metas.material.planning.IMRPSegment;
-import de.metas.material.planning.IMaterialPlanningContext;
-
 /**
  * This service's implementor can hold one or more {@link IMRPExecutor}s, each one being referenced as {@link ThreadLocal} variable.
  * 
@@ -50,21 +47,21 @@ public interface IMRPExecutorService extends ISingletonService
 	 * 
 	 * @param mrpContext
 	 */
-	IMRPResult run(IMaterialPlanningContext mrpContext);
+	IMRPResult run(IMRPContext mrpContext);
 
 	/**
 	 * Execute MRP on given contexts
 	 * 
 	 * @param mrpContexts
 	 */
-	IMRPResult run(List<IMaterialPlanningContext> mrpContexts);
+	IMRPResult run(List<IMRPContext> mrpContexts);
 
 	/**
 	 * Removed all generated MRP documents and notices.
 	 * 
 	 * @param mrpContext
 	 */
-	IMRPResult cleanup(IMaterialPlanningContext mrpContext);
+	IMRPResult cleanup(IMRPContext mrpContext);
 
 	/**
 	 * Called to notify that the MRP segment changed.

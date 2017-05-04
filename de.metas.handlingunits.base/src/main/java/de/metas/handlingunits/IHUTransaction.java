@@ -25,6 +25,7 @@ package de.metas.handlingunits;
 
 import java.util.Date;
 
+import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
@@ -32,7 +33,6 @@ import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.quantity.Quantity;
 
 /**
  * Transaction Line Candidate. Use the constructor of {@link HUTransaction} to get instances.
@@ -61,16 +61,9 @@ public interface IHUTransaction
 	/**
 	 * Gets {@link #getM_HU_Item()}'s handling unit
 	 *
-	 * @return affected HU; might be null
+	 * @return affected HU
 	 */
 	I_M_HU getM_HU();
-
-	/** @see #getM_HU() */
-	default int getM_HU_ID()
-	{
-		final I_M_HU hu = getM_HU();
-		return hu == null ? -1 : hu.getM_HU_ID();
-	}
 
 	/**
 	 * Gets affected HU Item.
@@ -107,17 +100,9 @@ public interface IHUTransaction
 	 *
 	 * i.e. the product which was transfered.
 	 *
-	 * @return transaction product; never returns null
+	 * @return transaction product.
 	 */
 	I_M_Product getProduct();
-
-	/**
-	 * @see #getProduct()
-	 */
-	default int getProductId()
-	{
-		return getProduct().getM_Product_ID();
-	}
 
 	/**
 	 * Gets transaction Qty/UOM. It's value is absolute and it means:

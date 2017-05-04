@@ -201,8 +201,7 @@ public class OpenTrxBL implements IOpenTrxBL
 				if (!allowed)
 				{
 					throw new TrxConstraintException("TrxName " + trx.getTrxName() + " is not allowed. Allowed prefixes: "
-							+ constraints.getAllowedTrxNamePrefixes())
-									.setParameter("ITrxConstraints", constraints);
+							+ constraints.getAllowedTrxNamePrefixes());
 				}
 			}
 			if (constraints.getTrxTimeoutSecs() > 0)

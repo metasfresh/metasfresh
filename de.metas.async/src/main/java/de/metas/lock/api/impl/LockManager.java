@@ -101,25 +101,25 @@ public class LockManager implements ILockManager
 	@Override
 	public boolean isLocked(final int adTableId, final int recordId)
 	{
-		return getLockDatabase().isLocked(adTableId, recordId, LockOwner.ANY);
+		return getLockDatabase().isLocked(adTableId, recordId, ILock.NULL);
 	}
 
 	@Override
 	public boolean isLocked(final Class<?> modelClass, final int recordId)
 	{
-		return getLockDatabase().isLocked(modelClass, recordId, LockOwner.ANY);
+		return getLockDatabase().isLocked(modelClass, recordId, ILock.NULL);
 	}
 
 	@Override
-	public boolean isLocked(final Class<?> modelClass, final int recordId, final LockOwner lockOwner)
+	public boolean isLocked(final Class<?> modelClass, final int recordId, final ILock lockedBy)
 	{
-		return getLockDatabase().isLocked(modelClass, recordId, lockOwner);
+		return getLockDatabase().isLocked(modelClass, recordId, lockedBy);
 	}
 
 	@Override
 	public boolean isLocked(final Object model)
 	{
-		return getLockDatabase().isLocked(model, LockOwner.ANY);
+		return getLockDatabase().isLocked(model, ILock.NULL);
 	}
 
 	@Override
@@ -141,15 +141,15 @@ public class LockManager implements ILockManager
 	}
 	
 	@Override
-	public String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
+	public String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final ILock lock)
 	{
-		return getLockDatabase().getLockedWhereClause(modelClass, joinColumnNameFQ, lockOwner);
+		return getLockDatabase().getLockedWhereClause(modelClass, joinColumnNameFQ, lock);
 	}
 
 	@Override
-	public final <T> IQueryFilter<T> getLockedByFilter(final Class<T> modelClass, final LockOwner lockOwner)
+	public final <T> IQueryFilter<T> getLockedByFilter(final Class<T> modelClass, final ILock lock)
 	{
-		return getLockDatabase().getLockedByFilter(modelClass, lockOwner);
+		return getLockDatabase().getLockedByFilter(modelClass, lock);
 	}
 
 	@Override
@@ -162,11 +162,5 @@ public class LockManager implements ILockManager
 	public <T> IQueryBuilder<T> getLockedRecordsQueryBuilder(final Class<T> modelClass, final Object contextProvider)
 	{
 		return getLockDatabase().getLockedRecordsQueryBuilder(modelClass, contextProvider);
-	}
-	
-	@Override
-	public int removeAutoCleanupLocks()
-	{
-		return getLockDatabase().removeAutoCleanupLocks();
 	}
 }

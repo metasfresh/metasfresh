@@ -35,13 +35,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.api.IResourceDAO;
 import org.eevolution.exceptions.LiberoException;
+import org.eevolution.mrp.api.IMRPContext;
+import org.eevolution.mrp.api.IMRPContextFactory;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPResult;
+import org.eevolution.mrp.api.IMutableMRPContext;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.material.planning.IMRPContextFactory;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.process.JavaProcess;
 
 public abstract class AbstractMRPProcess extends JavaProcess
@@ -107,19 +107,19 @@ public abstract class AbstractMRPProcess extends JavaProcess
 	@Override
 	protected final String doIt() throws Exception
 	{
-		final IMaterialPlanningContext mrpContext = createMRPContext();
+		final IMRPContext mrpContext = createMRPContext();
 		final IMRPResult mrpResult = run(mrpContext);
 		return mrpResult.getSummary(getCtx());
 	}
 
-	protected abstract IMRPResult run(final IMaterialPlanningContext mrpContext);
+	protected abstract IMRPResult run(final IMRPContext mrpContext);
 
 	/**
-	 * Creates {@link IMaterialPlanningContext} from process parameters.
+	 * Creates {@link IMRPContext} from process parameters.
 	 * 
 	 * @return created MRP Context
 	 */
-	protected final IMaterialPlanningContext createMRPContext()
+	protected final IMRPContext createMRPContext()
 	{
 		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
 
