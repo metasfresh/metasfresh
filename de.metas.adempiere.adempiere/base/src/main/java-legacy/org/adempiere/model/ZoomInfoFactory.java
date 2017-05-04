@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: ADempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2009 www.metas.de                                            *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: ADempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2009 www.metas.de *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.model;
 
@@ -42,7 +42,7 @@ import de.metas.logging.LogManager;
  *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
-public class ZoomInfoFactory implements IZoomProvider
+public class ZoomInfoFactory
 {
 	public static final ZoomInfoFactory get()
 	{
@@ -74,6 +74,15 @@ public class ZoomInfoFactory implements IZoomProvider
 		default boolean isSOTrx()
 		{
 			return Env.isSOTrx(getCtx());
+		}
+
+		boolean hasField(String columnName);
+
+		Object getFieldValue(String columnName);
+
+		default boolean getFieldValueAsBoolean(final String columnName)
+		{
+			return DisplayType.toBoolean(getFieldValue(columnName));
 		}
 	}
 
@@ -215,6 +224,18 @@ public class ZoomInfoFactory implements IZoomProvider
 
 			return Evaluatees.ofCtx(privateCtx, Env.WINDOW_None, false);
 		}
+
+		@Override
+		public boolean hasField(String columnName)
+		{
+			return po.getPOInfo().hasColumnName(columnName);
+		}
+
+		@Override
+		public Object getFieldValue(String columnName)
+		{
+			return po.get_Value(columnName);
+		}
 	}
 
 	/**
@@ -269,7 +290,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			return _zoomInfoId;
 		}
-		
+
 		public ITranslatableString getLabel()
 		{
 			final ITranslatableString postfix = ImmutableTranslatableString.constant(" (#" + getRecordCount() + ")");
@@ -294,6 +315,8 @@ public class ZoomInfoFactory implements IZoomProvider
 
 	private static final Logger logger = LogManager.getLogger(ZoomInfoFactory.class);
 
+	private boolean factAcctZoomProviderEnabled = true;
+
 	private ZoomInfoFactory()
 	{
 		super();
@@ -313,8 +336,7 @@ public class ZoomInfoFactory implements IZoomProvider
 	/**
 	 * Retrieves all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
-	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	private List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		logger.debug("source={}", source);
 
@@ -390,7 +412,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		}
 	}
 
-	private static List<IZoomProvider> retrieveZoomProviders(final String tableName)
+	private List<IZoomProvider> retrieveZoomProviders(final String tableName)
 	{
 		final List<IZoomProvider> zoomProviders = new ArrayList<>();
 
@@ -398,7 +420,21 @@ public class ZoomInfoFactory implements IZoomProvider
 		// it will pick only the first one (i.e. the one from the first provider).
 		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
+		if (factAcctZoomProviderEnabled)
+		{
+			zoomProviders.add(FactAcctZoomProvider.instance);
+		}
 
 		return zoomProviders;
+	}
+
+	/**
+	 * Disable the {@link FactAcctZoomProvider} (which is enabled by default
+	 * @deprecated Needed only for Swing
+	 */
+	@Deprecated
+	public void disableFactAcctZoomProvider()
+	{
+		factAcctZoomProviderEnabled = false;
 	}
 }

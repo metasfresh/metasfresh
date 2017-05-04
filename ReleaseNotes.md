@@ -37,6 +37,12 @@ Here come the actual release notes:
     * Adding the Activity window to WebUI.
   * [#1418](https://github.com/metasfresh/metasfresh/issues/1418) Window for c_bank in WebUI
     * Adding the Bank Master data window definition to WebUI.
+  * [#1419](https://github.com/metasfresh/metasfresh/issues/1419) Window for c_currency in WebUI
+    * Adding the Currency Master data window definition to WebUI.
+  * [#1429](https://github.com/metasfresh/metasfresh/issues/1429) Window for Bank Account in WebUI
+    * Created a new Bank Account window and added to WebUI
+  * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
+    * Adding the Currency Conversion rate window to WebUI.
   
 # metasfresh 5.7 (2017-17)
 
