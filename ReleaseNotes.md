@@ -22,12 +22,14 @@ Here come the actual release notes:
   * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
     * Adding the Translation of Request Type in webUI for language en_US.
+  * [#1398](https://github.com/metasfresh/metasfresh/issues/1398) Take out "New" in C_DocTypeTarget_ID in PP_Order
   * [#1399](https://github.com/metasfresh/metasfresh/issues/1399) DocumentNo not generated for PP_Orders in WebUI
     * Adding Document No. control to all manufacturing Document Types.
   * [#1400](https://github.com/metasfresh/metasfresh/issues/1400) DocumentNo not generated for empties in WebUI
     * Adding the Document No. control to the empties return document.
   * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
     * Translating the jump Navigation of "New Request" to de_DE.
+  * [#1403](https://github.com/metasfresh/metasfresh/issues/1403) technical: refactor TaxNotFoundException
   * [#1405](https://github.com/metasfresh/metasfresh/issues/1405) Adjust Empties Return Window to mandatory field grouping layout
     * Adjusting Empties Return Window to mandatory Field primary layout.
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
@@ -37,7 +39,28 @@ Here come the actual release notes:
     * Adding the Activity window to WebUI.
   * [#1418](https://github.com/metasfresh/metasfresh/issues/1418) Window for c_bank in WebUI
     * Adding the Bank Master data window definition to WebUI.
+  * [#1419](https://github.com/metasfresh/metasfresh/issues/1419) Window for c_currency in WebUI
+    * Adding the Currency Master data window definition to WebUI.
+  * [#1429](https://github.com/metasfresh/metasfresh/issues/1429) Window for Bank Account in WebUI
+    * Created a new Bank Account window and added to WebUI
+  * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
+    * Adding the Currency Conversion rate window to WebUI.
+  * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
+  * [#1438](https://github.com/metasfresh/metasfresh/issues/1438) Fix spring scanBasePackageClasses and introduce profiles
+
+* metasfresh-webui-api
+  * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
   
+## Fixes
+
+* metasfresh-backend
+  * [#1353](https://github.com/metasfresh/metasfresh/issues/1353) Problem with C_Order filtering in M_ShipmentSchedule
+  * [#1440](https://github.com/metasfresh/metasfresh/issues/1440) ClassCastException: CompositeQueryFilter cannot be cast to SqlQueryFilter 
+  
+* metasfresh-webui-api
+  * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
+  * [#339](https://github.com/metasfresh/metasfresh-webui-api/issues/339) Sales Order also show Purchase Orders
+ 
 # metasfresh 5.7 (2017-17)
 
 ## Features

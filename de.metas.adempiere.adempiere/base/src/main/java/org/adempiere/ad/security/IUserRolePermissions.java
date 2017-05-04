@@ -1,33 +1,10 @@
 package org.adempiere.ad.security;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.security.permissions.Constraint;
+import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.security.permissions.InfoWindowPermission;
 import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.security.permissions.Permission;
@@ -49,7 +26,6 @@ import de.metas.document.engine.IDocActionOptionsContext;
 public interface IUserRolePermissions
 {
 	int SYSTEM_ROLE_ID = 0;
-	Set<Integer> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<Integer>()); // NOTE: new instance to make sure it's unique
 
 	Permission PERMISSION_AccessAllOrgs = ResourceAsPermission.ofName("IsAccessAllOrgs");
 	Permission PERMISSION_CanReport = ResourceAsPermission.ofName("IsCanReport");
@@ -136,6 +112,9 @@ public interface IUserRolePermissions
 
 	Boolean checkWindowAccess(int AD_Window_ID);
 
+	/** @return window permissions; never return null */
+	ElementPermission checkWindowPermission(int AD_Window_ID);
+
 	Boolean getWindowAccess(int AD_Window_ID);
 
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);
@@ -170,8 +149,22 @@ public interface IUserRolePermissions
 	 * @param AD_Table_ID record table
 	 * @param Record_ID record id
 	 * @return true if you can view
+	 * 
+	 * @deprecated consider using {@link #checkCanView(int, int, int, int)}
 	 **/
+	@Deprecated
 	boolean canView(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID);
+
+	/**
+	 * Checks if given record can be viewed by this role.
+	 * 
+	 * @param AD_Client_ID
+	 * @param AD_Org_ID
+	 * @param AD_Table_ID
+	 * @param Record_ID
+	 * @return error message or <code>null</code> if it's OK and can be viewed
+	 */
+	String checkCanView(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID);
 
 	/**
 	 * Checks if given record can be updated by this role.
@@ -180,12 +173,24 @@ public interface IUserRolePermissions
 	 * @param AD_Org_ID record's AD_Org_ID
 	 * @param AD_Table_ID record table
 	 * @param Record_ID record id
-	 * @param saveWarning true if a warning shall be logged and saved (AccessTableNoUpdate).
+	 * @param createError true if a warning shall be logged and saved (AccessTableNoUpdate).
 	 * @return true if you can update
+	 * 
+	 * @deprecated consider using {@link #checkCanUpdate(int, int, int, int)}
 	 **/
+	@Deprecated
 	boolean canUpdate(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID, boolean createError);
-
-	boolean isRecordAccess(int AD_Table_ID, int Record_ID, boolean ro);
+	
+	/**
+	 * Checks if given record can be updated by this role.
+	 *
+	 * @param AD_Client_ID record's AD_Client_ID
+	 * @param AD_Org_ID record's AD_Org_ID
+	 * @param AD_Table_ID record table
+	 * @param Record_ID record id
+	 * @return error message or <code>null</code> if it's OK and can be updated
+	 **/
+	String checkCanUpdate(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID);
 
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, boolean ro);
 
@@ -196,8 +201,6 @@ public interface IUserRolePermissions
 	boolean isCanReport(int AD_Table_ID);
 
 	boolean isOrgAccess(int AD_Org_ID, boolean rw);
-
-	boolean isClientAccess(int AD_Client_ID, boolean rw);
 
 	String getClientWhere(boolean rw);
 
@@ -230,8 +233,6 @@ public interface IUserRolePermissions
 
 	UserPreferenceLevelConstraint getPreferenceLevel();
 
-	boolean isPersonalAccess();
-
 	TableAccessLevel getUserLevel();
 
 	int getStartup_AD_Form_ID();
@@ -239,8 +240,6 @@ public interface IUserRolePermissions
 	boolean isCanExport();
 
 	boolean isCanReport();
-
-	boolean isAccessAllOrgs();
 
 	boolean isAllow_Info_Product();
 
