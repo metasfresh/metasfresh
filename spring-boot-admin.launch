@@ -14,7 +14,6 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.metas.admin.SpringBootAdminApplication"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.admin"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-admin"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="${jrebel_args}"/>
 </launchConfiguration>
