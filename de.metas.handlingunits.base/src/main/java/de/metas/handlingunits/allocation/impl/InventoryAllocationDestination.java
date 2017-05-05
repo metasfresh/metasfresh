@@ -232,6 +232,10 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		// set the M_HU_PI_Item_Product from the HU
 		inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
+		
+		final BigDecimal qtyTU = hu.getM_HU_LUTU_Configuration().getQtyTU();
+		
+		inventoryLine.setQtyTU(qtyTU);
 
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
 
