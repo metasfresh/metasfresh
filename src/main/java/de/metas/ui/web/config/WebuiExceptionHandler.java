@@ -74,6 +74,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private static final String ATTR_Status = "status";
 	private static final String ATTR_Error = "error";
 	private static final String ATTR_Exception = "exception";
+	private static final String ATTR_ExceptionAttributes = "exceptionAttributes";
 	private static final String ATTR_Message = "message";
 	private static final String ATTR_Stacktrace = "trace";
 	private static final String ATTR_Path = "path";
@@ -92,7 +93,8 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	{
 		logExceptionIfNeeded(ex, handler);
 		request.setAttribute(REQUEST_ATTR_EXCEPTION, ex);
-		return null;
+
+		return null; // don't forward, go with default processing
 	}
 
 	private void logExceptionIfNeeded(final Exception ex, final Object handler)
@@ -186,6 +188,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 	private void addErrorDetails(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes, final boolean includeStackTrace)
 	{
+		//
+		// Get exception and
+		// Set "exception" attribute.
 		Throwable error = getError(requestAttributes);
 		if (error != null)
 		{
@@ -201,11 +206,24 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			}
 		}
 
+		//
+		// Set "message" attribute
 		final Object message = getAttribute(requestAttributes, RequestDispatcher.ERROR_MESSAGE);
 		if ((!StringUtils.isEmpty(message) || errorAttributes.get(ATTR_Message) == null)
 				&& !(error instanceof BindingResult))
 		{
 			errorAttributes.put(ATTR_Message, StringUtils.isEmpty(message) ? "No message available" : message);
+		}
+
+		//
+		// Set "exceptionAttributes" attribute
+		if (error instanceof AdempiereException)
+		{
+			final Map<String, Object> exceptionAttributes = ((AdempiereException)error).getParameters();
+			if (exceptionAttributes != null && !exceptionAttributes.isEmpty())
+			{
+				errorAttributes.put(ATTR_ExceptionAttributes, exceptionAttributes);
+			}
 		}
 	}
 
