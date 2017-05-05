@@ -1,6 +1,7 @@
 package de.metas.ui.web.address;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -50,6 +51,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+	private static final Optional<String> LookupTableName = Optional.of(I_C_Region.Table_Name); 
 	private static final String CACHE_PREFIX = I_C_Region.Table_Name;
 	private static final String CONTEXT_LookupTableName = I_C_Region.Table_Name;
 	private static final Set<String> PARAMETERS = ImmutableSet.of(
@@ -61,6 +63,11 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 
 	private final CCache<Integer, LookupValuesList> regionsByCountryId = CCache.newLRUCache(CACHE_PREFIX + "RegionLookupValues", 100, 0);
 
+	@Override
+	public Optional<String> getLookupTableName()
+	{
+		return LookupTableName;
+	}
 	@Override
 	public String getCachePrefix()
 	{

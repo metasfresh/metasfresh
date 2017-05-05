@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.util.Check;
 import org.compiere.util.CCache;
@@ -81,6 +82,12 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 		return MoreObjects.toStringHelper("Cached")
 				.addValue(delegate)
 				.toString();
+	}
+	
+	@Override
+	public Optional<String> getLookupTableName()
+	{
+		return delegate.getLookupTableName();
 	}
 
 	@Override
