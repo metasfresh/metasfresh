@@ -28,7 +28,9 @@ Here come the actual release notes:
   * [#796](https://github.com/metasfresh/metasfresh/issues/796) Fact Account WebUI Window Readonly
     * Including the Fact Account window to WebUI.
   * [#886](https://github.com/metasfresh/metasfresh/issues/866) Make payment callouts work in webui
+    * Implementation in WebUI to also allow the Payment Callouts there.
   * [#1315](https://github.com/metasfresh/metasfresh/issues/1315) 2D Barcode wit ad_table_id/ record_id on bestellkontrolle
+    * Add a 2D Barcode to each line of Order controll report for manufacturing and logistics. This Barcode will be used in manufacturing to scan and trigger the manufacturing Order issue/ receipt record and workflow.
   * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
     * Adjusting the Document Type setting for incoming and outgoings payment Documents. Now allowing the Document No. to be automatically create taken from Document sequences in WebUI.
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
@@ -56,7 +58,9 @@ Here come the actual release notes:
   * [#1419](https://github.com/metasfresh/metasfresh/issues/1419) Window for c_currency in WebUI
     * Adding the Currency Master data window definition to WebUI.
   * [#1424](https://github.com/metasfresh/metasfresh/issues/1424) Fresh Migration of WebUI Menu for rel. 5.8
+    * Building an updated menue in WebUI for Release 5.8
   * [#1425](https://github.com/metasfresh/metasfresh/issues/1425) make price field bigger in sales invoice document
+    * Resizing the price field in sales Invoice document, now allowing greater prices.
   * [#1429](https://github.com/metasfresh/metasfresh/issues/1429) Window for Bank Account in WebUI
     * Created a new Bank Account window and added to WebUI
   * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
@@ -64,6 +68,7 @@ Here come the actual release notes:
   * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
     * Technical Task to improve performance and redues possible caching issues.
   * [#1435](https://github.com/metasfresh/metasfresh/issues/1435) Add method for Escaping '@' char, by replacing one @ with double @@
+    * Internal Implementation, allowing to escape @ characters.
   * [#1438](https://github.com/metasfresh/metasfresh/issues/1438) Fix spring scanBasePackageClasses and introduce profiles
     * Adjusting the spring boot configurations for the different metasfresh applications to allow a better maintenance.
   * [#1442](https://github.com/metasfresh/metasfresh/issues/1442) Window for C_Doc_Outbound_Config in WebUI
