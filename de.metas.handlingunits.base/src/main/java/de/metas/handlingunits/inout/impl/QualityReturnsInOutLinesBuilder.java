@@ -11,7 +11,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -23,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.product.IProductBL;
 
 /*
@@ -86,12 +86,12 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	}
 
 	@Override
-	public QualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage)
+	public QualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage, I_M_InOutLine originInOutLine)
 	{
 		final I_M_InOut inout = getM_InOut();
 		InterfaceWrapperHelper.save(inout); // make sure inout header is saved
 
-		updateInOutLine(productStorage);
+		updateInOutLine(productStorage, originInOutLine);
 
 		return this;
 	}
@@ -102,8 +102,9 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	 * In the end assign the handling unit to the inout line and mark the HU as shipped.
 	 * 
 	 * @param productStorage
+	 * @param originInOutLine 
 	 */
-	private void updateInOutLine(final IHUProductStorage productStorage)
+	private void updateInOutLine(final IHUProductStorage productStorage, I_M_InOutLine originInOutLine)
 	{
 		// services
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -117,7 +118,7 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 
 		final I_M_Product product = productStorage.getM_Product();
 
-		final I_M_InOutLine inOutLine = getCreateInOutLine(product);
+		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine);
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
@@ -160,7 +161,7 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	 * @param product
 	 * @return
 	 */
-	private I_M_InOutLine getCreateInOutLine(final I_M_Product product)
+	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine)
 	{
 
 		// services
@@ -176,7 +177,7 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 
 		//
 		// Check if we already have a movement line for our key
-		final ArrayKey inOutLineKey = mkInOutLineKey(product);
+		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine);
 		final I_M_InOutLine existingInOutLine = _inOutLines.get(inOutLineKey);
 
 		// return the existing inout line if found
@@ -192,7 +193,9 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 		newInOutLine.setAD_Org_ID(inout.getAD_Org_ID());
 		newInOutLine.setM_InOut_ID(inout.getM_InOut_ID());
 
-		newInOutLine.setM_Product(product);
+		newInOutLine.setM_Product(originInOutLine.getM_Product());
+		
+		newInOutLine.setVendorReturn_Origin_InOutLine(originInOutLine);
 
 		// NOTE: we are not saving the inOut line
 
@@ -209,9 +212,9 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	 * @param product
 	 * @return
 	 */
-	private ArrayKey mkInOutLineKey(final I_M_Product product)
+	private ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine)
 	{
-		return Util.mkKey(product.getM_Product_ID());
+		return Util.mkKey(originInOutLine.getM_InOutLine_ID());
 	}
 
 	@Override

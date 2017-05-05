@@ -355,12 +355,17 @@ public class ZoomInfoFactory
 					//
 					// Skip if we already added a zoom info for the same window
 					final int adWindowId = zoomInfo.getAD_Window_ID();
-					if (!alreadySeenWindowIds.add(adWindowId))
-					{
-						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
-						continue;
-					}
 
+					// #1062
+					// Only consider a window already seen if it actually has record count > 0
+					if (checkRecordsCount && zoomInfo.getRecordCount() > 0)
+					{
+						if (!alreadySeenWindowIds.add(adWindowId))
+						{
+							logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
+							continue;
+						}
+					}
 					//
 					// Filter out those ZoomInfos which have ZERO records (if requested)
 					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)

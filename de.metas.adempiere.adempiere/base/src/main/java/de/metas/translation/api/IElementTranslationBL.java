@@ -1,12 +1,12 @@
-package de.metas.handlingunits.inout;
+package de.metas.translation.api;
 
-import de.metas.handlingunits.inout.impl.QualityReturnsInOutLinesBuilder;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.inout.model.I_M_InOutLine;
+import java.sql.SQLException;
+
+import org.adempiere.util.ISingletonService;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -26,25 +26,24 @@ import de.metas.inout.model.I_M_InOutLine;
  * #L%
  */
 
-public interface IQualityReturnsInOutLinesBuilder
+public interface IElementTranslationBL extends ISingletonService
 {
 
 	/**
-	 * Create quality return inout line based on the given product storage.
+	 * Method used for updating the data in the following tables:
 	 * 
-	 * @param productStorage
-	 * @param originInOutLine
-	 * @return
+	 * <li>AD_Column_TRL,
+	 * <li>AD_Process_Para_TRL,
+	 * <li>AD_Field_TRL,
+	 * <li>AD_PrintFormatItem_TRL
+	 * </li>
+	 * 
+	 * Specific columns are updated based on the similar columns from the table AD_Element_TRL, where the AD_Element_ID and the AD_Language are the given ones
+	 * 
+	 * @param elementId
+	 * @param adLanguage
+	 * @throws SQLException 
 	 */
-	QualityReturnsInOutLinesBuilder addHUProductStorage(IHUProductStorage productStorage, final I_M_InOutLine originInOutLine);
-
-	/**
-	 * Check if this builder is empty.
-	 *
-	 * A builder is considered empty, when there are no created document lines.
-	 *
-	 * @return true if empty.
-	 */
-	boolean isEmpty();
+	void updateTranslations(int elementId, String adLanguage) throws SQLException;
 
 }
