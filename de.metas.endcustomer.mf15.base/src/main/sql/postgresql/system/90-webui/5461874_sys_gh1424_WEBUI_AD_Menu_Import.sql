@@ -66,22 +66,29 @@ insert into AD_Menu
 select
 ad_menu_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, issummary, issotrx, isreadonly, action, ad_window_id, ad_workflow_id, ad_task_id, ad_process_id, ad_form_id, ad_workbench_id, entitytype, internalname, iscreatenew, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb
 from backup.WEBUI_AD_Menu t
-where not exists (select 1 from AD_Menu m where m.AD_Menu_ID=t.AD_Menu_ID);
+where
+	not exists (select 1 from AD_Menu m where m.AD_Menu_ID=t.AD_Menu_ID)
+	and (t.AD_Form_ID is null or exists(select 1 from AD_Form z where z.AD_Form_ID=t.AD_Form_ID))
+;
 --
 insert into AD_Menu_Trl
 (ad_menu_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, istranslated, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
 select
 ad_menu_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, istranslated, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb
 from backup.WEBUI_AD_Menu_Trl t
-where not exists (select 1 from AD_Menu_Trl m where m.AD_Menu_ID=t.AD_Menu_ID and m.AD_Language=t.AD_Language);
-
+where
+	not exists (select 1 from AD_Menu_Trl m where m.AD_Menu_ID=t.AD_Menu_ID and m.AD_Language=t.AD_Language)
+	and exists (select 1 from AD_Menu z where z.AD_Menu_ID=t.AD_Menu_ID)
+;
 
 
 
 --
 -- Delete orphan trees of webui AD_Tree_ID
 delete from AD_TreeNodeMM n
-where n.Node_ID in (
+where 
+n.AD_Tree_ID=1000039
+and n.Node_ID in (
 	select t.Node_ID
 	from get_AD_TreeNodeMM_Paths(1000039, null) t
 	where not IsCycle and t.Root_ID <> 0
