@@ -10,7 +10,7 @@
 def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
-	
+
 	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
 	//
 	// Here i'm not checking if the build job exists but if the respective branch on github exists. If the branch is there, then I assume that the multibranch plugin also created the job
@@ -22,7 +22,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		// Perhaps you forgot to surround the code with a step that provides this, such as: node
 		// ...
 		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
-		
+
 		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
 	}
 
@@ -31,24 +31,24 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
 		jobName = jobFolderName + "/" + upstreamBranch
 	}
-	else 
+	else
 	{
 		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
 		jobName = jobFolderName + "/master"
 	}
-	
+
 	// I also tried
-	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name] 
+	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name]
 	// which worked from chrome, also for metas-dev.
 	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
 	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
 	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
-	
-	// and I also tried inspecting the list returned by 
+
+	// and I also tried inspecting the list returned by
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
-	
-	build job: jobName, 
+
+	build job: jobName,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_BUILD_ID', value: buildId),
@@ -64,20 +64,20 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-		string(defaultValue: '', 
+		string(defaultValue: '',
 			description: '''If this job is invoked via an updstream build job, than that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
+<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
 		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
-Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''', 
+Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
-		string(defaultValue: '', 
-			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
+		string(defaultValue: '',
+			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>',
 			name: 'MF_BUILD_ID')
-	]), 
+	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
@@ -141,7 +141,7 @@ currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRAN
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
 
 
-timestamps 
+timestamps
 {
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -149,53 +149,49 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	{
 		// checkout our code
 		checkout([
-			$class: 'GitSCM', 
-			branches: [[name: "${env.BRANCH_NAME}"]], 
-			doGenerateSubmoduleConfigurations: false, 
+			$class: 'GitSCM',
+			branches: [[name: "${env.BRANCH_NAME}"]],
+			doGenerateSubmoduleConfigurations: false,
 			extensions: [
 				[$class: 'CleanCheckout']
-			], 
-			submoduleCfg: [], 
+			],
+			submoduleCfg: [],
 			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-admin.git']]
 		])
 	}
 
-    configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+    configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
-        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
+        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
-            stage('Set artifact versions') 
+            stage('Set artifact versions')
             {
                 // set the artifact version of everything below the pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+								sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+								sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
             }
-            
-			stage('Build metasfresh-admin') 
+
+						stage('Build metasfresh-admin')
             {
-        		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-        		sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-				
-				// there are no tests
-				// junit '**/target/surefire-reports/*.xml'
+        			sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy docker:build -DpushImage"
             }
 		}
 	}
-   
+/*
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	{
-		stage('Invoke downstream job') 
+		stage('Invoke downstream job')
 		{
-			invokeDownStreamJobs('metasfresh', MF_BUILD_ID, MF_UPSTREAM_BRANCH, false); // wait=false 
+			invokeDownStreamJobs('metasfresh', MF_BUILD_ID, MF_UPSTREAM_BRANCH, false); // wait=false
 		}
 	}
 	else
 	{
 		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
 	}
-
+*/
 	// clean up the work space, including the local maven repositories that the withMaven steps created
 	// don't clean up the work space..we do it when we check out next time
 	// step([$class: 'WsCleanup', cleanWhenFailure: false])
 } // node
-} // timestamps   
+} // timestamps
