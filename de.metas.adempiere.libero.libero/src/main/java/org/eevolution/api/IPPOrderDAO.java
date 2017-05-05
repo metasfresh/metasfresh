@@ -65,4 +65,10 @@ public interface IPPOrderDAO extends ISingletonService
 	 * @return manufacturing orders
 	 */
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(Properties ctx, int warehouseId);
+	
+	/**
+	 * @param orderLineId
+	 * @return PP_Order_ID or -1 if not found.
+	 */
+	int retrievePPOrderIdByOrderLineId(final int orderLineId);
 }
