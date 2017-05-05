@@ -20,9 +20,11 @@ Here come the actual release notes:
   * [#796](https://github.com/metasfresh/metasfresh/issues/796) Fact Account WebUI Window Readonly
     * Including the Fact Account window to WebUI.
   * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
+    * Adjusting the Document Type setting for incoming and outgoings payment Documents. Now allowing the Document No. to be automatically create taken from Document sequences in WebUI.
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
     * Adding the Translation of Request Type in webUI for language en_US.
   * [#1398](https://github.com/metasfresh/metasfresh/issues/1398) Take out "New" in C_DocTypeTarget_ID in PP_Order
+    * Adjusted the behaviot of Manufacturing Order Document when manually created. Taken out the Document Target "New", which only confuses user when selectable.
   * [#1399](https://github.com/metasfresh/metasfresh/issues/1399) DocumentNo not generated for PP_Orders in WebUI
     * Adding Document No. control to all manufacturing Document Types.
   * [#1400](https://github.com/metasfresh/metasfresh/issues/1400) DocumentNo not generated for empties in WebUI
@@ -30,11 +32,13 @@ Here come the actual release notes:
   * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
     * Translating the jump Navigation of "New Request" to de_DE.
   * [#1403](https://github.com/metasfresh/metasfresh/issues/1403) technical: refactor TaxNotFoundException
+    * Technical Task to make the Tax selection easier and more robust in background implementation.
   * [#1405](https://github.com/metasfresh/metasfresh/issues/1405) Adjust Empties Return Window to mandatory field grouping layout
     * Adjusting Empties Return Window to mandatory Field primary layout.
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
     * Creating the initial Layout for the Material Candidates Window in WebUI.
   * [#1411](https://github.com/metasfresh/metasfresh/issues/1411) Possible 1:1 switch for Data Lifecycle Management users
+    * New feature to allow individual users to be switched on/ off for the Data Lifecycle Management functionality. Before it was only possible to switch all users on for the same environment.
   * [#1417](https://github.com/metasfresh/metasfresh/issues/1417) Window for c_activity in WebUI
     * Adding the Activity window to WebUI.
   * [#1418](https://github.com/metasfresh/metasfresh/issues/1418) Window for c_bank in WebUI
@@ -46,9 +50,19 @@ Here come the actual release notes:
   * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
     * Adding the Currency Conversion rate window to WebUI.
   * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
+    * Technical Task to improve performance and redues possible caching issues.
   * [#1438](https://github.com/metasfresh/metasfresh/issues/1438) Fix spring scanBasePackageClasses and introduce profiles
+    * Adjusting the spring boot configurations for the different metasfresh applications to allow a better maintenance.
+  * #1442(https://github.com/metasfresh/metasfresh/issues/1442) Window for C_Doc_Outbound_Config in WebUI
+    * This new Window in WebUI allows to do the configuration of Outbound Documents.
+  * [#1444](https://github.com/metasfresh/metasfresh/issues/1444) Window for C_Doc_Outbound_Log in WebUI
+    * New Window for the maintenance of outbound Documents in webUI.
   * [#1446](https://github.com/metasfresh/metasfresh/issues/1446) Add filter to currency conversion window in WebUI
     * Adding Filter criteria to currency conversion window.
+  * [#1451](https://github.com/metasfresh/metasfresh/issues/1451) Add scale Price Tab in Window Product Price
+    * Adding the Scale Price Tab in Product Price Window on WebUI.
+  * [#1456](https://github.com/metasfresh/metasfresh/issues/1456) Translation of Initial Setup Wizard Process Window and Menu entry
+    * Translation of Initial Client Setup Added to WebUI Menu for language en_US
 
 * metasfresh-webui-api
   * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
@@ -57,11 +71,18 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1353](https://github.com/metasfresh/metasfresh/issues/1353) Problem with C_Order filtering in M_ShipmentSchedule
+    * Fixes a Bug when filtering Document No. and more than 1 exact result is returned. Added validation rule to exclude Purchase Orders from Search.
   * [#1440](https://github.com/metasfresh/metasfresh/issues/1440) ClassCastException: CompositeQueryFilter cannot be cast to SqlQueryFilter 
+    * Fixes a Bug that was introduced in Data Lifecycle Task and cause a Null Pointer Exception in Doc Outbound eMail functionality .
   
 * metasfresh-webui-api
   * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
   * [#339](https://github.com/metasfresh/metasfresh-webui-api/issues/339) Sales Order also show Purchase Orders
+  
+* metasfresh-webui-frontend
+  * [#701](https://github.com/metasfresh/metasfresh-webui-frontend/issues/701) "Filter" panel does not disappear
+  * [#703](https://github.com/metasfresh/metasfresh-webui-frontend/issues/703) leave the page message on request modal
+  * [#704](https://github.com/metasfresh/metasfresh-webui-frontend/issues/704) request modal saving is loading 4 tabs
  
 # metasfresh 5.7 (2017-17)
 
