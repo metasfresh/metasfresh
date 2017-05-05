@@ -78,9 +78,6 @@ class Breadcrumb extends Component {
             {index ? <span className="divider">/</span> : null}
             <div className="header-btn tooltip-parent">
                 <div
-                    title={(index && menu.children.captionBreadcrumb) ?
-                        menu.children.captionBreadcrumb : ''
-                    }
                     className={'header-item-container pointer ' +
                         (menuOverlay === menu.nodeId ?
                             'header-item-open ' : '') +
