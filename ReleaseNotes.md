@@ -55,6 +55,7 @@ Here come the actual release notes:
     * Adding the Bank Master data window definition to WebUI.
   * [#1419](https://github.com/metasfresh/metasfresh/issues/1419) Window for c_currency in WebUI
     * Adding the Currency Master data window definition to WebUI.
+  * [#1424](https://github.com/metasfresh/metasfresh/issues/1424) Fresh Migration of WebUI Menu for rel. 5.8
   * [#1425](https://github.com/metasfresh/metasfresh/issues/1425) make price field bigger in sales invoice document
   * [#1429](https://github.com/metasfresh/metasfresh/issues/1429) Window for Bank Account in WebUI
     * Created a new Bank Account window and added to WebUI
