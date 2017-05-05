@@ -115,6 +115,9 @@ Here come the actual release notes:
     * Fixes a Role Permission issue when browsing and editing data.
   * [#342](https://github.com/metasfresh/metasfresh-webui-api/issues/342) Exception in WebUI when opening initial Doc Outbound window
     * Fixes a Bug that occured when opeing the new Doc Outbound window in WebUI.
+  * [#345](https://github.com/metasfresh/metasfresh-webui-api/issues/345) Batch entry not working in order
+  * [#346](https://github.com/metasfresh/metasfresh-webui-api/issues/346) Zoom into error
+
 
 * metasfresh-webui-frontend
   * [#675](https://github.com/metasfresh/metasfresh-webui-frontend/issues/675) Icons for manufacturing components
