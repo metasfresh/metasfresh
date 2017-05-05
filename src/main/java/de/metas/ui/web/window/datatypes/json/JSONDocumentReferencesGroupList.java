@@ -99,6 +99,7 @@ public class JSONDocumentReferencesGroupList
 	@JsonProperty("groups")
 	private final List<JSONDocumentReferencesGroup> groups;
 
+	// TODO: delete this property after https://github.com/metasfresh/metasfresh-webui-frontend/issues/719 is implemented.
 	@JsonProperty("references")
 	@Deprecated
 	private final List<JSONDocumentReference> references;
