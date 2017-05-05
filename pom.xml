@@ -19,7 +19,6 @@
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
 		<start-class>de.metas.admin.SpringBootAdminApplication</start-class>
-		<docker.image.prefix>metasfresh</docker.image.prefix>
 	</properties>
 
 	<dependencyManagement>
