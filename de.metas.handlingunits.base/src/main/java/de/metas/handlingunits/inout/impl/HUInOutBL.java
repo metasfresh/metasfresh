@@ -237,9 +237,9 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public IReturnsInOutProducer createQualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU> hus)
+	public IReturnsInOutProducer createQualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
 	{
-		return new QualityReturnsInOutProducer(ctx, hus);
+		return new QualityReturnsInOutProducer(ctx, huAssignments);
 	}
 
 	@Override
@@ -248,7 +248,7 @@ public class HUInOutBL implements IHUInOutBL
 
 		// services
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final Map<Integer, List<I_M_HU>> partnerstoHUs = new HashMap<>();
+		final Map<Integer, List<I_M_HU_Assignment>> partnerstoHUAssignments = new HashMap<>();
 
 		// inoutline table id
 		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class);
@@ -268,27 +268,27 @@ public class HUInOutBL implements IHUInOutBL
 
 				final int bpartnerID = inOut.getC_BPartner_ID();
 
-				List<I_M_HU> husForPartner = partnerstoHUs.get(bpartnerID);
+				List<I_M_HU_Assignment> huAssignmentsForPartner = partnerstoHUAssignments.get(bpartnerID);
 
-				if (husForPartner == null)
+				if (huAssignmentsForPartner == null)
 				{
-					husForPartner = new ArrayList<I_M_HU>();
-					partnerstoHUs.put(bpartnerID, husForPartner);
+					huAssignmentsForPartner = new ArrayList<I_M_HU_Assignment>();
+					partnerstoHUAssignments.put(bpartnerID, huAssignmentsForPartner);
 				}
 				
-				husForPartner.add(hu);
+				huAssignmentsForPartner.add(assignment);
 			}
 		}
 
 		// there will be as many return inouts as there are partners
 
-		Set<Integer> keySet = partnerstoHUs.keySet();
+		Set<Integer> keySet = partnerstoHUAssignments.keySet();
 
 		I_M_InOut inOut = null;
 
 		for (final int partnerId : keySet)
 		{
-			inOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUs.get(partnerId), warehouse, movementDate);
+			inOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
 		}
 
 		// return the last inout that was created
@@ -298,6 +298,8 @@ public class HUInOutBL implements IHUInOutBL
 
 		return huInOut;
 	}
+	
+	
 
 	/**
 	 * Create vendor return producer, set the details and use it to create the vendor return inout.
@@ -306,13 +308,13 @@ public class HUInOutBL implements IHUInOutBL
 	 * @param hus
 	 * @return
 	 */
-	private I_M_InOut createInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	private I_M_InOut createInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU_Assignment> huAssignments, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(ctx, hus);
+		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(ctx, huAssignments);
 		producer.setC_BPartner(partner);
 
 		final I_C_BPartner_Location shipToLocation = bpartnerDAO.retrieveShipToLocation(ctx, partnerId, ITrx.TRXNAME_None);
@@ -325,6 +327,10 @@ public class HUInOutBL implements IHUInOutBL
 
 		producer.setMovementDate(movementDate);
 
+		// There will be one return inout for each partner
+		// The return inout lines will be created based on the origin inoutlines (from receipts)
+	
+		
 		//
 		// Create Shipment document and return it
 		final I_M_InOut inOut = producer.create();

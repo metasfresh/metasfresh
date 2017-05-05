@@ -16,7 +16,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1209179945L;
+	private static final long serialVersionUID = -788188880L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
@@ -33,9 +33,9 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 // @M_Locator_ID@
 			setM_Product_ID (0);
 			setProcessed (false);
-			setQtyBook (Env.ZERO);
-			setQtyCount (Env.ZERO);
-			setQtyCsv (Env.ZERO);
+			setQtyBook (BigDecimal.ZERO);
+			setQtyCount (BigDecimal.ZERO);
+			setQtyCsv (BigDecimal.ZERO);
         } */
     }
 
@@ -86,6 +86,43 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	public int getC_Charge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -412,7 +449,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBook);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -434,7 +471,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -453,7 +490,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCsv);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -475,7 +512,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInternalUse);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
