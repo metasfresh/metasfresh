@@ -10,14 +10,14 @@
 	</parent>
 
 	<groupId>de.metas.admin.webui</groupId>
-	<artifactId>de.metas.admin.webui</artifactId>
+	<artifactId>metasfresh-admin</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
 	<version>1.0.0</version>
 
 	<properties>
-		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
-		<spring-boot-admin.version>1.3.0</spring-boot-admin.version>
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
 		<start-class>de.metas.admin.SpringBootAdminApplication</start-class>
 	</properties>
 
@@ -35,8 +35,6 @@
 	</dependencyManagement>
 
 	<dependencies>
-
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -51,19 +49,11 @@
 			<artifactId>spring-boot-admin-server-ui</artifactId>
 			<version>${spring-boot-admin.version}</version>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -82,5 +72,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
