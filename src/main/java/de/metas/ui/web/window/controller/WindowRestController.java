@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +27,8 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.menu.MenuTree;
+import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -35,10 +39,11 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -99,6 +104,9 @@ public class WindowRestController
 
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
+	
+	@Autowired
+	private MenuTreeRepository menuTreeRepository;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -115,9 +123,10 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(windowId)
-				.getLayout();
+		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
+//		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions()); // FIXME commented for debugging
+		
+		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
@@ -452,17 +461,27 @@ public class WindowRestController
 	}
 
 	@GetMapping(value = "/{windowId}/{documentId}/references")
-	public JSONDocumentReferencesList getDocumentReferences(
+	public JSONDocumentReferencesGroupList getDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
 	)
 	{
 		userSession.assertLoggedIn();
-		
+
+		// Get document references
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
-		return JSONDocumentReferencesList.of(documentReferences, newJSONOptions().build());
+		if(documentReferences.isEmpty())
+		{
+			return JSONDocumentReferencesGroupList.EMPTY;
+		}
+
+		// Organize document references in groups (by top level menu) and return them as JSON
+		final JSONOptions jsonOpts = newJSONOptions().build();
+		final MenuTree menuTree = menuTreeRepository.getMenuTree(userSession.getUserRolePermissionsKey(), jsonOpts.getAD_Language());
+		final String othersMenuCaption = Services.get(IMsgBL.class).translatable("DocumentReferences.group.Others").translate(jsonOpts.getAD_Language());
+		return JSONDocumentReferencesGroupList.of(documentReferences, menuTree, othersMenuCaption, jsonOpts);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")

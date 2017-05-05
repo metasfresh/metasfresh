@@ -29,6 +29,7 @@ import com.google.common.cache.RemovalNotification;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -120,11 +121,9 @@ public class DocumentCollection
 	
 	public <R> R forDocumentReadonly(final DocumentPath documentPath, final Function<Document, R> documentProcessor)
 	{
-		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
-
-		try (final IAutoCloseable readLock = rootDocuments.getUnchecked(rootDocumentKey).lockForReading())
-		{
-			final Document rootDocument = rootDocuments.getUnchecked(rootDocumentKey);
+		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
+		
+		return forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
 			if (documentPath.isRootDocument())
 			{
 				return documentProcessor.apply(rootDocument);
@@ -132,13 +131,15 @@ public class DocumentCollection
 			else if (documentPath.isSingleIncludedDocument())
 			{
 				final Document includedDocument = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+				DocumentPermissionsHelper.assertCanView(includedDocument, UserSession.getCurrentPermissions());
+				
 				return documentProcessor.apply(includedDocument);
 			}
 			else
 			{
 				throw new InvalidDocumentPathException(documentPath);
 			}
-		}
+		});
 	}
 	
 	public <R> R forRootDocumentReadonly(final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
@@ -148,6 +149,8 @@ public class DocumentCollection
 		try (final IAutoCloseable readLock = rootDocuments.getUnchecked(rootDocumentKey).lockForReading())
 		{
 			final Document rootDocument = rootDocuments.getUnchecked(rootDocumentKey);
+			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
+			
 			return rootDocumentProcessor.apply(rootDocument);
 		}
 	}
@@ -170,6 +173,7 @@ public class DocumentCollection
 			else
 			{
 				document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
 			}
 			
 			return documentProcessor.apply(document);
@@ -211,6 +215,8 @@ public class DocumentCollection
 				rootDocument = rootDocuments.getUnchecked(rootDocumentKey)
 						.refreshFromRepositoryIfStaled()
 						.copy(CopyMode.CheckOutWritable);
+				
+				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
 			}
 
 			//

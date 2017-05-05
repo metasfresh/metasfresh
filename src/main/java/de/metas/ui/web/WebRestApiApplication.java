@@ -1,7 +1,9 @@
 package de.metas.ui.web;
 
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
@@ -23,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
@@ -121,6 +124,9 @@ public class WebRestApiApplication
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.WEBUI);
+		
+		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
+		
 		return adempiere;
 	}
 

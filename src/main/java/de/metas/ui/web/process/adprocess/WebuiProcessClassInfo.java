@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
+import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.ListLookupDescriptor;
@@ -122,6 +123,8 @@ final class WebuiProcessClassInfo
 	private static WebuiProcessClassInfo createWebuiProcessClassInfo(final Class<?> processClass) throws Exception
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(processClass);
+		
+		final WebuiProcess webuiProcessAnn = processClass.getAnnotation(WebuiProcess.class);
 
 		@SuppressWarnings("unchecked")
 		final Set<Method> lookupValuesProviderMethods = ReflectionUtils.getAllMethods(processClass, ReflectionUtils.withAnnotation(ProcessParamLookupValuesProvider.class));
@@ -137,25 +140,35 @@ final class WebuiProcessClassInfo
 			return NULL;
 		}
 
-		return new WebuiProcessClassInfo(processClassInfo, paramLookupValuesProviders);
+		return new WebuiProcessClassInfo(processClassInfo, webuiProcessAnn, paramLookupValuesProviders);
 	}
 
 	private static final WebuiProcessClassInfo NULL = new WebuiProcessClassInfo();
 
 	private final ProcessClassInfo processClassInfo;
 	private final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders;
+	private final ProcessLayoutType layoutType;
 
 	/** Null constructor */
 	private WebuiProcessClassInfo()
 	{
 		processClassInfo = ProcessClassInfo.NULL;
 		paramLookupValuesProviders = ImmutableMap.of();
+		this.layoutType = ProcessLayoutType.Panel;
 	}
 
-	private WebuiProcessClassInfo(final ProcessClassInfo processClassInfo, final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders)
+	private WebuiProcessClassInfo(final ProcessClassInfo processClassInfo, final WebuiProcess webuiProcessAnn, final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders)
 	{
 		this.processClassInfo = processClassInfo;
 		this.paramLookupValuesProviders = paramLookupValuesProviders;
+		if(webuiProcessAnn != null)
+		{
+			this.layoutType = webuiProcessAnn.layoutType();
+		}
+		else
+		{
+			this.layoutType = ProcessLayoutType.Panel;
+		}
 	}
 
 	@Override
@@ -165,6 +178,11 @@ final class WebuiProcessClassInfo
 				.add("paramLookupValuesProviders", paramLookupValuesProviders)
 				.add("processClassInfo", processClassInfo)
 				.toString();
+	}
+	
+	public ProcessLayoutType getLayoutType()
+	{
+		return layoutType;
 	}
 
 	public LookupDescriptorProvider getLookupDescriptorProviderOrNull(final String parameterName)

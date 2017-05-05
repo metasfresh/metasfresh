@@ -105,6 +105,17 @@ public class UserSession
 		return userSession;
 	}
 
+	/**
+	 * Gets current permissions.
+	 * 
+	 * @return permissions; never returns null
+	 * @throws NotLoggedInException
+	 */
+	public static IUserRolePermissions getCurrentPermissions()
+	{
+		return getCurrent().getUserRolePermissions();
+	}
+
 	// services
 	static final transient Logger logger = LogManager.getLogger(UserSession.class);
 	private final transient ApplicationEventPublisher eventPublisher;
