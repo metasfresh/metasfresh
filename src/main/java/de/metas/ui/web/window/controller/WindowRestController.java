@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -478,7 +480,7 @@ public class WindowRestController
 		// Organize document references in groups (by top level menu) and return them as JSON
 		final JSONOptions jsonOpts = newJSONOptions().build();
 		final MenuTree menuTree = menuTreeRepository.getMenuTree(userSession.getUserRolePermissionsKey(), jsonOpts.getAD_Language());
-		final String othersMenuCaption = "Others"; // FIXME: hardcoded
+		final String othersMenuCaption = Services.get(IMsgBL.class).translatable("DocumentReferences.group.Others").translate(jsonOpts.getAD_Language());
 		return JSONDocumentReferencesGroupList.of(documentReferences, menuTree, othersMenuCaption, jsonOpts);
 	}
 
