@@ -90,12 +90,13 @@ Here come the actual release notes:
   * [#334](https://github.com/metasfresh/metasfresh-webui-api/issues/334) switch filters to primary layout
     * Improving the usability and readability of process Parameters, switching the labels and fields to primary layout there.
   * [#344](https://github.com/metasfresh/metasfresh-webui-api/issues/344) backend: Document references: group them by their top level menu
-    * New Layount feature in Document references for beter visibility. Grouping the referenced in Sidelist via their top level (1 beneath root) Navigation node.
+    * New Layount feature in Document references for beter visibility. Grouping the referenced in Sidelist via their top level (1 beneath root) Navigation node. This is the backend task, waiting for frontend implementation in the next week to visualize the reference results.
 
 ## Fixes
 
 * metasfresh-backend
   * [#1044](https://github.com/metasfresh/metasfresh/issues/1044) System Elements w/ centrally maintained Y shall also migrate migration scripts for Translations
+    * Now allowing more efficient Translation creation. System elements with centrally maintained = 'Y' now also create migration scripts whan adjusted.
   * [#1353](https://github.com/metasfresh/metasfresh/issues/1353) Problem with C_Order filtering in M_ShipmentSchedule
     * Fixes a Bug when filtering Document No. and more than 1 exact result is returned. Added validation rule to exclude Purchase Orders from Search.
   * [#1440](https://github.com/metasfresh/metasfresh/issues/1440) ClassCastException: CompositeQueryFilter cannot be cast to SqlQueryFilter
@@ -103,11 +104,17 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#257](https://github.com/metasfresh/metasfresh-webui-api/issues/257) BPartner contact cannot be saved because mandatory field Name is not set
+    * Fixing a Bug that Business Partner record was not saved because mandatory name field was not set. Implemented a callout which  builds the Name when the user changes Firstname or Lastname.
   * [#333](https://github.com/metasfresh/metasfresh-webui-api/issues/333) HUs child and parent get separated when both selected on issue
+    * Fixes a Bug that seperated the Child-Parent-Handling Units of a Component when issueing to Manufacturing Order.
   * [#339](https://github.com/metasfresh/metasfresh-webui-api/issues/339) Sales Order also show Purchase Orders
+    * Fixes a Bug that showed Purchase Orders also in the Purchase Order Window.
   * [#340](https://github.com/metasfresh/metasfresh-webui-api/issues/340) Manufacturing order: Prevent issuing VHUs which are not top level
+    * Fixing a BUg that did not handle sub Handling Units correctly when selected during manufacturing Issue.
   * [#341](https://github.com/metasfresh/metasfresh-webui-api/issues/341) Apply role permissions when browsing/editing data
+    * Fixes a Role Permission issue when browsing and editing data.
   * [#342](https://github.com/metasfresh/metasfresh-webui-api/issues/342) Exception in WebUI when opening initial Doc Outbound window
+    * Fixes a Bug that occured when opeing the new Doc Outbound window in WebUI.
 
 * metasfresh-webui-frontend
   * [#675](https://github.com/metasfresh/metasfresh-webui-frontend/issues/675) Icons for manufacturing components
