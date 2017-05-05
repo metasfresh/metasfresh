@@ -17,7 +17,6 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
-  * [#1425](https://github.com/metasfresh/metasfresh/issues/1425) make price field bigger in sales invoice document
 
 # metasfresh 5.8 (2017-18)
 
@@ -56,6 +55,7 @@ Here come the actual release notes:
     * Adding the Bank Master data window definition to WebUI.
   * [#1419](https://github.com/metasfresh/metasfresh/issues/1419) Window for c_currency in WebUI
     * Adding the Currency Master data window definition to WebUI.
+  * [#1425](https://github.com/metasfresh/metasfresh/issues/1425) make price field bigger in sales invoice document
   * [#1429](https://github.com/metasfresh/metasfresh/issues/1429) Window for Bank Account in WebUI
     * Created a new Bank Account window and added to WebUI
   * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
@@ -80,6 +80,7 @@ Here come the actual release notes:
   * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
   * [#330](https://github.com/metasfresh/metasfresh-webui-api/issues/330) Implement webui HUEditor support for massive amount of HUs
   * [#334](https://github.com/metasfresh/metasfresh-webui-api/issues/334) switch filters to primary layout
+  * [#344](https://github.com/metasfresh/metasfresh-webui-api/issues/344) backend: Document references: group them by their top level menu
 
 ## Fixes
 
