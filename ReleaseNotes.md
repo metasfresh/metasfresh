@@ -61,6 +61,8 @@ Here come the actual release notes:
     * Adding Filter criteria to currency conversion window.
   * [#1451](https://github.com/metasfresh/metasfresh/issues/1451) Add scale Price Tab in Window Product Price
     * Adding the Scale Price Tab in Product Price Window on WebUI.
+  * [#1456](https://github.com/metasfresh/metasfresh/issues/1456) Translation of Initial Setup Wizard Process Window and Menu entry
+    * Translation of Initial Client Setup Added to WebUI Menu for language en_US
 
 * metasfresh-webui-api
   * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
