@@ -118,12 +118,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#675](https://github.com/metasfresh/metasfresh-webui-frontend/issues/675) Icons for manufacturing components
+    * Chaning the icons for manufacturing element types in Action Issue and Receipt window on WebUI to allow a better visiblity.
   * [#697](https://github.com/metasfresh/metasfresh-webui-frontend/issues/697) New Businesspartner modal overlay cancel
+    * Including the cancel button in modal overlay of new Business Partner window.
   * [#700](https://github.com/metasfresh/metasfresh-webui-frontend/issues/700) Typeahead not working in lookup filter parameters
+    * Fixing typahead fields/ dropdowns in process parameters, that were not working.
   * [#701](https://github.com/metasfresh/metasfresh-webui-frontend/issues/701) "Filter" panel does not disappear
+    * Fixing a Bug that prohibited to close Filtzer panels without filling mandatory fields.
   * [#702](https://github.com/metasfresh/metasfresh-webui-frontend/issues/702) Running a process from menu does not work, again
+    * Fixes the processes Panel issue when processed are started from menu. Now the panel is shown again.
   * [#703](https://github.com/metasfresh/metasfresh-webui-frontend/issues/703) leave the page message on request modal
+    * Now its possible again to leave a fully recorded request modal overlay without receiving a question about saving.
   * [#704](https://github.com/metasfresh/metasfresh-webui-frontend/issues/704) request modal saving is loading 4 tabs
+    * Internal issue fixed, when saving the request modeal overlay, loading multiple tabs.
 
 
 # metasfresh 5.7 (2017-17)
