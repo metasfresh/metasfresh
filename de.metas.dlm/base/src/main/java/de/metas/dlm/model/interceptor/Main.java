@@ -67,13 +67,13 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onAfterInit()
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		DBException.registerExceptionWrapper(DLMReferenceExceptionWrapper.INSTANCE);
 
 		// gh #1411: only register the connection customizer if it was enabled.
 		final IDLMService dlmService = Services.get(IDLMService.class);
-		if (dlmService.isConnectionCustomizerEnabled())
+		if (dlmService.isConnectionCustomizerEnabled(AD_User_ID))
 		{
 			Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentIniCustomizer.INSTANCE);
 		}

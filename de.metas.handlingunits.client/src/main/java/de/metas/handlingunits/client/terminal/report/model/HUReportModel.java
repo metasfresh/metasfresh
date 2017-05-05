@@ -195,7 +195,7 @@ public class HUReportModel implements IDisposable
 
 		for (final I_AD_Process process : availableReportProcesses)
 		{
-			final boolean processFitsType = mHUPorcessBL.processFitsType(process, unitTypeToSelectProcesses);
+			final boolean processFitsType = mHUPorcessBL.processFitsType(process.getAD_Process_ID(), unitTypeToSelectProcesses);
 
 			// If the process (or report) was defined for another handling unit type, do not display it
 			if (!processFitsType)
@@ -357,15 +357,15 @@ public class HUReportModel implements IDisposable
 		{
 			throw new TerminalException("@" + HUReportModel.MSG_NoReportProcessSelected + "@");
 		}
-		final I_AD_Process process = selectedKey.getProcess();
-		executeReport0(process, printCopies);
+		final int adProcessId = selectedKey.getAD_Process_ID();
+		executeReport0(adProcessId, printCopies);
 	}
 
-	private final void executeReport0(final I_AD_Process process, final BigDecimal printCopies)
+	private final void executeReport0(final int adProcessId, final BigDecimal printCopies)
 	{
 		HUReportExecutor.get(getCtx())
 				.withWindowNo(getTerminalContext().getWindowNo())
 				.withNumberOfCopies(printCopies.intValueExact())
-				.executeHUReportAfterCommit(process, getHUsToProcess());
+				.executeHUReportAfterCommit(adProcessId, getHUsToProcess());
 	}
 }

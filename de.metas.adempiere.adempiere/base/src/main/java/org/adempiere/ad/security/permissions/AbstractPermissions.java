@@ -25,13 +25,14 @@ package org.adempiere.ad.security.permissions;
 
 import java.util.Collection;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.logging.LogManager;
 
 public abstract class AbstractPermissions<PermissionType extends Permission> implements Permissions<PermissionType>
 {
@@ -118,7 +119,7 @@ public abstract class AbstractPermissions<PermissionType extends Permission> imp
 		}
 
 		//
-		// Fallback: get the permision defined for the resource of "no permission", if any
+		// Fallback: get the permission defined for the resource of "no permission", if any
 		final PermissionType nonePermission = noPermission();
 		if (nonePermission == null)
 		{

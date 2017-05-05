@@ -73,13 +73,13 @@ import org.compiere.util.CMemoryUsage;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Ini.IsNotSwingClient;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 
 import ch.qos.logback.classic.Level;
+import de.metas.ServerBoot;
 import de.metas.logging.LogManager;
 
 /**
@@ -88,8 +88,8 @@ import de.metas.logging.LogManager;
  * @author Jorg Janke
  * @author tsa
  */
-@Conditional(IsNotSwingClient.class)
 @WebServlet(value = "/serverMonitor", loadOnStartup = 1)
+@Profile(ServerBoot.PROFILE)
 public class ServerMonitor extends HttpServlet
 {
 	/**

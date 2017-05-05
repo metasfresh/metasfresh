@@ -24,7 +24,6 @@ package de.metas.handlingunits.process.api.impl;
 
 
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Process;
 
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -35,15 +34,20 @@ public class MHUProcessBL implements IMHUProcessBL
 {
 
 	@Override
-	public boolean processFitsType(final I_AD_Process process, final String selectedHUUnitType)
+	public boolean processFitsType(final int adProcessId, final String selectedHUUnitType)
 	{
-		final I_M_HU_Process mHUProcess = Services.get(IMHUProcessDAO.class).retrieveHUProcess(process);
+		final I_M_HU_Process huProcess = Services.get(IMHUProcessDAO.class).retrieveHUProcess(adProcessId);
+		if(huProcess == null)
+		{
+			// no HU process
+			return false;
+		}
 
 		// Check if the give HU Unit type fits the M_HU_Process equivalent flag
 
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(selectedHUUnitType))
 		{
-			if (mHUProcess.isApplyLU())
+			if (huProcess.isApplyLU())
 			{
 				return true;
 			}
@@ -51,7 +55,7 @@ public class MHUProcessBL implements IMHUProcessBL
 
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(selectedHUUnitType))
 		{
-			if (mHUProcess.isApplyTU())
+			if (huProcess.isApplyTU())
 			{
 				return true;
 			}
@@ -59,7 +63,7 @@ public class MHUProcessBL implements IMHUProcessBL
 
 		if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(selectedHUUnitType))
 		{
-			if (mHUProcess.isApplyVirtualPI())
+			if (huProcess.isApplyVirtualPI())
 			{
 				return true;
 			}
