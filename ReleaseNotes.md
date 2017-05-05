@@ -84,9 +84,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#325](https://github.com/metasfresh/metasfresh-webui-api/issues/325) make error message more clear when printing in receipt candidates
+    * Enhancing error messages in Printing Framework, now allowing to receive a helpful error message when printing fails.
   * [#330](https://github.com/metasfresh/metasfresh-webui-api/issues/330) Implement webui HUEditor support for massive amount of HUs
+    * Enhancing the WebUI Handling Unit Editor to allow performant usage also when loading mass data Handling Units.
   * [#334](https://github.com/metasfresh/metasfresh-webui-api/issues/334) switch filters to primary layout
+    * Improving the usability and readability of process Parameters, switching the labels and fields to primary layout there.
   * [#344](https://github.com/metasfresh/metasfresh-webui-api/issues/344) backend: Document references: group them by their top level menu
+    * New Layount feature in Document references for beter visibility. Grouping the referenced in Sidelist via their top level (1 beneath root) Navigation node.
 
 ## Fixes
 
