@@ -34,6 +34,7 @@ import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -82,7 +83,7 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int rawProduct2Id = 55;
 
-	private static I_AD_Org org;
+	private I_AD_Org org;
 
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
@@ -195,7 +196,7 @@ public class DistributionPlanEventHandlerTests
 	@Test
 	public void testTwoDistibutionPlanEvents()
 	{
-		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
+		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
 	}
 
 	/**
@@ -203,7 +204,9 @@ public class DistributionPlanEventHandlerTests
 	 *
 	 * @param mdEventListener
 	 */
-	public static void performTestTwoDistibutionPlanEvents(DistributionPlanEventHandler distributionPlanEventHandler)
+	public static void performTestTwoDistibutionPlanEvents(
+			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
+			@NonNull final I_AD_Org org)
 	{
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 
