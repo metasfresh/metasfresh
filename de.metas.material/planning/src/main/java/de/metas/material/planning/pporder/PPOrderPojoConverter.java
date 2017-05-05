@@ -1,15 +1,6 @@
 package de.metas.material.planning.pporder;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
@@ -45,24 +36,6 @@ import lombok.NonNull;
 @Service
 public class PPOrderPojoConverter
 {
-
-//	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrder)
-//	{
-//		return PPOrder.builder()
-//				.datePromised(ppOrder.getDatePromised())
-//				.dateStartSchedule(ppOrder.getDateStartSchedule())
-//				.orgId(ppOrder.getAD_Org_ID())
-//
-//				// .productPlanningId(productPlanningId)
-//				.plantId(ppOrder.getS_Resource_ID())
-//							.productId(ppOrder.getM_Product_ID())
-//				.quantity(ppOrder.getQtyOrdered())
-//				.uomId(ppOrder.getC_UOM_ID())
-//				.warehouseId(ppOrder.getM_Warehouse_ID())
-//
-//				.build();
-//	}
-
 	public PPOrderLine asPPOrderLinePojo(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		return PPOrderLine.builder()
@@ -83,29 +56,11 @@ public class PPOrderPojoConverter
 			@NonNull final PPOrder ppOrder,
 			@NonNull final TableRecordReference reference)
 	{
-		final Integer orgId = ppOrder.getOrgId();
-		final Integer warehouseId = ppOrder.getWarehouseId();
-
-		final BigDecimal productQty = convertQtyToProductUOM(ppOrder.getProductId(), ppOrder.getUomId(), ppOrder.getQuantity());
-
-		final ProductionPlanEventBuilder builder = ProductionPlanEvent.builder();
-		builder
+		final ProductionPlanEventBuilder builder = ProductionPlanEvent.builder()
 				.eventDescr(new EventDescr())
 				.reference(reference)
 				.ppOrder(ppOrder);
 
 		return builder.build();
-	}
-
-	private BigDecimal convertQtyToProductUOM(final Integer productId, final Integer uomId, final BigDecimal quantity)
-	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
-		final I_C_UOM uomSource = InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
-
-		// in material-dispo we currently don't care for UOMs, so it always has to be the product's UOM.
-		final BigDecimal productQty = uomConversionBL.convertToProductUOM(Env.getCtx(), product, uomSource, quantity);
-		return productQty;
 	}
 }

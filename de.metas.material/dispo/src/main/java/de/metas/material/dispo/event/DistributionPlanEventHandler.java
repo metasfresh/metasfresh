@@ -7,6 +7,7 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -78,6 +79,9 @@ public class DistributionPlanEventHandler
 				.quantity(materialDescr.getQty())
 				.warehouseId(materialDescr.getWarehouseId())
 				.reference(event.getReference())
+				.demandDetail(DemandCandidateDetail.builder()
+						.orderLineId(event.getOrderLineId())
+						.build())
 				.build();
 
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
@@ -109,11 +113,11 @@ public class DistributionPlanEventHandler
 		}
 
 		// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-		candidateRepository.addOrReplace(supplyCandidateWithId
+		candidateRepository.addOrUpdate(supplyCandidateWithId
 				.withSeqNo(demandCandidateWithId.getSeqNo() - 1),
 				false);
 
-		candidateRepository.addOrReplace(candidateRepository
+		candidateRepository.addOrUpdate(candidateRepository
 				.retrieve(supplyCandidateWithId.getParentId())
 				.withSeqNo(demandCandidateWithId.getSeqNo() - 2),
 				false);

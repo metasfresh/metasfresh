@@ -46,8 +46,7 @@ public class CandidateService
 
 	public CandidateService(
 			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final MaterialEventService materialEventService
-			)
+			@NonNull final MaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
@@ -96,6 +95,11 @@ public class CandidateService
 
 		for (final Candidate groupMember : group)
 		{
+			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
+			{
+				ppOrderBuilder = ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
+			}
+
 			final ProductionCandidateDetail prodDetail = groupMember.getProductionDetail();
 			if (prodDetail.getPlantId() > 0)
 			{

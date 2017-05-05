@@ -124,6 +124,8 @@ public class PPOrderPojoSupplier
 				//
 				// Qtys
 				.quantity(qtyToSupply)
+
+				.orderLineId(request.getMRPDemandOrderLineSOId())
 				//
 				// offer further advise :-)
 				.createPPOrder(productPlanningData.isCreatePlan())

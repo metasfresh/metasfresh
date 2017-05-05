@@ -1,5 +1,7 @@
 package de.metas.material.dispo.event;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -15,6 +17,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -79,6 +82,8 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int rawProduct2Id = 55;
 
+	private static I_AD_Org org;
+
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	@Mocked
@@ -88,6 +93,9 @@ public class DistributionPlanEventHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		org = newInstance(I_AD_Org.class);
+		save(org);
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
@@ -115,7 +123,7 @@ public class DistributionPlanEventHandlerTests
 				.fromWarehouseId(fromWarehouseId)
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t2)
-						.orgId(20)
+						.orgId(org.getAD_Org_ID())
 						.productId(productId)
 						.qty(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
@@ -134,7 +142,7 @@ public class DistributionPlanEventHandlerTests
 
 		// all four shall have the same org
 		allRecords.forEach(r -> {
-			assertThat(r.getAD_Org_ID(), is(20));
+			assertThat(r.getAD_Org_ID(), is(org.getAD_Org_ID()));
 		});
 
 		// all four shall have the same reference
@@ -205,7 +213,7 @@ public class DistributionPlanEventHandlerTests
 				.fromWarehouseId(fromWarehouseId)
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t2)
-						.orgId(20)
+						.orgId(org.getAD_Org_ID())
 						.productId(productId)
 						.qty(BigDecimal.TEN)
 						.warehouseId(intermediateWarehouseId)
@@ -224,7 +232,7 @@ public class DistributionPlanEventHandlerTests
 				.fromWarehouseId(intermediateWarehouseId)
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t3)
-						.orgId(20)
+						.orgId(org.getAD_Org_ID())
 						.productId(productId)
 						.qty(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)

@@ -46,7 +46,6 @@ public class DistributionPlanEvent implements MaterialEvent
 	@NonNull
 	private final EventDescr eventDescr;
 
-	@NonNull
 	private final TableRecordReference reference;
 
 	@NonNull
@@ -57,5 +56,7 @@ public class DistributionPlanEvent implements MaterialEvent
 
 	@NonNull
 	private final MaterialDescriptor materialDescr;
+
+	private int orderLineId;
 
 }

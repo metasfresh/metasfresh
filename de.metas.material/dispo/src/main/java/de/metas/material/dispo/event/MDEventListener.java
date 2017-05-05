@@ -7,6 +7,7 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateChangeHandler;
+import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
@@ -45,17 +46,17 @@ public class MDEventListener implements MaterialEventListener
 
 	private final CandidateChangeHandler candidateChangeHandler;
 
-	private final ProdcutionPlanEventHandler prodcutionPlanEventHandler;
+	private final ProductionPlanEventHandler productionPlanEventHandler;
 
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	public MDEventListener(
 			@NonNull final CandidateChangeHandler candidateChangeHandler,
 			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
-			@NonNull final ProdcutionPlanEventHandler prodcutionPlanEventHandler)
+			@NonNull final ProductionPlanEventHandler productionPlanEventHandler)
 	{
 		this.distributionPlanEventHandler = distributionPlanEventHandler;
-		this.prodcutionPlanEventHandler = prodcutionPlanEventHandler;
+		this.productionPlanEventHandler = productionPlanEventHandler;
 		this.candidateChangeHandler = candidateChangeHandler;
 	}
 
@@ -80,7 +81,7 @@ public class MDEventListener implements MaterialEventListener
 		}
 		else if (event instanceof ProductionPlanEvent)
 		{
-			prodcutionPlanEventHandler.handleProductionPlanEvent((ProductionPlanEvent)event);
+			productionPlanEventHandler.handleProductionPlanEvent((ProductionPlanEvent)event);
 		}
 	}
 
@@ -104,7 +105,7 @@ public class MDEventListener implements MaterialEventListener
 				.reference(event.getReference())
 				.build();
 
-		candidateChangeHandler.updateStock(candidate);
+		candidateChangeHandler.addOrUpdateStock(candidate);
 	}
 
 	private void handleReceiptScheduleEvent(@NonNull final ReceiptScheduleEvent event)
@@ -150,6 +151,9 @@ public class MDEventListener implements MaterialEventListener
 				.productId(materialDescr.getProductId())
 				.quantity(materialDescr.getQty())
 				.reference(event.getReference())
+				.demandDetail(DemandCandidateDetail.builder()
+						.orderLineId(event.getOrderLineId())
+						.build())
 				.build();
 		candidateChangeHandler.onDemandCandidateNewOrChange(candidate);
 	}

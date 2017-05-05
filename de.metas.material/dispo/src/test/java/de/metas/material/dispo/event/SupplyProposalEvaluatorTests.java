@@ -1,5 +1,7 @@
 package de.metas.material.dispo.event;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -9,6 +11,7 @@ import java.util.Date;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -77,10 +80,15 @@ public class SupplyProposalEvaluatorTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
+	private I_AD_Org org;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		org = newInstance(I_AD_Org.class);
+		save(org);
 
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
@@ -168,7 +176,7 @@ public class SupplyProposalEvaluatorTests
 	private void addSimpleSupplyDemand()
 	{
 		final Candidate supplyCandidate = Candidate.builder()
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.date(t3)
 				.productId(3)
 				.quantity(BigDecimal.TEN)
@@ -176,10 +184,10 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(SUPPLY_WAREHOUSE_ID)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepository.addOrReplace(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdate(supplyCandidate);
 
 		final Candidate demandCandidate = Candidate.builder()
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.date(t2)
 				.parentId(supplyCandidateWithId.getId())
 				.productId(3)
@@ -188,7 +196,7 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.build();
 
-		candidateRepository.addOrReplace(demandCandidate);
+		candidateRepository.addOrUpdate(demandCandidate);
 	}
 
 	/**

@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -58,7 +59,6 @@ import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
-import org.springframework.util.CollectionUtils;
 
 import com.google.common.base.Supplier;
 
@@ -390,7 +390,22 @@ public final class Env
 		Check.assumeNotNull(ctx, "ctx not null");
 
 		final Properties newCtx = new Properties();
-		CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
+
+		for (Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
+		{
+			String key = (String)en.nextElement();
+			Object value = ctx.get(key);
+			if (value == null)
+			{
+				// Allow for defaults fallback or potentially overridden accessor...
+				value = newCtx.getProperty(key);
+			}
+			if (value == null)
+			{
+				continue;
+			}
+			newCtx.put(key, value);
+		}
 
 		return newCtx;
 	}
@@ -1180,10 +1195,10 @@ public final class Env
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}	// getAD_Role_ID
 
-//	public static void setAD_Role_ID(Properties ctx, final int adRoleId)
-//	{
-//		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
-//	}	// getAD_Role_ID
+	// public static void setAD_Role_ID(Properties ctx, final int adRoleId)
+	// {
+	// Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
+	// } // getAD_Role_ID
 
 	public static IUserRolePermissions getUserRolePermissions()
 	{
@@ -1207,7 +1222,6 @@ public final class Env
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
-
 
 	public static void resetUserRolePermissions()
 	{
@@ -1437,7 +1451,7 @@ public final class Env
 
 		//
 		// Check if we have a perfect match
-		if(AD_Languages.contains(searchAD_Language))
+		if (AD_Languages.contains(searchAD_Language))
 		{
 			return;
 		}
@@ -1614,11 +1628,10 @@ public final class Env
 		return parseContext(ctx, WindowNo, expression, onlyWindow, ignoreUnparsable);
 	}	// parseContext
 
-
 	/*************************************************************************/
 
 	// Array of active Windows
-	private static ArrayList<Container> s_windows = new ArrayList<Container>(20);
+	private static ArrayList<Container> s_windows = new ArrayList<>(20);
 
 	/**
 	 * Add Container and return WindowNo. The container is a APanel, AWindow or JFrame/JDialog
@@ -1845,7 +1858,7 @@ public final class Env
 	}	// isWindows
 
 	/** Array of hidden Windows */
-	private static ArrayList<CFrame> s_hiddenWindows = new ArrayList<CFrame>();
+	private static ArrayList<CFrame> s_hiddenWindows = new ArrayList<>();
 	/** Closing Window Indicator */
 	private static boolean s_closingWindows = false;
 
@@ -1962,7 +1975,7 @@ public final class Env
 	 */
 	public static Set<Window> updateUI()
 	{
-		Set<Window> updated = new HashSet<Window>();
+		Set<Window> updated = new HashSet<>();
 		for (Container c : s_windows)
 		{
 			Window w = getFrame(c);

@@ -45,7 +45,7 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID,
 			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate,
-			I_M_ShipmentSchedule.COLUMNNAME_IsActive /* IsActive=N shall be threaded like a deletion*/})
+			I_M_ShipmentSchedule.COLUMNNAME_IsActive /* IsActive=N shall be threaded like a deletion */ })
 	public void fireEvent(final I_M_ShipmentSchedule schedule, final int timing)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -64,6 +64,7 @@ public class M_ShipmentSchedule
 						.build())
 				.reference(TableRecordReference.of(schedule))
 				.shipmentScheduleDeleted(deleted)
+				.orderLineId(schedule.getC_OrderLine_ID())
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);

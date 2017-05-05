@@ -3,10 +3,12 @@ package de.metas.material.dispo.event;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
+import de.metas.material.dispo.Candidate.Status;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
@@ -35,12 +37,12 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class ProdcutionPlanEventHandler
+public class ProductionPlanEventHandler
 {
 	private final CandidateChangeHandler candidateChangeHandler;
 	private final CandidateService candidateService;
 
-	public ProdcutionPlanEventHandler(
+	public ProductionPlanEventHandler(
 			@NonNull final CandidateChangeHandler candidateChangeHandler,
 			@NonNull final CandidateService candidateService)
 	{
@@ -52,13 +54,36 @@ public class ProdcutionPlanEventHandler
 	{
 		final PPOrder ppOrder = event.getPpOrder();
 
+		final Candidate.Status candidateStatus;
+		if (ppOrder.getPpOrderId() <= 0)
+		{
+			candidateStatus = Status.doc_planned;
+		}
+		else if ("DR".equals(ppOrder.getDocStatus())||"IP".equals(ppOrder.getDocStatus()))
+		{
+			candidateStatus = Status.doc_created;
+		}
+		else if ("CO".equals(ppOrder.getDocStatus()))
+		{
+			candidateStatus = Status.doc_completed;
+		}
+		else if ("CL".equals(ppOrder.getDocStatus()))
+		{
+			candidateStatus = Status.doc_closed;
+		}
+		else
+		{
+			candidateStatus = Status.unexpected;
+		}
+
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
+				.status(candidateStatus)
+
 				.date(ppOrder.getDatePromised())
 				.orgId(ppOrder.getOrgId())
 				.productId(ppOrder.getProductId())
-
 				.quantity(ppOrder.getQuantity())
 				.warehouseId(ppOrder.getWarehouseId())
 				.reference(event.getReference())
@@ -67,6 +92,9 @@ public class ProdcutionPlanEventHandler
 						.productPlanningId(ppOrder.getProductPlanningId())
 						.ppOrderId(ppOrder.getPpOrderId())
 						.ppOrderDocStatus(ppOrder.getDocStatus())
+						.build())
+				.demandDetail(DemandCandidateDetail.builder()
+						.orderLineId(ppOrder.getOrderLineId())
 						.build())
 				.build();
 
@@ -78,6 +106,7 @@ public class ProdcutionPlanEventHandler
 			final Candidate lineCandidate = Candidate.builder()
 					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
 					.subType(SubType.PRODUCTION)
+					.status(candidateStatus)
 
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
@@ -96,9 +125,12 @@ public class ProdcutionPlanEventHandler
 							.ppOrderDocStatus(ppOrder.getDocStatus())
 							.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 							.build())
+					.demandDetail(DemandCandidateDetail.builder()
+							.orderLineId(ppOrder.getOrderLineId())
+							.build())
 					.build();
 
-			// might trigger further depmand events
+			// might trigger further demand events
 			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
 		}
 

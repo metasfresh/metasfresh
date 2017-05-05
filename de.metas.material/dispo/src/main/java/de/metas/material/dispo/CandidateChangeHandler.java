@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -55,8 +56,7 @@ public class CandidateChangeHandler
 	public CandidateChangeHandler(
 			@NonNull final CandidateRepository candidateRepository,
 			@NonNull final CandidateFactory candidateFactory,
-			@NonNull final MaterialEventService materialEventService
-			)
+			@NonNull final MaterialEventService materialEventService)
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateFactory = candidateFactory;
@@ -83,7 +83,7 @@ public class CandidateChangeHandler
 	{
 		Preconditions.checkArgument(demandCandidate.getType() == Type.DEMAND, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", demandCandidate.getType(), demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepository.addOrReplace(demandCandidate);
+		final Candidate demandCandidateWithId = candidateRepository.addOrUpdate(demandCandidate);
 
 		if (demandCandidateWithId.getQuantity().signum() == 0)
 		{
@@ -94,7 +94,7 @@ public class CandidateChangeHandler
 		// this is the seqno which the new stock candidate shall get according to the demand candidate
 		final int expectedStockSeqNo = demandCandidateWithId.getSeqNo() + 1;
 
-		final Candidate stockWithDemand = updateStock(demandCandidate
+		final Candidate stockWithDemand = addOrUpdateStock(demandCandidate
 				.withSeqNo(expectedStockSeqNo)
 				.withQuantity(demandCandidateWithId.getQuantity().negate())
 				.withParentId(demandCandidateWithId.getId()));
@@ -107,7 +107,7 @@ public class CandidateChangeHandler
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
 					.withSeqNo(stockWithDemand.getSeqNo() - 1);
-			candidateRepository.addOrReplace(demandCandidateToReturn);
+			candidateRepository.addOrUpdate(demandCandidateToReturn);
 		}
 		else
 		{
@@ -118,6 +118,8 @@ public class CandidateChangeHandler
 		{
 			// there would be no more stock left, so
 			// notify whoever is in charge that we have a demand to balance
+			final int orderLineId = demandCandidate.getDemandDetail() == null ? 0 : demandCandidate.getDemandDetail().getOrderLineId();
+
 			final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
 					.builder()
 					.eventDescr(new EventDescr())
@@ -129,6 +131,7 @@ public class CandidateChangeHandler
 							.warehouseId(demandCandidate.getWarehouseId())
 							.build())
 					.reference(demandCandidate.getReference())
+					.orderLineId(orderLineId)
 					.build();
 
 			materialEventService.fireEvent(materialDemandEvent);
@@ -150,21 +153,39 @@ public class CandidateChangeHandler
 		Preconditions.checkArgument(supplyCandidate.getType() == Type.SUPPLY, "Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s", supplyCandidate.getType(), supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
-		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrReplace(supplyCandidate);
+		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrUpdate(supplyCandidate);
 
 		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
 			return supplyCandidateDeltaWithId; // nothing to do
 		}
 
-		// update the stock with the delta
-		final Candidate parentStockCandidateWithId = updateStock(supplyCandidateDeltaWithId
-				.withSeqNo(null) // don't provide the supply's SeqNo, because there might already be a stock record which we might override; plus, the supply's seqNo shall depend on the stock's anyways
-		);
+		final Candidate parentStockCandidateWithId;
+		if (supplyCandidateDeltaWithId.getParentIdNotNull() > 0)
+		{
+			// this supply candidate is not new and already has a stock candidate as its parent
+			parentStockCandidateWithId = updateStock(
+					supplyCandidateDeltaWithId,
+					() -> {
+						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
+						final Candidate stockCandidate = candidateRepository.retrieve(supplyCandidateDeltaWithId.getParentId());
+						return candidateRepository.updateQty(
+								stockCandidate.withQuantity(
+										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
+					});
+		}
+		else
+		{
+			// update (or add) the stock with the delta
+			parentStockCandidateWithId = addOrUpdateStock(supplyCandidateDeltaWithId
+					// but don't provide the supply's SeqNo, because there might already be a stock record which we might override (even if the supply candidate is not yet linked to it);
+					// plus, the supply's seqNo shall depend on the stock's anyways
+					.withSeqNo(null));
+		}
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepository.addOrReplace(
+		candidateRepository.addOrUpdate(
 				supplyCandidate
 						.withParentId(parentStockCandidateWithId.getId())
 						.withSeqNo(parentStockCandidateWithId.getSeqNo() + 1));
@@ -179,9 +200,32 @@ public class CandidateChangeHandler
 		// now has -21
 	}
 
-	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
+	private Candidate updateStock(
+			@NonNull final Candidate relatedCanidateWithDelta,
+			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
 	{
-		candidateRepository.deleteForReference(recordReference);
+		final Optional<Candidate> previousCandidate = candidateRepository.retrieve(relatedCanidateWithDelta);
+
+		final Candidate persistedStockCandidate = stockCandidateToUpdate.get();
+
+		final BigDecimal delta;
+		if (previousCandidate.isPresent())
+		{
+			// there was already a persisted candidate. This means that the addOrReplace already did the work of providing our delta between the old and the current status.
+			delta = persistedStockCandidate.getQuantity();
+		}
+		else
+		{
+			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
+			delta = relatedCanidateWithDelta.getQuantity();
+		}
+		applyDeltaToLaterStockCandidates(
+				relatedCanidateWithDelta.getProductId(),
+				relatedCanidateWithDelta.getWarehouseId(),
+				relatedCanidateWithDelta.getDate(),
+				persistedStockCandidate.getGroupId(),
+				delta);
+		return persistedStockCandidate;
 	}
 
 	/**
@@ -195,33 +239,23 @@ public class CandidateChangeHandler
 	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
 	 *         Note: this method does not establish a parent-child relationship between any two records
 	 */
-	public Candidate updateStock(@NonNull final Candidate candidate)
+	public Candidate addOrUpdateStock(@NonNull final Candidate candidate)
 	{
-		final Optional<Candidate> previousCandidate = candidateRepository.retrieve(candidate);
+		return updateStock(
+				candidate,
+				() -> {
+					final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
 
-		final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
+					final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
+					final Candidate persistedStockCandidate = candidateRepository.addOrUpdate(stockCandidateToPersist, preserveExistingSeqNo);
 
-		final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
-		final Candidate persistedStockCandidate = candidateRepository.addOrReplace(stockCandidateToPersist, preserveExistingSeqNo);
+					return persistedStockCandidate;
+				});
+	}
 
-		final BigDecimal delta;
-		if (previousCandidate.isPresent())
-		{
-			// there was already a persisted candidate. This means that the addOrReplace already did the work of providing our delta between the old and the current status.
-			delta = persistedStockCandidate.getQuantity();
-		}
-		else
-		{
-			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
-			delta = candidate.getQuantity();
-		}
-		applyDeltaToLaterStockCandidates(
-				candidate.getProductId(),
-				candidate.getWarehouseId(),
-				candidate.getDate(),
-				persistedStockCandidate.getGroupId(),
-				delta);
-		return persistedStockCandidate;
+	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
+	{
+		candidateRepository.deleteForReference(recordReference);
 	}
 
 	/**
@@ -256,7 +290,7 @@ public class CandidateChangeHandler
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepository.addOrReplace(candidate
+			candidateRepository.addOrUpdate(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
 		}

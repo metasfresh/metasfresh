@@ -50,7 +50,6 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	@NonNull
 	private final EventDescr eventDescr;
 
-	@NonNull
 	private final TableRecordReference reference;
 
 	@NonNull

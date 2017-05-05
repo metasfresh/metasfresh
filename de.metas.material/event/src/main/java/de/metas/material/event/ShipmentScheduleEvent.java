@@ -48,4 +48,6 @@ public class ShipmentScheduleEvent implements MaterialEvent
 	 * Note that we count an inactive shipment schedule as deleted too, because as far as the material dispo is concerned, there is no difference
 	 */
 	private final boolean shipmentScheduleDeleted;
+
+	private final int orderLineId;
 }

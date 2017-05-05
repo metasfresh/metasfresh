@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,8 +17,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,7 @@ import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.NonNull;
 
@@ -57,14 +61,14 @@ import lombok.NonNull;
 public class CandidateRepository
 {
 	/**
-	 * Invokes {@link #addOrReplace(Candidate, boolean)} with {@code preserveExistingSeqNo == false}.
+	 * Invokes {@link #addOrUpdate(Candidate, boolean)} with {@code preserveExistingSeqNo == false}.
 	 *
 	 * @param candidate
 	 * @return
 	 */
-	public Candidate addOrReplace(@NonNull final Candidate candidate)
+	public Candidate addOrUpdate(@NonNull final Candidate candidate)
 	{
-		return addOrReplace(candidate, false);
+		return addOrUpdate(candidate, false);
 	}
 
 	/**
@@ -78,11 +82,30 @@ public class CandidateRepository
 	 *         <ul>
 	 *         <li>the {@code id} of the persisted data record</li>
 	 *         <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or the given candidate's ID (in case the given candiate didn't have a groupId)</li>
+	 *         <li>the {@code parentId} of the persisted data record or {@code null} if the persisted record didn't exist or has a parentId of zero.
 	 *         <li>the {@code seqNo} The rules are similar to groupId, but if there was a persisted {@link I_MD_Candidate} with a different seqno, that different seqno might also be returned, depending on the {@code preserveExistingSeqNo} parameter.</li>
 	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
 	 *         </ul>
 	 */
-	public Candidate addOrReplace(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
+	public Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
+	{
+		//
+		// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
+		final Properties copyCtx = Env.copyCtx(Env.getCtx());
+
+		final I_AD_Org org = InterfaceWrapperHelper.create(copyCtx, candidate.getOrgId(), I_AD_Org.class, ITrx.TRXNAME_None);
+
+		Env.setContext(copyCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
+		Env.setContext(copyCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
+
+		try (final IAutoCloseable c = Env.switchContext(copyCtx))
+		{
+			return addOrUpdate0(candidate, preserveExistingSeqNo);
+		}
+	}
+
+	@VisibleForTesting
+	Candidate addOrUpdate0(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
 	{
 		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
 
@@ -109,11 +132,45 @@ public class CandidateRepository
 			addOrRecplaceProductionDetail(candidate, synchedRecord);
 		}
 
+		if (candidate.getDemandDetail() != null)
+		{
+			// we do this independently of the type; the demand info might be needed by many records, not just by the "first" demand record
+			addOrRecplaceDemandDetail(candidate, synchedRecord);
+		}
+
+		final Integer parentId = synchedRecord.getMD_Candidate_Parent_ID() > 0 ? synchedRecord.getMD_Candidate_Parent_ID() : null;
+
 		return candidate
 				.withId(synchedRecord.getMD_Candidate_ID())
+				.withParentId(parentId)
 				.withGroupId(synchedRecord.getMD_Candidate_GroupId())
 				.withSeqNo(synchedRecord.getSeqNo())
 				.withQuantity(qtyDelta);
+	}
+
+	/**
+	 * Updates the qty of the given candidate.
+	 * Differs from {@link #addOrUpdate(Candidate)} in that
+	 * no matching id done, and if there is no existing persisted record, then an exception is thrown. Instead, it just updates the underyling persisted record of the given {@code candidateToUpdate}.
+	 *
+	 *
+	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId() > 0}.
+	 *
+	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
+	 */
+	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
+	{
+		Preconditions.checkState(candidateToUpdate.getId() != null && candidateToUpdate.getId() > 0, "Parameter 'candidateToUpdate' has Id=%s; candidateToUpdate=%s", candidateToUpdate.getId(), candidateToUpdate);
+
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.create(Env.getCtx(), candidateToUpdate.getId(), I_MD_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+
+		final BigDecimal oldQty = candidateRecord.getQty();
+		candidateRecord.setQty(candidateToUpdate.getQuantity());
+		InterfaceWrapperHelper.save(candidateRecord);
+
+		final BigDecimal qtyDelta = candidateToUpdate.getQuantity().subtract(oldQty);
+
+		return candidateToUpdate.withQuantity(qtyDelta);
 	}
 
 	private void addOrRecplaceProductionDetail(
@@ -121,7 +178,7 @@ public class CandidateRepository
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = retrieveProductiondetail(synchedRecord);
+		final I_MD_Candidate_Prod_Detail existingDetail = retrieveProductionDetail(synchedRecord);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
@@ -143,13 +200,50 @@ public class CandidateRepository
 		InterfaceWrapperHelper.save(detailRecordToUpdate);
 	}
 
-	private I_MD_Candidate_Prod_Detail retrieveProductiondetail(final I_MD_Candidate synchedRecord)
+	private I_MD_Candidate_Prod_Detail retrieveProductionDetail(@NonNull final I_MD_Candidate synchedRecord)
 	{
-		final I_MD_Candidate_Prod_Detail existingDetail = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final I_MD_Candidate_Prod_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
 				.create()
 				.firstOnly(I_MD_Candidate_Prod_Detail.class); // we have a UC in place..
+		return existingDetail;
+	}
+
+	private void addOrRecplaceDemandDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		if (candidate.getDemandDetail() == null || candidate.getDemandDetail().getOrderLineId() <= 0)
+		{
+			return; // nothing to do
+		}
+
+		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
+		final I_MD_Candidate_Demand_Detail existingDetail = retrieveDemandDetail(synchedRecord);
+		if (existingDetail == null)
+		{
+			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
+			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+		}
+		else
+		{
+			detailRecordToUpdate = existingDetail;
+		}
+		final DemandCandidateDetail demandDetail = candidate.getDemandDetail();
+		detailRecordToUpdate.setC_OrderLine_ID(demandDetail.getOrderLineId());
+		InterfaceWrapperHelper.save(detailRecordToUpdate);
+	}
+
+	private I_MD_Candidate_Demand_Detail retrieveDemandDetail(@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final I_MD_Candidate_Demand_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
+				.create()
+				.firstOnly(I_MD_Candidate_Demand_Detail.class); // TODO we don't yet have a UC in place..
 		return existingDetail;
 	}
 
@@ -200,7 +294,10 @@ public class CandidateRepository
 	 * <li>warehouse</li>
 	 * <li>product</li>
 	 * <li>date</li>
-	 * <li>tableId and record?</li>
+	 * <li>tableId and record (only if set)</li>
+	 * <li>demand details</li>
+	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.
+	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (like pporder ID and pporder BOM line ID which can change for zero to an actual reference)</li>
 	 * </ul>
 	 *
 	 * @param candidate
@@ -224,6 +321,61 @@ public class CandidateRepository
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID());
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, referencedRecord.getRecord_ID());
+		}
+
+		final DemandCandidateDetail demandDetail = candidate.getDemandDetail();
+		if (demandDetail != null && demandDetail.getOrderLineId() != 0)
+		{
+			final IQueryBuilder<I_MD_Candidate_Demand_Detail> demandDetailsSubQueryBuilder = queryBL
+					.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (demandDetail.getOrderLineId() == DemandCandidateDetail.NO_ORDERLINE_ID)
+			{
+				builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
+						I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,
+						demandDetailsSubQueryBuilder.create());
+			}
+			else if (demandDetail.getOrderLineId() > 0)
+			{
+				demandDetailsSubQueryBuilder
+						.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_C_OrderLine_ID, demandDetail.getOrderLineId());
+
+				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
+						I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,
+						demandDetailsSubQueryBuilder.create());
+			}
+		}
+
+		{
+			final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
+
+			final IQueryBuilder<I_MD_Candidate_Prod_Detail> productDetailSubQueryBuilder = queryBL
+					.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (productionDetail == null)
+			{
+				builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
+			}
+			else
+			{
+				boolean doFilter = false;
+				if (productionDetail.getProductPlanningId() > 0)
+				{
+					productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_Planning_ID, productionDetail.getProductPlanningId());
+					doFilter = true;
+				}
+				if (productionDetail.getProductBomLineId() > 0)
+				{
+					productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_BOMLine_ID, productionDetail.getProductBomLineId());
+					doFilter = true;
+				}
+				if (doFilter)
+				{
+					builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
+				}
+			}
 		}
 
 		final I_MD_Candidate candidateRecord = builder
@@ -294,6 +446,11 @@ public class CandidateRepository
 			candidateRecordToUse.setMD_Candidate_GroupId(candidate.getGroupId());
 		}
 
+		if (candidate.getStatus() != null)
+		{
+			candidateRecordToUse.setMD_Candidate_Status(candidate.getStatus().toString());
+		}
+
 		return candidateRecordToUse;
 	}
 
@@ -345,7 +502,7 @@ public class CandidateRepository
 		}
 		if (subType == SubType.PRODUCTION)
 		{
-			final I_MD_Candidate_Prod_Detail productiondetail = retrieveProductiondetail(candidateRecord);
+			final I_MD_Candidate_Prod_Detail productiondetail = retrieveProductionDetail(candidateRecord);
 			if (productiondetail != null)
 			{
 				builder.productionDetail(ProductionCandidateDetail.builder()
@@ -361,6 +518,14 @@ public class CandidateRepository
 			}
 		}
 
+		final I_MD_Candidate_Demand_Detail demandDetail = retrieveDemandDetail(candidateRecord);
+		if (demandDetail != null)
+		{
+			builder.demandDetail(DemandCandidateDetail.builder()
+					.orderLineId(demandDetail.getC_OrderLine_ID())
+					.build());
+		}
+
 		return Optional.of(builder.build());
 	}
 
@@ -374,7 +539,12 @@ public class CandidateRepository
 		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
 
 		final I_MD_Candidate candidateRecord = builder
-				.orderBy().addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, false).endOrderBy()
+				.orderBy()
+				// there can be many stock candidates with the same DateProjected, because e.g. a to of sales orders can all have the same promised date and time
+				// therefore we need to filter by both dateprojected and md-candidate-id
+				.addColumn(I_MD_Candidate.COLUMNNAME_DateProjected, false)
+				.addColumn(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, false)
+				.endOrderBy()
 				.create()
 				.first();
 
@@ -488,5 +658,4 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, reference.getAD_Table_ID())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, reference.getRecord_ID());
 	}
-
 }
