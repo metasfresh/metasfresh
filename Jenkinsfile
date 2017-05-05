@@ -348,6 +348,7 @@ node('agent && linux && libc6-i386')
 <h3>Deploy</h3>
 <ul>
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the tar.gz to a host of your choice.</li>
+	<li>..and <a href=\"https://jenkins.metasfresh.com/job/ops/job/release_weekly_release_package/parambuild/?URL_APP_DIST=${MF_ARTIFACT_URLS['metasfresh-dist']}&URL_WEBAPI_JAR=${MF_ARTIFACT_URLS['metasfresh-webui']}&URL_WEBUI_FRONTEND=${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\"><b>this link</b></a> lets you jump to a release job that will create the weekly release package from this build.</li>
 </ul>
 <p>
 <h3>Additional notes</h3>
