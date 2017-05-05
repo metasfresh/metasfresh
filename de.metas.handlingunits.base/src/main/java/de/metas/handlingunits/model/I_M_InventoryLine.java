@@ -1,8 +1,4 @@
-package de.metas.handlingunits.inout;
-
-import de.metas.handlingunits.inout.impl.QualityReturnsInOutLinesBuilder;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.inout.model.I_M_InOutLine;
+package de.metas.handlingunits.model;
 
 /*
  * #%L
@@ -26,25 +22,13 @@ import de.metas.inout.model.I_M_InOutLine;
  * #L%
  */
 
-public interface IQualityReturnsInOutLinesBuilder
+public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 {
-
-	/**
-	 * Create quality return inout line based on the given product storage.
-	 * 
-	 * @param productStorage
-	 * @param originInOutLine
-	 * @return
-	 */
-	QualityReturnsInOutLinesBuilder addHUProductStorage(IHUProductStorage productStorage, final I_M_InOutLine originInOutLine);
-
-	/**
-	 * Check if this builder is empty.
-	 *
-	 * A builder is considered empty, when there are no created document lines.
-	 *
-	 * @return true if empty.
-	 */
-	boolean isEmpty();
-
+	// @formatter:off
+		public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+		// public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
+		public int getM_HU_PI_Item_Product_ID();
+		public void setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product M_HU_PI_Item_Product) throws RuntimeException;
+		public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
+		// @formatter:on
 }
