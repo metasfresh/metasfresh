@@ -26,6 +26,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,6 +45,7 @@ import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.permissions.Access;
 import org.adempiere.ad.security.permissions.Constraint;
 import org.adempiere.ad.security.permissions.Constraints;
+import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.security.permissions.ElementPermissions;
 import org.adempiere.ad.security.permissions.GenericPermissions;
 import org.adempiere.ad.security.permissions.LoginOrgConstraint;
@@ -87,6 +90,8 @@ import de.metas.logging.MetasfreshLastError;
 class UserRolePermissions implements IUserRolePermissions
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
+
+	private static final Set<Integer> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<Integer>()); // NOTE: new instance to make sure it's unique
 
 	/** Permissions name (i.e. role name) */
 	private final String name;
@@ -254,8 +259,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return all_AD_Role_IDs;
 	}
 
-	@Override
-	public boolean isAccessAllOrgs()
+	private boolean isAccessAllOrgs()
 	{
 		return hasPermission(PERMISSION_AccessAllOrgs);
 	}
@@ -304,8 +308,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return userLevel;
 	}
 
-	@Override
-	public boolean isPersonalAccess()
+	private boolean isPersonalAccess()
 	{
 		return hasPermission(PERMISSION_PersonalAccess);
 	}
@@ -374,8 +377,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param rw read write access
 	 * @return true if access
 	 */
-	@Override
-	public boolean isClientAccess(final int AD_Client_ID, final boolean rw)
+	private boolean isClientAccess(final int AD_Client_ID, final boolean rw)
 	{
 		if (AD_Client_ID == 0 && !rw)
 		{
@@ -577,36 +579,24 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean isTableAccess(final int AD_Table_ID, final boolean ro)
 	{
-		if (!isTableAccessLevel(AD_Table_ID, ro))
+		if (!ro)
 		{
-			return false;
+			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
+			if (roleAccessLevel == null)
+			{
+				logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
+				return false;
+			}
+			
+			final TableAccessLevel userLevel = getUserLevel();
+			if(!roleAccessLevel.hasCommonLevels(userLevel))
+			{
+				return false;
+			}
 		}
+
+		//
 		return tablePermissions.isTableAccess(AD_Table_ID, ro);
-	}
-
-	/**
-	 * Access to Table based on Role User Level Table Access Level
-	 *
-	 * @param AD_Table_ID table
-	 * @param ro check read only access otherwise read write access level
-	 * @return has RO/RW access to table
-	 */
-	private boolean isTableAccessLevel(final int AD_Table_ID, final boolean ro)
-	{
-		if (ro)
-		{
-			return true;
-		}
-
-		final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
-		if (roleAccessLevel == null)
-		{
-			logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
-			return false;
-		}
-
-		final TableAccessLevel userLevel = getUserLevel();
-		return roleAccessLevel.hasCommonLevels(userLevel);
 	}
 
 	/**
@@ -636,8 +626,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param ro read only
 	 * @return boolean
 	 */
-	@Override
-	public boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final boolean ro)
+	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final boolean ro)
 	{
 		// if (!isTableAccess(AD_Table_ID, ro)) // No Access to Table
 		// return false;
@@ -663,6 +652,12 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		final Boolean retValue = windowPermissions.getReadWritePermission(AD_Window_ID);
 		return retValue;
+	}
+	
+	@Override
+	public ElementPermission checkWindowPermission(final int AD_Window_ID)
+	{
+		return windowPermissions.getPermission(AD_Window_ID);
 	}
 
 	/**
@@ -950,6 +945,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// Notification
+		// TODO: consider deleting it because it's not used
 		final String tableAcessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), tableAcessLevel.getAD_Message());
 		final String userAccessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), userAccessLevel.getAD_Message());
 		MetasfreshLastError.saveWarning(logger, "AccessTableNoView", "Required=" + tableAcessLevel + "(" + tableAcessLevelTrl + ") != UserLevel=" + userAccessLevelTrl);
@@ -959,95 +955,101 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean canView(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
 	{
-		final boolean saveWarning = false;
 		final boolean accessReadWrite = false;
-		return canAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, saveWarning, accessReadWrite);
+		final String errmsg = checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+		return errmsg == null;
+	}
+
+	@Override
+	public String checkCanView(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
+	{
+		final boolean accessReadWrite = false;
+		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+	}
+
+	@Override
+	public String checkCanUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
+	{
+		final boolean accessReadWrite = true;
+		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
 	}
 
 	@Override
 	public boolean canUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID, final boolean saveWarning)
 	{
-		final boolean accessReadWrite = true;
-		return canAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, saveWarning, accessReadWrite);
-	}
-
-	private final boolean canAccessRecord(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID, final boolean createError, final boolean accessReadWrite)
-	{
-		final TableAccessLevel userLevel = getUserLevel();
-
-		if (userLevel.isSystem())
+		final String errmsg = checkCanUpdate(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID);
+		if(errmsg == null)
 		{
 			return true;
 		}
-
-		boolean retValue = true;
-		String whatMissing = "";
-
-		// System == Client=0 & Org=0
-		if (AD_Client_ID == 0 && AD_Org_ID == 0
-				&& !userLevel.isSystem())
+		else
 		{
-			retValue = false;
-			whatMissing += "S";
-		}
-
-		// Client == Client!=0 & Org=0
-		else if (AD_Client_ID != 0 && AD_Org_ID == 0
-				&& !userLevel.isClient())
-		{
-			if (userLevel.isOrganization() && isOrgAccess(AD_Org_ID, accessReadWrite))
+			if(saveWarning)
 			{
-				;	// Client+Org with access to *
+				MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate", errmsg);
+				logger.warn("No update access: {}, {}", errmsg, this);			
 			}
-			else
-			{
-				retValue = false;
-				whatMissing += "C";
-			}
+			return false;
 		}
+	}
 
-		// Organization == Client!=0 & Org!=0
-		else if (AD_Client_ID != 0 && AD_Org_ID != 0
-				&& !userLevel.isOrganization())
+	/** @return error message or <code>null</code> if OK */
+	private final String checkCanAccessRecord(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID, final boolean accessReadWrite)
+	{
+		final TableAccessLevel userLevel = getUserLevel();
+
+		// If user level is system then it can access anything
+		// TODO: check if we really need this rule here
+		if (userLevel.isSystem())
 		{
-			retValue = false;
-			whatMissing += "O";
+			return null; // OK
 		}
 
+		final List<String> missingAccesses = new ArrayList<>();
+
+		// Check user level vs required level (based on AD_Client_ID/AD_Org_ID)
+		if(accessReadWrite)
+		{
+			final TableAccessLevel requiredLevel = TableAccessLevel.forClientOrg(AD_Client_ID, AD_Org_ID);
+			if(!requiredLevel.canBeAccessedBy(userLevel))
+			{
+				missingAccesses.add(requiredLevel.toString());
+			}
+		}
+		
+		//
 		// Client Access: Verify if the role has access to the given client - teo_sarca, BF [ 1982398 ]
-		if (retValue)
+		if (missingAccesses.isEmpty() && !isClientAccess(AD_Client_ID, accessReadWrite))
 		{
-			retValue = isClientAccess(AD_Client_ID, accessReadWrite); // r/w access
+			missingAccesses.add("client access");
 		}
 
 		// Org Access: Verify if the role has access to the given organization - teo_sarca, patch [ 1628050 ]
-		if (retValue)
+		if (missingAccesses.isEmpty() && !isOrgAccess(AD_Org_ID, accessReadWrite))
 		{
-			retValue = isOrgAccess(AD_Org_ID, accessReadWrite); // r/w access
-			whatMissing = "W";
+			missingAccesses.add("organization access");
 		}
 
-		// Data Access
-		if (retValue)
+		// Table Access
+		if (missingAccesses.isEmpty() && !isTableAccess(AD_Table_ID, !accessReadWrite))
 		{
-			retValue = isTableAccess(AD_Table_ID, !accessReadWrite);
+			missingAccesses.add("table access");
 		}
 
-		if (retValue && Record_ID > 0)
+		// Record Access
+		if (Record_ID > 0 && missingAccesses.isEmpty() && !isRecordAccess(AD_Table_ID, Record_ID, !accessReadWrite))
 		{
-			retValue = isRecordAccess(AD_Table_ID, Record_ID, !accessReadWrite);
+			missingAccesses.add("record access");
 		}
 
-		if (!retValue && createError)
+		if(!missingAccesses.isEmpty())
 		{
-			MetasfreshLastError.saveWarning(logger, "AccessTableNoUpdate",
-					"AD_Client_ID=" + AD_Client_ID
-							+ ", AD_Org_ID=" + AD_Org_ID + ", UserLevel=" + userLevel
-							+ " => missing=" + whatMissing);
-			logger.warn(toString());
+			final String adMessage = accessReadWrite ? "AccessTableNoUpdate" : "AccessTableNoView";
+			return "@" + adMessage + "@: " + Joiner.on(", ").join(missingAccesses);
 		}
-		return retValue;
-	}	// canUpdate
+		
+		return null; // OK
+	}
 
 	/**
 	 * Return Where clause for Record Access

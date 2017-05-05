@@ -109,52 +109,6 @@ public interface I_X_MRP_ProductInfo_V
     public static final String COLUMNNAME_Fresh_QtyOnHand_OnDate = "Fresh_QtyOnHand_OnDate";
 
 	/**
-	 * Set Ind9.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setFresh_QtyOnHand_OnDate_Ind9 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Ind9);
-
-	/**
-	 * Get Ind9.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Ind9();
-
-    /** Column definition for Fresh_QtyOnHand_OnDate_Ind9 */
-    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_V, Object> COLUMN_Fresh_QtyOnHand_OnDate_Ind9 = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_V, Object>(I_X_MRP_ProductInfo_V.class, "Fresh_QtyOnHand_OnDate_Ind9", null);
-    /** Column name Fresh_QtyOnHand_OnDate_Ind9 */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9 = "Fresh_QtyOnHand_OnDate_Ind9";
-
-	/**
-	 * Set Stö2.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setFresh_QtyOnHand_OnDate_Stö2 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Stö2);
-
-	/**
-	 * Get Stö2.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Stö2();
-
-    /** Column definition for Fresh_QtyOnHand_OnDate_Stö2 */
-    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_V, Object> COLUMN_Fresh_QtyOnHand_OnDate_Stö2 = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_V, Object>(I_X_MRP_ProductInfo_V.class, "Fresh_QtyOnHand_OnDate_Stö2", null);
-    /** Column name Fresh_QtyOnHand_OnDate_Stö2 */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2 = "Fresh_QtyOnHand_OnDate_Stö2";
-
-	/**
 	 * Set Zusagbar Zählbestand.
 	 *
 	 * <br>Type: Quantity
