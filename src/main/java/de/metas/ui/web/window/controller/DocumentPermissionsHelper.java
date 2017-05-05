@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Services;
 
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentPermissionException;
@@ -82,6 +83,12 @@ public class DocumentPermissionsHelper
 
 	public static void assertCanView(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
+		// In case document type is not Window, return OK because we cannot validate
+		if (document.getDocumentPath().getDocumentType() != DocumentType.Window)
+		{
+			return; // OK
+		}
+		
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
 		{
@@ -121,6 +128,12 @@ public class DocumentPermissionsHelper
 	
 	private static String checkCanEdit(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
+		// In case document type is not Window, return OK because we cannot validate
+		if (document.getDocumentPath().getDocumentType() != DocumentType.Window)
+		{
+			return null; // OK
+		}
+		
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
 		{
@@ -129,8 +142,10 @@ public class DocumentPermissionsHelper
 		}
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		
+		int adClientId = document.getAD_Client_ID();
+		int adOrgId = document.getAD_Org_ID();
 		final int recordId = document.getDocumentId().toIntOr(-1);
-		return permissions.checkCanUpdate(document.getAD_Client_ID(), document.getAD_Org_ID(), adTableId, recordId);
+		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
 	}
 
 }
