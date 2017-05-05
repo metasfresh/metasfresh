@@ -25,6 +25,8 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.menu.MenuTree;
+import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -35,7 +37,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -100,6 +102,9 @@ public class WindowRestController
 
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
+	
+	@Autowired
+	private MenuTreeRepository menuTreeRepository;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -454,17 +459,27 @@ public class WindowRestController
 	}
 
 	@GetMapping(value = "/{windowId}/{documentId}/references")
-	public JSONDocumentReferencesList getDocumentReferences(
+	public JSONDocumentReferencesGroupList getDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
 	)
 	{
 		userSession.assertLoggedIn();
-		
+
+		// Get document references
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
-		return JSONDocumentReferencesList.of(documentReferences, newJSONOptions().build());
+		if(documentReferences.isEmpty())
+		{
+			return JSONDocumentReferencesGroupList.EMPTY;
+		}
+
+		// Organize document references in groups (by top level menu) and return them as JSON
+		final JSONOptions jsonOpts = newJSONOptions().build();
+		final MenuTree menuTree = menuTreeRepository.getMenuTree(userSession.getUserRolePermissionsKey(), jsonOpts.getAD_Language());
+		final String othersMenuCaption = "Others"; // FIXME: hardcoded
+		return JSONDocumentReferencesGroupList.of(documentReferences, menuTree, othersMenuCaption, jsonOpts);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")

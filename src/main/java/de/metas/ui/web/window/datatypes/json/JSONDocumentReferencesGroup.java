@@ -1,24 +1,23 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.Collection;
 import java.util.List;
-
-import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.model.DocumentReference;
+import lombok.Builder;
+import lombok.Singular;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,36 +36,27 @@ import de.metas.ui.web.window.model.DocumentReference;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONDocumentReferencesList
+public class JSONDocumentReferencesGroup
 {
-	public static JSONDocumentReferencesList of(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
-	{
-		if (documentReferences.isEmpty())
-		{
-			return EMPTY;
-		}
-
-		final ImmutableList<JSONDocumentReference> references = documentReferences.stream()
-				.map(documentReference -> JSONDocumentReference.of(documentReference, jsonOpts))
-				.filter(jsonDocumentReference -> jsonDocumentReference != null)
-				.collect(GuavaCollectors.toImmutableList());
-		if (references.isEmpty())
-		{
-			return EMPTY;
-		}
-
-		return new JSONDocumentReferencesList(references);
-	}
-
-	private static final JSONDocumentReferencesList EMPTY = new JSONDocumentReferencesList(ImmutableList.of());
+	@JsonProperty("caption")
+	private final String caption;
 
 	@JsonProperty("references")
 	private final List<JSONDocumentReference> references;
 
+	@JsonIgnore
+	private boolean miscGroup;
+
 	@JsonCreator
-	private JSONDocumentReferencesList(@JsonProperty("references") final List<JSONDocumentReference> references)
+	@Builder
+	private JSONDocumentReferencesGroup( //
+			@JsonProperty("caption") final String caption //
+			, final boolean isMiscGroup //
+			, @JsonProperty("references") @Singular final List<JSONDocumentReference> references //
+	)
 	{
-		super();
+		this.caption = caption;
+		this.miscGroup = isMiscGroup;
 		this.references = references == null || references.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(references);
 	}
 
@@ -74,7 +64,28 @@ public final class JSONDocumentReferencesList
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(references)
+				.add("caption", caption)
+				.add("references", references)
 				.toString();
+	}
+	
+	public String getCaption()
+	{
+		return caption;
+	}
+
+	public List<JSONDocumentReference> getReferences()
+	{
+		return references;
+	}
+	
+	public boolean isEmpty()
+	{
+		return references.isEmpty();
+	}
+	
+	public boolean isMiscGroup()
+	{
+		return miscGroup;
 	}
 }
