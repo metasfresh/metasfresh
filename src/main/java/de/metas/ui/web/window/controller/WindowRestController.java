@@ -37,14 +37,17 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -57,6 +60,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -447,7 +451,7 @@ public class WindowRestController
 
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/zoomInto")
-	public JSONDocumentLayout getDocumentFieldZoomInto(
+	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("fieldName") final String fieldName //
@@ -460,7 +464,7 @@ public class WindowRestController
 
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/zoomInto")
-	public JSONDocumentLayout getDocumentFieldZoomInto(
+	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
@@ -473,23 +477,40 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	private JSONDocumentLayout getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
+	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
-		final int adWindowId = documentCollection.forDocumentReadonly(documentPath, document -> {
-			final ITableRecordReference tableRecordRef = document.getFieldView(fieldName).getValueAs(ITableRecordReference.class);
-			return RecordZoomWindowFinder.findAD_Window_ID(tableRecordRef);
+		final ITableRecordReference tableRecordRef = documentCollection.forDocumentReadonly(documentPath, document -> {
+			final IDocumentFieldView field = document.getFieldView(fieldName);
+			return field.getValueAs(ITableRecordReference.class);
 		});
-
-		if (adWindowId <= 0)
+		if (tableRecordRef == null)
 		{
-			throw new EntityNotFoundException("No windowId found")
+			throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value")
 					.setParameter("documentPath", documentPath)
 					.setParameter("fieldName", fieldName);
 		}
 
-		return getLayout(String.valueOf(adWindowId), false); // advanced=false
+		final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableRecordRef);
+		if (adWindowId > 0)
+		{
+			throw new EntityNotFoundException("No windowId found")
+					.setParameter("documentPath", documentPath)
+					.setParameter("fieldName", fieldName)
+					.setParameter("tableRecordRef", tableRecordRef);
+		}
+
+		// TODO: handle the case of included documents (e.g. Zooming into C_OrderLine)
+		
+		final JSONDocumentLayout windowLayout = getLayout(String.valueOf(adWindowId), false); // advanced=false
+		return JSONZoomInto.builder()
+				.documentPath(JSONDocumentPath.builder()
+						.windowId(WindowId.of(adWindowId))
+						.documentId(DocumentId.of(tableRecordRef.getRecord_ID()))
+						.build())
+				.windowLayout(windowLayout)
+				.build();
 	}
 
 	@GetMapping("/{windowId}/{documentId}/actions")

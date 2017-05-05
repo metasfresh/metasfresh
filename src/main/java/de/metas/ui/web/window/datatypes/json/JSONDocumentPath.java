@@ -15,6 +15,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
+import lombok.Builder;
 
 /*
  * #%L
@@ -68,6 +69,7 @@ public class JSONDocumentPath implements Serializable
 	private final String fieldName;
 
 	@JsonCreator
+	@Builder
 	private JSONDocumentPath(
 			@JsonProperty("windowId") final WindowId windowId //
 			, @JsonProperty("processId") final ProcessId processId //
