@@ -336,5 +336,10 @@ public class HUInOutBL implements IHUInOutBL
 		final I_M_InOut inOut = producer.create();
 		return inOut;
 	}
+	
+	public I_M_HU createHUForCustomerReturnLine(final I_M_InOutLine customerReturnLine)
+	{
+		
+	}
 
 }
