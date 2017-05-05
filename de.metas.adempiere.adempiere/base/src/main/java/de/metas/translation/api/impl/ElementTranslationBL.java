@@ -32,28 +32,15 @@ import de.metas.translation.api.IElementTranslationBL;
 
 public class ElementTranslationBL implements IElementTranslationBL
 {
-	public static final String AD_Column_TRL_Updater = "update_AD_Column_TRL_On_ElementTrl";
-	public static final String AD_Process_Para_TRL_Updater = "update_AD_Process_Para_TRL_On_ElementTrl";
-	public static final String AD_Field_TRL_Updater = "update_AD_Field_TRL_On_ElementTrl";
-	public static final String AD_PrintFormatItem_TRL_Updater = "update_AD_PrintFormatItem_TRL_On_ElementTrl";
+	public static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
 
 	@Override
 	public void updateTranslations(final int elementId, final String adLanguage) throws SQLException
 	{
-		// Update Columns, Fields, Parameters, Print Info
+		// Update Columns, Fields, Parameters, Print Info translation tables
 		final String trxName = ITrx.TRXNAME_None;
 		{
-			// Column
-			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(AD_Column_TRL_Updater, elementId, adLanguage), null);
-
-			// Process Parameter
-			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(AD_Process_Para_TRL_Updater, elementId, adLanguage), null);
-
-			// Field
-			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(AD_Field_TRL_Updater, elementId, adLanguage), null);
-
-			// PrintFormatItem
-			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(AD_PrintFormatItem_TRL_Updater, elementId, adLanguage), null);
+			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update, elementId, adLanguage), null);
 		}
 	}
 
