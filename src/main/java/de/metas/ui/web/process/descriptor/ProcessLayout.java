@@ -82,10 +82,10 @@ public class ProcessLayout
 
 		Preconditions.checkNotNull(builder.processId, "processId not set: %s", builder);
 		processId = builder.processId;
-		
+
 		Preconditions.checkNotNull(builder.layoutType, "layoutType not set: %s", builder);
 		layoutType = builder.layoutType;
-		
+
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
 		elements = ImmutableList.copyOf(builder.elements);
@@ -201,7 +201,8 @@ public class ProcessLayout
 					.setWidgetType(processParaDescriptor.getWidgetType())
 					.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
 							.setLookupSource(processParaDescriptor.getLookupSourceType())
-							.setPublicField(true))
+							.setPublicField(true)
+							.setSupportZoomInto(processParaDescriptor.getWidgetType().isLookup()))
 					.build();
 
 			addElement(element);

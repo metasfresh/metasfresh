@@ -596,6 +596,7 @@ public class LayoutFactory
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
 				.setLookupSource(field.getLookupSourceType())
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
+				.setSupportZoomInto(field.getWidgetType().isLookup())
 				.trackField(field);
 
 		logger.trace("Built layout element field for {}: {}", field, layoutElementFieldBuilder);

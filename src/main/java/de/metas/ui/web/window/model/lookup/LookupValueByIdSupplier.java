@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
+import org.adempiere.util.lang.ITableRecordReference;
+
 import de.metas.ui.web.window.datatypes.LookupValue;
 
 /*
@@ -24,8 +26,9 @@ import de.metas.ui.web.window.datatypes.LookupValue;
  * #L%
  */
 
-@FunctionalInterface
 public interface LookupValueByIdSupplier
 {
 	LookupValue findById(Object id);
+	
+	ITableRecordReference toTableRecordReference(int id);
 }

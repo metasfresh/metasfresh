@@ -30,11 +30,11 @@ import de.metas.ui.web.devices.JSONDeviceDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,10 +65,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	private final LookupSource lookupSource;
 	private final Optional<String> lookupTableName;
-	
+
 	private final ITranslatableString emptyText;
 
 	private final List<JSONDeviceDescriptor> devices;
+
+	private final boolean supportZoomInto;
 
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
 	{
@@ -80,9 +82,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		publicField = builder.publicField;
 		emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
 		devices = builder.getDevices();
-		
+
 		lookupSource = builder.lookupSource;
 		lookupTableName = builder.getLookupTableName();
+
+		supportZoomInto = builder.isSupportZoomInto();
 	}
 
 	@Override
@@ -127,7 +131,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		return lookupSource;
 	}
-	
+
 	public Optional<String> getLookupTableName()
 	{
 		return lookupTableName;
@@ -152,6 +156,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		return devices;
 	}
+	
+	public boolean isSupportZoomInto()
+	{
+		return supportZoomInto;
+	}
 
 	public static final class Builder
 	{
@@ -170,12 +179,14 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private ITranslatableString emptyText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
 		private List<JSONDeviceDescriptor> _devices;
-		
+
 		private LookupSource lookupSource;
 		private Optional<String> lookupTableName = null;
 
 		private boolean consumed = false;
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
+
+		private boolean supportZoomInto;
 
 		private Builder(final String fieldName)
 		{
@@ -233,25 +244,25 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		{
 			return lookupSource != null;
 		}
-		
+
 		public Builder setLookupTableName(final Optional<String> lookupTableName)
 		{
 			Check.assumeNotNull(lookupTableName, "Parameter lookupTableName is not null");
 			this.lookupTableName = lookupTableName;
 			return this;
 		}
-		
+
 		public Optional<String> getLookupTableName()
 		{
-			if(lookupTableName != null)
+			if (lookupTableName != null)
 			{
 				return lookupTableName;
 			}
-			if(documentFieldBuilder != null)
+			if (documentFieldBuilder != null)
 			{
 				return documentFieldBuilder.getLookupTableName();
 			}
-			
+
 			return Optional.empty();
 		}
 
@@ -295,7 +306,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			documentFieldBuilder = field;
 			return this;
 		}
-		
+
 		public boolean isSpecialFieldToExcludeFromLayout()
 		{
 			return documentFieldBuilder != null && documentFieldBuilder.isSpecialFieldToExcludeFromLayout();
@@ -325,6 +336,17 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 				return ImmutableList.of();
 			}
 			return ImmutableList.copyOf(_devices);
+		}
+
+		public Builder setSupportZoomInto(boolean supportZoomInto)
+		{
+			this.supportZoomInto = supportZoomInto;
+			return this;
+		}
+
+		private boolean isSupportZoomInto()
+		{
+			return supportZoomInto;
 		}
 	}
 }

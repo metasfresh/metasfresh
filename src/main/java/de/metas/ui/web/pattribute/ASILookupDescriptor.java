@@ -1,6 +1,7 @@
 package de.metas.ui.web.pattribute;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -54,6 +55,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		return new ASILookupDescriptor(attributeValuesProvider);
 	}
 
+	private static final Optional<String> LookupTableName = Optional.of(I_M_AttributeValue.Table_Name); 
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
 
 	private final IAttributeValuesProvider attributeValuesProvider;
@@ -72,6 +74,12 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		return MoreObjects.toStringHelper(this)
 				.addValue(attributeValuesProvider)
 				.toString();
+	}
+	
+	@Override
+	public Optional<String> getLookupTableName()
+	{
+		return LookupTableName;
 	}
 
 	@Override

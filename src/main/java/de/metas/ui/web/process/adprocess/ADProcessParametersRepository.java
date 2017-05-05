@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 
 import de.metas.process.IADPInstanceDAO;
@@ -19,6 +20,7 @@ import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
  * #%L
@@ -91,7 +93,21 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		final Object parameterValue = processInfoParameter.getParameter();
 		final String parameterDisplay = processInfoParameter.getInfo();
-		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, id -> LookupValue.fromObject(id, parameterDisplay));
+		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, new LookupValueByIdSupplier()
+		{
+			
+			@Override
+			public ITableRecordReference toTableRecordReference(int id)
+			{
+				throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public LookupValue findById(Object id)
+			{
+				return LookupValue.fromObject(id, parameterDisplay);
+			}
+		});
 		return parameterValueConv;
 	}
 

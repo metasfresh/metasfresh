@@ -40,11 +40,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -74,8 +74,8 @@ public class AddressDescriptorFactory
 				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText("C_Location_ID"))
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
 				.disableDefaultTableCallouts()
-				//
-				;
+		//
+		;
 
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address1)
 				.setValueClass(String.class)
@@ -150,9 +150,9 @@ public class AddressDescriptorFactory
 				.setMandatoryLogic(false)
 				//
 				.addCharacteristic(Characteristic.PublicField)
-				//
-				// .setDataBinding(new AddressFieldBinding(columnName, false, I_C_Location::get))
-				//
+		//
+		// .setDataBinding(new AddressFieldBinding(columnName, false, I_C_Location::get))
+		//
 		;
 
 	}
@@ -177,7 +177,8 @@ public class AddressDescriptorFactory
 				.setWidgetType(fieldDescriptor.getWidgetType())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
 						.setLookupSource(fieldDescriptor.getLookupSourceType())
-						.setPublicField(true));
+						.setPublicField(true)
+						.setSupportZoomInto(fieldDescriptor.getWidgetType().isLookup()));
 	}
 
 	private static class AddressDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
@@ -224,7 +225,7 @@ public class AddressDescriptorFactory
 				, final boolean mandatory //
 				, final Function<I_C_Location, Object> readMethod //
 				, final BiConsumer<I_C_Location, IDocumentFieldView> writeMethod //
-		)
+				)
 		{
 			super();
 			this.columnName = columnName;
@@ -304,7 +305,7 @@ public class AddressDescriptorFactory
 		{
 			toLocationRecord.setAddress4(fromField.getValueAs(String.class));
 		}
-		
+
 		public static void writeValue_Postal(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
 		{
 			toLocationRecord.setPostal(fromField.getValueAs(String.class));

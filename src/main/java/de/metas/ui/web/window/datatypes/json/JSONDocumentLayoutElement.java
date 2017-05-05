@@ -155,6 +155,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				, (List<JSONDeviceDescriptor>)null // devices
 				, (String)null // newRecordWindowId
 				, (String)null // newRecordCaption
+				, widgetType.isLookup() // supportZoomInfo
 		));
 	}
 
