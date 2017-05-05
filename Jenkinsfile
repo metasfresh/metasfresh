@@ -304,7 +304,7 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 							//docker.withTool('default') {
         			//sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy docker:build -DpushImage"
 							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-							sh "cp target/metasfresh-admin-${BUILD_VERSION}.jar src/main/docker/de.metas.admin.webui-1.0.0.jar"
+							sh "cp target/metasfresh-admin-${BUILD_VERSION}.jar src/main/docker/metasfresh-admin.jar"
 
 							docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 							{
