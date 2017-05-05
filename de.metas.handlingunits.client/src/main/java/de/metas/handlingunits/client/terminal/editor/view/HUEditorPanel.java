@@ -177,19 +177,18 @@ public class HUEditorPanel
 	 * button for moving HUs to quality Warehouse (task #1065)
 	 */
 	protected ITerminalButton bMoveToQualityWarehouse;
-	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; // TODO: Translate
+	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; 
 
 	/**
 	 * button to create Vendor Return inout (task #1062)
 	 */
 	protected ITerminalButton bCreateVendorReturn;
-	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; // TODO: Translate
-
+	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; 
 	/**
 	 * boton to move HUs + products to garbage (task #1064)
 	 */
 	protected ITerminalButton bMoveToGarbage;
-	private static final String ACTION_MoveToGarbage = "MoveToGarbage"; // TODO: Translate
+	private static final String ACTION_MoveToGarbage = "MoveToGarbage"; 
 
 	/**
 	 * Barcode search field

@@ -10,9 +10,18 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.9 (2017-19)
+
+**upcoming release for week 2017-19**
+
+## Features
+
+* metasfresh-backend
+  * [#1425](https://github.com/metasfresh/metasfresh/issues/1425) make price field bigger in sales invoice document
+
 # metasfresh 5.8 (2017-18)
 
-**upcoming release for week 2017-18**
+**this week's release candidate**
 
 ## Features
 
@@ -75,6 +84,7 @@ Here come the actual release notes:
 ## Fixes
 
 * metasfresh-backend
+  * [#1044](https://github.com/metasfresh/metasfresh/issues/1044) System Elements w/ centrally maintained Y shall also migrate migration scripts for Translations
   * [#1353](https://github.com/metasfresh/metasfresh/issues/1353) Problem with C_Order filtering in M_ShipmentSchedule
     * Fixes a Bug when filtering Document No. and more than 1 exact result is returned. Added validation rule to exclude Purchase Orders from Search.
   * [#1440](https://github.com/metasfresh/metasfresh/issues/1440) ClassCastException: CompositeQueryFilter cannot be cast to SqlQueryFilter
