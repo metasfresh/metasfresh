@@ -23,6 +23,7 @@ SET default_with_oids = false;
 -- Name: webui_ad_treenodemm; Type: TABLE; Schema: backup; Owner: metasfresh
 --
 
+DROP table if exists webui_ad_treenodemm;
 CREATE TABLE webui_ad_treenodemm (
     ad_tree_id numeric(10,0),
     node_id numeric(10,0),
