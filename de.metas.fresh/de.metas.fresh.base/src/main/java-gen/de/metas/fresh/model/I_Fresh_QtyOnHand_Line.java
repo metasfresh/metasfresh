@@ -222,8 +222,8 @@ public interface I_Fresh_QtyOnHand_Line
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -232,8 +232,8 @@ public interface I_Fresh_QtyOnHand_Line
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
