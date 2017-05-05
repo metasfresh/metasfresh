@@ -20,9 +20,11 @@ Here come the actual release notes:
   * [#796](https://github.com/metasfresh/metasfresh/issues/796) Fact Account WebUI Window Readonly
     * Including the Fact Account window to WebUI.
   * [#1362](https://github.com/metasfresh/metasfresh/issues/1362) Activate auto numbering for incoming and outgoing payments
+    * Adjusting the Document Type setting for incoming and outgoings payment Documents. Now allowing the Document No. to be automatically create taken from Document sequences in WebUI.
   * [#1369](https://github.com/metasfresh/metasfresh/issues/1369) Translate request type to de_DE Vorgang Art
     * Adding the Translation of Request Type in webUI for language en_US.
   * [#1398](https://github.com/metasfresh/metasfresh/issues/1398) Take out "New" in C_DocTypeTarget_ID in PP_Order
+    * Adjusted the behaviot of Manufacturing Order Document when manually created. Taken out the Document Target "New", which only confuses user when selectable.
   * [#1399](https://github.com/metasfresh/metasfresh/issues/1399) DocumentNo not generated for PP_Orders in WebUI
     * Adding Document No. control to all manufacturing Document Types.
   * [#1400](https://github.com/metasfresh/metasfresh/issues/1400) DocumentNo not generated for empties in WebUI
@@ -30,11 +32,13 @@ Here come the actual release notes:
   * [#1401](https://github.com/metasfresh/metasfresh/issues/1401) Translate Process "New Request" to de_DE
     * Translating the jump Navigation of "New Request" to de_DE.
   * [#1403](https://github.com/metasfresh/metasfresh/issues/1403) technical: refactor TaxNotFoundException
+    * Technical Task to make the Tax selection easier and more robust in background implementation.
   * [#1405](https://github.com/metasfresh/metasfresh/issues/1405) Adjust Empties Return Window to mandatory field grouping layout
     * Adjusting Empties Return Window to mandatory Field primary layout.
   * [#1408](https://github.com/metasfresh/metasfresh/issues/1408) Create the WebUI Layout for Material Candidates
     * Creating the initial Layout for the Material Candidates Window in WebUI.
   * [#1411](https://github.com/metasfresh/metasfresh/issues/1411) Possible 1:1 switch for Data Lifecycle Management users
+    * New feature to allow individual users to be switched on/ off for the Data Lifecycle Management functionality. Before it was only possible to switch all users on for the same environment.
   * [#1417](https://github.com/metasfresh/metasfresh/issues/1417) Window for c_activity in WebUI
     * Adding the Activity window to WebUI.
   * [#1418](https://github.com/metasfresh/metasfresh/issues/1418) Window for c_bank in WebUI
@@ -46,6 +50,7 @@ Here come the actual release notes:
   * [#1430](https://github.com/metasfresh/metasfresh/issues/1430) Window for c_conversion_rate in WebUI
     * Adding the Currency Conversion rate window to WebUI.
   * [#1432](https://github.com/metasfresh/metasfresh/issues/1432) technical: HUReportService shall work with AD_Process_ID instead of I_AD_Process
+    * Technical Task to improve performance and redues possible caching issues.
   * [#1438](https://github.com/metasfresh/metasfresh/issues/1438) Fix spring scanBasePackageClasses and introduce profiles
     * Adjusting the spring boot configurations for the different metasfresh applications to allow a better maintenance.
   * #1442(https://github.com/metasfresh/metasfresh/issues/1442) Window for C_Doc_Outbound_Config in WebUI
