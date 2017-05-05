@@ -493,7 +493,7 @@ public class WindowRestController
 		}
 
 		final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableRecordRef);
-		if (adWindowId > 0)
+		if (adWindowId <= 0)
 		{
 			throw new EntityNotFoundException("No windowId found")
 					.setParameter("documentPath", documentPath)
