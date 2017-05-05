@@ -16,7 +16,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 592773067L;
+	private static final long serialVersionUID = -208616401L;
 
     /** Standard Constructor */
     public X_X_MRP_ProductInfo_V (Properties ctx, int X_MRP_ProductInfo_V_ID, String trxName)
@@ -24,33 +24,29 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
       super (ctx, X_MRP_ProductInfo_V_ID, trxName);
       /** if (X_MRP_ProductInfo_V_ID == 0)
         {
-			setFresh_QtyMRP (Env.ZERO);
+			setFresh_QtyMRP (BigDecimal.ZERO);
 // 0
-			setFresh_QtyOnHand_OnDate (Env.ZERO);
+			setFresh_QtyOnHand_OnDate (BigDecimal.ZERO);
 // 0
-			setFresh_QtyOnHand_OnDate_Ind9 (Env.ZERO);
+			setFresh_QtyPromised (BigDecimal.ZERO);
 // 0
-			setFresh_QtyOnHand_OnDate_Stö2 (Env.ZERO);
+			setFresh_QtyPromised_OnDate (BigDecimal.ZERO);
 // 0
-			setFresh_QtyPromised (Env.ZERO);
+			setQtyAvailable (BigDecimal.ZERO);
 // 0
-			setFresh_QtyPromised_OnDate (Env.ZERO);
+			setQtyMaterialentnahme (BigDecimal.ZERO);
 // 0
-			setQtyAvailable (Env.ZERO);
+			setQtyOnHand (BigDecimal.ZERO);
 // 0
-			setQtyMaterialentnahme (Env.ZERO);
+			setQtyOrdered (BigDecimal.ZERO);
 // 0
-			setQtyOnHand (Env.ZERO);
+			setQtyOrdered_OnDate (BigDecimal.ZERO);
 // 0
-			setQtyOrdered (Env.ZERO);
+			setQtyPromised (BigDecimal.ZERO);
 // 0
-			setQtyOrdered_OnDate (Env.ZERO);
+			setQtyReserved (BigDecimal.ZERO);
 // 0
-			setQtyPromised (Env.ZERO);
-// 0
-			setQtyReserved (Env.ZERO);
-// 0
-			setQtyReserved_OnDate (Env.ZERO);
+			setQtyReserved_OnDate (BigDecimal.ZERO);
 // 0
         } */
     }
@@ -101,7 +97,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyMRP);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -120,45 +116,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate);
 		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Ind9.
-		@param Fresh_QtyOnHand_OnDate_Ind9 Ind9	  */
-	@Override
-	public void setFresh_QtyOnHand_OnDate_Ind9 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Ind9)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9, Fresh_QtyOnHand_OnDate_Ind9);
-	}
-
-	/** Get Ind9.
-		@return Ind9	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Ind9 () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Stö2.
-		@param Fresh_QtyOnHand_OnDate_Stö2 Stö2	  */
-	@Override
-	public void setFresh_QtyOnHand_OnDate_Stö2 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Stö2)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2, Fresh_QtyOnHand_OnDate_Stö2);
-	}
-
-	/** Get Stö2.
-		@return Stö2	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Stö2 () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2);
-		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -177,7 +135,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyPromised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -196,7 +154,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyPromised_OnDate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -344,7 +302,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PMM_QtyPromised_OnDate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -385,7 +343,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAvailable);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -404,7 +362,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMaterialentnahme);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -426,7 +384,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHand);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -448,7 +406,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -467,7 +425,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_OnDate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -486,7 +444,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -508,7 +466,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -527,7 +485,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved_OnDate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
