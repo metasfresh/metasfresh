@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -37,7 +36,6 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -481,34 +479,22 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ITableRecordReference tableRecordRef = documentCollection.forDocumentReadonly(documentPath, document -> {
+		final ITableRecordReference zoomInfoTableRecordRef = documentCollection.forDocumentReadonly(documentPath, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 			return field.getValueAs(ITableRecordReference.class);
 		});
-		if (tableRecordRef == null)
+		if (zoomInfoTableRecordRef == null)
 		{
 			throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value")
 					.setParameter("documentPath", documentPath)
 					.setParameter("fieldName", fieldName);
 		}
 
-		final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableRecordRef);
-		if (adWindowId <= 0)
-		{
-			throw new EntityNotFoundException("No windowId found")
-					.setParameter("documentPath", documentPath)
-					.setParameter("fieldName", fieldName)
-					.setParameter("tableRecordRef", tableRecordRef);
-		}
-
-		// TODO: handle the case of included documents (e.g. Zooming into C_OrderLine)
-		
-		final JSONDocumentLayout windowLayout = getLayout(String.valueOf(adWindowId), false); // advanced=false
+		final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomInfoTableRecordRef);
+		final JSONDocumentLayout windowLayout = getLayout(zoomIntoDocumentPath.getWindowId().toJson(), false); // advanced=false
 		return JSONZoomInto.builder()
-				.documentPath(JSONDocumentPath.builder()
-						.windowId(WindowId.of(adWindowId))
-						.documentId(DocumentId.of(tableRecordRef.getRecord_ID()))
-						.build())
+				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
+				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
 				.windowLayout(windowLayout)
 				.build();
 	}

@@ -26,11 +26,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -59,14 +59,13 @@ public final class DocumentQuery
 				.build();
 	}
 
-
 	private final DocumentsRepository documentsRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final DocumentId recordId;
 	private final Document parentDocument;
 
 	private final List<DocumentFilter> filters;
-	
+
 	private final boolean noSorting;
 	private final List<DocumentQueryOrderBy> orderBys;
 
@@ -115,6 +114,16 @@ public final class DocumentQuery
 		return documentsRepository.retrieveDocuments(this);
 	}
 
+	/**
+	 * Retrieves parent's {@link DocumentId} for a child document identified by given query.
+	 * 
+	 * @param parentEntityDescriptor parent descriptor
+	 */
+	public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor)
+	{
+		return documentsRepository.retrieveParentDocumentId(parentEntityDescriptor, this);
+	}
+
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
 		return entityDescriptor;
@@ -144,7 +153,7 @@ public final class DocumentQuery
 	{
 		return filters;
 	}
-	
+
 	public boolean isNoSorting()
 	{
 		return noSorting;

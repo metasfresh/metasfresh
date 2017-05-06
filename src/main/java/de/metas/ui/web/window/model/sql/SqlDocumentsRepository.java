@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
@@ -247,6 +248,26 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
+	public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor, final DocumentQuery childDocumentQuery)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = SqlDocumentQueryBuilder.of(childDocumentQuery)
+				.getSqlSelectParentId(sqlParams, parentEntityDescriptor);
+
+		final int parentRecordId = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		if (parentRecordId < 0)
+		{
+			throw new EntityNotFoundException("Parent documentId was not found")
+					.setParameter("parentEntityDescriptor", parentEntityDescriptor)
+					.setParameter("childDocumentQuery", childDocumentQuery)
+					.setParameter("sql", sql)
+					.setParameter("sqlParams", sqlParams);
+		}
+
+		return DocumentId.of(parentRecordId);
+	}
+
+	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
 		assertThisRepository(entityDescriptor);
@@ -281,7 +302,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		private DocumentId id;
 
 		private String version;
-
 
 		public ResultSetDocumentValuesSupplier(final DocumentEntityDescriptor entityDescriptor, final String adLanguage, final ResultSet rs)
 		{
@@ -650,11 +670,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		// If both values are empty we can consider they are equal
 		// (see task https://github.com/metasfresh/metasfresh-webui-api/issues/276)
-		if(isEmptyPOFieldValue(value1) && isEmptyPOFieldValue(value2))
+		if (isEmptyPOFieldValue(value1) && isEmptyPOFieldValue(value2))
 		{
 			return true;
 		}
-		
+
 		return DataTypes.equals(value1, value2);
 	}
 
