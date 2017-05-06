@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -16,6 +17,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,6 +45,36 @@ import lombok.Builder;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDocumentPath implements Serializable
 {
+	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath)
+	{
+		final String fieldName = null;
+		return ofWindowDocumentPath(documentPath, fieldName);
+	}
+	
+	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath, final String fieldName)
+	{
+		final JSONDocumentPathBuilder builder = builder()
+				.fieldName(fieldName) // optional
+				.windowId(documentPath.getWindowId())
+				.documentId(documentPath.getDocumentId());
+		
+		if (documentPath.isRootDocument())
+		{
+			return builder.build();
+		}
+		else if (documentPath.isSingleIncludedDocument())
+		{
+			return builder
+					.tabId(documentPath.getDetailId())
+					.rowId(documentPath.getSingleRowId())
+					.build();
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert " + documentPath + " to JSON");
+		}
+	}
+
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final WindowId windowId;
@@ -56,9 +88,15 @@ public class JSONDocumentPath implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final DocumentId documentId;
 	//
+	@JsonProperty("tabId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final DetailId tabId;
+	//
 	@JsonProperty("tabid")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final DetailId tabid;
+	@Deprecated
+	private final DetailId legacyTabId;
+
 	//
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -74,7 +112,8 @@ public class JSONDocumentPath implements Serializable
 			@JsonProperty("windowId") final WindowId windowId //
 			, @JsonProperty("processId") final ProcessId processId //
 			, @JsonProperty("documentId") final DocumentId documentId //
-			, @JsonProperty("tabid") final DetailId tabid //
+			, @JsonProperty("tabId") final DetailId tabId //
+			, @JsonProperty("tabid") @Deprecated final DetailId legacyTabId //
 			, @JsonProperty("rowId") final DocumentId rowId //
 			, @JsonProperty("fieldName") final String fieldName)
 	{
@@ -82,7 +121,7 @@ public class JSONDocumentPath implements Serializable
 		{
 			throw new IllegalArgumentException("windowId or processId shall be set");
 		}
-		else if(windowId != null && processId != null)
+		else if (windowId != null && processId != null)
 		{
 			throw new IllegalArgumentException("windowId or processId shall be set but not all of them");
 		}
@@ -93,9 +132,35 @@ public class JSONDocumentPath implements Serializable
 		}
 
 		this.documentId = documentId;
-		this.tabid = tabid;
+		
+		this.tabId = extractTabId(tabId, legacyTabId);
+		this.legacyTabId = this.tabId;
 		this.rowId = rowId;
 		this.fieldName = fieldName;
+	}
+	
+	private static final DetailId extractTabId(final DetailId tabId, final DetailId legacyTabId)
+	{
+		if(tabId == legacyTabId)
+		{
+			return tabId;
+		}
+		else if(tabId != null && legacyTabId == null)
+		{
+			return tabId;
+		}
+		else if(tabId == null && legacyTabId != null)
+		{
+			return legacyTabId;
+		}
+		else if (Objects.equals(tabId, legacyTabId))
+		{
+			return tabId;
+		}
+		else
+		{
+			throw new IllegalArgumentException("tabId and tabid(legacy) does not match");
+		}
 	}
 
 	@Override
@@ -106,7 +171,7 @@ public class JSONDocumentPath implements Serializable
 				.add("windowId", windowId)
 				.add("processId", processId)
 				.add("documentId", documentId)
-				.add("tabid", tabid)
+				.add("tabId", tabId)
 				.add("rowId", rowId)
 				.add("fieldName", fieldName)
 				.toString();
@@ -116,7 +181,7 @@ public class JSONDocumentPath implements Serializable
 	{
 		if (windowId != null)
 		{
-			return DocumentPath.singleWindowDocumentPath(windowId, documentId, tabid, rowId);
+			return DocumentPath.singleWindowDocumentPath(windowId, documentId, tabId, rowId);
 		}
 		else if (processId != null)
 		{
