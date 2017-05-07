@@ -17,10 +17,10 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1463](https://github.com/metasfresh/metasfresh/issues/1463) Add Window for S_Resource_Ressource to WebUI
+    * Adding a new window to WebUI to allow maintaining Manufacturing Resources. 
 
 # metasfresh 5.8 (2017-18)
-
-**this week's release candidate**
 
 ## Features
 
