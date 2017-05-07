@@ -57,9 +57,11 @@ class List extends Component {
     render() {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
-            emptyText, tabIndex, mandatory, validStatus, lookupList
+            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus
         } = this.props;
         const {list, loading, selectedItem} = this.state;
+
+        console.log(autofocus);
 
         return (
             <RawList
@@ -78,6 +80,7 @@ class List extends Component {
                 tabIndex={tabIndex}
                 mandatory={mandatory}
                 validStatus={validStatus}
+                autofocus={autofocus}
             />
         )
     }

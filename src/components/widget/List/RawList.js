@@ -18,6 +18,8 @@ class RawList extends Component {
     componentDidMount = () => {
         const {autofocus} = this.props;
 
+        console.log(autofocus);
+
         (this.dropdown && autofocus) && this.dropdown.focus();
     }
 

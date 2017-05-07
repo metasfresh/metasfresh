@@ -17,7 +17,7 @@ class RawLookup extends Component {
     constructor(props) {
         super(props);
 
-        const {properties} = this.props;
+        // const {properties} = this.props;
 
         this.state = {
             query: '',
@@ -25,11 +25,11 @@ class RawLookup extends Component {
             isInputEmpty: true,
             selected: null,
             model: null,
-            property: '',
+            // property: '',
             properts: {},
             loading: false,
-            propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
+            // propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
+            // mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
             shouldBeFocused: true,
@@ -38,7 +38,7 @@ class RawLookup extends Component {
     }
 
     componentDidMount() {
-        const {selected, item} = this.props;
+        const {selected} = this.props;
 
         this.handleValueChanged();
 
@@ -65,12 +65,13 @@ class RawLookup extends Component {
 
     handleSelect = (select) => {
         const {
-            onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus
+            onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus, mainProperty,
+            getNextDropdown
         } = this.props;
 
-        const {
-            mainProperty, property
-        } = this.state;
+        // const {
+        //      property
+        // } = this.state;
 
         // removing selection
         this.setState({
@@ -81,13 +82,11 @@ class RawLookup extends Component {
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
                 handleInputEmptyStatus(false);
+                getNextDropdown(true);
 
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
-
-                console.log(mainProperty[0].field);
-                console.log(select);
 
                 
                     onChange(
@@ -96,6 +95,7 @@ class RawLookup extends Component {
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     handleInputEmptyStatus(false);
+                    getNextDropdown(true);
 
                     this.handleBlur();
                 
@@ -106,10 +106,10 @@ class RawLookup extends Component {
     handleAddNew = () => {
         const {
             dispatch, newRecordWindowId, newRecordCaption, filterWidget,
-            parameterName
+            parameterName, mainProperty
         } = this.props;
 
-        const {mainProperty} = this.state;
+        // const {mainProperty} = this.state;
 
         dispatch(openModal(
             newRecordCaption, newRecordWindowId, 'window', null, null, null,
@@ -129,24 +129,21 @@ class RawLookup extends Component {
     }
 
     handleFocus = () => {
-        const {isInputEmpty, property} = this.state;
+        // const {isInputEmpty, property} = this.state;
         this.setState({
             isOpen: true
         })
 
-        if(!isInputEmpty && property === ''){
-            this.handleChange(true);
-        }
+        // if(!isInputEmpty && property === ''){
+        //     this.handleChange(true);
+        // }
     }
 
     handleChange = (handleChangeOnFocus) => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
-            tabId, rowId, entity, subentity, subentityId, viewId, item
+            tabId, rowId, entity, subentity, subentityId, viewId, mainProperty
         } = this.props;
-
-
-        const {mainProperty} = this.state;
 
         if(this.inputSearch.value != ''){
 
@@ -187,21 +184,21 @@ class RawLookup extends Component {
             isInputEmpty: true,
             selected: null,
             model: null,
-            property: '',
+            // property: '',
             loading: false,
             query: ''
         });
     }
 
-    handleClear = (e) => {
-        const {onChange, properties} = this.props;
-        e && e.preventDefault();
-        this.inputSearch.value = '';
+    // handleClear = (e) => {
+    //     const {onChange, properties} = this.props;
+    //     e && e.preventDefault();
+    //     this.inputSearch.value = '';
 
-        onChange(properties, null, false);
+    //     onChange(properties, null, false);
 
-        this.handleBlur(this.clearState);
-    }
+    //     this.handleBlur(this.clearState);
+    // }
 
     handleKeyDown = (e) => {
         const {listenOnKeys, listenOnKeysFalse} = this.props;
@@ -299,11 +296,11 @@ class RawLookup extends Component {
 
     render() {
         const { handleAddNew, onClickOutside, disableOnClickOutside, isModal, rank, updated, filterWidget, mandatory, validStatus, align,
-        creatingNewDisabled, newRecordCaption, placeholder, readonly, tabIndex, item} = this.props;
+        creatingNewDisabled, newRecordCaption, placeholder, readonly, tabIndex, item, mainProperty} = this.props;
 
         const {
             propertiesCopy, isInputEmpty, list, query, loading, selected,
-            isOpen, validLocal, mainProperty
+            isOpen, validLocal
         } = this.state;
 
         return (

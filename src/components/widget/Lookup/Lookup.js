@@ -28,7 +28,8 @@ class Lookup extends Component {
         this.state = {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            mainProperty: getItemsByProperty(properties, 'source', 'lookup')
+            mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
+            showNextDropdown: false
         }
 
         // console.log(this.state.propertiesCopy);
@@ -38,7 +39,7 @@ class Lookup extends Component {
 
     componentDidMount() {
         const {defaultValue} = this.props;
-        console.log(defaultValue);
+        // console.log(defaultValue);
 
         this.checkIfDefaultValue();
     }
@@ -49,6 +50,12 @@ class Lookup extends Component {
         })
     }
 
+    getNextDropdown=(state)=> {
+        this.setState({
+            showNextDropdown: state
+        });
+    }
+
     checkIfDefaultValue = () => {
         const {defaultValue} = this.props;
         defaultValue.map(item => {
@@ -56,7 +63,7 @@ class Lookup extends Component {
                 this.setState({
                     isInputEmpty: false
                 })
-                console.log(item.value);
+                // console.log(item.value);
             }
             
         });
@@ -84,7 +91,7 @@ class Lookup extends Component {
     // }
 
     handleClear = (e) => {
-        console.log('handleClear');
+        // console.log('handleClear');
         const {onChange, properties} = this.props;
         onChange(properties, null, false);
         this.setState({
@@ -102,7 +109,7 @@ class Lookup extends Component {
             subentity, subentityId, viewId
         } = this.props;
 
-        const {isInputEmpty} = this.state;
+        const {isInputEmpty, mainProperty, showNextDropdown} = this.state;
 
         return (
             <div
@@ -132,7 +139,8 @@ class Lookup extends Component {
                                 key={index}
                                 newRecordCaption={newRecordCaption}
                                 defaultValue={defaultValue}
-                                properties={properties}
+                                // properties={properties}
+                                mainProperty={mainProperty}
                                 placeholder={placeholder}
                                 readonly={readonly}
                                 tabIndex={tabIndex}
@@ -151,6 +159,7 @@ class Lookup extends Component {
                                 onChange={onChange}
                                 item={item}
                                 handleInputEmptyStatus={this.handleInputEmptyStatus}
+                                getNextDropdown={this.getNextDropdown}
                             />
 
                         } else if (item.source === 'list') {
@@ -158,6 +167,9 @@ class Lookup extends Component {
                             const objectValue = getItemsByProperty(
                                 defaultValue, 'field', item.field
                             )[0].value;
+
+                            console.log(objectValue);
+                            console.log(showNextDropdown);
 
                             return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
                                     <List
@@ -173,6 +185,7 @@ class Lookup extends Component {
                                         viewId={viewId}
                                         onChange={onChange}
                                         lookupList={true}
+                                        autofocus={!objectValue && showNextDropdown ? true : false}
                                         defaultValue={objectValue[Object.keys(objectValue)[0]]}
                                     />
                                 </div>
