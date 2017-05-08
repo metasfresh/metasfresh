@@ -181,7 +181,8 @@ body {
     font-size: 12px;
 }
 
-.order-list-panel-body .subheader-item {
+.order-list-panel-body .subheader-item, 
+.order-list-panel-body .subheader-caption {
     font-size: 14px;
 }
 
