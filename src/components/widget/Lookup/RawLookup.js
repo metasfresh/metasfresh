@@ -17,19 +17,14 @@ class RawLookup extends Component {
     constructor(props) {
         super(props);
 
-        // const {properties} = this.props;
-
         this.state = {
             query: '',
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
-            // property: '',
             properts: {},
             loading: false,
-            // propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            // mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             oldValue: '',
             isOpen: false,
             shouldBeFocused: true,
@@ -69,11 +64,6 @@ class RawLookup extends Component {
             getNextDropdown
         } = this.props;
 
-        // const {
-        //      property
-        // } = this.state;
-
-        // removing selection
         this.setState({
             selected: null
         }, () => {
@@ -109,8 +99,6 @@ class RawLookup extends Component {
             parameterName, mainProperty
         } = this.props;
 
-        // const {mainProperty} = this.state;
-
         dispatch(openModal(
             newRecordCaption, newRecordWindowId, 'window', null, null, null,
             null, null, 'NEW',
@@ -129,14 +117,9 @@ class RawLookup extends Component {
     }
 
     handleFocus = () => {
-        // const {isInputEmpty, property} = this.state;
         this.setState({
             isOpen: true
         })
-
-        // if(!isInputEmpty && property === ''){
-        //     this.handleChange(true);
-        // }
     }
 
     handleChange = (handleChangeOnFocus) => {
@@ -184,21 +167,10 @@ class RawLookup extends Component {
             isInputEmpty: true,
             selected: null,
             model: null,
-            // property: '',
             loading: false,
             query: ''
         });
     }
-
-    // handleClear = (e) => {
-    //     const {onChange, properties} = this.props;
-    //     e && e.preventDefault();
-    //     this.inputSearch.value = '';
-
-    //     onChange(properties, null, false);
-
-    //     this.handleBlur(this.clearState);
-    // }
 
     handleKeyDown = (e) => {
         const {listenOnKeys, listenOnKeysFalse} = this.props;

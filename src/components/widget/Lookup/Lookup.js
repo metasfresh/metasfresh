@@ -28,12 +28,10 @@ class Lookup extends Component {
         this.state = {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            mainProperty: getItemsByProperty(properties, 'source', 'lookup'),
             showNextDropdown: false
         }
 
         // console.log(this.state.propertiesCopy);
-        // console.log(this.state.mainProperty);
         // console.log(properties);
     }
 
@@ -96,9 +94,7 @@ class Lookup extends Component {
         onChange(properties, null, false);
         this.setState({
             isInputEmpty: true
-        });
-
-        
+        });  
     }
 
     render() {
@@ -109,7 +105,7 @@ class Lookup extends Component {
             subentity, subentityId, viewId
         } = this.props;
 
-        const {isInputEmpty, mainProperty, showNextDropdown} = this.state;
+        const {isInputEmpty, showNextDropdown} = this.state;
 
         return (
             <div
@@ -139,8 +135,7 @@ class Lookup extends Component {
                                 key={index}
                                 newRecordCaption={newRecordCaption}
                                 defaultValue={defaultValue}
-                                // properties={properties}
-                                mainProperty={mainProperty}
+                                mainProperty={[item]}
                                 placeholder={placeholder}
                                 readonly={readonly}
                                 tabIndex={tabIndex}
@@ -187,6 +182,7 @@ class Lookup extends Component {
                                         lookupList={true}
                                         autofocus={!objectValue && showNextDropdown ? true : false}
                                         defaultValue={objectValue[Object.keys(objectValue)[0]]}
+                                        isInputEmpty={isInputEmpty}
                                     />
                                 </div>
                         }
