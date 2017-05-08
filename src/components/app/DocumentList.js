@@ -62,7 +62,7 @@ class DocumentList extends Component {
     }
 
     componentDidMount = () => {
-        this.mounted = true;
+        this.mounted = true
     }
 
     componentWillUnmount() {
@@ -426,7 +426,7 @@ class DocumentList extends Component {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
             includedView, children, isIncluded, disablePaginationShortcuts,
-            notfound, disconnectFromState
+            notfound, disconnectFromState, autofocus
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
@@ -513,15 +513,9 @@ class DocumentList extends Component {
                                 cachedSelection : selected}
                             queryLimitHit={data.queryLimitHit}
                             doesSelectionExist={this.doesSelectionExist}
-                            disconnectFromState={disconnectFromState}
-                            isIncluded={isIncluded}
-                            isModal={isModal}
-                            disablePaginationShortcuts={
-                                disablePaginationShortcuts}
-                            inBackground={inBackground}
-                            closeOverlays={closeOverlays}
-                            open={open}
-                            page={page}
+                            {...{isIncluded, disconnectFromState, autofocus,
+                                open, page, closeOverlays, inBackground,
+                                disablePaginationShortcuts, isModal}}
                         >
                             {layout.supportAttributes && !isIncluded &&
                                 !hasIncluded &&

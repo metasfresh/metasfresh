@@ -54,6 +54,10 @@ class Table extends Component {
 
     componentDidMount(){
         this.getIndentData(true);
+
+        const {autofocus} = this.props;
+
+        autofocus && this.table.focus();
     }
 
     componentDidUpdate(prevProps, prevState) {

@@ -184,6 +184,21 @@ class TableItem extends Component {
         handleSelect(this.nestedSelect(elem).concat([id]));
     }
 
+    getIconClassName = (huType) => {
+        switch(huType){
+            case 'LU':
+                return 'meta-icon-pallete';
+            case 'TU':
+                return 'meta-icon-package';
+            case 'CU':
+                return 'meta-icon-product';
+            case 'PP_Order_Receive':
+                return 'meta-icon-receive';
+            case 'PP_Order_Issue':
+                return 'meta-icon-issue';
+        }
+    }
+
     renderTree = (huType) => {
         const {
             indent, lastSibling, includedDocuments, indentSupported, rowId
@@ -225,9 +240,7 @@ class TableItem extends Component {
                     <div
                         className="indent-icon"
                     >
-                        {huType == 'LU' && <i className="meta-icon-palette"/>}
-                        {huType == 'TU' && <i className="meta-icon-package"/>}
-                        {huType == 'CU' && <i className="meta-icon-product"/>}
+                        <i className={this.getIconClassName(huType)} />
                     </div>
                 </div>
             );
