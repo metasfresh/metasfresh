@@ -1,15 +1,11 @@
-package de.metas.material.event;
+package de.metas.material.dispo;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-material-event
+ * metasfresh-material-dispo
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -28,21 +24,14 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter value does into which property
-public class MaterialDemandEvent implements MaterialEvent
+@Builder
+public class DemandCandidateDetail
 {
-	public static final String TYPE = "MaterialDemandEvent";
+	/**
+	 * This ID indicates that the demand candidate explicitly specifies "no order line id". All other values less or equal zero mean "i don't care".
+	 */
+	public static final int NO_ORDERLINE_ID = -99;
 
-	@NonNull
-	private final EventDescr eventDescr;
-
-	@NonNull
-	private final MaterialDescriptor descr;
-
-	private final TableRecordReference reference;
-
-	private int orderLineId;
+	private final int orderLineId;
 }

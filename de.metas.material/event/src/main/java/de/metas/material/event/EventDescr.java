@@ -1,9 +1,9 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import java.time.Instant;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -20,29 +20,27 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter value does into which property
-public class MaterialDemandEvent implements MaterialEvent
+@AllArgsConstructor
+public class EventDescr
 {
-	public static final String TYPE = "MaterialDemandEvent";
+
+	public EventDescr()
+	{
+		this(Instant.now(), UUID.randomUUID());
+	}
 
 	@NonNull
-	private final EventDescr eventDescr;
+	private final Instant when;
 
 	@NonNull
-	private final MaterialDescriptor descr;
-
-	private final TableRecordReference reference;
-
-	private int orderLineId;
+	private final UUID uuid;
 }

@@ -1,7 +1,9 @@
 package de.metas.material.dispo.event;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -52,9 +54,9 @@ public class SupplyProposalEvaluator
 
 	public SupplyProposalEvaluator(@NonNull final CandidateRepository candidateRepository)
 	{
-		this.candidateRepository=candidateRepository;
+		this.candidateRepository = candidateRepository;
 	}
-	
+
 	/**
 	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b> and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
 	 * <p>
@@ -100,7 +102,11 @@ public class SupplyProposalEvaluator
 		final List<Candidate> demands = candidateRepository.retrieveMatches(demandSegment);
 		for (final Candidate demand : demands)
 		{
-			final Candidate indirectSupplyCandidate = searchRecursive(demand, supplySegment);
+			final Candidate indirectSupplyCandidate = searchRecursive(
+					demand,
+					supplySegment,
+					new HashSet<>());
+
 			if (indirectSupplyCandidate != null)
 			{
 				return false;
@@ -110,33 +116,48 @@ public class SupplyProposalEvaluator
 		return true;
 	}
 
-	private Candidate searchRecursive(@NonNull final  Candidate candidate, @NonNull final  CandidatesSegment searchTarget)
+	private Candidate searchRecursive(
+			@NonNull final Candidate currentCandidate,
+			@NonNull final CandidatesSegment searchTarget,
+			@NonNull final Set<Candidate> alreadySeen)
 	{
-		if (searchTarget.matches(candidate))
+		if (!alreadySeen.add(currentCandidate))
 		{
-			return candidate;
+			return null;
 		}
 
-		if (candidate.getParentIdNotNull() > 0)
+		if (searchTarget.matches(currentCandidate))
 		{
-			final Candidate foundSearchTarget = searchRecursive(candidateRepository.retrieve(candidate.getParentId()), searchTarget);
+			return currentCandidate;
+		}
+
+		if (currentCandidate.getParentIdNotNull() > 0)
+		{
+			final Candidate foundSearchTarget = searchRecursive(
+					candidateRepository.retrieve(currentCandidate.getParentId()),
+					searchTarget,
+					alreadySeen);
 			if (foundSearchTarget != null)
 			{
 				return foundSearchTarget;
 			}
 		}
 		else /* the "else" is important to avoid a stack overflow error */
-		if (candidate.getGroupIdNotNull() > 0)
+		if (currentCandidate.getGroupIdNotNull() > 0)
 		{
-			final List<Candidate> group = candidateRepository.retrieveGroup(candidate.getGroupIdNotNull());
+			final List<Candidate> group = candidateRepository.retrieveGroup(currentCandidate.getGroupIdNotNull());
 			for (final Candidate groupMember : group)
 			{
-				if (groupMember.getId() <= candidate.getId())
+				if (groupMember.getId() <= currentCandidate.getId())
 				{
 					continue; // avoid a stack overflow error
 				}
 
-				final Candidate foundSearchTarget = searchRecursive(groupMember, searchTarget);
+				final Candidate foundSearchTarget = searchRecursive(
+						groupMember,
+						searchTarget,
+						alreadySeen);
+
 				if (foundSearchTarget != null)
 				{
 					return foundSearchTarget;
