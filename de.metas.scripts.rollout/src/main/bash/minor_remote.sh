@@ -104,7 +104,6 @@ install_metasfresh()
 	trace install_metasfresh END
 }
 
-# 
 install_service()
 {
 	local service_name=$1
@@ -159,40 +158,6 @@ install_service()
 	sudo systemctl start ${service_name}
 	
 	trace install_${service_name} END
-}
-
-install_metasfresh-webui-api()
-{
-	trace install_metasfresh-webui-api BEGIN
-	
-	# First, check if there is anything to do at all
-	# Thx to http://stackoverflow.com/a/13864829/1012103 on how to check if METASFRESH_WEBUI_FRONTEND_HOME is set
-	if [ -z ${METASFRESH_WEBUI_API_HOME+x} ]; 
-	then
-		trace install_metasfresh-webui-api "Variable METASFRESH_WEBUI_API_HOME is not set. Not installing the webui-api"
-		return
-	fi
-	
-	local SRC_JAR="${ROLLOUT_DIR}/deploy/services/metasfresh-webui-api.jar"
-	if [ ! -e ${SRC_JAR} ];
-	then
-		trace install_metasfresh-webui-api "File ${SRC_JAR} is not part of this package. Not installing the webui-api"
-		return
-	fi
-
-	local TARGET_JAR="${METASFRESH_WEBUI_API_HOME}/metasfresh-webui-api.jar"	
-	if [ -x $TARGET_JAR ]; # if TARGET_JAR exists as an executable file, then try to stop it
-	then
-		stop_metasfresh-webui-api
-	fi
-	
-	cp -v $SRC_JAR $TARGET_JAR
-	chmod -v 700 $TARGET_JAR # make it executable
-	chown -v metasfresh: $TARGET_JAR
-		
-	start_metasfresh-webui-api
-	
-	trace install_metasfresh-webui-api END
 }
 
 install_metasfresh-webui-frontend()
@@ -272,7 +237,16 @@ install_metasfresh
 install_service metasfresh-admin
 install_service metasfresh-material-dispo
 
-install_metasfresh-webui-api
+# move metasfresh-webui-api to be where the other services are
+if [[ -f /opt/metasfresh-webui-api ]]; 
+then
+	trace $(basename $0) "Move existing metasfresh-webui-api from /opt/metasfresh-webui-api to /opt/metasfresh/metasfresh-webui-api"
+	stop_metasfresh-webui-api
+	mv -v /opt/metasfresh-webui-api /opt/metasfresh/metasfresh-webui-api
+	trace $(basename $0) "DONE moving existing metasfresh-webui-api"
+fi
+install_service metasfresh-webui-api
+
 install_metasfresh-webui-frontend
 
 # task 06284
