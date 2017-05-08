@@ -1,8 +1,8 @@
 --
 -- Backup
-create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5461871 as select * from AD_TreeNodeMM;
-create table backup.AD_Menu_BKP_BeforeImportWebUI_5461871 as select * from AD_Menu;
-create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5461871 as select * from AD_Menu_Trl;
+create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI_5461871_2 as select * from AD_TreeNodeMM;
+create table backup.AD_Menu_BKP_BeforeImportWebUI_5461871_2 as select * from AD_Menu;
+create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI_5461871_2 as select * from AD_Menu_Trl;
 
 --
 -- Expected input tables:
