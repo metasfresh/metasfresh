@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -222,7 +223,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			final BigDecimal qtyFinishedGood,
 			final I_C_UOM qtyFinishedGoodUOM)
 	{
-		final BigDecimal qtyRequired = calculateQtyRequired(orderBOMLine, qtyFinishedGood);
+		final BigDecimal qtyRequired = calculateQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood);
 		orderBOMLine.setQtyRequiered(qtyRequired);
 	}
 
@@ -236,7 +237,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	 */
 	@VisibleForTesting
 	/* package */BigDecimal calculateQtyRequired(
-			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@NonNull final PPOrderBomLineAware orderBOMLine,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
 		final BigDecimal multiplier = getQtyMultiplier(orderBOMLine);
@@ -277,7 +278,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			@NonNull final PPOrder ppOrderPojo,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
-		throw new UnsupportedOperationException("calculateQtyRequired");
+		return calculateQtyRequired(fromPojo(ppOrderLinePojo), qtyFinishedGood);
 	}
 
 	@Override
@@ -288,7 +289,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
 		final BigDecimal qtyRequiredActual_FinishedGood = qtyRequired_FinishedGood.max(qtyDelivered_FinishedGood);
 
-		return calculateQtyRequired(orderBOMLine, qtyRequiredActual_FinishedGood);
+		return calculateQtyRequired(fromRecord(orderBOMLine), qtyRequiredActual_FinishedGood);
 	}
 
 	@Override
@@ -305,7 +306,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Calculate how much we can issue at max, based on how much finish goods we delivered
-		final BigDecimal qtyToIssueMax_InStdUOM = calculateQtyRequired(orderBOMLine, qtyDelivered_FinishedGood);
+		final BigDecimal qtyToIssueMax_InStdUOM = calculateQtyRequired(fromRecord(orderBOMLine), qtyDelivered_FinishedGood);
 		if (qtyToIssueMax_InStdUOM.signum() <= 0)
 		{
 			return Quantity.zero(uom);
@@ -327,6 +328,154 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return new Quantity(qtyToIssueEffective, uom, qtyToIssueEffective_InStdUOM, standardUOM);
 	}
 
+	private interface PPOrderBomLineAware
+	{
+
+		BigDecimal getQtyBOM();
+
+		I_M_Product getPPOrderBomProduct();
+
+		BigDecimal getScrap();
+
+		String getComponentType();
+
+		I_C_UOM getC_UOM();
+
+		BigDecimal getQtyBatch();
+
+		boolean isQtyPercentage();
+
+		I_C_UOM getPPOrderBomUOM();
+	}
+
+	@VisibleForTesting
+	PPOrderBomLineAware fromPojo(@NonNull final PPOrderLine ppOrderBOMLine)
+	{
+		return new PPOrderBomLineAware()
+		{
+			@Override
+			public boolean isQtyPercentage()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine.isQtyPercentage();
+			}
+
+			private I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderBOMLine)
+			{
+				final I_PP_Product_BOMLine productBomLine = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderBOMLine.getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
+				return productBomLine;
+			}
+
+			@Override
+			public BigDecimal getScrap()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine.getScrap();
+			}
+
+			@Override
+			public BigDecimal getQtyBatch()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine.getQtyBatch();
+			}
+
+			@Override
+			public BigDecimal getQtyBOM()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine.getQtyBOM();
+			}
+
+			@Override
+			public String getComponentType()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine.getComponentType();
+			}
+
+			@Override
+			public I_C_UOM getC_UOM()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine.getC_UOM();
+			}
+
+			@Override
+			public I_M_Product getPPOrderBomProduct()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine
+						.getPP_Product_BOM()
+						.getM_Product();
+			}
+
+			@Override
+			public I_C_UOM getPPOrderBomUOM()
+			{
+				final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderBOMLine);
+				return productBomLine
+						.getPP_Product_BOM()
+						.getC_UOM();
+			}
+		};
+	}
+
+	@VisibleForTesting
+	PPOrderBomLineAware fromRecord(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
+	{
+		return new PPOrderBomLineAware()
+		{
+			@Override
+			public boolean isQtyPercentage()
+			{
+				return ppOrderBOMLine.isQtyPercentage();
+			}
+
+			@Override
+			public BigDecimal getQtyBatch()
+			{
+				return ppOrderBOMLine.getQtyBatch();
+			}
+
+			@Override
+			public BigDecimal getQtyBOM()
+			{
+				return ppOrderBOMLine.getQtyBOM();
+			}
+
+			@Override
+			public I_M_Product getPPOrderBomProduct()
+			{
+				return ppOrderBOMLine.getPP_Order_BOM().getM_Product();
+			}
+
+			@Override
+			public I_C_UOM getPPOrderBomUOM()
+			{
+				return ppOrderBOMLine.getPP_Order_BOM().getC_UOM();
+			}
+
+			@Override
+			public I_C_UOM getC_UOM()
+			{
+				return ppOrderBOMLine.getC_UOM();
+			}
+
+			@Override
+			public BigDecimal getScrap()
+			{
+				return ppOrderBOMLine.getScrap();
+			}
+
+			@Override
+			public String getComponentType()
+			{
+				return ppOrderBOMLine.getComponentType();
+			}
+		};
+	}
+
 	/**
 	 * Return Unified BOM Qty Multiplier.
 	 *
@@ -336,7 +485,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	 *
 	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
 	 */
-	/* package */BigDecimal getQtyMultiplier(final I_PP_Order_BOMLine orderBOMLine)
+	/* package */BigDecimal getQtyMultiplier(
+			@NonNull final PPOrderBomLineAware orderBOMLine)
 	{
 		BigDecimal qty;
 		if (orderBOMLine.isQtyPercentage())
@@ -346,9 +496,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			//
 			// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 			// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-			final I_PP_Order_BOM orderBOM = orderBOMLine.getPP_Order_BOM();
-			final I_M_Product bomProduct = orderBOM.getM_Product();
-			final I_C_UOM bomUOM = orderBOM.getC_UOM();
+			final I_M_Product bomProduct = orderBOMLine.getPPOrderBomProduct();
+			final I_C_UOM bomUOM = orderBOMLine.getPPOrderBomUOM();
 
 			final I_C_UOM bomLineUOM = orderBOMLine.getC_UOM();
 			Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");

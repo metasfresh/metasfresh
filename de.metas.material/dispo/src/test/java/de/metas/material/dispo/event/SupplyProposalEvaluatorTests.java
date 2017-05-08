@@ -1,5 +1,7 @@
 package de.metas.material.dispo.event;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -9,6 +11,7 @@ import java.util.Date;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,7 +65,9 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	private MDEventListener mdEventListener;
+	//private MDEventListener mdEventListener;
+
+	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	/**
 	 * This is the code under test
@@ -75,18 +80,22 @@ public class SupplyProposalEvaluatorTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
+	private I_AD_Org org;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		org = newInstance(I_AD_Org.class);
+		save(org);
+
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		mdEventListener = new MDEventListener(
-				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService),
-				candidateRepository,
-				supplyProposalEvaluator);
+		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
+
+		distributionPlanEventHandler = new DistributionPlanEventHandler(candidateRepository, candidateChangeHandler, supplyProposalEvaluator);
 	}
 
 	/**
@@ -167,7 +176,7 @@ public class SupplyProposalEvaluatorTests
 	private void addSimpleSupplyDemand()
 	{
 		final Candidate supplyCandidate = Candidate.builder()
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.date(t3)
 				.productId(3)
 				.quantity(BigDecimal.TEN)
@@ -175,10 +184,10 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(SUPPLY_WAREHOUSE_ID)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepository.addOrReplace(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdate(supplyCandidate);
 
 		final Candidate demandCandidate = Candidate.builder()
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.date(t2)
 				.parentId(supplyCandidateWithId.getId())
 				.productId(3)
@@ -187,7 +196,7 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.build();
 
-		candidateRepository.addOrReplace(demandCandidate);
+		candidateRepository.addOrUpdate(demandCandidate);
 	}
 
 	/**
@@ -196,7 +205,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		MDEEventListenerTests.performTestTwoDistibutionPlanEvents(mdEventListener);
+		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
@@ -232,7 +241,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		MDEEventListenerTests.performTestTwoDistibutionPlanEvents(mdEventListener);
+		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 

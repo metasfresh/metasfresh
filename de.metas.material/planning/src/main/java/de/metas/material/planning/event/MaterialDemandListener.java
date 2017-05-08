@@ -2,7 +2,6 @@ package de.metas.material.planning.event;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
 import de.metas.material.event.DistributionPlanEvent;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
@@ -48,6 +48,7 @@ import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -102,7 +103,7 @@ public class MaterialDemandListener implements MaterialEventListener
 
 
 	@Override
-	public void onEvent(final MaterialEvent event)
+	public void onEvent(@NonNull final MaterialEvent event)
 	{
 		if (!(event instanceof MaterialDemandEvent))
 		{
@@ -113,7 +114,7 @@ public class MaterialDemandListener implements MaterialEventListener
 		handleMaterialDemandEvent((MaterialDemandEvent)event);
 	}
 
-	private void handleMaterialDemandEvent(final MaterialDemandEvent materialDemandEvent)
+	private void handleMaterialDemandEvent(@NonNull final MaterialDemandEvent materialDemandEvent)
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandEvent);
 
@@ -134,7 +135,7 @@ public class MaterialDemandListener implements MaterialEventListener
 					final I_M_Locator toLocator = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getToLocatorId(), I_M_Locator.class, mrpContext.getTrxName());
 
 					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
-							.when(Instant.now())
+							.eventDescr(new EventDescr())
 							.fromWarehouseId(fromLocator.getM_Warehouse_ID())
 							.distributionStart(orderLineStartDate)
 							.materialDescr(MaterialDescriptor.builder()
@@ -145,6 +146,7 @@ public class MaterialDemandListener implements MaterialEventListener
 									.warehouseId(toLocator.getM_Warehouse_ID())
 									.build())
 							.reference(materialDemandEvent.getReference())
+							.orderLineId(materialDemandEvent.getOrderLineId())
 							.build();
 
 					materialEventService.fireEvent(distributionPlanEvent);
@@ -165,7 +167,7 @@ public class MaterialDemandListener implements MaterialEventListener
 		}
 	}
 
-	private IMutableMRPContext mkMRPContext(final MaterialDemandEvent materialDemandEvent)
+	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandEvent materialDemandEvent)
 	{
 		final MaterialDescriptor descr = materialDemandEvent.getDescr();
 
@@ -208,7 +210,9 @@ public class MaterialDemandListener implements MaterialEventListener
 		return mrpContext;
 	}
 
-	private IMaterialRequest mkRequest(final MaterialDemandEvent materialDemandEvent, final IMaterialPlanningContext mrpContext)
+	private IMaterialRequest mkRequest(
+			@NonNull final MaterialDemandEvent materialDemandEvent,
+			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		return new IMaterialRequest()
 		{
@@ -222,7 +226,7 @@ public class MaterialDemandListener implements MaterialEventListener
 			@Override
 			public int getMRPDemandOrderLineSOId()
 			{
-				return -1;
+				return materialDemandEvent.getOrderLineId();
 			}
 
 			@Override
