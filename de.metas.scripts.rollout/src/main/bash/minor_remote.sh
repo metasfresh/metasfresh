@@ -19,7 +19,8 @@ if [ "$LOCAL_DIR" == "." ]; then
 fi
 
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
-ROLLOUT_DIR=$LOCAL_DIR/..
+#Thanks to http://stackoverflow.com/questions/6643853/how-to-convert-in-path-names-to-absolute-name-in-a-bash-script for the readlink tip
+ROLLOUT_DIR=$(readlink -m $LOCAL_DIR/..)
 
 SOURCES_DIR=$ROLLOUT_DIR/sources
 
@@ -66,8 +67,6 @@ prepare()
 install_metasfresh()
 {	
 	trace install_metasfresh BEGIN
-
-	prepare
 	
 	if [[ -f ${METASFRESH_HOME}/metasfresh_server.conf ]]; then
 		trace install_metasfresh "The local instalation is already spring-bootified"
@@ -112,22 +111,52 @@ install_service()
 	trace install_${service_name} BEGIN
 	
 	local SYSTEM_SERVICE_FILE=/etc/systemd/system/${service_name}.service
+	local SYSTEM_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
+	local SYSTEM_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
 	
-	if [[ ! -f $SYSTEM_SERVICE_FILE ]]; then
-		trace install_${service_name} "The service file $SYSTEM_SERVICE_FILE is not yet installed."
-		exit 1;
+	if [[ ! -f ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ]]; 
+	then
+		trace install_${service_name} "Service binary  ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar is not present. Nothing to do."
+		return;
 	fi
 	
-	systemctl stop ${service_name}
+	if [[ ! -f $SYSTEM_SERVICE_FILE ]]; 
+	then
+		trace install_${service_name} "The systemd service file $SYSTEM_SERVICE_FILE is not yet installed."
+		trace install_${service_name} "To install it, please do the following as super user"
+		echo
+		echo "cd $(pwd)"
+		echo "unzip ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-configs.zip -d ./${service_name}-configs"
+		echo "cp -v ./${service_name}-configs/configs/${service_name}.service ${SYSTEM_SERVICE_FILE}"
+		echo "chmod 0644 ${SYSTEM_SERVICE_FILE}"
+		echo ""
+		trace install_${service_name} "Also please make sure, that the following is in /etc/sudoers.d/metasfresh"
+		echo "metasfresh ALL=(root)NOPASSWD: /bin/systemctl stop ${service_name}.service"
+		echo "metasfresh ALL=(root)NOPASSWD: /bin/systemctl start ${service_name}.service"
+		echo "metasfresh ALL=(root)NOPASSWD: /bin/systemctl status ${service_name}.service"
+		echo "metasfresh ALL=(root)NOPASSWD: /bin/systemctl restart ${service_name}.service"
+		echo ""
+		exit 1;
+	else
+		trace install_${service_name} "Stopping service"
+		sudo systemctl stop ${service_name}
+	fi
 	
 	mkdir -p ${METASFRESH_HOME}/${service_name}
 	
-	cp ${ROLLOUT_DIR}/deploy/${service_name}.jar ${METASFRESH_HOME}/${service_name}/${service_name}.jar
+	if [[ -f ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar ]]; 
+	then
+		trace main "Making sure that the main jar can be overwritten with our new version"
+		chmod 200 ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+	fi
+
+	cp ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	
 	trace main "Making sure that the main jar shall only be accessible for its owner"
-	chmod 500 ${METASFRESH_HOME}/${service_name}/${service_name}.jar
+	chmod 500 ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	
-	systemctl start ${service_name}
+	trace install_${service_name} "Starting service"
+	sudo systemctl start ${service_name}
 	
 	trace install_${service_name} END
 }
@@ -144,7 +173,7 @@ install_metasfresh-webui-api()
 		return
 	fi
 	
-	local SRC_JAR="${ROLLOUT_DIR}/deploy/download/metasfresh-webui-api.jar"
+	local SRC_JAR="${ROLLOUT_DIR}/deploy/services/metasfresh-webui-api.jar"
 	if [ ! -e ${SRC_JAR} ];
 	then
 		trace install_metasfresh-webui-api "File ${SRC_JAR} is not part of this package. Not installing the webui-api"
@@ -236,12 +265,14 @@ while getopts "d:s:n" OPTION; do
 	esac
 done
 
+prepare
+
 install_metasfresh 
 
 install_service metasfresh-admin
 install_service metasfresh-material-dispo
-install_service metasfresh-webui-api
 
+install_metasfresh-webui-api
 install_metasfresh-webui-frontend
 
 # task 06284
