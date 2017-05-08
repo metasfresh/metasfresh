@@ -9,7 +9,7 @@
 		<version>1.0.0</version>
 	</parent>
 
-	<groupId>de.metas.admin.webui</groupId>
+	<groupId>de.metas.admin</groupId>
 	<artifactId>metasfresh-admin</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
@@ -72,4 +72,5 @@
 			</plugin>
 		</plugins>
 	</build>
+	<description>A standalone spring-boot service with spring-boot-admin. See https://github.com/codecentric/spring-boot-admin/blob/master/README.md for further infos</description>
 </project>
