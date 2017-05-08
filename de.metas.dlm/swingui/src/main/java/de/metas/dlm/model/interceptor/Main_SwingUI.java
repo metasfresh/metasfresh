@@ -40,11 +40,11 @@ import de.metas.dlm.swingui.PreferenceCustomizer;
 public class Main_SwingUI extends AbstractModuleInterceptor
 {
 	@Override
-	protected void onAfterInit()
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// gh #1411: only add the connection customizer settings to the preferences window if it was enabled.
 		final IDLMService dlmService = Services.get(IDLMService.class);
-		if (dlmService.isConnectionCustomizerEnabled())
+		if (dlmService.isConnectionCustomizerEnabled(AD_User_ID))
 		{
 			PreferenceCustomizer.customizePrefernces(); // gh #975
 		}

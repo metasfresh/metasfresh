@@ -194,7 +194,7 @@ public class InterfaceWrapperHelper
 	 *
 	 * @param model the underlying {@link PO}, {@link GridTab} or POJO for which we need an instance of <code>cl</code>
 	 * @param cl the interface we need an instance of
-	 * @return and instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
+	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
 	public static <T> T create(final Object model, final Class<T> cl)
 	{
@@ -315,7 +315,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Loads given model, out of transaction.
 	 * NOTE: to be used, mainly for loading master data models.
-	 * 
+	 *
 	 * @param id model's ID
 	 * @param modelClass
 	 * @return loaded model
@@ -324,10 +324,10 @@ public class InterfaceWrapperHelper
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
 	}
-	
+
 	/**
 	 * Loads given model, using thread inherited transaction.
-	 * 
+	 *
 	 * @param id model's ID
 	 * @param modelClass
 	 * @return loaded model
@@ -770,7 +770,7 @@ public class InterfaceWrapperHelper
 	 * If the modelClass does not have a table name it will return <code>expectedTableName</code> if that's not null.
 	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
 	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
-	 * 
+	 *
 	 * @param modelClass
 	 * @param expectedTableName
 	 * @return model table name; never returns null

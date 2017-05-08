@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -111,7 +112,7 @@ public interface IHUInOutBL extends ISingletonService
 	 * @param hus
 	 * @return
 	 */
-	IReturnsInOutProducer createQualityReturnsInOutProducer(Properties ctx, List<I_M_HU> hus);
+	IReturnsInOutProducer createQualityReturnsInOutProducer(Properties ctx, List<I_M_HU_Assignment> huAssignments);
 
 	/**
 	 * Create return inouts for products of precarious quality based on the details of the given HUs

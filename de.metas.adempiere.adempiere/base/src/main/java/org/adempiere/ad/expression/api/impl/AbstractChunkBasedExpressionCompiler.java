@@ -42,9 +42,9 @@ import org.compiere.util.CtxName;
  */
 public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpression<V>> implements IExpressionCompiler<V, ET>
 {
-	private static final String PARAMETER_TAG = CtxName.NAME_Marker;
+	protected static final String PARAMETER_TAG = CtxName.NAME_Marker;
 	private static final int PARAMETER_TAG_LENGTH = CtxName.NAME_Marker.length();
-	private static final String PARAMETER_DOUBLE_TAG = PARAMETER_TAG + PARAMETER_TAG;
+	protected static final String PARAMETER_DOUBLE_TAG = PARAMETER_TAG + PARAMETER_TAG;
 
 	// NOTE to developer: make sure there are no variables here since we are using a shared instance
 

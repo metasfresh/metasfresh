@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -33,7 +32,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
@@ -257,20 +255,20 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 			return;
 		}
 
-		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(ctx);
-		if (!process.isPresent())
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		if (adProcessId <= 0)
 		{
 			logger.info("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 			return;
 		}
 
 		final List<I_M_HU> husToProcess = huReportService
-				.getHUsToProcess(hu, process.get()).stream()
+				.getHUsToProcess(hu, adProcessId).stream()
 				.filter(huToProcess -> handlingUnitsBL.isTopLevel(huToProcess)) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
 				.collect(Collectors.toList());
 		if (husToProcess.isEmpty())
 		{
-			logger.info("hu's type does not match process {}; nothing to do; hu={}", process.get().getValue(), hu);
+			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
 			return;
 		}
 
@@ -278,6 +276,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 		HUReportExecutor.get(ctx)
 				.withNumberOfCopies(copies)
-				.executeHUReportAfterCommit(process.get(), husToProcess);
+				.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}
 }

@@ -23,6 +23,7 @@ package de.metas.handlingunits.allocation.impl;
  */
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,17 +31,18 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.minventory.api.IInventoryBL;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -59,6 +61,7 @@ import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.product.IProductBL;
 
 /**
@@ -74,9 +77,14 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	private final int chargeId;
 	private final I_M_Locator defaultLocator;
 
-	private I_M_Inventory inventory = null;
+	private List<I_M_Inventory> inventories = new ArrayList<I_M_Inventory>();
 
 	private final I_C_DocType inventoryDocType;
+
+	/**
+	 * There will be an inventory entry for each partner
+	 */
+	private final Map<Integer, I_M_Inventory> partnerIdToInventory = new HashMap<Integer, I_M_Inventory>();
 
 	/**
 	 * Map the inventory lines to the base inout lines
@@ -138,7 +146,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				}
 
 				// create the inventory line based on the info from inoutline and request
-				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, request);
+				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, topLevelParent, request);
 
 				final BigDecimal qtyInternalUseOld = inventoryLine.getQtyInternalUse();
 				final BigDecimal qtyInternalUseNew = qtyInternalUseOld.add(qty);
@@ -160,14 +168,21 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return result;
 	}
 
-	private I_M_Inventory getCreateInventoryHeader(final IAllocationRequest request)
+	private I_M_Inventory getCreateInventoryHeader(final I_M_InOutLine inOutLine, final IAllocationRequest request)
 	{
-		if (null != inventory)
+
+		final I_M_InOut inout = inOutLine.getM_InOut();
+
+		final I_C_BPartner partner = inout.getC_BPartner();
+
+		final int partnerId = partner.getC_BPartner_ID();
+
+		if (partnerIdToInventory.containsKey(partnerId))
 		{
-			return inventory;
+			return partnerIdToInventory.get(partnerId);
 		}
 
-		// No inventory. Create it now.
+		// No inventory for the given partner. Create it now.
 		final IHUContext huContext = request.getHUContext();
 		Services.get(ITrxManager.class).assertTrxNotNull(huContext);
 		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class, huContext);
@@ -181,17 +196,18 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		InterfaceWrapperHelper.save(inventory);
 
-		this.inventory = inventory;
+		partnerIdToInventory.put(partnerId, inventory);
+		inventories.add(inventory);
 
 		return inventory;
 	}
 
-	public I_M_Inventory getInventory()
+	public List<I_M_Inventory> getInventories()
 	{
-		return inventory;
+		return inventories;
 	}
 
-	private I_M_InventoryLine getCreateInventoryLine(final I_M_InOutLine inOutLine, final IAllocationRequest request)
+	private I_M_InventoryLine getCreateInventoryLine(final I_M_InOutLine inOutLine, final I_M_HU hu, final IAllocationRequest request)
 	{
 		final int inOutLineId = inOutLine.getM_InOutLine_ID();
 
@@ -205,12 +221,19 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final IHUContext huContext = request.getHUContext();
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class, huContext);
 
-		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(request);
+		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(inOutLine, request);
 		inventoryLine.setM_Inventory_ID(inventoryHeader.getM_Inventory_ID());
 		inventoryLine.setM_Product_ID(inOutLine.getM_Product_ID());
 		inventoryLine.setC_Charge_ID(chargeId);
 		inventoryLine.setM_Locator_ID(defaultLocator.getM_Locator_ID());
 		inventoryLine.setM_InOutLine(inOutLine);
+
+		inventoryLine.setC_UOM(inOutLine.getC_UOM());
+
+		// set the M_HU_PI_Item_Product from the HU
+		inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
+
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
 
 		inOutLineId2InventoryLine.put(inOutLineId, inventoryLine);
 
@@ -221,13 +244,16 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	public void processInventory()
 	{
-		if (inventory == null)
+		if (inventories.isEmpty())
 		{
 			// No inventory was created. Nothing to do.
 			return;
 		}
 
-		// Finally, process the inventory document.
-		Services.get(IDocActionBL.class).processEx(inventory, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		for (final I_M_Inventory inventory : inventories)
+		{
+			// Finally, process the inventory document.
+			Services.get(IDocActionBL.class).processEx(inventory, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		}
 	}
 }

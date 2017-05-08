@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableSet;
  * @author tsa
  *
  */
-public class ElementPermission extends AbstractPermission
+public final class ElementPermission extends AbstractPermission
 {
 	public static ElementPermission of(final ElementResource resource, final boolean readWrite)
 	{
@@ -54,9 +54,14 @@ public class ElementPermission extends AbstractPermission
 
 		return new ElementPermission(resource, accesses.build());
 	}
-
+	
+	public static final ElementPermission none(final ElementResource resource)
+	{
+		return new ElementPermission(resource, ImmutableSet.of());
+	}
+	
 	private final ElementResource resource;
-	private final Set<Access> accesses;
+	private final ImmutableSet<Access> accesses;
 
 	private ElementPermission(final ElementResource resource, final Set<Access> accesses)
 	{
@@ -112,6 +117,16 @@ public class ElementPermission extends AbstractPermission
 	public boolean hasAccess(Access access)
 	{
 		return accesses.contains(access);
+	}
+	
+	public boolean hasReadAccess()
+	{
+		return accesses.contains(Access.READ);
+	}
+	
+	public boolean hasWriteAccess()
+	{
+		return accesses.contains(Access.WRITE);
 	}
 
 	@Override

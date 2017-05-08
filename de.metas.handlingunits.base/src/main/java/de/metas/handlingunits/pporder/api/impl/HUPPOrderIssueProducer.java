@@ -146,10 +146,16 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		{
 			throw new HUException("Only active HUs can be issued but " + hu + " is " + hu.getHUStatus());
 		}
+		
 
 		// If not a top level HU, take it out first
 		if (!handlingUnitsBL.isTopLevel(hu))
 		{
+			if(handlingUnitsBL.isVirtual(hu))
+			{
+				throw new HUException("Issuing VHUs is not allowed");
+			}
+			
 			huTrxBL.setParentHU(huContext //
 					, null // parentHUItem
 					, hu //

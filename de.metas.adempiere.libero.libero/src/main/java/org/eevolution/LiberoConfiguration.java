@@ -33,7 +33,7 @@ import de.metas.material.planning.MaterialPlanningConfiguration;
 		LiberoConfiguration.class, // scan the classes in *this* package and its subpackages
 		MaterialPlanningConfiguration.class, // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
 		MaterialEventConfiguration.class,
-		StartupListener.class
+		StartupListener.class // needed when we call this case from a junit test
 })
 public class LiberoConfiguration
 {

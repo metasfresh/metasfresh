@@ -2,7 +2,6 @@ package de.metas.handlingunits.report;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
@@ -18,7 +17,6 @@ import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
 import de.metas.logging.LogManager;
-import de.metas.process.IADProcessDAO;
 
 /*
  * #%L
@@ -66,24 +64,16 @@ public class HUReportService
 	}
 
 	/**
-	 * Return the {@link I_AD_Process} that was configured via {@code SysConfig} {@value #SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_PROCESS_ID}, if any.
+	 * Return the AD_Process_ID that was configured via {@code SysConfig} {@value #SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_PROCESS_ID}, if any.
 	 *
 	 * @param ctx use to get {@code AD_Client_ID} and {@code AD_Org_ID} for the sysconfig call.
-	 * @return
+	 * @return AD_Process_ID or <code>-1</code>
 	 */
-	public Optional<I_AD_Process> retrievePrintReceiptLabelProcess(final Properties ctx)
+	public int retrievePrintReceiptLabelProcessId(final Properties ctx)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int reportProcessId = sysConfigBL.getIntValue(SYSCONFIG_RECEIPT_LABEL_PROCESS_ID, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-
-		if (reportProcessId <= 0)
-		{
-			return Optional.empty(); // nothing to do here
-		}
-
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final I_AD_Process process = adProcessDAO.retrieveProcessById(ctx, reportProcessId);
-		return Optional.of(process);
+		return reportProcessId > 0 ? reportProcessId : -1;
 	}
 
 	/**
@@ -93,14 +83,14 @@ public class HUReportService
 	 * @param process
 	 * @return never {@code null}
 	 */
-	public List<I_M_HU> getHUsToProcess(final I_M_HU hu, final I_AD_Process process)
+	public List<I_M_HU> getHUsToProcess(final I_M_HU hu, final int adProcessId)
 	{
 		final List<I_M_HU> husToProcess = new ArrayList<>();
 
 		final IMHUProcessBL huProcessBL = Services.get(IMHUProcessBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		logger.info("Looking for processable HUs belong hu={}", hu);
+		logger.debug("Looking for processable HUs belong hu={}", hu);
 		new HUIterator()
 				.setEnableStorageIteration(false) // gh metasfresh-webui#222: we only care for HUs. Also note that to iterate storages, we would have to provide a date.
 				.setListener(new HUIteratorListenerAdapter()
@@ -109,14 +99,14 @@ public class HUReportService
 					public Result beforeHU(final IMutable<I_M_HU> hu)
 					{
 						final String huType = handlingUnitsBL.getHU_UnitType(hu.getValue());
-						if (huProcessBL.processFitsType(process, huType))
+						if (huProcessBL.processFitsType(adProcessId, huType))
 						{
-							logger.debug("process.value={}: add hu with type={} to husToProcess; hu={}", process.getValue(), huType, hu);
+							logger.debug("adProcessId={}: add hu with type={} to husToProcess; hu={}", adProcessId, huType, hu);
 							husToProcess.add(hu.getValue());
 						}
 						else
 						{
-							logger.debug("process.value={}: DO NOT add hu with type={} to husToProcess; hu={}", process.getValue(), huType, hu);
+							logger.debug("adProcessId={}: DO NOT add hu with type={} to husToProcess; hu={}", adProcessId, huType, hu);
 						}
 						return getDefaultResult();
 					}

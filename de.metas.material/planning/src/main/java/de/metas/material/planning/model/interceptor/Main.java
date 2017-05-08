@@ -3,6 +3,7 @@ package de.metas.material.planning.model.interceptor;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
@@ -46,7 +47,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
-		if (Ini.isClient())
+		if (Ini.getRunMode() != RunMode.BACKEND)
 		{
 			return; // event based material planning can only run in the backend as of now
 		}
@@ -55,5 +56,6 @@ public class Main extends AbstractModuleInterceptor
 		final MaterialDemandListener materialDemandListener = Adempiere.getBean(MaterialDemandListener.class);
 
 		materialEventService.registerListener(materialDemandListener);
+		materialEventService.subscribeToEventBus();
 	}
 }

@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.StartupListener;
 import de.metas.event.Type;
 
 /*
@@ -34,7 +33,8 @@ import de.metas.event.Type;
 @Configuration
 @ComponentScan(basePackageClasses = {
 		MaterialEventConfiguration.class,
-		StartupListener.class })
+		// StartupListener.class // there are different startup listener classes. one for  metasfresh-backend, one for metasfresh-webui-api.
+})
 public class MaterialEventConfiguration
 {
 

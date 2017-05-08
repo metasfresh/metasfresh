@@ -32,8 +32,7 @@ import javax.imageio.ImageIO;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.Ini.IsNotSwingClient;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,11 +51,12 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
 
 @RestController
 @RequestMapping(value = BarcodeRestController.ENDPOINT)
-@Conditional(IsNotSwingClient.class)
+@Profile(JasperConstants.PROFILE_JasperServer)
 public class BarcodeRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/BarcodeServlet";
