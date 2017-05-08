@@ -520,10 +520,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,53637,0,53034,540385,543963,TO_TIMESTAMP('2017-05-08 15:28:29','YYYY-MM-DD HH24:MI:SS'),100,'Project Issues (Material, Labor)','Issues to the project initiated by the "Issue to Project" process. You can issue Receipts, Time and Expenses, or Stock.','Y','N','N','Y','N','Projekt-Problem',0,150,0,TO_TIMESTAMP('2017-05-08 15:28:29','YYYY-MM-DD HH24:MI:SS'),100)
 ;
--- 2017-05-08T15:28:29.218
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,53637,0,53034,540385,543963,TO_TIMESTAMP('2017-05-08 15:28:29','YYYY-MM-DD HH24:MI:SS'),100,'Project Issues (Material, Labor)','Issues to the project initiated by the "Issue to Project" process. You can issue Receipts, Time and Expenses, or Stock.','Y','N','N','Y','N','Projekt-Problem',0,150,0,TO_TIMESTAMP('2017-05-08 15:28:29','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
 -- 2017-05-08T15:33:20.988
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
