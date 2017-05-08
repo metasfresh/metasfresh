@@ -102,7 +102,7 @@ class Table extends Component {
     getIndentData = (selectFirst) => {
         const {rowData, tabid, indentSupported} = this.props;
 
-        if(indentSupported){
+        if(indentSupported && rowData[tabid]){
             let rowsData = [];
 
             rowData[tabid].map(item => {
