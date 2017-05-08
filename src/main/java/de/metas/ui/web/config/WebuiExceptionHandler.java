@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
@@ -31,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.window.datatypes.Values;
 
 /*
  * #%L
@@ -222,7 +224,11 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			final Map<String, Object> exceptionAttributes = ((AdempiereException)error).getParameters();
 			if (exceptionAttributes != null && !exceptionAttributes.isEmpty())
 			{
-				errorAttributes.put(ATTR_ExceptionAttributes, exceptionAttributes);
+				final Map<String, Object> jsonExceptionAttributes = exceptionAttributes.entrySet()
+						.stream()
+						.map(entry -> GuavaCollectors.entry(entry.getKey(), Values.valueToJsonObject(entry.getValue(), String::valueOf)))
+						.collect(GuavaCollectors.toImmutableMap());
+				errorAttributes.put(ATTR_ExceptionAttributes, jsonExceptionAttributes);
 			}
 		}
 	}

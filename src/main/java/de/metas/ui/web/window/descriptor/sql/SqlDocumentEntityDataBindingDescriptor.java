@@ -161,11 +161,17 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlKeyColumnName;
 	}
 
+	/**
+	 * @return the column name from this entity which will link to parent
+	 */
 	public String getLinkColumnName()
 	{
 		return sqlLinkColumnName;
 	}
 
+	/**
+	 * @return the column name from parent entity on which {@link #getLinkColumnName()} shall join
+	 */
 	public String getParentLinkColumnName()
 	{
 		return sqlParentLinkColumnName;

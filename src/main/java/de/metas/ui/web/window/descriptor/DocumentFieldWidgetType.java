@@ -134,6 +134,11 @@ public enum DocumentFieldWidgetType
 	{
 		return this == Button || this == ActionButton || this == ProcessButton;
 	}
+	
+	public final boolean isLookup()
+	{
+		return this == Lookup || this == List;
+	}
 
 	/**
 	 * Same as {@link #getValueClassOrNull()} but it will throw exception in case there is no valueClass.

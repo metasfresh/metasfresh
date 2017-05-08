@@ -1,7 +1,9 @@
 package de.metas.ui.web.window.model.sql;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -11,6 +13,8 @@ import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -22,8 +26,10 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFiltersBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -42,11 +48,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -70,8 +76,8 @@ public class SqlDocumentQueryBuilder
 				.setOrderBys(query.getOrderBys())
 				//
 				.setPage(query.getFirstRow(), query.getPageLength())
-				//
-				;
+		//
+		;
 	}
 
 	private final Properties ctx;
@@ -90,10 +96,8 @@ public class SqlDocumentQueryBuilder
 
 	//
 	// Built values
-	private IStringExpression _sqlWhereExpr;
-	private List<Object> _sqlWhereParams;
-	private IStringExpression _sqlExpr;
-	private List<Object> _sqlParams;
+	private IPair<IStringExpression, List<Object>> _sqlWhereAndParams;
+	private IPair<IStringExpression, List<Object>> _sqlAndParams;
 
 	private SqlDocumentQueryBuilder(final DocumentEntityDescriptor entityDescriptor)
 	{
@@ -101,7 +105,7 @@ public class SqlDocumentQueryBuilder
 
 		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
 		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
-		
+
 	}
 
 	@Override
@@ -160,32 +164,109 @@ public class SqlDocumentQueryBuilder
 	{
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
-	
+
+	/**
+	 * SQL to fetch the parent's ID based on given child document.
+	 * 
+	 * @return SELECT KeyColumnName from ParentTableName WHERE ....
+	 */
+	public String getSqlSelectParentId(final List<Object> outSqlParams, final DocumentEntityDescriptor parentEntityDescriptor)
+	{
+		final String linkColumnName = entityBinding.getLinkColumnName();
+		final String parentLinkColumnName = entityBinding.getParentLinkColumnName();
+		if (parentLinkColumnName == null || linkColumnName == null)
+		{
+			throw new AdempiereException("Selecting parent ID is not possible because this entity does not have a parent link")
+					.setParameter("linkColumnName", linkColumnName)
+					.setParameter("parentLinkColumnName", parentLinkColumnName)
+					.setParameter("entityBinding", entityBinding);
+		}
+
+		//
+		// SELECT linkColumnName from current(child) tableName
+		final List<Object> sqlSelectLinkColumnNameParams = new ArrayList<>();
+		final CompositeStringExpression.Builder sqlSelectLinkColumnName = IStringExpression.composer();
+		{
+			final IPair<IStringExpression, List<Object>> sqlWhereAndParams = getSqlWhereAndParams();
+			final IStringExpression sqlWhere = sqlWhereAndParams.getLeft();
+			final List<Object> sqlWhereParams = sqlWhereAndParams.getRight();
+
+			sqlSelectLinkColumnName
+					.append("SELECT " + linkColumnName + " FROM " + entityBinding.getTableName())
+					.append("\n WHERE ").append(sqlWhere);
+			sqlSelectLinkColumnNameParams.addAll(sqlWhereParams);
+		}
+
+		//
+		//
+		final String parentKeyColumnName = extractKeyColumnName(parentEntityDescriptor);
+		if (Objects.equals(parentKeyColumnName, parentLinkColumnName))
+		{
+			final Evaluatee evalCtx = getEvaluationContext();
+
+			final String sql = sqlSelectLinkColumnName.build().evaluate(evalCtx, OnVariableNotFound.Fail);
+			outSqlParams.addAll(sqlSelectLinkColumnNameParams);
+			return sql;
+		}
+		else
+		{
+			final Evaluatee evalCtx = getEvaluationContext();
+
+			final String sql = IStringExpression.composer()
+					.append("SELECT " + parentKeyColumnName + " FROM " + parentEntityDescriptor.getTableName())
+					.append("\n WHERE " + parentLinkColumnName + " IN (").append(sqlSelectLinkColumnName).append(")")
+					.build()
+					.evaluate(evalCtx, OnVariableNotFound.Fail);
+			outSqlParams.addAll(sqlSelectLinkColumnNameParams);
+			return sql;
+		}
+
+	}
+
+	/** @return SQL key column name; never returns null */
+	private static final String extractKeyColumnName(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
+		if (idField == null)
+		{
+			throw new AdempiereException("Entity does not have an ID field: " + entityDescriptor);
+		}
+
+		final SqlDocumentFieldDataBindingDescriptor idFieldBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(idField.getDataBinding());
+		if (idFieldBinding == null)
+		{
+			throw new AdempiereException("Entity's ID field does not have SQL bindings: " + idField);
+		}
+
+		return idFieldBinding.getColumnName();
+	}
+
+	/**
+	 * @return SQL to fully load the documents matched by this query.
+	 */
 	public String getSql(final List<Object> outSqlParams)
 	{
 		final Evaluatee evalCtx = getEvaluationContext();
-		final String sql = getSql().evaluate(evalCtx, OnVariableNotFound.Fail);
-		final List<Object> sqlParams = getSqlParams();
+		final IPair<IStringExpression, List<Object>> sqlAndParams = getSqlAndParams();
+		final String sql = sqlAndParams.getLeft().evaluate(evalCtx, OnVariableNotFound.Fail);
+		final List<Object> sqlParams = sqlAndParams.getRight();
 
 		outSqlParams.addAll(sqlParams);
 		return sql;
 	}
 
-	private IStringExpression getSql()
+	private IPair<IStringExpression, List<Object>> getSqlAndParams()
 	{
-		if (_sqlExpr == null)
+		IPair<IStringExpression, List<Object>> sqlAndParams = _sqlAndParams;
+		if (sqlAndParams == null)
 		{
-			buildSql();
+			sqlAndParams = buildSql();
+			_sqlAndParams = sqlAndParams;
 		}
-		return _sqlExpr;
+		return sqlAndParams;
 	}
 
-	private List<Object> getSqlParams()
-	{
-		return _sqlParams;
-	}
-
-	private final void buildSql()
+	private final IPair<IStringExpression, List<Object>> buildSql()
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 
@@ -198,11 +279,14 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// WHERE
-		final IStringExpression sqlWhereClause = getSqlWhere();
-		if (!sqlWhereClause.isNullExpression())
 		{
-			sqlBuilder.append("\n WHERE ").append(sqlWhereClause);
-			sqlParams.addAll(getSqlWhereParams());
+			final IPair<IStringExpression, List<Object>> sqlWhereClauseAndParams = getSqlWhereAndParams();
+			final IStringExpression sqlWhereClause = sqlWhereClauseAndParams.getLeft();
+			if (!sqlWhereClause.isNullExpression())
+			{
+				sqlBuilder.append("\n WHERE ").append(sqlWhereClause);
+				sqlParams.addAll(sqlWhereClauseAndParams.getRight());
+			}
 		}
 
 		//
@@ -218,23 +302,24 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// LIMIT/OFFSET
-		final int firstRow = getFirstRow();
-		if (firstRow > 0)
 		{
-			sqlBuilder.append("\n OFFSET ?");
-			sqlParams.add(firstRow);
-		}
-		final int pageLength = getPageLength();
-		if (pageLength > 0)
-		{
-			sqlBuilder.append("\n LIMIT ?");
-			sqlParams.add(pageLength);
+			final int firstRow = getFirstRow();
+			if (firstRow > 0)
+			{
+				sqlBuilder.append("\n OFFSET ?");
+				sqlParams.add(firstRow);
+			}
+			final int pageLength = getPageLength();
+			if (pageLength > 0)
+			{
+				sqlBuilder.append("\n LIMIT ?");
+				sqlParams.add(pageLength);
+			}
 		}
 
 		//
 		//
-		_sqlExpr = sqlBuilder.build();
-		_sqlParams = sqlParams;
+		return ImmutablePair.of(sqlBuilder.build(), Collections.unmodifiableList(sqlParams));
 	}
 
 	private IStringExpression getSqlSelectFrom()
@@ -242,25 +327,18 @@ public class SqlDocumentQueryBuilder
 		return entityBinding.getSqlSelectAllFrom();
 	}
 
-	private IStringExpression getSqlWhere()
+	private IPair<IStringExpression, List<Object>> getSqlWhereAndParams()
 	{
-		if (_sqlWhereExpr == null)
+		IPair<IStringExpression, List<Object>> sqlWhereAndParams = _sqlWhereAndParams;
+		if (sqlWhereAndParams == null)
 		{
-			buildSqlWhereClause();
+			sqlWhereAndParams = buildSqlWhereClause();
+			_sqlWhereAndParams = sqlWhereAndParams;
 		}
-		return _sqlWhereExpr;
+		return sqlWhereAndParams;
 	}
 
-	private List<Object> getSqlWhereParams()
-	{
-		if (_sqlWhereParams == null)
-		{
-			buildSqlWhereClause();
-		}
-		return _sqlWhereParams;
-	}
-
-	private void buildSqlWhereClause()
+	private IPair<IStringExpression, List<Object>> buildSqlWhereClause()
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 
@@ -321,7 +399,7 @@ public class SqlDocumentQueryBuilder
 			final String sqlFilters = SqlDocumentFiltersBuilder.newInstance(entityBinding)
 					.addFilters(getDocumentFilters())
 					.buildSqlWhereClause(sqlParams);
-			if(!Check.isEmpty(sqlFilters, true))
+			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(sqlFilters).append(")\n");
@@ -330,8 +408,7 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// Build the final SQL where clause
-		_sqlWhereExpr = sqlWhereClauseBuilder.build();
-		_sqlWhereParams = sqlParams;
+		return ImmutablePair.of(sqlWhereClauseBuilder.build(), Collections.unmodifiableList(sqlParams));
 	}
 
 	private List<DocumentQueryOrderBy> getOrderBysEffective()
@@ -402,11 +479,11 @@ public class SqlDocumentQueryBuilder
 		orderBys = null;
 		return this;
 	}
-	
+
 	public SqlDocumentQueryBuilder noSorting(final boolean noSorting)
 	{
 		this.noSorting = noSorting;
-		if(noSorting)
+		if (noSorting)
 		{
 			orderBys = null;
 		}

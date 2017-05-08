@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.compiere.util.CCache.CCacheStats;
 
@@ -52,4 +53,7 @@ public interface LookupDataSourceFetcher
 	boolean isCached();
 	List<CCacheStats> getCacheStats();
 	//@formatter:on
+
+	/** @return tableName if available */
+	Optional<String> getLookupTableName();
 }

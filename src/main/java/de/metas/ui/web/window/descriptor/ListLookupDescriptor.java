@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -53,6 +54,7 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 
 	private final Set<String> dependsOnFieldNames;
 	private final Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
+	private final Optional<String> lookupTableName;
 
 	private ListLookupDescriptor(final Builder builder)
 	{
@@ -75,6 +77,8 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 				return lookupValue;
 			};
 		}
+		
+		lookupTableName = builder.lookupTableName;
 	}
 
 	@Override
@@ -95,6 +99,12 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 	public Set<String> getDependsOnFieldNames()
 	{
 		return dependsOnFieldNames;
+	}
+	
+	@Override
+	public Optional<String> getLookupTableName()
+	{
+		return lookupTableName;
 	}
 
 	@Override
@@ -117,6 +127,8 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		private Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
 		private Set<String> dependsOnFieldNames;
 
+		private Optional<String> lookupTableName = Optional.empty();
+		
 		private Builder()
 		{
 		}
@@ -163,5 +175,10 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 			return this;
 		}
 
+		public Builder setLookupTableName(final String lookupTableName)
+		{
+			this.lookupTableName = Check.isEmpty(lookupTableName, true) ? Optional.empty() : Optional.of(lookupTableName);
+			return this;
+		}
 	}
 }
