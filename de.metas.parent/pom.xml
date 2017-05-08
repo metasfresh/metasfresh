@@ -547,7 +547,7 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>2.6</version>
 				<executions>
-					
+
 					<execution>
 						<id>copy-springboot-properties</id>
 						<phase>process-resources</phase>
@@ -753,8 +753,8 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
-								<groupId>de.metas.assemblies</groupId>
-								<artifactId>de.metas.assemblies</artifactId>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
 								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
 								<version>[1.0.0,5.0.0]</version>
 							</dependency>
@@ -867,8 +867,8 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
-								<groupId>de.metas.assemblies</groupId>
-								<artifactId>de.metas.assemblies</artifactId>
+								<groupId>de.metas</groupId>
+								<artifactId>de.metas.parent.general</artifactId>
 								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
 								<version>[1.0.0,5.0.0]</version>
 							</dependency>
@@ -954,8 +954,8 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
-								<groupId>de.metas.assemblies</groupId>
-								<artifactId>de.metas.assemblies</artifactId>
+								<groupId>de.metas</groupId>
+								<artifactId>de.metas.parent.general</artifactId>
 								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
 								<version>[1.0.0,5.0.0]</version>
 							</dependency>
