@@ -6,9 +6,13 @@
 	<artifactId>de.metas.parent.general</artifactId>
 	<version>1.0.0</version>
 
-	<packaging>pom</packaging>
+	<!-- this parent pom also provides our assembly descriptors, so the packaging is 'jar', not 'pom' -->
+	<packaging>jar</packaging>
 
-	<description>Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects</description>
+	<description>
+Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects.
+Also provides a set of shared assembly descriptors.
+	</description>
 
 	<url>http://www.metasfresh.com/</url>
 
