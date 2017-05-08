@@ -93,6 +93,7 @@
 
 .panel-modal-content {
     position: relative;
+    padding-top: 1.5rem;
     max-height: calc(100% - 77px);
     min-height: calc(100% - 100px);
     width: 100%;

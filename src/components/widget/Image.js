@@ -63,7 +63,6 @@ class Image extends Component{
                     })
                 })
             })
-
     }
 
     updateImagePreview(id){
@@ -99,10 +98,8 @@ class Image extends Component{
 
         // upload the picture taken
         canvas.toBlob(blob => {
-            this.uploadBlob(blob)
-                .then(() => {
-                    return this.stopUsingCamera()
-                })
+            this.uploadBlob(blob);
+            this.stopUsingCamera();
         })
     }
 
@@ -151,6 +148,23 @@ class Image extends Component{
         this.uploadBlob(this.imageInput.files[0]);
     }
 
+    handleKeyDown = (e) => {
+        switch(e.key){
+            case 'Escape':
+                e.preventDefault();
+                this.stopUsingCamera();
+                break;
+        }
+    }
+
+    handleClear = () => {
+        const {handlePatch, data} = this.props;
+        handlePatch(data.field, null);
+        this.setState({
+            imageSrc: ''
+        })
+    }
+
     renderVideoPreview(){
         const {isLoading} = this.state;
         return <div
@@ -161,28 +175,9 @@ class Image extends Component{
             </div>
     }
 
-    renderUsingCameraControls(){
-        return <div>
-            <div
-                className="btn btn-meta-outline-secondary btn-sm btn-distance-3"
-                onClick={() => this.takeSnapshot()}
-            >
-                <i className="meta-icon-photo"/>
-                Capture
-            </div>
-            <div
-                className="btn btn-meta-outline-secondary btn-sm"
-                onClick={() => this.stopUsingCamera()}
-            >
-                <i className="meta-icon-close-alt"/>
-                Cancel
-            </div>
-        </div>
-    }
-
     renderRegularCameraControl(){
         return <div
-                className="btn btn-block btn-meta-outline-secondary btn-sm"
+                className="btn btn-block btn-meta-outline-secondary btn-sm mb-1"
                 onClick={() => this.handleCamera()}
             >
                 <i className="meta-icon-photo"/>
@@ -195,7 +190,11 @@ class Image extends Component{
         const { fields, readonly } = this.props;
 
         return(
-            <div className="form-control-label image-widget">
+            <div
+                className="form-control-label image-widget"
+                onKeyDown={this.handleKeyDown}
+                tabIndex={0}
+            >
                 {imageSrc ?
                     <div className="image-preview">
                         <img
@@ -218,7 +217,7 @@ class Image extends Component{
                     className=" image-source-options"
                 >
                     <label
-                        className="btn btn-meta-outline-secondary btn-sm"
+                        className="btn btn-meta-outline-secondary btn-sm mb-1"
                     >
                         <input
                             className="input"
@@ -231,13 +230,16 @@ class Image extends Component{
                             Upload a photo
                         </div>
                     </label>
-                    {
-                        this.isCameraAvailable() &&
-                        (usingCamera ?
-                            this.renderUsingCameraControls() :
-                            this.renderRegularCameraControl()
-                        )
+                    {this.isCameraAvailable() &&
+                        this.renderRegularCameraControl()
                     }
+                    {imageSrc && <div
+                            className="btn btn-meta-outline-secondary btn-sm"
+                            onClick={() => this.handleClear()}
+                        >
+                            <i className="meta-icon-close-alt"/>
+                            Clear
+                        </div>}
                 </div>}
             </div>
         )
