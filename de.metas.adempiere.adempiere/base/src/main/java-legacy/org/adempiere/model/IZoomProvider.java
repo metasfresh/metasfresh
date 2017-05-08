@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: ADempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2009 www.metas.de                                            *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: ADempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2009 www.metas.de *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.model;
 
@@ -26,11 +26,11 @@ package org.adempiere.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,7 +49,7 @@ public interface IZoomProvider
 	/**
 	 *
 	 * @param source the source we need zoom targets for
-	 * @param targetAD_Window_ID optional target window ID
+	 * @param targetAD_Window_ID optional target window ID; if specified, only those {@link ZoomInfo}s will be returned which have this targetAD_Window_ID.
 	 * @param checkRecordsCount
 	 *            Set to <code>true</code> if we also need the records count.
 	 *            In this case those ZoomInfos with ZERO records would be skipped.
