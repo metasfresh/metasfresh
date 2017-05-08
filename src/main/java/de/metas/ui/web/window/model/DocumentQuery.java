@@ -9,9 +9,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L

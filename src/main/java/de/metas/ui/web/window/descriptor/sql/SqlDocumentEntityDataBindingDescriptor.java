@@ -21,12 +21,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.POInfo;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -46,16 +46,16 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor
+public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor, SqlEntityBinding
 {
 	public static final Builder builder()
 	{
@@ -71,11 +71,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	public static final String FIELDNAME_Version = "Updated";
 
-//	//
-//	// Paging constants
-//	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
-//	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
-//	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
+	// //
+	// // Paging constants
+	// public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
+	// public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
+	// public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 
 	private final DocumentsRepository documentsRepository;
 	private final String sqlTableName;
@@ -86,12 +86,10 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
-	private final List<DocumentQueryOrderBy> orderBys;
+	private final List<DocumentQueryOrderBy> defaultOrderBys;
 
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 
-	private final SqlViewBinding viewBinding;
-	
 	private final Optional<String> sqlSelectVersionById;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
@@ -118,25 +116,24 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlWhereClause = builder.getSqlWhereClauseExpression()
 				.caching();
 
-		orderBys = ImmutableList.copyOf(builder.getOrderBysList());
-		
+		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
+
 		sqlSelectVersionById = builder.getSqlSelectVersionById();
-		
-		viewBinding = builder.buildViewBinding();
 	}
 
 	@Override
 	public String toString()
 	{
+		// NOTE: keep it short
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("sqlTableName", sqlTableName)
 				.add("sqlTableAlias", sqlTableAlias)
-				.add("sqlKeyColumnName", sqlKeyColumnName)
-				.add("sqlLinkColumnName", sqlLinkColumnName)
-				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
-				.add("orderBys", orderBys)
-				.add("fields", _fieldsByFieldName.isEmpty() ? null : _fieldsByFieldName.values())
+				// .add("sqlKeyColumnName", sqlKeyColumnName)
+				// .add("sqlLinkColumnName", sqlLinkColumnName)
+				// .add("sqlParentLinkColumnName", sqlParentLinkColumnName)
+				// .add("orderBys", orderBys)
+				// .add("fields", _fieldsByFieldName.isEmpty() ? null : _fieldsByFieldName.values())
 				.toString();
 	}
 
@@ -146,27 +143,24 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return documentsRepository;
 	}
 
+	@Override
 	public String getTableName()
 	{
 		return sqlTableName;
 	}
 
+	@Override
 	public String getTableAlias()
 	{
 		return sqlTableAlias;
 	}
 
-	public POInfo getPOInfo()
-	{
-		// NOTE: don't cache it here because it might change dynamically and it would be so nice to support that case...
-		return POInfo.getPOInfo(sqlTableName);
-	}
-
+	@Override
 	public String getKeyColumnName()
 	{
 		return sqlKeyColumnName;
 	}
-	
+
 	public String getLinkColumnName()
 	{
 		return sqlLinkColumnName;
@@ -182,78 +176,23 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlSelectAllFrom;
 	}
 
+	@Override
 	public IStringExpression getSqlWhereClause()
 	{
 		return sqlWhereClause;
 	}
-	
+
 	public String getSqlWhereClauseById(final int recordId)
 	{
 		return sqlTableName + "." + sqlKeyColumnName + " = " + recordId;
 	}
 
-	public List<DocumentQueryOrderBy> getOrderBys()
+	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
-		return orderBys;
+		return defaultOrderBys;
 	}
 
-	public final IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
-	{
-		if (orderBys.isEmpty())
-		{
-			return IStringExpression.NULL;
-		}
-
-		final IStringExpression sqlOrderByFinal = orderBys
-				.stream()
-				.map(orderBy -> buildSqlOrderBy(orderBy))
-				.filter(sql -> sql != null && !sql.isNullExpression())
-				.collect(IStringExpression.collectJoining(", "));
-
-		return sqlOrderByFinal;
-	}
-
-	public final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
-	{
-		final String fieldName = orderBy.getFieldName();
-		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
-		return fieldBinding.buildSqlOrderBy(orderBy.isAscending());
-	}
-
-	public final IStringExpression buildSqlFullOrderBy(final List<DocumentQueryOrderBy> orderBys)
-	{
-		if (orderBys.isEmpty())
-		{
-			return null;
-		}
-
-		final IStringExpression sqlOrderByFinal = orderBys
-				.stream()
-				.map(orderBy -> buildSqlFullOrderBy(orderBy))
-				.filter(sql -> sql != null && !sql.isNullExpression())
-				.collect(IStringExpression.collectJoining(", "));
-
-		return sqlOrderByFinal;
-	}
-
-	private final IStringExpression buildSqlFullOrderBy(final DocumentQueryOrderBy orderBy)
-	{
-		final String fieldName = orderBy.getFieldName();
-		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
-		return fieldBinding.buildSqlFullOrderBy(orderBy.isAscending());
-	}
-
-	public String replaceTableNameWithTableAlias(final String sql)
-	{
-		if(sql == null || sql.isEmpty())
-		{
-			return sql;
-		}
-		
-		final String sqlFixed = sql.replace(getTableName() + ".", getTableAlias() + ".");
-		return sqlFixed;
-	}
-
+	@Override
 	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
 	{
 		final SqlDocumentFieldDataBindingDescriptor field = _fieldsByFieldName.get(fieldName);
@@ -263,17 +202,17 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		}
 		return field;
 	}
-	
-	public SqlViewBinding getViewBinding()
+
+	public Collection<SqlDocumentFieldDataBindingDescriptor> getFields()
 	{
-		return viewBinding;
+		return _fieldsByFieldName.values();
 	}
-	
+
 	public Optional<String> getSqlSelectVersionById()
 	{
 		return sqlSelectVersionById;
 	}
-	
+
 	@Override
 	public boolean isVersioningSupported()
 	{
@@ -297,8 +236,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private final LinkedHashMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlDocumentFieldDataBindingDescriptor _keyField;
-		
-		private SqlViewBinding.Builder viewBinding = SqlViewBinding.builder();
+
+		// private SqlViewBinding.Builder viewBinding = SqlViewBinding.builder();
 
 		private Builder()
 		{
@@ -343,13 +282,13 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				throw new AdempiereException("No SQL fields found");
 			}
 
-			final List<IStringExpression> sqlSelectValuesList = new ArrayList<>(fields.size());
+			final List<String> sqlSelectValuesList = new ArrayList<>(fields.size());
 			final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>(fields.size());
 			for (final SqlDocumentFieldDataBindingDescriptor sqlField : fields)
 			{
 				//
 				// Value column
-				final IStringExpression sqlSelectValue = sqlField.getSqlSelectValue();
+				final String sqlSelectValue = sqlField.getSqlSelectValue();
 				sqlSelectValuesList.add(sqlSelectValue);
 
 				//
@@ -365,14 +304,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			_sqlSelectAll = buildSqlSelect(sqlSelectValuesList, sqlSelectDisplayNamesList);
 		}
 
-		private final IStringExpression buildSqlSelect(final List<IStringExpression> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
+		private final IStringExpression buildSqlSelect(final List<String> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
 			final String sqlTableName = getTableName();
 			final String sqlTableAlias = getTableAlias();
 
 			final IStringExpression sqlInnerExpr = IStringExpression.composer()
 					.append("SELECT ")
-					.append("\n ").appendAllJoining("\n, ", sqlSelectValuesList)
+					.append("\n ").append(Joiner.on("\n, ").join(sqlSelectValuesList))
 					.append("\n FROM ").append(sqlTableName)
 					.wrap(AccessSqlStringExpression.wrapper(sqlTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 					.build();
@@ -412,13 +351,13 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					// NOTE: because current AD_Tab.WhereClause contain fully qualified TableNames, we shall replace them with our table alias
 					// (e.g. "R_Request.SalesRep_ID=@#AD_User_ID@" shall become ""tableAlias.SalesRep_ID=@#AD_User_ID@"
 					.replace(getTableName() + ".", getTableAlias() + ".") //
-					;
+			;
 
 			final IStringExpression sqlWhereClauseExpr = Services.get(IExpressionFactory.class).compileOrDefault(sqlWhereClausePrepared, IStringExpression.NULL, IStringExpression.class);
 			return sqlWhereClauseExpr;
 		}
 
-		private List<DocumentQueryOrderBy> getOrderBysList()
+		private List<DocumentQueryOrderBy> getDefaultOrderBys()
 		{
 			// Build the ORDER BY from fields
 			return getFieldsByFieldName()
@@ -447,7 +386,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 			_sqlTableName = sqlTableName;
-			viewBinding.setTableName(sqlTableName);
 			return this;
 		}
 
@@ -456,11 +394,15 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return _sqlTableName;
 		}
 
+		public POInfo getPOInfo()
+		{
+			return POInfo.getPOInfo(getTableName());
+		}
+
 		private Builder setTableAlias(final String sqlTableAlias)
 		{
 			assertNotBuilt();
 			_tableAlias = sqlTableAlias;
-			viewBinding.setTableAlias(sqlTableAlias);
 			return this;
 		}
 
@@ -482,12 +424,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			return _tableAlias;
 		}
-		
+
 		public Builder setChildToParentLinkColumnNames(final IPair<String, String> childToParentLinkColumnNames)
 		{
 			assertNotBuilt();
-			
-			if(childToParentLinkColumnNames != null)
+
+			if (childToParentLinkColumnNames != null)
 			{
 				_sqlLinkColumnName = childToParentLinkColumnNames.getLeft();
 				_sqlParentLinkColumnName = childToParentLinkColumnNames.getRight();
@@ -530,8 +472,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			{
 				setKeyField(sqlField);
 			}
-			
-			viewBinding.addField(sqlField);
+
+			// viewBinding.addField(sqlField);
 
 			return this;
 		}
@@ -540,7 +482,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			return _fieldsByFieldName;
 		}
-		
+
 		private Builder setKeyField(final SqlDocumentFieldDataBindingDescriptor keyField)
 		{
 			Check.assumeNull(_keyField, "More than one key field is not allowed: {}, {}", _keyField, keyField);
@@ -552,25 +494,25 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			return _keyField == null ? null : _keyField.getColumnName();
 		}
-		
-		private SqlViewBinding buildViewBinding()
-		{
-			return viewBinding.build();
-		}
-		
+
+		// private SqlViewBinding buildViewBinding()
+		// {
+		// return viewBinding.build();
+		// }
+
 		private Optional<String> getSqlSelectVersionById()
 		{
-			if(getFieldsByFieldName().get(FIELDNAME_Version) == null)
+			if (getFieldsByFieldName().get(FIELDNAME_Version) == null)
 			{
 				return Optional.empty();
 			}
-			
+
 			final String keyColumnName = getKeyColumnName();
-			if(keyColumnName == null)
+			if (keyColumnName == null)
 			{
 				return Optional.empty();
 			}
-			
+
 			final String sql = "SELECT " + FIELDNAME_Version + " FROM " + getTableName() + " WHERE " + keyColumnName + "=?";
 			return Optional.of(sql);
 		}

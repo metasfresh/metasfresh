@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -21,6 +20,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L

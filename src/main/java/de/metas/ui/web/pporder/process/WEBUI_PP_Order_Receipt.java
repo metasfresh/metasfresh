@@ -161,7 +161,7 @@ public class WEBUI_PP_Order_Receipt
 		}
 
 		//
-		// OK, Override caption with current packing info, if any 
+		// OK, Override caption with current packing info, if any
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
 		if (!Check.isEmpty(packingInfo, true))
 		{

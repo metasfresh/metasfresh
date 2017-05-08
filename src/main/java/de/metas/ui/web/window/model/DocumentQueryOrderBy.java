@@ -103,7 +103,6 @@ public final class DocumentQueryOrderBy implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
 				.add("fieldName", fieldName)
 				.add("ascending", ascending)
 				.toString();

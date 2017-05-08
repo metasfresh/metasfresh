@@ -2,12 +2,15 @@ package de.metas.ui.web.window.datatypes.json;
 
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -31,9 +34,10 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  * #L%
  */
 
-public class JSONDocumentReference
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+public final class JSONDocumentReference
 {
-	public static final JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
+	static final JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		try
 		{
@@ -53,7 +57,7 @@ public class JSONDocumentReference
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("documentType")
-	private final String documentType;
+	private final WindowId windowId;
 	@JsonProperty("documentsCount")
 	private final int documentsCount;
 	@JsonProperty("filter")
@@ -64,35 +68,10 @@ public class JSONDocumentReference
 		super();
 		id = documentReference.getId();
 		caption = documentReference.getCaption(jsonOpts.getAD_Language());
-		documentType = String.valueOf(documentReference.getAD_Window_ID());
+		windowId = documentReference.getWindowId();
 		documentsCount = documentReference.getDocumentsCount();
 
 		final DocumentFilter filter = documentReference.getFilter();
 		this.filter = JSONDocumentFilter.of(filter);
-	}
-	
-	public String getId()
-	{
-		return id;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getDocumentType()
-	{
-		return documentType;
-	}
-
-	public int getDocumentsCount()
-	{
-		return documentsCount;
-	}
-
-	public JSONDocumentFilter getFilter()
-	{
-		return filter;
 	}
 }

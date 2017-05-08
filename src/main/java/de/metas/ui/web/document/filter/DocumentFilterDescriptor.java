@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
  * #%L

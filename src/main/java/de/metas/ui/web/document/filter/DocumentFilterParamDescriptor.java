@@ -1,12 +1,12 @@
-package de.metas.ui.web.window.descriptor.filters;
+package de.metas.ui.web.document.filter;
 
 import org.adempiere.util.Check;
-import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;

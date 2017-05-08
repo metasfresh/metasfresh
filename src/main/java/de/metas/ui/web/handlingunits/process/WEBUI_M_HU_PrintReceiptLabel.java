@@ -1,9 +1,9 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Properties;
 
-import org.compiere.model.I_AD_Process;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,8 +49,9 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(getCtx());
-		if (!process.isPresent())
+		final Properties ctx = Env.getCtx(); // note: at this point, the JavaProces's ctx was not set so we are using the global context
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		if (adProcessId <= 0)
 		{
 			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 		}
@@ -65,7 +66,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 			return ProcessPreconditionsResolution.reject("No (single) HU selected");
 		}
 
-		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, process.get());
+		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 		if (husToProcess.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject("current HU's type does not match the receipt label process");
@@ -80,15 +81,15 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		final Optional<I_AD_Process> process = huReportService.retrievePrintReceiptLabelProcess(getCtx());
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(getCtx());
 		final I_M_HU hu = getSingleSelectedRow().getM_HU();
 
-		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, process.get());
+		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 
 		HUReportExecutor.get(getCtx())
 				.withWindowNo(getProcessInfo().getWindowNo())
 				.withNumberOfCopies(p_copies)
-				.executeHUReportAfterCommit(process.get(), husToProcess);
+				.executeHUReportAfterCommit(adProcessId, husToProcess);
 
 		return MSG_OK;
 	}

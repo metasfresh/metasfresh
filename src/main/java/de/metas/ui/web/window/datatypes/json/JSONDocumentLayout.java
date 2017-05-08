@@ -15,8 +15,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;

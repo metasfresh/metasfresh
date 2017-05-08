@@ -14,10 +14,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*

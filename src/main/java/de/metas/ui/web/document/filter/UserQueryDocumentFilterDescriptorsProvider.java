@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,17 +13,16 @@ import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
-import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 
 /*
@@ -112,7 +111,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			final Join join = queryRestriction.getJoin();
 			final UserQueryField searchField = UserQueryField.cast(queryRestriction.getSearchField());
 			final String fieldName = searchField.getColumnName();
-			final Operator operator = queryRestriction.getOperator();
+			final Operator operator = MQueryDocumentFilterHelper.fromMQueryOperator(queryRestriction.getOperator());
 			final Object value = queryRestriction.getValue();
 			final Object valueTo = queryRestriction.getValueTo();
 

@@ -30,6 +30,7 @@ import com.google.common.base.Joiner;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -42,9 +43,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
@@ -249,6 +250,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
 		assertThisRepository(entityDescriptor);
+		// TODO: check permissions if we can create a new record
 
 		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
 
@@ -441,6 +443,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
+		DocumentPermissionsHelper.assertCanEdit(document, UserSession.getCurrentPermissions());
 
 		//
 		// Load the PO / Create new PO instance
@@ -671,7 +674,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
+	public static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
 	{
 		final Class<?> valueClass = value == null ? null : value.getClass();
 
@@ -773,6 +776,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
+		DocumentPermissionsHelper.assertCanEdit(document, UserSession.getCurrentPermissions());
 
 		if (document.isNew())
 		{

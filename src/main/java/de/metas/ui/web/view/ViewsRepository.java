@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -23,15 +22,16 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -89,16 +89,11 @@ public class ViewsRepository implements IViewsRepository
 				viewTypes = JSONViewDataType.values();
 			}
 
-			registerFactory(windowId, viewTypes, factory);
-		}
-	}
-
-	public void registerFactory(final WindowId windowId, final JSONViewDataType[] viewTypes, @NonNull final IViewFactory factory)
-	{
-		for (final JSONViewDataType viewType : viewTypes)
-		{
-			factories.put(mkFactoryKey(windowId, viewType), factory);
-			logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
+			for (final JSONViewDataType viewType : viewTypes)
+			{
+				factories.put(mkFactoryKey(windowId, viewType), factory);
+				logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
+			}
 		}
 	}
 
@@ -127,11 +122,13 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public JSONViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
 	{
+		DocumentPermissionsHelper.assertWindowAccess(windowId, null, UserSession.getCurrentPermissions());
+
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		final ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
-		final Collection<DocumentFilterDescriptor> viewFilters = factory.getViewFilters(windowId);
+		final Collection<DocumentFilterDescriptor> viewFilterDescriptors = factory.getViewFilterDescriptors(windowId, viewDataType);
 
-		final JSONViewLayout jsonLayout = JSONViewLayout.of(viewLayout, viewFilters, jsonOpts);
+		final JSONViewLayout jsonLayout = JSONViewLayout.of(viewLayout, viewFilterDescriptors, jsonOpts);
 		//
 		// Enable new record if supported
 		menuTreeRepo.getUserSessionMenuTree()
@@ -183,6 +180,9 @@ public class ViewsRepository implements IViewsRepository
 		{
 			throw new EntityNotFoundException("No view found for viewId=" + viewId);
 		}
+		
+		DocumentPermissionsHelper.assertWindowAccess(view.getViewId().getWindowId(), viewId, UserSession.getCurrentPermissions());
+		
 		return view;
 	}
 
@@ -203,7 +203,10 @@ public class ViewsRepository implements IViewsRepository
 	@Async
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		Check.assumeNotEmpty(recordRefs, "Parameter recordRefs is not empty");
+		if(recordRefs.isEmpty())
+		{
+			return;
+		}
 
 		final Collection<IView> views = this.views.asMap().values();
 		

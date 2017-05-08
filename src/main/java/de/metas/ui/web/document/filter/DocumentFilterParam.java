@@ -1,9 +1,6 @@
-package de.metas.ui.web.window.model.filters;
+package de.metas.ui.web.document.filter;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.model.MQuery;
-import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
@@ -20,11 +17,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,39 +32,32 @@ public class DocumentFilterParam
 	{
 		return new Builder();
 	}
-
-	public static DocumentFilterParam of(final MQuery mquery, final int restrictionIndex)
+	
+	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
 	{
-		try
-		{
-			if (mquery.isDirectWhereClause(restrictionIndex))
-			{
-				final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
-				final String sqlWhereClause = mquery.getDirectWhereClause(restrictionIndex);
+		return new DocumentFilterParam(joinAnd, sqlWhereClause);
+	}
 
-				return new DocumentFilterParam(joinAnd, sqlWhereClause);
-			}
-			
-			final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
-			final String fieldName = mquery.getColumnName(restrictionIndex);
-			final Operator operator = mquery.getOperator(restrictionIndex);
-			final Object value = mquery.getCode(restrictionIndex);
-			final Object valueTo = mquery.getCodeTo(restrictionIndex);
-
-			return builder()
-					.setJoinAnd(joinAnd)
-					.setFieldName(fieldName)
-					.setOperator(operator)
-					.setValue(value)
-					.setValueTo(valueTo)
-					.build();
-		}
-		catch (final Exception ex)
+	public static enum Operator
+	{
+		EQUAL, NOT_EQUAL, //
+		IN_ARRAY, //
+		LIKE, //
+		/** Like (case-insensitive) */
+		LIKE_I, //
+		NOT_LIKE, //
+		/** Not Like (case-insensitive) */
+		NOT_LIKE_I, //
+		GREATER, //
+		GREATER_OR_EQUAL, //
+		LESS, //
+		LESS_OR_EQUAL, //
+		BETWEEN, //
+		;
+		
+		public boolean isRangeOperator()
 		{
-			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentFilterParam.class
-					+ "\n MQuery: " + mquery
-					+ "\n Restriction index: " + restrictionIndex //
-					, ex);
+			return this == BETWEEN;
 		}
 	}
 

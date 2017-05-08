@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.Properties;
-
 import org.adempiere.util.Check;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -72,11 +70,14 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Properties ctx = Env.getCtx(); // TODO get rid of ctx
-		final int windowNo = 0; // TODO: get rid of WindowNo from GridWindowVO
-		final int AD_Menu_ID = 0; // N/A
-		final boolean loadAllLanguages = true;
-		final GridWindowVO gridWindowVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID, AD_Menu_ID, loadAllLanguages);
+		final GridWindowVO gridWindowVO = GridWindowVO.builder()
+				.ctx(Env.getCtx())
+				.windowNo(0) // TODO: get rid of WindowNo from GridWindowVO
+				.adWindowId(AD_Window_ID)
+				.adMenuId(-1) // N/A
+				.loadAllLanguages(true)
+				.applyRolePermissions(false)
+				.build();
 		Check.assumeNotNull(gridWindowVO, "Parameter gridWindowVO is not null"); // shall never happen
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();

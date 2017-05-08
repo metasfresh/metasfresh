@@ -5,11 +5,12 @@ import java.util.Collection;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -18,7 +19,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
  * #%L
@@ -70,7 +70,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	}
 
 	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilters(final WindowId windowId)
+	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		return null; // not supported
 	}

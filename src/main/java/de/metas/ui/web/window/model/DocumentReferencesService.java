@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -33,11 +34,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -51,17 +52,17 @@ public class DocumentReferencesService
 	public List<DocumentReference> getDocumentReferences(final DocumentPath documentPath)
 	{
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
-			if(document.isNew())
+			if (document.isNew())
 			{
 				return ImmutableList.of();
 			}
-			
+
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
 
 			return ZoomInfoFactory.get()
 					.retrieveZoomInfos(zoomSource)
 					.stream()
-					.map(zoomInfo -> DocumentReference.of(zoomInfo))
+					.map(zoomInfo -> createDocumentReference(zoomInfo))
 					.collect(ImmutableList.toImmutableList());
 		});
 	}
@@ -71,34 +72,47 @@ public class DocumentReferencesService
 		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
 			{
-				throw new IllegalArgumentException("New documents cannot be referenced: "+sourceDocument);
+				throw new IllegalArgumentException("New documents cannot be referenced: " + sourceDocument);
 			}
-			
+
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
-			
+
 			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toInt());
-			return DocumentReference.of(zoomInfo);
+			return createDocumentReference(zoomInfo);
 		});
+	}
+
+	private static final DocumentReference createDocumentReference(final ZoomInfo zoomInfo)
+	{
+		return DocumentReference.builder()
+				.id(zoomInfo.getId())
+				.caption(zoomInfo.getLabel())
+				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
+				.documentsCount(zoomInfo.getRecordCount())
+				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery()))
+				.build();
 	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource
 	{
 		private final Properties ctx;
 		private final Evaluatee evaluationContext;
-		
+
 		private final int adWindowId;
 		private final String tableName;
 		private final int adTableId;
 		private final int recordId;
 		private final String keyColumnName;
 		private final List<String> keyColumnNames;
+		private final Document document;
 
 		private DocumentAsZoomSource(final Document document)
 		{
 			super();
 			ctx = document.getCtx();
+			this.document = document;
 			evaluationContext = document.asEvaluatee();
-			
+
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			adWindowId = entityDescriptor.getWindowId().toInt();
 			tableName = entityDescriptor.getTableName();
@@ -107,7 +121,7 @@ public class DocumentReferencesService
 			keyColumnName = entityDescriptor.getIdFieldName();
 			keyColumnNames = keyColumnName == null ? ImmutableList.of() : ImmutableList.of(keyColumnName);
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -170,6 +184,24 @@ public class DocumentReferencesService
 		public Evaluatee createEvaluationContext()
 		{
 			return evaluationContext;
+		}
+
+		@Override
+		public boolean hasField(final String columnName)
+		{
+			return document.hasField(columnName);
+		}
+
+		@Override
+		public Object getFieldValue(final String columnName)
+		{
+			return document.getFieldView(columnName).getValue();
+		}
+
+		@Override
+		public boolean getFieldValueAsBoolean(final String columnName)
+		{
+			return document.getFieldView(columnName).getValueAsBoolean();
 		}
 	}
 }

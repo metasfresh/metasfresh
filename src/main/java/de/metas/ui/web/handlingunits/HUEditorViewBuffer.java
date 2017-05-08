@@ -54,7 +54,20 @@ public interface HUEditorViewBuffer
 	/** @return top level rows and included rows recursive stream */
 	Stream<HUEditorRow> streamAllRecursive() throws UnsupportedOperationException;
 
-	Stream<HUEditorRow> streamByIds(Collection<DocumentId> rowIds);
+	/**
+	 * Stream all rows (including children) which match any of given <code>rowIds</code>.
+	 * 
+	 * If a rowId is included in another row (which will be returned by this method), then that row will be excluded.
+	 * e.g.
+	 * Consider having following structure: rowId=1 which includes rowId=2 which includes rowId=3.
+	 * <ul>
+	 * <li>When this method will be called with rowIds={1, 3}, only rowId=1 will be returned because rowId=3 is indirectly included in rowId=1.
+	 * <li>When this method will be called with rowIds={3}, rowId=3 will be returned because it's not included in any of the rowIds we asked for.
+	 * <li>
+	 * </ul>
+	 * 
+	 */
+	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(Collection<DocumentId> rowIds);
 
 	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 

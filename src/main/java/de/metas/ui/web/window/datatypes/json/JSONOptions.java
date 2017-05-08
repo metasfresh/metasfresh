@@ -3,6 +3,8 @@ package de.metas.ui.web.window.datatypes.json;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.adempiere.ad.security.IUserRolePermissions;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -72,6 +74,8 @@ public final class JSONOptions
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
 
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+
+	private final JSONDocumentPermissions documentPermissions;
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
 	{
@@ -232,6 +236,9 @@ public final class JSONOptions
 		debugShowColumnNamesForCaption = builder.isShowColumnNamesForCaption(false);
 		
 		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
+		
+		final IUserRolePermissions userRolePermissions = builder.getPermissionsOrNull();
+		documentPermissions = userRolePermissions == null ? null : new JSONDocumentPermissions(userRolePermissions);
 	}
 
 	@Override
@@ -326,7 +333,17 @@ public final class JSONOptions
 	{
 		return newRecordDescriptorsProvider;
 	}
+	
+	public JSONDocumentPermissions getDocumentPermissions()
+	{
+		return documentPermissions;
+	}
 
+	//
+	//
+	//
+	//
+	//
 	public static final class Builder
 	{
 		private final UserSession _userSession;
@@ -365,6 +382,11 @@ public final class JSONOptions
 			}
 			
 			throw new IllegalStateException("Cannot detect the AD_Language");
+		}
+		
+		private IUserRolePermissions getPermissionsOrNull()
+		{
+			return _userSession == null ? null : _userSession.getUserRolePermissions();
 		}
 
 		public Builder setShowAdvancedFields(final boolean showAdvancedFields)

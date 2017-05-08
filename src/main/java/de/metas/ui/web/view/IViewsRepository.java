@@ -8,8 +8,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
@@ -36,6 +36,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * {@link IView}s repository.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IViewsRepository
 {
 	JSONViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);

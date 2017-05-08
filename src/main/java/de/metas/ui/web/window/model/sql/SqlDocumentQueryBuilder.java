@@ -7,15 +7,10 @@ import java.util.Properties;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
-import org.adempiere.db.DBConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.model.MQuery.Operator;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -23,17 +18,16 @@ import org.compiere.util.Evaluatees;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFiltersBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.ui.web.window.model.filters.DocumentFilter;
-import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
  * #%L
@@ -81,7 +75,6 @@ public class SqlDocumentQueryBuilder
 	}
 
 	private final Properties ctx;
-	private final DocumentEntityDescriptor entityDescriptor;
 	private final SqlDocumentEntityDataBindingDescriptor entityBinding;
 
 	private transient Evaluatee _evaluationContext = null; // lazy
@@ -107,7 +100,6 @@ public class SqlDocumentQueryBuilder
 		ctx = Env.getCtx();
 
 		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
-		this.entityDescriptor = entityDescriptor;
 		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 		
 	}
@@ -118,11 +110,10 @@ public class SqlDocumentQueryBuilder
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("TableName", entityBinding.getTableName())
-				.add("detailId", entityDescriptor.getDetailId())
 				.toString();
 	}
 
-	public Evaluatee getEvaluationContext()
+	private Evaluatee getEvaluationContext()
 	{
 		if (_evaluationContext == null)
 		{
@@ -170,11 +161,6 @@ public class SqlDocumentQueryBuilder
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 	
-	public IUserRolePermissions getPermissions()
-	{
-		return Env.getUserRolePermissions(getCtx());
-	}
-
 	public String getSql(final List<Object> outSqlParams)
 	{
 		final Evaluatee evalCtx = getEvaluationContext();
@@ -194,7 +180,7 @@ public class SqlDocumentQueryBuilder
 		return _sqlExpr;
 	}
 
-	public List<Object> getSqlParams()
+	private List<Object> getSqlParams()
 	{
 		return _sqlParams;
 	}
@@ -224,7 +210,7 @@ public class SqlDocumentQueryBuilder
 		if (isSorting())
 		{
 			final IStringExpression sqlOrderBy = getSqlOrderByEffective();
-			if (!sqlOrderBy.isNullExpression())
+			if (sqlOrderBy != null && !sqlOrderBy.isNullExpression())
 			{
 				sqlBuilder.append("\n ORDER BY ").append(sqlOrderBy);
 			}
@@ -256,7 +242,7 @@ public class SqlDocumentQueryBuilder
 		return entityBinding.getSqlSelectAllFrom();
 	}
 
-	public IStringExpression getSqlWhere()
+	private IStringExpression getSqlWhere()
 	{
 		if (_sqlWhereExpr == null)
 		{
@@ -265,7 +251,7 @@ public class SqlDocumentQueryBuilder
 		return _sqlWhereExpr;
 	}
 
-	public List<Object> getSqlWhereParams()
+	private List<Object> getSqlWhereParams()
 	{
 		if (_sqlWhereParams == null)
 		{
@@ -320,7 +306,7 @@ public class SqlDocumentQueryBuilder
 				final Object parentLinkValue = parentLinkField.getValue();
 				final DocumentFieldWidgetType parentLinkWidgetType = parentLinkField.getWidgetType();
 
-				final Class<?> targetClass = entityBinding.getFieldByFieldName(linkColumnName).getValueClass();
+				final Class<?> targetClass = entityBinding.getFieldByFieldName(linkColumnName).getSqlValueClass();
 				final Object sqlParentLinkValue = SqlDocumentsRepository.convertValueToPO(parentLinkValue, parentLinkColumnName, parentLinkWidgetType, targetClass);
 
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
@@ -332,8 +318,10 @@ public class SqlDocumentQueryBuilder
 		//
 		// Document filters
 		{
-			final IStringExpression sqlFilters = buildSqlWhereClause(sqlParams, getDocumentFilters());
-			if (!sqlFilters.isNullExpression())
+			final String sqlFilters = SqlDocumentFiltersBuilder.newInstance(entityBinding)
+					.addFilters(getDocumentFilters())
+					.buildSqlWhereClause(sqlParams);
+			if(!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(sqlFilters).append(")\n");
@@ -346,225 +334,7 @@ public class SqlDocumentQueryBuilder
 		_sqlWhereParams = sqlParams;
 	}
 
-	/** Build document filters where clause */
-	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final List<DocumentFilter> filters)
-	{
-		if (filters.isEmpty())
-		{
-			return IStringExpression.NULL;
-		}
-
-		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
-
-		for (final DocumentFilter filter : filters)
-		{
-			final IStringExpression sqlFilter = buildSqlWhereClause(sqlParams, filter);
-			if (sqlFilter.isNullExpression())
-			{
-				continue;
-			}
-
-			sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-			sqlWhereClauseBuilder.append(DB.TO_COMMENT(filter.getFilterId())).append("(").append(sqlFilter).append(")");
-		}
-
-		return sqlWhereClauseBuilder.build();
-	}
-
-	/** Build document filter where clause */
-	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilter filter)
-	{
-		final CompositeStringExpression.Builder sql = IStringExpression.composer();
-
-		for (final DocumentFilterParam filterParam : filter.getParameters())
-		{
-			final IStringExpression sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam);
-			if (sqlFilterParam.isNullExpression())
-			{
-				continue;
-			}
-
-			sql.appendIfNotEmpty(filterParam.isJoinAnd() ? " AND " : " OR ");
-			sql.append("(").append(sqlFilterParam).append(")");
-		}
-
-		return sql.build();
-	}
-
-	/** Build document filter parameter where clause */
-	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilterParam filterParam)
-	{
-		//
-		// SQL filter
-		if (filterParam.isSqlFilter())
-		{
-			final SqlDocumentEntityDataBindingDescriptor binding = getEntityBinding();
-			final String sqlWhereClause = binding.replaceTableNameWithTableAlias(filterParam.getSqlWhereClause());
-			return IStringExpression.compile(sqlWhereClause);
-		}
-
-		//
-		// Regular filter
-		final String fieldName = filterParam.getFieldName();
-		final SqlDocumentFieldDataBindingDescriptor fieldBinding = entityBinding.getFieldByFieldName(fieldName);
-
-		final POInfo poInfo = entityBinding.getPOInfo();
-		final IStringExpression sqlColumnExpr = fieldBinding.getColumnSql();
-		final String columnName = fieldBinding.getColumnName();
-		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
-		final Class<?> targetClass = poInfo.getColumnClass(columnName);
-		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(filterParam.getValue(), columnName, widgetType, targetClass);
-		
-		final Operator operator = filterParam.getOperator();
-		switch (operator)
-		{
-			case EQUAL:
-			{
-				final boolean negate = false;
-				return buildSqlWhereClause_Equals(sqlColumnExpr, sqlValue, negate, sqlParams);
-			}
-			case NOT_EQUAL:
-			{
-				final boolean negate = true;
-				return buildSqlWhereClause_Equals(sqlColumnExpr, sqlValue, negate, sqlParams);
-			}
-			case GREATER:
-			{
-				return buildSqlWhereClause_Compare(sqlColumnExpr, ">", sqlValue, sqlParams);
-			}
-			case GREATER_EQUAL:
-			{
-				return buildSqlWhereClause_Compare(sqlColumnExpr, ">=", sqlValue, sqlParams);
-			}
-			case LESS:
-			{
-				return buildSqlWhereClause_Compare(sqlColumnExpr, "<", sqlValue, sqlParams);
-			}
-			case LESS_EQUAL:
-			{
-				return buildSqlWhereClause_Compare(sqlColumnExpr, "<=", sqlValue, sqlParams);
-			}
-			case LIKE:
-			{
-				final boolean negate = false;
-				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(sqlColumnExpr, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case NOT_LIKE:
-			{
-				final boolean negate = true;
-				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(sqlColumnExpr, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case LIKE_I:
-			{
-				final boolean negate = false;
-				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(sqlColumnExpr, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case NOT_LIKE_I:
-			{
-				final boolean negate = true;
-				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(sqlColumnExpr, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case BETWEEN:
-			{
-				final Object sqlValueTo = SqlDocumentsRepository.convertValueToPO(filterParam.getValueTo(), columnName, widgetType, targetClass);
-				return buildSqlWhereClause_Between(sqlColumnExpr, sqlValue, sqlValueTo, sqlParams);
-			}
-			default:
-			{
-				throw new IllegalArgumentException("Operator not supported: " + operator);
-			}
-		}
-	}
-
-	private static final IStringExpression buildSqlWhereClause_Equals(final IStringExpression sqlColumnExpr, final Object sqlValue, final boolean negate, final List<Object> sqlParams)
-	{
-		if (sqlValue == null)
-		{
-			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
-		}
-
-		sqlParams.add(sqlValue);
-		return IStringExpression.composer()
-				.append(sqlColumnExpr).append(negate ? " <> ?" : " = ?")
-				.build();
-	}
-
-	private static final IStringExpression buildSqlWhereClause_IsNull(final IStringExpression sqlColumnExpr, final boolean negate)
-	{
-		return IStringExpression.composer()
-				.append(sqlColumnExpr).append(negate ? " IS NOT NULL" : " IS NULL")
-				.build();
-	}
-
-	private static final IStringExpression buildSqlWhereClause_Compare(final IStringExpression sqlColumnExpr, final String sqlOperator, final Object sqlValue, final List<Object> sqlParams)
-	{
-		sqlParams.add(sqlValue);
-		return IStringExpression.composer()
-				.append(sqlColumnExpr).append(sqlOperator).append("?")
-				.build();
-	}
-
-	private static final IStringExpression buildSqlWhereClause_Like(final IStringExpression sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue,
-			final List<Object> sqlParams)
-	{
-		if (sqlValue == null)
-		{
-			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
-		}
-
-		String sqlValueStr = sqlValue.toString();
-		if (sqlValueStr.isEmpty())
-		{
-			return IStringExpression.NULL;
-		}
-
-		if (!sqlValueStr.startsWith("%"))
-		{
-			sqlValueStr = "%" + sqlValueStr;
-		}
-		if (!sqlValueStr.endsWith("%"))
-		{
-			sqlValueStr = sqlValueStr + "%";
-		}
-
-		final String sqlOperator = (negate ? " NOT " : " ") + (ignoreCase ? "ILIKE " : "LIKE ");
-
-		sqlParams.add(sqlValueStr);
-		return CompositeStringExpression.builder()
-				.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(sqlColumnExpr).append(", 1)")
-				.append(sqlOperator)
-				.append(DBConstants.FUNCNAME_unaccent_string).append("(?, 1)")
-				.build();
-	}
-
-	private static final IStringExpression buildSqlWhereClause_Between(final IStringExpression sqlColumnExpr, final Object sqlValue, final Object sqlValueTo, final List<Object> sqlParams)
-	{
-		if (sqlValue == null)
-		{
-			if (sqlValueTo == null)
-			{
-				return IStringExpression.NULL;
-			}
-			return buildSqlWhereClause_Compare(sqlColumnExpr, "<=", sqlValueTo, sqlParams);
-		}
-		if (sqlValueTo == null)
-		{
-			// NOTE: at this point sqlValue is not null!
-			return buildSqlWhereClause_Compare(sqlColumnExpr, ">=", sqlValue, sqlParams);
-		}
-
-		sqlParams.add(sqlValue);
-		sqlParams.add(sqlValueTo);
-		return IStringExpression.composer()
-				.append(sqlColumnExpr).append(" BETWEEN ").append("? AND ?")
-				.build();
-	}
-
-	public List<DocumentQueryOrderBy> getOrderBysEffective()
+	private List<DocumentQueryOrderBy> getOrderBysEffective()
 	{
 		if (noSorting)
 		{
@@ -577,26 +347,16 @@ public class SqlDocumentQueryBuilder
 			return queryOrderBys;
 		}
 
-		return entityBinding.getOrderBys();
+		return entityBinding.getDefaultOrderBys();
 	}
 
-	public IStringExpression getSqlOrderByEffective()
+	private IStringExpression getSqlOrderByEffective()
 	{
 		final List<DocumentQueryOrderBy> orderBys = getOrderBysEffective();
-		return entityBinding.buildSqlOrderBy(orderBys);
+		return SqlDocumentOrderByBuilder.newInstance(entityBinding::getFieldOrderBy).buildSqlOrderBy(orderBys);
 	}
 
-	public DocumentEntityDescriptor getEntityDescriptor()
-	{
-		return entityDescriptor;
-	}
-
-	public SqlDocumentEntityDataBindingDescriptor getEntityBinding()
-	{
-		return entityBinding;
-	}
-
-	public List<DocumentFilter> getDocumentFilters()
+	private List<DocumentFilter> getDocumentFilters()
 	{
 		return documentFilters == null ? ImmutableList.of() : ImmutableList.copyOf(documentFilters);
 	}

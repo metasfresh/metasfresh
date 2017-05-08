@@ -2,10 +2,13 @@ package de.metas.ui.web.handlingunits;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -15,11 +18,13 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -72,6 +77,31 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return (HUEditorRow)viewRow;
 	}
 
+	public static DocumentId rowIdFromM_HU_ID(final int huId)
+	{
+		return DocumentId.of(huId);
+	}
+
+	public static Set<DocumentId> rowIdsFromM_HU_IDs(final Collection<Integer> huIds)
+	{
+		return DocumentId.ofIntSet(huIds);
+	}
+
+	public static DocumentId rowIdFromM_HU_Storage(final int huId, final int productId)
+	{
+		return DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + productId);
+	}
+
+	public static int rowIdToM_HU_ID(final DocumentId rowId)
+	{
+		return rowId == null ? -1 : rowId.toInt();
+	}
+
+	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
+	{
+		return DocumentId.toIntSet(rowIds);
+	}
+
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
 	private final HUEditorRowType type;
@@ -97,7 +127,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		documentPath = builder.getDocumentPath();
 		rowId = documentPath.getDocumentId();
-		
+
 		type = builder.getType();
 		processed = builder.isProcessed();
 
@@ -123,6 +153,15 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		{
 			attributesSupplier = null;
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("rowId", rowId)
+				.add("summary", getSummary())
+				.toString();
 	}
 
 	@Override
@@ -202,6 +241,21 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return includedRows;
 	}
 
+	/** @return a stream of this row and all it's included rows recursively */
+	public Stream<HUEditorRow> streamRecursive()
+	{
+		return streamRecursive(this);
+	}
+
+	/** @return a stream of given row and all it's included rows recursively */
+	private static Stream<HUEditorRow> streamRecursive(final HUEditorRow row)
+	{
+		return row.getIncludedRows()
+				.stream()
+				.map(includedRow -> streamRecursive(includedRow))
+				.reduce(Stream.of(row), Stream::concat);
+	}
+
 	/**
 	 *
 	 * @return the ID of the wrapped HU or a value {@code <= 0} if there is none.
@@ -250,12 +304,11 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		return X_M_HU.HUSTATUS_Active.equals(getHUStatusKey());
 	}
-	
+
 	public boolean isHUStatusDestroyed()
 	{
 		return X_M_HU.HUSTATUS_Destroyed.equals(getHUStatusKey());
 	}
-
 
 	public boolean isPureHU()
 	{

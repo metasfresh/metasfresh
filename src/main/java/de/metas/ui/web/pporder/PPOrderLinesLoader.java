@@ -12,7 +12,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -27,6 +26,7 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
@@ -88,7 +88,10 @@ public class PPOrderLinesLoader
 	{
 		this.windowId = windowId;
 		
-		huAttributesProvider = HUEditorRowAttributesProvider.newInstance();
+		huAttributesProvider = HUEditorRowAttributesProvider.builder()
+				.readonly(false)
+				.build();
+		
 		huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(windowId)
 				.referencingTableName(I_PP_Order.Table_Name)

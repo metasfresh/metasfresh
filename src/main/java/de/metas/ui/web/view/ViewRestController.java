@@ -162,14 +162,12 @@ public class ViewRestController
 	}
 
 	@GetMapping("/layout")
-	@Deprecated
-	public JSONViewLayout getViewLayout_DEPRECATED(
+	public JSONViewLayout getViewLayout(
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 			)
 	{
 		userSession.assertLoggedIn();
-//		userSession.assertDeprecatedRestAPIAllowed();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		return viewsRepo.getViewLayout(windowId, viewDataType, newJSONOptions());

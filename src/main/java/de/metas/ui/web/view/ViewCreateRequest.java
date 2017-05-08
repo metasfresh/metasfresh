@@ -11,12 +11,12 @@ import org.adempiere.util.collections.ListUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import lombok.NonNull;
 

@@ -1,16 +1,16 @@
-package de.metas.ui.web.window.model.filters;
+package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
-import org.compiere.model.MQuery;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 
 /*
  * #%L
@@ -25,11 +25,11 @@ import com.google.common.collect.ImmutableList;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,28 +42,16 @@ public final class DocumentFilter
 		return new Builder();
 	}
 
-	public static DocumentFilter of(final MQuery mquery)
+	public static DocumentFilter singleParameterFilter(final String filterId, final String fieldName, final Operator operator, final Object value)
 	{
-		final List<DocumentFilterParam> parameters = new ArrayList<>();
-		for (int i = 0, restrictionsCount = mquery.getRestrictionCount(); i < restrictionsCount; i++)
-		{
-			final DocumentFilterParam param = DocumentFilterParam.of(mquery, i);
-			parameters.add(param);
-		}
-
-		final String filterId;
-		if (parameters.size() == 1 && !parameters.get(0).isSqlFilter())
-		{
-			filterId = parameters.get(0).getFieldName();
-		}
-		else
-		{
-			filterId = "MQuery-" + UUID.randomUUID(); // FIXME: find a better filterId
-		}
-
 		return builder()
 				.setFilterId(filterId)
-				.setParameters(parameters)
+				.addParameter(DocumentFilterParam.builder()
+						.setJoinAnd(true)
+						.setFieldName(fieldName)
+						.setOperator(operator)
+						.setValue(value)
+						.build())
 				.build();
 	}
 
