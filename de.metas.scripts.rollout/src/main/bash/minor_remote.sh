@@ -90,8 +90,7 @@ install_metasfresh()
 
 	trace main "Making sure that the main jar can be overwritten with our new version"
 	chmod 200 ${METASFRESH_HOME}/metasfresh_server.jar
-	
-	
+		
 	trace install_metasfresh "Copying our files to the metasfresh folder" 
 	cp -Rv ${ROLLOUT_DIR}/deploy/* ${METASFRESH_HOME}
 
@@ -104,6 +103,33 @@ install_metasfresh()
 	start_metasfresh
 	
 	trace install_metasfresh END
+}
+
+# 
+install_service()
+{
+	local service_name=$1
+	trace install_${service_name} BEGIN
+	
+	local SYSTEM_SERVICE_FILE=/etc/systemd/system/${service_name}.service
+	
+	if [[ ! -f $SYSTEM_SERVICE_FILE ]]; then
+		trace install_${service_name} "The service file $SYSTEM_SERVICE_FILE is not yet installed."
+		exit 1;
+	fi
+	
+	systemctl stop ${service_name}
+	
+	mkdir -p ${METASFRESH_HOME}/${service_name}
+	
+	cp ${ROLLOUT_DIR}/deploy/${service_name}.jar ${METASFRESH_HOME}/${service_name}/${service_name}.jar
+	
+	trace main "Making sure that the main jar shall only be accessible for its owner"
+	chmod 500 ${METASFRESH_HOME}/${service_name}/${service_name}.jar
+	
+	systemctl start ${service_name}
+	
+	trace install_${service_name} END
 }
 
 install_metasfresh-webui-api()
@@ -152,7 +178,7 @@ install_metasfresh-webui-frontend()
 		return
 	fi
 	
-	local SRC_TAR="${ROLLOUT_DIR}/deploy/download/metasfresh-webui-frontend.tar.gz"
+	local SRC_TAR="${ROLLOUT_DIR}/deploy/metasfresh-webui-frontend.tar.gz"
 	if [ ! -e ${SRC_TAR} ];
 	then
 		trace install_metasfresh-webui-frontend "File ${SRC_TAR} is not part of this package. Not installing the webui-frontend"
@@ -211,7 +237,11 @@ while getopts "d:s:n" OPTION; do
 done
 
 install_metasfresh 
-install_metasfresh-webui-api
+
+install_service metasfresh-admin
+install_service metasfresh-material-dispo
+install_service metasfresh-webui-api
+
 install_metasfresh-webui-frontend
 
 # task 06284

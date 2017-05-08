@@ -738,7 +738,7 @@
 
 	<profiles>
 		<profile>
-			<!-- If there is sql directory, this profile will activate and zip up 
+			<!-- If there is a sql directory, then this profile will activate and zip up 
 				the migration SQL files in that directory. Note the property "migration-sql-basedir" 
 				needs to be defined in that case -->
 			<id>postgres</id>

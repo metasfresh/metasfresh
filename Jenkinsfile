@@ -385,7 +385,7 @@ node('agent && linux')
 		} // withMaven
 	} // configFileProvider
 
-	// clean up the workspace after (successfull) builds; let's see if this works well
+	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
 
 } // node
