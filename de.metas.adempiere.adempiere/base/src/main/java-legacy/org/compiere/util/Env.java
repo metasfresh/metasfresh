@@ -391,18 +391,21 @@ public final class Env
 
 		final Properties newCtx = new Properties();
 
-		for (Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
+		// we can't use this great tool, because it (reasonably) assumes that the given ctx doews not have null values
+		// org.springframework.util.CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
+
+		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
 		{
-			String key = (String)en.nextElement();
+			final String key = (String)en.nextElement();
 			Object value = ctx.get(key);
 			if (value == null)
 			{
-				// Allow for defaults fallback or potentially overridden accessor...
+				// Allow for defaults fallback or potentially overridden accessor
 				value = newCtx.getProperty(key);
 			}
 			if (value == null)
 			{
-				continue;
+				continue; // the given ctx might have null values, so this chack is crucial
 			}
 			newCtx.put(key, value);
 		}
