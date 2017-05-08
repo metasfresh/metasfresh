@@ -425,8 +425,10 @@ public class ZoomInfoFactory
 		}
 		else
 		{
-			// shall not happen because we assume that retriveZoomInfos will return one zoom info per AD_Window_ID
-			throw new IllegalStateException("More than one zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId + ": " + zoomInfos);
+			// Got more then one Zoominfo(s).
+			// we could check if they all have the same AD_Window_ID but does not matter..
+			// => returning the first one
+			return zoomInfos.get(0);
 		}
 	}
 
