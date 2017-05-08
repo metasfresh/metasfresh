@@ -28,7 +28,8 @@ class Lookup extends Component {
         this.state = {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            showNextDropdown: false
+            showNextDropdown: false,
+            property: properties[0].field
         }
 
         // console.log(this.state.propertiesCopy);
@@ -36,10 +37,40 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        const {defaultValue} = this.props;
-        // console.log(defaultValue);
+        const {defaultValue, properties} = this.props;
+        console.log('defaultValue component did mount');
+        console.log(defaultValue);
+
+        // this.setState({
+        //     property: properties[0].field
+        // })
 
         this.checkIfDefaultValue();
+    }
+
+    componentDidUpdate(prevProps) {
+        const {defaultValue, properties} = this.props;
+        const {property} = this.state;
+         
+
+        if(JSON.stringify(prevProps.defaultValue)!==JSON.stringify(defaultValue)){
+
+            defaultValue.map((item, index)=>{
+                const prevIndex = index-1;
+                if(prevIndex>-1 && defaultValue[prevIndex].field === property){
+                    console.log(properties[index].field);
+                    this.setState({
+                        property: properties[index].field
+                    })
+                }
+                
+            })
+        }
+        // console.log('defaultValue');
+        // console.log(defaultValue);
+
+        
+     
     }
 
     handleInputEmptyStatus = (isEmpty) => {
@@ -51,6 +82,15 @@ class Lookup extends Component {
     getNextDropdown=(state)=> {
         this.setState({
             showNextDropdown: state
+        });
+    }
+
+    setProperty = (property)=> {
+        const {defaultValue} = this.props;
+        console.log('setProperty');
+        console.log(property);
+        this.setState({
+            property: property
         });
     }
 
@@ -93,7 +133,8 @@ class Lookup extends Component {
         const {onChange, properties} = this.props;
         onChange(properties, null, false);
         this.setState({
-            isInputEmpty: true
+            isInputEmpty: true,
+            property: properties[0].field
         });  
     }
 
@@ -129,12 +170,15 @@ class Lookup extends Component {
 
             {
                 properties && properties.map((item, index) => {
+                    {/*console.log(item);*/}
                     {
                         if(item.source === 'lookup'){
                             return <RawLookup
                                 key={index}
                                 newRecordCaption={newRecordCaption}
-                                defaultValue={defaultValue}
+                                defaultValue={getItemsByProperty(
+                                            defaultValue, 'field', item.field)
+                                            [0].value}
                                 mainProperty={[item]}
                                 placeholder={placeholder}
                                 readonly={readonly}
@@ -155,6 +199,7 @@ class Lookup extends Component {
                                 item={item}
                                 handleInputEmptyStatus={this.handleInputEmptyStatus}
                                 getNextDropdown={this.getNextDropdown}
+                                setProperty={this.setProperty}
                             />
 
                         } else if (item.source === 'list') {
@@ -163,8 +208,8 @@ class Lookup extends Component {
                                 defaultValue, 'field', item.field
                             )[0].value;
 
-                            console.log(objectValue);
-                            console.log(showNextDropdown);
+                            {/*console.log(objectValue);*/}
+                            {/*console.log(showNextDropdown);*/}
 
                             return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
                                     <List

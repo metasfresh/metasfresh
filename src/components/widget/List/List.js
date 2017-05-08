@@ -61,7 +61,7 @@ class List extends Component {
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 
-        console.log(autofocus);
+       
 
         return (
             <RawList

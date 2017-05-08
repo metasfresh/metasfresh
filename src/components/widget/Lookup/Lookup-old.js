@@ -75,6 +75,8 @@ class Lookup extends Component {
             mainProperty, property
         } = this.state;
 
+        console.log('handleSelect');
+
         // removing selection
         this.setState({
             selected: null

@@ -18,13 +18,19 @@ class RawList extends Component {
     componentDidMount = () => {
         const {autofocus} = this.props;
 
-        console.log(autofocus);
+        // console.log(autofocus);
 
         (this.dropdown && autofocus) && this.dropdown.focus();
     }
 
     componentDidUpdate = prevProps => {
-        const { list, mandatory } = this.props;
+        const { list, mandatory, defaultValue } = this.props;
+
+        // console.log(defaultValue);
+
+        if(prevProps.defaultValue != defaultValue){
+            this.dropdown && this.dropdown.focus();
+        }
 
         if(prevProps.list !== list){
             let dropdown = [];

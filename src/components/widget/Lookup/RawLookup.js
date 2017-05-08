@@ -23,7 +23,6 @@ class RawLookup extends Component {
             isInputEmpty: true,
             selected: null,
             model: null,
-            properts: {},
             loading: false,
             oldValue: '',
             isOpen: false,
@@ -47,8 +46,11 @@ class RawLookup extends Component {
     componentDidUpdate() {
         this.handleValueChanged();
 
-        const {autoFocus} = this.props;
+        const {autoFocus, defaultValue} = this.props;
         const {isInputEmpty, shouldBeFocused} = this.state;
+
+        // console.log('defaultValue');
+        // console.log(defaultValue);
 
         if(autoFocus && isInputEmpty && shouldBeFocused){
             this.inputSearch.focus();
@@ -61,7 +63,7 @@ class RawLookup extends Component {
     handleSelect = (select) => {
         const {
             onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus, mainProperty,
-            getNextDropdown
+            getNextDropdown, setProperty
         } = this.props;
 
         this.setState({
@@ -86,6 +88,7 @@ class RawLookup extends Component {
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     handleInputEmptyStatus(false);
                     getNextDropdown(true);
+                    setProperty(mainProperty[0].field);
 
                     this.handleBlur();
                 
@@ -239,8 +242,9 @@ class RawLookup extends Component {
         const {defaultValue, filterWidget} = this.props;
         const {oldValue} = this.state;
 
-        if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
-            const init = defaultValue[0].value;
+        if(!filterWidget && !!defaultValue && this.inputSearch) {
+            // const init = defaultValue[0].value;
+            const init = defaultValue;
             const inputValue = init[Object.keys(init)[0]];
 
             if(inputValue !== oldValue){
@@ -253,8 +257,8 @@ class RawLookup extends Component {
                 });
             }
 
-        } else if(oldValue && !defaultValue[0].value && this.inputSearch) {
-            const inputEmptyValue = defaultValue[0].value;
+        } else if(oldValue && !defaultValue && this.inputSearch) {
+            const inputEmptyValue = defaultValue;
 
             if(inputEmptyValue !== oldValue){
                 this.inputSearch.value = inputEmptyValue;
