@@ -16,9 +16,9 @@
 		
 		<!-- the main spring-boot jar which shall further down be copied into the lib folder -->
 		<mainJar>${project.name}-${project.version}.jar</mainJar>
-		
+
 		<start-class>de.metas.SwingUIApplication</start-class>
-		
+
 		<!-- Changing from JarLauncher to PropertiesLauncher, because that way we can specify external jars
 			Issue: https://github.com/metasfresh/metasfresh/issues/695 
 		    Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
@@ -192,8 +192,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-
 
 			<plugin>
 				<!--  

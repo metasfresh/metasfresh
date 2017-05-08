@@ -29,6 +29,7 @@
 		<metasfresh.version>1.0.0</metasfresh.version>
 		<metasfresh-webui-api.version>1.0.0</metasfresh-webui-api.version>
 		<metasfresh-procurement-webui.version>1.0.0</metasfresh-procurement-webui.version>
+		<metasfresh-admin.version>1.0.0</metasfresh-admin.version>
 		
 		<!-- need to pick LATEST because there is now 1.0.0 version in our local repo. Because currently it's only build on jenkins. -->
 		<metasfresh-webui-frontend.version>LATEST</metasfresh-webui-frontend.version>
@@ -101,14 +102,6 @@ Since we now work with a range, we now declare the dependencies here where range
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
-		<!-- removed because we are not using it
-		<dependency>
-			<groupId>de.metas.admin.webui</groupId>
-			<artifactId>de.metas.admin.webui</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		-->
 
 		<!-- 
 			gh #968 https://github.com/metasfresh/metasfresh/issues/968
@@ -132,6 +125,13 @@ Since we now work with a range, we now declare the dependencies here where range
 			<artifactId>de.metas.procurement.webui</artifactId>
 			<version>${metasfresh-procurement-webui.version}</version>
 			<type>jar</type>
+		</dependency>
+
+		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
+		<dependency>
+			<groupId>de.metas.admin</groupId>
+			<artifactId>metasfresh-admin</artifactId>
+			<version>${metasfresh-admin.version}</version>
 		</dependency>
 
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
@@ -605,7 +605,9 @@ note: when adding new records, please roughly order them by alphabet.
 								metasfresh-webui-frontend,
 								metasfresh-webui-api,
 								<!-- gh metasfresh/metasfresh#523 -->
-								metasfresh-material-dispo
+								metasfresh-material-dispo,
+								<!-- gh metasfresh/metasfresh#1471 -->
+								metasfresh-admin
 							</includeArtifactIds>
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>

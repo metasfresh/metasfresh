@@ -116,6 +116,12 @@
 							<searchReactor>false</searchReactor>
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
+						<property>
+							<!-- metasfresh/metasfresh#1471 -->
+							<name>metasfresh-admin.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
 					</properties>
 				</configuration>
 			</plugin>
