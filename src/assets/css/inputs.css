@@ -427,7 +427,6 @@ input:checked + .input-slider:before {
 
 .input-error-popup {
     position: absolute;
-    z-index: 1000000;
     right:0;
     bottom: 100%;
     margin-bottom: .3rem;
