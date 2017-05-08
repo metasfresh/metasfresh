@@ -143,7 +143,8 @@ body {
 .order-list-panel {
     position: fixed;
     display: none;
-    height: calc(100% - 55px);
+    top:96px;
+    height: calc(100% - 96px);
     width: 472px;
     background-color: #fff;
     border-left: 1px solid $brand-border-color;
@@ -152,10 +153,6 @@ body {
     bottom: 0;
     overflow-y: scroll;
     overflow-x: hidden;
-}
-
-.order-list-body{
-    margin-top: 41px;
 }
 
 @media (max-width: $breakpoint) {
