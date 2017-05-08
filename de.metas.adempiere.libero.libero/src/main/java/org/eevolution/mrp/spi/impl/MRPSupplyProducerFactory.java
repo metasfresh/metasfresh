@@ -29,11 +29,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public class MRPSupplyProducerFactory implements IMRPSupplyProducerFactory
 {
@@ -58,7 +59,7 @@ public class MRPSupplyProducerFactory implements IMRPSupplyProducerFactory
 	}
 
 	@Override
-	public IMRPSupplyProducer getSupplyProducer(final IMRPContext mrpContext)
+	public IMRPSupplyProducer getSupplyProducer(final IMaterialPlanningContext mrpContext)
 	{
 		return producers.getSupplyProducers(mrpContext);
 	}
@@ -82,7 +83,7 @@ public class MRPSupplyProducerFactory implements IMRPSupplyProducerFactory
 	}
 
 	@Override
-	public void notifyQtyOnHandAllocated(final IMRPContext mrpContext,
+	public void notifyQtyOnHandAllocated(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final List<IMRPDemandToSupplyAllocation> mrpDemandsToSupplyAllocations)
 	{

@@ -10,12 +10,12 @@ package de.metas.handlingunits.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -51,6 +50,10 @@ import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -58,6 +61,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -66,7 +70,11 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = HandlingUnitsConfiguration.class)
+@ActiveProfiles("test")
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
 	private MRPTestDataSimple masterData;
@@ -433,7 +441,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	{
 		final I_M_Product product = productBOM.getM_Product();
 		final I_C_UOM uom = productBOM.getC_UOM();
-		
+
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
 		InterfaceWrapperHelper.save(docType);
@@ -451,6 +459,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
 		ppOrder.setDocAction(DocAction.ACTION_Complete);
 		ppOrder.setC_UOM(uom);
+		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
 		InterfaceWrapperHelper.save(ppOrder);
 		return ppOrder;
 	}

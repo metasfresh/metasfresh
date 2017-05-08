@@ -141,8 +141,8 @@ public class DLM_MassMigrate extends JavaProcess
 			{ 
 				// note that we can't include the vacuum calls in the DB function because of some transaction stuffs
 				final Stopwatch stopWatch = Stopwatch.createStarted();
-				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM " + lastTableName.getValue(), new Object[0]);
-				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM dlm.massmigrate_records", new Object[0]);
+				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM ANALYZE " + lastTableName.getValue(), new Object[0]);
+				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM ANALYZE dlm.massmigrate_records", new Object[0]);
 				final String elapsedTime = stopWatch.stop().toString();
 
 				Loggables.get().addLog("{}: Vacuumed {} and dlm.massmigrate_records; elapsed time={}", dbFunctionName, lastTableName.getValue(), elapsedTime);

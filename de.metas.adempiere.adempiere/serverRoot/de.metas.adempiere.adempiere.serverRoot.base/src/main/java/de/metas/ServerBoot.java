@@ -19,9 +19,11 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
 import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
@@ -55,13 +57,13 @@ import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SpringBootApplication( //
-scanBasePackages = { "de.metas", "org.adempiere" },  //
-excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
-)
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @ServletComponentScan(value = { "de.metas", "org.adempiere" })
+@Profile(ServerBoot.PROFILE)
 public class ServerBoot
 {
+	public static final String PROFILE = "metasfresh-server";
+	
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -73,6 +75,7 @@ public class ServerBoot
 		new SpringApplicationBuilder(ServerBoot.class)
 				.headless(true)
 				.web(true)
+				.profiles(PROFILE, JasperConstants.PROFILE_JasperServer)
 				.run(args);
 	}
 

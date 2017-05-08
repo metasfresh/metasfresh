@@ -13,15 +13,14 @@ package org.eevolution.mrp.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,13 +35,15 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 
-/* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
+import de.metas.material.planning.IMaterialPlanningContext;
+
+
+public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
 {
-	private final IMRPContext mrpContext;
+	private final IMaterialPlanningContext mrpContext;
 	private final IMRPExecutor mrpExecutor;
 	private final BigDecimal qtyToSupply;
 	private final Date demandDate;
@@ -56,7 +57,7 @@ import org.eevolution.mrp.api.IMRPExecutor;
 	private final int mrpDemandBPartnerId;
 	private final int mrpDemandOrderLineSOId;
 
-	public MRPCreateSupplyRequest(final IMRPContext mrpContext,
+	public MRPCreateSupplyRequest(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final BigDecimal qtyToSupply,
 			final Date demandDate,
@@ -90,7 +91,7 @@ import org.eevolution.mrp.api.IMRPExecutor;
 			{
 				bpartnerIds.add(bpartnerId);
 			}
-			
+
 			final int orderLineSOId = mrpRecord.getC_OrderLineSO_ID();
 			if (orderLineSOId > 0)
 			{
@@ -140,7 +141,7 @@ import org.eevolution.mrp.api.IMRPExecutor;
 	}
 
 	@Override
-	public IMRPContext getMRPContext()
+	public IMaterialPlanningContext getMRPContext()
 	{
 		return mrpContext;
 	}

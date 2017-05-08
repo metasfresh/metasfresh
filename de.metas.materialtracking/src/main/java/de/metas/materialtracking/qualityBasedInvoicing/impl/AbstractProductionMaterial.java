@@ -30,15 +30,14 @@ import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBOMBL;
 
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 
 /* package */abstract class AbstractProductionMaterial implements IProductionMaterial
 {
 	// Services
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	protected final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 	protected final IUOMConversionContext getUOMConversionContext()
 	{
@@ -72,7 +71,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 	@Override
 	public boolean isByProduct()
 	{
-		return ppOrderBOMBL.isByProduct(getComponentType());
+		return PPOrderUtil.isByProduct(getComponentType());
 	}
 
 }

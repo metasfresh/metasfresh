@@ -19,6 +19,7 @@ package org.compiere.util;
  * 
  * @author Teo Sarca, http://www.arhipac.ro
  */
+@FunctionalInterface
 public interface TrxRunnable
 {
 	public void run(String localTrxName) throws Exception;

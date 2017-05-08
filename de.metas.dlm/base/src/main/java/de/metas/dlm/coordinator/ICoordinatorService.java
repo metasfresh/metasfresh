@@ -28,6 +28,10 @@ import de.metas.dlm.Partition;
 
 public interface ICoordinatorService extends ISingletonService
 {
+	/**
+	 * Register another {@link IRecordInspector} to be invoked when {@link #inspectPartition(Partition)} is called.
+	 * @param recordInspector
+	 */
 	void registerInspector(IRecordInspector recordInspector);
 
 	/**

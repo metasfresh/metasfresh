@@ -36,11 +36,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.eevolution.exceptions.LiberoException;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
+
+import de.metas.material.planning.IMaterialPlanningContext;
 
 public class CompositeMRPSupplyProducer implements IMRPSupplyProducer
 {
@@ -105,7 +106,7 @@ public class CompositeMRPSupplyProducer implements IMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMRPContext mrpContext, final IMutable<String> notAppliesReason)
+	public boolean applies(final IMaterialPlanningContext mrpContext, final IMutable<String> notAppliesReason)
 	{
 		final StringBuilder notAppliesReasonBuf = new StringBuilder();
 		for (final IMRPSupplyProducer producer : producers)
@@ -197,7 +198,7 @@ public class CompositeMRPSupplyProducer implements IMRPSupplyProducer
 		}
 	}
 
-	public IMRPSupplyProducer getSupplyProducers(final IMRPContext mrpContext)
+	public IMRPSupplyProducer getSupplyProducers(final IMaterialPlanningContext mrpContext)
 	{
 		final StringBuilder notAppliesReasonBuf = new StringBuilder();
 
@@ -216,7 +217,7 @@ public class CompositeMRPSupplyProducer implements IMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		for (final IMRPSupplyProducer producer : producers)
 		{
@@ -225,7 +226,7 @@ public class CompositeMRPSupplyProducer implements IMRPSupplyProducer
 	}
 
 	@Override
-	public void onQtyOnHandReservation(final IMRPContext mrpContext,
+	public void onQtyOnHandReservation(final IMaterialPlanningContext mrpContext,
 			final IMRPExecutor mrpExecutor,
 			final IMRPDemandToSupplyAllocation mrpDemandToSupplyAllocation)
 	{

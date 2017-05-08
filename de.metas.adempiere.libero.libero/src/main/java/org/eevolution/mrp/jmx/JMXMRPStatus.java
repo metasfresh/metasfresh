@@ -44,14 +44,14 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPSegment;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 import org.eevolution.mrp.spi.impl.DDOrderLineMRPForwardNavigator;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -66,7 +66,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 	{
 		super();
 
-		jmxName = IMRPContext.LOGGERNAME + ":type=MRPStatus";
+		jmxName = IMaterialPlanningContext.LOGGERNAME + ":type=MRPStatus";
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 
 	private final Logger getMRPLogger()
 	{
-		final Logger mrpLogger = LogManager.getLogger(IMRPContext.LOGGERNAME);
+		final Logger mrpLogger = LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
 		return mrpLogger;
 	}
 

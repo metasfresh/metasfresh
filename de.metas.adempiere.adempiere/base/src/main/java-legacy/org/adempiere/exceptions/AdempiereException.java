@@ -431,6 +431,12 @@ public class AdempiereException extends RuntimeException
 	@OverridingMethodsMustInvokeSuper
 	public AdempiereException setParameter(final String name, final Object value)
 	{
+		// avoid setting null values because it will fail on getParameters() which is returning an ImmutableMap
+		if (value == null)
+		{
+			return this;
+		}
+
 		if (parameters == null)
 		{
 			parameters = new LinkedHashMap<>();

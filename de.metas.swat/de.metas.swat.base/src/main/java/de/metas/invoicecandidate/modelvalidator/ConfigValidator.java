@@ -82,9 +82,9 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	};
 
 	@Override
-	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	public void onAfterInit()
 	{
-		super.onInit(engine, client);
+		//super.onInit(engine, client);
 
 		if (!Ini.isClient())
 		{

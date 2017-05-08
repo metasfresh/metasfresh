@@ -31,7 +31,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -44,6 +43,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 {
@@ -138,7 +139,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final HUPPOrderReceiptCUKey createCoProductCUKey(final I_PP_Order_BOMLine ppOrderBOMLine, final I_PP_Order ppOrder)
 	{
 		// Make sure we can receive on this BOM Line
-		if (!ppOrderBOMBL.isReceipt(ppOrderBOMLine))
+		if (!PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
 		{
 			return null;
 		}

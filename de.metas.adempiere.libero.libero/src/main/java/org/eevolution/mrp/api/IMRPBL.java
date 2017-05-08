@@ -31,18 +31,12 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alternative;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IMaterialPlanningContext;
+
 public interface IMRPBL extends ISingletonService
 {
 	String toString(final I_PP_MRP mrp);
-
-	/**
-	 * Duration to have this Qty available (i.e. Lead Time + Transfer Time)
-	 * 
-	 * @param leadtimeDays lead time in days
-	 * @param productPlanningData
-	 * @return duration [days]
-	 */
-	int calculateDurationDays(final int leadtimeDays, final I_PP_Product_Planning productPlanningData);
 
 	/**
 	 * Sets MRP's Quantity
@@ -101,10 +95,10 @@ public interface IMRPBL extends ISingletonService
 	 * @param mrpContext
 	 * @param runnable
 	 */
-	void executeInMRPContext(IMRPContext mrpContext, IMRPContextRunnable runnable);
+	void executeInMRPContext(IMaterialPlanningContext mrpContext, IMRPContextRunnable runnable);
 
 	/**
-	 * Updates given <code>mrp</code> record with settings from current MRP Context (see {@link #executeInMRPContext(IMRPContext, Runnable)}).
+	 * Updates given <code>mrp</code> record with settings from current MRP Context (see {@link #executeInMRPContext(IMaterialPlanningContext, Runnable)}).
 	 * 
 	 * Mainly, it sets PP_MRP_Parent_ID, C_OrderLineSO_ID, S_Resource_ID/PP_Plant_ID
 	 * 

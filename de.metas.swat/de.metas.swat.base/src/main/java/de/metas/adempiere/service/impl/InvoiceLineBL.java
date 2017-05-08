@@ -128,13 +128,16 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (taxId <= 0)
 		{
 			final I_C_Invoice invoice = il.getC_Invoice();
-			throw new TaxNotFoundException(taxCategoryId, io.isSOTrx(),
-					shipDate,
-					locationFrom.getC_Location_ID(),
-					locationTo.getC_Location_ID(),
-					invoice.getDateInvoiced(),
-					locationFrom.getC_Location_ID(),
-					invoice.getC_BPartner_Location().getC_Location_ID());
+			throw TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(io.isSOTrx())
+					.shipDate(shipDate)
+					.shipFromC_Location_ID(locationFrom.getC_Location_ID())
+					.shipToC_Location_ID(locationTo.getC_Location_ID())
+					.billDate(invoice.getDateInvoiced())
+					.billFromC_Location_ID(locationFrom.getC_Location_ID())
+					.billToC_Location_ID(invoice.getC_BPartner_Location().getC_Location_ID())
+					.build();
 		}
 
 		final boolean taxChange = il.getC_Tax_ID() != taxId;

@@ -13,17 +13,17 @@ package org.eevolution.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,6 +32,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_BOMLine;
 
 public class ProductBOMLineBuilder
@@ -42,11 +43,14 @@ public class ProductBOMLineBuilder
 	private I_C_UOM _uom;
 	private boolean _isQtyPercentage;
 	private BigDecimal _qtyBOM;
-	private String _issueMethod;
+
+	// we need some issue method to avoid NPE when creating the lightweight PPOrdeRLine pojo;
+	private String _issueMethod = X_PP_Order_BOMLine.ISSUEMETHOD_Issue;
+
 	private BigDecimal _scrap;
 	private BigDecimal _qtyBatch;
 
-	/* package */ProductBOMLineBuilder(final ProductBOMBuilder parent)
+	/* package */ ProductBOMLineBuilder(final ProductBOMBuilder parent)
 	{
 		super();
 		Check.assumeNotNull(parent, "parent not null");
@@ -83,6 +87,8 @@ public class ProductBOMLineBuilder
 		bomLine.setQtyBOM(_qtyBOM); // used when QtyPercentage=false
 		bomLine.setQtyBatch(_qtyBatch); // used when QtyPercentage=true
 		bomLine.setScrap(_scrap);
+
+		bomLine.setValidFrom(Timestamp.valueOf("2010-01-01 00:00:00")); // needed to avoid an NPE when creating the lightweight PPOrderLine pojos.
 
 		InterfaceWrapperHelper.save(bomLine);
 		return bomLine;
@@ -182,7 +188,7 @@ public class ProductBOMLineBuilder
 		this._qtyBatch = qtyBatch;
 		return this;
 	}
-	
+
 	public ProductBOMLineBuilder setQtyBatch(final int qtyBatch)
 	{
 		return setQtyBatch(new BigDecimal(qtyBatch));
@@ -198,6 +204,12 @@ public class ProductBOMLineBuilder
 		return setScrap(new BigDecimal(scrap));
 	}
 
+	/**
+	 * The default is {@link X_PP_Product_BOMLine#ISSUEMETHOD_Issue}.
+	 * 
+	 * @param issueMethod
+	 * @return
+	 */
 	public ProductBOMLineBuilder setIssueMethod(final String issueMethod)
 	{
 		this._issueMethod = issueMethod;

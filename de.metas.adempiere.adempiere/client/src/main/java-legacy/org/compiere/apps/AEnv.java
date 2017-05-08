@@ -937,8 +937,14 @@ public final class AEnv
 		if (mWindowVO == null)
 		{
 			log.info("create local");
-			final boolean loadAllLanguages = false;
-			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID, loadAllLanguages);
+			mWindowVO = GridWindowVO.builder()
+					.ctx(Env.getCtx())
+					.windowNo(WindowNo)
+					.adWindowId(AD_Window_ID)
+					.adMenuId(AD_Menu_ID)
+					.loadAllLanguages(false)
+					.applyRolePermissions(true)
+					.build();
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(AD_Window_ID, mWindowVO);
 		}   	// from Client

@@ -30,7 +30,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.IPPOrderBOMBL;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -39,6 +38,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**
  * Handles {@link I_PP_Order_BOMLine} lines from which we are able to receive materials
@@ -58,8 +59,7 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 	@Override
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-		ppOrderBOMBL.assertReceipt(ppOrderBOMLine);
+		PPOrderUtil.assertReceipt(ppOrderBOMLine);
 
 		final org.eevolution.model.I_PP_Order ppOrder = ppOrderBOMLine.getPP_Order();
 		final I_C_BPartner bpartner = ppOrder.getC_BPartner();

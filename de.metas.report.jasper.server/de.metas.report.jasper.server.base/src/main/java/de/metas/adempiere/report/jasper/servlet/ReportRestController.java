@@ -1,7 +1,6 @@
 package de.metas.adempiere.report.jasper.servlet;
 
-import org.compiere.util.Ini.IsNotSwingClient;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,13 +11,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.server.LocalJasperServer;
 
 @RestController
 @RequestMapping(value = ReportRestController.ENDPOINT)
-@Conditional(IsNotSwingClient.class)
+@Profile(JasperConstants.PROFILE_JasperServer)
 public class ReportRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/ReportServlet";

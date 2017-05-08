@@ -58,15 +58,13 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
-import org.eevolution.mrp.api.IMRPSegment;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import com.google.common.base.Optional;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.IMRPSegment;
 
 public class MRPDAO implements IMRPDAO
 {
@@ -325,7 +323,7 @@ public class MRPDAO implements IMRPDAO
 		final IQueryBuilder<I_PP_MRP_Alternative> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP_Alternative.class, mrp)
 				.addEqualsFilter(I_PP_MRP_Alternative.COLUMN_PP_MRP_ID, mrp.getPP_MRP_ID());
 
-		// just to have a predictible order
+		// just to have a predictable order
 		queryBuilder.orderBy()
 				.addColumn(I_PP_MRP_Alternative.COLUMN_PP_MRP_ID)
 				.addColumn(I_PP_MRP_Alternative.COLUMN_M_Product_ID);

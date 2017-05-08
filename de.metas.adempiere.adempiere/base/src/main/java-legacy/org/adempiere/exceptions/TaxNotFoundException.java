@@ -13,17 +13,19 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MLocation;
-import org.compiere.model.MTaxCategory;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import lombok.Builder;
 
 /**
  * Throw by Tax Engine where no tax found for given criteria
@@ -40,28 +42,47 @@ public class TaxNotFoundException extends AdempiereException
 	/** AD_Message code */
 	private static final String AD_Message = "TaxNotFound";
 	
-	public TaxNotFoundException(int C_TaxCategory_ID, boolean IsSOTrx,
-			Timestamp shipDate, int shipFromC_Location_ID, int shipToC_Location_ID,
-			Timestamp billDate, int billFromC_Location_ID, int billToC_Location_ID)
-	{
-		super(buildMessage(C_TaxCategory_ID, 0, 0, IsSOTrx,
-				shipDate, shipFromC_Location_ID, shipToC_Location_ID,
-				billDate, billFromC_Location_ID, billToC_Location_ID));
-	}
+	private final int productId;
+	private final int chargeId;
 	
-	public TaxNotFoundException(int productId, int chargeId, int C_TaxCategory_ID, boolean IsSOTrx,
-			Timestamp shipDate, int shipFromC_Location_ID, int shipToC_Location_ID,
-			Timestamp billDate, int billFromC_Location_ID, int billToC_Location_ID)
-	{
-		super(buildMessage(C_TaxCategory_ID, productId, chargeId, IsSOTrx,
-				shipDate, shipFromC_Location_ID, shipToC_Location_ID,
-				billDate, billFromC_Location_ID, billToC_Location_ID));
-	}
+	private final int taxCategoryId;
+	private final boolean isSOTrx;
 	
+	private final Date shipDate;
+	private final int shipFromC_Location_ID;
+	private final int shipToC_Location_ID;
+	
+	private final Date billDate;
+	private final int billFromC_Location_ID;
+	private final int billToC_Location_ID;
 
-	private static final String buildMessage (int C_TaxCategory_ID, int productId, int chargeId, boolean IsSOTrx,
-			Timestamp shipDate, int shipFromC_Location_ID, int shipToC_Location_ID,
-			Timestamp billDate, int billFromC_Location_ID, int billToC_Location_ID)
+	
+	@Builder
+	private TaxNotFoundException( //
+			int productId, int chargeId //
+			, int taxCategoryId //
+			, boolean isSOTrx //
+			, Date shipDate, int shipFromC_Location_ID, int shipToC_Location_ID //
+			, Date billDate, int billFromC_Location_ID, int billToC_Location_ID //
+			)
+	{
+		this.productId = productId;
+		this.chargeId = chargeId;
+		
+		this.taxCategoryId = taxCategoryId;
+		this.isSOTrx = isSOTrx;
+		
+		this.shipDate = shipDate;
+		this.shipFromC_Location_ID = shipFromC_Location_ID;
+		this.shipToC_Location_ID = shipToC_Location_ID;
+		
+		this.billDate = billDate;
+		this.billFromC_Location_ID = billFromC_Location_ID;
+		this.billToC_Location_ID = billToC_Location_ID;
+	}
+	
+	@Override
+	protected String buildMessage()
 	{
 		final DateFormat df = DisplayType.getDateFormat();
 		final StringBuilder msg = new StringBuilder("@").append(AD_Message).append("@");
@@ -77,44 +98,60 @@ public class TaxNotFoundException extends AdempiereException
 		}
 
 		//
-		if(C_TaxCategory_ID>0)
+		if(taxCategoryId > 0)
 		{
-			msg.append(" - @C_TaxCategory_ID@:").append(getTaxCategoryString(C_TaxCategory_ID));
+			msg.append(" - @C_TaxCategory_ID@:").append(getTaxCategoryString(taxCategoryId));
 		}
 		
-		msg.append(", @IsSOTrx@:@").append(IsSOTrx ? "Y":"N").append("@");
+		msg.append(", @IsSOTrx@:@").append(isSOTrx ? "Y":"N").append("@");
+
 		//
-		msg.append(", @Shipment@ (").append(df.format(shipDate)).append(", ")
-			.append(getLocationString(shipFromC_Location_ID))
-			.append(" -> ")
-			.append(getLocationString(shipToC_Location_ID))
-			.append(")");
+		// Ship info
+		if(shipDate != null || shipFromC_Location_ID > 0 || shipToC_Location_ID > 0)
+		{
+			msg.append(", @Shipment@ (")
+				.append(shipDate != null ? df.format(shipDate) : "unknown ship date")
+				.append(", ")
+				.append(getLocationString(shipFromC_Location_ID))
+				.append(" -> ")
+				.append(getLocationString(shipToC_Location_ID))
+				.append(")");
+		}
+		
 		//
-		msg.append(", @Invoice@ (").append(df.format(billDate)).append(", ")
-			.append(getLocationString(billFromC_Location_ID))
-			.append(" -> ")
-			.append(getLocationString(billToC_Location_ID))
-			.append(")");
+		// Bill info
+		if(billDate != null || billFromC_Location_ID > 0 || billToC_Location_ID > 0)
+		{
+			msg.append(", @Invoice@ (")
+				.append(billDate != null ? df.format(billDate) : "unknown bill date")
+				.append(", ")
+				.append(getLocationString(billFromC_Location_ID))
+				.append(" -> ")
+				.append(getLocationString(billToC_Location_ID))
+				.append(")");
+		}
+		
 		//
 		//
 		return msg.toString();
 	}
 	
-	private static final String getTaxCategoryString(int C_TaxCategory_ID)
+	private static final String getTaxCategoryString(final int C_TaxCategory_ID)
 	{
 		if (C_TaxCategory_ID <= 0)
 		{
 			return "?";
 		}
-		MTaxCategory cat = new MTaxCategory(Env.getCtx(), C_TaxCategory_ID, null);
-		if (cat.get_ID() != C_TaxCategory_ID)
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.loadOutOfTrx(C_TaxCategory_ID, I_C_TaxCategory.class);
+		if (taxCategory == null)
 		{
 			return "?";
 		}
-		return cat.getName();
+		
+		return taxCategory.getName();
 	}
 	
-	private static final String getLocationString(int C_Location_ID)
+	private static final String getLocationString(final int C_Location_ID)
 	{
 		if (C_Location_ID <= 0)
 		{

@@ -524,7 +524,7 @@ public class MColumn extends X_AD_Column
 			if (!Check.isEmpty(fkConstraintDDL, true))
 			{
 				// remove the "ALTER TABLE ... ADD" and the trailing ";"
-				// the (?iu) means the the patters is created with Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+				// the (?iu) means the the pattern is created with Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
 				// thanks to https://blogs.oracle.com/xuemingshen/entry/case_insensitive_matching_in_java
 				final String constraint = fkConstraintDDL
 						.replaceFirst("(?iu)ALTER *TABLE *" + tableName + " *ADD *", "")

@@ -30,12 +30,13 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.compiere.util.Ini.IsNotSwingClient;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 
 import com.google.common.base.Optional;
+
+import de.metas.ServerBoot;
 
 /**
  * Servlet used to server images directly from our database
@@ -53,8 +54,8 @@ import com.google.common.base.Optional;
  * @author tsa
  *
  */
-@Conditional(IsNotSwingClient.class)
 @WebServlet("/images/*")
+@Profile(ServerBoot.PROFILE)
 public class ImagesServlet extends HttpServlet
 {
 

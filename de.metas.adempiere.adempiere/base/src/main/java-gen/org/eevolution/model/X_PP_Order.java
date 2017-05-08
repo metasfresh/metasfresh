@@ -16,7 +16,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -15520562L;
+	private static final long serialVersionUID = -600634647L;
 
     /** Standard Constructor */
     public X_PP_Order (Properties ctx, int PP_Order_ID, String trxName)
@@ -731,6 +731,47 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set DLM_Level.
+		@param DLM_Level DLM_Level	  */
+	@Override
+	public void setDLM_Level (int DLM_Level)
+	{
+		set_Value (COLUMNNAME_DLM_Level, Integer.valueOf(DLM_Level));
+	}
+
+	/** Get DLM_Level.
+		@return DLM_Level	  */
+	@Override
+	public int getDLM_Level () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Level);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Partition.
+		@param DLM_Partition_ID Partition	  */
+	@Override
+	public void setDLM_Partition_ID (int DLM_Partition_ID)
+	{
+		if (DLM_Partition_ID < 1) 
+			set_Value (COLUMNNAME_DLM_Partition_ID, null);
+		else 
+			set_Value (COLUMNNAME_DLM_Partition_ID, Integer.valueOf(DLM_Partition_ID));
+	}
+
+	/** Get Partition.
+		@return Partition	  */
+	@Override
+	public int getDLM_Partition_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
@@ -1442,6 +1483,40 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getPP_Product_BOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
+	}
+
+	@Override
+	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
+	}
+
+	/** Set Product Planning.
+		@param PP_Product_Planning_ID Product Planning	  */
+	@Override
+	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID)
+	{
+		if (PP_Product_Planning_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_Planning_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_Planning_ID, Integer.valueOf(PP_Product_Planning_ID));
+	}
+
+	/** Get Product Planning.
+		@return Product Planning	  */
+	@Override
+	public int getPP_Product_Planning_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_Planning_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

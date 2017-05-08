@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -164,7 +165,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			{
 				return true;
 			}
-			else if (Check.equals(modelValue, value))
+			else if (Objects.equals(modelValue, value))
 			{
 				return true;
 			}

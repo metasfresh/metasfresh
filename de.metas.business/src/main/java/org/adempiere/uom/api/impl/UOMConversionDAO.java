@@ -1,5 +1,7 @@
 package org.adempiere.uom.api.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,7 +39,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
 
@@ -101,8 +102,8 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		conversion.setM_Product_ID(productId);
 		conversion.setC_UOM_ID(productUOMId);
 		conversion.setC_UOM_To_ID(productUOMId);
-		conversion.setMultiplyRate(Env.ONE);
-		conversion.setDivideRate(Env.ONE);
+		conversion.setMultiplyRate(BigDecimal.ONE);
+		conversion.setDivideRate(BigDecimal.ONE);
 
 		// NOTE: don't save it
 

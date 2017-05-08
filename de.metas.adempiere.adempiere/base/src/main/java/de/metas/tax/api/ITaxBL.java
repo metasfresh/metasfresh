@@ -27,8 +27,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.exceptions.TaxCriteriaNotFoundException;
 import org.adempiere.exceptions.TaxNoExemptFoundException;
+import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
@@ -139,7 +139,7 @@ public interface ITaxBL extends ISingletonService
 	 * @param shipC_BPartner_Location_ID ship location (ignored)
 	 * @param IsSOTrx is a sales trx
 	 * @return C_Tax_ID
-	 * @throws TaxCriteriaNotFoundException if a criteria was not found
+	 * @throws TaxNotFoundException
 	 */
 	int get(Properties ctx, int M_Product_ID, int C_Charge_ID,
 			Timestamp billDate, Timestamp shipDate,

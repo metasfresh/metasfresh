@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.connection.IConnectionCustomizerService;
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.connection.DLMPermanentIniCustomizer;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.coordinator.impl.LastUpdatedInspector;
@@ -66,14 +67,19 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onAfterInit()
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		DBException.registerExceptionWrapper(DLMReferenceExceptionWrapper.INSTANCE);
 
-		Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentIniCustomizer.INSTANCE);
+		// gh #1411: only register the connection customizer if it was enabled.
+		final IDLMService dlmService = Services.get(IDLMService.class);
+		if (dlmService.isConnectionCustomizerEnabled(AD_User_ID))
+		{
+			Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentIniCustomizer.INSTANCE);
+		}
 
 		Services.get(ICoordinatorService.class).registerInspector(LastUpdatedInspector.INSTANCE);
-		
+
 		// gh #968: register handler to try to get back archived records, if PO could not load them
 		NoDataFoundHandlers.get().addHandler(UnArchiveRecordHandler.INSTANCE);
 	}

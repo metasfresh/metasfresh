@@ -25,8 +25,8 @@ package org.adempiere.util.trxConstraints.api.impl;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -46,7 +46,7 @@ public class TrxConstraintsBL implements ITrxConstraintsBL
 	 */
 	public static final TrxConstraintsDisabled disabled = TrxConstraintsDisabled.get();
 
-	private final Map<Thread, Deque<ITrxConstraints>> thread2TrxConstraint = new WeakHashMap<Thread, Deque<ITrxConstraints>>();
+	private final Map<Thread, Deque<ITrxConstraints>> thread2TrxConstraint = new HashMap<Thread, Deque<ITrxConstraints>>();
 	private final CloseableReentrantLock thread2TrxConstraintLock = new CloseableReentrantLock();
 
 	@Override
@@ -100,7 +100,7 @@ public class TrxConstraintsBL implements ITrxConstraintsBL
 
 		try (final CloseableReentrantLock lock = thread2TrxConstraintLock.open())
 		{
-			ITrxConstraints constraints = getConstraints(callingThread); // make sure that there is at least one instance
+			final ITrxConstraints constraints = getConstraints(callingThread); // make sure that there is at least one instance
 			if (isDisabled(constraints))
 			{
 				return;

@@ -236,7 +236,9 @@ public final class CompositeStringExpression implements IStringExpression
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
 					.addValue(Joiner.on("\n").join(expressions))
+					.addValue(_lastConstantBuffer)
 					.toString();
 		}
 
