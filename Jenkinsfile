@@ -255,7 +255,7 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 
 							docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 							{
-								def app = docker.build 'metasfresh/spring-boot-admin', 'src/main/docker';
+								def app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
 								app.push "${MF_UPSTREAM_BRANCH}-latest";
 								app.push "${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}";
 							}
