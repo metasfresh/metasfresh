@@ -130,7 +130,7 @@ public class WindowRestController
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
-		// DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions()); // FIXME commented for debugging
+		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 
@@ -151,9 +151,10 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(windowId)
-				.getLayout();
+		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
+		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
+		
+		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
