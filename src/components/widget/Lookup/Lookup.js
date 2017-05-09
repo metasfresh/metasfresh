@@ -29,7 +29,7 @@ class Lookup extends Component {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
             showNextDropdown: false,
-            property: properties[0].field
+            property: ''
         }
 
         // console.log(this.state.propertiesCopy);
@@ -40,6 +40,7 @@ class Lookup extends Component {
         const {defaultValue, properties} = this.props;
         console.log('defaultValue component did mount');
         console.log(defaultValue);
+        console.log(properties);
 
         // this.setState({
         //     property: properties[0].field
@@ -52,20 +53,22 @@ class Lookup extends Component {
         const {defaultValue, properties} = this.props;
         const {property} = this.state;
          
+        //  console.log('property');
+        //  console.log(property);
 
-        if(JSON.stringify(prevProps.defaultValue)!==JSON.stringify(defaultValue)){
+        // if(JSON.stringify(prevProps.defaultValue)!==JSON.stringify(defaultValue)){
 
-            defaultValue.map((item, index)=>{
-                const prevIndex = index-1;
-                if(prevIndex>-1 && defaultValue[prevIndex].field === property){
-                    console.log(properties[index].field);
-                    this.setState({
-                        property: properties[index].field
-                    })
-                }
+        //     defaultValue.map((item, index)=>{
+        //         const prevIndex = index-1;
+        //         if(prevIndex>-1 && defaultValue[prevIndex].field === property){
+        //             console.log(properties[index].field);
+        //             this.setState({
+        //                 property: properties[index].field
+        //             })
+        //         }
                 
-            })
-        }
+        //     })
+        // }
         // console.log('defaultValue');
         // console.log(defaultValue);
 
@@ -79,19 +82,39 @@ class Lookup extends Component {
         })
     }
 
-    getNextDropdown=(state)=> {
-        this.setState({
-            showNextDropdown: state
-        });
-    }
+    // getNextDropdown=(state)=> {
+    //     this.setState({
+    //         showNextDropdown: state
+    //     });
+    // }
 
-    setProperty = (property)=> {
-        const {defaultValue} = this.props;
-        console.log('setProperty');
+    setNextProperty = (property)=> {
+        const {defaultValue, properties} = this.props;
+        console.log('setNextProperty');
         console.log(property);
-        this.setState({
-            property: property
-        });
+        // property && this.setState({
+        //     property: property
+        // });
+
+
+        defaultValue.map((item, index)=>{
+                const nextIndex = index+1;
+                if(nextIndex<defaultValue.length && defaultValue[index].field === property){
+                    console.log(properties[nextIndex].field);
+                    this.setState({
+                        property: properties[nextIndex].field
+                    })
+                    return;
+                } else if(defaultValue[defaultValue.length-1].field === property){
+                    console.log('else-----------------------------');
+                    this.setState({
+                        property: ''
+                    })
+                }
+                
+            })
+        
+        
     }
 
     checkIfDefaultValue = () => {
@@ -134,8 +157,9 @@ class Lookup extends Component {
         onChange(properties, null, false);
         this.setState({
             isInputEmpty: true,
-            property: properties[0].field
-        });  
+            property: properties[0].field,
+            property: ''
+        });
     }
 
     render() {
@@ -146,7 +170,7 @@ class Lookup extends Component {
             subentity, subentityId, viewId
         } = this.props;
 
-        const {isInputEmpty, showNextDropdown} = this.state;
+        const {isInputEmpty, property} = this.state;
 
         return (
             <div
@@ -198,8 +222,7 @@ class Lookup extends Component {
                                 onChange={onChange}
                                 item={item}
                                 handleInputEmptyStatus={this.handleInputEmptyStatus}
-                                getNextDropdown={this.getNextDropdown}
-                                setProperty={this.setProperty}
+                                setNextProperty={this.setNextProperty}
                             />
 
                         } else if (item.source === 'list') {
@@ -208,8 +231,10 @@ class Lookup extends Component {
                                 defaultValue, 'field', item.field
                             )[0].value;
 
-                            {/*console.log(objectValue);*/}
-                            {/*console.log(showNextDropdown);*/}
+                            {/*console.log('----');
+                            console.log(item.field);
+                            console.log(property);*/}
+
 
                             return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
                                     <List
@@ -225,9 +250,11 @@ class Lookup extends Component {
                                         viewId={viewId}
                                         onChange={onChange}
                                         lookupList={true}
-                                        autofocus={!objectValue && showNextDropdown ? true : false}
+                                        autofocus={item.field == property ? true : false}
                                         defaultValue={objectValue[Object.keys(objectValue)[0]]}
                                         isInputEmpty={isInputEmpty}
+                                        setNextProperty={this.setNextProperty}
+                                        mainProperty={[item]}
                                     />
                                 </div>
                         }

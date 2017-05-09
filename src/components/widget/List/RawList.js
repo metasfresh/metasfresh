@@ -18,15 +18,15 @@ class RawList extends Component {
     componentDidMount = () => {
         const {autofocus} = this.props;
 
-        // console.log(autofocus);
+        
 
         (this.dropdown && autofocus) && this.dropdown.focus();
     }
 
     componentDidUpdate = prevProps => {
-        const { list, mandatory, defaultValue } = this.props;
+        const { list, mandatory, defaultValue, autofocus } = this.props;
 
-        // console.log(defaultValue);
+        (this.dropdown && autofocus) && this.dropdown.focus();
 
         if(prevProps.defaultValue != defaultValue){
             this.dropdown && this.dropdown.focus();
@@ -110,9 +110,10 @@ class RawList extends Component {
     }
 
     handleBlur = () => {
+        console.log('handleBlur');
         const { selected, doNotOpenOnFocus } = this.props;
 
-        !doNotOpenOnFocus && this.dropdown.blur();
+        !doNotOpenOnFocus && this.dropdown && this.dropdown.blur();
         this.setState({
             isOpen: false,
             selected: selected || 0

@@ -41,13 +41,14 @@ class List extends Component {
     }
 
     handleSelect = (option) => {
-        const {onChange, lookupList, properties} = this.props;
+        const {onChange, lookupList, properties, setNextProperty, mainProperty} = this.props;
 
         if(lookupList){
             onChange(properties[0].field, option);
             this.setState({
                 selectedItem: option
             });
+            setNextProperty(mainProperty[0].field);
         } else {
             onChange(option);
         }
@@ -60,8 +61,6 @@ class List extends Component {
             emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus
         } = this.props;
         const {list, loading, selectedItem} = this.state;
-
-       
 
         return (
             <RawList

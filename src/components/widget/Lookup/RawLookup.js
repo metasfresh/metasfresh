@@ -63,7 +63,7 @@ class RawLookup extends Component {
     handleSelect = (select) => {
         const {
             onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus, mainProperty,
-            getNextDropdown, setProperty
+            getNextDropdown, setNextProperty
         } = this.props;
 
         this.setState({
@@ -74,7 +74,6 @@ class RawLookup extends Component {
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
                 handleInputEmptyStatus(false);
-                getNextDropdown(true);
 
                 this.handleBlur();
             } else {
@@ -87,8 +86,8 @@ class RawLookup extends Component {
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     handleInputEmptyStatus(false);
-                    getNextDropdown(true);
-                    setProperty(mainProperty[0].field);
+                    // getNextDropdown(true);
+                    setNextProperty(mainProperty[0].field);
 
                     this.handleBlur();
                 
