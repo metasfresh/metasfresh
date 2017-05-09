@@ -21,7 +21,8 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -37,12 +38,12 @@ import de.metas.material.planning.pporder.PPOrderPojoConverter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -89,14 +90,14 @@ public class PPOrderPojoConverterTests
 	public void testPProductBOMStuff()
 	{
 		final I_PP_Product_BOM ppProductBom = InterfaceWrapperHelper.newInstance(I_PP_Product_BOM.class);
-		
+
 		InterfaceWrapperHelper.save(ppProductBom);
 	}
 
 	private void createProductBomLine()
 	{
 		final I_PP_Product_BOMLine ppProductBomLine = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMLine.class);
-		
+
 		ppProductBomLine.setAssay(BigDecimal.valueOf(20));
 		ppProductBomLine.setBackflushGroup("backflushGroup");
 		ppProductBomLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Component);
@@ -114,10 +115,10 @@ public class PPOrderPojoConverterTests
 		ppProductBomLine.setValidTo(new Timestamp(t4.getTime()));
 		ppProductBomLine.setVariantGroup("variantGroup");
 		ppProductBomLine.setM_ChangeNotice_ID(120);
-		
+
 		InterfaceWrapperHelper.save(ppProductBomLine);
 	}
-	
+
 	@Test
 	public void test()
 	{
@@ -151,10 +152,10 @@ public class PPOrderPojoConverterTests
 
 		assertThat(productionPlanEvent, notNullValue());
 
-		final ProductionOrderRequested productionOrderEvent = ProductionOrderRequested.builder()
+		final PPOrderRequestedEvent productionOrderEvent = PPOrderRequestedEvent.builder()
+				.eventDescr(new EventDescr())
 				.ppOrder(productionPlanEvent.getPpOrder())
 				.reference(productionPlanEvent.getReference())
-				.when(productionPlanEvent.getWhen())
 				.build();
 
 		final PPOrder ppOrderPojoAfterConversion = ppOrderPojoConverter.asPPOrderPojo(productionOrderEvent);

@@ -1,5 +1,7 @@
 package de.metas.material.dispo;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -20,6 +22,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -70,6 +73,8 @@ public class CandidateChangeHandlerTests
 	private final Date t3 = TimeUtil.addMinutes(t1, 20);
 	private final Date t4 = TimeUtil.addMinutes(t1, 30);
 
+	private I_AD_Org org;
+
 	private I_M_Product product;
 
 	private I_M_Warehouse warehouse;
@@ -88,6 +93,9 @@ public class CandidateChangeHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		org = newInstance(I_AD_Org.class);
+		save(org);
 
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		InterfaceWrapperHelper.save(product);
@@ -124,18 +132,18 @@ public class CandidateChangeHandlerTests
 		{
 			candidate = Candidate.builder()
 					.type(Type.STOCK)
-					.orgId(1)
+					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
 					.quantity(new BigDecimal("10"))
 					.date(t2)
 					.build();
-			candidateRepository.addOrReplace(candidate);
+			candidateRepository.addOrUpdate(candidate);
 
 			earlierCandidate = candidateRepository
-					.addOrReplace(Candidate.builder()
+					.addOrUpdate(Candidate.builder()
 							.type(Type.STOCK)
-							.orgId(1)
+							.orgId(org.getAD_Org_ID())
 							.productId(product.getM_Product_ID())
 							.warehouseId(warehouse.getM_Warehouse_ID())
 							.quantity(new BigDecimal("10"))
@@ -144,33 +152,33 @@ public class CandidateChangeHandlerTests
 
 			final Candidate laterCandidate = Candidate.builder()
 					.type(Type.STOCK)
-					.orgId(1)
+					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
 					.quantity(new BigDecimal("10"))
 					.date(t3)
 					.build();
-			candidateRepository.addOrReplace(laterCandidate);
+			candidateRepository.addOrUpdate(laterCandidate);
 
 			evenLaterCandidate = Candidate.builder()
 					.type(Type.STOCK)
-					.orgId(1)
+					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
 					.quantity(new BigDecimal("12"))
 					.date(t4)
 					.build();
-			candidateRepository.addOrReplace(evenLaterCandidate);
+			candidateRepository.addOrUpdate(evenLaterCandidate);
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(Type.STOCK)
-					.orgId(1)
+					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(otherWarehouse.getM_Warehouse_ID())
 					.quantity(new BigDecimal("12"))
 					.date(t4)
 					.build();
-			candidateRepository.addOrReplace(evenLaterCandidateWithDifferentWarehouse);
+			candidateRepository.addOrUpdate(evenLaterCandidateWithDifferentWarehouse);
 		}
 
 		// do the test
@@ -308,13 +316,13 @@ public class CandidateChangeHandlerTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
 				.build();
-		final Candidate processedCandidate = candidateChangeHandler.updateStock(candidate);
+		final Candidate processedCandidate = candidateChangeHandler.addOrUpdateStock(candidate);
 		return processedCandidate;
 	}
 
@@ -395,21 +403,21 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Verifies that {@link CandidateChangeHandler#updateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
+	 * Verifies that {@link CandidateChangeHandler#addOrUpdateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
 	 */
 	@Test
 	public void testOnStockCandidateNewOrChangedNotStockType()
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(t2)
 				.build();
 
-		final Candidate processedCandidate = candidateChangeHandler.updateStock(candidate);
+		final Candidate processedCandidate = candidateChangeHandler.addOrUpdateStock(candidate);
 		assertThat(processedCandidate.getType(), is(Type.STOCK));
 		assertThat(processedCandidate.getDate().getTime(), is(t2.getTime()));
 		assertThat(processedCandidate.getQuantity(), comparesEqualTo(BigDecimal.TEN));
@@ -425,7 +433,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -452,7 +460,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -487,7 +495,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -524,19 +532,19 @@ public class CandidateChangeHandlerTests
 
 		final Candidate olderStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(olderStockQty)
 				.date(t1)
 				.build();
-		candidateChangeHandler.updateStock(olderStockCandidate);
+		candidateChangeHandler.addOrUpdateStock(olderStockCandidate);
 
 		final BigDecimal supplyQty = new BigDecimal("23");
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.subType(SubType.PRODUCTION)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -566,7 +574,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -598,7 +606,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -611,7 +619,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -648,7 +656,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -668,7 +676,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate demandCandidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -703,7 +711,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.DEMAND)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
@@ -742,7 +750,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.DEMAND)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)

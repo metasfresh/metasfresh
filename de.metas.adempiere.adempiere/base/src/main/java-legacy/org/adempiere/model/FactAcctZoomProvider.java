@@ -51,19 +51,18 @@ public class FactAcctZoomProvider implements IZoomProvider
 	{
 		//
 		// Get the Fact_Acct AD_Window_ID
-		final int factAcctWindowId;
-		if (targetAD_Window_ID > 0)
-		{
-			factAcctWindowId = targetAD_Window_ID;
-		}
-		else
-		{
-			factAcctWindowId = RecordZoomWindowFinder.newInstance(I_Fact_Acct.Table_Name).findAD_Window_ID();
-		}
+		final int factAcctWindowId = RecordZoomWindowFinder.newInstance(I_Fact_Acct.Table_Name).findAD_Window_ID();
 		if (factAcctWindowId <= 0)
 		{
 			return ImmutableList.of();
 		}
+
+		// If not our target window ID, return nothing
+		if (targetAD_Window_ID > 0 && targetAD_Window_ID != factAcctWindowId)
+		{
+			return ImmutableList.of();
+		}
+
 		
 		// Return nothing if source is not Posted
 		if(source.hasField(COLUMNNAME_Posted))
