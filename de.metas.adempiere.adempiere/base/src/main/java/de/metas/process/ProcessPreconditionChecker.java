@@ -214,6 +214,11 @@ public class ProcessPreconditionChecker
 
 	private final Class<?> loadClass(final String classname, final boolean isServerProcess)
 	{
+		if(classname == null)
+		{
+			return null;
+		}
+		
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader == null)
 		{
