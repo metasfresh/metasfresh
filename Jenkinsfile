@@ -347,7 +347,12 @@ node('agent && linux')
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
 
 				// now create and publish some docker image..well, 1 docker image for starts
-				sh "cp metasfresh-material-dispo/target/metasfresh-material-dispo-${BUILD_VERSION}.jar metasfresh-material-dispo/src/main/docker/metasfresh-material-dispo.jar" // copy the file so it can be handled by the docker build
+				final dockerWorkDir='docker-build/metasfresh-material-dispo'
+				sh "mkdir -p ${dockerWorkDir}"
+
+				sh "cp de.metas.material/dispo/target/metasfresh-material-dispo-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo.jar" // copy the file so it can be handled by the docker build
+				sh "cp -R de.metas.material/dispo/src/main/docker/* ${dockerWorkDir}"
+				sh "cp -R de.metas.material/dispo/src/main/configs/* ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
 					def app = docker.build 'metasfresh/metasfresh-material-dispo', 'metasfresh-material-dispo/src/main/docker';
