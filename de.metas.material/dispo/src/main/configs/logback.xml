@@ -1,0 +1,65 @@
+<configuration scan="true">
+	<!-- Spring boot defaults -->
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+	<!-- Sync log levels from SLF4J/logback to JUL -->	
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>false</resetJUL>
+	</contextListener>
+	
+	<!-- Console logging configuration -->
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+	
+
+	<!-- File logging configuration -->
+	<property name="LOG_PATH" value="${LOG_PATH:-./log/}" />
+	<appender name="FILE" class="de.metas.logging.MetasfreshFileAppender">
+		<encoder>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
+		</encoder>
+		
+		<!-- it works with changing the logging.path property -->
+		<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
+			<LogDir>${LOG_PATH}</LogDir>
+			<LogFilePrefix>metasfresh</LogFilePrefix>
+			<LogFileDatePattern>%d{yyyy-MM-dd}</LogFileDatePattern>
+			
+			<TimeBasedFileNamingAndTriggeringPolicy class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+		</rollingPolicy>
+	</appender>
+
+	<!-- Error logger (AD_Issue) -->
+	<appender name="AD_ISSUE" class="de.metas.logging.MetasfreshIssueAppender">
+	</appender>
+
+	<!--
+		https://metasfresh.atlassian.net/browse/FRESH-87 
+		logging inbound and outbound CXF messages  
+	-->
+	<appender name="cxf-messages-File-Appender" class="ch.qos.logback.core.FileAppender">
+		<file>${LOG_PATH}/cxf-messages.log</file>
+		<encoder>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
+			<outputPatternAsHeader>true</outputPatternAsHeader>
+		</encoder>
+	</appender>
+
+	<logger name="org.apache.cxf.interceptor.LoggingInInterceptor" level="INFO">
+		<appender-ref ref="cxf-messages-File-Appender" />
+	</logger>
+	<logger name="org.apache.cxf.interceptor.LoggingOutInterceptor" level="INFO">
+		<appender-ref ref="cxf-messages-File-Appender" />
+	</logger>
+	
+	<!-- Configure root logger -->
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+		<appender-ref ref="AD_ISSUE" />
+	</root>
+	
+	<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#loglevel-management -->
+	<!-- include resource="org/springframework/boot/logging/logback/base.xml"/ -->
+	<jmxConfigurator/>
+
+</configuration>

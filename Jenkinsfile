@@ -346,6 +346,15 @@ node('agent && linux')
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
 
+				// now create and publish some docker image..well, 1 docker image for starts
+				sh "cp metasfresh-material-dispo/target/metasfresh-material-dispo-${BUILD_VERSION}.jar metasfresh-material-dispo/src/main/docker/metasfresh-material-dispo.jar" // copy the file so it can be handled by the docker build
+				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
+				{
+					def app = docker.build 'metasfresh/metasfresh-material-dispo', 'metasfresh-material-dispo/src/main/docker';
+					app.push "${MF_UPSTREAM_BRANCH}-latest";
+					app.push "${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}";
+				}
+
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
@@ -363,7 +372,7 @@ node('agent && linux')
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
-	           	sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
@@ -371,7 +380,7 @@ node('agent && linux')
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
-    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
 				} // if(params.MF_SKIP_TO_DIST)
 			} // stage
