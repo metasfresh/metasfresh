@@ -492,11 +492,9 @@ public class WindowRestController
 		}
 
 		final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomInfoTableRecordRef);
-		final JSONDocumentLayout windowLayout = getLayout(zoomIntoDocumentPath.getWindowId().toJson(), false); // advanced=false
 		return JSONZoomInto.builder()
 				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
 				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
-				.windowLayout(windowLayout)
 				.build();
 	}
 

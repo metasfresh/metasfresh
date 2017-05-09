@@ -37,6 +37,4 @@ public class JSONZoomInto
 	private final JSONDocumentPath documentPath;
 	/** Source field for whom we retrieved the ZoomInto document path */
 	private final JSONDocumentPath source;
-	/** ZoomInto's window layout */
-	private final JSONDocumentLayout windowLayout;
 }
