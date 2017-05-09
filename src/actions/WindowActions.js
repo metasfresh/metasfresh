@@ -321,6 +321,7 @@ function initTabs(layout, windowType, docId, isModal) {
                 dispatch(
                     getTab(tab.tabid, windowType, docId)
                 ).then(res => {
+                    console.log(res);
                     tabTmp[tab.tabid] = res;
                     dispatch(
                         addRowData(tabTmp, getScope(isModal))
@@ -335,13 +336,17 @@ export function getTab(tabId, windowType, docId) {
     return dispatch =>
         dispatch(getData('window', windowType, docId, tabId))
             .then(res => {
+                console.log(res.data);
                 if(res.data){
                     let tab = {};
-                    res.data.map(row => {
+                    res.data.map((row, index) => {
                         row.fields = parseToDisplay(row.fields);
                         tab[row.rowId] = row;
+                        // tab[index]=row;
                     });
+                    // console.log(tab);
                     return tab;
+                    // return res.data;
                 }
             })
 }
@@ -512,6 +517,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
 }
 
 function updateStatus(responseData) {
+    console.log('updateStatus');
     return dispatch => {
         const updateDispatch = (item) => {
             if(item.rowId){
