@@ -19,8 +19,16 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1463](https://github.com/metasfresh/metasfresh/issues/1463) Add Window for S_Resource_Ressource to WebUI
     * Adding a new window to WebUI to allow maintaining Manufacturing Resources.
+  * [#1464](https://github.com/metasfresh/metasfresh/issues/1464) New Window for Manufacturing Workflow in WebUI
+    * Adding the Manufacturing Workflow Window to WebUI, now allowing to maintain these.
+  * [#1465](https://github.com/metasfresh/metasfresh/issues/1465) New Window for Distribution Network in WebUI
+    * Including the Distribution Network Window in WebUI.
   * [#1466](https://github.com/metasfresh/metasfresh/issues/1466) New Window for Resource Type in WebUI
     * Adding the ResourceType maintenance Window to WebUI.
+  * [#1467](https://github.com/metasfresh/metasfresh/issues/1467) New Window for Product Planning Data in WebUI
+    * Including the Window Product Planning Data to WebUI, to allow the user to maintain Manufacturing dependant data for products.
+  * [#1473](https://github.com/metasfresh/metasfresh/issues/1473) New Window for Node Transitions in webUI
+    * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
 
 # metasfresh 5.8 (2017-18)
 
