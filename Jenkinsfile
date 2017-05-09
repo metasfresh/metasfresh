@@ -352,10 +352,10 @@ node('agent && linux')
 
 				sh "cp de.metas.material/dispo/target/metasfresh-material-dispo-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo.jar" // copy the file so it can be handled by the docker build
 				sh "cp -R de.metas.material/dispo/src/main/docker/* ${dockerWorkDir}"
-				sh "cp -R de.metas.material/dispo/src/main/configs/* ${dockerWorkDir}"
+				sh "cp -R de.metas.material/dispo/src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
-					def app = docker.build 'metasfresh/metasfresh-material-dispo', 'metasfresh-material-dispo/src/main/docker';
+					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
 					app.push "${MF_UPSTREAM_BRANCH}-latest";
 					app.push "${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}";
 				}
