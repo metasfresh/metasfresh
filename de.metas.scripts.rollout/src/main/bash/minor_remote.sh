@@ -104,62 +104,58 @@ install_metasfresh()
 	trace install_metasfresh END
 }
 
+prompt_superuser_script()
+{
+	local service_name="$1"
+	local message="$2"
+	
+	trace install_${service_name} "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	trace install_${service_name} "!! PLEASE READ THE FOLLOWING !!"
+	trace install_${service_name} "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	trace install_${service_name} "${message}"
+	trace install_${service_name} "To perform this task and possible others, please run the following shell script as SUPER USER. Then rerun this script."
+	echo ""
+	echo "$(pwd)/prepare_services_superuser.sh"
+	echo ""
+}
+
 install_service()
 {
 	local service_name=$1
 	trace install_${service_name} BEGIN
-	
-	
+
 	local SYSTEM_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
 	local SYSTEM_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
-	
+
 	if [[ ! -f ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ]]; 
 	then
-		trace install_${service_name} "Service binary  ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar is not present. Nothing to do."
+		trace install_${service_name} "Service binary ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar is not present. Nothing to do."
 		return;
 	fi
 	
-	local SYSTEM_SERVICE_FILE=/etc/systemd/system/${service_name}.service
-	if [[ ! -f $SYSTEM_SERVICE_FILE ]]; 
+	if [[ -d /opt/${service_name} ]]; 
 	then
-		trace install_${service_name} "The systemd service file $SYSTEM_SERVICE_FILE is not yet installed."
-		echo "" > ${service_name}_install_service_file.sh
-		echo "echo \"!!! Installing service unit file !!! \"" >> ${service_name}_install_service_file.sh
-		echo "cd $(pwd)" >> ${service_name}_install_service_file.sh
-		echo "unzip ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-configs.zip -d ./${service_name}-configs" >> ${service_name}_install_service_file.sh
-		echo "cp -v ./${service_name}-configs/configs/${service_name}.service ${SYSTEM_SERVICE_FILE}" >> ${service_name}_install_service_file.sh
-		echo "chmod 0644 ${SYSTEM_SERVICE_FILE}" >> ${service_name}_install_service_file.sh
-		echo "systemctl daemon-reload" >> ${service_name}_install_service_file.sh
-		echo "echo \"!!!  Done !!! \"" >> ${service_name}_install_service_file.sh
-		echo ""
-		chmod u+x ${service_name}_install_service_file.sh
-		trace install_${service_name} "To install it, please run the following shell script as super user"
-		echo ""
-		echo "$(pwd)/${service_name}_install_service_file.sh"
-		echo ""
-		exit 1;
-	fi
-	
-	local SYSTEM_SUDOERS_FILE="/etc/sudoers.d/${service_name}"
-	if [[ ! -f $SYSTEM_SUDOERS_FILE ]];
-	then
-		trace install_${service_name} "The sudoers.d file $SYSTEM_SUDOERS_FILE is not yet installed. It is required to allow the metasfresh user to start and stop the ${service_name} service"
-		echo "echo \"!!! Installing sudoers file !!! \"" > ${service_name}_install_sudoers_file.sh
-		echo "echo \"metasfresh ALL=(root)NOPASSWD: /bin/systemctl stop ${service_name}.service\" > ${SYSTEM_SUDOERS_FILE}" >> ${service_name}_install_sudoers_file.sh
-		echo "echo \"metasfresh ALL=(root)NOPASSWD: /bin/systemctl start ${service_name}.service\" >> ${SYSTEM_SUDOERS_FILE}" >> ${service_name}_install_sudoers_file.sh
-		echo "echo \"metasfresh ALL=(root)NOPASSWD: /bin/systemctl status ${service_name}.service\" >> ${SYSTEM_SUDOERS_FILE}" >> ${service_name}_install_sudoers_file.sh
-		echo "echo \"metasfresh ALL=(root)NOPASSWD: /bin/systemctl restart ${service_name}.service\" >> ${SYSTEM_SUDOERS_FILE}" >> ${service_name}_install_sudoers_file.sh
-		echo "chown root:root ${SYSTEM_SUDOERS_FILE}" >> ${service_name}_install_sudoers_file.sh
-		echo "chmod 0440 ${SYSTEM_SUDOERS_FILE}" >> ${service_name}_install_sudoers_file.sh
-		echo "echo \"!!! Done !!!\"" >> ${service_name}_install_sudoers_file.sh
-		chmod u+x ${service_name}_install_sudoers_file.sh
-		trace install_${service_name} "To install it, please run the following shell script as super user"
-		echo ""
-		echo "$(pwd)/${service_name}_install_sudoers_file.sh"
-		echo ""
+		prompt_superuser_script ${service_name} "The service ${service_name} is currently installed in /opt/${service_name}. It needs to be migrated to $SYSTEM_DEPLOY_TARGET_FOLDER"
 		exit 1;
 	fi
 
+	local SYSTEM_SERVICE_FILE=/etc/systemd/system/${service_name}.service
+	if [[ ! -f $SYSTEM_SERVICE_FILE ]]; 
+	then
+		prompt_superuser_script ${service_name} "The systemd service file $SYSTEM_SERVICE_FILE is not yet installed."
+		exit 1;
+	fi
+
+	local SYSTEM_SUDOERS_FILE="/etc/sudoers.d/${service_name}"
+	if [[ ! -f $SYSTEM_SUDOERS_FILE ]];
+	then
+		prompt_superuser_script ${service_name} "The sudoers.d file $SYSTEM_SUDOERS_FILE is not yet installed. It is required to allow the metasfresh user to start and stop the ${service_name} service."
+		exit 1;
+	fi
+
+	# make sure the service's folder actually exists
+	mkdir -p $SYSTEM_DEPLOY_TARGET_FOLDER
+	
 	local SERVICE_CONF_FILE="$SYSTEM_DEPLOY_TARGET_FOLDER/${service_name}.conf"
 	if [[ ! -f $SERVICE_CONF_FILE ]];
 	then
@@ -274,17 +270,6 @@ install_metasfresh
 
 install_service metasfresh-admin
 install_service metasfresh-material-dispo
-
-# move metasfresh-webui-api to be where the other services are
-if [[ -d /opt/metasfresh-webui-api ]]; 
-then
-	trace $(basename $0) "Move existing metasfresh-webui-api from /opt/metasfresh-webui-api to /opt/metasfresh/metasfresh-webui-api"
-	stop_metasfresh-webui-api
-	cp -v /opt/metasfresh-webui-api /opt/metasfresh/metasfresh-webui-api
-	rm /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api.conf # needs to be replaced with a new version. details for the user will follow when this script proceeds
-	mv /opt/metasfresh-webui-api /opt/metasfresh-webui-api_OLD
-	trace $(basename $0) "DONE moving existing metasfresh-webui-api"
-fi
 install_service metasfresh-webui-api
 
 install_metasfresh-webui-frontend
