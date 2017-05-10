@@ -37,14 +37,18 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Transaction;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.document.IDocTypeDAO;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -52,6 +56,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.empties.impl.EmptiesInOutProducer;
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
@@ -275,7 +280,7 @@ public class HUInOutBL implements IHUInOutBL
 					huAssignmentsForPartner = new ArrayList<I_M_HU_Assignment>();
 					partnerstoHUAssignments.put(bpartnerID, huAssignmentsForPartner);
 				}
-				
+
 				huAssignmentsForPartner.add(assignment);
 			}
 		}
@@ -298,8 +303,6 @@ public class HUInOutBL implements IHUInOutBL
 
 		return huInOut;
 	}
-	
-	
 
 	/**
 	 * Create vendor return producer, set the details and use it to create the vendor return inout.
@@ -329,16 +332,65 @@ public class HUInOutBL implements IHUInOutBL
 
 		// There will be one return inout for each partner
 		// The return inout lines will be created based on the origin inoutlines (from receipts)
-	
-		
+
 		//
 		// Create Shipment document and return it
 		final I_M_InOut inOut = producer.create();
 		return inOut;
 	}
-	
-	public I_M_HU createHUForCustomerReturnLine(final I_M_InOutLine customerReturnLine)
+
+	@Override
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines)
 	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_InOutLine inOutLine)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isCustomerReturn(final I_M_InOut inOut)
+	{
+
+		// in the case of returns the docSubType is null
+		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
+
+		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
+				.getDocTypeOrNullForSOTrx(
+						Env.getCtx() // ctx
+						, X_C_DocType.DOCBASETYPE_MaterialReceipt // doc basetype
+						, docSubType // doc subtype
+						, true // isSOTrx
+						, inOut.getAD_Client_ID() // client
+						, inOut.getAD_Org_ID() // org
+						, ITrx.TRXNAME_None); // trx
+
+		if (returnsDocType == null)
+		{
+			// there is no customer return doc type defined in the project. Return false by default
+			return false;
+		}
+
+		if (returnsDocType.getC_DocType_ID() != inOut.getC_DocType_ID())
+		{
+			// the inout is not a customer return
+			return false;
+		}
+
+		// the inout is a customer return
+		return true;
+	}
+
+	@Override
+	public void createHUsForCustomerReturn(final I_M_InOut customerReturn)
+	{
+		Check.assume(isCustomerReturn(customerReturn), "Inout {} is not a customer return ", customerReturn);
+		
 		
 	}
 

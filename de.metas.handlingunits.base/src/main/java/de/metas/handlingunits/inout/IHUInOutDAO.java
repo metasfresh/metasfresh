@@ -47,4 +47,6 @@ public interface IHUInOutDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_InOutLine retrieveInOutLineOrNull(I_M_HU hu);
+
+	void deleteTradingUnitAllocations(I_M_InOutLine inOutLine, List<I_M_HU> tradingUnitsToUnassign, String trxName);
 }
