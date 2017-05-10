@@ -40,6 +40,7 @@ Here come the actual release notes:
 
 * other
   * [metasfresh/metasfresh-dev#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+  * [metasfresh/metasfresh-dev#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
 
 # metasfresh 5.8 (2017-18)
 
