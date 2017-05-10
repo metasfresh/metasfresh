@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,9 +44,9 @@ import de.metas.logging.LogManager;
 
 /**
  * Filters out only records which are present in sub-query.
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <T>
  */
 public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -66,7 +66,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private static final transient Logger logger = LogManager.getLogger(InSubQueryFilter.class);
 
 	/**
-	 * 
+	 *
 	 * @param columnName this query match column
 	 * @param subQueryColumnName sub query match column
 	 * @param subQuery sub query
@@ -132,7 +132,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 
 		final TypedSqlQuery<?> subQueryImpl = TypedSqlQuery.cast(subQuery);
-		
+
 		//
 		// Decide if we will render the SQL using "EXISTS (...)" (preferred option, at least of postresql) or "IN (...)".
 		final boolean useIN;
@@ -142,7 +142,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			// In case the sub query is done on the same table as the parent table, we can't write it with "EXISTS"
 			// Because we don't have aliases.
 			// Therefore, in such cases, we have to keep the writing with "IN"
-			logDevelopmentWarn("The query has to be written with IN instead of EXISTS because the tablename is the same for both query and sub query.");
+			//logDevelopmentWarn("The query has to be written with IN instead of EXISTS because the tablename is the same for both query and sub query.");
 			useIN = true;
 		}
 		else if (subQueryImpl.hasLimitOrOffset())
@@ -178,9 +178,9 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	/**
 	 * Build the filter SQL using EXISTS.
-	 * 
+	 *
 	 * e.g. EXISTS (SELECT 1 FROM SubTable WHERE ParentTable.JoinColumn=SubTable.JoinColumn AND .....)
-	 * 
+	 *
 	 * @param subQueryImpl
 	 * @return sql
 	 */
@@ -189,7 +189,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final String subQueryColumnNameWithModifier = modifier.getColumnSql(this.subQueryColumnName);
 
 		//
-		// Build the new sub-query's SELECT FROM 
+		// Build the new sub-query's SELECT FROM
 		final StringBuilder subQuerySelectClause = new StringBuilder()
 				.append("SELECT 1 FROM ").append(subQueryImpl.getTableName());
 		final boolean subQueryUseOrderByClause = false;
@@ -232,9 +232,9 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	/**
 	 * Build the filter SQL using IN.
-	 * 
+	 *
 	 * e.g. ParentTable.JoinColumn IN (SELECT 1 FROM SubTable WHERE ...)
-	 * 
+	 *
 	 * @param subQueryImpl
 	 * @return sql
 	 */
@@ -243,7 +243,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final String subQueryColumnNameWithModifier = modifier.getColumnSql(this.subQueryColumnName);
 
 		//
-		// Build the new sub-query's SELECT FROM 
+		// Build the new sub-query's SELECT FROM
 		final StringBuilder subQuerySelectClause = new StringBuilder()
 				.append("SELECT ").append(subQueryColumnNameWithModifier)
 				.append(" FROM ").append(subQueryImpl.getTableName());
@@ -279,7 +279,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 				.append(")")
 				.toString();
 	}
-	
+
 	private final void logDevelopmentWarn(final String message)
 	{
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
@@ -322,7 +322,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		final List<?> subQueryResult = subQuery.list();
 
-		final List<Object> subQueryValues = new ArrayList<Object>(subQueryResult.size());
+		final List<Object> subQueryValues = new ArrayList<>(subQueryResult.size());
 		for (Object subModel : subQueryResult)
 		{
 			final Object value0 = InterfaceWrapperHelper.getValue(subModel, this.subQueryColumnName).orNull();

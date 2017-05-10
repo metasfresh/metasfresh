@@ -24,7 +24,6 @@ package org.eevolution.model.validator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -38,6 +37,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -54,12 +54,13 @@ import org.eevolution.api.IPPOrderWorkflowBL;
 import org.eevolution.api.IPPOrderWorkflowDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -75,7 +76,7 @@ public class PP_Order
 	public void registerCallouts()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order());
-		
+
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);
 	}
 
@@ -262,26 +263,31 @@ public class PP_Order
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void preventForwardDDOrderToBeCleanedUp(final I_PP_Order ppOrder)
-	{
-		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-
-		final List<I_DD_Order> forwardDDOrdersToDisallowCleanup = ddOrderDAO.retrieveForwardDDOrderLinesQuery(ppOrder)
-				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_MRP_AllowCleanup, true)
-				.create()
-				.list();
-
-		for (final I_DD_Order ddOrder : forwardDDOrdersToDisallowCleanup)
-		{
-			if (ddOrder.isMRP_AllowCleanup())
-			{
-				ddOrder.setMRP_AllowCleanup(false);
-				InterfaceWrapperHelper.save(ddOrder);
-			}
-		}
-	}
+	// commenting this out, to prevent
+	// org.eevolution.exceptions.LiberoException: No MRP supply record found for MPPOrder[ID=1047383-DocumentNo=1045999,IsSOTrx=false,C_DocType_ID=1000037]
+	// at org.eevolution.api.impl.DDOrderDAO.retrieveForwardDDOrderLinesQuery(DDOrderDAO.java:232)
+	// at org.eevolution.model.validator.PP_Order.preventForwardDDOrderToBeCleanedUp(PP_Order.java:272)
+	//
+	// @DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	// public void preventForwardDDOrderToBeCleanedUp(final I_PP_Order ppOrder)
+	// {
+	// final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+	//
+	// final List<I_DD_Order> forwardDDOrdersToDisallowCleanup = ddOrderDAO.retrieveForwardDDOrderLinesQuery(ppOrder)
+	// .andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
+	// .addEqualsFilter(I_DD_Order.COLUMNNAME_MRP_AllowCleanup, true)
+	// .create()
+	// .list();
+	//
+	// for (final I_DD_Order ddOrder : forwardDDOrdersToDisallowCleanup)
+	// {
+	// if (ddOrder.isMRP_AllowCleanup())
+	// {
+	// ddOrder.setMRP_AllowCleanup(false);
+	// InterfaceWrapperHelper.save(ddOrder);
+	// }
+	// }
+	// }
 
 	/**
 	 * When manufacturing order is completed by the user, complete supply DD Orders.
@@ -306,13 +312,14 @@ public class PP_Order
 		ddOrderBL.completeDDOrdersIfNeeded(ddOrders);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE,
-			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_CLOSE,
-			ModelValidator.TIMING_AFTER_UNCLOSE })
-	public void fireMaterialEvent(final I_PP_Order ppOrder)
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
+	public void fireMaterialEvent(final I_PP_Order ppOrder, final int timing)
 	{
-
+		// when going with @DocAction, here the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
+		// also, it might still be rolled back
+		// those aren't show-stoppers, but we therefore rather work with @ModelChange
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())
 				.dateStartSchedule(ppOrder.getDateStartSchedule())
@@ -325,10 +332,11 @@ public class PP_Order
 				.productPlanningId(ppOrder.getPP_Product_Planning_ID())
 				.quantity(ppOrder.getQtyOrdered())
 				.uomId(ppOrder.getC_UOM_ID())
-				.warehouseId(ppOrder.getM_Warehouse_ID());
+				.warehouseId(ppOrder.getM_Warehouse_ID())
+				.orderLineId(ppOrder.getC_OrderLine_ID());
 
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		for (I_PP_Order_BOMLine line : orderBOMLines)
+		for (final I_PP_Order_BOMLine line : orderBOMLines)
 		{
 			ppOrderPojoBuilder.line(PPOrderLine.builder()
 					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
@@ -342,13 +350,13 @@ public class PP_Order
 		}
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.when(Instant.now())
+				.eventDescr(new EventDescr())
 				.ppOrder(ppOrderPojoBuilder.build())
-		// .reference(reference)
+				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 				.build();
 
-
-		;
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.fireEventAfterCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
 	}
 
 }

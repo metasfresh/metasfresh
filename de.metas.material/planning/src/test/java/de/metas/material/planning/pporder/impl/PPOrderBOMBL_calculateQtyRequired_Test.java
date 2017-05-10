@@ -89,7 +89,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrder.setC_UOM(uomEa);
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
-		
+
 		// Component
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		ppOrderBOMLine.setPP_Order(ppOrder);
@@ -137,7 +137,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequired(ppOrderBOMLine, ppOrder.getQtyOrdered()),
+				ppOrderBOMBL.calculateQtyRequired(ppOrderBOMBL.fromRecord(ppOrderBOMLine), ppOrder.getQtyOrdered()),
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
 

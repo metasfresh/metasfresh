@@ -239,8 +239,10 @@ public class Doc_MatchInv extends Doc
 		// dr.setLocationFromLocator(m_receiptLine.getM_Locator_ID(), false); // to Loc
 		// Set AmtAcctCr/Dr from Receipt (sets also Project)
 		if (!dr.updateReverseLine(I_M_InOut.Table_ID, 		// Amt updated
-				m_receiptLine.getM_InOut_ID(), m_receiptLine.getM_InOutLine_ID(),
-				receiptQtyMultiplier))
+				m_receiptLine.getM_InOut_ID(),
+				m_receiptLine.getM_InOutLine_ID(),
+				receiptQtyMultiplier)
+				)
 		{
 			throw newPostingException()
 					.setC_AcctSchema(as)

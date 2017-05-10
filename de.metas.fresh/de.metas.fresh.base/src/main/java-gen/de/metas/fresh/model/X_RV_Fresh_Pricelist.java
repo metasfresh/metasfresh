@@ -16,7 +16,7 @@ public class X_RV_Fresh_Pricelist extends org.compiere.model.PO implements I_RV_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -842664207L;
+	private static final long serialVersionUID = -1981273295L;
 
     /** Standard Constructor */
     public X_RV_Fresh_Pricelist (Properties ctx, int RV_Fresh_Pricelist_ID, String trxName)
@@ -205,7 +205,7 @@ public class X_RV_Fresh_Pricelist extends org.compiere.model.PO implements I_RV_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
