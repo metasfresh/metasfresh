@@ -9,10 +9,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Locator;
 import org.compiere.process.DocAction;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +30,7 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -101,6 +104,17 @@ public class ReceiptCorrectHUsProcessor
 				if (!seenHUIds.add(huId))
 				{
 					continue;
+				}
+
+				// task #1065
+				// do not allow HUs to be displayed in the ReceiptCorrect list if they are already in a quality warehouse
+				final I_M_Locator huLocator = hu.getM_Locator();
+
+				final I_M_Warehouse huWarehouse = InterfaceWrapperHelper.create(huLocator.getM_Warehouse(), I_M_Warehouse.class);
+				if (huWarehouse.isQualityReturnWarehouse())
+				{
+					continue;
+
 				}
 
 				// TODO: check if is a top level HU

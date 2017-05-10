@@ -73,7 +73,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
-import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineHUTrxListener;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
@@ -315,12 +314,6 @@ public final class Main extends AbstractModuleInterceptor
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IInOutCandHandlerBL.class)
 					.registerListener(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
-		}
-
-		//
-		// Manufacturing
-		{
-			huTrxBL.addListener(PPOrderBOMLineHUTrxListener.instance);
 		}
 
 		// Order - Fast Input

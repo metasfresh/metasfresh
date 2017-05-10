@@ -33,6 +33,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.eevolution.model.I_PP_MRP;
 
+import de.metas.material.planning.IMaterialPlanningContext;
+
 /**
  * To get an instance call {@link IMRPDAO#createMRPQueryBuilder()}.
  * 
@@ -94,7 +96,7 @@ public interface IMRPQueryBuilder
 	IMRPQueryBuilder setContextProvider(Properties ctx, String trxName);
 
 	/**
-	 * Sets {@link IMRPContext} to be used.
+	 * Sets {@link IMaterialPlanningContext} to be used.
 	 * 
 	 * From MRP context following things are taken:
 	 * <ul>
@@ -106,7 +108,7 @@ public interface IMRPQueryBuilder
 	 * @param mrpContext
 	 * @return this
 	 */
-	IMRPQueryBuilder setMRPContext(final IMRPContext mrpContext);
+	IMRPQueryBuilder setMRPContext(final IMaterialPlanningContext mrpContext);
 
 	IMRPQueryBuilder setAD_Client_ID(Integer adClientId);
 

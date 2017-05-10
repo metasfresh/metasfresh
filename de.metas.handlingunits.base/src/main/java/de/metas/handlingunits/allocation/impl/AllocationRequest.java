@@ -22,11 +22,9 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_UOM;
@@ -34,6 +32,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.quantity.Quantity;
 
 /* package */final class AllocationRequest implements IAllocationRequest
 {
@@ -77,11 +76,12 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 	@Override
 	public String toString()
 	{
+		final String fromTableRecordStr = fromTableRecord == null ? null : "" + fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
 		return "AllocationRequest ["
 				+ "product=" + product.getValue()
 				+ ", qty=" + (isInfiniteQty() ? "inifinite" : quantity)
 				+ ", date=" + date
-				+ ", fromTableRecord=" + fromTableRecord
+				+ ", fromTableRecord=" + fromTableRecordStr
 				+ ", forceQtyAllocation=" + forceQtyAllocation
 				+ "]";
 	}

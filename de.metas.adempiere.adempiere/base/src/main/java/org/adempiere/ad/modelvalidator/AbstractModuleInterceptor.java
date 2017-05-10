@@ -13,15 +13,14 @@ package org.adempiere.ad.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -47,7 +46,7 @@ import de.metas.event.Topic;
  * <li>module configuration
  * <li>sub-sequent interceptors and callouts registration
  * </ul>
- * Note that module interceptors can also be registered in the "the normal ways" like any other model insterceptor. For example  via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
+ * Note that module interceptors can also be registered in the "the normal ways" like any other model interceptor. For example via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
  *
  * @author tsa
  *
@@ -55,7 +54,9 @@ import de.metas.event.Topic;
 public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 {
 	/**
-	 * Called when module is about to be initialized
+	 * Called when module is about to be initialized.
+	 * <p>
+	 * Instead of overriding this method, please consider overriding {@link #onAfterInit()} or one of the other methods such as {@link #registerCallouts(IProgramaticCalloutProvider)}.
 	 *
 	 * @param engine
 	 * @param client

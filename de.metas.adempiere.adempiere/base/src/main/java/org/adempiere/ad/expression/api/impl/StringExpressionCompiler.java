@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 
 public final class StringExpressionCompiler extends AbstractChunkBasedExpressionCompiler<String, IStringExpression>
@@ -12,6 +13,21 @@ public final class StringExpressionCompiler extends AbstractChunkBasedExpression
 
 	// NOTE to developer: make sure there are no variables here since we are using a shared instance
 
+	/**
+	 * Escape '@' char, by replacing one @ with double @@  
+	 * @param str
+	 * @return
+	 */
+	public static String escape(final String str)
+	{
+		if (Check.isEmpty(str, true))
+		{
+			return str;
+		}
+		
+		return str.replace(PARAMETER_TAG, PARAMETER_DOUBLE_TAG);
+	}
+	
 	private StringExpressionCompiler()
 	{
 		super();

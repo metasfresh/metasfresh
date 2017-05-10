@@ -24,8 +24,10 @@ package org.adempiere.ad.dao;
 
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
+import org.compiere.util.Env;
 
 public interface IQueryBL extends ISingletonService
 {
@@ -36,6 +38,20 @@ public interface IQueryBL extends ISingletonService
 	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Properties ctx, String trxName);
 
 	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
+	
+	/** @return query builder using current context and thread inherited transaction */
+	default <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass)
+	{
+		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	/** @return query builder using current context and out of transaction */
+	default <T> IQueryBuilder<T> createQueryBuilderOutOfTrx(Class<T> modelClass)
+	{
+		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_None);
+	}
+
+
 
 	/**
 	 * Create a query builder to query for a class like <code>IProductAware</code> (but also regular model interfaces like I_C_Order are supported), for which the framework can't deduct the table name.
@@ -68,7 +84,7 @@ public interface IQueryBL extends ISingletonService
 
 	/**
 	 *
-	 * @param tableName name of the table in question.
+	 * @param tableName name of the table in question. <b>Can</b> be null
 	 * @return
 	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(String tableName);

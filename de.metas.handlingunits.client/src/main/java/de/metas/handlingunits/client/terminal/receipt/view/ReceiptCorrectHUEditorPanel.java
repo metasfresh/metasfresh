@@ -26,7 +26,9 @@ package de.metas.handlingunits.client.terminal.receipt.view;
 import java.util.List;
 
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Warehouse;
 
+import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.TerminalDialogCancelClosingException;
 import de.metas.adempiere.form.terminal.TerminalException;
@@ -80,5 +82,20 @@ public class ReceiptCorrectHUEditorPanel extends HUEditorPanel
 		}
 
 		model.reverseReceipts(receiptsToReverse);
+	}
+
+	@Override
+	protected void createAndAddActionButtons(IContainer buttonsPanel)
+	{
+		buttonsPanel.add(bMoveToQualityWarehouse, "newline");
+		buttonsPanel.add(bCreateVendorReturn, "");
+		buttonsPanel.add(bMoveToGarbage, "");
+	}
+	
+	@Override
+	protected I_M_Warehouse getCurrentWarehouse()
+	{
+		
+		return getHUEditorModel().getM_Warehouse();
 	}
 }

@@ -13,15 +13,14 @@ package de.metas.handlingunits.pporder.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -30,12 +29,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**
  * Product storage for a manufacturing order BOM Line.
@@ -55,40 +54,22 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 
 	public PPOrderBOMLineProductStorage(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		super();
-		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
-
 		Check.assumeNotNull(orderBOMLine, "orderBOMLine");
 		this.orderBOMLine = orderBOMLine;
 	}
 
+	/** @return infinite capacity because we don't want to enforce how many items we can allocate on this storage */
 	@Override
 	protected IHUCapacityDefinition retrieveTotalCapacity()
 	{
+		checkStaled();
+		
 		final I_M_Product product = orderBOMLine.getM_Product();
 		final I_C_UOM uom = orderBOMLine.getC_UOM();
-
-		//
-		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
-		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
-		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
-		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-		final String issueMethod = orderBOMLine.getIssueMethod();
-		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod) && !ppOrderBOMBL.isReceipt(orderBOMLine))
-		{
-			final BigDecimal qtyToIssueRequired = ppOrderBOMBL.calculateQtyRequiredBasedOnFinishedGoodReceipt(orderBOMLine);
-			return capacityBL.createCapacity(qtyToIssueRequired,
-					product,
-					uom,
-					true // allowNegativeCapacity
-					);
-		}
-
-		//
-		// NOTE: we return infinite capacity because we don't want to enforce how many items we can allocate on this storage
 		return capacityBL.createInfiniteCapacity(product, uom);
 	}
 
+	/** @return quantity that was already issued/received on this order BOM Line */
 	@Override
 	protected BigDecimal retrieveQtyInitial()
 	{
@@ -96,8 +77,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 
 		final BigDecimal qtyCapacity;
 		final BigDecimal qtyToIssueOrReceive;
-
-		if (ppOrderBOMBL.isReceipt(orderBOMLine))
+		if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 		{
 			qtyCapacity = ppOrderBOMBL.getQtyRequiredToReceive(orderBOMLine);
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToReceive(orderBOMLine);
@@ -108,8 +88,6 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 			qtyToIssueOrReceive = ppOrderBOMBL.getQtyToIssue(orderBOMLine);
 		}
 
-		//
-		// We consider our initial qty as the quantity that was already issued/received on this order BOM Line
 		final BigDecimal qtyIssued = qtyCapacity.subtract(qtyToIssueOrReceive);
 		return qtyIssued;
 	}
@@ -120,6 +98,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 		staled = true;
 	}
 
+	/** refresh BOM line if staled */
 	private final void checkStaled()
 	{
 		if (!staled)

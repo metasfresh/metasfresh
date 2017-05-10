@@ -14,7 +14,7 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -477617748L;
+	private static final long serialVersionUID = -1007700789L;
 
     /** Standard Constructor */
     public X_C_Order_MFGWarehouse_ReportLine (Properties ctx, int C_Order_MFGWarehouse_ReportLine_ID, String trxName)
@@ -22,9 +22,10 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
       super (ctx, C_Order_MFGWarehouse_ReportLine_ID, trxName);
       /** if (C_Order_MFGWarehouse_ReportLine_ID == 0)
         {
-			setC_OrderLine_ID (0);
+			setBarcode (null);
 			setC_Order_MFGWarehouse_Report_ID (0);
 			setC_Order_MFGWarehouse_ReportLine_ID (0);
+			setC_OrderLine_ID (0);
 			setM_Product_ID (0);
         } */
     }
@@ -44,41 +45,20 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
       return poi;
     }
 
+	/** Set Barcode.
+		@param Barcode Barcode	  */
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public void setBarcode (java.lang.String Barcode)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+		set_Value (COLUMNNAME_Barcode, Barcode);
 	}
 
+	/** Get Barcode.
+		@return Barcode	  */
 	@Override
-	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
+	public java.lang.String getBarcode () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
-	}
-
-	/** Set Auftragsposition.
-		@param C_OrderLine_ID 
-		Auftragsposition
-	  */
-	@Override
-	public void setC_OrderLine_ID (int C_OrderLine_ID)
-	{
-		if (C_OrderLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
-	}
-
-	/** Get Auftragsposition.
-		@return Auftragsposition
-	  */
-	@Override
-	public int getC_OrderLine_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_Barcode);
 	}
 
 	@Override
@@ -132,6 +112,43 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
 	public int getC_Order_MFGWarehouse_ReportLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_MFGWarehouse_ReportLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
+	}
+
+	/** Set Auftragsposition.
+		@param C_OrderLine_ID 
+		Auftragsposition
+	  */
+	@Override
+	public void setC_OrderLine_ID (int C_OrderLine_ID)
+	{
+		if (C_OrderLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
+	}
+
+	/** Get Auftragsposition.
+		@return Auftragsposition
+	  */
+	@Override
+	public int getC_OrderLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

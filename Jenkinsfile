@@ -384,6 +384,10 @@ node('agent && linux')
 
 		} // withMaven
 	} // configFileProvider
+
+	// clean up the workspace after (successfull) builds; let's see if this works well
+	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
+
 } // node
 
 // this map is populated in the "Invoke downstream jobs" stage

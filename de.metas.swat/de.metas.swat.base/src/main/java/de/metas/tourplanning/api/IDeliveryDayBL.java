@@ -13,15 +13,14 @@ package de.metas.tourplanning.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -85,17 +84,17 @@ public interface IDeliveryDayBL extends ISingletonService
 	 */
 	void invalidate(I_M_DeliveryDay deliveryDay);
 
-	
 	/**
 	 * Calculate the Preparation time based on a ContextAware object, a date promised, sotrx and a location ID
 	 * 
 	 * @param context - object from where the context is taken
 	 * @param isSOTrx
+	 * @param dateOrdered
 	 * @param datePromised
 	 * @param bpartnerLocationId
 	 * @return
 	 */
-	Timestamp calculatePreparationDateOrNull(IContextAware context, boolean isSOTrx, Timestamp datePromised, int bpartnerLocationId);
+	Timestamp calculatePreparationDateOrNull(IContextAware context, boolean isSOTrx, Timestamp dateOrdered, Timestamp datePromised, int bpartnerLocationId);
 
 	/**
 	 * Sets DeliveryDateTimeMax = DeliveryDate + BufferHours.

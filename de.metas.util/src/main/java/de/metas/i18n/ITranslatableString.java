@@ -1,5 +1,6 @@
 package de.metas.i18n;
 
+import java.util.Arrays;
 import java.util.Set;
 
 /*
@@ -15,11 +16,11 @@ import java.util.Set;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,9 +33,29 @@ import java.util.Set;
  */
 public interface ITranslatableString
 {
+	public static ITranslatableString compose(final ITranslatableString... trls)
+	{
+		if (trls == null || trls.length == 0)
+		{
+			throw new IllegalArgumentException("trls is null or empty");
+		}
+
+		if (trls.length == 1)
+		{
+			return trls[0];
+		}
+
+		return new CompositeTranslatableString(Arrays.asList(trls));
+	}
+
 	public String translate(final String adLanguage);
-	
+
 	public String getDefaultValue();
-	
+
 	public Set<String> getAD_Languages();
+
+	default boolean isTranslatedTo(String adLanguage)
+	{
+		return getAD_Languages().contains(adLanguage);
+	}
 }

@@ -16,7 +16,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1047188887L;
+	private static final long serialVersionUID = -1402725139L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item (Properties ctx, int M_HU_PI_Item_ID, String trxName)
@@ -275,7 +275,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

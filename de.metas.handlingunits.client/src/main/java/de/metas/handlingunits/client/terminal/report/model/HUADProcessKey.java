@@ -32,7 +32,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 public class HUADProcessKey extends TerminalKey
 {
-	private final I_AD_Process process;
+	private final int adProcessId;
 	private final String id;
 	private final String name;
 	private final KeyNamePair value;
@@ -42,7 +42,7 @@ public class HUADProcessKey extends TerminalKey
 		super(terminalContext);
 
 		Check.assumeNotNull(process, "process not null");
-		this.process = process;
+		this.adProcessId = process.getAD_Process_ID();
 
 		final int processId = process.getAD_Process_ID();
 		id = getClass().getName() + "-" + processId;
@@ -77,8 +77,8 @@ public class HUADProcessKey extends TerminalKey
 		return value;
 	}
 
-	public I_AD_Process getProcess()
+	public int getAD_Process_ID()
 	{
-		return process;
+		return adProcessId; 
 	}
 }

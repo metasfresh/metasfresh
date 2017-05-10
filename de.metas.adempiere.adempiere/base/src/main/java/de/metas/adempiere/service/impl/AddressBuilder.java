@@ -61,7 +61,7 @@ public class AddressBuilder
 	
 	private int getAD_Org_ID()
 	{
-		return org.getAD_Org_ID();
+		return org == null ? Env.CTXVALUE_AD_Org_ID_Any : org.getAD_Org_ID();
 	}
 
 	private String getAD_Language()
@@ -254,9 +254,21 @@ public class AddressBuilder
 			}
 			else if (token.equals("CO"))
 			{
-				String countryName = isLocalAddress ? null : country.getName();
+				final String countryName;
+				if(isLocalAddress)
+				{
+					countryName = null;
+				}
+				else
+				{
+					final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
+					countryName = countryTrl.getName();
+				}
+				
 				if (countryName != null && countryName.length() > 0)
+				{
 					outStr.append(countryName);
+				}
 			}
 			else if (token.equals("A1"))
 			{

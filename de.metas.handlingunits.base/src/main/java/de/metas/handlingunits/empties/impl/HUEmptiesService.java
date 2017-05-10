@@ -15,19 +15,19 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.empties.EmptiesMovementProducer;
 import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
-import de.metas.handlingunits.empties.IEmptiesInOutProducer;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 
 /*
  * #%L
@@ -134,7 +134,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	}
 	
 	@Override
-	public IEmptiesInOutProducer newEmptiesInOutProducer(final Properties ctx)
+	public IReturnsInOutProducer newReturnsInOutProducer(final Properties ctx)
 	{
 		return new EmptiesInOutProducer(ctx);
 	}

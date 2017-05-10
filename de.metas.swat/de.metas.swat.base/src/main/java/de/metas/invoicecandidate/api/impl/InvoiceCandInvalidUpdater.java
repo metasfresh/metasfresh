@@ -534,7 +534,7 @@ import de.metas.lock.api.ILock;
 		 * Resets the given IC to its old values, and sets an error flag in it.
 		 */
 		@Override
-		public void onItemError(final Exception e, final Object item)
+		public void onItemError(final Throwable e, final Object item)
 		{
 			result.incrementErrorsCount();
 

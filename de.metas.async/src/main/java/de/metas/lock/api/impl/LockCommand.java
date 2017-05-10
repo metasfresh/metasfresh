@@ -100,7 +100,7 @@ import de.metas.lock.spi.ILockDatabase;
 		}
 		else
 		{
-			try (CloseableReentrantLock l = parentLock.mutex)
+			try (final CloseableReentrantLock l = parentLock.mutex)
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);

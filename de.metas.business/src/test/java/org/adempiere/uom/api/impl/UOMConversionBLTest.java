@@ -29,8 +29,9 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UOMConstants;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.QuantityExpectation;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -39,6 +40,9 @@ import org.compiere.util.Ini;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.quantity.Quantity;
+import de.metas.uom.UOMConstants;
 
 public class UOMConversionBLTest extends UOMTestBase
 {
@@ -113,6 +117,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal qtyExpected = new BigDecimal(qtyStrExpected);
 		Assert.assertEquals("Invalid qty", qtyExpected, qtyRounded);
 	}
+	
 
 	@Test
 	public void test_Convert()
@@ -503,5 +508,73 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(ctx, product, uom2);
 		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate);
+	}
+	
+	@Test
+	public void test_convertTo_CurrentUOM()
+	{
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomConversionHelper.createUOM("UOM1", 2);
+		final BigDecimal sourceQty = new BigDecimal("1235");
+		final I_C_UOM sourceUOM = uomConversionHelper.createUOM("UOM2", 2);
+		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
+
+		final IUOMConversionContext conversionCtx = null; // don't care, shall not be used
+		final Quantity quantityConv = conversionBL.convertQuantityTo(quantity, conversionCtx, uom);
+		Assert.assertSame("Invalid converted quantity", quantity, quantityConv);
+	}
+
+	@Test
+	public void test_convertTo_SourceUOM()
+	{
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomConversionHelper.createUOM("UOM1", 2);
+		final BigDecimal sourceQty = new BigDecimal("1235");
+		final I_C_UOM sourceUOM = uomConversionHelper.createUOM("UOM2", 2);
+		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
+
+		final IUOMConversionContext conversionCtx = null; // don't care, shall not be used
+		final Quantity quantityConv = conversionBL.convertQuantityTo(quantity, conversionCtx, sourceUOM);
+		new QuantityExpectation()
+				.sameQty(sourceQty)
+				.uom(sourceUOM)
+				.sameSourceQty(qty)
+				.sourceUOM(uom)
+				.assertExpected("converted quantity", quantityConv);
+	}
+
+	@Test
+	public void test_convertTo_OtherUOM()
+	{
+		//
+		// Create Quantity
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomConversionHelper.createUOM("UOM", 2);
+		final BigDecimal sourceQty = new BigDecimal("1235");
+		final I_C_UOM sourceUOM = uomConversionHelper.createUOM("UOM_Source", 2);
+		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
+
+		//
+		// Create the other UOM
+		final I_C_UOM otherUOM = uomConversionHelper.createUOM("UOM_Other", 2);
+
+		//
+		// Create conversion rate: uom -> otherUOM (for product)
+		final I_M_Product product = uomConversionHelper.createProduct("product", uom);
+		uomConversionHelper.createUOMConversion(product, uom, otherUOM, new BigDecimal("2"), new BigDecimal("0.5"));
+
+		//
+		// Create UOM Conversion context
+		final IUOMConversionContext uomConversionCtx = uomConversionHelper.createUOMConversionContext(product);
+
+		//
+		// Convert the quantity to "otherUOM" and validate
+		final Quantity quantityConv = conversionBL.convertQuantityTo(quantity, uomConversionCtx, otherUOM);
+		new QuantityExpectation()
+				.qty("2468")
+				.uom(otherUOM)
+				.sourceQty(qty)
+				.sourceUOM(uom)
+				.assertExpected("converted quantity", quantityConv);
 	}
 }

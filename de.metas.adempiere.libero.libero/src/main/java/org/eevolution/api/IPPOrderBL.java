@@ -35,6 +35,7 @@ import de.metas.document.IDocTypeDAO;
 
 public interface IPPOrderBL extends ISingletonService
 {
+	void setDefaults(I_PP_Order ppOrder);
 
 	void setQty(I_PP_Order order, BigDecimal Qty);
 

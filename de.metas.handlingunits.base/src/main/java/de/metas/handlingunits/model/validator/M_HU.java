@@ -31,13 +31,13 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;

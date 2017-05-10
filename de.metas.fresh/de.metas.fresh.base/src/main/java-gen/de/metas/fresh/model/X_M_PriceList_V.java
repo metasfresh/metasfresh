@@ -16,7 +16,7 @@ public class X_M_PriceList_V extends org.compiere.model.PO implements I_M_PriceL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 47105568L;
+	private static final long serialVersionUID = -516591160L;
 
     /** Standard Constructor */
     public X_M_PriceList_V (Properties ctx, int M_PriceList_V_ID, String trxName)
@@ -211,7 +211,7 @@ public class X_M_PriceList_V extends org.compiere.model.PO implements I_M_PriceL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

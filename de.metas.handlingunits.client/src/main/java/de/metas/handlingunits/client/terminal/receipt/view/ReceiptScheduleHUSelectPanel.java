@@ -434,7 +434,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final ITerminalContext terminalContext = getTerminalContext();
 		try (final ITerminalContextReferences refs = terminalContext.newReferences())
 		{
-			final ReceiptCorrectHUEditorModel receiptCorrectModel = new ReceiptCorrectHUEditorModel(getTerminalContext());
+			final ReceiptCorrectHUEditorModel receiptCorrectModel = new ReceiptCorrectHUEditorModel(getTerminalContext(), getModel().getM_Warehouse_ID());
 			receiptCorrectModel.loadFromReceiptSchedule(receiptSchedule);
 
 			// Create Receipt Correct Panel and display it to user

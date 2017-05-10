@@ -50,6 +50,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.TableAccessLevel;
@@ -1123,7 +1124,7 @@ public abstract class PO
 					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
 					value instanceof String)
 			{
-				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
+				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
 				if (!hasListValue)
 				{
 					final StringBuilder validValues = new StringBuilder();
@@ -2988,8 +2989,16 @@ public abstract class PO
 		m_createNew = false;
 
 		//
+		// Reset model cache
+		if(!newRecord)
+		{
+			TableModelLoader.instance.invalidateCache(get_TableName(), get_ID(), get_TrxName());
+		}
+		//
 		// Reset cache
-		if (!newRecord)
+		// NOTE: we need to do it even for newly created records because there are some aggregates which are cached (e.g. all lines for a given document),
+		// so in case a new record pops in, those caches shall be reset..
+		//if (!newRecord)
 		{
 			final int id = get_ID();
 			CacheMgt.get().resetOnTrxCommit(get_TrxName(), p_info.getTableName(), id);
@@ -4036,7 +4045,10 @@ public abstract class PO
 			m_valueLoaded = new boolean[size]; // metas
 			m_stale = false; // metas: 01537
 
-			CacheMgt.get().resetOnTrxCommit(trxName, p_info.getTableName(), m_idOld);
+			final String tableName = get_TableName();
+			CacheMgt.get().resetOnTrxCommit(trxName, tableName, m_idOld);
+			TableModelLoader.instance.invalidateCache(tableName, m_idOld, trxName);
+			
 			m_idOld = 0;
 		}
 	}

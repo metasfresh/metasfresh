@@ -29,12 +29,10 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.io.Files;
 
-import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
 import de.metas.process.ClientOnlyProcess;
-import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -81,15 +79,9 @@ public class ReportStarter implements IProcess
 			{
 				// task 08283: direct print can be done in background; no need to let the user wait for this
 				Services.get(ITaskExecutorService.class).submit(
-						new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								startProcess0(pi, reportPrintingInfo);
-							}
-						},
-						ReportStarter.class.getSimpleName());
+						() -> startProcess0(pi, reportPrintingInfo) //
+						, ReportStarter.class.getSimpleName() //
+				);
 			}
 		}
 		//
@@ -241,10 +233,7 @@ public class ReportStarter implements IProcess
 		}
 		catch (final Exception e)
 		{
-			final ProcessExecutionResult result = pi.getResult();
-			result.markAsError(e);
-			Services.get(IADPInstanceDAO.class).unlockAndSaveResult(pi.getCtx(), result);
-			Services.get(IClientUI.class).warn(pi.getWindowNo(), e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 

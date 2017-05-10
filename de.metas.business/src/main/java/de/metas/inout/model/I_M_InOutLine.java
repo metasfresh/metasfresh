@@ -16,11 +16,11 @@ package de.metas.inout.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -103,4 +103,13 @@ public interface I_M_InOutLine extends org.compiere.model.I_M_InOutLine
 	public I_M_InOutLine getM_PackingMaterial_InOutLine();
 	// @formatter:on
 
+	//
+	// VendorReturn_Origin_InOutLine_ID
+	// @formatter:off
+	public static final String COLUMNNAME_VendorReturn_Origin_InOutLine_ID = "VendorReturn_Origin_InOutLine_ID";
+	public void setVendorReturn_Origin_InOutLine_ID(int VendorReturn_Origin_InOutLine_ID);
+	public void setVendorReturn_Origin_InOutLine(I_M_InOutLine VendorReturn_Origin_InOutLine);
+	public int getVendorReturn_Origin_InOutLine_ID();
+	public I_M_InOutLine getVendorReturn_Origin_InOutLine() throws RuntimeException;
+	// @formatter:on
 }

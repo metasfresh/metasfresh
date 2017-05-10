@@ -56,6 +56,7 @@ public final class Event
 	}
 
 	private static final String PROPERTY_Record = "record";
+	public static final String PROPERTY_SuggestedWindowId = "suggestedWindowId";
 
 	private final String id;
 	private final String summary;
@@ -64,6 +65,7 @@ public final class Event
 	private final String senderId;
 	private final ImmutableSet<Integer> recipientUserIds;
 	private final ImmutableMap<String, Object> properties;
+	
 	//
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 	//
@@ -85,6 +87,7 @@ public final class Event
 		detailADMessage = builder.getDetailADMessage();
 		senderId = builder.senderId;
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
+		
 
 		final ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
 		for (final Map.Entry<String, Object> e : builder.getProperties().entrySet())
@@ -216,6 +219,11 @@ public final class Event
 		return recipientUserIds.isEmpty();
 	}
 
+	/**
+	 * 
+	 * @param name
+	 * @return tje propertiy with the given name or {@code null}
+	 */
 	public <T> T getProperty(final String name)
 	{
 		@SuppressWarnings("unchecked")
@@ -510,5 +518,13 @@ public final class Event
 				throw new AdempiereException("Unknown value type " + name + " = " + value + " (type " + value.getClass() + ")");
 			}
 		}
+
+		public Builder setSuggestedWindowId(int suggestedWindowId)
+		{
+			putProperty(PROPERTY_SuggestedWindowId, suggestedWindowId);
+			return this;
+		}
+
+		
 	}
 }

@@ -75,6 +75,33 @@ public enum TableAccessLevel
 	}
 
 	/**
+	 * @return minimum required access level to access a record with given AD_Client_ID/AD_Org_ID.
+	 */
+	public static final TableAccessLevel forClientOrg(final int AD_Client_ID, final int AD_Org_ID)
+	{
+		// System == Client=0 & Org=0
+		if (AD_Client_ID == 0 && AD_Org_ID == 0)
+		{
+			return TableAccessLevel.SystemOnly;
+		}
+		// Client == Client>0 & Org=0
+		else if (AD_Client_ID > 0 && AD_Org_ID == 0)
+		{
+			return TableAccessLevel.ClientOnly;
+		}
+		// Organization == Client>0 & Org>0
+		else if (AD_Client_ID > 0 && AD_Org_ID > 0)
+		{
+			return TableAccessLevel.Organization;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Invalid AD_Client_ID=" + AD_Client_ID + " / AD_Org_ID=" + AD_Org_ID);
+		}
+
+	}
+
+	/**
 	 *
 	 * @param userLevel user level (SCO format)
 	 * @return {@link TableAccessLevel}

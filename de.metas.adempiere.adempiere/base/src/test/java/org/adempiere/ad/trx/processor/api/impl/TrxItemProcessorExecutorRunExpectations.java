@@ -71,7 +71,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	private final ITrxItemExceptionHandler exceptionHandler = new LoggerTrxItemExceptionHandler()
 	{
 		@Override
-		public void onItemError(Exception e, Object item)
+		public void onItemError(Throwable e, Object item)
 		{
 			super.onItemError(e, item);
 			if (item instanceof Item)

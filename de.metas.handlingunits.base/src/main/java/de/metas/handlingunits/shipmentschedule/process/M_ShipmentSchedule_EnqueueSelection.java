@@ -84,12 +84,14 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 				.setContext(getCtx(), getTrxName())
 				.createWorkpackages(getAD_PInstance_ID(), queryFilters, p_IsUseQtyPicked, p_IsCompleteShipments);
 
-		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " +result.getSkippedPackagesCount();
+		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}
 
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()
 	{
-		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_ShipmentSchedule.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class);
 
 		filters.addOnlyActiveRecordsFilter();
 

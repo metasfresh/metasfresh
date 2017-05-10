@@ -25,12 +25,12 @@ package de.metas.handlingunits.allocation;
 
 import java.util.Date;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.quantity.Quantity;
 
 /**
  * {@link IAllocationRequest} builder. Use it to create modified instances of your immutable {@link IAllocationRequest}.

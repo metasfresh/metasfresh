@@ -21,6 +21,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -83,6 +84,24 @@ public abstract class AbstractDLMService implements IDLMService
 {
 
 	private final transient Logger logger = LogManager.getLogger(getClass());
+
+	// gh #1411
+	@Override
+	public boolean isConnectionCustomizerEnabled(final int AD_User_ID)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final String forUserSysConfigName = SYSCONFIG_DLM_CONNECTION_CUSTOMIZER_ENABLED_FOR_USER_ + AD_User_ID;
+
+		final boolean connectionCustomizerEnabled = sysConfigBL.getBooleanValue(
+				forUserSysConfigName,
+				sysConfigBL.getBooleanValue( // if there is no "_FOR_USER_123" setting, then use "_GENERAL" as default
+						SYSCONFIG_DLM_CONNECTION_CUSTOMIZER_ENABLED_GENERAL,
+						false // if there is no "_GENERAL" setting, assume false
+				));
+
+		return connectionCustomizerEnabled;
+	}
 
 	@Override
 	public void addTableToDLM(final I_AD_Table table)
@@ -650,5 +669,4 @@ public abstract class AbstractDLMService implements IDLMService
 				.setChanged(false)
 				.build();
 	}
-
 }

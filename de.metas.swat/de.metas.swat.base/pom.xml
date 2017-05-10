@@ -37,10 +37,15 @@
 			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.aggregation</groupId>
+			<artifactId>de.metas.aggregation</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 		<dependency>
-			<groupId>de.metas.storage</groupId>
-			<artifactId>de.metas.storage</artifactId>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 
@@ -63,16 +68,14 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-		
-<!-- 
+
+		<!-- metasfresh/metasfresh#523 -->
 		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
- -->
- 
-		<!-- jasper -->
+
 		<dependency>
 			<groupId>de.metas.report.jasper.client</groupId>
 			<artifactId>de.metas.report.jasper.client</artifactId>
@@ -80,17 +83,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.async</groupId>
-			<artifactId>de.metas.async</artifactId>
+			<groupId>de.metas.storage</groupId>
+			<artifactId>de.metas.storage</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>de.metas.aggregation</groupId>
-			<artifactId>de.metas.aggregation</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>

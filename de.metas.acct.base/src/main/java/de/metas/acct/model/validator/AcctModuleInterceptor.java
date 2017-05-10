@@ -26,10 +26,12 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctListenersService;
+import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
@@ -55,7 +57,6 @@ import de.metas.acct.spi.impl.PaymentDocumentRepostingHandler;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 
-
 /**
  * Accounting module activator
  *
@@ -75,11 +76,16 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-		//FRESH-539: register Reposting Handlers
+		// FRESH-539: register Reposting Handlers
 		documentBL.registerHandler(new InvoiceDocumentRepostingHandler());
 		documentBL.registerHandler(new PaymentDocumentRepostingHandler());
 		documentBL.registerHandler(new AllocationHdrDocumentRepostingHandler());
 		documentBL.registerHandler(new GLJournalDocumentRepostingHandler());
+
+		if (Services.get(IPostingService.class).isEnabled())
+		{
+			Services.get(IUserRolePermissionsDAO.class).setAccountingModuleActive();
+		}
 	}
 
 	@Override

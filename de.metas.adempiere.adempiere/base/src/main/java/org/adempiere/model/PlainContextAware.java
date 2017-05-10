@@ -41,6 +41,12 @@ public final class PlainContextAware implements IContextAware
 		final boolean allowThreadInherited = false;
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None, allowThreadInherited);
 	}
+	
+	public static final PlainContextAware newOutOfTrx()
+	{
+		final boolean allowThreadInherited = false;
+		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None, allowThreadInherited);
+	}
 
 	/**
 	 * Like {@link #newOutOfTrx(Properties)}, but the returned instance's {@link #isAllowThreadInherited()} will return <code>true</code>.

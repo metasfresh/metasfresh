@@ -77,6 +77,12 @@ public class RecordZoomWindowFinder
 		return new RecordZoomWindowFinder(record.getTableName(), record.getRecord_ID());
 	}
 	
+	public static final RecordZoomWindowFinder newInstance(final String tableName)
+	{
+		return new RecordZoomWindowFinder(tableName);
+	}
+
+	
 	public static final int findAD_Window_ID(final ITableRecordReference record)
 	{
 		return newInstance(record).findAD_Window_ID();
@@ -85,6 +91,12 @@ public class RecordZoomWindowFinder
 	public static final RecordZoomWindowFinder newInstance(final MQuery query)
 	{
 		return new RecordZoomWindowFinder(query);
+	}
+	
+	public static final RecordZoomWindowFinder newInstance(final MQuery query, final int windowIdToUse)
+	{
+		return new RecordZoomWindowFinder(query, windowIdToUse);
+		
 	}
 	
 	private static final Logger logger = LogManager.getLogger(RecordZoomWindowFinder.class);
@@ -111,22 +123,44 @@ public class RecordZoomWindowFinder
 
 	private RecordZoomWindowFinder(final String tableName, final int recordId)
 	{
-		super();
-
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
 		_tableName = tableName;
-		
 		_recordId = recordId;
 		if(_recordId < 0)
 		{
 			logger.warn("No Record_ID provided to detect the AD_Window_ID by TableName={}. Going forward.", _tableName);
 		}
-			
+		_query_Provided = null;
+	}
+	
+	private RecordZoomWindowFinder(final String tableName)
+	{
+		Check.assumeNotEmpty(tableName, "tableName is not empty");
+		_tableName = tableName;
+		_recordId = -1;
 		_query_Provided = null;
 	}
 
+
 	private RecordZoomWindowFinder(final MQuery query)
+	{
+		Check.assumeNotNull(query, "Parameter query is not null");
+
+		final String tableName = query.getTableName();
+		Check.assumeNotEmpty(tableName, "tableName is not empty for {}", query);
+		_tableName = tableName;
+		_recordId = -1;
+		_query_Provided = query;
+
+		//
+		// Load additional infos from given query
+		_isSOTrx_Provided = query.isSOTrxOrNull();
+		
+		
+	}
+	
+	private RecordZoomWindowFinder(final MQuery query, final int adWindowId)
 	{
 		super();
 
@@ -141,6 +175,11 @@ public class RecordZoomWindowFinder
 		//
 		// Load additional infos from given query
 		_isSOTrx_Provided = query.isSOTrxOrNull();
+		
+		// task #1062
+		// suggested window is for both trx
+		// to be extended if we need 2 windows later
+		_windowIdsEffective = WindowIds.of(adWindowId, adWindowId);
 	}
 
 	@Override
@@ -189,16 +228,16 @@ public class RecordZoomWindowFinder
 		return query;
 	}
 
-	public RecordZoomWindowFinder setSO_Window_ID(final int so_AD_Window_ID)
+	public RecordZoomWindowFinder setSO_Window_ID(final int soWindowId)
 	{
-		_soWindowId_Provided = so_AD_Window_ID;
+		_soWindowId_Provided = soWindowId;
 		resetEffectiveValues();
 		return this;
 	}
 
-	public RecordZoomWindowFinder setPO_Window_ID(final int po_AD_Window_ID)
+	public RecordZoomWindowFinder setPO_Window_ID(final int poWindowId)
 	{
-		_poWindowId_Provided = po_AD_Window_ID;
+		_poWindowId_Provided = poWindowId;
 		resetEffectiveValues();
 		return this;
 	}
@@ -245,8 +284,13 @@ public class RecordZoomWindowFinder
 			return _query_Provided.getWhereClause(fullyQualified);
 		}
 
-		final String keyColumnName = getKeyColumnName();
 		final int recordId = getRecord_ID();
+		if(recordId < 0)
+		{
+			return null;
+		}
+		
+		final String keyColumnName = getKeyColumnName();
 		final String sqlWhereClause = keyColumnName + "=" + recordId;
 		return sqlWhereClause;
 	}
@@ -291,19 +335,27 @@ public class RecordZoomWindowFinder
 	{
 		if (_isSOTrx_Effective == null)
 		{
-			final Boolean isSOTrxProvided = _isSOTrx_Provided;
-			if (isSOTrxProvided == null)
-			{
-				final String tableName = getTableName();
-				final String sqlWhereClause = getRecordWhereClause();
-				_isSOTrx_Effective = retriveIsSOTrx(tableName, sqlWhereClause);
-			}
-			else
-			{
-				_isSOTrx_Effective = isSOTrxProvided;
-			}
+			_isSOTrx_Effective = computeIsSOTrxEffective();
 		}
 		return _isSOTrx_Effective;
+	}
+	
+	private boolean computeIsSOTrxEffective()
+	{
+		final Boolean isSOTrxProvided = _isSOTrx_Provided;
+		if(isSOTrxProvided != null)
+		{
+			return isSOTrxProvided;
+		}
+		
+		final String tableName = getTableName();
+		final String sqlWhereClause = getRecordWhereClause(); // might be null
+		if(Check.isEmpty(sqlWhereClause, true))
+		{
+			return true;
+		}
+		
+		return retriveIsSOTrx(tableName, sqlWhereClause);
 	}
 
 	//

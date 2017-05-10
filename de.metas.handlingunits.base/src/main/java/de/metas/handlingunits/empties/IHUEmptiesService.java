@@ -7,6 +7,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_Locator;
 
 /*
@@ -70,6 +71,6 @@ public interface IHUEmptiesService extends ISingletonService
 
 	boolean isEmptiesInOut(I_M_InOut inout);
 
-	IEmptiesInOutProducer newEmptiesInOutProducer(Properties ctx);
+	IReturnsInOutProducer newReturnsInOutProducer(Properties ctx);
 
 }

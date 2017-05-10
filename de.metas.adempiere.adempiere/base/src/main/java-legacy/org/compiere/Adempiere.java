@@ -124,7 +124,7 @@ public class Adempiere
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
 	/** Logging */
-	private static Logger logger = null;
+	private static final transient Logger logger = LogManager.getLogger(Adempiere.class);
 
 	private ApplicationContext applicationContext;
 
@@ -134,8 +134,9 @@ public class Adempiere
 	}
 
 	/**
-	 * Inject the application context from outside.
-	 * currently seems to be requried because currently the client startup procedure needs to be decomposed more.
+	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
+	 * 
+	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 *
 	 * @param applicationContext
@@ -143,6 +144,11 @@ public class Adempiere
 	public void setApplicationContext(final ApplicationContext applicationContext)
 	{
 		this.applicationContext = applicationContext;
+		logger.info("Set application context: {}", applicationContext);
+		
+		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
+		// we will call it when the spring context was loaded.
+
 	}
 
 	/**
@@ -152,11 +158,24 @@ public class Adempiere
 	 */
 	public static final void autowire(final Object bean)
 	{
-		if (getSpringApplicationContext() == null)
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		if (springApplicationContext == null)
 		{
 			return;
 		}
-		getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
+	}
+
+	public static final <T> T getBean(final Class<T> requiredType)
+	{
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		if (springApplicationContext == null)
+		{
+			throw new IllegalStateException("springApplicationContext not configured yet");
+		}
+
+		System.out.println("Trying to fetch " + requiredType);
+		return springApplicationContext.getBean(requiredType);
 	}
 
 	//
@@ -382,7 +401,7 @@ public class Adempiere
 		return System.getProperty("java.vm.name") // e.g. Java HotSpot(TM) 64-Bit Server VM
 				+ " " + System.getProperty("java.version") // e.g. 1.7.0_21
 				+ "/" + System.getProperty("java.vm.version") // e.g. 23.21-b01
-				;
+		;
 	}	// getJavaInfo
 
 	/**
@@ -395,7 +414,7 @@ public class Adempiere
 		return System.getProperty("os.name") // e.g. Windows 7
 				+ " " + System.getProperty("os.version") // e.g. 6.1
 				+ " " + System.getProperty("sun.os.patch.level") // e.g. Service Pack 1
-				;
+		;
 	}	// getJavaInfo
 
 	/**
@@ -602,10 +621,6 @@ public class Adempiere
 		// which will lead us to weird behaviour
 		// So, instead of manually instantiating and registering here the services, it's much more safer to use AutodetectServices.
 		Services.setAutodetectServices(true);
-		// Services.registerService(ISysConfigBL.class, new SysConfigBL()); // metas 02367
-		// Services.registerService(ITrxManager.class, new TrxManager());
-		// Services.registerService(ITrxConstraintsBL.class, new TrxConstraintsBL()); // metas 02367
-		// Services.registerService(IOpenTrxBL.class, new OpenTrxBL()); // metas 02367
 		Services.registerService(IDeveloperModeBL.class, DeveloperModeBL.instance); // we need this during AIT
 
 		final boolean runmodeClient = runMode == RunMode.SWING_CLIENT;
@@ -618,8 +633,6 @@ public class Adempiere
 		LogManager.initialize(runmodeClient);
 		Ini.setRunMode(runMode);
 
-		// Init Log
-		logger = LogManager.getLogger(Adempiere.class);
 		// Greeting
 		logger.info(getSummaryAscii());
 

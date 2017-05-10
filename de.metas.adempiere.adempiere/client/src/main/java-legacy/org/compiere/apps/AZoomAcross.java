@@ -1,23 +1,21 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +39,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-
 
 /**
  * Application Zoom Across Launcher.
@@ -72,7 +69,7 @@ public class AZoomAcross
 	{
 		final PO po = new Query(Env.getCtx(), tableName, query.getWhereClause(), ITrx.TRXNAME_None)
 				.firstOnly();
-		if(po == null)
+		if (po == null)
 		{
 			return null;
 		}
@@ -83,19 +80,13 @@ public class AZoomAcross
 	{
 		super();
 		logger.info("source={}", source);
+		final String adLanguage = Env.getAD_Language(Env.getCtx());
 
 		final List<ZoomInfo> zoomInfos = retrieveZoomTargets(source);
 		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomInfos)
 		{
-
-			m_popup.add(zoomInfo.getLabel()).addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					launch(zoomInfo);
-				}
-			});
+			final String labelCaption = zoomInfo.getLabel().translate(adLanguage);
+			m_popup.add(labelCaption).addActionListener(event -> launch(zoomInfo));
 		}
 
 		if (zoomInfos.isEmpty())
@@ -121,11 +112,12 @@ public class AZoomAcross
 
 		final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<>();
 		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
+		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
 		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 		{
 			zoomInfos.add(zoomInfo);
 		}
-		
+
 		return ImmutableList.copyOf(zoomInfos);
 	}
 

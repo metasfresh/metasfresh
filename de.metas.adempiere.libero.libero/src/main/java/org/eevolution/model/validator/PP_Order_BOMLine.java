@@ -26,6 +26,8 @@ package org.eevolution.model.validator;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,17 +37,23 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+
 @Validator(I_PP_Order_BOMLine.class)
 public class PP_Order_BOMLine
 {
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
+	
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order_BOMLine());
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_PP_Order_BOMLine orderBOMLine, final int changeType)
@@ -80,7 +88,7 @@ public class PP_Order_BOMLine
 		if (newRecord && X_PP_Order_BOMLine.COMPONENTTYPE_Phantom.equals(orderBOMLine.getComponentType()))
 		{
 			final BigDecimal qtyOrderedForPhantom = orderBOMLine.getQtyRequiered();
-			orderBOMLine.setQtyRequiered(Env.ZERO);
+			orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
 
 			final Runnable explodePhantomRunnable = new Runnable()
 			{
@@ -147,7 +155,7 @@ public class PP_Order_BOMLine
 	public void beforeDelete(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		// Release Reservation
-		orderBOMLine.setQtyRequiered(Env.ZERO);
+		orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
 		Services.get(IPPOrderBOMBL.class).reserveStock(orderBOMLine);
 	}
 
