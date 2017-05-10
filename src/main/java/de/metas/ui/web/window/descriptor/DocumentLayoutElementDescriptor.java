@@ -68,7 +68,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 					.setPublicField(true)
 					.setLookupSource(field.getLookupSourceType())
 					.setLookupTableName(field.getLookupTableName())
-					.setSupportZoomInto(field.getWidgetType().isLookup()));
+					.setSupportZoomInto(field.getWidgetType().isSupportZoomInto()));
 		}
 
 		return elementBuilder;

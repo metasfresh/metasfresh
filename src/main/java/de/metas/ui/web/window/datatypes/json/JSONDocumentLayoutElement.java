@@ -160,7 +160,7 @@ public final class JSONDocumentLayoutElement
 				, (List<JSONDeviceDescriptor>)null // devices
 				, (String)null // newRecordWindowId
 				, (String)null // newRecordCaption
-				, widgetType.isLookup() // supportZoomInfo
+				, widgetType.isSupportZoomInto() // supportZoomInfo
 		));
 	}
 }

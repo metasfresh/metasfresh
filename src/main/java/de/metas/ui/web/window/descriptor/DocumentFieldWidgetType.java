@@ -140,6 +140,11 @@ public enum DocumentFieldWidgetType
 	{
 		return this == Lookup || this == List;
 	}
+	
+	public final boolean isSupportZoomInto()
+	{
+		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton;
+	}
 
 	/**
 	 * Same as {@link #getValueClassOrNull()} but it will throw exception in case there is no valueClass.

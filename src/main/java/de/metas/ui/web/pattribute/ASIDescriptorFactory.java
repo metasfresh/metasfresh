@@ -248,7 +248,7 @@ public class ASIDescriptorFactory
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
 						.setLookupSource(fieldDescriptor.getLookupSourceType())
 						.setPublicField(true)
-						.setSupportZoomInto(fieldDescriptor.getWidgetType().isLookup()));
+						.setSupportZoomInto(fieldDescriptor.getWidgetType().isSupportZoomInto()));
 	}
 
 	private static class ASIDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder

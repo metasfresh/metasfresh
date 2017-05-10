@@ -202,7 +202,7 @@ public class ProcessLayout
 					.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
 							.setLookupSource(processParaDescriptor.getLookupSourceType())
 							.setPublicField(true)
-							.setSupportZoomInto(processParaDescriptor.getWidgetType().isLookup()))
+							.setSupportZoomInto(processParaDescriptor.getWidgetType().isSupportZoomInto()))
 					.build();
 
 			addElement(element);

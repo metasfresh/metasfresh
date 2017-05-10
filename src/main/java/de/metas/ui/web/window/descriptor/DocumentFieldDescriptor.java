@@ -39,7 +39,6 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -1302,21 +1301,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		public ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
 			return buttonActionDescriptor;
-		}
-		
-		public boolean isSupportZoomInfo()
-		{
-			if(getWidgetType().isLookup())
-			{
-				return true;
-			}
-			final ButtonFieldActionDescriptor buttonAction = getButtonActionDescriptor();
-			if(buttonAction != null && buttonAction.getActionType() == ButtonFieldActionType.genericZoomInto)
-			{
-				return true;
-			}
-			
-			return false;
 		}
 	}
 }
