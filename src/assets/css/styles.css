@@ -1116,3 +1116,12 @@ td.pulse-off input {
     font-size: 3rem;
     opacity: .2;
 }
+
+.zoom-into {
+    color: red
+}
+
+.zoom-into:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}

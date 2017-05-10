@@ -587,6 +587,20 @@ export function attachFileAction(windowType, docId, data){
     }
 }
 
+//ZOOM INTO
+export function getZoomIntoWindow(windowId, docId, field, tabId, rowId) {
+   return () => axios.get(
+        config.API_URL +
+        '/window/' + windowId +
+        '/' + docId +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
+        '/attribute' +
+        '/' + field +
+        '/zoomInto'
+    );
+}
+
 // PROCESS ACTIONS
 
 export function createProcess(processType, viewId, type, ids, tabId, rowId) {

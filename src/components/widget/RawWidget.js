@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
@@ -10,6 +12,8 @@ import List from './List/List';
 import ActionButton from './ActionButton';
 import Image from './Image';
 import DevicesWidget from './Devices/DevicesWidget';
+
+import {getZoomIntoWindow} from '../../actions/WindowActions';
 
 import {DATE_FORMAT}  from '../../constants/Constants';
 
@@ -98,6 +102,15 @@ class RawWidget extends Component {
         this.setState({
             errorPopup: value
         })
+    }
+
+    handleZoomInto = (field) => {
+        const {dispatch, dataId, windowType, tabId, rowId} = this.props;
+        dispatch(getZoomIntoWindow(windowType, dataId, field, tabId, rowId))
+        .then(res => {
+             window.open('/window/' + res.data.documentPath.windowId + '/' +
+             res.data.documentPath.documentId, '_blank');
+        });
     }
 
     getClassnames = (icon) => {
@@ -702,7 +715,13 @@ class RawWidget extends Component {
                         }
                         title={caption}
                     >
-                        {caption}
+                        {fields[0].supportZoomInto ?
+                        <span
+                            className="zoom-into"
+                            onClick={() => this.handleZoomInto(
+                                fields[0].field)}>
+                            {caption}
+                        </span> : caption}
                     </div>
                 }
                 <div
@@ -747,4 +766,10 @@ class RawWidget extends Component {
     }
 }
 
-export default RawWidget;
+RawWidget.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+RawWidget = connect()(RawWidget)
+
+export default RawWidget
