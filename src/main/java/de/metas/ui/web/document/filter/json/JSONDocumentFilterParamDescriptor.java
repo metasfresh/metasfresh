@@ -1,21 +1,21 @@
 package de.metas.ui.web.document.filter.json;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.ToString;
 
 /*
  * #%L
@@ -39,8 +39,9 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  * #L%
  */
 
-@SuppressWarnings("serial")
-/* package */final class JSONDocumentFilterParamDescriptor implements Serializable
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@ToString
+/* package */final class JSONDocumentFilterParamDescriptor
 {
 	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONOptions jsonOpts)
 	{
@@ -84,13 +85,10 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 	/** Type: primary, secondary */
 	@JsonProperty("type")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JSONLayoutType type = JSONLayoutType.primary; // default "primary", see https://github.com/metasfresh/metasfresh-webui-api/issues/334
+	private final JSONLayoutType type;
 
 	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
-		super();
-
 		parameterName = param.getParameterName();
 
 		if (jsonOpts.isDebugShowColumnNamesForCaption())
@@ -112,91 +110,24 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 		mandatory = param.isMandatory();
 		displayed = true;
 		readonly = false;
+
+		type = toJSONLayoutType(widgetType);
 	}
 
-	@JsonCreator
-	private JSONDocumentFilterParamDescriptor(
-			@JsonProperty("caption") final String caption //
-			, @JsonProperty("parameterName") final String parameterName //
-			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
-			, @JsonProperty("range") final boolean rangeParameter //
-			, @JsonProperty("defaultValue") final Object defaultValue //
-			, @JsonProperty("defaultValueTo") final Object defaultValueTo //
-			, @JsonProperty("mandatory") final boolean mandatory //
-			, @JsonProperty("displayed") final boolean displayed //
-			, @JsonProperty("readonly") final boolean readonly //
-	)
+	private static final JSONLayoutType toJSONLayoutType(final JSONLayoutWidgetType widgetType)
 	{
-		this.caption = caption;
-		this.parameterName = parameterName;
-		this.widgetType = widgetType;
-		this.rangeParameter = rangeParameter;
-		this.defaultValue = defaultValue;
-		this.defaultValueTo = defaultValueTo;
-		this.mandatory = mandatory;
-		this.displayed = displayed;
-		this.readonly = readonly;
-	}
+		// Checkboxes
+		// see https://github.com/metasfresh/metasfresh-webui-api/issues/352
+		if (widgetType == JSONLayoutWidgetType.YesNo || widgetType == JSONLayoutWidgetType.Switch)
+		{
+			return JSONLayoutType.primaryLongLabels;
+		}
+		// Default "primary"
+		// see https://github.com/metasfresh/metasfresh-webui-api/issues/334
+		else
+		{
+			return JSONLayoutType.primary;
+		}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("caption", caption)
-				.add("parameterName", parameterName)
-				.add("widgetType", widgetType)
-				.add("rangeParameter", rangeParameter)
-				.add("defaultValue", defaultValue)
-				.add("defaultValueTo", defaultValueTo)
-				.add("mandatory", mandatory)
-				.add("displayed", displayed)
-				.add("readonly", readonly)
-				.toString();
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getParameterName()
-	{
-		return parameterName;
-	}
-
-	public JSONLayoutWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-
-	public boolean isRangeParameter()
-	{
-		return rangeParameter;
-	}
-
-	public Object getDefaultValue()
-	{
-		return defaultValue;
-	}
-
-	public Object getDefaultValueTo()
-	{
-		return defaultValueTo;
-	}
-
-	public boolean isMandatory()
-	{
-		return mandatory;
-	}
-
-	public boolean isDisplayed()
-	{
-		return displayed;
-	}
-
-	public boolean isReadonly()
-	{
-		return readonly;
 	}
 }
