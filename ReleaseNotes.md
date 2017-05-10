@@ -29,6 +29,8 @@ Here come the actual release notes:
     * Including the Window Product Planning Data to WebUI, to allow the user to maintain Manufacturing dependant data for products.
   * [#1473](https://github.com/metasfresh/metasfresh/issues/1473) New Window for Node Transitions in webUI
     * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
+  * [#1478](https://github.com/metasfresh/metasfresh/issues/1478) New Window for InvoiceSchedule in WebUI
+    * Adding the Invoice Schedule Window to WebUI to allow the user to define invoiceing frequencies.
 
 # metasfresh 5.8 (2017-18)
 
