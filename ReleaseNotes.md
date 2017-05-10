@@ -38,6 +38,9 @@ Here come the actual release notes:
   * [#1494](https://github.com/metasfresh/metasfresh/issues/1494) Add HU_PI_Item to Product Price Window in WebUI
     * Adding the Field Handling Unit Packing Instruction to Product Price Window. Minor Adjustments in Layout.
 
+* other
+  * [metasfresh/metasfresh-dev#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+
 # metasfresh 5.8 (2017-18)
 
 ## Features
