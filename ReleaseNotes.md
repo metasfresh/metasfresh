@@ -29,6 +29,18 @@ Here come the actual release notes:
     * Including the Window Product Planning Data to WebUI, to allow the user to maintain Manufacturing dependant data for products.
   * [#1473](https://github.com/metasfresh/metasfresh/issues/1473) New Window for Node Transitions in webUI
     * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
+  * [#1478](https://github.com/metasfresh/metasfresh/issues/1478) New Window for InvoiceSchedule in WebUI
+    * Adding the Invoice Schedule Window to WebUI to allow the user to define invoiceing frequencies.
+  * [#1486](https://github.com/metasfresh/metasfresh/issues/1486) Add Status Field to Material Disposition Window in WebUI
+    * Adding the Status Field to Material Disposition Window in WebUI. Minor Adjustments in window Layout.
+  * [#1487](https://github.com/metasfresh/metasfresh/issues/1487) Allow the editing of Workflow Node in Window
+    * Adjustment in Window Workflow Node Transition, now allowing the user to select the Workflow Node.
+  * [#1494](https://github.com/metasfresh/metasfresh/issues/1494) Add HU_PI_Item to Product Price Window in WebUI
+    * Adding the Field Handling Unit Packing Instruction to Product Price Window. Minor Adjustments in Layout.
+
+* other
+  * [metasfresh/metasfresh-dev#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+  * [metasfresh/metasfresh-dev#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
 
 # metasfresh 5.8 (2017-18)
 
