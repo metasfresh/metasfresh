@@ -118,3 +118,55 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.M_InOutLine_HU_Alloc (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_HU_ID NUMERIC(10), M_InOutLine_HU_Alloc_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT MHU_MInOutLineHUAlloc FOREIGN KEY (M_HU_ID) REFERENCES public.M_HU DEFERRABLE INITIALLY DEFERRED, CONSTRAINT M_InOutLine_HU_Alloc_Key PRIMARY KEY (M_InOutLine_HU_Alloc_ID))
 ;
 
+
+
+-- 2017-05-10T10:02:07.302
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,556772,1026,0,19,540817,'N','M_InOutLine_ID',TO_TIMESTAMP('2017-05-10 10:02:06','YYYY-MM-DD HH24:MI:SS'),100,'N','Position auf Versand- oder Wareneingangsbeleg','D',10,'"Versand-/Wareneingangsposition" bezeichnet eine einzelne Zeile/Position auf einem Versand- oder Wareneingangsbeleg.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Versand-/Wareneingangsposition',0,TO_TIMESTAMP('2017-05-10 10:02:06','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2017-05-10T10:02:07.312
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=556772 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-05-10T10:02:09.643
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('m_inoutline_hu_alloc','ALTER TABLE public.M_InOutLine_HU_Alloc ADD COLUMN M_InOutLine_ID NUMERIC(10)')
+;
+
+-- 2017-05-10T10:02:09.678
+-- URL zum Konzept
+ALTER TABLE M_InOutLine_HU_Alloc ADD CONSTRAINT MInOutLine_MInOutLineHUAlloc FOREIGN KEY (M_InOutLine_ID) REFERENCES public.M_InOutLine DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2017-05-10T10:03:00.203
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.handlingunits',Updated=TO_TIMESTAMP('2017-05-10 10:03:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556772
+;
+
+-- 2017-05-10T10:13:30.864
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,556773,542462,0,19,540817,'N','M_TU_HU_ID',TO_TIMESTAMP('2017-05-10 10:13:30','YYYY-MM-DD HH24:MI:SS'),100,'N','Handling Unit of type Tranding Unit','de.metas.handlingunits',10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Handling Unit (TU)',0,TO_TIMESTAMP('2017-05-10 10:13:30','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2017-05-10T10:13:30.867
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=556773 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-05-10T10:13:47.323
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=540499,Updated=TO_TIMESTAMP('2017-05-10 10:13:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556773
+;
+
+-- 2017-05-10T10:13:49.347
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('m_inoutline_hu_alloc','ALTER TABLE public.M_InOutLine_HU_Alloc ADD COLUMN M_TU_HU_ID NUMERIC(10)')
+;
+
+-- 2017-05-10T10:13:49.358
+-- URL zum Konzept
+ALTER TABLE M_InOutLine_HU_Alloc ADD CONSTRAINT MTUHU_MInOutLineHUAlloc FOREIGN KEY (M_TU_HU_ID) REFERENCES public.M_HU DEFERRABLE INITIALLY DEFERRED
+;
+
