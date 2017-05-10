@@ -31,6 +31,12 @@ Here come the actual release notes:
     * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
   * [#1478](https://github.com/metasfresh/metasfresh/issues/1478) New Window for InvoiceSchedule in WebUI
     * Adding the Invoice Schedule Window to WebUI to allow the user to define invoiceing frequencies.
+  * [#1486](https://github.com/metasfresh/metasfresh/issues/1486) Add Status Field to Material Disposition Window in WebUI
+    * Adding the Status Field to Material Disposition Window in WebUI. Minor Adjustments in window Layout.
+  * [#1487](https://github.com/metasfresh/metasfresh/issues/1487) Allow the editing of Workflow Node in Window
+    * Adjustment in Window Workflow Node Transition, now allowing the user to select the Workflow Node.
+  * [#1494](https://github.com/metasfresh/metasfresh/issues/1494) Add HU_PI_Item to Product Price Window in WebUI
+    * Adding the Field Handling Unit Packing Instruction to Product Price Window. Minor Adjustments in Layout.
 
 # metasfresh 5.8 (2017-18)
 
