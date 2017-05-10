@@ -357,7 +357,8 @@ public class LayoutFactory
 			{
 				layoutElementBuilder.setWidgetType(field.getWidgetType());
 			}
-			layoutElementBuilder.setButtonProcessId(field.getButtonProcessId());
+			
+			layoutElementBuilder.setButtonActionDescriptor(field.getButtonActionDescriptor());
 
 			layoutElementBuilder.addField(layoutElementFieldBuilder);
 		}

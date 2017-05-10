@@ -81,7 +81,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private final Optional<Integer> precision;
-	private final int buttonProcessId;
+	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final LayoutType layoutType;
 	private final LayoutAlign gridAlign;
@@ -103,7 +103,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		widgetType = builder.getWidgetType();
 		precision = Optional.ofNullable(builder.getPrecision());
-		buttonProcessId = builder.getButtonProcessId();
+		buttonActionDescriptor = builder.getButtonActionDescriptor();
 
 		layoutType = builder.getLayoutType();
 		gridAlign = builder.getGridAlign();
@@ -184,10 +184,10 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return !fields.isEmpty();
 	}
-
-	public int getButtonProcessId()
+	
+	public ButtonFieldActionDescriptor getButtonActionDescriptor()
 	{
-		return buttonProcessId;
+		return buttonActionDescriptor;
 	}
 
 	public static final class Builder
@@ -198,7 +198,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private ITranslatableString _caption = null;
 		private ITranslatableString _description = null;
 		private DocumentFieldWidgetType _widgetType;
-		private int buttonProcessId = -1;
+		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 		private LayoutType _layoutType;
 		private boolean _gridElement = false;
 		private boolean _advancedField = false;
@@ -466,17 +466,16 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return _gridElement ? getWidgetType().getGridAlign() : null;
 		}
-
-		public Builder setButtonProcessId(final int buttonProcessId)
+		
+		public Builder setButtonActionDescriptor(ButtonFieldActionDescriptor buttonActionDescriptor)
 		{
-			this.buttonProcessId = buttonProcessId;
+			this.buttonActionDescriptor = buttonActionDescriptor;
 			return this;
 		}
-
-		/* package */ int getButtonProcessId()
+		
+		/* package */ ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
-			return buttonProcessId;
+			return buttonActionDescriptor;
 		}
-
 	}
 }

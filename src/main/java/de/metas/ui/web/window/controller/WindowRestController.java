@@ -46,9 +46,11 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
@@ -153,7 +155,7 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
-		
+
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 
 		final JSONOptions jsonOpts = newJSONOptions()
@@ -482,7 +484,38 @@ public class WindowRestController
 
 		final ITableRecordReference zoomInfoTableRecordRef = documentCollection.forDocumentReadonly(documentPath, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
-			return field.getValueAs(ITableRecordReference.class);
+
+			// Generic ZoomInto button
+			if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.ZoomIntoButton)
+			{
+				final ButtonFieldActionDescriptor buttonActionDescriptor = field.getDescriptor().getButtonActionDescriptor();
+				final String zoomIntoTableIdFieldName = buttonActionDescriptor.getZoomIntoTableIdFieldName();
+
+				final Integer adTableId = document.getFieldView(zoomIntoTableIdFieldName).getValueAs(Integer.class);
+				if (adTableId == null || adTableId <= 0)
+				{
+					throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No AD_Table_ID.")
+							.setParameter("documentPath", documentPath)
+							.setParameter("fieldName", fieldName)
+							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
+				}
+
+				final Integer recordId = field.getValueAs(Integer.class);
+				if (recordId == null)
+				{
+					throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No Record_ID.")
+							.setParameter("documentPath", documentPath)
+							.setParameter("fieldName", fieldName)
+							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
+				}
+
+				return TableRecordReference.of(adTableId, recordId);
+			}
+			// Regular lookup value
+			else
+			{
+				return field.getValueAs(ITableRecordReference.class);
+			}
 		});
 		if (zoomInfoTableRecordRef == null)
 		{

@@ -13,8 +13,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -79,9 +82,10 @@ public final class JSONDocumentLayoutElement
 
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
+	
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer buttonProcessId;
+	private final ProcessId buttonProcessId;
 
 	@JsonProperty("precision")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -117,8 +121,18 @@ public final class JSONDocumentLayoutElement
 		description = element.getDescription(adLanguage);
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
-		buttonProcessId = element.getButtonProcessId() > 0 ? element.getButtonProcessId() : null;
 		precision = element.getPrecision().orElse(null);
+		
+		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
+		final ButtonFieldActionType buttonActionType = buttonAction == null ? null : buttonAction.getActionType();
+		if(buttonActionType == ButtonFieldActionType.processCall)
+		{
+			buttonProcessId = buttonAction.getProcessId();
+		}
+		else
+		{
+			buttonProcessId = null;
+		}
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
