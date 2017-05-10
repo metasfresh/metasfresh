@@ -24,7 +24,11 @@ class RawList extends Component {
     }
 
     componentDidUpdate = prevProps => {
-        const { list, mandatory, defaultValue, autofocus } = this.props;
+        const { list, mandatory, defaultValue, autofocus, blur } = this.props;
+
+        if(prevProps.blur != blur){
+            blur && this.handleBlur();
+        }
 
         (this.dropdown && autofocus) && this.dropdown.focus();
 
@@ -110,7 +114,6 @@ class RawList extends Component {
     }
 
     handleBlur = () => {
-        console.log('handleBlur');
         const { selected, doNotOpenOnFocus } = this.props;
 
         !doNotOpenOnFocus && this.dropdown && this.dropdown.blur();
@@ -298,7 +301,8 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated,
-            loading, rowId, isModal, tabIndex, disabled, mandatory, validStatus
+            loading, rowId, isModal, tabIndex, disabled, mandatory, validStatus,
+            lookupList
         } = this.props;
 
         const {
@@ -347,8 +351,8 @@ class RawList extends Component {
                             readOnly
                             tabIndex={-1}
                             placeholder={defaultValue}
-                            value={selected ?
-                                selected[Object.keys(selected)[0]] : ''}
+                            value={lookupList ? defaultValue : (selected ?
+                                selected[Object.keys(selected)[0]] : '')}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             disabled={readonly || disabled}

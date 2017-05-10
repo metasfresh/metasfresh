@@ -28,23 +28,12 @@ class Lookup extends Component {
         this.state = {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            showNextDropdown: false,
             property: ''
         }
-
-        // console.log(this.state.propertiesCopy);
-        // console.log(properties);
     }
 
     componentDidMount() {
         const {defaultValue, properties} = this.props;
-        console.log('defaultValue component did mount');
-        console.log(defaultValue);
-        console.log(properties);
-
-        // this.setState({
-        //     property: properties[0].field
-        // })
 
         this.checkIfDefaultValue();
     }
@@ -52,27 +41,14 @@ class Lookup extends Component {
     componentDidUpdate(prevProps) {
         const {defaultValue, properties} = this.props;
         const {property} = this.state;
-         
-        //  console.log('property');
-        //  console.log(property);
 
-        // if(JSON.stringify(prevProps.defaultValue)!==JSON.stringify(defaultValue)){
+         const objectValue = property && getItemsByProperty(
+                                defaultValue, 'field', property
+                            )[0].value;
 
-        //     defaultValue.map((item, index)=>{
-        //         const prevIndex = index-1;
-        //         if(prevIndex>-1 && defaultValue[prevIndex].field === property){
-        //             console.log(properties[index].field);
-        //             this.setState({
-        //                 property: properties[index].field
-        //             })
-        //         }
-                
-        //     })
-        // }
-        // console.log('defaultValue');
-        // console.log(defaultValue);
-
-        
+        if(objectValue) {
+            this.setNextProperty(property);
+        }
      
     }
 
@@ -82,39 +58,23 @@ class Lookup extends Component {
         })
     }
 
-    // getNextDropdown=(state)=> {
-    //     this.setState({
-    //         showNextDropdown: state
-    //     });
-    // }
-
-    setNextProperty = (property)=> {
+    setNextProperty = (prop)=> {
         const {defaultValue, properties} = this.props;
-        console.log('setNextProperty');
-        console.log(property);
-        // property && this.setState({
-        //     property: property
-        // });
-
 
         defaultValue.map((item, index)=>{
                 const nextIndex = index+1;
-                if(nextIndex<defaultValue.length && defaultValue[index].field === property){
-                    console.log(properties[nextIndex].field);
+                if(nextIndex<defaultValue.length && defaultValue[index].field === prop){
                     this.setState({
                         property: properties[nextIndex].field
                     })
                     return;
-                } else if(defaultValue[defaultValue.length-1].field === property){
-                    console.log('else-----------------------------');
+                } else if(defaultValue[defaultValue.length-1].field === prop){
                     this.setState({
                         property: ''
                     })
                 }
                 
             })
-        
-        
     }
 
     checkIfDefaultValue = () => {
@@ -124,40 +84,16 @@ class Lookup extends Component {
                 this.setState({
                     isInputEmpty: false
                 })
-                // console.log(item.value);
             }
             
         });
     }
 
-    // componentDidUpdate(prevProps) {
-    //     const {defaultValue} = this.props;
-    //     console.log(prevProps.defaultValue);
-
-    //     if(JSON.stringify(prevProps.defaultValue) !==
-    //         JSON.stringify(defaultValue)){
-    //         this.checkIfDefaultValue();
-    //     }
-        
-
-    //     // defaultValue.map(item => {
-    //     //     if(item.value){
-    //     //         this.setState({
-    //     //             isInputEmpty: false
-    //     //         })
-    //     //         console.log(item.value);
-    //     //     }
-            
-    //     // });
-    // }
-
     handleClear = (e) => {
-        // console.log('handleClear');
         const {onChange, properties} = this.props;
         onChange(properties, null, false);
         this.setState({
             isInputEmpty: true,
-            property: properties[0].field,
             property: ''
         });
     }
@@ -194,8 +130,6 @@ class Lookup extends Component {
 
             {
                 properties && properties.map((item, index) => {
-                    {/*console.log(item);*/}
-                    {
                         if(item.source === 'lookup'){
                             return <RawLookup
                                 key={index}
@@ -231,11 +165,6 @@ class Lookup extends Component {
                                 defaultValue, 'field', item.field
                             )[0].value;
 
-                            {/*console.log('----');
-                            console.log(item.field);
-                            console.log(property);*/}
-
-
                             return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
                                     <List
                                         dataId={dataId}
@@ -251,21 +180,16 @@ class Lookup extends Component {
                                         onChange={onChange}
                                         lookupList={true}
                                         autofocus={item.field == property ? true : false}
-                                        defaultValue={objectValue[Object.keys(objectValue)[0]]}
-                                        isInputEmpty={isInputEmpty}
+                                        defaultValue={objectValue ? objectValue[Object.keys(objectValue)[0]] : ''}
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}
+                                        blur={!property?true:false}
                                     />
                                 </div>
                         }
-                        
-                        
-                    }
                 })
             }
-
     
-
             {isInputEmpty ?
                 <div className="input-icon input-icon-lg raw-lookup-wrapper">
                     <i className="meta-icon-preview" />

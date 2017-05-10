@@ -22,7 +22,6 @@ class RawLookup extends Component {
             list: [],
             isInputEmpty: true,
             selected: null,
-            model: null,
             loading: false,
             oldValue: '',
             isOpen: false,
@@ -49,9 +48,6 @@ class RawLookup extends Component {
         const {autoFocus, defaultValue} = this.props;
         const {isInputEmpty, shouldBeFocused} = this.state;
 
-        // console.log('defaultValue');
-        // console.log(defaultValue);
-
         if(autoFocus && isInputEmpty && shouldBeFocused){
             this.inputSearch.focus();
             this.setState({
@@ -74,19 +70,18 @@ class RawLookup extends Component {
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
                 handleInputEmptyStatus(false);
+                setNextProperty(mainProperty[0].field);
 
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
 
-                
                     onChange(
                         mainProperty[0].field, select, this.getAllDropdowns
                     );
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     handleInputEmptyStatus(false);
-                    // getNextDropdown(true);
                     setNextProperty(mainProperty[0].field);
 
                     this.handleBlur();
@@ -168,7 +163,6 @@ class RawLookup extends Component {
             list: [],
             isInputEmpty: true,
             selected: null,
-            model: null,
             loading: false,
             query: ''
         });
@@ -242,7 +236,6 @@ class RawLookup extends Component {
         const {oldValue} = this.state;
 
         if(!filterWidget && !!defaultValue && this.inputSearch) {
-            // const init = defaultValue[0].value;
             const init = defaultValue;
             const inputValue = init[Object.keys(init)[0]];
 

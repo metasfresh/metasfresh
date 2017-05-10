@@ -58,7 +58,7 @@ class List extends Component {
     render() {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
-            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus
+            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus, blur
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 
@@ -80,6 +80,8 @@ class List extends Component {
                 mandatory={mandatory}
                 validStatus={validStatus}
                 autofocus={autofocus}
+                lookupList={lookupList}
+                blur={blur}
             />
         )
     }
