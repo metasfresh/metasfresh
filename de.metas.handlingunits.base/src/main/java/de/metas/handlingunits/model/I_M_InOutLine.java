@@ -91,4 +91,10 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	public void setM_HU_PI_Item_Product_Override(I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override) throws RuntimeException;
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException;
 	// @formatter:on
+	
+	
+	
+	
+	// TODO
+	public void setIsHUPrepared(boolean IsHUPrepared);
 }
