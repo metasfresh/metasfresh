@@ -16,7 +16,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1944893752L;
+	private static final long serialVersionUID = -1795260422L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -294,10 +294,14 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	 * Reference name: MD_Candidate_Status
 	 */
 	public static final int MD_CANDIDATE_STATUS_AD_Reference_ID=540715;
-	/** fact = fact */
-	public static final String MD_CANDIDATE_STATUS_Fact = "fact";
-	/** planned = planned */
-	public static final String MD_CANDIDATE_STATUS_Planned = "planned";
+	/** doc_created = doc_created */
+	public static final String MD_CANDIDATE_STATUS_Doc_created = "doc_created";
+	/** doc_planned = doc_planned */
+	public static final String MD_CANDIDATE_STATUS_Doc_planned = "doc_planned";
+	/** doc_completed = doc_completed */
+	public static final String MD_CANDIDATE_STATUS_Doc_completed = "doc_completed";
+	/** doc_closed = doc_closed */
+	public static final String MD_CANDIDATE_STATUS_Doc_closed = "doc_closed";
 	/** Set Status.
 		@param MD_Candidate_Status Status	  */
 	@Override

@@ -21,8 +21,8 @@ SELECT
 	hupip.Name AS ItemProductName,
 	pm.Name AS PackingMaterialName,
 	ROUND( COALESCE( ppa.PriceStd, pp.PriceStd ), 2 ) AS PriceStd,
-	ROUND( COALESCE( ppa2.PriceStd, pp2.PriceStd ), 2 ) AS AltPriceStd,
-	CASE WHEN COALESCE( ppa2.PriceStd, pp2.PriceStd) IS NULL THEN 0 ELSE 1 END AS hasaltprice,
+	ROUND (pp2.PriceStd, 2 ) AS AltPriceStd,
+	CASE WHEN pp2.PriceStd IS NULL THEN 0 ELSE 1 END AS hasaltprice,
 	uom.UOMSymbol,
 	COALESCE(ppa.Attributes, '') as attributes,
 	pp.seqNo,
@@ -84,20 +84,26 @@ INNER JOIN M_PriceList_Version plv ON pp.M_PriceList_Version_ID = plv.M_PriceLis
 	/* Get all PriceList_Versions of the PriceList (we need all available PriceList_Version_IDs for outside filtering)
 	 limited to the same PriceList because the Parameter validation rule is enforcing this */
 LEFT JOIN M_PriceList_Version plv2 ON plv.M_PriceList_ID = plv2.M_PriceList_ID AND plv2.IsActive = 'Y'
-LEFT JOIN M_ProductPrice pp2 ON p.M_Product_ID = pp2.M_Product_ID AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID AND pp2.IsActive = 'Y'
-								AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR (pp2.m_hu_pi_item_product_ID is null and pp.m_hu_pi_item_product_ID is null))
-								AND pp2.isAttributeDependant = pp.isAttributeDependant
-								--avoid comparing different prices in same pricelist
-								AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
+LEFT OUTER JOIN LATERAL(
+		SELECT  COALESCE( ppa2.PriceStd, pp2.PriceStd ) AS PriceStd, ppa2.signature  
+		FROM M_ProductPrice pp2
+			/* Joining attribute prices */
+		INNER JOIN report.fresh_AttributePrice ppa2 ON pp2.M_ProductPrice_ID = ppa2.M_ProductPrice_ID AND ppa2.m_pricelist_version_id = pp2.m_pricelist_version_id
+			
+		WHERE p.M_Product_ID = pp2.M_Product_ID AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID AND pp2.IsActive = 'Y'
+				AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR (pp2.m_hu_pi_item_product_ID is null and pp.m_hu_pi_item_product_ID is null))
+				AND pp2.isAttributeDependant = pp.isAttributeDependant
+				--avoid comparing different prices in same pricelist
+				AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)	
+				/* we have to make sure that only prices with the same attributes and packing instructions are compared. Note: 
+				* - If there is an Existing Attribute Price but no signature related columns are filled the signature will be ''
+				* - If there are no Attribute Prices the signature will be null
+				* This is important, because otherwise an empty attribute price will be compared to the regular price AND the alternate attribute price */
+				AND (ppa.signature = ppa2.signature ) AND ppa2.IsActive = 'Y'
+				AND (ppa2.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa2.m_hu_pi_item_product_id IS NULL)
+) pp2 ON true
 											
-	/* Joining attribute prices */
-LEFT JOIN report.fresh_AttributePrice ppa2 ON pp2.M_ProductPrice_ID = ppa2.M_ProductPrice_ID AND ppa2.m_pricelist_version_id = pp2.m_pricelist_version_id
-			/* we have to make sure that only prices with the same attributes and packing instructions are compared. Note: 
-			 * - If there is an Existing Attribute Price but no signature related columns are filled the signature will be ''
-			 * - If there are no Attribute Prices the signature will be null
-			 * This is important, because otherwise an empty attribute price will be compared to the regular price AND the alternate attribute price */
-			AND (ppa.signature = ppa2.signature ) AND ppa2.IsActive = 'Y'
-			AND (ppa.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa.m_hu_pi_item_product_id IS NULL)
+
 			
 
 WHERE pp.isActive = 'Y'
@@ -105,7 +111,7 @@ WHERE pp.isActive = 'Y'
 		AND (pp.M_Attributesetinstance_ID = ppa.M_Attributesetinstance_ID OR pp.M_Attributesetinstance_ID is null)
 		AND (pp.M_HU_PI_Item_Product_ID = bp_ip.M_HU_PI_Item_Product_ID OR  pp.M_HU_PI_Item_Product_ID is null)
 		
-		AND  (case when plv2.M_PriceList_Version_ID = plv.M_PriceList_Version_ID THEN  ppa.signature=ppa2.signature ELSE true end)
+		AND  (case when plv2.M_PriceList_Version_ID = plv.M_PriceList_Version_ID THEN  ppa.signature=pp2.signature ELSE true end)
 
 
 ;

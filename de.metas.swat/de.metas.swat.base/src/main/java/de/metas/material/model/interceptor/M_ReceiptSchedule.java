@@ -1,7 +1,5 @@
 package de.metas.material.model.interceptor;
 
-import java.time.Instant;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -10,6 +8,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ReceiptScheduleEvent;
@@ -31,7 +30,7 @@ public class M_ReceiptSchedule
 	{
 		final boolean deleted = timing == ModelValidator.TYPE_AFTER_DELETE;
 		final ReceiptScheduleEvent event = ReceiptScheduleEvent.builder()
-				.when(Instant.now())
+				.eventDescr(new EventDescr())
 				.reference(TableRecordReference.of(schedule))
 				.materialDescr(MaterialDescriptor.builder()
 						.orgId(schedule.getAD_Org_ID())

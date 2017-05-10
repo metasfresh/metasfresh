@@ -37,8 +37,12 @@ public class MaterialDemandEvent implements MaterialEvent
 	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
-	private final MaterialDescriptor descr;
+	private final EventDescr eventDescr;
 
 	@NonNull
+	private final MaterialDescriptor descr;
+
 	private final TableRecordReference reference;
+
+	private int orderLineId;
 }

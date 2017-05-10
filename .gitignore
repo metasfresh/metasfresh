@@ -4,8 +4,12 @@
 **/.settings/
 *.cache
 *.diff
-*.project
-*.classpath
+**/.classpath
+**/.project
+
+**/activemq-data/
+**/data/
+**/log/
 
 de.metas.endcustomer.mf15/metasfresh.properties
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/log/

@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import java.time.Instant;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +36,7 @@ public class ShipmentScheduleEvent implements MaterialEvent
 	public static final String TYPE = "ShipmentScheduleEvent";
 
 	@NonNull
-	private final Instant when;
+	private final EventDescr eventDescr;
 
 	@NonNull
 	private final TableRecordReference reference;
@@ -50,4 +48,6 @@ public class ShipmentScheduleEvent implements MaterialEvent
 	 * Note that we count an inactive shipment schedule as deleted too, because as far as the material dispo is concerned, there is no difference
 	 */
 	private final boolean shipmentScheduleDeleted;
+
+	private final int orderLineId;
 }

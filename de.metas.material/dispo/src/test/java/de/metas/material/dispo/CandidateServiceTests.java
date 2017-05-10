@@ -14,7 +14,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 
 /*
@@ -27,12 +28,12 @@ import de.metas.material.event.pporder.PPOrder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -79,8 +80,9 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final CandidateService candidateService = new CandidateService(candidateRepository);
-		final ProductionOrderRequested productionOrderEvent = candidateService.requestProductionOrder(ImmutableList.of(candidate, candidate2, candidate3));
+		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
+
+		final PPOrderRequestedEvent productionOrderEvent = candidateService.createRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
 
 		final PPOrder ppOrder = productionOrderEvent.getPpOrder();

@@ -10,12 +10,12 @@ package de.metas.material.planning.pporder.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,11 +54,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 
 /**
  * This class tests {@link IPPOrderBOMBL} in convert with {@link IPPOrderBOMDAO}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -74,7 +73,7 @@ public class PPOrderBOMBLTest
 	@Autowired
 	private PPOrderBOMBL ppOrderBOMBL;
 	// Other services
-	
+
 	private IPPOrderBOMDAO ppOrderBOMDAO;
 
 	@Before
@@ -181,7 +180,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Carrot = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pCarrot);
 			assertUOM(expectedUOM, ppOrderBOMLine_Carrot);
 
-			BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMLine_Carrot); // lineCarrot
+			BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Carrot)); // lineCarrot
 			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
 		}
 
@@ -194,7 +193,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Frisee = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFrisee);
 			assertUOM(expectedUOM, ppOrderBOMLine_Frisee);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMLine_Frisee); // lineFrisee
+			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Frisee)); // lineFrisee
 			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
 		}
 
@@ -207,7 +206,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Radiesli = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pRadiesli);
 			assertUOM(expectedUOM, ppOrderBOMLine_Radiesli);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMLine_Radiesli); // lineRadisli
+			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Radiesli)); // lineRadisli
 			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
 		}
 
@@ -220,7 +219,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 			assertUOM(expectedUOM, ppOrderBOMLine_Folie);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMLine_Folie); // lineFolie
+			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Folie)); // lineFolie
 			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
 		}
 	}
@@ -233,7 +232,7 @@ public class PPOrderBOMBLTest
 		ppOrder.setAD_Org(masterData.adOrg01);
 
 		setCommonProperties(ppOrder);
-		
+
 		ppOrder.setM_Product(product);
 		ppOrder.setPP_Product_BOM(productBOM);
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
@@ -251,13 +250,13 @@ public class PPOrderBOMBLTest
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
 		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
-		
+
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();
 		ppOrder.setDateOrdered(t1);
 		ppOrder.setDateStartSchedule(t1);
 	}
-	
+
 	private I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
 	{
 		final I_C_UOM uom = helper.createUOM(name);

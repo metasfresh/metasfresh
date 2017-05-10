@@ -1,14 +1,17 @@
 package de.metas.material.dispo;
 
-import java.time.Instant;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.ProductionOrderRequested;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -35,13 +38,17 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Service
 public class CandidateService
 {
 	private final CandidateRepository candidateRepository;
+	private final MaterialEventService materialEventService;
 
-	public CandidateService(@NonNull final CandidateRepository candidateRepository)
+	public CandidateService(
+			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final MaterialEventService materialEventService)
 	{
+		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
 	}
 
@@ -66,14 +73,21 @@ public class CandidateService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param group a non-empty list of candidates that all have {@link SubType#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
 	 * @return
 	 */
+
+	private void requestProductionOrder(@NonNull final List<Candidate> group)
+	{
+		final PPOrderRequestedEvent ppOrderRequestEvent = createRequestEvent(group);
+		materialEventService.fireEvent(ppOrderRequestEvent);
+	}
+
 	@VisibleForTesting
-	ProductionOrderRequested requestProductionOrder(@NonNull final List<Candidate> group)
+	PPOrderRequestedEvent createRequestEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -81,6 +95,11 @@ public class CandidateService
 
 		for (final Candidate groupMember : group)
 		{
+			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
+			{
+				ppOrderBuilder = ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
+			}
+
 			final ProductionCandidateDetail prodDetail = groupMember.getProductionDetail();
 			if (prodDetail.getPlantId() > 0)
 			{
@@ -118,9 +137,10 @@ public class CandidateService
 								.build());
 			}
 		}
-		return ProductionOrderRequested.builder()
+		return PPOrderRequestedEvent.builder()
+				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr())
 				.ppOrder(ppOrderBuilder.build())
-				.when(Instant.now())
 				.reference(group.get(0).getReference())
 				.build();
 	}
