@@ -108,8 +108,9 @@ class RawWidget extends Component {
         const {dispatch, dataId, windowType, tabId, rowId} = this.props;
         dispatch(getZoomIntoWindow(windowType, dataId, field, tabId, rowId))
         .then(res => {
-             window.open('/window/' + res.data.documentPath.windowId + '/' +
-             res.data.documentPath.documentId, '_blank');
+             res.data && window.open('/window/' +
+                                res.data.documentPath.windowId + '/' +
+                                res.data.documentPath.documentId, '_blank');
         });
     }
 
