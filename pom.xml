@@ -15,7 +15,7 @@
 	<artifactId>metasfresh-webui-api</artifactId>
 
 	<properties>
-	
+
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 		<springfox-swagger.version>2.6.1</springfox-swagger.version>
 
@@ -142,6 +142,19 @@
 			<version>${springfox-swagger.version}</version>
 		</dependency>
 
+		<!-- logging -->
+		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>4.9</version>
+		</dependency>
+		<!-- we need janino for the conditional that we have in the logback config -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -150,8 +163,8 @@
 			<exclusions>
 				<!-- excluded to avoid maven-enforcer-plugin error: Duplicate classes found: org.ow2.asm:asm:jar:5.0.3:test, net.minidev:accessors-smart:jar:1.1:test -->
 				<exclusion>
-				    <groupId>org.ow2.asm</groupId>
-   					<artifactId>asm</artifactId>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
