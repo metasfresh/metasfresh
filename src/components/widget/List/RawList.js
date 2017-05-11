@@ -74,6 +74,7 @@ class RawList extends Component {
 
         //not visible from above
         const scrollFromDown = selectedIndex * listElementHeight;
+
         if (
             selectedIndex * listElementHeight < visibleMin &&
             listScrollWrap.scrollTop !== scrollFromDown
@@ -90,9 +91,14 @@ class RawList extends Component {
             return 0;
         }
 
-        const baseIndex = list.findIndex(item =>
-            Object.keys(item)[0] === Object.keys(selected)[0]
-        );
+        let baseIndex;
+        if(list.indexOf(selected) < 0) {
+            baseIndex = list.findIndex(item =>
+                Object.keys(item)[0] === Object.keys(selected)[0]
+            );
+        } else {
+            baseIndex = list.indexOf(selected);
+        }
 
         if (!mandatory){
             return baseIndex + 1;
