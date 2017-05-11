@@ -16,7 +16,7 @@
 
 	<properties>
 	
-		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 		<springfox-swagger.version>2.6.1</springfox-swagger.version>
 
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
