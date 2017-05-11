@@ -8,7 +8,9 @@
 
 	<packaging>pom</packaging>
 
-	<description>Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects</description>
+	<description>
+Default parent pom with common settings (e.g. java file encoding) to be used by all maven projects.
+	</description>
 
 	<url>http://www.metasfresh.com/</url>
 
@@ -32,10 +34,15 @@
 		<metasfresh.java.version>1.8</metasfresh.java.version>
 	</properties>
 
+	<modules>
+		<!-- this module provides a shared set of assembly descriptors-->
+		<module>assemblies</module>
+	</modules>
+
 	<repositories>
-		<!--
-		    The repositories that we relate on are defined in this parent POM,
-			because whether an artifact is found should not depend on a specific user's settings.xml
+		<!-- 
+		    The repositories that we relate on are defined in this parent POM, 
+			because whether an artifact is found should not depend on a specific user's settings.xml 
 		-->
 		<repository>
 			<id>metasfresh-repo</id>
@@ -62,7 +69,7 @@
 	</pluginRepositories>
 
 	<distributionManagement>
-		<!--
+		<!-- 
 		Where to deploy build artifacts; the values are coming from the outside via cmd-line parameters.
 		Even if you can't deploy to this repo, you can still make your own builds and install them to your local repo.
 		-->
@@ -99,20 +106,20 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
-					<!--
-						later versions of the plugin don't work with eclipse's m2e plugin.
-						see https://github.com/mojohaus/jaxb2-maven-plugin/issues/24 for details
-						and updates on the issue
+					<!-- 
+						later versions of the plugin don't work with eclipse's m2e plugin. 
+						see https://github.com/mojohaus/jaxb2-maven-plugin/issues/24 for details 
+						and updates on the issue 
 					-->
 					<!-- version>2.2</version -->
 					<version>1.6</version>
 				</plugin>
 
 				<plugin>
-					<!--
+					<!-- 
 						gh #968: If we run mvn properties:write-project-properties
 						then store the properties to a file calle "app.properties".
-						We need this for https://github.com/metasfresh/metasfresh/issues/968
+						We need this for https://github.com/metasfresh/metasfresh/issues/968 
 						because among those properties there are some artifact versions that we want to document.
 					-->
 					<groupId>org.codehaus.mojo</groupId>
@@ -123,7 +130,7 @@
 					</configuration>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -181,10 +188,10 @@
 						</goals>
 						<configuration>
 							<properties>
-								<!--
+								<!-- 
 									Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
-									because 'file' access is not allowed due to restriction set by the accessExternalSchema
-									property."
+									because 'file' access is not allowed due to restriction set by the accessExternalSchema 
+									property." 
 									Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
 								<property>
 									<name>javax.xml.accessExternalSchema</name>
@@ -197,4 +204,46 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+
+		<profile>
+			<!-- If there is a configs directory, then this profile will activate and zip up the files in that directory -->
+			<id>configs</id>
+			<activation>
+				<file>
+					<exists>src/main/configs</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
+								<version>[1.0.0,5.0.0]</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>make-configs-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>configs</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
 </project>
