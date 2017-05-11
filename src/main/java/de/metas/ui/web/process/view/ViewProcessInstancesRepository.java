@@ -1,6 +1,5 @@
 package de.metas.ui.web.process.view;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -14,13 +13,13 @@ import org.springframework.stereotype.Component;
 
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
-import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
@@ -128,18 +127,32 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	}
 
 	@Override
-	public IProcessInstanceController createNewProcessInstance(final ProcessId processId, final JSONCreateProcessInstanceRequest request)
+	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request)
 	{
-		final IPair<String, String> viewIdAndActionId = extractViewIdAndActionId(processId);
+		//
+		// Get the view and and the viewActionDescriptor
+		final IPair<String, String> viewIdAndActionId = extractViewIdAndActionId(request.getProcessId());
 		final String viewId = viewIdAndActionId.getLeft();
 		final String actionId = viewIdAndActionId.getRight();
 		final IView view = viewsRepository.getView(viewId);
 		final ViewActionDescriptor viewActionDescriptor = getViewActionsDescriptor(view).getAction(actionId);
 
+		//
+		// Create the view action instance
+		// and add it to our internal list of current view action instances
 		final ViewActionInstancesList viewActionInstancesList = viewActionInstancesByViewId.getOrLoad(viewId, () -> new ViewActionInstancesList(viewId));
 		final DocumentId pinstanceId = viewActionInstancesList.nextPInstanceId();
-		final ViewActionInstance viewActionInstance = ViewActionInstance.of(pinstanceId, view, viewActionDescriptor, request);
+		final ViewActionInstance viewActionInstance = ViewActionInstance.builder()
+				.pinstanceId(pinstanceId)
+				.view(view)
+				.viewActionDescriptor(viewActionDescriptor)
+				.selectedDocumentIds(request.getViewDocumentIds())
+				.build();
+		request.assertProcessIdEquals(viewActionInstance.getProcessId());
 		viewActionInstancesList.add(viewActionInstance);
+		
+		//
+		// Return the newly created instance
 		return viewActionInstance;
 	}
 
@@ -185,7 +198,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	{
 		private final String viewId;
 		private final AtomicInteger nextIdSupplier = new AtomicInteger(1);
-		private final Map<DocumentId, ViewActionInstance> instances = new ConcurrentHashMap<>();
+		private final ConcurrentHashMap<DocumentId, ViewActionInstance> instances = new ConcurrentHashMap<>();
 
 		public ViewActionInstancesList(@NonNull final String viewId)
 		{
@@ -202,7 +215,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 			return actionInstance;
 		}
 
-		public DocumentId nextPInstanceId()
+		private DocumentId nextPInstanceId()
 		{
 			final int nextId = nextIdSupplier.incrementAndGet();
 			return DocumentId.ofString(viewId + "_" + nextId);
