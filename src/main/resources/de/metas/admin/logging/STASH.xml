@@ -12,7 +12,7 @@
 		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
 			<providers>
 				<mdc /> <!-- MDC variables on the Thread will be written as JSON fields-->
-				<context /> <!--Outputs entries from logback's context -->
+				<!-- context / --> <!--Outputs entries from logback's context -->
 				<version /> <!-- Logstash json format version, the @version field in the output-->
 				<logLevel />
 				<loggerName />
