@@ -42,12 +42,12 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = candidate.getPP_Order_BOMLine();
-		if(orderBOMLine == null)
+		if (orderBOMLine == null)
 		{
 			// Main product receipt
 			reverseDraftReceipt(candidate);
 		}
-		else if(PPOrderUtil.isReceipt(orderBOMLine))
+		else if (PPOrderUtil.isReceipt(orderBOMLine))
 		{
 			// Co/By Product receipt
 			reverseDraftReceipt(candidate);
@@ -58,7 +58,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 			reverseDraftIssue(candidate);
 		}
 	}
-	
+
 	private void reverseDraftIssue(final I_PP_Order_Qty candidate)
 	{
 		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
@@ -82,7 +82,9 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor()
-				.run(huContext -> handlingUnitsBL.markDestroyed(huContext, huToReceive));
+				.run(huContext -> {
+					handlingUnitsBL.markDestroyed(huContext, huToReceive);
+				});
 
 		//
 		// Delete the candidate
