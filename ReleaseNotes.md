@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1305](https://github.com/metasfresh/metasfresh/issues/1305) Jasper Document for Vendor Returns
+  * [#1320](https://github.com/metasfresh/metasfresh/issues/1320) Translation for nl_NL in WebUI
   * [#1463](https://github.com/metasfresh/metasfresh/issues/1463) Add Window for S_Resource_Ressource to WebUI
     * Adding a new window to WebUI to allow maintaining Manufacturing Resources.
   * [#1464](https://github.com/metasfresh/metasfresh/issues/1464) New Window for Manufacturing Workflow in WebUI
@@ -37,6 +39,11 @@ Here come the actual release notes:
     * Adjustment in Window Workflow Node Transition, now allowing the user to select the Workflow Node.
   * [#1494](https://github.com/metasfresh/metasfresh/issues/1494) Add HU_PI_Item to Product Price Window in WebUI
     * Adding the Field Handling Unit Packing Instruction to Product Price Window. Minor Adjustments in Layout.
+  * [#1499](https://github.com/metasfresh/metasfresh/issues/1499) Update to spring-boot 1.5.3
+
+* other
+  * [metasfresh/metasfresh-dev#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+  * [metasfresh/metasfresh-dev#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
 
 # metasfresh 5.8 (2017-18)
 

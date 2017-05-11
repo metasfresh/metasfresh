@@ -103,7 +103,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		{
 			return ImmutableList.of();
 		}
-		
+
 		// NOTE: we would prefer to always run this out of transactions,
 		// but in some cases like issuing from Swing POS we cannot enforce it because in that case
 		// the candidates are created and processed in one uber-transaction
@@ -112,7 +112,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		// Lock the HUs first, to make sure nobody else is changing them
 		// The lock shall stay until the issue candidate is processed.
 		huLockBL.lockAll(hus, lockOwner);
-		
+
 		boolean success = false;
 		try
 		{
@@ -146,16 +146,15 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		{
 			throw new HUException("Only active HUs can be issued but " + hu + " is " + hu.getHUStatus());
 		}
-		
 
 		// If not a top level HU, take it out first
 		if (!handlingUnitsBL.isTopLevel(hu))
 		{
-			if(handlingUnitsBL.isVirtual(hu))
+			if (handlingUnitsBL.isVirtual(hu))
 			{
 				throw new HUException("Issuing VHUs is not allowed");
 			}
-			
+
 			huTrxBL.setParentHU(huContext //
 					, null // parentHUItem
 					, hu //
@@ -305,5 +304,21 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 				.filter(bomLine -> bomLine.getM_Product_ID() == productId)
 				.findFirst()
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
+	}
+
+	@Override
+	public void reverseDraftIssue(final I_PP_Order_Qty candidate)
+	{
+		if (candidate.isProcessed())
+		{
+			throw new HUException("Cannot reverse candidate because it's already processed: " + candidate);
+		}
+		
+		final I_M_HU huToIssue = candidate.getM_HU();
+		huLockBL.unlock(huToIssue, HUPPOrderIssueProducer.lockOwner);
+
+		//
+		// Delete the candidate
+		huPPOrderQtyDAO.delete(candidate);
 	}
 }
