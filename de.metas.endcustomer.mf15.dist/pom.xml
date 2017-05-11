@@ -29,6 +29,7 @@
 		<metasfresh.version>1.0.0</metasfresh.version>
 		<metasfresh-webui-api.version>1.0.0</metasfresh-webui-api.version>
 		<metasfresh-procurement-webui.version>1.0.0</metasfresh-procurement-webui.version>
+		<metasfresh-admin.version>1.0.0</metasfresh-admin.version>
 		
 		<!-- need to pick LATEST because there is now 1.0.0 version in our local repo. Because currently it's only build on jenkins. -->
 		<metasfresh-webui-frontend.version>LATEST</metasfresh-webui-frontend.version>
@@ -101,14 +102,6 @@ Since we now work with a range, we now declare the dependencies here where range
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
-		<!-- removed because we are not using it
-		<dependency>
-			<groupId>de.metas.admin.webui</groupId>
-			<artifactId>de.metas.admin.webui</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		-->
 
 		<!-- 
 			gh #968 https://github.com/metasfresh/metasfresh/issues/968
@@ -134,12 +127,22 @@ Since we now work with a range, we now declare the dependencies here where range
 			<type>jar</type>
 		</dependency>
 
+		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
+		<dependency>
+			<groupId>de.metas.admin</groupId>
+			<artifactId>metasfresh-admin</artifactId>
+			<version>${metasfresh-admin.version}</version>
+			<type>jar</type>
+			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
+		</dependency>
+
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-dispo</artifactId>
 			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
 			<type>jar</type>
+			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
 		</dependency>
 
 <!-- 
@@ -583,10 +586,30 @@ note: when adding new records, please roughly order them by alphabet.
 					</execution>
 
 					<!-- 
-						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
-						We specified these artifacts as dependencies further up. 
-						Therefore they were already resolved and now we only need to grab 'em by the artifactid
-						without having to specify a particular version. 
+						Build deploy folder: additional binaries that are generally required for metasfresh to run.
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-deploy-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+							<includeArtifactIds>
+								metasfresh-webui-frontend
+							</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+
+					<!--
+						Build deploy/download folder with procurement-webui and some camel ESB modules. Those binary are only needed in some scenarior
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
 					-->
 					<execution>
 						<id>copy-metasfresh-download-jars</id>
@@ -599,14 +622,55 @@ note: when adding new records, please roughly order them by alphabet.
 							<includeArtifactIds>
 								de.metas.printing.esb.camel,
 								de.metas.edi.esb.camel,
-								de.metas.admin.webui,
-								<!-- gh metasfresh/metasfresh#968 -->
-								de.metas.procurement.webui,
-								metasfresh-webui-frontend,
-								metasfresh-webui-api,
-								<!-- gh metasfresh/metasfresh#523 -->
-								metasfresh-material-dispo
+								de.metas.procurement.webui
 							</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-metasfresh-service-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/services</outputDirectory>
+							<includeArtifactIds>
+								<!-- gh metasfresh/metasfresh#1471 -->
+								metasfresh-admin,
+								<!-- gh metasfresh/metasfresh#523 and metasfresh/metasfresh#1471 -->
+								metasfresh-material-dispo,
+								<!-- gh metasfresh/metasfresh#968 -->
+								metasfresh-webui-api
+							</includeArtifactIds>
+							<type>jar</type>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-metasfresh-service-configs</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/services</outputDirectory>
+							<includeArtifactIds>
+								<!-- gh metasfresh/metasfresh#1471 -->
+								metasfresh-admin,
+								<!-- gh metasfresh/metasfresh#523 and metasfresh/metasfresh#1471 -->
+								metasfresh-material-dispo,
+								<!-- gh metasfresh/metasfresh#968 -->
+								metasfresh-webui-api
+							</includeArtifactIds>
+							<type>zip</type>
+							<classifier>configs</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
