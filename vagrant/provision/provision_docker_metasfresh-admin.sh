@@ -7,7 +7,7 @@ echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "Providing & starting metasfresh-admin"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-docker run -d -p 9090:9090 -t metasfresh/metasfresh-admin:gh1471-metasfresh-latest
+docker run -d -p 9090:9090 -t metasfresh/metasfresh-admin:master-latest
 
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "Done providing & starting metasfresh-admin"
