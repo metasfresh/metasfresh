@@ -30,6 +30,17 @@ So either wait for vagrant 1.9.5 or install https://releases.hashicorp.com/vagra
 
 Note that vagrant will probably ask you to restart your box.
 
+# Run it
+
+once you have virtualbox and vagrant installed, you can
+* clone this repo 
+* `cd`  into this folder (i.e. the `vagrant` folder)
+* run `vagrant up`
+
+This should cause vagrant to get all the neccessary stuff to provide you local virtual  metasfresh dev machine
+
+To stop the machine, run `vagrant halt`
+
 # Which shell to use
 
 You can run vagrant from the normal windows command line (I mean `cmd.exe`), but there the vagrant ssh command will probably not work (unless you explicitly configured this, which I didn't).
