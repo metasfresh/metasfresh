@@ -49,6 +49,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpression
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -95,7 +96,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
 
 		final int adWindowId = preconditionsContext.getAD_Window_ID();
-
+		
 		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
 				.values()
 				.stream()
@@ -103,12 +104,24 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
 
-	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
+	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor, @NonNull final IProcessPreconditionsContext preconditionsContext)
 	{
-		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcess.getProcessId());
+		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcessDescriptor.getProcessId());
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
-		return WebuiRelatedProcessDescriptor.of(relatedProcess, processDescriptor, preconditionsResolutionSupplier);
+		
+		return WebuiRelatedProcessDescriptor.builder()
+				.processId(processDescriptor.getProcessId())
+				.processCaption(processDescriptor.getCaption())
+				.processDescription(processDescriptor.getDescription())
+				.debugProcessClassname(processDescriptor.getProcessClassname())
+				//
+				.quickAction(relatedProcessDescriptor.isWebuiQuickAction())
+				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
+				//
+				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
+				//
+				.build();
 	}
 
 	public ProcessDescriptor getProcessDescriptor(final ProcessId processId)

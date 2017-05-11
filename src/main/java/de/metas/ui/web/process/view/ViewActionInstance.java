@@ -19,7 +19,6 @@ import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
-import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -29,6 +28,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -57,15 +57,10 @@ import lombok.ToString;
 @ToString
 /* package */final class ViewActionInstance implements IProcessInstanceController
 {
-	public static final ViewActionInstance of(final DocumentId instanceId, final IView view, final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
-	{
-		return new ViewActionInstance(instanceId, view, viewActionDescriptor, request);
-	}
-
 	private static final String VERSION_DEFAULT = "0";
 
 	private final ProcessId processId;
-	private final DocumentId instanceId;
+	private final DocumentId pinstanceId;
 	private final WeakReference<IView> viewRef;
 	private final ViewActionDescriptor viewActionDescriptor;
 	private final Set<DocumentId> selectedDocumentIds;
@@ -75,20 +70,26 @@ import lombok.ToString;
 	@Nullable
 	private final Document parametersDocument;
 
-	private ViewActionInstance(@NonNull final DocumentId instanceId, @NonNull final IView view, @NonNull final ViewActionDescriptor viewActionDescriptor, final JSONCreateProcessInstanceRequest request)
+	@Builder
+	private ViewActionInstance( //
+			@NonNull final DocumentId pinstanceId //
+			, @NonNull final IView view //
+			, @NonNull final ViewActionDescriptor viewActionDescriptor //
+			, final Set<DocumentId> selectedDocumentIds //
+	)
 	{
 		processId = ViewProcessInstancesRepository.buildProcessId(view.getViewId(), viewActionDescriptor.getActionId());
-		this.instanceId = instanceId;
+		this.pinstanceId = pinstanceId;
 
 		viewRef = new WeakReference<>(view);
 		this.viewActionDescriptor = viewActionDescriptor;
 
-		selectedDocumentIds = ImmutableSet.copyOf(request.getViewDocumentIds());
+		this.selectedDocumentIds = selectedDocumentIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(selectedDocumentIds);
 
 		final DocumentEntityDescriptor parametersDescriptor = viewActionDescriptor.createParametersEntityDescriptor(processId);
 		if (parametersDescriptor != null)
 		{
-			parametersDocument = Document.builder(parametersDescriptor).initializeAsNewDocument(instanceId, VERSION_DEFAULT);
+			parametersDocument = Document.builder(parametersDescriptor).initializeAsNewDocument(pinstanceId, VERSION_DEFAULT);
 		}
 		else
 		{
@@ -105,23 +106,28 @@ import lombok.ToString;
 		}
 		return view;
 	}
-
+	
 	@Override
 	public void destroy()
 	{
 		// nothing
 	}
 
+	public ProcessId getProcessId()
+	{
+		return processId;
+	}
+
 	@Override
 	public DocumentId getInstanceId()
 	{
-		return instanceId;
+		return pinstanceId;
 	}
 
 	@Override
 	public Collection<IDocumentFieldView> getParameters()
 	{
-		if(parametersDocument == null)
+		if (parametersDocument == null)
 		{
 			return ImmutableList.of();
 		}
@@ -180,7 +186,7 @@ import lombok.ToString;
 			final Object resultActionObj = viewActionMethod.invoke(targetObject, viewActionParams);
 			final ResultAction resultAction = viewActionDescriptor.convertReturnType(resultActionObj);
 
-			final ProcessInstanceResult result = ProcessInstanceResult.builder(instanceId)
+			final ProcessInstanceResult result = ProcessInstanceResult.builder(pinstanceId)
 					.setAction(resultAction)
 					.build();
 

@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
-import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -31,19 +30,58 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * #L%
  */
 
+/**
+ * Process descriptors and instances repository.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IProcessInstancesRepository
 {
+	/**
+	 * Gets the handler type.
+	 * The handler type shall be unique accross all {@link IProcessInstancesRepository} implementations.
+	 * 
+	 * @return handler type
+	 */
 	String getProcessHandlerType();
 
+	/**
+	 * @return process descriptor; never returns null
+	 */
 	ProcessDescriptor getProcessDescriptor(ProcessId processId);
 
+	/** @return related process descriptors which are available to be called for given <code>preconditionsContext</code> */
 	Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(IProcessPreconditionsContext preconditionsContext);
 
-	IProcessInstanceController createNewProcessInstance(ProcessId processId, JSONCreateProcessInstanceRequest request);
+	/**
+	 * Creates a new process instance for given request.
+	 * 
+	 * @param request
+	 * @return newly created process instance; never returns null
+	 */
+	IProcessInstanceController createNewProcessInstance(CreateProcessInstanceRequest request);
 
+	/**
+	 * Fetching the process instance for given <code>pinstanceId</code> (readonly) and processes it using given processor.
+	 * 
+	 * @param pinstanceId
+	 * @param processor
+	 * @return <code>processor</code>'s return value
+	 */
 	<R> R forProcessInstanceReadonly(DocumentId pinstanceId, Function<IProcessInstanceController, R> processor);
 
+	/**
+	 * Fetching the process instance for given <code>pinstanceId</code> (read-write) and processes it using given processor.
+	 * 
+	 * @param pinstanceId
+	 * @param processor
+	 * @return <code>processor</code>'s return value
+	 */
 	<R> R forProcessInstanceWritable(DocumentId pinstanceId, Function<IProcessInstanceController, R> processor);
-	
+
+	/**
+	 * Resets internal caches.
+	 */
 	void cacheReset();
 }

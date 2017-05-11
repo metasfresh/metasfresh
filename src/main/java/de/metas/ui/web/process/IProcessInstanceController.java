@@ -32,7 +32,13 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 /**
- * Process instance controller
+ * Process instance controller.
+ * 
+ * Implementations of this call are able to manage a process instance life-cycle:
+ * <ul>
+ * <li>parameters: providing current values, changing parameters, providing lookup values
+ * <li>starting the process
+ * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
  *

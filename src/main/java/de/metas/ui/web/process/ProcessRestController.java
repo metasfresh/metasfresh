@@ -135,15 +135,24 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
-	public JSONProcessInstance createInstanceFromRequest(@PathVariable("processId") final String processIdStr, @RequestBody final JSONCreateProcessInstanceRequest request)
+	public JSONProcessInstance createInstanceFromRequest(@PathVariable("processId") final String processIdStr, @RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
 	{
 		userSession.assertLoggedIn();
 
-		final ProcessId processId = ProcessId.fromJson(processIdStr);
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
+				.processId(ProcessId.fromJson(processIdStr))
+				.singleDocumentPath(jsonRequest.getSingleDocumentPath())
+				.viewId(jsonRequest.getViewId())
+				.viewDocumentIds(jsonRequest.getViewDocumentIds())
+				.build();
+		// Validate request's AD_Process_ID 
+		// (we are not using it, but just for consistency)
+		request.assertProcessIdEquals(jsonRequest.getProcessId());
+		
+		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(processId, request);
+			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
