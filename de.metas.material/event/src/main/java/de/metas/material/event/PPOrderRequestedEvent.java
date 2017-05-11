@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import java.time.Instant;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
 
@@ -38,21 +36,20 @@ import lombok.NonNull;
  * <p>
  * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
  * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Data
 @AllArgsConstructor
 @Builder
-public class ProductionOrderRequested implements MaterialEvent
+public class PPOrderRequestedEvent implements MaterialEvent
 {
 	public static final String TYPE = "ProductionOrderEvent";
 
 	@NonNull
-	private final Instant when;
+	private final EventDescr eventDescr;
 
-	@NonNull
 	private final TableRecordReference reference;
 
 	@NonNull

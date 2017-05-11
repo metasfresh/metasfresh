@@ -352,15 +352,33 @@ public class ZoomInfoFactory
 			{
 				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount))
 				{
-					//
-					// Skip if we already added a zoom info for the same window
 					final int adWindowId = zoomInfo.getAD_Window_ID();
-					if (!alreadySeenWindowIds.add(adWindowId))
+
+					// If not our target window ID, skip it
+					// This shall not happen because we asked the zoomProvider to return only those for our target window,
+					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
+					if (targetAD_Window_ID > 0 && targetAD_Window_ID != adWindowId)
 					{
-						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
+						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
+								+ "\n zoomInfo: " + zoomInfo
+								+ "\n zoomProvider: " + zoomProvider
+								+ "\n targetAD_Window_ID: " + targetAD_Window_ID
+								+ "\n source: " + source
+								+ "\n checkRecordsCount: " + checkRecordsCount)
+										.throwIfDeveloperModeOrLogWarningElse(logger);
 						continue;
 					}
 
+					// #1062
+					// Only consider a window already seen if it actually has record count > 0
+					if (checkRecordsCount && zoomInfo.getRecordCount() > 0)
+					{
+						if (!alreadySeenWindowIds.add(adWindowId))
+						{
+							logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
+							continue;
+						}
+					}
 					//
 					// Filter out those ZoomInfos which have ZERO records (if requested)
 					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)
@@ -407,8 +425,10 @@ public class ZoomInfoFactory
 		}
 		else
 		{
-			// shall not happen because we assume that retriveZoomInfos will return one zoom info per AD_Window_ID
-			throw new IllegalStateException("More than one zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId + ": " + zoomInfos);
+			// Got more then one Zoominfo(s).
+			// we could check if they all have the same AD_Window_ID but does not matter..
+			// => returning the first one
+			return zoomInfos.get(0);
 		}
 	}
 
@@ -430,6 +450,7 @@ public class ZoomInfoFactory
 
 	/**
 	 * Disable the {@link FactAcctZoomProvider} (which is enabled by default
+	 * 
 	 * @deprecated Needed only for Swing
 	 */
 	@Deprecated
