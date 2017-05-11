@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
@@ -755,10 +752,4 @@ class RawWidget extends Component {
     }
 }
 
-RawWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-RawWidget = connect()(RawWidget)
-
-export default RawWidget
+export default RawWidget;
