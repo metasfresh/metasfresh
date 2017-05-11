@@ -147,6 +147,7 @@ class LoginForm extends Component {
                             disabled={pending}
                             autofocus={true}
                             doNotOpenOnFocus={true}
+                            mandatory={true}
                         />
                     </div>:
                     <div>
