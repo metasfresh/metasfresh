@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
@@ -12,8 +9,6 @@ import List from './List/List';
 import ActionButton from './ActionButton';
 import Image from './Image';
 import DevicesWidget from './Devices/DevicesWidget';
-
-import {getZoomIntoWindow} from '../../actions/WindowActions';
 
 import {DATE_FORMAT}  from '../../constants/Constants';
 
@@ -102,16 +97,6 @@ class RawWidget extends Component {
         this.setState({
             errorPopup: value
         })
-    }
-
-    handleZoomInto = (field) => {
-        const {dispatch, dataId, windowType, tabId, rowId} = this.props;
-        dispatch(getZoomIntoWindow(windowType, dataId, field, tabId, rowId))
-        .then(res => {
-             res.data && window.open('/window/' +
-                                res.data.documentPath.windowId + '/' +
-                                res.data.documentPath.documentId, '_blank');
-        });
     }
 
     getClassnames = (icon) => {
@@ -690,7 +675,7 @@ class RawWidget extends Component {
     render() {
         const {
             caption, fields, type, noLabel, widgetData, rowId, isModal,
-            handlePatch, widgetType
+            handlePatch, widgetType, handleZoomInto
         } = this.props;
 
         const {errorPopup} = this.state;
@@ -736,7 +721,7 @@ class RawWidget extends Component {
                         {fields[0].supportZoomInto ?
                         <span
                             className="zoom-into"
-                            onClick={() => this.handleZoomInto(
+                            onClick={() => handleZoomInto(
                                 fields[0].field)}>
                             {caption}
                         </span> : caption}
@@ -784,10 +769,4 @@ class RawWidget extends Component {
     }
 }
 
-RawWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-RawWidget = connect()(RawWidget)
-
-export default RawWidget
+export default RawWidget;

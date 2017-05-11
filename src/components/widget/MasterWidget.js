@@ -5,7 +5,8 @@ import { connect } from 'react-redux';
 import {
     patch,
     updatePropertyValue,
-    openModal
+    openModal,
+    getZoomIntoWindow
 } from '../../actions/WindowActions';
 
 import RawWidget from './RawWidget';
@@ -160,6 +161,16 @@ class MasterWidget extends Component {
         ));
     }
 
+    handleZoomInto = (field) => {
+        const {dispatch, dataId, windowType, tabId, rowId} = this.props;
+        dispatch(getZoomIntoWindow(windowType, dataId, field, tabId, rowId))
+        .then(res => {
+             res.data && window.open('/window/' +
+                                res.data.documentPath.windowId + '/' +
+                                res.data.documentPath.documentId, '_blank');
+        });
+    }
+
     render() {
         const {
             caption, widgetType, fields, windowType, type, noLabel, widgetData,
@@ -203,6 +214,7 @@ class MasterWidget extends Component {
                 listenOnKeysFalse={listenOnKeysFalse}
                 closeTableField={closeTableField}
                 inputValue={data}
+                handleZoomInto={this.handleZoomInto}
             />
         )
     }
