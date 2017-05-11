@@ -139,7 +139,7 @@ class RawWidget extends Component {
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
-            listenOnKeysFalse, closeTableField
+            listenOnKeysFalse, closeTableField, handleZoomInto
         } = this.props;
 
         const {isEdited} = this.state;
@@ -649,6 +649,23 @@ class RawWidget extends Component {
                         handlePatch={this.handlePatch}
                         readonly={widgetData[0].readonly || disabled}
                     />
+                )
+            case 'ZoomIntoButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ?
+                                'tag-disabled disabled ' : '')
+                        }
+                        onClick={() => handleZoomInto(
+                                fields[0].field)}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
+                    </button>
                 )
             default:
                 return false;
