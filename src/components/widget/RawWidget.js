@@ -139,7 +139,7 @@ class RawWidget extends Component {
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
-            listenOnKeysFalse, closeTableField
+            listenOnKeysFalse, closeTableField, handleZoomInto
         } = this.props;
 
         const {isEdited} = this.state;
@@ -659,7 +659,7 @@ class RawWidget extends Component {
                             (widgetData[0].readonly || disabled ?
                                 'tag-disabled disabled ' : '')
                         }
-                        onClick={() => this.handleZoomInto(
+                        onClick={() => handleZoomInto(
                                 fields[0].field)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
