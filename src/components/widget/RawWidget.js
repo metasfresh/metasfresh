@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
@@ -659,7 +658,7 @@ class RawWidget extends Component {
     render() {
         const {
             caption, fields, type, noLabel, widgetData, rowId, isModal,
-            handlePatch, widgetType
+            handlePatch, widgetType, handleZoomInto
         } = this.props;
 
         const {errorPopup} = this.state;
@@ -702,7 +701,13 @@ class RawWidget extends Component {
                         }
                         title={caption}
                     >
-                        {caption}
+                        {fields[0].supportZoomInto ?
+                        <span
+                            className="zoom-into"
+                            onClick={() => handleZoomInto(
+                                fields[0].field)}>
+                            {caption}
+                        </span> : caption}
                     </div>
                 }
                 <div
