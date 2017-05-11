@@ -386,7 +386,8 @@ class DocumentList extends Component {
 
     handleFilterChange = (filters) => {
         this.setState({
-            filters: filters
+            filters: filters,
+            page: 1
         }, () => {
             this.fetchLayoutAndData(true);
         })
