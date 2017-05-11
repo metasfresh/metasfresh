@@ -665,6 +665,23 @@ class RawWidget extends Component {
                         readonly={widgetData[0].readonly || disabled}
                     />
                 )
+            case 'ZoomIntoButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ?
+                                'tag-disabled disabled ' : '')
+                        }
+                        onClick={() => this.handleZoomInto(
+                                fields[0].field)}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
+                    </button>
+                )
             default:
                 return false;
         }
