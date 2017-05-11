@@ -134,7 +134,7 @@ public final class WebuiRelatedProcessDescriptor
 
 	public String getDisabledReason(final String adLanguage)
 	{
-		return getPreconditionsResolution().getRejectReason();
+		return getPreconditionsResolution().getRejectReason().translate(adLanguage);
 	}
 
 	public Map<String, Object> getDebugProperties()
