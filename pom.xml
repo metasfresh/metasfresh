@@ -50,6 +50,19 @@
 			<version>${spring-boot-admin.version}</version>
 		</dependency>
 
+		<!-- logging -->
+		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>4.9</version>
+		</dependency>
+		<!-- we need janino for the conditional that we have in the logback config -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
