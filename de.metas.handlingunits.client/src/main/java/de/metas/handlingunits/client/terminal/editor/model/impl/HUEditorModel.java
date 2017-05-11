@@ -1488,7 +1488,9 @@ public class HUEditorModel implements IDisposable
 		for (final HUKey huKey : huKeys)
 		{
 			final I_M_HU hu = huKey.getM_HU();
-			hus.add(hu);
+			
+			final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
+			hus.add(topLevelHU);
 		}
 
 		// movement date for inout
