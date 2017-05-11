@@ -67,7 +67,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		return PROCESS_HANDLER_TYPE;
 	}
 
-	private final ViewActionDescriptorsList getViewActionsDescriptor(@NonNull final IView view)
+	private final ViewActionDescriptorsList getViewActionDescriptors(@NonNull final IView view)
 	{
 		final ViewActionDescriptorsList viewClassActions = ViewActionDescriptorsFactory.instance.getFromClass(view.getClass());
 		
@@ -83,7 +83,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		final String actionId = viewIdAndActionId.getRight();
 		final IView view = viewsRepository.getView(viewId);
 
-		return getViewActionsDescriptor(view)
+		return getViewActionDescriptors(view)
 				.getAction(actionId);
 	}
 
@@ -103,7 +103,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		}
 
 		final IView view = viewContext.getView();
-		return getViewActionsDescriptor(view)
+		return getViewActionDescriptors(view)
 				.streamDocumentRelatedProcesses(viewContext);
 	}
 
@@ -135,7 +135,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		final String viewId = viewIdAndActionId.getLeft();
 		final String actionId = viewIdAndActionId.getRight();
 		final IView view = viewsRepository.getView(viewId);
-		final ViewActionDescriptor viewActionDescriptor = getViewActionsDescriptor(view).getAction(actionId);
+		final ViewActionDescriptor viewActionDescriptor = getViewActionDescriptors(view).getAction(actionId);
 
 		//
 		// Create the view action instance
