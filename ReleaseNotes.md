@@ -75,29 +75,38 @@ Here come the actual release notes:
     * Implementation of the new Zoom-into functionality in WebUI.
 
 * other
-  * [metasfresh/metasfresh-dev#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+  * [#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
     * Extension of the metasfresh-eclipse-config repository to generally contain development resources
-  * [metasfresh/metasfresh-dev#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
+  * [#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
     * Adding Vagrantfile for Developers.
-  * [metasfresh/metasfresh-admin/#3](https://github.com/metasfresh/metasfresh-admin/issues/3) create docker image for metasfresh-admin
+  * [#3](https://github.com/metasfresh/metasfresh-admin/issues/3) create docker image for metasfresh-admin
     * Creating a docker image for usage of metasfresh-admin.
 
 ## Fixes
 
 * metasfresh-backend
   * [#1179](https://github.com/metasfresh/metasfresh/issues/1179) Process logs are not displayed in Swing
-
+    * Fixes an exception of processe which create process logs in swing client.
+    
 * metasfresh-webui-api
   * [#255](https://github.com/metasfresh/metasfresh-webui-api/issues/255) Document fields: when receiving empty string values from frontend, convert them to nulls
+    * Converting empty string values to null for document fields.
   * [#351](https://github.com/metasfresh/metasfresh-webui-api/issues/351) Fix NPE when opening Materialdisposition
+    * Fixes a Null Pointer Exception that happend when opening the Material Disposition Window in WebUI.
   * [#360](https://github.com/metasfresh/metasfresh-webui-api/issues/360) Material receipt candidates: Error while Receving HUs for a particular case
+    * Fixes an error that occured in Material receipt window when trying to receive Handling units for a minor case.
 
 * metasfresh-webui-frontend
   * [#705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/705) Debug/Fix why /window/540189 shows empty
+    * Fix in webui. Window 540189 was only shown as empty screeen.
   * [#717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/717) Sidelist's scrollbar is on wrong container.
+    * Adding the sidelist scrollbar now in the correct container.
   * [#724](https://github.com/metasfresh/metasfresh-webui-frontend/issues/724) Login role selection keyboard down does not scroll automatically
+    * Fixing the login role selection. Now allowing the user to also select and see roles also in long role lists.
   * [#725](https://github.com/metasfresh/metasfresh-webui-frontend/issues/725) Sidelist closes when doubleclick
+    * Fixing the sidelist navigational behavior. When selecting a record the sidelist now remains sticky, until the user closes it via "oustide" cklick.
   * [#727](https://github.com/metasfresh/metasfresh-webui-frontend/issues/727) Grid view: reset current page to 1 when filtering
+    * Fixes the filtering functionality in grid view. Retestting the page counter to 1 after adding new Filter criteria.
 
 # metasfresh 5.8 (2017-18)
 
