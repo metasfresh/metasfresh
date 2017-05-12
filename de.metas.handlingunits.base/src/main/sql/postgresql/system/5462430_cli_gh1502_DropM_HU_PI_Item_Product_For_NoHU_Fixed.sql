@@ -8,7 +8,7 @@ UPDATE C_InvoiceLine SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Produ
 UPDATE DD_OrderLine SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_ShipmentSchedule SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE C_OLCand SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
-UPDATE M_HU_PI_Item_Product SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
+-- UPDATE M_HU_PI_Item_Product SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_HU SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_ProductPrice_Attribute SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_ReceiptSchedule SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
