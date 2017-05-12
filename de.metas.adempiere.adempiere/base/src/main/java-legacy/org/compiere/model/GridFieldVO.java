@@ -38,12 +38,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 

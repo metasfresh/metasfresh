@@ -13,7 +13,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,7 +46,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -56,6 +54,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
