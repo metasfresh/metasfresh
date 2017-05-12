@@ -165,8 +165,8 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	}
 
 	@Override
-	public I_M_HU_Item retrieveAggregatedItem(I_M_HU hu, I_M_HU_PI_Item piItem)
+	public I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu)
 	{
-		return getDelegate(hu).retrieveAggregatedItem(hu, piItem);
+		return getDelegate(hu).retrieveAggregatedItemOrNull(hu);
 	}
 }

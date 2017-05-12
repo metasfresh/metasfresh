@@ -81,5 +81,11 @@ public interface IHUAndItemsDAO
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
 
-	I_M_HU_Item retrieveAggregatedItem(I_M_HU hu, I_M_HU_PI_Item piItem);
+	/**
+	 * Retrieve the Aggregated Item from an HU in case it has one
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu);
 }
