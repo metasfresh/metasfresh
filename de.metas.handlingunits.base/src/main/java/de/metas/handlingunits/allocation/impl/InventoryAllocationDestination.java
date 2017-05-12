@@ -167,15 +167,15 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				}
 				else
 				{
+					// check if there is any aggregated HU in the top level HU.
 					final I_M_HU_PI_Item huPIItem = hu.getM_HU_PI_Item_Product().getM_HU_PI_Item();
 					
-					final I_M_HU_Item item1 = handlingUnitsDAO.retrieveAggregatedItem(hu, huPIItem);
-					final I_M_HU_Item item2 = handlingUnitsDAO.retrieveAggregatedItem(topLevelParent, huPIItem);
-//					if(item != null)
-//					{
+					final I_M_HU_Item item = handlingUnitsDAO.retrieveAggregatedItem(topLevelParent, huPIItem);
+					if(item != null)
+					{
 						final I_M_HU_PI huPI = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI();
-						collector.addM_HU_PI(huPI, item2.getQty().intValueExact(), inOutLine);
-	//				}
+						collector.addM_HU_PI(huPI, item.getQty().intValueExact(), inOutLine);
+					}
 				}
 				final I_M_InOut inout = inOutLine.getM_InOut();
 
