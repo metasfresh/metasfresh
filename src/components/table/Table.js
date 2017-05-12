@@ -218,7 +218,8 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        if(event.target.parentNode !== document) {
+        if(event.target.parentNode !== document &&
+            !event.target.parentNode.className.includes('notification')) {
             const item = event.path;
             for(let i = 0; i < item.length; i++){
                 if(
