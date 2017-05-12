@@ -147,7 +147,8 @@ class MasterWindow extends Component {
 
     renderBody = () => {
         const {
-            master, modal, rawModal, selected, indicator
+            master, modal, rawModal, selected, indicator, selectedWindowType,
+            includedView, processStatus
         } = this.props;
         const {newRow, modalTitle} = this.state;
         const {type} = master.layout;
@@ -202,8 +203,23 @@ class MasterWindow extends Component {
                         windowType={rawModal.type}
                         defaultViewId={rawModal.viewId}
                         selected={selected}
+                        selectedWindowType={selectedWindowType}
+                        isModal={true}
                         setModalTitle={this.setModalTitle}
-                    />
+                        processStatus={processStatus}
+                        includedView={includedView}
+                        inBackground={
+                            includedView.windowType && includedView.viewId
+                        }
+                    >
+                        <DocumentList
+                            type="includedView"
+                            selected={selected}
+                            windowType={includedView.windowType}
+                            defaultViewId={includedView.viewId}
+                            isIncluded={true}
+                        />
+                    </DocumentList>
                 </RawModal>
             )
         }
@@ -293,19 +309,33 @@ MasterWindow.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
+    const { windowHandler, menuHandler, listHandler, appHandler } = state;
     const {
         master,
         modal,
         rawModal,
         selected,
+        selectedWindowType,
         indicator
     } = windowHandler || {
         master: {},
         modal: false,
         rawModal: {},
         selected: [],
+        selectedWindowType: null,
         indicator: ''
+    }
+
+    const {
+        includedView
+    } = listHandler || {
+        includedView: {}
+    }
+
+    const {
+        processStatus
+    } = appHandler || {
+        processStatus: ''
     }
 
     const {
@@ -320,7 +350,10 @@ function mapStateToProps(state) {
         modal,
         selected,
         rawModal,
-        indicator
+        indicator,
+        selectedWindowType,
+        includedView,
+        processStatus
     }
 }
 
