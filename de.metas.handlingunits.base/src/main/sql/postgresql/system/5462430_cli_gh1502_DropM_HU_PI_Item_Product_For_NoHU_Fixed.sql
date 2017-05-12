@@ -1,4 +1,5 @@
-
+-- See 5462431_cli_gh1502_DropM_HU_PI_Item_Product_For_NoHU_Fixed_2.sql
+/*
 UPDATE M_ProductPrice SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE C_Order SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE C_OrderLine SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
@@ -28,6 +29,4 @@ UPDATE PMM_Balance SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product
 
 delete from M_HU_PI_Item_Product pip
 where exists (select * from M_HU_PI_Item i where i.M_HU_PI_Item_ID=pip.M_HU_PI_Item_ID and i.M_HU_PI_Version_ID=100);
-
-
-
+*/
