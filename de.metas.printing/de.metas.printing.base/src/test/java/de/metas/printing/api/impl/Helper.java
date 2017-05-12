@@ -60,8 +60,6 @@ import org.compiere.util.Util.ArrayKey;
 import org.junit.Assert;
 import org.junit.rules.TestName;
 
-import com.google.common.base.Suppliers;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
@@ -203,7 +201,7 @@ public class Helper
 
 		//
 		// Base Language
-		Language.setBaseLanguage(Suppliers.ofInstance(Language.getLanguage("de_DE")));
+		Language.setBaseLanguage(() -> "de_DE");
 	}
 
 	public Properties getCtx()
