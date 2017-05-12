@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -692,8 +691,7 @@ public class HUTransferService
 	 * @param luPIItem may be {@code null}. If null, then the resulting top level HU will be a TU
 	 * @param isOwnPackingMaterials
 	 */
-	private List<I_M_HU> tuToTopLevelHUs(
-			final I_M_HU sourceTuHU, final BigDecimal qtyTU, final I_M_HU_PI_Item luPIItem, final boolean isOwnPackingMaterials)
+	private List<I_M_HU> tuToTopLevelHUs(final I_M_HU sourceTuHU, final BigDecimal qtyTU, final I_M_HU_PI_Item luPIItem, final boolean isOwnPackingMaterials)
 	{
 		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
@@ -741,23 +739,17 @@ public class HUTransferService
 			}
 			destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
-			final IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
-
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
 					.retrievePIItems(tuPI, sourceTuHU.getC_BPartner()).stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
-			if(materialItem == null)
+			if (materialItem == null)
 			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@");
+				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@")
+						.setParameter("tuPI", tuPI);
 			}
 
-			final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(materialItem, sourceTuHU.getC_BPartner(), cuProduct, SystemTime.asDate());
-			if (piip == null)
-			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_Product_ID@");
-			}
-			destination.addTUCapacity(cuProduct, piip.getQty(), cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
+			destination.addTUCapacity(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
 			HUSplitBuilderCoreEngine
 					.of(huContext,
@@ -766,7 +758,7 @@ public class HUTransferService
 							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false),
 							destination)
 					.withPropagateHUValues()
-					.withTuPIItem(piip.getM_HU_PI_Item())
+					.withTuPIItem(materialItem)
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
 
