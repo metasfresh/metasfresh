@@ -21,6 +21,6 @@ de.metas.endcustomer.mf15/metasfresh.properties
 *.log
 
 /de.metas.elasticsearch/data/
-
-
+/.metadata
+/.recommenders
 
