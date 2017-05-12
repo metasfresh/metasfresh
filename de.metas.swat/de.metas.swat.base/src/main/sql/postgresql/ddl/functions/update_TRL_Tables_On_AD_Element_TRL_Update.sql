@@ -90,3 +90,17 @@ $BODY$
   COST 100;
 ALTER FUNCTION public.update_trl_tables_on_ad_element_trl_update(numeric, character varying)
   OWNER TO metasfresh;
+
+  
+  
+ COMMENT ON FUNCTION public.update_trl_tables_on_ad_element_trl_update(
+    ad_element_id numeric,
+    ad_language character varying) 
+ IS
+    'When the AD_Element_trl has one of its values changed, the change shall also propagate to the linked table entries:
+-AD_Column_TRL -- name, isTranslated
+-AD_Process_Para_TRL -- name, description, help, isTranslated
+-AD_Field_TRL --name, description, help, isTranslated
+-AD_PrintFormatItem_TRL -- printname, isTranslated
+'
+;
