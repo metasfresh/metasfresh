@@ -61,7 +61,7 @@ public final class JSONDocumentAction implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean disabled;
 	@JsonProperty("disabledReason")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String disabledReason;
 
 	private final Map<String, Object> debugProperties;

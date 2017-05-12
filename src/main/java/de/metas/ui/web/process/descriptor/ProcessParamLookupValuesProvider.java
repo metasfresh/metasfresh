@@ -64,4 +64,7 @@ public @interface ProcessParamLookupValuesProvider
 
 	/** true if we will provide {@link IntegerLookupValue}s, else {@link StringLookupValue}s are assumed */
 	boolean numericKey();
+
+	/** optional lookup table name; needed for zoom into */
+	String lookupTableName() default "";
 }

@@ -112,16 +112,26 @@ public final class MenuTree
 		return node;
 	}
 
-	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final String elementId)
+	private MenuNode getFirstNodeByElementIdOrNull(final MenuNodeType type, final String elementId)
 	{
 		final ArrayKey key = mkTypeAndElementIdKey(type, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())
 		{
-			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
+			return null;
 		}
 
 		return nodes.get(0);
+	}
+
+	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final String elementId)
+	{
+		final MenuNode node = getFirstNodeByElementIdOrNull(type, elementId);
+		if (node == null)
+		{
+			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
+		}
+		return node;
 	}
 
 	public Optional<MenuNode> getNewRecordNodeForWindowId(final WindowId windowId)
@@ -156,6 +166,23 @@ public final class MenuTree
 	{
 		final MenuNode node = getFirstNodeByElementId(type, elementId);
 		return getPath(node);
+	}
+
+	public MenuNode getTopLevelMenuGroupOrNull(final WindowId windowId)
+	{
+		final String elementId = windowId.toJson();
+		final MenuNode node = getFirstNodeByElementIdOrNull(MenuNodeType.Window, elementId);
+		if (node == null)
+		{
+			return null;
+		}
+		final List<MenuNode> path = getPath(node);
+		// NOTE: the top level menu group is at index "1" because on index "0" we have the menu root node.
+		if (path.size() < 2)
+		{
+			return null;
+		}
+		return path.get(1);
 	}
 
 	private List<MenuNode> getPath(final MenuNode node)

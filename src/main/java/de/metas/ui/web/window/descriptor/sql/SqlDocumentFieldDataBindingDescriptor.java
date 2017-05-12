@@ -1,27 +1,14 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.compiere.util.DisplayType;
-import org.compiere.util.SecureEngine;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -39,16 +26,16 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor
+public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor, SqlEntityFieldBinding
 {
 	public static final Builder builder()
 	{
@@ -69,7 +56,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		final DocumentFieldDataBindingDescriptor descriptor = optionalDescriptor.get();
 		return castOrNull(descriptor);
 	}
-	
+
 	public static final SqlDocumentFieldDataBindingDescriptor castOrNull(final DocumentFieldDataBindingDescriptor descriptor)
 	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
@@ -80,15 +67,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return null;
 	}
 
-
-	private static final transient Logger logger = LogManager.getLogger(SqlDocumentFieldDataBindingDescriptor.class);
-
 	private final String fieldName;
 
 	private final String sqlTableName;
 	private final String sqlTableAlias;
 	private final String sqlColumnName;
-	private final IStringExpression sqlColumnSql;
+	private final String sqlColumnSql;
+	private final Class<?> sqlValueClass;
+
 	private final boolean virtualColumn;
 	private final boolean mandatory;
 	private final boolean keyColumn;
@@ -102,12 +88,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final IStringExpression displayColumnSqlExpression;
 	private final Boolean numericKey;
 	//
-	private final IStringExpression sqlSelectValue;
+	private final String sqlSelectValue;
 	private final IStringExpression sqlSelectDisplayValue;
 
 	private final int defaultOrderByPriority;
 	private final boolean defaultOrderByAscending;
-	
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
@@ -118,6 +103,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		sqlTableAlias = builder.getTableAlias();
 		sqlColumnName = builder.getColumnName();
 		sqlColumnSql = builder.getColumnSql();
+		sqlValueClass = builder.getSqlValueClass();
 		virtualColumn = builder.isVirtualColumn();
 		mandatory = builder.mandatory;
 		keyColumn = builder.keyColumn;
@@ -179,17 +165,24 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	/**
 	 * @return ColumnName or a SQL string expression in case {@link #isVirtualColumn()}
 	 */
-	public IStringExpression getColumnSql()
+	@Override
+	public String getColumnSql()
 	{
 		return sqlColumnSql;
 	}
-	
+
+	@Override
+	public Class<?> getSqlValueClass()
+	{
+		return sqlValueClass;
+	}
+
 	/** @return SQL to be used in SELECT ... 'this field's sql' ... FROM ... */
-	public IStringExpression getSqlSelectValue()
+	public String getSqlSelectValue()
 	{
 		return sqlSelectValue;
 	}
-	
+
 	public IStringExpression getSqlSelectDisplayValue()
 	{
 		return sqlSelectDisplayValue;
@@ -202,13 +195,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return virtualColumn;
 	}
-	
+
 	@Override
 	public boolean isMandatory()
 	{
 		return mandatory;
 	}
-	
+
+	@Override
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
@@ -275,53 +269,22 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.build();
 	}
 
-	/**
-	 * @param ascending
-	 * @return ORDER BY sql which consist of full column SQL definition instead of just the column name / display name
-	 */
-	public final IStringExpression buildSqlFullOrderBy(final boolean ascending)
+	@Override
+	public IStringExpression getSqlOrderBy()
 	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getColumnSql();
-		if (orderByExpr.isNullExpression())
-		{
-			return orderByExpr;
-		}
-
-		return IStringExpression.composer()
-				.append("(").append(orderByExpr).append(")").append(ascending ? " ASC" : " DESC")
-				.build();
-	}
-
-	public IStringExpression getSqlFullOrderBy()
-	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getColumnSql();
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.of(getColumnSql());
 		return orderByExpr;
 	}
-
-	/**
-	 * Retrieves a particular field from given {@link ResultSet}.
-	 */
-	@FunctionalInterface
-	public static interface DocumentFieldValueLoader
-	{
-		Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage) throws SQLException;
-		
-		default Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable) throws SQLException
-		{
-			String adLanguage = null;
-			return retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
-		}
-
-	}
-
+	
 	public static final class Builder
 	{
 		private String fieldName;
 		private String _sqlTableName;
 		private String _sqlTableAlias;
 		private String _sqlColumnName;
-		private IStringExpression _sqlColumnSql;
-		
+		private String _sqlColumnSql;
+		private Class<?> sqlValueClass;
+
 		private Boolean _virtualColumn;
 		private Boolean mandatory;
 
@@ -356,10 +319,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			if (_lookupDescriptor != null)
 			{
 				_usingDisplayColumn = true;
-				
+
 				final String sqlTableAlias = getTableAlias();
 				final String sqlColumnName = getColumnName();
-				
+
 				_displayColumnName = sqlColumnName + "$Display";
 				final String sqlColumnNameFQ = sqlTableAlias + "." + sqlColumnName;
 				_displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlColumnNameFQ);
@@ -375,44 +338,40 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 			return new SqlDocumentFieldDataBindingDescriptor(this);
 		}
-		
-		private final IStringExpression buildSqlSelectValue()
+
+		private final String buildSqlSelectValue()
 		{
-			final IStringExpression columnSqlExpr = getColumnSql();
+			final String columnSql = getColumnSql();
 			final String columnName = getColumnName();
 
 			final boolean isVirtualColumn = isVirtualColumn();
 			if (isVirtualColumn)
 			{
-				return IStringExpression.composer()
-						.append(columnSqlExpr).append(" AS ").append(columnName)
-						.build();
+				return columnSql + " AS " + columnName;
 			}
 			else
 			{
-				return IStringExpression.composer()
-						.append(getTableName()).append(".").append(columnSqlExpr).append(" AS ").append(columnName)
-						.build();
+				return getTableName() + "." + columnSql + " AS " + columnName;
 			}
 		}
-		
+
 		private final IStringExpression buildSqlSelectDisplayValue()
 		{
-			if(!isUsingDisplayColumn())
+			if (!isUsingDisplayColumn())
 			{
 				return IStringExpression.NULL;
 			}
-			
+
 			final IStringExpression displayColumnSqlExpression = getDisplayColumnSqlExpression();
 			final String displayColumnName = getDisplayColumnName();
 			return IStringExpression.composer()
 					.append("(").append(displayColumnSqlExpression).append(") AS ").append(displayColumnName)
 					.build();
 		}
-		
+
 		private DocumentFieldValueLoader getDocumentFieldValueLoader()
 		{
-			if(_documentFieldValueLoader == null)
+			if (_documentFieldValueLoader == null)
 			{
 				_documentFieldValueLoader = createDocumentFieldValueLoader(
 						getColumnName() //
@@ -446,167 +405,43 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				, final DocumentFieldWidgetType widgetType //
 				, final boolean encrypted //
 				, final Boolean numericKey //
-		)
+				)
 		{
-			final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger; // yes, we can share the static logger
-
 			if (!Check.isEmpty(displayColumnName))
 			{
-				if (numericKey)
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						final int id = rs.getInt(sqlColumnName);
-						if(rs.wasNull())
-						{
-							return null;
-						}
-						if (isDisplayColumnAvailable)
-						{
-							final String displayName = rs.getString(displayColumnName);
-							return IntegerLookupValue.of(id, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
-						}
-						else
-						{
-							return IntegerLookupValue.unknown(id);
-						}
-					};
-				}
-				else
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						final String key = rs.getString(sqlColumnName);
-						if(rs.wasNull())
-						{
-							return null;
-						}
-						if (isDisplayColumnAvailable)
-						{
-							final String displayName = rs.getString(displayColumnName);
-							return StringLookupValue.of(key, ImmutableTranslatableString.singleLanguage(adLanguage, displayName));
-						}
-						else
-						{
-							return StringLookupValue.unknown(key);
-						}
-
-					};
-				}
+				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, displayColumnName, numericKey);
 			}
 			else if (java.lang.String.class == valueClass)
 			{
-				if (encrypted)
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> decrypt(rs.getString(sqlColumnName));
-				}
-				else
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> rs.getString(sqlColumnName);
-				}
+				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
 			}
 			else if (java.lang.Integer.class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final int valueInt = rs.getInt(sqlColumnName);
-					final Integer value = rs.wasNull() ? null : valueInt;
-					return encrypted ? decrypt(value) : value;
-				};
+				return DocumentFieldValueLoaders.toInteger(sqlColumnName, encrypted);
 			}
 			else if (java.math.BigDecimal.class == valueClass)
 			{
 				final Integer precision = widgetType.getStandardNumberPrecision();
-				if (precision != null)
-				{
-					final int precisionInt = precision;
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						BigDecimal value = rs.getBigDecimal(sqlColumnName);
-						value = value == null ? null : NumberUtils.setMinimumScale(value, precisionInt);
-						return encrypted ? decrypt(value) : value;
-					};
-				}
-				else
-				{
-					return (rs, isDisplayColumnAvailable, adLanguage) -> {
-						final BigDecimal value = rs.getBigDecimal(sqlColumnName);
-						return encrypted ? decrypt(value) : value;
-					};
-				}
+				return DocumentFieldValueLoaders.toBigDecimal(sqlColumnName, encrypted, precision);
 			}
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final Timestamp valueTS = rs.getTimestamp(sqlColumnName);
-					final java.util.Date value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
-					return encrypted ? decrypt(value) : value;
-				};
+				return DocumentFieldValueLoaders.toDate(sqlColumnName, encrypted);
 			}
 			// YesNo
 			else if (Boolean.class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					String valueStr = rs.getString(sqlColumnName);
-					if (encrypted)
-					{
-						valueStr = valueStr == null ? null : decrypt(valueStr).toString();
-					}
-
-					return DisplayType.toBoolean(valueStr);
-				};
+				return DocumentFieldValueLoaders.toBoolean(sqlColumnName, encrypted);
 			}
 			// LOB
 			else if (byte[].class == valueClass)
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final Object valueObj = rs.getObject(sqlColumnName);
-					final byte[] valueBytes;
-					if (rs.wasNull())
-					{
-						valueBytes = null;
-					}
-					else if (valueObj instanceof Clob)
-					{
-						final Clob lob = (Clob)valueObj;
-						final long length = lob.length();
-						valueBytes = lob.getSubString(1, (int)length).getBytes();
-					}
-					else if (valueObj instanceof Blob)
-					{
-						final Blob lob = (Blob)valueObj;
-						final long length = lob.length();
-						valueBytes = lob.getBytes(1, (int)length);
-					}
-					else if (valueObj instanceof String)
-					{
-						valueBytes = ((String)valueObj).getBytes();
-					}
-					else if (valueObj instanceof byte[])
-					{
-						valueBytes = (byte[])valueObj;
-					}
-					else
-					{
-						logger.warn("Unknown LOB value '{}' for {}. Considering it null.", valueObj, sqlColumnName);
-						valueBytes = null;
-					}
-					//
-					return valueBytes;
-				};
+				return DocumentFieldValueLoaders.toByteArray(sqlColumnName, encrypted);
 			}
 			else
 			{
-				return (rs, isDisplayColumnAvailable, adLanguage) -> {
-					final String value = rs.getString(sqlColumnName);
-					return encrypted ? decrypt(value) : value;
-				};
+				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
 			}
-		}
-
-		private static final Object decrypt(final Object value)
-		{
-			if (value == null)
-			{
-				return null;
-			}
-			return SecureEngine.decrypt(value);
 		}
 
 		public Builder setFieldName(final String fieldName)
@@ -620,7 +455,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this._sqlTableName = tableName;
 			return this;
 		}
-		
+
 		private String getTableName()
 		{
 			return _sqlTableName;
@@ -631,7 +466,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this._sqlTableAlias = tableAlias;
 			return this;
 		}
-		
+
 		private String getTableAlias()
 		{
 			return _sqlTableAlias;
@@ -642,19 +477,19 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this._sqlColumnName = columnName;
 			return this;
 		}
-		
+
 		private String getColumnName()
 		{
 			return _sqlColumnName;
 		}
 
-		public Builder setColumnSql(final IStringExpression columnSql)
+		public Builder setColumnSql(final String columnSql)
 		{
 			this._sqlColumnSql = columnSql;
 			return this;
 		}
-		
-		private IStringExpression getColumnSql()
+
+		private String getColumnSql()
 		{
 			return _sqlColumnSql;
 		}
@@ -664,12 +499,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this._virtualColumn = virtualColumn;
 			return this;
 		}
-		
+
 		private boolean isVirtualColumn()
 		{
 			return _virtualColumn;
 		}
-		
+
 		public Builder setMandatory(final boolean mandatory)
 		{
 			this.mandatory = mandatory;
@@ -687,33 +522,45 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this.widgetType = widgetType;
 			return this;
 		}
-		
+
+		public Builder setSqlValueClass(final Class<?> sqlValueClass)
+		{
+			this.sqlValueClass = sqlValueClass;
+			return this;
+		}
+
+		private Class<?> getSqlValueClass()
+		{
+			Check.assumeNotNull(sqlValueClass, "Parameter sqlValueClass is not null");
+			return sqlValueClass;
+		}
+
 		public Builder setLookupDescriptor(final LookupDescriptor lookupDescriptor)
 		{
 			this._lookupDescriptor = lookupDescriptor;
 			return this;
 		}
-		
+
 		private boolean isUsingDisplayColumn()
 		{
 			return _usingDisplayColumn;
 		}
-		
+
 		private String getDisplayColumnName()
 		{
 			return _displayColumnName;
 		}
-		
+
 		public IStringExpression getDisplayColumnSqlExpression()
 		{
 			return _displayColumnSqlExpression;
 		}
-		
+
 		public Boolean getNumericKey()
 		{
 			return _numericKey;
 		}
-		
+
 		public Builder setKeyColumn(final boolean keyColumn)
 		{
 			this.keyColumn = keyColumn;

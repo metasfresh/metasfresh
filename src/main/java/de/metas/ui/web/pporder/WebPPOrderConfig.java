@@ -3,15 +3,15 @@ package de.metas.ui.web.pporder;
 import java.util.function.Function;
 
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import com.google.common.base.Preconditions;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
@@ -37,14 +37,13 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 
 @Configuration
+@DependsOn(WebRestApiApplication.BEANNAME_Adempiere) // NOTE: we need Adempiere as parameter to make sure it was initialized. Else the DAOs will fail.
 public class WebPPOrderConfig
 {
 	public static final String AD_WINDOW_ID_IssueReceipt_String = "540328"; // Manufacturing Issue/Receipt
 	public static final WindowId AD_WINDOW_ID_IssueReceipt = WindowId.fromJson("540328"); // Manufacturing Issue/Receipt
 
-	// NOTE: we need Adempiere as parameter to make sure it was initialized. Else the DAOs will fail.
-	@Autowired
-	public WebPPOrderConfig(final Adempiere adempiere_NOTUSED)
+	public WebPPOrderConfig()
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
@@ -63,6 +62,7 @@ public class WebPPOrderConfig
 			};
 			//
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class).build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ReverseCandidate.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Planning.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Review.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Complete.class).build());

@@ -21,6 +21,7 @@ import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -92,6 +93,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final boolean calculated;
 
 	private final DocumentFieldWidgetType widgetType;
+	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final Class<?> valueClass;
 
@@ -149,6 +151,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		calculated = builder.isCalculated();
 
 		widgetType = builder.getWidgetType();
+		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		valueClass = builder.getValueClass();
 
 		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
@@ -232,6 +235,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
+	}
+	
+	public ButtonFieldActionDescriptor getButtonActionDescriptor()
+	{
+		return buttonActionDescriptor;
 	}
 
 	public Class<?> getValueClass()
@@ -459,8 +467,22 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 			else if (Boolean.class == targetType)
 			{
+				final Object valueToConv;
+				if(value instanceof StringLookupValue)
+				{
+					// If String lookup value then consider only the Key.
+					// usage example 1: the Posted column which can be Y, N and some other error codes.
+					// In this case we want to convert the "Y" to "true".
+					// usage example 2: some column which is List and the reference is "_YesNo".
+					valueToConv = ((StringLookupValue)value).getIdAsString();
+				}
+				else
+				{
+					valueToConv = value;
+				}
+				
 				@SuppressWarnings("unchecked")
-				final T valueConv = (T)DisplayType.toBoolean(value, Boolean.FALSE);
+				final T valueConv = (T)DisplayType.toBoolean(valueToConv, Boolean.FALSE);
 				return valueConv;
 			}
 			else if (IntegerLookupValue.class == targetType)
@@ -568,6 +590,12 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
+			else if(ITableRecordReference.class.isAssignableFrom(targetType))
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)convertToTableRecordReference(fieldName, value, widgetType, targetType, lookupDataSource);
+				return valueConv;
+			}
 		}
 		catch (final Exception e)
 		{
@@ -580,6 +608,23 @@ public final class DocumentFieldDescriptor implements Serializable
 		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 				+ "\n LookupDataSource: " + lookupDataSource //
 		);
+	}
+	
+	private static final ITableRecordReference convertToTableRecordReference(
+			final String fieldName //
+			, final Object value //
+			, final DocumentFieldWidgetType widgetType //
+			, final Class<?> targetType //
+			, @NonNull final LookupValueByIdSupplier lookupDataSource //
+			)
+	{
+		final IntegerLookupValue lookupValue = convertToValueClass(fieldName, value, widgetType, IntegerLookupValue.class, lookupDataSource);
+		if(lookupValue == null)
+		{
+			return null;
+		}
+		
+		return lookupDataSource.toTableRecordReference(lookupValue.getIdAsInt());
 	}
 
 	/* package */List<IDocumentFieldCallout> getCallouts()
@@ -638,7 +683,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
-		private int buttonProcessId = -1;
+		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
 		private Builder(final String fieldName)
 		{
@@ -1246,16 +1291,16 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return ImmutableList.copyOf(callouts);
 		}
-
-		public Builder setButtonProcessId(final int buttonProcessId)
+		
+		public Builder setButtonActionDescriptor(ButtonFieldActionDescriptor buttonActionDescriptor)
 		{
-			this.buttonProcessId = buttonProcessId;
+			this.buttonActionDescriptor = buttonActionDescriptor;
 			return this;
 		}
-
-		public int getButtonProcessId()
+		
+		public ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
-			return buttonProcessId;
+			return buttonActionDescriptor;
 		}
 	}
 }

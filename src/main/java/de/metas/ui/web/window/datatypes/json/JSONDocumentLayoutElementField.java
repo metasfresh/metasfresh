@@ -140,6 +140,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonProperty("newRecordCaption")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String newRecordCaption;
+	
+	@JsonProperty("supportZoomInto")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean supportZoomInto;
 
 	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
 	{
@@ -161,6 +165,8 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			newRecordWindowId = null;
 			newRecordCaption = null;
 		}
+		
+		supportZoomInto = fieldDescriptor.isSupportZoomInto() ? Boolean.TRUE : null;
 	}
 
 	@JsonCreator
@@ -171,7 +177,9 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			, @JsonProperty("emptyText") final String emptyText //
 			, @JsonProperty("devices") final List<JSONDeviceDescriptor> devices //
 			, @JsonProperty("newRecordWindowId") final String newRecordWindowId //
-			, @JsonProperty("newRecordCaption") final String newRecordCaption)
+			, @JsonProperty("newRecordCaption") final String newRecordCaption //
+			, @JsonProperty("supportZoomInto") final boolean supportZoomInto //
+			)
 	{
 		super();
 		this.field = field;
@@ -182,6 +190,8 @@ public final class JSONDocumentLayoutElementField implements Serializable
 
 		this.newRecordWindowId = newRecordWindowId;
 		this.newRecordCaption = newRecordCaption;
+		
+		this.supportZoomInto = supportZoomInto;
 	}
 
 	@Override
@@ -195,6 +205,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.add("emptyText", emptyText)
 				.add("actions", devices.isEmpty() ? null : devices)
 				.add("newRecordWindowId", newRecordWindowId)
+				.add("supportZoomInto", supportZoomInto)
 				.toString();
 	}
 

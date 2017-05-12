@@ -16,7 +16,7 @@
 
 	<properties>
 	
-		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 		<springfox-swagger.version>2.6.1</springfox-swagger.version>
 
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
@@ -95,6 +95,15 @@
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
 			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
+		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo</artifactId>
+			<version>${metasfresh.version}</version>
+			<type>jar</type>
 		</dependency>
 
 		<!-- Elasticsearch -->

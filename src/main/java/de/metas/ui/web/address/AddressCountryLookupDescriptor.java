@@ -1,6 +1,7 @@
 package de.metas.ui.web.address;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,6 +51,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupVal
 
 public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+	private static final Optional<String> LookupTableName = Optional.of(I_C_Country.Table_Name); 
 	private static final String CACHE_PREFIX = I_C_Country.Table_Name;
 	private static final String CONTEXT_LookupTableName = I_C_Country.Table_Name;
 
@@ -65,6 +67,12 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	public boolean isCached()
 	{
 		return true;
+	}
+	
+	@Override
+	public Optional<String> getLookupTableName()
+	{
+		return LookupTableName;
 	}
 	
 	@Override

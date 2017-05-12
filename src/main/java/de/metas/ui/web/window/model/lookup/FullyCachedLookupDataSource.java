@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
@@ -28,11 +30,11 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -62,7 +64,7 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		final int expireAfterMinutes = 60 * 2;
 		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -91,7 +93,7 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		}
 
 		final Predicate<LookupValue> filterPredicate = LookupValueFilterPredicates.of(filter);
-		if(filterPredicate == LookupValueFilterPredicates.MATCH_ALL)
+		if (filterPredicate == LookupValueFilterPredicates.MATCH_ALL)
 		{
 			return partition.offsetAndLimit(firstRow, pageLength);
 		}
@@ -119,8 +121,17 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
+	public ITableRecordReference toTableRecordReference(int id)
+	{
+		final String tableName = fetcher.getLookupTableName()
+				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to ITableRecordReference because the fetcher returned null tablename: " + fetcher));
+		return TableRecordReference.of(tableName, id);
+	}
+
+	@Override
 	public List<CCacheStats> getCacheStats()
 	{
 		return ImmutableList.of(cacheByPartition.stats());
 	}
+
 }

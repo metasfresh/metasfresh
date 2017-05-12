@@ -1,5 +1,6 @@
 package de.metas.ui.web.pporder;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -8,20 +9,24 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.allocation.transfer.HUTransferService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.view.ViewAction;
+import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -47,7 +52,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 
 /**
  * Collection of view actions to be plugged when the HU editor is opened
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -68,9 +73,35 @@ public final class PPOrderHUsToIssueActions
 		}
 	}
 
+	/** Precondition: the are some HUs selected */
+	public static class SingleSelectedLUOrTU implements ViewAction.Precondition
+	{
+		@Override
+		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
+		{
+			if (selectedDocumentIds.isEmpty())
+			{
+				return ProcessPreconditionsResolution.reject("no rows selected");
+			}
+			else if (selectedDocumentIds.size() > 1)
+			{
+				return ProcessPreconditionsResolution.reject("only one row shall be selected");
+			}
+
+			final DocumentId rowId = selectedDocumentIds.iterator().next();
+			final HUEditorRow row = HUEditorRow.cast(view.getById(rowId));
+			if (!row.isLU() && !row.isTU())
+			{
+				return ProcessPreconditionsResolution.reject("LU or TU shall be selected");
+			}
+
+			return ProcessPreconditionsResolution.accept();
+		}
+	}
+
 	/**
 	 * Action to issue selected HUs to currenty selected manufacturing order BOM line
-	 * 
+	 *
 	 * @param husView
 	 * @param selectedHURowIds
 	 */
@@ -93,7 +124,37 @@ public final class PPOrderHUsToIssueActions
 
 		husView.removesHUsAndInvalidate(hus);
 		ppOrderView.invalidateAll();
+	}
 
+	@ViewAction(caption = "PPOrderIncludedHUEditorActions.issueSelectedTUs", precondition = SingleSelectedLUOrTU.class)
+	public static void issueSelectedTUs( //
+			final HUEditorView husView //
+			, final Set<DocumentId> selectedHURowIds //
+			, @ViewActionParam(caption = "QtyTU", widgetType = DocumentFieldWidgetType.Integer) final Integer qtyTUs //
+	)
+	{
+		final PPOrderLinesView ppOrderView = getPPOrderView(husView).get();
+		final int ppOrderId = ppOrderView.getPP_Order_ID();
+
+		final DocumentId rowId = selectedHURowIds.iterator().next();
+		final HUEditorRow row = HUEditorRow.cast(husView.getById(rowId));
+
+		final I_M_HU sourceLUorTU = row.getM_HU();
+
+		final List<I_M_HU> extractedTUs = HUTransferService.get(Env.getCtx())
+				.tuToNewTUs(sourceLUorTU, BigDecimal.valueOf(qtyTUs), sourceLUorTU.isHUPlanningReceiptOwnerPM());
+		if (extractedTUs.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		Services.get(IHUPPOrderBL.class)
+				.createIssueProducer()
+				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
+				.createIssues(extractedTUs);
+
+		husView.invalidateAll();
+		ppOrderView.invalidateAll();
 	}
 
 	private static final Set<Integer> extractHUIds(final IView view, final Set<DocumentId> selectedHURowIds)

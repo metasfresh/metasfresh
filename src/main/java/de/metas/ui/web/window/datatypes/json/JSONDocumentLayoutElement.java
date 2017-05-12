@@ -1,28 +1,27 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
+import lombok.ToString;
 
 /*
  * #%L
@@ -37,18 +36,19 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @ApiModel("element")
-@SuppressWarnings("serial")
-public final class JSONDocumentLayoutElement implements Serializable
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@ToString
+public final class JSONDocumentLayoutElement
 {
 	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
@@ -82,9 +82,10 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
+	
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer buttonProcessId;
+	private final ProcessId buttonProcessId;
 
 	@JsonProperty("precision")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -103,19 +104,14 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
-	/** Other properties */
-	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
-
 	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
 	{
-		super();
 		final String adLanguage = jsonOpts.getAD_Language();
 
 		final String caption = element.getCaption(adLanguage);
 		if (jsonOpts.isDebugShowColumnNamesForCaption())
 		{
 			this.caption = element.getCaptionAsFieldNames();
-			putDebugProperty("caption-original", caption);
 		}
 		else
 		{
@@ -125,8 +121,18 @@ public final class JSONDocumentLayoutElement implements Serializable
 		description = element.getDescription(adLanguage);
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
-		buttonProcessId = element.getButtonProcessId() > 0 ? element.getButtonProcessId() : null;
 		precision = element.getPrecision().orElse(null);
+		
+		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
+		final ButtonFieldActionType buttonActionType = buttonAction == null ? null : buttonAction.getActionType();
+		if(buttonActionType == ButtonFieldActionType.processCall)
+		{
+			buttonProcessId = buttonAction.getProcessId();
+		}
+		else
+		{
+			buttonProcessId = null;
+		}
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
@@ -137,7 +143,6 @@ public final class JSONDocumentLayoutElement implements Serializable
 	/** Debugging field constructor */
 	private JSONDocumentLayoutElement(final String fieldName, final DocumentFieldWidgetType widgetType)
 	{
-		super();
 		caption = fieldName;
 		description = null;
 
@@ -155,100 +160,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				, (List<JSONDeviceDescriptor>)null // devices
 				, (String)null // newRecordWindowId
 				, (String)null // newRecordCaption
+				, widgetType.isSupportZoomInto() // supportZoomInfo
 		));
-	}
-
-	@JsonCreator
-	public JSONDocumentLayoutElement(
-			@JsonProperty("caption") final String caption //
-			, @JsonProperty("description") final String description //
-			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
-			, @JsonProperty("buttonProcessId") final int buttonProcessId //
-			, @JsonProperty("precision") final Integer precision //
-			, @JsonProperty("type") final JSONLayoutType type //
-			, @JsonProperty("fields") final Set<JSONDocumentLayoutElementField> fields //
-			, @JsonProperty("gridAlign") final JSONLayoutAlign gridAlign //
-	)
-	{
-		super();
-		this.caption = caption;
-		this.description = description;
-
-		this.widgetType = widgetType;
-		this.buttonProcessId = buttonProcessId;
-		this.precision = precision;
-
-		this.type = type;
-		this.gridAlign = gridAlign;
-
-		this.fields = fields == null ? ImmutableSet.of() : ImmutableSet.copyOf(fields);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("caption", caption)
-				.add("description", description)
-				.add("widgetType", widgetType)
-				.add("buttonProcessId", buttonProcessId)
-				.add("type", type)
-				.add("gridAlign", gridAlign)
-				.add("fields", fields.isEmpty() ? null : fields)
-				.toString();
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getDescription()
-	{
-		return description;
-	}
-
-	public JSONLayoutWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-	
-	public Integer getButtonProcessId()
-	{
-		return buttonProcessId;
-	}
-
-	public JSONLayoutType getType()
-	{
-		return type;
-	}
-
-	public JSONLayoutAlign getGridAlign()
-	{
-		return gridAlign;
-	}
-
-	public Set<JSONDocumentLayoutElementField> getFields()
-	{
-		return fields;
-	}
-
-	@JsonAnyGetter
-	public Map<String, Object> getOtherProperties()
-	{
-		return otherProperties;
-	}
-
-	@JsonAnySetter
-	public void putOtherProperty(final String name, final Object jsonValue)
-	{
-		otherProperties.put(name, jsonValue);
-	}
-
-	public JSONDocumentLayoutElement putDebugProperty(final String name, final Object jsonValue)
-	{
-		otherProperties.put("debug-" + name, jsonValue);
-		return this;
 	}
 }

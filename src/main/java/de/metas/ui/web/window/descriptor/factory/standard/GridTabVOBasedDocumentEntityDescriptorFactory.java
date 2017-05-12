@@ -7,9 +7,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
@@ -18,12 +16,15 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -62,7 +63,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
 	private final Map<Integer, String> _adFieldId2columnName;
@@ -71,7 +72,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 	//
 	// State
-	private final Builder _documentEntryBuilder;
+	private final DocumentEntityDescriptor.Builder _documentEntryBuilder;
 
 	public GridTabVOBasedDocumentEntityDescriptorFactory(final GridTabVO gridTabVO, final GridTabVO parentTabVO, final boolean isSOTrx)
 	{
@@ -227,18 +228,16 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		//
 		//
 		DocumentFieldWidgetType widgetType;
-		final int buttonProcessId;
 		final Class<?> valueClass;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
 		final LookupDescriptorProvider lookupDescriptorProvider;
 		final LookupDescriptor lookupDescriptor;
-		final ILogicExpression readonlyLogic;
+		ILogicExpression readonlyLogic;
 
 		if (isParentLinkColumn)
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
-			buttonProcessId = -1;
 			valueClass = Integer.class;
 			alwaysUpdateable = false;
 
@@ -252,25 +251,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		{
 			final int displayType = gridFieldVO.getDisplayType();
 			widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
-			if (widgetType.isButton() && gridFieldVO.AD_Process_ID > 0)
-			{
-				if (WindowConstants.FIELDNAME_DocAction.equals(fieldName)
-						|| WindowConstants.FIELDNAME_Processing.equals(fieldName))
-				{
-					// FIXME: hardcoded, exclude field when considering ProcessButton widget
-					// because it's AD_Process_ID it's a placeholder-ish one.
-					buttonProcessId = -1;
-				}
-				else
-				{
-					widgetType = DocumentFieldWidgetType.ProcessButton;
-					buttonProcessId = gridFieldVO.AD_Process_ID;
-				}
-			}
-			else
-			{
-				buttonProcessId = -1;
-			}
 
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 
@@ -314,6 +294,31 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				readonlyLogic = gridFieldVO.getReadOnlyLogic();
 			}
 		}
+		
+		//
+		// Button action
+		final ButtonFieldActionDescriptor buttonAction;
+		if(!isParentLinkColumn && widgetType.isButton())
+		{
+			buttonAction = extractButtonFieldActionDescriptor(entityDescriptor.getTableNameOrNull(), fieldName, gridFieldVO.AD_Process_ID);
+			if(buttonAction != null)
+			{
+				final ButtonFieldActionType actionType = buttonAction.getActionType();
+				if (actionType == ButtonFieldActionType.processCall)
+				{
+					widgetType = DocumentFieldWidgetType.ProcessButton;
+				}
+				else if(actionType == ButtonFieldActionType.genericZoomInto)
+				{
+					widgetType = DocumentFieldWidgetType.ZoomIntoButton;
+					readonlyLogic = ConstantLogicExpression.FALSE; // allow pressing the button
+				}
+			}
+		}
+		else
+		{
+			buttonAction = null;
+		}
 
 		//
 		// ORDER BY SortNo
@@ -323,7 +328,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			orderBySortNo = Integer.MAX_VALUE;
 		}
 
-		final IStringExpression sqlColumnSql = expressionFactory.compile(gridFieldVO.getColumnSQL(false), IStringExpression.class);
+		final String sqlColumnSql = gridFieldVO.getColumnSQL(false);
 
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
@@ -335,6 +340,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
+				.setSqlValueClass(entityBindings.getPOInfo().getColumnClass(sqlColumnName))
 				.setLookupDescriptor(lookupDescriptor)
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
@@ -349,7 +355,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setParentLink(isParentLinkColumn)
 				//
 				.setWidgetType(widgetType)
-				.setButtonProcessId(buttonProcessId)
+				.setButtonActionDescriptor(buttonAction)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				.setValueClass(fieldBinding.getValueClass())
 				.setVirtualField(fieldBinding.isVirtualColumn())
@@ -379,6 +385,40 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+	
+	private ButtonFieldActionDescriptor extractButtonFieldActionDescriptor(final String tableName, final String fieldName, final int adProcessId)
+	{
+		// Process call
+		if(adProcessId > 0)
+		{
+			// FIXME: hardcoded, exclude field when considering ProcessButton widget
+			// because it's AD_Process_ID it's a placeholder-ish one.
+			if (WindowConstants.FIELDNAME_DocAction.equals(fieldName)
+					|| WindowConstants.FIELDNAME_Processing.equals(fieldName))
+			{
+				return null;
+			}
+
+			return ButtonFieldActionDescriptor.processCall(ProcessId.ofAD_Process_ID(adProcessId));
+			// TODO widgetType = DocumentFieldWidgetType.ProcessButton;
+		}
+		
+		// Generic ZoomInto button
+		if(tableName != null)
+		{
+			if(adColumnBL.isRecordColumnName(fieldName))
+			{
+				final String zoomIntoTableIdFieldName = adColumnBL.getTableColumnName(tableName, fieldName).orElse(null);
+				if(zoomIntoTableIdFieldName != null)
+				{
+					return ButtonFieldActionDescriptor.genericZoomInto(zoomIntoTableIdFieldName);
+				}
+			}
+		}
+
+		//
+		return null;
 	}
 
 	public final DocumentFieldDescriptor.Builder addInternalVirtualField(

@@ -9,6 +9,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.GridTabVO;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -129,7 +130,7 @@ public final class DetailId implements Serializable
 		return toJson(this);
 	}
 
-	@JsonCreator
+	@JsonValue
 	public String toJson()
 	{
 		return toJson(this);

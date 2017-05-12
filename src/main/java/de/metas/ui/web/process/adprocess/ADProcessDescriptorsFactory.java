@@ -34,7 +34,6 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -50,6 +49,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpression
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -96,7 +96,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
 
 		final int adWindowId = preconditionsContext.getAD_Window_ID();
-
+		
 		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
 				.values()
 				.stream()
@@ -104,12 +104,24 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
 
-	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
+	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor, @NonNull final IProcessPreconditionsContext preconditionsContext)
 	{
-		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcess.getProcessId());
+		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcessDescriptor.getProcessId());
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
-		return WebuiRelatedProcessDescriptor.of(relatedProcess, processDescriptor, preconditionsResolutionSupplier);
+		
+		return WebuiRelatedProcessDescriptor.builder()
+				.processId(processDescriptor.getProcessId())
+				.processCaption(processDescriptor.getCaption())
+				.processDescription(processDescriptor.getDescription())
+				.debugProcessClassname(processDescriptor.getProcessClassname())
+				//
+				.quickAction(relatedProcessDescriptor.isWebuiQuickAction())
+				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
+				//
+				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
+				//
+				.build();
 	}
 
 	public ProcessDescriptor getProcessDescriptor(final ProcessId processId)
@@ -153,7 +165,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 		// Parameters layout
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setProcessId(processId)
-				.setLayoutType(ProcessLayoutType.Panel)
+				.setLayoutType(webuiProcesClassInfo.getLayoutType())
 				.setCaption(parametersDescriptor.getCaption())
 				.setDescription(parametersDescriptor.getDescription())
 				.addElements(parametersDescriptor);

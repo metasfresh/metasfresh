@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
 
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
@@ -56,4 +57,6 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	LookupValue findById(Object id);
 
 	List<CCacheStats> getCacheStats();
+	
+	ITableRecordReference toTableRecordReference(final int id);
 }

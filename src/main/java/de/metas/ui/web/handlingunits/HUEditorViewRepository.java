@@ -21,7 +21,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -31,7 +30,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
@@ -148,7 +146,7 @@ public class HUEditorViewRepository
 		final int huId = hu.getM_HU_ID();
 
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(DocumentId.of(huId))
+				.setRowId(HUEditorRow.rowIdFromM_HU_ID(huId))
 				.setType(huRecordType)
 				.setAttributesProvider(attributesProvider)
 				.setProcessed(processed)
@@ -275,7 +273,7 @@ public class HUEditorViewRepository
 		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
 
 		return HUEditorRow.builder(windowId)
-				.setRowId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + product.getM_Product_ID()))
+				.setRowId(HUEditorRow.rowIdFromM_HU_Storage(huId, product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProviderEffective)

@@ -116,6 +116,17 @@ public final class DocumentPath
 				.setRowId(rowIdStr)
 				.build();
 	}
+	
+	public static final DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId, @NonNull final DocumentId rowId)
+	{
+		return builder()
+				.setDocumentType(windowId)
+				.setDocumentId(documentId)
+				.setDetailId(detailId)
+				.setRowId(rowId)
+				.build();
+	}
+
 
 	public static final DocumentPath includedDocumentPath(final WindowId windowId, final String idStr, final String detailId)
 	{

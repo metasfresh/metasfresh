@@ -21,6 +21,7 @@ import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -47,11 +48,8 @@ import lombok.Value;
 
 public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 {
-	public static final HUEditorRowAttributesProvider newInstance()
-	{
-		return new HUEditorRowAttributesProvider();
-	}
-	
+	private final boolean readonly;
+
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
 	private final ConcurrentHashMap<ViewRowAttributesKey, HUEditorRowAttributes> rowAttributesByKey = new ConcurrentHashMap<>();
 
@@ -62,11 +60,17 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		private DocumentId huId;
 	}
 
-	private HUEditorRowAttributesProvider()
+	@Builder
+	private HUEditorRowAttributesProvider(final boolean readonly)
 	{
-		super();
+		this.readonly = readonly;
 	}
-	
+
+	private boolean isReadonly()
+	{
+		return readonly;
+	}
+
 	public DocumentId createAttributeKey(final int huId)
 	{
 		return DocumentId.of(huId);
@@ -95,9 +99,10 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		final DocumentId huEditorRowId = key.getHuEditorRowId();
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.ViewRecordAttributes, documentTypeId, huEditorRowId);
 
-		final boolean readonly = !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
+		final boolean rowAttributesReadonly = isReadonly() // readonly if the provider shall provide readonly attributes
+				|| !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // or, readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 
-		return new HUEditorRowAttributes(documentPath, attributesStorage, readonly);
+		return new HUEditorRowAttributes(documentPath, attributesStorage, rowAttributesReadonly);
 	}
 
 	private IAttributeStorageFactory getAttributeStorageFactory()

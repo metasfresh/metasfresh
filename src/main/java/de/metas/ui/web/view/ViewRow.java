@@ -5,8 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +15,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -54,8 +53,6 @@ public final class ViewRow implements IViewRow
 
 	private final Map<String, Object> values;
 
-	private final IViewRowAttributesProvider attributesProvider;
-
 	private final List<IViewRow> includedRows;
 
 	private ViewRow(final Builder builder)
@@ -65,11 +62,9 @@ public final class ViewRow implements IViewRow
 		type = builder.getType();
 		processed = builder.isProcessed();
 
-		values = ImmutableMap.copyOf(builder.values);
+		values = ImmutableMap.copyOf(builder.getValues());
 
 		includedRows = builder.buildIncludedRows();
-
-		attributesProvider = builder.getAttributesProviderOrNull();
 	}
 
 	@Override
@@ -80,7 +75,6 @@ public final class ViewRow implements IViewRow
 				.add("id", rowId)
 				.add("type", type)
 				.add("values", values)
-				.add("attributesProvider", attributesProvider)
 				.add("includedRows.count", includedRows.size())
 				.add("processed", processed)
 				.toString();
@@ -119,27 +113,13 @@ public final class ViewRow implements IViewRow
 	@Override
 	public boolean hasAttributes()
 	{
-		return attributesProvider != null;
+		return false;
 	}
 
 	@Override
 	public IViewRowAttributes getAttributes()
 	{
-		if (rowId == null)
-		{
-			throw new EntityNotFoundException("row does not support attributes");
-		}
-		if (attributesProvider == null)
-		{
-			throw new EntityNotFoundException("row does not support attributes");
-		}
-
-		final IViewRowAttributes attributes = attributesProvider.getAttributes(rowId, null);
-		if (attributes == null)
-		{
-			throw new EntityNotFoundException("row does not support attributes");
-		}
-		return attributes;
+		throw new EntityNotFoundException("row does not support attributes");
 	}
 
 	@Override
@@ -159,19 +139,15 @@ public final class ViewRow implements IViewRow
 	//
 	//
 	//
+	@ToString
 	public static final class Builder
 	{
 		private final WindowId windowId;
-		private String idFieldName;
-		private DocumentId _rowId;
+		private DocumentId rowId;
 		private IViewRowType type;
 		private Boolean processed;
-
-		private final Map<String, Object> values = new LinkedHashMap<>();
-
+		private final Map<String, Object> values = new LinkedHashMap<>(); // preserve the insertion order of fields
 		private List<IViewRow> includedRows = null;
-
-		private IViewRowAttributesProvider attributesProvider;
 
 		private Builder(@NonNull final WindowId windowId)
 		{
@@ -189,55 +165,53 @@ public final class ViewRow implements IViewRow
 			return DocumentPath.rootDocumentPath(windowId, documentId);
 		}
 
-		public Builder setIdFieldName(final String idFieldName)
+		public Builder setRowId(final DocumentId rowId)
 		{
-			this.idFieldName = idFieldName;
+			this.rowId = rowId;
 			return this;
 		}
 
-		public Builder setRowId(final DocumentId rowId)
+		public Builder setRowIdFromObject(final Object jsonRowIdObj)
 		{
-			_rowId = rowId;
+			setRowId(convertToRowId(jsonRowIdObj));
 			return this;
+		}
+
+		private static final DocumentId convertToRowId(@NonNull final Object jsonRowIdObj)
+		{
+			if (jsonRowIdObj instanceof DocumentId)
+			{
+				return (DocumentId)jsonRowIdObj;
+			}
+			else if (jsonRowIdObj instanceof Integer)
+			{
+				return DocumentId.of((Integer)jsonRowIdObj);
+			}
+			else if (jsonRowIdObj instanceof String)
+			{
+				return DocumentId.of(jsonRowIdObj.toString());
+			}
+			else if (jsonRowIdObj instanceof JSONLookupValue)
+			{
+				// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
+				final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
+				return DocumentId.of(jsonLookupValue.getKey());
+			}
+			else
+			{
+				throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
+			}
+
 		}
 
 		/** @return view row ID */
 		private DocumentId getRowId()
 		{
-			if (_rowId != null)
+			if (rowId == null)
 			{
-				return _rowId;
+				throw new IllegalStateException("No rowId was provided for " + this);
 			}
-
-			if (idFieldName == null)
-			{
-				throw new IllegalStateException("No idFieldName was specified");
-			}
-
-			final Object idJson = values.get(idFieldName);
-
-			if (idJson == null)
-			{
-				throw new IllegalArgumentException("No ID found for " + idFieldName);
-			}
-			if (idJson instanceof Integer)
-			{
-				return DocumentId.of((Integer)idJson);
-			}
-			else if (idJson instanceof String)
-			{
-				return DocumentId.of(idJson.toString());
-			}
-			else if (idJson instanceof JSONLookupValue)
-			{
-				// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-				final JSONLookupValue jsonLookupValue = (JSONLookupValue)idJson;
-				return DocumentId.of(jsonLookupValue.getKey());
-			}
-			else
-			{
-				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' (" + idJson.getClass() + ") to integer");
-			}
+			return rowId;
 		}
 
 		private IViewRowType getType()
@@ -285,15 +259,9 @@ public final class ViewRow implements IViewRow
 			return this;
 		}
 
-		private IViewRowAttributesProvider getAttributesProviderOrNull()
+		private Map<String, Object> getValues()
 		{
-			return attributesProvider;
-		}
-
-		public Builder setAttributesProvider(@Nullable final IViewRowAttributesProvider attributesProvider)
-		{
-			this.attributesProvider = attributesProvider;
-			return this;
+			return values;
 		}
 
 		public Builder addIncludedRow(final IViewRow includedRow)

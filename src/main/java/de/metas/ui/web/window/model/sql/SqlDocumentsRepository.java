@@ -28,8 +28,10 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -42,9 +44,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
@@ -246,9 +248,30 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
+	public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor, final DocumentQuery childDocumentQuery)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = SqlDocumentQueryBuilder.of(childDocumentQuery)
+				.getSqlSelectParentId(sqlParams, parentEntityDescriptor);
+
+		final int parentRecordId = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		if (parentRecordId < 0)
+		{
+			throw new EntityNotFoundException("Parent documentId was not found")
+					.setParameter("parentEntityDescriptor", parentEntityDescriptor)
+					.setParameter("childDocumentQuery", childDocumentQuery)
+					.setParameter("sql", sql)
+					.setParameter("sqlParams", sqlParams);
+		}
+
+		return DocumentId.of(parentRecordId);
+	}
+
+	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
 		assertThisRepository(entityDescriptor);
+		// TODO: check permissions if we can create a new record
 
 		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
 
@@ -279,7 +302,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		private DocumentId id;
 
 		private String version;
-
 
 		public ResultSetDocumentValuesSupplier(final DocumentEntityDescriptor entityDescriptor, final String adLanguage, final ResultSet rs)
 		{
@@ -441,6 +463,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
+		DocumentPermissionsHelper.assertCanEdit(document, UserSession.getCurrentPermissions());
 
 		//
 		// Load the PO / Create new PO instance
@@ -647,11 +670,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		// If both values are empty we can consider they are equal
 		// (see task https://github.com/metasfresh/metasfresh-webui-api/issues/276)
-		if(isEmptyPOFieldValue(value1) && isEmptyPOFieldValue(value2))
+		if (isEmptyPOFieldValue(value1) && isEmptyPOFieldValue(value2))
 		{
 			return true;
 		}
-		
+
 		return DataTypes.equals(value1, value2);
 	}
 
@@ -671,7 +694,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
+	public static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
 	{
 		final Class<?> valueClass = value == null ? null : value.getClass();
 
@@ -773,6 +796,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
+		DocumentPermissionsHelper.assertCanEdit(document, UserSession.getCurrentPermissions());
 
 		if (document.isNew())
 		{

@@ -15,8 +15,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -57,9 +57,13 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return new JSONDocumentLayout(detailLayout, jsonOpts);
 	}
+	
+	@JsonProperty("windowId")
+	private final String windowId;
 
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
+	@Deprecated
 	private final String type;
 
 	@JsonProperty("tabid")
@@ -114,7 +118,8 @@ public final class JSONDocumentLayout implements Serializable
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
-		type = String.valueOf(layout.getAD_Window_ID());
+		windowId = String.valueOf(layout.getAD_Window_ID());
+		type = windowId;
 		tabid = null;
 		
 		caption = layout.getCaption(jsonOpts.getAD_Language());
@@ -166,7 +171,8 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
-		type = String.valueOf(detailLayout.getAD_Window_ID());
+		windowId = String.valueOf(detailLayout.getAD_Window_ID());
+		type = windowId;
 
 		final DetailId detailId = detailLayout.getDetailId();
 		tabid = DetailId.toJson(detailId);
@@ -192,7 +198,7 @@ public final class JSONDocumentLayout implements Serializable
 
 	@JsonCreator
 	private JSONDocumentLayout(
-			@JsonProperty("type") final String type//
+			@JsonProperty("windowId") final String windowId//
 			, @JsonProperty("tabid") final String tabId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("documentSummaryElement") final JSONDocumentLayoutElement documentSummaryElement //
@@ -205,7 +211,8 @@ public final class JSONDocumentLayout implements Serializable
 
 			)
 	{
-		this.type = type;
+		this.windowId = windowId;
+		type = windowId;
 		tabid = Strings.emptyToNull(tabId);
 		
 		this.caption = caption;
