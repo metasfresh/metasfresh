@@ -65,15 +65,22 @@ Here come the actual release notes:
     * New Quickaction in manufacturing issue/ receipt window. Allowing to issue Handling Units with a predefined quantity of Transport Units.
 
 * metasfresh-webui-frontend
-  * [#216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/216) Button <record_id> does not open according window
+  * [#216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/216) Button record_id does not open according window
+    * Frontend implementation of table-id/ record-id buttons.
   * [#716](https://github.com/metasfresh/metasfresh-webui-frontend/issues/716) Image widget: button to clear current image
+    * New button that allows to clear the current saved image.
   * [#719](https://github.com/metasfresh/metasfresh-webui-frontend/issues/719) Document references: group them by their top level menu
+    * New Grouping functionality in referenced documents sidelist allowing a better usability.
   * [#720](https://github.com/metasfresh/metasfresh-webui-frontend/issues/720) Implement Zoom-into in webUI
+    * Implementation of the new Zoom-into functionality in WebUI.
 
 * other
   * [metasfresh/metasfresh-dev#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+    * Extension of the metasfresh-eclipse-config repository to generally contain development resources
   * [metasfresh/metasfresh-dev#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
+    * Adding Vagrantfile for Developers.
   * [metasfresh/metasfresh-admin/#3](https://github.com/metasfresh/metasfresh-admin/issues/3) create docker image for metasfresh-admin
+    * Creating a docker image for usage of metasfresh-admin.
 
 ## Fixes
 
