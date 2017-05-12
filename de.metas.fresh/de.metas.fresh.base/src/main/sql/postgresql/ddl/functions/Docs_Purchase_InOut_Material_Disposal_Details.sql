@@ -8,7 +8,11 @@ RETURNS TABLE
 	huname text,
 	qty numeric,
 	uomsymbol character varying(10),
-	StdPrecision numeric(10,0)
+	StdPrecision numeric(10,0),
+	Description Character Varying,
+	bp_product_no character varying(30),
+	bp_product_name character varying(100),
+	line numeric
 )
 AS
 $$
@@ -19,15 +23,23 @@ SELECT
 	pifb.name AS HUName,
 	SUM(il.qtyinternaluse) AS qty,
 	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
-	uom.StdPrecision
+	uom.StdPrecision,
+	iol.Description,
+	-- in case there is no C_BPartner_Product, fallback to the default ones
+	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	max(iol.line) as line
 	
 FROM M_Inventory i
 
 INNER JOIN M_InventoryLine il ON i.M_Inventory_ID = il.M_Inventory_ID
 INNER JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
---INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
 
 INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
+LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+				AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 INNER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 LEFT OUTER JOIN C_UOM_Trl uomt	ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
@@ -64,7 +76,9 @@ GROUP BY
 	p.name, pt.name,
 	a.attributes,
 	pifb.Name,
-	uomt.UOMSymbol, uom.UOMSymbol,uom.StdPrecision
+	uomt.UOMSymbol, uom.UOMSymbol,uom.StdPrecision,
+	iol.description,
+	bpp.ProductNo,bpp.ProductName, p.value
 $$
 LANGUAGE sql STABLE
 ;	
