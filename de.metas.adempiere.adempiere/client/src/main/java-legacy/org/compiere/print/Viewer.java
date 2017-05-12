@@ -65,7 +65,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
@@ -106,6 +105,7 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.ILanguageBL;
 import de.metas.logging.LogManager;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;

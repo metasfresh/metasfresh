@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -35,6 +34,7 @@ import org.compiere.util.Msg;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 

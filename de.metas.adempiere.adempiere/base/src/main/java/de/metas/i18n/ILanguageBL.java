@@ -1,11 +1,10 @@
 /**
  * 
  */
-package org.adempiere.ad.api;
+package de.metas.i18n;
 
 import java.util.Properties;
 
-import org.adempiere.ad.language.ADLanguageList;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Language;

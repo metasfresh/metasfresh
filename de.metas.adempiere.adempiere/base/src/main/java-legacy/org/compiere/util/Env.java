@@ -37,7 +37,6 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
@@ -63,6 +62,7 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 
 /**

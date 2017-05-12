@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 
 /**

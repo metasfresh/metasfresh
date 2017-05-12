@@ -1,11 +1,12 @@
-package org.adempiere.ad.api.impl;
+package de.metas.i18n.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.api.ILanguageBL;
-import org.adempiere.ad.language.ADLanguageList;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.compiere.util.Language;
+
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageBL;
 
 public class PlainLanguageBL implements ILanguageBL
 {

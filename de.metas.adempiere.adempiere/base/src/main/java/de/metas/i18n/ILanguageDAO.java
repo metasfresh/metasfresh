@@ -1,4 +1,4 @@
-package org.adempiere.ad.language;
+package de.metas.i18n;
 
 import java.util.Properties;
 
