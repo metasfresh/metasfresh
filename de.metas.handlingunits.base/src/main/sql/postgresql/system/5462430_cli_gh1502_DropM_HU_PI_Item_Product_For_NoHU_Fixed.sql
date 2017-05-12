@@ -12,6 +12,7 @@ UPDATE M_HU_PI_Item_Product SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Ite
 UPDATE M_HU SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_ProductPrice_Attribute SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_ReceiptSchedule SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
+-- UPDATE EDI_M_HU_PI_Item_Product_Lookup_UPC_v SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_HU_LUTU_Configuration SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE C_Invoice_Detail SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
 UPDATE M_HU_Snapshot SET  M_HU_PI_Item_Product_ID = 101 WHERE M_HU_PI_Item_Product_ID = 100;
