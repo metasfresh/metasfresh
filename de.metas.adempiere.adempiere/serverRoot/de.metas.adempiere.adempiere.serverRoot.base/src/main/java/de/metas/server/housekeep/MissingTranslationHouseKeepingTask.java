@@ -3,7 +3,6 @@ package de.metas.server.housekeep;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 /*
  * #%L
@@ -33,6 +32,6 @@ public class MissingTranslationHouseKeepingTask implements IStartupHouseKeepingT
 	@Override
 	public void executeTask()
 	{
-		Services.get(ILanguageDAO.class).addAllMissingTranslations(Env.getCtx());
+		Services.get(ILanguageDAO.class).addAllMissingTranslations();
 	}
 }

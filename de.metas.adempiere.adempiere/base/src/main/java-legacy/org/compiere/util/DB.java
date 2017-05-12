@@ -190,7 +190,7 @@ public final class DB
 
 		// Language check
 		log.info("After migration: Language maintainance");
-		Services.get(ILanguageDAO.class).addAllMissingTranslations(ctx);
+		Services.get(ILanguageDAO.class).addAllMissingTranslations();
 
 		// Sequence check
 		log.info("After migration: Sequence check");

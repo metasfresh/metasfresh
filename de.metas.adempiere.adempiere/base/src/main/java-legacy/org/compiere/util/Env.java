@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1450,7 +1449,9 @@ public final class Env
 
 		//
 		// Get available languages, having BaseLanguage first and then System Language
-		final List<String> AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableAD_LanguagesForMatching(getCtx());
+		final Set<String> AD_Languages = Services.get(ILanguageDAO.class)
+				.retrieveAvailableLanguages()
+				.getAD_Languages();
 
 		//
 		// Check if we have a perfect match
