@@ -59,6 +59,13 @@ class TablePagination extends Component {
         });
     }
 
+    resetGoToPage = () => {
+        this.setState({
+            secondDotsState: false,
+            firstDotsState: false
+        })
+    }
+
     renderGoToPage = (pages, value) => {
         return (
             <div className="page-dots-open">
@@ -83,7 +90,10 @@ class TablePagination extends Component {
             <li
                 className="page-item"
                 key={1}
-                onClick={() => {handleChangePage(1); deselect()} }
+                onClick={() => {
+                    this.resetGoToPage();
+                    handleChangePage(1);
+                    deselect()} }
             >
                 <a
                     className={
@@ -127,7 +137,11 @@ class TablePagination extends Component {
             <li
                 className="page-item"
                 key={9999}
-                onClick={() => {handleChangePage(pages); deselect()} }
+                onClick={() => {
+                    this.resetGoToPage();
+                    handleChangePage(pages);
+                    deselect()
+                } }
             >
                 <a
                     className={
@@ -149,7 +163,11 @@ class TablePagination extends Component {
                         (page === i ? 'active': '')
                     }
                     key={i}
-                    onClick={() => {handleChangePage(i); deselect()} }
+                    onClick={() => {
+                        this.resetGoToPage();
+                        handleChangePage(i);
+                        deselect();
+                    } }
                 >
                     <a
                         className={
@@ -204,6 +222,7 @@ class TablePagination extends Component {
                         (compressed ? 'page-link-compressed ' : '')
                     }
                     onClick={() => {
+                        this.resetGoToPage();
                         handleChangePage(left ? 'down' : 'up');
                         deselect();
                     }}
