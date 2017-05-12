@@ -714,8 +714,8 @@ class RawWidget extends Component {
                         className={
                             'form-control-label ' +
                             ((type === 'primary' && !oneLineException) ?
-                                'col-sm-12 panel-title' : 
-                                (type === 'primaryLongLabels' ? 
+                                'col-sm-12 panel-title' :
+                                (type === 'primaryLongLabels' ?
                                     'col-sm-6' : 'col-sm-3 ')
                             )
                         }
@@ -733,10 +733,10 @@ class RawWidget extends Component {
                 <div
                     className={
                         (
-                            ((type === 'primary' || noLabel) && 
+                            ((type === 'primary' || noLabel) &&
                                 !oneLineException ) ?
-                            'col-sm-12 ' : 
-                            (type === 'primaryLongLabels' ? 
+                            'col-sm-12 ' :
+                            (type === 'primaryLongLabels' ?
                                 'col-sm-6' : 'col-sm-9 ')
                         ) +
                         (fields[0].devices ? 'form-group-flex ': '')
