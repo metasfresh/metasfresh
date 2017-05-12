@@ -5,7 +5,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,6 +29,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ILanguageBL;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
