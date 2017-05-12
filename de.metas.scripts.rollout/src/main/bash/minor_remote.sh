@@ -11,16 +11,10 @@ else
 	exit 1
 fi
 
-
-LOCAL_DIR=$(dirname $0)
-
-if [ "$LOCAL_DIR" == "." ]; then
-	LOCAL_DIR=$(pwd)
-fi
-
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
 #Thanks to http://stackoverflow.com/questions/6643853/how-to-convert-in-path-names-to-absolute-name-in-a-bash-script for the readlink tip
-ROLLOUT_DIR=$(readlink -m $LOCAL_DIR/..)
+LOCAL_DIR=$(readlink -m $(dirname $0))
+ROLLOUT_DIR=$(readlink -m LOCAL_DIR/..)
 
 SOURCES_DIR=$ROLLOUT_DIR/sources
 
