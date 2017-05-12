@@ -14,7 +14,7 @@ fi
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
 #Thanks to http://stackoverflow.com/questions/6643853/how-to-convert-in-path-names-to-absolute-name-in-a-bash-script for the readlink tip
 LOCAL_DIR=$(readlink -m $(dirname $0))
-ROLLOUT_DIR=$(readlink -m LOCAL_DIR/..)
+ROLLOUT_DIR=$(readlink -m ${LOCAL_DIR}/..)
 
 SOURCES_DIR=$ROLLOUT_DIR/sources
 
@@ -103,13 +103,13 @@ prompt_superuser_script()
 	local service_name="$1"
 	local message="$2"
 	
-	trace install_${service_name} "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	trace install_${service_name} "!! PLEASE READ THE FOLLOWING !!"
-	trace install_${service_name} "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	trace install_${service_name} "${message}"
-	trace install_${service_name} "To perform this task and possible others, please run the following shell script as SUPER USER. Then rerun this script."
+	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo "!! PLEASE READ THE FOLLOWING !!"
+	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo "${message}"
+	echo "To perform this task and possible others, please run the following shell script as SUPER USER. Then rerun this script."
 	echo ""
-	echo "$(pwd)/prepare_services_superuser.sh"
+	echo "${LOCAL_DIR}/prepare_services_superuser.sh -s ${LOCAL_SETTINGS_FILE} -d ${ROLLOUT_DIR}"
 	echo ""
 }
 
