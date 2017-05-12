@@ -22,9 +22,9 @@ import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.util.Language;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.i18n.Language;
 
 /**
  *	Location Country Model (Value Object)

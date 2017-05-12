@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
@@ -28,12 +29,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-
 import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -99,7 +98,7 @@ public class MLanguage extends X_AD_Language
 			{
 				// metas: 03362: If there is no Language object for database configured base language,
 				// that is a big error and we need to throw an exception, instead of just returning
-				throw new AdempiereException("No org.compiere.util.Language defined for " + baseADLanguage);
+				throw new AdempiereException("No " + Language.class + " defined for " + baseADLanguage);
 				// return;
 			}
 			s_log.info("Found base language: {}", language);
@@ -115,29 +114,15 @@ public class MLanguage extends X_AD_Language
 
 	};
 
-	/**************************************************************************
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param AD_Language_ID id
-	 * @param trxName transaction
-	 */
 	public MLanguage(final Properties ctx, final int AD_Language_ID, final String trxName)
 	{
 		super(ctx, AD_Language_ID, trxName);
-	}	// MLanguage
+	}
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MLanguage(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MLanguage
+	}
 
 	@Override
 	public String toString()
@@ -145,28 +130,8 @@ public class MLanguage extends X_AD_Language
 		return "MLanguage[" + getAD_Language() + "-" + getName()
 				+ ",Language=" + getLanguageISO() + ",Country=" + getCountryCode()
 				+ "]";
-	}	// toString
+	}
 
-	/**
-	 * Set AD_Language_ID
-	 */
-	private void setAD_Language_ID()
-	{
-		int AD_Language_ID = getAD_Language_ID();
-		if (AD_Language_ID == 0)
-		{
-			final String sql = "SELECT COALESCE(MAX(AD_Language_ID), 999999) FROM AD_Language WHERE AD_Language_ID > 1000";
-			AD_Language_ID = DB.getSQLValue(get_TrxName(), sql);
-			setAD_Language_ID(AD_Language_ID + 1);
-		}
-	}	// setAD_Language_ID
-
-	/**
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return true/false
-	 */
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
@@ -196,11 +161,6 @@ public class MLanguage extends X_AD_Language
 			{
 				throw new AdempiereException("@Error@ @DatePattern@ - " + e.getMessage(), e);
 			}
-		}
-		
-		if (newRecord)
-		{
-			setAD_Language_ID();
 		}
 		
 		return true;

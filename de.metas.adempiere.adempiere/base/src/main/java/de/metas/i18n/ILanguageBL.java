@@ -8,7 +8,6 @@ import java.util.Properties;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Language;
-import org.compiere.util.Language;
 
 /**
  * {@link I_AD_Language} related helpers.

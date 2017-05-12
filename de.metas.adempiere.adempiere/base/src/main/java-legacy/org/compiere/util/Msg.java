@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
