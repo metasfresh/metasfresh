@@ -747,15 +747,20 @@ public class HUTransferService
 					.retrievePIItems(tuPI, sourceTuHU.getC_BPartner()).stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
-			if(materialItem == null)
+			if (materialItem == null)
 			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@");
+				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@")
+						.setParameter("tuPI", tuPI);
 			}
 
 			final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(materialItem, sourceTuHU.getC_BPartner(), cuProduct, SystemTime.asDate());
 			if (piip == null)
 			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_Product_ID@");
+				throw new HUException("@NotFound@ @M_HU_PI_Item_Product_ID@")
+						.setParameter("tuPI", tuPI)
+						.setParameter("tuPI_Item", materialItem)
+						.setParameter("cuProduct", cuProduct)
+						.setParameter("BPartner", sourceTuHU.getC_BPartner());
 			}
 			destination.addTUCapacity(cuProduct, piip.getQty(), cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
