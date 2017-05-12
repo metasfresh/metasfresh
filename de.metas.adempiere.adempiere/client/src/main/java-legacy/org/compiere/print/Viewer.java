@@ -99,13 +99,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;

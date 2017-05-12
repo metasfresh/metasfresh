@@ -33,12 +33,12 @@ import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.tr;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /*

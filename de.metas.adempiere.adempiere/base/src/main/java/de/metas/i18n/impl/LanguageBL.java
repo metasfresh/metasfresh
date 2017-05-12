@@ -13,11 +13,11 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
 
 public class LanguageBL implements ILanguageBL
 {

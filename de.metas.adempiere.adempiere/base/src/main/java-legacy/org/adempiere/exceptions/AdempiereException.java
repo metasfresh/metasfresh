@@ -29,12 +29,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.i18n.Language;
 import de.metas.logging.MetasfreshLastError;
 
 /**

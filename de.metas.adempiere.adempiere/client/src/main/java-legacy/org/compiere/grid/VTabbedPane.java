@@ -33,9 +33,9 @@ import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
