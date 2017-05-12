@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Msg;
 
@@ -142,7 +144,7 @@ public class MsgBL implements IMsgBL
 		@Override
 		public Set<String> getAD_Languages()
 		{
-			throw new UnsupportedOperationException();
+			return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
 		}
 	}
 
@@ -183,7 +185,7 @@ public class MsgBL implements IMsgBL
 		@Override
 		public Set<String> getAD_Languages()
 		{
-			throw new UnsupportedOperationException();
+			return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
 		}
 	}
 
