@@ -15,6 +15,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import groovy.transform.Immutable;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -39,7 +42,8 @@ import groovy.transform.Immutable;
  */
 
 @Immutable
-final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
+@ToString
+public final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	public static final ImmutableDocumentFilterDescriptorsProvider of(final List<DocumentFilterDescriptor> descriptors)
 	{
@@ -76,7 +80,8 @@ final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilter
 
 	private final Map<String, DocumentFilterDescriptor> descriptorsByFilterId;
 
-	public ImmutableDocumentFilterDescriptorsProvider(final List<DocumentFilterDescriptor> descriptors)
+	@Builder
+	private ImmutableDocumentFilterDescriptorsProvider(@Singular final List<DocumentFilterDescriptor> descriptors)
 	{
 		super();
 		descriptorsByFilterId = Maps.uniqueIndex(descriptors, descriptor -> descriptor.getFilterId());

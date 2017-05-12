@@ -36,9 +36,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
  * #L%
  */
 
-public class DocumentFilterParamDescriptor
+public final class DocumentFilterParamDescriptor
 {
-	static final Builder builder()
+	public static final Builder builder()
 	{
 		return new Builder();
 	}
