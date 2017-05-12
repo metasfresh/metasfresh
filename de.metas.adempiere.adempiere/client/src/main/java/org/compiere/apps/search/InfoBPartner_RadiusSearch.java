@@ -35,11 +35,11 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.gui.search.GeodbAutoCompleter;
 import de.metas.adempiere.gui.search.GeodbObject;
+import de.metas.i18n.Msg;
 
 /**
  * @author teo.sarca@gmail.com

@@ -50,8 +50,8 @@ import org.compiere.model.GridTab;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
+import de.metas.i18n.Msg;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.MMShipperTransportation;

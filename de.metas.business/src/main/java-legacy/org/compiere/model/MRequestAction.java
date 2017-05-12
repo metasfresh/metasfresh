@@ -19,7 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Msg;
+import de.metas.i18n.Msg;
 
 /**
  *	Request History Model

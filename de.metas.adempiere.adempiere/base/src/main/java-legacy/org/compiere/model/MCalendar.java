@@ -24,7 +24,8 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  *	Calendar Model

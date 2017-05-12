@@ -20,7 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  *	

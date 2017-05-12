@@ -24,6 +24,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
@@ -41,7 +43,6 @@ import org.compiere.minigrid.MiniTable;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
 /**

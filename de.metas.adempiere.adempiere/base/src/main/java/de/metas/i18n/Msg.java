@@ -1,4 +1,4 @@
-package org.compiere.util;
+package de.metas.i18n;
 
 import java.io.File;
 import java.sql.PreparedStatement;
@@ -18,11 +18,15 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Message;
+import org.compiere.util.AmtInWords;
+import org.compiere.util.CCache;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**

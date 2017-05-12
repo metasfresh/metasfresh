@@ -49,7 +49,6 @@ import org.compiere.model.PO;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.model.MHRMovement;
 
 import de.metas.adempiere.model.IProductAware;
@@ -86,6 +85,7 @@ import de.metas.commission.service.ICommissionTypeBL;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.SuccessiveFactsFinder;
+import de.metas.i18n.Msg;
 
 /**
  * 

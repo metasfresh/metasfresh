@@ -42,6 +42,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
@@ -60,7 +62,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  * Custom form view (panel)

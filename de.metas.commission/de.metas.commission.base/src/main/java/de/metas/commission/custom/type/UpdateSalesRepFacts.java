@@ -43,7 +43,6 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.IProductAware;
@@ -79,6 +78,7 @@ import de.metas.commission.service.ISalesRepFactBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.HierarchyAscender;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

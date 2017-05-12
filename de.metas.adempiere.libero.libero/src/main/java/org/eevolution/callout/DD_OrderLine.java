@@ -36,12 +36,12 @@ import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
 import org.compiere.model.MUOMConversion;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.api.IDDOrderLineBL;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.MDDOrderLine;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 

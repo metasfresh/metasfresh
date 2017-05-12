@@ -28,7 +28,8 @@ package org.compiere.apps.search;
 
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  * @author cg
