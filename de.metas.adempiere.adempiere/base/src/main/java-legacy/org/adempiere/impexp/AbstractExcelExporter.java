@@ -22,6 +22,8 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 import org.adempiere.util.StringUtils;
@@ -40,7 +42,6 @@ import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 

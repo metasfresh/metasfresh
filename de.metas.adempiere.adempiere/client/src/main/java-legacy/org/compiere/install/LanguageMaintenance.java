@@ -16,11 +16,11 @@
  *****************************************************************************/
 package org.compiere.install;
 
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MLanguage;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.process.JavaProcess;
 
 

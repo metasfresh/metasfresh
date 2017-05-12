@@ -27,15 +27,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Vector;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JPasswordField;
 import javax.swing.SwingConstants;
@@ -43,7 +42,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
@@ -55,7 +53,6 @@ import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.db.CConnectionEditor;
 import org.compiere.grid.ed.VDate;
-import org.compiere.model.I_AD_Language;
 import org.compiere.model.MLanguage;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -70,7 +67,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.Login;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
@@ -78,6 +74,9 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
 
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -514,13 +513,11 @@ public final class ALogin extends CDialog
 		//
 		// Load all available languages
 		// and find out which is the language to preselect, language previously selected and base language
-		final Vector<ValueNamePair> availableLanguageNames;
+		final List<ValueNamePair> availableLanguageNames = new ArrayList<>();
 		{
-			final List<I_AD_Language> availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages(getCtx());
-			availableLanguageNames = new Vector<>(availableLanguages.size());
-			for (final I_AD_Language language : availableLanguages)
+			final ADLanguageList availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages();
+			for (final ValueNamePair languageVNP : availableLanguages.toValueNamePairs())
 			{
-				final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
 				availableLanguageNames.add(languageVNP);
 
 				if (adLanguageToPreselect != null
@@ -531,11 +528,12 @@ public final class ALogin extends CDialog
 					// we allow the preselected language to be identified by both name and value.
 					languageToPreselect = languageVNP;
 				}
-				if (languagePreviouslySelectedOld != null && Check.equals(languageVNP.getValue(), languagePreviouslySelectedOld.getValue()))
+				if (languagePreviouslySelectedOld != null && Objects.equals(languageVNP.getValue(), languagePreviouslySelectedOld.getValue()))
 				{
 					languagePreviouslySelected = languageVNP;
 				}
-				if (language.isBaseLanguage())
+				
+				if(availableLanguages.isBaseLanguage(languageVNP))
 				{
 					baseLanguage = languageVNP;
 				}
@@ -548,7 +546,7 @@ public final class ALogin extends CDialog
 
 		//
 		// Update language combo's model and preselect the language
-		languageCombo.setModel(new DefaultComboBoxModel<>(availableLanguageNames));
+		languageCombo.setModel(new ListComboBoxModel<>(availableLanguageNames));
 		if (languageToPreselect != null)
 		{
 			languageCombo.setSelectedItem(languageToPreselect);
