@@ -194,6 +194,11 @@ install_service()
     	trace install_${service_name} "Starting service"
         sudo systemctl start ${service_name}.service
     fi
+    
+    if [[ ${service_name} = "metasfresh-webui-api" ]] || [[ ${service_name} = "metasfresh-material-dispo" ]]; then
+        sudo systemctl restart ${service_name}.service
+    fi 
+    
 	
 	trace install_${service_name} END
 }
