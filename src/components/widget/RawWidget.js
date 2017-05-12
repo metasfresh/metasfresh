@@ -714,7 +714,10 @@ class RawWidget extends Component {
                         className={
                             'form-control-label ' +
                             ((type === 'primary' && !oneLineException) ?
-                                'col-sm-12 panel-title' : 'col-sm-3')
+                                'col-sm-12 panel-title' : 
+                                (type === 'primaryLongLabels' ? 
+                                    'col-sm-6' : 'col-sm-3 ')
+                            )
                         }
                         title={caption}
                     >
@@ -729,9 +732,13 @@ class RawWidget extends Component {
                 }
                 <div
                     className={
-                        (((type === 'primary' || noLabel) &&
-                            !oneLineException ) ?
-                                'col-sm-12 ' : 'col-sm-9 ') +
+                        (
+                            ((type === 'primary' || noLabel) && 
+                                !oneLineException ) ?
+                            'col-sm-12 ' : 
+                            (type === 'primaryLongLabels' ? 
+                                'col-sm-6' : 'col-sm-9 ')
+                        ) +
                         (fields[0].devices ? 'form-group-flex ': '')
                     }
                     onMouseEnter={() => this.handleErrorPopup(true)}
