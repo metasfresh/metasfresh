@@ -45,8 +45,7 @@ import de.metas.material.event.MaterialEventService;
  * @author metas-dev <dev@metasfresh.com>
  */
 @SpringBootApplication( //
-		scanBasePackages = { "de.metas", "org.adempiere" },  //
-		excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
+		scanBasePackages = { "de.metas", "org.adempiere" }  //
 )
 public class Application
 {
