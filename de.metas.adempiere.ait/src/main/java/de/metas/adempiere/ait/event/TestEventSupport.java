@@ -31,10 +31,10 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.AssertionFailedError;
-
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
+import org.adempiere.util.Check;
+
+import junit.framework.AssertionFailedError;
 
 public final class TestEventSupport
 {
@@ -101,7 +101,7 @@ public final class TestEventSupport
 		{
 			final Object itd = pce.getOldValue();
 
-			Util.assume(
+			Check.assume(
 					itd instanceof AIntegrationTestDriver,
 					"pce.getOldValue()='" + itd + "' is instance of IIntegrationTestDriver");
 
