@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -45,7 +46,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return new Builder();
 	}
 
-	private final int AD_Window_ID;
+	private final WindowId windowId;
 	private final DetailId detailId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -59,8 +60,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
-		super();
-		AD_Window_ID = builder.AD_Window_ID;
+		windowId = builder.windowId;
+		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+		
 		detailId = builder.getDetailId();
 		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
 		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
@@ -82,9 +84,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 				.toString();
 	}
 
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
-		return AD_Window_ID;
+		return windowId;
 	}
 
 	public DetailId getDetailId()
@@ -134,7 +136,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	public static final class Builder
 	{
-		public Integer AD_Window_ID;
+		public WindowId windowId;
 		private DetailId detailId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
@@ -176,9 +178,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 					.toString();
 		}
 
-		public Builder setAD_Window_ID(final int AD_Window_ID)
+		public Builder setWindowId(WindowId windowId)
 		{
-			this.AD_Window_ID = AD_Window_ID;
+			this.windowId = windowId;
 			return this;
 		}
 

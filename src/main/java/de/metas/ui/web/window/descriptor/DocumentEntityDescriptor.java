@@ -112,7 +112,7 @@ public class DocumentEntityDescriptor
 	private final boolean defaultTableCalloutsEnabled;
 	private final ICalloutExecutor calloutExecutorFactory;
 
-	private final DocumentFilterDescriptorsProvider filtersProvider;
+	private final DocumentFilterDescriptorsProvider filterDescriptors;
 
 	private final OptionalInt printProcessId;
 
@@ -152,7 +152,7 @@ public class DocumentEntityDescriptor
 		defaultTableCalloutsEnabled = builder.isDefaultTableCalloutsEnabled();
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
 
-		filtersProvider = builder.createFiltersProvider();
+		filterDescriptors = builder.createFilterDescriptors();
 
 		printProcessId = builder.getPrintAD_Process_ID();
 
@@ -388,9 +388,9 @@ public class DocumentEntityDescriptor
 		return calloutExecutorFactory.newInstanceSharingMasterData();
 	}
 
-	public DocumentFilterDescriptorsProvider getFiltersProvider()
+	public DocumentFilterDescriptorsProvider getFilterDescriptors()
 	{
-		return filtersProvider;
+		return filterDescriptors;
 	}
 
 	public int getPrintProcessId()
@@ -939,7 +939,7 @@ public class DocumentEntityDescriptor
 			return calloutExecutorBuilder.build();
 		}
 
-		private final DocumentFilterDescriptorsProvider createFiltersProvider()
+		private final DocumentFilterDescriptorsProvider createFilterDescriptors()
 		{
 			final String tableName = getTableName().orElse(null);
 			final int adTabId = getAD_Tab_ID().orElse(-1);

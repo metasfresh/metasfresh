@@ -150,7 +150,7 @@ public class SqlViewFactory implements IViewFactory
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(key.getWindowId());
 		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
-		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFiltersProvider();
+		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
 		
 		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
 				.setTableName(entityBinding.getTableName())

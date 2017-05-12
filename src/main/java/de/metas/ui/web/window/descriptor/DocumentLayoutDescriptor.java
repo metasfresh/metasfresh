@@ -56,8 +56,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return new Builder();
 	}
 
-	/** i.e. AD_Window_ID */
-	private final int AD_Window_ID;
+	private final WindowId windowId;
 	private final ITranslatableString caption;
 
 	/** Special element: Document summary */
@@ -82,7 +81,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 	private DocumentLayoutDescriptor(final Builder builder)
 	{
 		super();
-		AD_Window_ID = builder.AD_Window_ID;
+		windowId = builder.windowId;
+		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+		
 		caption = builder.caption;
 		
 		documentSummaryElement = builder.documentSummaryElement;
@@ -90,10 +91,10 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		sections = ImmutableList.copyOf(builder.buildSections());
 		gridView = builder.getGridView()
-				.setWindowId(WindowId.of(AD_Window_ID))
+				.setWindowId(windowId)
 				.build();
 		advancedView = builder.getAdvancedView()
-				.setAD_Window_ID(AD_Window_ID)
+				.setWindowId(windowId)
 				.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
 		sideListView = builder.getSideList();
@@ -106,7 +107,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_Window_ID", AD_Window_ID)
+				.add("windowId", windowId)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("gridView", gridView)
 				.add("advancedView", advancedView)
@@ -115,9 +116,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 				.toString();
 	}
 
-	public int getAD_Window_ID()
+	public WindowId getWindowId()
 	{
-		return AD_Window_ID;
+		return windowId;
 	}
 	
 	public String getCaption(final String adLanguage)
@@ -196,7 +197,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
 
-		private int AD_Window_ID;
+		private WindowId windowId;
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private DocumentLayoutElementDescriptor documentSummaryElement;
 		private DocumentLayoutElementDescriptor docActionElement;
@@ -220,7 +221,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("AD_Window_ID", AD_Window_ID)
+					.add("windowId", windowId)
 					.toString();
 		}
 
@@ -275,15 +276,15 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return detailsBuilders
 					.stream()
 					.map(detailBuilder -> detailBuilder
-							.setAD_Window_ID(AD_Window_ID)
+							.setWindowId(windowId)
 							.build())
 					.filter(detail -> detail.hasElements())
 					.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getDetailId()));
 		}
 
-		public Builder setAD_Window_ID(final int AD_Window_ID)
+		public Builder setWindowId(WindowId windowId)
 		{
-			this.AD_Window_ID = AD_Window_ID;
+			this.windowId = windowId;
 			return this;
 		}
 		
