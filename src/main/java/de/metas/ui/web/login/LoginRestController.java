@@ -302,9 +302,10 @@ public class LoginRestController
 	@RequestMapping(value = "/availableLanguages", method = RequestMethod.GET)
 	public JSONLookupValuesList getAvailableLanguages()
 	{
-		return Services.get(ILanguageBL.class).getAvailableLanguages(userSession.getCtx())
+		return Services.get(ILanguageBL.class).getAvailableLanguages()
+				.toValueNamePairs()
 				.stream()
-				.map(adLanguageObj -> JSONLookupValue.of(adLanguageObj.getAD_Language(), adLanguageObj.getName()))
+				.map(JSONLookupValue::ofNamePair)
 				.collect(JSONLookupValuesList.collect())
 				.setDefaultValue(userSession.getAD_Language());
 	}
