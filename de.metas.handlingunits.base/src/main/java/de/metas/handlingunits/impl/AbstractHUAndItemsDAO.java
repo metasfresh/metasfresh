@@ -53,5 +53,22 @@ public abstract class AbstractHUAndItemsDAO implements IHUAndItemsDAO
 		}
 		return huAggregateItem;
 	}
+	
+
+	@Override
+	{
+		I_M_HU_Item huAggregateItem = null;
+
+		final int piItemId = piItem.getM_HU_PI_Item_ID();
+		for (final I_M_HU_Item item : retrieveItems(hu))
+		{
+			
+			// since we iterate all items anyway, also look out for the aggregate/bag item.
+			{
+				huAggregateItem = item;
+			}
+		}
+		return huAggregateItem;
+	}
 
 }

@@ -345,4 +345,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	I_M_HU_Item retrieveAggregatedItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 }
