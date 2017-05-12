@@ -2,9 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Supplier;
 
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +11,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
@@ -57,14 +57,33 @@ public class HUEditorViewFactory implements IViewFactory
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
-	private static final Supplier<SqlViewBinding> sqlViewBindingSupplier = ExtendedMemorizingSupplier.of(() -> createSqlViewBinding());
+	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
 	private SqlViewBinding getSqlViewBinding()
 	{
-		return sqlViewBindingSupplier.get();
+		final int key = 0; // not important
+		return sqlViewBindingCache.getOrLoad(key, () -> createSqlViewBinding());
 	}
-	
+
+	private static final DocumentFilterDescriptorsProvider createFilterDescriptors()
+	{
+		// TODO: implement
+//		final ITranslatableString caption = Services.get(IMsgBL.class).translatable("Barcode");
+		final DocumentFilterDescriptorsProvider viewFilterDescriptors = ImmutableDocumentFilterDescriptorsProvider.builder()
+//				.descriptor(DocumentFilterDescriptor.builder()
+//						.setFilterId("barcode")
+//						.setDisplayName(caption)
+//						.addParameter(DocumentFilterParamDescriptor.builder()
+//								.setFieldName("Barcode")
+//								.setDisplayName(caption)
+//								.setWidgetType(DocumentFieldWidgetType.Text))
+//						.build())
+				.build();
+
+		return viewFilterDescriptors;
+	}
+
 	private static SqlViewBinding createSqlViewBinding()
 	{
 		return SqlViewBinding.builder()
@@ -81,6 +100,7 @@ public class HUEditorViewFactory implements IViewFactory
 						.build())
 				//
 				.setOrderBys(ImmutableList.of(DocumentQueryOrderBy.byFieldName(I_M_HU.COLUMNNAME_M_HU_ID, true)))
+				.setViewFilterDescriptors(createFilterDescriptors())
 				.build();
 	}
 
@@ -96,7 +116,7 @@ public class HUEditorViewFactory implements IViewFactory
 	{
 		return getSqlViewBinding().getViewFilterDescriptors().getAll();
 	}
-	
+
 	private final ViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
 	{
 		if (viewDataType == JSONViewDataType.includedView)
@@ -117,6 +137,7 @@ public class HUEditorViewFactory implements IViewFactory
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(IHUEditorRow.COLUMNNAME_M_HU_ID)
+				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -153,6 +174,7 @@ public class HUEditorViewFactory implements IViewFactory
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(IHUEditorRow.COLUMNNAME_M_HU_ID)
+				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -220,7 +242,7 @@ public class HUEditorViewFactory implements IViewFactory
 		{
 			referencingTableName = null;
 		}
-		
+
 		final Set<Integer> huIds = request.getFilterOnlyIds();
 		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())

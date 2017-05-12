@@ -47,7 +47,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 
 public final class DocumentFilterDescriptor
 {
-	static final Builder builder()
+	public static final Builder builder()
 	{
 		return new Builder();
 	}
