@@ -52,11 +52,17 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#280](https://github.com/metasfresh/metasfresh-webui-api/issues/280) Scan of Barcode "Bestellkontrolle" for Manufacturing execution
+    * New Functionality for manufacturing action issue/ receipt processing, allowing the user to scan the Order control report for efficient workflow start.
   * [#348](https://github.com/metasfresh/metasfresh-webui-api/issues/348) backend: Implement Zoom-into in webUI
+    * New usability feature for zoom-into. Fields with references to other records now create a link to the corresponding records via available field label.
   * [#352](https://github.com/metasfresh/metasfresh-webui-api/issues/352) Introduce JSONLayoutType.primaryLongLabels
+    * Introducing a new Lable LayoutType for longer label names.
   * [#354](https://github.com/metasfresh/metasfresh-webui-api/issues/354) Support for Record_ID buttons
+    * New Functionality for table-ID record-ID buttons, allowing the user to navigate quickly into the referenced window.
   * [#356](https://github.com/metasfresh/metasfresh-webui-api/issues/356) Manufacturing Quickaction: Reverse Issue / Receipt
+    * New quickaction allowing the reverse issues/ receipts planning in Action-receipt and -issue window of manufacturing in WebUI.
   * [#357](https://github.com/metasfresh/metasfresh-webui-api/issues/357) Manufacturing Quickaction: Issue selected HU w/ TU Quantity parm
+    * New Quickaction in manufacturing issue/ receipt window. Allowing to issue Handling Units with a predefined quantity of Transport Units.
 
 * metasfresh-webui-frontend
   * [#216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/216) Button <record_id> does not open according window
