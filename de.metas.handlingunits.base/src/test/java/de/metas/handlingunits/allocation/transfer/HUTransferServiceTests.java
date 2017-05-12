@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -12,6 +13,8 @@ import java.util.List;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -442,8 +445,7 @@ public class HUTransferServiceTests
 	}
 
 	@Theory
-	public void testAggregateTU_To_NewTUs(
-			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	public void testAggregateTU_To_NewTUs(@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
 		final I_M_HU tuToSplit = mkAggregateCUToSplit("80");
 
@@ -458,6 +460,38 @@ public class HUTransferServiceTests
 		assertThat(newTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
 		assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("40.000")));
+	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/1516
+	 */
+	@Theory
+	public void test_TakeOutTUsFromCustomLU(@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
+	{
+		// Make sure the standard CU-TU capacity it's not 13Kg
+		assertThat(data.piLU_Item_IFCO.getQty(), not(comparesEqualTo(BigDecimal.valueOf(13))));
+		
+		// Create an LU with 10TUs with 13Kg each.
+		final I_M_HU lu = mkAggregateCUToSplit("130", 13);
+
+		// Actually take out 2 TUs
+		final List<I_M_HU> newTUs = HUTransferService.get(data.helper.getHUContext())
+				.tuToNewTUs(lu, BigDecimal.valueOf(2), isOwnPackingMaterials);
+		assertThat(newTUs.size(), is(2));
+
+		// Make sure each TU is valid
+		// * it's top level
+		// * the "HUPlanningReceiptOwnerPM" flag was correctly set
+		// * it's capacity it's 13Kg and not how much was defined in CU-TU
+		for (final I_M_HU newTU : newTUs)
+		{
+			final Node newTUXML = HUXmlConverter.toXml(newTU);
+			assertThat(newTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
+			assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+			assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("13.000")));
+		}
+
+
 	}
 
 	/**
@@ -875,17 +909,34 @@ public class HUTransferServiceTests
 	/**
 	 * Creates an LU with PI {@link LUTUProducerDestinationTestSupport#piLU} and an aggregate TU with PI {@link LUTUProducerDestinationTestSupport#piTU_IFCO}.
 	 * 
-	 * @param strCuQty
+	 * @param totalQtyCUStr
 	 * @return
 	 */
-	private I_M_HU mkAggregateCUToSplit(final String strCuQty)
+	private I_M_HU mkAggregateCUToSplit(final String totalQtyCUStr)
 	{
+		final int qtyCUsPerTU = -1; // N/A
+		return mkAggregateCUToSplit(totalQtyCUStr, qtyCUsPerTU);
+	}
+
+	private I_M_HU mkAggregateCUToSplit(final String totalQtyCUStr, final int qtyCUsPerTU)
+	{
+		final I_M_Product cuProduct = data.helper.pTomato;
+		final I_C_UOM cuUOM = data.helper.uomKg;
+		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
+
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setTUPI(data.piTU_IFCO);
 		lutuProducer.setMaxTUsPerLU(Integer.MAX_VALUE); // allow as many TUs on that one pallet as we want
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(strCuQty), data.helper.uomKg);
+
+		// Custom TU capacity (if specified)
+		if (qtyCUsPerTU > 0)
+		{
+			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
+		}
+
+		data.helper.load(lutuProducer, cuProduct, totalQtyCU, cuUOM);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdLUs.size(), is(1));
@@ -934,13 +985,13 @@ public class HUTransferServiceTests
 				.tuToNewTUs(aggregateTU, BigDecimal.ONE, isOwnPackingMaterials);
 		assertThat(newTUs.size(), is(1));
 		final I_M_HU newTU = newTUs.get(0);
-		//data.helper.commitAndDumpHU(newTU);
-		
+		// data.helper.commitAndDumpHU(newTU);
+
 		final Node newTuXML = HUXmlConverter.toXml(newTU);
 		assertThat(newTuXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("5.470")));
-		
+
 		// the original aggregate HU is still intact, it just represents one less TU
-		
+
 		final Node createdLuXML = HUXmlConverter.toXml(createdLU);
 
 		// there shall still be no "real" HU

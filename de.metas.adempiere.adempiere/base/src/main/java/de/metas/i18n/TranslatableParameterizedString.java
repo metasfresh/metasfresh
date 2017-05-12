@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import com.google.common.base.MoreObjects;
 

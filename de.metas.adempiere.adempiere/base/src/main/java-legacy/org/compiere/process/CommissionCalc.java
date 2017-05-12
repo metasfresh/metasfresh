@@ -33,9 +33,9 @@ import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Language;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.Language;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 

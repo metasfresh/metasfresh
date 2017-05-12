@@ -1,20 +1,4 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-package org.compiere.util;
+package de.metas.i18n;
 
 import java.awt.ComponentOrientation;
 import java.io.Serializable;
@@ -24,47 +8,58 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
-/**
- * Language Management.
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
  *
- * @author Jorg Janke
- * @version $Id: Language.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/**
+ * Language.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ * @author based on initial version developed by Jorg Janke
  */
 public final class Language implements Serializable
 {
-	/**
-	 * 
-	 */
-	/**************************************************************************
-	 * Languages
-	 * http://www.ics.uci.edu/pub/ietf/http/related/iso639.txt
-	 * Countries
-	 * http://www.iso.org/iso/country_codes/iso_3166_code_lists/english_country_names_and_code_elements.htm
-	 *************************************************************************/
+	private static final long serialVersionUID = 7907858733034838149L;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -964846521004545703L;
-	/** Base Language */
 	public static final String AD_Language_en_US = "en_US";
-	/** Additional Languages */
 	private static final String AD_Language_en_GB = "en_GB";
 	private static final String AD_Language_en_AU = "en_AU";
 	private static final String AD_Language_ca_ES = "ca_ES";
@@ -102,11 +97,7 @@ public final class Language implements Serializable
 	private static final String AD_Language_hu_HU = "hu_HU";
 	private static final String AD_Language_el_GR = "el_GR";
 
-	/***
-	 * System Languages.
-	 * If you want to add a language, extend the array
-	 * - or use the addLanguage() method.
-	 **/
+	/** System Languages. */
 	private static final CopyOnWriteArrayList<Language> s_languages = new CopyOnWriteArrayList<>(new Language[] {
 			new Language("English",
 					AD_Language_en_US, Locale.US, null, null,
@@ -237,12 +228,12 @@ public final class Language implements Serializable
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(Language.class);
 
-	/**************************************************************************
+	/**
 	 * Get Language.
 	 * If language does not exist, create it on the fly assuming that it is valid
 	 * 
-	 * @param langInfo either language (en) or locale (en-US) or display name
-	 * @return Name (e.g. Deutsch)
+	 * @param langInfo either language (en) or locale (en_US) or display name
+	 * @return language instance
 	 */
 	public static Language getLanguage(final String langInfo)
 	{
@@ -323,12 +314,35 @@ public final class Language implements Serializable
 	/**
 	 * Set the actual base language. Do not call this method because this is part of internal API.
 	 * 
-	 * @param languageSupplier base language supplier
+	 * @param baseADLanguageSupplier base language supplier
 	 */
-	public static void setBaseLanguage(final Supplier<Language> languageSupplier)
+	public static void setBaseLanguage(final Supplier<String> baseADLanguageSupplier)
 	{
-		Check.assumeNotNull(languageSupplier, "languageSupplier not null");
-		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(languageSupplier);
+		Check.assumeNotNull(baseADLanguageSupplier, "baseADLanguageSupplier not null");
+		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(()->{
+			final String baseADLanguage = baseADLanguageSupplier.get();
+			final Language language = getLanguage(baseADLanguage);
+			if (language == null)
+			{
+				// metas: 03362: If there is no Language object for database configured base language,
+				// that is a big error and we need to throw an exception, instead of just returning
+				throw new AdempiereException("No " + Language.class + " defined for " + baseADLanguage);
+				// return;
+			}
+			log.info("Found base language: {}", language);
+
+			//
+			// Update current context
+			// TODO: consider removing this part because we shall not update the context from here. it's not expected at all.
+			final Properties ctx = Env.getCtx();
+			if (Check.isEmpty(Env.getContext(ctx, Env.CTXNAME_AD_Language), true))
+			{
+				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
+			}
+			
+			return language;
+			
+		});
 	}
 
 	/**
@@ -521,10 +535,10 @@ public final class Language implements Serializable
 	/** Locale */
 	private final Locale m_locale;
 	//
-	private Boolean _decimalPoint;
-	private Boolean _leftToRight;
+	private Boolean _decimalPoint; // might be lazy
+	private Boolean _leftToRight; // might be lazy
 
-	private String _dateFormatPattern;
+	private String _dateFormatPattern; // might be lazy
 	private ThreadLocal<SimpleDateFormat> _dateFormatThreadLocal = null;
 
 	private final MediaSize _mediaSize;
@@ -556,7 +570,7 @@ public final class Language implements Serializable
 	 * 
 	 * @param AD_Language e.g. en-US
 	 */
-	void setAD_Language(final String AD_Language)
+	public void setAD_Language(final String AD_Language)
 	{
 		if (AD_Language != null)
 		{

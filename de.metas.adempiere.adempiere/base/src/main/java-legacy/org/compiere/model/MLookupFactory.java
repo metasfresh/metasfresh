@@ -33,13 +33,13 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 

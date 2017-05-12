@@ -1,6 +1,5 @@
-package org.adempiere.ad.language;
+package de.metas.i18n;
 
-import java.util.List;
 import java.util.Properties;
 
 /*
@@ -30,14 +29,8 @@ import org.compiere.model.I_AD_Language;
 
 public interface ILanguageDAO extends ISingletonService
 {
-	List<I_AD_Language> retrieveAvailableLanguages(Properties ctx, int clientId);
+	ADLanguageList retrieveAvailableLanguages();
 	
-	/**
-	 * @param ctx
-	 * @return all available AD_Languages, having the base language as first item
-	 */
-	List<String> retrieveAvailableAD_LanguagesForMatching(Properties ctx);
-
 	/**
 	 * Retrieve Base AD_Language right from database.
 	 * 
@@ -54,7 +47,7 @@ public interface ILanguageDAO extends ISingletonService
 	 *
 	 * @param ctx context
 	 */
-	void addAllMissingTranslations(Properties ctx);
+	void addAllMissingTranslations();
 
 	/**
 	 * Add missing language translations
@@ -71,4 +64,6 @@ public interface ILanguageDAO extends ISingletonService
 	 * @return number of records deleted
 	 */
 	int removeTranslations(I_AD_Language language);
+
+	void maintainTranslations(I_AD_Language language, String maintenanceMode);
 }

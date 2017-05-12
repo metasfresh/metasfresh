@@ -17,9 +17,9 @@ import org.compiere.model.I_AD_Table_Process;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.Language;
 import de.metas.process.ProcessInfo;
 
 /*

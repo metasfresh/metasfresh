@@ -49,11 +49,11 @@ import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAt
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.Language;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider;
+import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
 

@@ -36,11 +36,11 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
+import de.metas.i18n.Language;
 
 /**
  *  Client Model
