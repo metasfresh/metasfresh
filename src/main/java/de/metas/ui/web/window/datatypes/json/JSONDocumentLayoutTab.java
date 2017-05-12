@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -42,6 +43,11 @@ import io.swagger.annotations.ApiModel;
  * #L%
  */
 
+/**
+ * Window included tab layout (JSON)
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
 @ApiModel("tab")
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -51,28 +57,22 @@ public final class JSONDocumentLayoutTab implements Serializable
 	{
 		final Collection<DocumentFilterDescriptor> filters = null;
 		return details.stream()
-				.map(detail -> of(detail, filters, jsonOpts))
+				.map(detail -> new JSONDocumentLayoutTab(detail, filters, jsonOpts))
 				.filter(jsonDetail -> jsonDetail.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutTab of(
-			final DocumentLayoutDetailDescriptor detail //
-			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONOptions jsonOpts //
-	)
-	{
-		return new JSONDocumentLayoutTab(detail, filters, jsonOpts);
-	}
-
-	/** i.e. AD_Window_ID */
+	@JsonProperty("windowId")
+	private final WindowId windowId;
+	@Deprecated
 	@JsonProperty("type")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String type;
+	private final WindowId type;
 
+	@JsonProperty("tabId")
+	private final DetailId tabId;
+	@Deprecated
 	@JsonProperty("tabid")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String tabid;
+	private final DetailId tabid;
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -102,7 +102,6 @@ public final class JSONDocumentLayoutTab implements Serializable
 	private final boolean supportQuickInput;
 
 	@JsonProperty("queryOnActivate")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final boolean queryOnActivate;
 
 	private JSONDocumentLayoutTab(
@@ -113,10 +112,11 @@ public final class JSONDocumentLayoutTab implements Serializable
 	{
 		super();
 
-		type = String.valueOf(detail.getAD_Window_ID());
+		windowId = detail.getWindowId();
+		type = windowId;
 
-		final DetailId detailId = detail.getDetailId();
-		tabid = DetailId.toJson(detailId);
+		this.tabId = detail.getDetailId();
+		tabid = tabId;
 
 		final String adLanguage = jsonOpts.getAD_Language();
 		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabid != null)
@@ -147,8 +147,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 	@JsonCreator
 	private JSONDocumentLayoutTab(
-			@JsonProperty("type") final String type //
-			, @JsonProperty("tabid") final String tabid //
+			@JsonProperty("windowId") final WindowId windowId //
+			, @JsonProperty("tabId") final DetailId tabId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("description") final String description //
 			, @JsonProperty("emptyResultText") final String emptyResultText //
@@ -160,8 +160,11 @@ public final class JSONDocumentLayoutTab implements Serializable
 	)
 	{
 		super();
-		this.type = type;
-		this.tabid = tabid;
+		this.windowId = windowId;
+		this.type = windowId;
+
+		this.tabId = tabId;
+		this.tabid = tabId;
 
 		this.caption = caption;
 		this.description = description;
@@ -179,50 +182,15 @@ public final class JSONDocumentLayoutTab implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("tabid", tabid)
+				.add("tabId", tabId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.add("filters", filters.isEmpty() ? null : filters)
 				.toString();
 	}
 
-	public String getTabid()
-	{
-		return tabid;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getDescription()
-	{
-		return description;
-	}
-
-	public String getEmptyResultText()
-	{
-		return emptyResultText;
-	}
-
-	public String getEmptyResultHint()
-	{
-		return emptyResultHint;
-	}
-
-	public List<JSONDocumentLayoutElement> getElements()
-	{
-		return elements;
-	}
-
-	public boolean hasElements()
+	private boolean hasElements()
 	{
 		return !elements.isEmpty();
-	}
-
-	public List<JSONDocumentFilterDescriptor> getFilters()
-	{
-		return filters;
 	}
 }
