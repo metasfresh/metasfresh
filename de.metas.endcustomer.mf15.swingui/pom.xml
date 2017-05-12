@@ -25,7 +25,7 @@
 		<spring.jarLauncherClass>org.springframework.boot.loader.PropertiesLauncher</spring.jarLauncherClass>
 
 		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>5.8.0.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.versionInfo>5.9.0.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
 		<launch4j.preCp></launch4j.preCp>
 		
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
@@ -122,7 +122,7 @@
 		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo</artifactId>
+			<artifactId>metasfresh-material-dispo-common</artifactId>
 			<version>${metasfresh.version}</version>
 			<type>jar</type>
 		</dependency>
