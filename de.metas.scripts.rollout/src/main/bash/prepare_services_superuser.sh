@@ -21,13 +21,13 @@ prepare_service_superuser()
 
 	local SYSTEM_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
 	local SYSTEM_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
-	
+    local service_isrunning=NOTSET	
 	echo "Checking if /opt/${service_name} needs to be migrated"
+
 	if [[ -d /opt/${service_name} ]]; 
 	then
 
 		local INIT_D_FILE=/etc/init.d/${service_name}
-		local service_isrunning=NOTSET
 		if [[ -x "${INIT_D_FILE}" ]]; then
 
             # check if service is currently running. If so, start it after migrating to systemd service
