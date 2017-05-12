@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -38,7 +37,6 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
@@ -64,6 +62,7 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 
 /**
@@ -1450,7 +1449,9 @@ public final class Env
 
 		//
 		// Get available languages, having BaseLanguage first and then System Language
-		final List<String> AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableAD_LanguagesForMatching(getCtx());
+		final Set<String> AD_Languages = Services.get(ILanguageDAO.class)
+				.retrieveAvailableLanguages()
+				.getAD_Languages();
 
 		//
 		// Check if we have a perfect match

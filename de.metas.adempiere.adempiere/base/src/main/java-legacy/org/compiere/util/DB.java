@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -67,6 +66,7 @@ import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
@@ -190,7 +190,7 @@ public final class DB
 
 		// Language check
 		log.info("After migration: Language maintainance");
-		Services.get(ILanguageDAO.class).addAllMissingTranslations(ctx);
+		Services.get(ILanguageDAO.class).addAllMissingTranslations();
 
 		// Sequence check
 		log.info("After migration: Sequence check");

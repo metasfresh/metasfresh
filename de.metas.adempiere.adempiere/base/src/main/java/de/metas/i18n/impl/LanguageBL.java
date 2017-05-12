@@ -1,10 +1,7 @@
-package org.adempiere.ad.api.impl;
+package de.metas.i18n.impl;
 
-import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.api.ILanguageBL;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
@@ -12,20 +9,22 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.ILanguageDAO;
+
 public class LanguageBL implements ILanguageBL
 {
 	@Override
-	public List<I_AD_Language> getAvailableLanguages(final Properties ctx)
+	public ADLanguageList getAvailableLanguages()
 	{
-		final int clientId = Env.getAD_Client_ID(ctx);
-		return Services.get(ILanguageDAO.class).retrieveAvailableLanguages(ctx, clientId);
+		return Services.get(ILanguageDAO.class).retrieveAvailableLanguages();
 	}
 
 	@Override

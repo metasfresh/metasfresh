@@ -1,4 +1,4 @@
-package org.adempiere.ad.language.impl;
+package de.metas.i18n.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,38 +6,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Language;
@@ -47,31 +18,26 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.util.CacheCtx;
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class LanguageDAO implements ILanguageDAO
 {
-	private static final Logger logger = LogManager.getLogger(LanguageDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(LanguageDAO.class);
 
 	private static final String SQL_retriveBaseLanguage_1P = "SELECT " + I_AD_Language.COLUMNNAME_AD_Language
 			+ " FROM " + I_AD_Language.Table_Name
 			+ " WHERE " + I_AD_Language.COLUMNNAME_IsBaseLanguage + "=?";
 
-	private static final IQueryOrderBy ORDERBY_BaseLanguage_SystemLanguage_First = Services.get(IQueryBL.class)
-			.createQueryOrderByBuilder(I_AD_Language.class)
-			.addColumn(I_AD_Language.COLUMNNAME_IsBaseLanguage, Direction.Descending, Nulls.Last)
-			.addColumn(I_AD_Language.COLUMNNAME_IsSystemLanguage, Direction.Descending, Nulls.Last)
-			.addColumn(I_AD_Language.COLUMNNAME_AD_Language, Direction.Ascending, Nulls.Last)
-			.createQueryOrderBy();
-
 	@Override
 	@Cached(cacheName = I_AD_Language.Table_Name)
-	public List<I_AD_Language> retrieveAvailableLanguages(@CacheCtx final Properties ctx, final int clientId)
+	public ADLanguageList retrieveAvailableLanguages()
 	{
 		final IQueryBuilder<I_AD_Language> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayOrAllFilter(I_AD_Language.COLUMNNAME_AD_Client_ID, 0, clientId)
+				.createQueryBuilderOutOfTrx(I_AD_Language.class)
+				.addEqualsFilter(I_AD_Language.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System) // just to make sure, even though AD_Language's AccessLevel=4-System
 				.addOnlyActiveRecordsFilter();
 
 		// Only Base or System languages
@@ -85,26 +51,19 @@ public class LanguageDAO implements ILanguageDAO
 				.addColumn(I_AD_Language.COLUMNNAME_Name)
 				.addColumn(I_AD_Language.COLUMNNAME_AD_Language);
 
-		return queryBuilder.create().listImmutable(I_AD_Language.class);
-	}
+		final ADLanguageList.Builder languages = ADLanguageList.builder();
+		queryBuilder
+				.create()
+				.stream(I_AD_Language.class)
+				.forEach(adLanguage -> languages.addLanguage(adLanguage.getAD_Language(), adLanguage.getName(), adLanguage.isBaseLanguage()));
 
-	@Override
-	@Cached(cacheName = I_AD_Language.Table_Name + "#AvailableForMatching")
-	public List<String> retrieveAvailableAD_LanguagesForMatching(@CacheCtx final Properties ctx)
-	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		return retrieveAvailableLanguages(ctx, adClientId)
-				.stream()
-				.sorted(ORDERBY_BaseLanguage_SystemLanguage_First.getComparator())
-				.map(adLanguageModel -> adLanguageModel.getAD_Language())
-				.collect(GuavaCollectors.toImmutableList());
-
+		return languages.build();
 	}
 
 	@Override
 	public String retrieveBaseLanguage()
 	{
-		// NOTE: because this method is called right after database connection is established
+		// IMPORTANT: because this method is called right after database connection is established
 		// we cannot use the Query API which is requiring MLanguage.getBaseLanguage() to be set
 
 		final String baseADLanguage = DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_retriveBaseLanguage_1P, true);
@@ -123,23 +82,10 @@ public class LanguageDAO implements ILanguageDAO
 				.firstOnly(I_AD_Language.class);
 	}
 
-	private List<I_AD_Language> retrieveSystemLanguages(final Properties ctx)
+	private List<String> retrieveTrlTableNames()
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsSystemLanguage, true)
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_AD_Language.COLUMNNAME_AD_Language)
-				.endOrderBy()
-				.create()
-				.list(I_AD_Language.class);
-	}
-
-	private List<String> retrieveTrlTableNames(final Properties ctx)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Table.class)
 				.addEndsWithQueryFilter(I_AD_Table.COLUMNNAME_TableName, "_Trl")
 				.orderBy()
 				.addColumn(I_AD_Table.COLUMNNAME_TableName)
@@ -149,28 +95,28 @@ public class LanguageDAO implements ILanguageDAO
 	}
 
 	@Override
-	public void addAllMissingTranslations(final Properties ctx)
+	public void addAllMissingTranslations()
 	{
-		final List<I_AD_Language> languages = retrieveSystemLanguages(ctx);
+		final ADLanguageList languages = retrieveAvailableLanguages();
 
 		final List<String> errorLanguages = new ArrayList<>();
 		final List<Throwable> errorCauses = new ArrayList<>();
-		for (final I_AD_Language language : languages)
+		for (final String adLanguage : languages.getAD_Languages())
 		{
 			// Skip base language
-			if (language.isBaseLanguage())
+			if(languages.isBaseLanguage(adLanguage))
 			{
 				continue;
 			}
 
 			try
 			{
-				addRemoveLanguageTranslations(language, true);
+				addRemoveLanguageTranslations(adLanguage, true);
 			}
 			catch (Exception ex)
 			{
 				// collect error
-				errorLanguages.add(language.getAD_Language());
+				errorLanguages.add(adLanguage);
 				errorCauses.add(ex);
 			}
 		}
@@ -191,22 +137,19 @@ public class LanguageDAO implements ILanguageDAO
 	public int addMissingTranslations(final I_AD_Language language)
 	{
 		final boolean add = true;
-		return addRemoveLanguageTranslations(language, add);
+		return addRemoveLanguageTranslations(language.getAD_Language(), add);
 	}
 
 	@Override
 	public int removeTranslations(final I_AD_Language language)
 	{
 		final boolean add = false;
-		return addRemoveLanguageTranslations(language, add);
+		return addRemoveLanguageTranslations(language.getAD_Language(), add);
 	}
 
-	private int addRemoveLanguageTranslations(final I_AD_Language language, final boolean add)
+	private int addRemoveLanguageTranslations(@NonNull final String adLanguage, final boolean add)
 	{
-		Check.assumeNotNull(language, "language not null");
-		final Properties ctx = InterfaceWrapperHelper.getCtx(language);
-
-		final List<String> trlTableNames = retrieveTrlTableNames(ctx);
+		final List<String> trlTableNames = retrieveTrlTableNames();
 
 		int retNo = 0;
 		final List<String> errorTables = new ArrayList<>();
@@ -217,17 +160,17 @@ public class LanguageDAO implements ILanguageDAO
 			{
 				if (add)
 				{
-					retNo += addTableTranslations(language, trlTableName);
+					retNo += addTableTranslations(trlTableName, adLanguage);
 				}
 				else
 				{
-					retNo += deleteTableTranslations(language, trlTableName);
+					retNo += deleteTableTranslations(trlTableName, adLanguage);
 				}
 			}
 			catch (final Exception ex)
 			{
 				// collect error
-				errorTables.add(trlTableName + "(" + language.getAD_Language() + ")");
+				errorTables.add(trlTableName + "(" + adLanguage + ")");
 				errorCauses.add(ex);
 			}
 		}
@@ -249,14 +192,12 @@ public class LanguageDAO implements ILanguageDAO
 	/**
 	 * Delete Translation
 	 *
-	 * @param language
-	 *
 	 * @param trlTableName table name
+	 * @param adLanguage
 	 * @return number of records deleted
 	 */
-	private int deleteTableTranslations(final I_AD_Language language, final String trlTableName)
+	private int deleteTableTranslations(final String trlTableName, final String adLanguage)
 	{
-		final String adLanguage = language.getAD_Language();
 		final String sql = "DELETE FROM  " + trlTableName + " WHERE AD_Language=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { adLanguage }, ITrx.TRXNAME_ThreadInherited);
 		logger.info("Removed {} translations for {} ({})", no, trlTableName, adLanguage);
@@ -266,12 +207,11 @@ public class LanguageDAO implements ILanguageDAO
 	/**
 	 * Add Translation to table
 	 *
-	 * @param language
-	 *
 	 * @param trlTableName table name
+	 * @param adLanguage
 	 * @return number of records inserted
 	 */
-	private int addTableTranslations(final I_AD_Language language, final String trlTableName)
+	private int addTableTranslations(final String trlTableName, final String adLanguage)
 	{
 		final String baseTableName = trlTableName.substring(0, trlTableName.length() - 4);
 		final POInfo poInfo = POInfo.getPOInfo(baseTableName);
@@ -300,9 +240,7 @@ public class LanguageDAO implements ILanguageDAO
 		//
 		// Insert Statement
 		final String trlAlias = "trl";
-		final String adLanguage = language.getAD_Language();
-		final Properties ctx = InterfaceWrapperHelper.getCtx(language);
-		final int AD_User_ID = Env.getAD_User_ID(ctx);
+		final int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
 		final String keyColumn = poInfo.getKeyColumnName();
 		Check.assumeNotEmpty(keyColumn, "keyColumn not empty for {}", baseTableName); // shall not happen
 		//
