@@ -35,13 +35,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Payment;
+import org.junit.Assert;
 
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.event.TestEvent;
 import de.metas.adempiere.ait.test.annotation.ITEventListener;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_Payment;
-import junit.framework.Assert;
 
 public class PaymentTestListener
 {

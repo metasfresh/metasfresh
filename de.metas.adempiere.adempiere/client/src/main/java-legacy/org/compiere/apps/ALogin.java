@@ -67,7 +67,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.Login;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
@@ -77,6 +76,7 @@ import com.google.common.base.Throwables;
 
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**

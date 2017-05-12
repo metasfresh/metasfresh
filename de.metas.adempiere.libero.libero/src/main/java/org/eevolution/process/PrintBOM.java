@@ -54,10 +54,10 @@ import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
 import org.eevolution.model.X_T_BOMLine;
 
+import de.metas.i18n.Language;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;

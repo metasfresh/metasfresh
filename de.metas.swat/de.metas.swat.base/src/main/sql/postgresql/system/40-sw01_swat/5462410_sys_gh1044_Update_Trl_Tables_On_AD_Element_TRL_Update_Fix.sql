@@ -1,6 +1,6 @@
 -- Function: public.update_trl_tables_on_ad_element_trl_update(numeric, character varying)
 
--- DROP FUNCTION public.update_trl_tables_on_ad_element_trl_update(numeric, character varying);
+ DROP FUNCTION IF EXISTS public.update_trl_tables_on_ad_element_trl_update(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION public.update_trl_tables_on_ad_element_trl_update(
     ad_element_id numeric,
@@ -90,7 +90,9 @@ $BODY$
   COST 100;
 ALTER FUNCTION public.update_trl_tables_on_ad_element_trl_update(numeric, character varying)
   OWNER TO metasfresh;
-
+  
+  
+  
   
   
  COMMENT ON FUNCTION public.update_trl_tables_on_ad_element_trl_update(
