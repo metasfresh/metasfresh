@@ -166,8 +166,14 @@ install_service()
 		fi
 	fi
 	
-	trace install_${service_name} "Stopping service"
-	sudo systemctl stop ${service_name}.service
+	# check if service is running. if it is, it's safe to assume stopping/starting during rollout
+	#
+	local service_isactive=NOTSET
+    if [[ $(systemctl status ${service_name}.service | grep "running" | wc -l) -gt "0" ]]; then
+        trace install_${service_name} "Stopping service"
+        service_isactive=yes
+        sudo systemctl stop ${service_name}.service
+    fi
 	
 	mkdir -p ${METASFRESH_HOME}/${service_name}
 	
@@ -182,8 +188,12 @@ install_service()
 	trace install_${service_name} "Making sure that the main jar shall only be accessible for its owner"
 	chmod 500 ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	
-	trace install_${service_name} "Starting service"
-	sudo systemctl start ${service_name}.service
+    # if system was running before rollout, start it back up
+    #
+    if [[ ${service_isactive} = "yes" ]]; then
+    	trace install_${service_name} "Starting service"
+        sudo systemctl start ${service_name}.service
+    fi
 	
 	trace install_${service_name} END
 }
