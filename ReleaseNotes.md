@@ -34,7 +34,7 @@ Here come the actual release notes:
   * [#1467](https://github.com/metasfresh/metasfresh/issues/1467) New Window for Product Planning Data in WebUI
     * Including the Window Product Planning Data to WebUI, to allow the user to maintain Manufacturing dependant data for products.
   * [#1471](https://github.com/metasfresh/metasfresh/issues/1471) Provide material-dispo and spring-boot-admin as services
-    * New Material Disposition Framework alowing to start the "Make or Buy" decision nearly just-in-time. This implementation is preparing the gound for the furture metasfresh microservices framewor
+    * New Material Disposition Framework alowing to start the "Make or Buy" decision nearly just-in-time. This implementation is preparing the gound for the furture metasfresh microservices framework
   * [#1473](https://github.com/metasfresh/metasfresh/issues/1473) New Window for Node Transitions in webUI
     * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
   * [#1478](https://github.com/metasfresh/metasfresh/issues/1478) New Window for InvoiceSchedule in WebUI
