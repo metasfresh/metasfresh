@@ -28,6 +28,11 @@ import java.util.Properties;
 
 public interface ISqlQueryFilter
 {
+	public static ISqlQueryFilter cast(final IQueryFilter<?> queryFilter)
+	{
+		return (ISqlQueryFilter)queryFilter;
+	}
+	
 	public String getSql();
 
 	public List<Object> getSqlParams(final Properties ctx);
