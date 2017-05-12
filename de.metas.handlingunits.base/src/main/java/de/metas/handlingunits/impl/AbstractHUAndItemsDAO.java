@@ -56,6 +56,7 @@ public abstract class AbstractHUAndItemsDAO implements IHUAndItemsDAO
 	
 
 	@Override
+	public  I_M_HU_Item retrieveAggregatedItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		I_M_HU_Item huAggregateItem = null;
 
@@ -64,6 +65,7 @@ public abstract class AbstractHUAndItemsDAO implements IHUAndItemsDAO
 		{
 			
 			// since we iterate all items anyway, also look out for the aggregate/bag item.
+			if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
 			{
 				huAggregateItem = item;
 			}
