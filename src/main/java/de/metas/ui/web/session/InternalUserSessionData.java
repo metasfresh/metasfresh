@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -19,6 +18,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.ui.web.base.session.UserPreference;
 
 /*
