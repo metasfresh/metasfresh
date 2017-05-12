@@ -30,6 +30,7 @@ prepare_service_superuser()
 		if [[ -x "${INIT_D_FILE}" ]]; then
 			echo "Found executable file ${INIT_D_FILE}; Going to try and stop ${service_name}"
 			${INIT_D_FILE} stop
+			rm -v ${INIT_D_FILE}
 		fi
 
 		echo "!!! Copying /opt/${service_name} to $SYSTEM_DEPLOY_TARGET_FOLDER (excluding /opt/${service_name}/log) !!! "
