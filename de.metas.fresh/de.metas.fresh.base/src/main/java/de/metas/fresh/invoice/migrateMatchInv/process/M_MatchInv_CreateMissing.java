@@ -45,8 +45,8 @@ import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 
 import de.metas.printing.esb.base.util.Check;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class M_MatchInv_CreateMissing extends JavaProcess
 {
@@ -131,7 +131,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 		// Add custom WHERE clause if any
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			queryBuilder.filter(new TypedSqlQueryFilter<I_C_InvoiceLine>(p_WhereClause));
+			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
 		}
 
 		//

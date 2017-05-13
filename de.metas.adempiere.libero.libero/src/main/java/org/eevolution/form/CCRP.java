@@ -77,7 +77,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.form.action.PopupAction;
 import org.eevolution.form.action.ZoomMenuAction;
 import org.eevolution.form.crp.CRPDatasetFactory;
@@ -98,6 +97,8 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer3D;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.TextAnchor;
+
+import de.metas.i18n.Msg;
 
 /**
  * Capacity Requirement Planning Form

@@ -57,7 +57,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHREmployee;
 import org.eevolution.model.MHRMovement;
@@ -65,6 +64,8 @@ import org.eevolution.model.MHRPeriod;
 import org.eevolution.model.MHRProcess;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

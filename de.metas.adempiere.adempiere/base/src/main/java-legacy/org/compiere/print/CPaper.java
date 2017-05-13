@@ -34,9 +34,8 @@ import javax.print.attribute.standard.OrientationRequested;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-
-import org.compiere.util.Msg;
 
 /**
  *	Adempiere Paper

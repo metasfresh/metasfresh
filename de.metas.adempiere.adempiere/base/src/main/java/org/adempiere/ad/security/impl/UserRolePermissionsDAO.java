@@ -404,7 +404,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		//
 		// EntityType filter: filter out those elements where EntityType is not displayed
 		final String accessTableName = InterfaceWrapperHelper.getTableName(accessTableClass);
-		final IQueryFilter<AccessTableType> entityTypeFilter = new TypedSqlQueryFilter<>("exists (select 1 from " + elementTableName + " t"
+		final IQueryFilter<AccessTableType> entityTypeFilter = TypedSqlQueryFilter.of("exists (select 1 from " + elementTableName + " t"
 				+ " where t." + elementColumnName + "=" + accessTableName + "." + elementColumnName
 				+ " and (" + EntityTypesCache.instance.getDisplayedInUIEntityTypeSQLWhereClause("t.EntityType") + ")"
 				+ ")");

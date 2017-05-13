@@ -26,7 +26,8 @@ import java.util.Properties;
 
 import org.compiere.model.MQuery;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  *	Layout Page

@@ -254,7 +254,7 @@ public final class CostDimension
 
 		if (!Check.isEmpty(whereClause, true))
 		{
-			final IQueryFilter<T> sqlFilter = new TypedSqlQueryFilter<T>(whereClause, params);
+			final IQueryFilter<T> sqlFilter = TypedSqlQueryFilter.of(whereClause, params);
 			queryBuilder.filter(sqlFilter);
 		}
 

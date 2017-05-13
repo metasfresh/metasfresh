@@ -27,11 +27,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

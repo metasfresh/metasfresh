@@ -47,6 +47,8 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Vector;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JComboBox;
@@ -65,7 +67,6 @@ import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 public class VCreateFromInvoiceUI extends CreateFromInvoice implements ActionListener, VetoableChangeListener
 {

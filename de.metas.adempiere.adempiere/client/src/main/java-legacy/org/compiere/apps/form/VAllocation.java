@@ -49,9 +49,10 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
+
+import de.metas.i18n.Msg;
 
 public class VAllocation extends Allocation
 	implements FormPanel, ActionListener, TableModelListener, VetoableChangeListener

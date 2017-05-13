@@ -21,16 +21,27 @@ prepare_service_superuser()
 
 	local SYSTEM_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
 	local SYSTEM_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
-	
+    local service_isrunning=NOTSET	
 	echo "Checking if /opt/${service_name} needs to be migrated"
+
 	if [[ -d /opt/${service_name} ]]; 
 	then
 
 		local INIT_D_FILE=/etc/init.d/${service_name}
 		if [[ -x "${INIT_D_FILE}" ]]; then
+
+            # check if service is currently running. If so, start it after migrating to systemd service
+            # starting the service is necessary to signal the "minor_remote.sh" script, that this service
+            # shall be restarted after rollout as well
+            #
+            if [[ $(${INIT_D_FILE} status | grep "Running" | wc -l) -gt "0" ]]; then
+                local service_isrunning=yes
+            fi
+            
 			echo "Found executable file ${INIT_D_FILE}; Going to try and stop ${service_name}"
 			${INIT_D_FILE} stop
-			rm -v ${INIT_D_FILE}
+			unlink ${INIT_D_FILE}
+			
 		fi
 
 		echo "!!! Copying /opt/${service_name} to $SYSTEM_DEPLOY_TARGET_FOLDER (excluding /opt/${service_name}/log) !!! "
@@ -57,6 +68,21 @@ prepare_service_superuser()
 		cp -v ./${service_name}-configs/configs/${service_name}.service ${SYSTEM_SERVICE_FILE}
 		chmod 0644 ${SYSTEM_SERVICE_FILE}
 		systemctl daemon-reload
+		
+		# if init.d file was previously running: start it to signal "minor_remote.sh" this service shall be
+		# started after rollout
+		#
+		if [[ ${service_isrunning} = "yes" ]]; then
+            systemctl start ${service_name}.service
+            
+            # metasfresh-webui-api is the ONLY service previously running using /etc/init.d/ script
+            # we want metasfresh-webui-api to be in autostart (enabled) after a server reboot
+            #
+            if [[ ${service_name} = "metasfresh-webui-api" ]]; then
+                systemctl enable ${service_name}.service
+            fi
+        fi
+        
 		echo "!!!  Done !!!"
 	else
 		echo "OK"

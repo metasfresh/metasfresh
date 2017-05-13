@@ -64,4 +64,6 @@ public interface ILanguageDAO extends ISingletonService
 	 * @return number of records deleted
 	 */
 	int removeTranslations(I_AD_Language language);
+
+	void maintainTranslations(I_AD_Language language, String maintenanceMode);
 }

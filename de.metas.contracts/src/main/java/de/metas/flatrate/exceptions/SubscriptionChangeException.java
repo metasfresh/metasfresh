@@ -28,10 +28,10 @@ import java.sql.Timestamp;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.i18n.Msg;
 
 /**
  * Indicates that there is more than one {@link I_C_SubscriptionChange} entry that could be applied in the given

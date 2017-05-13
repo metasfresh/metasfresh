@@ -55,12 +55,12 @@ import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.exception.NoContainerException;
 import de.metas.adempiere.service.IPackagingBL;
+import de.metas.i18n.Msg;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
