@@ -76,7 +76,7 @@ public class PMM_PurchaseCandidate_DatePromised_FacetCollector extends SingleFac
 		facets.add(0, Facet.<I_PMM_PurchaseCandidate> builder()
 				.setFacetCategory(getFacetCategory())
 				.setDisplayName(" < " + dateFormat.format(today))
-				.setFilter(new TypedSqlQueryFilter<I_PMM_PurchaseCandidate>(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised + "<" + DB.TO_DATE(today)))
+				.setFilter(TypedSqlQueryFilter.of(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised + "<" + DB.TO_DATE(today)))
 				.build()
 		);
 
@@ -91,7 +91,7 @@ public class PMM_PurchaseCandidate_DatePromised_FacetCollector extends SingleFac
 		return Facet.<I_PMM_PurchaseCandidate> builder()
 				.setFacetCategory(getFacetCategory())
 				.setDisplayName(dateFormat.format(date))
-				.setFilter(new TypedSqlQueryFilter<I_PMM_PurchaseCandidate>(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised + "=" + DB.TO_DATE(date)))
+				.setFilter(TypedSqlQueryFilter.of(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised + "=" + DB.TO_DATE(date)))
 				.build();
 	}
 

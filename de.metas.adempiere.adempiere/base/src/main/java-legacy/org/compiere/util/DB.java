@@ -932,6 +932,10 @@ public final class DB
 				// conn.commit();
 			}
 		}
+		catch(final DBException ex)
+		{
+			throw ex;
+		}
 		catch (final Exception ex)
 		{
 			Exception sqlException = DBException.extractSQLExceptionOrNull(ex);
@@ -985,14 +989,14 @@ public final class DB
 			}
 			else if (onFail == OnFail.ThrowException)
 			{
-				throw DBException.wrapIfNeeded(sqlException)
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
-				throw DBException.wrapIfNeeded(sqlException)
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
 			}
 		}

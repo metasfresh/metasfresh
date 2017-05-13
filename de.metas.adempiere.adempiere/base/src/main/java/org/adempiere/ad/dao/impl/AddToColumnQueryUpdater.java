@@ -65,7 +65,7 @@ class AddToColumnQueryUpdater<T> implements ISqlQueryUpdater<T>
 		}
 		else if (onlyWhenFilter instanceof ISqlQueryFilter)
 		{
-			final ISqlQueryFilter onlyWhenSqlFilter = (ISqlQueryFilter)onlyWhenFilter;
+			final ISqlQueryFilter onlyWhenSqlFilter = ISqlQueryFilter.cast(onlyWhenFilter);
 			
 			sql.append("(CASE WHEN ").append(onlyWhenSqlFilter.getSql()).append(" THEN ");
 			params.addAll(onlyWhenSqlFilter.getSqlParams(ctx));

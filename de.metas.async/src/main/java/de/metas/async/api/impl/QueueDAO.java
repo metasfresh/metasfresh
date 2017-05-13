@@ -70,7 +70,7 @@ public class QueueDAO extends AbstractQueueDAO
 					+ " WHERE v.C_Queue_Element_ID=" + parentAlias + ".C_Queue_Element_ID" + ")";
 
 			final List<Object> params = Collections.emptyList();
-			this.filter_C_Queue_Element_SkipAlreadyScheduledItems = new TypedSqlQueryFilter<I_C_Queue_Element>(wc, params);
+			this.filter_C_Queue_Element_SkipAlreadyScheduledItems = TypedSqlQueryFilter.of(wc, params);
 		}
 
 	}

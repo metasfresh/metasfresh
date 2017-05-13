@@ -77,7 +77,7 @@ public class PMM_PurchaseCandidate_Product_FacetCollector extends SingleFacetCat
 		final Facet<I_PMM_PurchaseCandidate> facet = Facet.<I_PMM_PurchaseCandidate> builder()
 				.setFacetCategory(facetCategoryBPartners)
 				.setDisplayName(bpartnerName)
-				.setFilter(new TypedSqlQueryFilter<I_PMM_PurchaseCandidate>(I_PMM_PurchaseCandidate.COLUMNNAME_M_Product_ID + "=" + bpartnerId))
+				.setFilter(TypedSqlQueryFilter.of(I_PMM_PurchaseCandidate.COLUMNNAME_M_Product_ID + "=" + bpartnerId))
 				.build();
 		return facet;
 	}

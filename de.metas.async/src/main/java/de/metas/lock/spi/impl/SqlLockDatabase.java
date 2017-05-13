@@ -203,7 +203,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 			final List<Object> sqlParams = new ArrayList<>();
-			final ISqlQueryFilter sqlFilter = (ISqlQueryFilter)selectionToLockFilters;
+			final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(selectionToLockFilters);
 			final String tableName = adTableDAO.retrieveTableName(adTableId);
 			final String sql = "INSERT INTO " + I_T_Lock.Table_Name + " ("
 					+ I_T_Lock.COLUMNNAME_AD_Table_ID
@@ -528,7 +528,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String joinColumnNameFQ = tableName + "." + keyColumnName;
 		final String sqlWhereClause = getNotLockedWhereClause(tableName, joinColumnNameFQ);
-		final TypedSqlQueryFilter<T> filter = new TypedSqlQueryFilter<>(sqlWhereClause);
+		final TypedSqlQueryFilter<T> filter = TypedSqlQueryFilter.of(sqlWhereClause);
 		return filter;
 	}
 
@@ -539,7 +539,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String joinColumnNameFQ = tableName + "." + keyColumnName;
 		final String sqlWhereClause = getLockedWhereClause(modelClass, joinColumnNameFQ, lockOwner);
-		final TypedSqlQueryFilter<T> filter = new TypedSqlQueryFilter<>(sqlWhereClause);
+		final TypedSqlQueryFilter<T> filter = TypedSqlQueryFilter.of(sqlWhereClause);
 		return filter;
 	}
 
