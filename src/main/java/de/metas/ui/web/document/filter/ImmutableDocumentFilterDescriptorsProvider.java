@@ -15,8 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import groovy.transform.Immutable;
-import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -32,11 +31,11 @@ import lombok.ToString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,7 +48,7 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 	{
 		if (descriptors == null || descriptors.isEmpty())
 		{
-			return NULL;
+			return EMPTY;
 		}
 		return new ImmutableDocumentFilterDescriptorsProvider(descriptors);
 	}
@@ -58,9 +57,14 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 	{
 		if (descriptor == null)
 		{
-			return NULL;
+			return EMPTY;
 		}
 		return new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of(descriptor));
+	}
+
+	public static final Builder builder()
+	{
+		return new Builder();
 	}
 
 	public static final Collector<DocumentFilterDescriptor, ?, ImmutableDocumentFilterDescriptorsProvider> collector()
@@ -76,12 +80,11 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	private static final ImmutableDocumentFilterDescriptorsProvider NULL = new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of());
+	private static final ImmutableDocumentFilterDescriptorsProvider EMPTY = new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of());
 
 	private final Map<String, DocumentFilterDescriptor> descriptorsByFilterId;
 
-	@Builder
-	private ImmutableDocumentFilterDescriptorsProvider(@Singular final List<DocumentFilterDescriptor> descriptors)
+	private ImmutableDocumentFilterDescriptorsProvider(final List<DocumentFilterDescriptor> descriptors)
 	{
 		super();
 		descriptorsByFilterId = Maps.uniqueIndex(descriptors, descriptor -> descriptor.getFilterId());
@@ -98,6 +101,42 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 	{
 		final DocumentFilterDescriptor descriptor = descriptorsByFilterId.get(filterId);
 		return descriptor;
+	}
+
+	public static class Builder
+	{
+		private final List<DocumentFilterDescriptor> descriptors = new ArrayList<>();
+
+		private Builder()
+		{
+		}
+
+		public ImmutableDocumentFilterDescriptorsProvider build()
+		{
+			if(descriptors.isEmpty())
+			{
+				return EMPTY;
+			}
+			return new ImmutableDocumentFilterDescriptorsProvider(descriptors);
+		}
+
+		public Builder addDescriptor(@NonNull final DocumentFilterDescriptor descriptor)
+		{
+			descriptors.add(descriptor);
+			return this;
+		}
+
+		public Builder addDescriptors(@NonNull final Collection<DocumentFilterDescriptor> descriptors)
+		{
+			if (descriptors.isEmpty())
+			{
+				return this;
+			}
+
+			this.descriptors.addAll(descriptors);
+			return this;
+		}
+
 	}
 
 }

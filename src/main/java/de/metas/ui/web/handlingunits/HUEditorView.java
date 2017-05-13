@@ -25,6 +25,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
@@ -85,6 +86,7 @@ public class HUEditorView implements IView
 	private final HUEditorViewBuffer rowsBuffer;
 	private final HUEditorRowAttributesProvider huAttributesProvider;
 
+	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final ImmutableList<DocumentFilter> stickyFilters;
 	private final ImmutableList<DocumentFilter> filters;
 
@@ -108,9 +110,11 @@ public class HUEditorView implements IView
 				.attributesProvider(huAttributesProvider)
 				.sqlViewBinding(builder.getSqlViewBinding())
 				.build();
+		
+		viewFilterDescriptors = builder.getSqlViewBinding().getViewFilterDescriptors();
 
 		//
-		// Build stickyFilters and huIds
+		// Build stickyFilters
 		{
 			final Collection<Integer> builder_huIds = builder.getHUIds();
 			final List<DocumentFilter> stickyFilters = new ArrayList<>(builder.getStickyFilters());
@@ -248,13 +252,19 @@ public class HUEditorView implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return viewFilterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx);
 	}
 
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return viewFilterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx, query);
 	}
 
 	@Override
